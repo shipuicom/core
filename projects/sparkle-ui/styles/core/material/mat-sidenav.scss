@@ -1,0 +1,46 @@
+$matDrawerTheme: true !default;
+
+@if $matDrawerTheme == true {
+  body.dark,
+  body {
+    --mat-sidenav-content-background-color: var(--base-level-20);
+    --mat-sidenav-container-background-color: var(--base-level-20);
+
+    .mat-drawer-content {
+      padding: p2r(16 16 16 0);
+
+      @include breakpoint(-milli) {
+        padding: 0;
+      }
+
+      main {
+        @include overflowScrolling();
+
+        background-color: var(--base-level-10);
+        border: 1px solid var(--base-level-40);
+        border-radius: var(--shape-3);
+        height: calc(100vh - #{p2r(32)});
+        box-shadow: var(--box-shadow-35);
+
+        @include breakpoint(-milli) {
+          border-radius: 0;
+          border: 0;
+          height: 100vh;
+          box-shadow: none;
+        }
+      }
+    }
+
+    .mat-drawer-side {
+      border-right: 0;
+      box-shadow: none;
+      background: transparent;
+      width: p2r(280);
+    }
+
+    .mat-drawer-container {
+      width: 100vw;
+      color: var(--base-level-60);
+    }
+  }
+}

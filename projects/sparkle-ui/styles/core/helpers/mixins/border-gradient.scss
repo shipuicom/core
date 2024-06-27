@@ -1,0 +1,61 @@
+@use 'sass:list';
+@use 'sass:map';
+
+$palettes: 'primary', 'accent', 'grey', 'warn', 'success';
+$colors: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950;
+
+@mixin borderGradient($mode: light, $width: 1px, $direction: right) {
+  $opacity: 0.48;
+  $bgColor: #fff;
+
+  @if $mode == dark {
+    $opacity: 0.06;
+    $bgColor: #000;
+  }
+
+  @if $mode == flipLight {
+    $opacity: 0.15;
+    $bgColor: #fff;
+  }
+
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(100% - #{$width * 2});
+    height: calc(100% - #{$width * 2});
+    border-width: $width;
+    border-style: solid;
+
+    @if $direction == right {
+      border-image: linear-gradient(
+          to $direction,
+          rgba($bgColor, 0),
+          rgba($bgColor, $opacity),
+          rgba($bgColor, 0)
+        )
+        100%
+        1;
+    }
+
+    @if $direction == bottom {
+      border-image: linear-gradient(
+          to $direction,
+          rgba($bgColor, 0),
+          rgba($bgColor, $opacity),
+          rgba($bgColor, 0)
+        )
+        1
+        100%;
+    }
+  }
+}
+
+@mixin noBorderGradient() {
+  &:before {
+    content: none;
+  }
+}

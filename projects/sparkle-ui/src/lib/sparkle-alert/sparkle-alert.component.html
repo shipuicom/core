@@ -1,0 +1,51 @@
+<div class="sparkle-alert-item">
+  <div
+    #ref
+    class="sparkle-alert-icon"
+    [style.display]="!ref.children.length ? 'none' : 'block'">
+    <ng-content select="[sparkle-alert-icon]"></ng-content>
+  </div>
+
+  @if (!ref.children.length) {
+    <div class="sparkle-alert-icon">
+      @switch (_type) {
+        @case ('primary') {
+          <mat-icon class="sparkle-alert-state-icon" fontIcon="info" />
+        }
+        @case ('accent') {
+          <mat-icon class="sparkle-alert-state-icon" fontIcon="info" />
+        }
+        @case ('success') {
+          <mat-icon class="sparkle-alert-state-icon" fontIcon="check-circle" />
+        }
+        @case ('error') {
+          <mat-icon
+            class="sparkle-alert-state-icon"
+            fontIcon="warning-octagon" />
+        }
+        @case ('warning') {
+          <mat-icon class="sparkle-alert-state-icon" fontIcon="warning" />
+        }
+        @default {
+          <mat-icon class="sparkle-alert-state-icon" fontIcon="question" />
+        }
+      }
+    </div>
+  }
+
+  <div class="sparkle-alert-title">
+    <ng-content select="[sparkle-alert-title]"></ng-content>
+    <ng-content></ng-content>
+  </div>
+
+  @if (id()) {
+    <mat-icon
+      class="sparkle-alert-close-icon"
+      (click)="removeAlert()"
+      fontIcon="plus" />
+  }
+
+  <div class="sparkle-alert-content">
+    <ng-content select="[sparkle-alert-content]"></ng-content>
+  </div>
+</div>

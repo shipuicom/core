@@ -1,0 +1,94 @@
+body.mat-typography {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  .title-10,
+  .title-20B,
+  .title-20,
+  .title-30B,
+  .title-30B,
+  .title-30B,
+  .paragraph-10,
+  .paragraph-20 {
+    margin: 0;
+  }
+}
+
+body {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .title-10,
+  .title-20B,
+  .title-20,
+  .title-30B,
+  .title-30B,
+  .title-30B {
+    color: var(--base-level-70);
+  }
+}
+
+p,
+.paragraph-10,
+.paragraph-20,
+.paragraph-30,
+.paragraph-40,
+.paragraph-10B,
+.paragraph-20B,
+.paragraph-30B,
+.paragraph-40B {
+  color: var(--base-level-60);
+}
+
+p {
+  margin: 0;
+}
+
+strong {
+  font-weight: 600;
+}
+
+a {
+  color: var(--primary-500);
+}
+
+sup {
+  color: var(--warn-500);
+  margin-left: -0.33em;
+  vertical-align: 3px;
+}
+
+body {
+  h3 {
+    font: var(--title-30);
+  }
+
+  $displaySizes: (10, 20, 30, 40, 50);
+  $titleSizes: (10, 20, 30, 10b, 20b, 30b);
+  $paragraphSizes: (10, 20, 30, 40, 10b, 20b, 30b, 40b);
+
+  @each $displaySize in $displaySizes {
+    .display-#{$displaySize} {
+      font: var(--display-#{$displaySize});
+    }
+  }
+
+  @each $titleSize in $titleSizes {
+    .title-#{$titleSize} {
+      font: var(--title-#{$titleSize});
+    }
+  }
+
+  @each $paragraphSize in $paragraphSizes {
+    .paragraph-#{$paragraphSize} {
+      font: var(--paragraph-#{$paragraphSize});
+    }
+  }
+}

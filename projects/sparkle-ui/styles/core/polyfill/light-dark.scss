@@ -1,0 +1,3 @@
+@function light-dark($light, $dark) {
+  @return var(--sparkle-light, $light) var(--sparkle-dark, $dark);
+}

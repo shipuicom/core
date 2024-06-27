@@ -1,0 +1,27 @@
+$matButtonTheme: true !default;
+
+@if $matButtonTheme == true {
+  body.dark,
+  body {
+    .mat-button-toggle-group {
+      --mat-standard-button-toggle-selected-state-background-color: var(--base-level-30);
+
+      height: p2r(32);
+      align-items: center;
+      border-radius: var(--shape-2);
+      border: 1px solid var(--base-level-40);
+
+      .mat-button-toggle {
+        flex: 1 0;
+        .mat-pseudo-checkbox {
+          display: none;
+          margin: 0;
+        }
+      }
+
+      .mat-button-toggle-appearance-standard + .mat-button-toggle-appearance-standard {
+        border-left: 1px solid var(--base-level-40);
+      }
+    }
+  }
+}

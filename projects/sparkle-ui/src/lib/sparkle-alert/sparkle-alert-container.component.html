@@ -1,0 +1,31 @@
+<div class="scroller" #scroller>
+  <div class="container">
+    @for (alert of alertHistory(); track $index) {
+      <sparkle-alert
+        #alerts
+        [type]="alert.type"
+        [id]="alert.id"
+        [style.transition-delay]="transitionDelay($index, true)"
+        [class.sparkle-alert-animate-in]="alert.animateIn"
+        [class.sparkle-alert-animate-out]="alert.animateOut"
+        [class.sparkle-alert-is-hidden]="
+          alertHistoryIsHidden() && !alert.isOpen
+        ">
+        <div sparkle-alert-title>{{ alert.title }}</div>
+
+        @if (alert.content) {
+          <div sparkle-alert-content>
+            {{ alert.content }}
+          </div>
+        }
+      </sparkle-alert>
+    }
+  </div>
+</div>
+<div
+  class="alert-tray"
+  [class.alert-tray-is-hidden]="!alertHistoryIsHidden()"
+  (mouseover)="this.onMouseOver()"
+  (mouseout)="this.onMouseOut()">
+  <mat-icon size="16" fontIcon="info" />
+</div>

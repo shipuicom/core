@@ -1,0 +1,17 @@
+:host {
+  display: block;
+  padding: 40px;
+}
+
+section {
+  width: 100%;
+  max-width: 500px;
+  padding: 20px;
+}
+
+.example-chip-row {
+  display: flex;
+  gap: 10px;
+  max-width: 800px;
+  padding: 20px 0;
+}

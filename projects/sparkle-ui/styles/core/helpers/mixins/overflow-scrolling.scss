@@ -1,0 +1,18 @@
+@mixin overflowScrolling($dir: y) {
+  @if $dir == y {
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: auto;
+  }
+
+  @if $dir == x {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: auto;
+  }
+
+  @if $dir == xy or $dir == yx {
+    overflow: auto;
+    -webkit-overflow-scrolling: auto;
+  }
+}

@@ -1,0 +1,9 @@
+$matPaginatorTheme: true !default;
+
+@if $matPaginatorTheme == true {
+  body {
+    .mat-mdc-paginator {
+      border-top: 1px solid var(--base-level-40);
+    }
+  }
+}

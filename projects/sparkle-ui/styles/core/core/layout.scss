@@ -1,0 +1,27 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+app-root {
+  width: 100vw;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--base-level-10);
+}
+
+body {
+  margin: 0;
+  font: var(--paragraph-30);
+  color: var(--mat-sidenav-content-text-color);
+}
+
+.spacer {
+  flex: 1 0;
+}
+
+.mat-success {
+  color: var(--success-500);
+}

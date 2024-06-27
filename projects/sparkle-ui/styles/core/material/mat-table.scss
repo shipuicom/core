@@ -1,0 +1,157 @@
+$matTableTheme: true !default;
+
+@if $matTableTheme == true {
+  body.dark,
+  body {
+    --mat-table-container-shape: var(--shape-2);
+    --mat-table-background-color: transparent;
+
+    // Table styles
+    table.mat-mdc-table {
+      th {
+        padding: p2r(0 0 0 20);
+        font: var(--paragraph-30);
+        line-height: 1em;
+        white-space: nowrap;
+        color: var(--base-level-60R);
+        border: 0;
+
+        &:last-child {
+          padding: p2r(0 20);
+        }
+      }
+
+      td {
+        padding: p2r(16 20);
+        height: p2r(78);
+        font-weight: 500;
+        white-space: nowrap;
+        color: var(--base-level-60);
+        border-top: 1px solid var(--base-level-30);
+        border-bottom: 0;
+      }
+
+      .mat-mdc-header-row {
+        height: 48px;
+      }
+
+      .mat-mdc-row {
+        &:last-child {
+          td {
+            border-bottom: 0;
+          }
+        }
+
+        &.is-clickable,
+        &.is-expandable {
+          cursor: pointer;
+
+          &:hover {
+            background-color: var(--base-level-20);
+          }
+        }
+
+        &.expandable-details {
+          overflow: hidden;
+          height: 0;
+
+          td:first-child.mat-column-expandedDetail {
+            padding: 0;
+            height: 0;
+            border: 0;
+          }
+
+          .mat-mdc-header-row {
+            height: p2r(48);
+          }
+
+          td:first-child,
+          th:first-child {
+            padding-left: p2r(92);
+          }
+
+          .expanded-content {
+            overflow: hidden;
+            background-color: var(--base-level-20);
+          }
+        }
+      }
+    }
+
+    // Table utilities
+    .table-fallback {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: p2r(32);
+      gap: p2r(12);
+
+      * {
+        max-width: 400px;
+      }
+
+      p {
+        text-wrap: balance;
+        text-align: center;
+      }
+    }
+
+    .mat-row-center {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mat-column-expander,
+    .mat-column-status,
+    .mat-column-actions {
+      width: 40px;
+    }
+
+    .mat-column-actions {
+      text-align: right;
+    }
+
+    .table-scrollable {
+      display: flex;
+      overflow: hidden;
+      width: 100%;
+      position: relative;
+
+      .mat-mdc-progress-bar {
+        position: absolute;
+        top: p2r(48);
+        left: 0;
+        right: 0;
+        height: p2r(4);
+      }
+
+      &.no-background {
+        &::before {
+          display: none;
+        }
+      }
+    }
+
+    // To support sticky tables
+    .table-wrap {
+      display: flex;
+      flex-direction: column;
+      flex: 1 0;
+      overflow: auto;
+      position: relative;
+      padding: 0;
+      background-color: var(--mat-table-background-color);
+
+      .mat-mdc-table-sticky {
+        transform: translateX(1px);
+        // border-left: 1px solid var(--mat-table-row-item-outline-color);
+
+        @include breakpoint(-milli) {
+          position: initial !important;
+        }
+      }
+    }
+  }
+}

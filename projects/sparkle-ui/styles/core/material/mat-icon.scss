@@ -1,0 +1,21 @@
+$matIconTheme: true !default;
+
+@if $matIconTheme == true {
+  body {
+    .mat-icon {
+      font-size: p2r(20);
+      line-height: 1em;
+      width: 1em;
+      height: 1em;
+      text-align: center;
+
+      &.large {
+        font-size: p2r(32);
+      }
+
+      &.small {
+        font-size: p2r(16);
+      }
+    }
+  }
+}

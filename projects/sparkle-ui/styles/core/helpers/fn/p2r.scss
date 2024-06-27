@@ -1,0 +1,22 @@
+@use 'sass:list';
+@use 'sass:math'; // Include math module for division
+
+$base-font-size-in-px: 16 !default;
+
+@function p2r($pxValues) {
+  $remValues: ();
+
+  @each $pxValue in $pxValues {
+    @if $pxValue == auto {
+      $remValues: list.append($remValues, auto);
+    } @else if type-of($pxValue) != number {
+      $pxValue: math.div($pxValue, 1px);
+    } @else if $pxValue == 0 {
+      $remValues: list.append($remValues, 0);
+    } @else {
+      $remValues: list.append($remValues, (math.div($pxValue, $base-font-size-in-px) * 1rem));
+    }
+  }
+
+  @return $remValues;
+}

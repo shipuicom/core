@@ -1,0 +1,46 @@
+@import '../../../styles/helpers.scss';
+
+:host {
+  display: block;
+  width: p2r(34);
+  height: p2r(20);
+  cursor: pointer;
+}
+
+.bg {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--base-level-40);
+  transition: background 150ms linear;
+
+  &.active {
+    background: linear-gradient(to right, var(--primary-400), var(--primary-500));
+
+    .knob {
+      left: p2r(16);
+    }
+  }
+
+  .knob {
+    position: absolute;
+    top: p2r(2);
+    left: p2r(2);
+    width: p2r(16);
+    height: p2r(16);
+    border-radius: 50%;
+    background-color: #fff;
+    box-shadow: var(--box-shadow-20);
+    transition: left 125ms ease-in-out;
+  }
+
+  &.sv-stroked {
+  }
+
+  &.sv-flat {
+  }
+
+  &.sv-flat {
+  }
+}

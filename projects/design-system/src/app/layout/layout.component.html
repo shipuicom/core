@@ -1,0 +1,99 @@
+<mat-drawer-container>
+  <mat-drawer mode="side" opened>
+    <header>
+      <div>✨ Sparkle UI</div>
+
+      <button mat-stroked-button class="small" (click)="toggleBodyClass()">
+        @if (isDarkMode()) {
+          <mat-icon fontIcon="sun" />
+        } @else {
+          <mat-icon fontIcon="moon" />
+        }
+      </button>
+    </header>
+
+    <mat-action-list class="variant-a">
+      <h3>Design system</h3>
+
+      <button
+        mat-list-item
+        routerLink="/design-system"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <mat-icon fontIcon="circle" />
+        Design system
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/design-system/colors"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <mat-icon fontIcon="circle" />
+        Colors
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/design-system/typography"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        Typography
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/design-system/buttons"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        Buttons
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/design-system/chips"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        Chips
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/design-system/menus"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        Menus
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/design-system/expansion-panel"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        Expansion panel
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/design-system/snackbar"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        Snackbar
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/design-system/form-fields"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        Form fields
+      </button>
+    </mat-action-list>
+  </mat-drawer>
+
+  <mat-drawer-content>
+    <main>
+      <router-outlet />
+    </main>
+  </mat-drawer-content>
+</mat-drawer-container>

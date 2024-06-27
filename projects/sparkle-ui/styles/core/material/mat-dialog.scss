@@ -1,0 +1,46 @@
+$matDialogTheme: true !default;
+
+@if $matDialogTheme == true {
+  body.dark,
+  body {
+    --mat-dialog-container-small-max-width: 90vw;
+
+    .mat-mdc-dialog-surface {
+      --mdc-dialog-container-color: var(--base-level-20);
+      --mdc-dialog-container-shape: var(--shape-2);
+      border: 1px solid var(--base-level-40);
+      box-shadow: var(--box-shadow-40);
+    }
+
+    .mdc-dialog {
+      .mdc-dialog__title {
+        font: var(--title-30);
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid var(--base-level-40);
+        padding: p2r(24);
+        gap: p2r(12);
+
+        &:before {
+          display: none;
+        }
+      }
+
+      .mat-mdc-dialog-title + .mat-mdc-dialog-content {
+        padding-top: p2r(20);
+      }
+
+      .mdc-dialog__actions {
+        border-top: 1px solid var(--base-level-40);
+        padding: p2r(10 20);
+        display: flex;
+        justify-content: flex-end;
+        gap: p2r(8);
+
+        button {
+          margin: 0;
+        }
+      }
+    }
+  }
+}

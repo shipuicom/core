@@ -1,0 +1,107 @@
+/* You can add global styles to this file, and also import other style files */
+@use 'sass:list';
+@use '@angular/material' as mat;
+
+@import './core/palette-variables.scss';
+
+@mixin palette($palette, $name) {
+  @each $key, $value in $palette {
+    --#{"" + $name}-#{$key}: #{list.nth($value, 1)};
+    --#{"" + $name}-rgb-#{$key}: #{list.nth($value, 2)};
+    --#{"" + $name}-contrast-#{$key}: var(--#{nth($value, 3)}-primary-text);
+  }
+}
+
+@import './core/polyfill/light-dark.scss';
+
+:root {
+  --font-size: 16px;
+  font-size: var(--font-size);
+}
+
+html body {
+  --sparkle-light: initial;
+  --sparkle-dark: ;
+  color-scheme: light dark;
+
+  @include palette($topaz-palette, primary);
+  @include palette($violet-palette, accent);
+  @include palette($amber-palette, tertiary);
+  @include palette($mono-palette, grey);
+  @include palette($ruby-palette, warn);
+  @include palette($emerald-palette, success);
+
+  --display-10: 600 80px / normal Inter Tight, sans-serif;
+  --display-20: 600 72px / normal Inter Tight, sans-serif;
+  --display-30: 600 64px / normal Inter Tight, sans-serif;
+  --display-40: 600 56px / normal Inter Tight, sans-serif;
+  --display-50: 600 48px / normal Inter Tight, sans-serif;
+
+  --title-10: 500 40px / normal Inter Tight, sans-serif;
+  --title-20: 500 32px / normal Inter Tight, sans-serif;
+  --title-30: 500 24px / normal Inter Tight, sans-serif;
+
+  --title-10B: 600 40px / normal Inter Tight, sans-serif;
+  --title-20B: 600 32px / normal Inter Tight, sans-serif;
+  --title-30B: 600 24px / normal Inter Tight, sans-serif;
+
+  --paragraph-10: 500 18px / normal Inter Tight, sans-serif;
+  --paragraph-20: 500 16px / normal Inter Tight, sans-serif;
+  --paragraph-30: 500 14px / normal Inter Tight, sans-serif;
+  --paragraph-40: 500 12px / normal Inter Tight, sans-serif;
+
+  --paragraph-10B: 600 18px / normal Inter Tight, sans-serif;
+  --paragraph-20B: 600 16px / normal Inter Tight, sans-serif;
+  --paragraph-30B: 600 14px / normal Inter Tight, sans-serif;
+  --paragraph-40B: 600 12px / normal Inter Tight, sans-serif;
+
+  --shape-1: 4px;
+  --shape-2: 8px;
+  --shape-3: 12px;
+  --shape-4: 16px;
+  --shape-5: 20px;
+
+  --box-shadow-10: 0 1px 2px 0 rgba(18, 18, 23, 0.07);
+  --box-shadow-20: 0 1px 3px 0 rgba(18, 18, 23, 0.1);
+  --box-shadow-30: 0 1px 4px -1px rgba(18, 18, 23, 0.08);
+  --box-shadow-35: 0 4px 6px -1px rgba(18, 18, 23, 0.08);
+  --box-shadow-40: 0 10px 15px -3px rgba(18, 18, 23, 0.08);
+  --box-shadow-50: 0 20px 25px -5px rgba(18, 18, 23, 0.1);
+  --box-shadow-60: 0 25px 50px -12px rgba(18, 18, 23, 0.25);
+
+  --base-level-10: #{light-dark(#fff, var(--grey-950))};
+  --base-level-20: #{light-dark(var(--grey-50), var(--grey-900))};
+  --base-level-30: #{light-dark(var(--grey-100), var(--grey-800))};
+  --base-level-40: #{light-dark(var(--grey-200), var(--grey-700))};
+  --base-level-50: #{light-dark(var(--grey-300), var(--grey-600))};
+  --base-level-60: #{light-dark(var(--grey-500), var(--grey-400))};
+  --base-level-60R: #{light-dark(var(--grey-400), var(--grey-500))};
+  --base-level-70: #{light-dark(var(--grey-900), #fff)};
+  --base-level-70R: #{light-dark(#fff, var(--grey-900))};
+
+  --dark-primary-text: var(--grey-900);
+  --light-primary-text: #fff;
+
+  &.dark {
+    --sparkle-light: ;
+    --sparkle-dark: initial;
+
+    color-scheme: dark;
+  }
+}
+
+$use-inter-tight: true !default;
+$use-apexcharts: true !default;
+
+@import './helpers.scss';
+// @import './core/fonts/phosphor-icons';
+// @if ($use-inter-tight == true) {
+@import './core/fonts/inter-tight';
+// }
+
+@import './core/material';
+@import './core/core';
+
+// @if ($use-apexcharts == true) {
+@import './core/apexcharts/apexcharts';
+// }

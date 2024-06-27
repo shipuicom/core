@@ -1,0 +1,41 @@
+@use '@angular/material' as mat;
+@use './variables.scss' as var;
+
+@include mat.core();
+// @include mat.typography-hierarchy(var.$typography-config);
+@include mat.all-component-themes(var.$light-theme);
+
+body {
+  &.dark {
+    @include mat.all-component-colors(var.$dark-theme);
+  }
+}
+// @import './material/cdk-overlay';
+
+// Components
+
+@import './material/mat-button';
+@import './material/mat-button-toggle';
+@import './material/mat-card';
+@import './material/mat-table';
+@import './material/mat-dialog';
+@import './material/mat-form-field';
+@import './material/mat-expansion-panel';
+// @import './material/mat-datepicker';
+// @import './material/mat-checkbox';
+@import './material/mat-progress-bar';
+// @import './material/mat-paginator';
+@import './material/mat-chip';
+// @import './material/mat-radio';
+// @import './material/mat-divider';
+@import './material/mat-menu';
+@import './material/mat-select';
+// @import './material/mat-slide-toggle';
+@import './material/mat-sidenav';
+@import './material/mat-spinner';
+@import './material/mat-icon';
+@import './material/mat-tab';
+@import './material/mat-list';
+@import './material/mat-stepper';
+@import './material/mat-toolbar';
+// @import './material/mat-tooltip';

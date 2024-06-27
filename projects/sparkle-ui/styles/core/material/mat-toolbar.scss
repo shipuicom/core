@@ -1,0 +1,12 @@
+$matToolbarTheme: true !default;
+
+@if $matToolbarTheme == true {
+  body.dark,
+  body {
+    .mat-toolbar {
+      background-color: var(--base-level-10);
+      border-bottom: 1px solid var(--base-level-40);
+      box-shadow: var(--box-shadow-20);
+    }
+  }
+}

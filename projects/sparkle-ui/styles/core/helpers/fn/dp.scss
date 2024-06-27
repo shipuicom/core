@@ -1,0 +1,14 @@
+@use 'sass:list';
+
+// Gutter
+$base-dp: 4px;
+
+@function dp($listTimes) {
+  $new-dp-list: ();
+
+  @each $times in $listTimes {
+    $new-dp-list: list.append($new-dp-list, $times * $base-dp, 'space');
+  }
+
+  @return $new-dp-list;
+}
