@@ -1,0 +1,49 @@
+name: Build and Deploy Angular Library
+
+on:
+  push:
+    branches:
+      - main  # Or your main branch name
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20' 
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Library
+        run: npm run build sparkle-ui
+
+      - name: Bump Version and Publish (if on main)
+        if: github.ref == 'refs/heads/main'
+        working-directory: ./projects/sparkle-ui
+        run: |
+          # Default to patch version bump
+          VERSION_BUMP=$(cat package.json | jq -r '.version' | awk -F. '{print $1 "." $2 "." ($3+1)}') 
+          
+          # Check for specific version bump tags
+          if [[ $(git log -1 --pretty=%B) =~ \[major\] ]]; then
+            VERSION_BUMP=$(cat package.json | jq -r '.version' | awk -F. '{print ($3+1) ".0.0"}')
+          elif [[ $(git log -1 --pretty=%B) =~ \[minor\] ]]; then
+            VERSION_BUMP=$(cat package.json | jq -r '.version' | awk -F. '{print $1 "." ($2+1) ".0"}')
+          fi
+
+          # Update the version in package.json
+          npm version --no-git-tag-version "$VERSION_BUMP"
+
+          # Publish (ensure your NPM_TOKEN secret is configured)
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+          npm publish --access public
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}  # Your NPM token from secrets
