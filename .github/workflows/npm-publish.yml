@@ -12,6 +12,11 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1 # shallow clone
+      
+      - name: Deepen Clone
+        run: git fetch --unshallow
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
