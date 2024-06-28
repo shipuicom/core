@@ -8,9 +8,7 @@
         [style.transition-delay]="transitionDelay($index, true)"
         [class.sparkle-alert-animate-in]="alert.animateIn"
         [class.sparkle-alert-animate-out]="alert.animateOut"
-        [class.sparkle-alert-is-hidden]="
-          alertHistoryIsHidden() && !alert.isOpen
-        ">
+        [class.sparkle-alert-is-hidden]="alertHistoryIsHidden() && !alert.isOpen">
         <div sparkle-alert-title>{{ alert.title }}</div>
 
         @if (alert.content) {
@@ -27,5 +25,5 @@
   [class.alert-tray-is-hidden]="!alertHistoryIsHidden()"
   (mouseover)="this.onMouseOver()"
   (mouseout)="this.onMouseOut()">
-  <mat-icon size="16" fontIcon="info" />
+  <mat-icon size="16">info</mat-icon>
 </div>

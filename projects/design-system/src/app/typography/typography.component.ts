@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { LayoutState } from '../../layout/layout.state';
+import { LayoutState } from '../layout/layout.state';
 
 @Component({
   selector: 'app-typography',
@@ -11,7 +11,7 @@ import { LayoutState } from '../../layout/layout.state';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class TypographyComponent {
-  private layoutState = inject(LayoutState);
+  #layoutState = inject(LayoutState);
 
-  isDarkMode = this.layoutState.isDarkMode$;
+  isDarkMode = this.#layoutState.isDarkMode;
 }

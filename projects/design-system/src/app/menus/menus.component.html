@@ -3,7 +3,7 @@
   <div class="example">
     <button mat-button [class.active]="true">
       Some active menu button
-      <mat-icon fontIcon="circle" />
+      <mat-icon>circle</mat-icon>
     </button>
     <div
       class="mat-mdc-menu-panel mat-mdc-elevation-specific ng-trigger ng-trigger-transformMenu mat-menu-after mat-menu-below"
@@ -11,11 +11,11 @@
       <div class="mat-mdc-menu-content">
         <div mat-menu-title>Section title 1.</div>
         <button mat-menu-item mat-menu-hotkey="⌘O">
-          <mat-icon fontIcon="circle" />
+          <mat-icon>circle</mat-icon>
           <span>Redial</span>
         </button>
         <button mat-menu-item mat-menu-hotkey="⌘O">
-          <mat-icon fontIcon="circle" />
+          <mat-icon>circle</mat-icon>
           <span>Redial</span>
         </button>
 
@@ -23,15 +23,15 @@
 
         <div mat-menu-title>Section title 2.</div>
         <button mat-menu-item mat-menu-hotkey="⌘O">
-          <mat-icon fontIcon="circle" />
+          <mat-icon>circle</mat-icon>
           <span>Redial</span>
         </button>
         <button mat-menu-item mat-menu-hotkey="⌘O" disabled>
-          <mat-icon fontIcon="circle" />
+          <mat-icon>circle</mat-icon>
           <span>Check voice mail</span>
         </button>
         <button mat-menu-item mat-menu-hotkey="⌘O">
-          <mat-icon fontIcon="circle" />
+          <mat-icon>circle</mat-icon>
           <span>Disable alerts</span>
         </button>
       </div>
@@ -45,7 +45,7 @@
       [matMenuTriggerFor]="languageMenu"
       #languageMenuTrigger="matMenuTrigger">
       Language
-      <mat-icon fontIcon="circle" />
+      <mat-icon>circle</mat-icon>
     </button>
     <mat-menu #languageMenu="matMenu">
       <button mat-menu-item>English</button>

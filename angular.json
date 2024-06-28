@@ -74,9 +74,17 @@
               {
                 "glob": "**/*",
                 "input": "projects/design-system/public"
+              },
+              {
+                "glob": "**/*",
+                "input": "projects/sparkle-ui/assets/fonts",
+                "output": "./sparkle-ui-assets/fonts/"
               }
             ],
-            "styles": ["projects/design-system/src/styles.scss"],
+            "stylePreprocessorOptions": {
+              "includePaths": ["projects/sparkle-ui/styles"]
+            },
+            "styles": ["projects/design-system/public/phb.css", "projects/design-system/src/styles.scss"],
             "scripts": []
           },
           "configurations": {

@@ -1,4 +1,4 @@
-@import 'src/styles/helpers.scss';
+@use 'helpers' as *;
 
 :host {
   display: block;

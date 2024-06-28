@@ -5,9 +5,9 @@
 
       <button mat-stroked-button class="small" (click)="toggleBodyClass()">
         @if (isDarkMode()) {
-          <mat-icon fontIcon="sun" />
+          <mat-icon>sun</mat-icon>
         } @else {
-          <mat-icon fontIcon="moon" />
+          <mat-icon>moon</mat-icon>
         }
       </button>
     </header>
@@ -17,25 +17,25 @@
 
       <button
         mat-list-item
-        routerLink="/design-system"
+        routerLink="/"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
-        <mat-icon fontIcon="circle" />
+        <mat-icon>circle</mat-icon>
         Design system
       </button>
 
       <button
         mat-list-item
-        routerLink="/design-system/colors"
+        routerLink="/colors"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
-        <mat-icon fontIcon="circle" />
+        <mat-icon>circle</mat-icon>
         Colors
       </button>
 
       <button
         mat-list-item
-        routerLink="/design-system/typography"
+        routerLink="/typography"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
         Typography
@@ -43,7 +43,7 @@
 
       <button
         mat-list-item
-        routerLink="/design-system/buttons"
+        routerLink="/buttons"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
         Buttons
@@ -51,7 +51,7 @@
 
       <button
         mat-list-item
-        routerLink="/design-system/chips"
+        routerLink="/chips"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
         Chips
@@ -59,7 +59,7 @@
 
       <button
         mat-list-item
-        routerLink="/design-system/menus"
+        routerLink="/menus"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
         Menus
@@ -67,7 +67,7 @@
 
       <button
         mat-list-item
-        routerLink="/design-system/expansion-panel"
+        routerLink="/expansion-panel"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
         Expansion panel
@@ -75,7 +75,7 @@
 
       <button
         mat-list-item
-        routerLink="/design-system/snackbar"
+        routerLink="/snackbar"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
         Snackbar
@@ -83,7 +83,7 @@
 
       <button
         mat-list-item
-        routerLink="/design-system/form-fields"
+        routerLink="/form-fields"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
         Form fields

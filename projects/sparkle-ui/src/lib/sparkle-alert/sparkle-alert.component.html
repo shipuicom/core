@@ -1,8 +1,5 @@
 <div class="sparkle-alert-item">
-  <div
-    #ref
-    class="sparkle-alert-icon"
-    [style.display]="!ref.children.length ? 'none' : 'block'">
+  <div #ref class="sparkle-alert-icon" [style.display]="!ref.children.length ? 'none' : 'block'">
     <ng-content select="[sparkle-alert-icon]"></ng-content>
   </div>
 
@@ -10,24 +7,22 @@
     <div class="sparkle-alert-icon">
       @switch (_type) {
         @case ('primary') {
-          <mat-icon class="sparkle-alert-state-icon" fontIcon="info" />
+          <mat-icon class="sparkle-alert-state-icon">info</mat-icon>
         }
         @case ('accent') {
-          <mat-icon class="sparkle-alert-state-icon" fontIcon="info" />
+          <mat-icon class="sparkle-alert-state-icon">info</mat-icon>
         }
         @case ('success') {
-          <mat-icon class="sparkle-alert-state-icon" fontIcon="check-circle" />
+          <mat-icon class="sparkle-alert-state-icon">check-circle</mat-icon>
         }
         @case ('error') {
-          <mat-icon
-            class="sparkle-alert-state-icon"
-            fontIcon="warning-octagon" />
+          <mat-icon class="sparkle-alert-state-icon">warning-octagon</mat-icon>
         }
         @case ('warning') {
-          <mat-icon class="sparkle-alert-state-icon" fontIcon="warning" />
+          <mat-icon class="sparkle-alert-state-icon">warning</mat-icon>
         }
         @default {
-          <mat-icon class="sparkle-alert-state-icon" fontIcon="question" />
+          <mat-icon class="sparkle-alert-state-icon">question</mat-icon>
         }
       }
     </div>
@@ -39,10 +34,7 @@
   </div>
 
   @if (id()) {
-    <mat-icon
-      class="sparkle-alert-close-icon"
-      (click)="removeAlert()"
-      fontIcon="plus" />
+    <mat-icon class="sparkle-alert-close-icon" (click)="removeAlert()">plus</mat-icon>
   }
 
   <div class="sparkle-alert-content">
