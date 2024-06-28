@@ -32,10 +32,18 @@ jobs:
 
       - name: Check if package.json was modified
         id: check_package_json_change
-        run: echo "::set-output name=changed::$(if git diff --name-only HEAD^ HEAD | grep 'projects/sparkle-ui/package.json' >/dev/null; then echo 'true'; else echo 'false'; fi)"
+        run: |
+          if git rev-list --count HEAD > 1; then 
+            changed=$(if git diff --name-only HEAD^ HEAD | grep 'projects/sparkle-ui/package.json' >/dev/null; then echo 'true'; else echo 'false'; fi)
+          else
+            changed="false"
+          fi
+
+          # Write the output to the environment file
+          echo "changed=$changed" >> $GITHUB_ENV
 
       - name: Publish (if package.json changed)
-        if: steps.check_package_json_change.outputs.changed == 'true' && github.ref == 'refs/heads/main'
+        if: env.changed == 'true' && github.ref == 'refs/heads/main'
         working-directory: ./projects/sparkle-ui
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
