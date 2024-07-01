@@ -31,7 +31,7 @@ if (values.src === undefined || values.out === undefined) {
 }
 
 const startTime = performance.now();
-const LIB_SRC = resolve(import.meta.dir, '../lib');
+const LIB_SRC = resolve(import.meta.dir, '../src/lib');
 const PROJECT_SRC = values.src; //'./projects/design-system/src';
 const PROJECT_PUBLIC = values.out; //'./projects/design-system/public';
 const TARGET_FONT_TYPE: SupportedFontTypes = 'woff2' as SupportedFontTypes;
