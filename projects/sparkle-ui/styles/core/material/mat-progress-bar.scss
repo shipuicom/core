@@ -3,7 +3,9 @@ $matProgressBarTheme: true !default;
 @if $matProgressBarTheme == true {
   body {
     .mat-mdc-progress-bar {
-      --mdc-linear-progress-track-color: var(--base-level-20);
+      .mdc-linear-progress__buffer-bar {
+        --mdc-linear-progress-track-color: var(--base-level-20);
+      }
     }
   }
 }

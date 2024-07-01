@@ -38,6 +38,7 @@
     "@types/node": "^18.18.0",
     "@types/subset-font": "^1.4.3",
     "ng-packagr": "^18.0.0",
+    "phosphor-icons": "^1.4.2",
     "prettier": "^3.3.2",
     "typescript": "~5.4.2"
   }

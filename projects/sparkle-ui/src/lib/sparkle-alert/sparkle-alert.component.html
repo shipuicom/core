@@ -5,7 +5,7 @@
 
   @if (!ref.children.length) {
     <div class="sparkle-alert-icon">
-      @switch (_type) {
+      @switch (type) {
         @case ('primary') {
           <mat-icon class="sparkle-alert-state-icon">info</mat-icon>
         }
@@ -33,7 +33,7 @@
     <ng-content></ng-content>
   </div>
 
-  @if (id()) {
+  @if (id) {
     <mat-icon class="sparkle-alert-close-icon" (click)="removeAlert()">plus</mat-icon>
   }
 

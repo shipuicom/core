@@ -27,6 +27,7 @@ $matFormFieldTheme: true !default;
       &[read-only],
       &[read-only='true'],
       &[readonly='true'],
+      &[readonly],
       &.readonly {
         cursor: not-allowed;
         pointer-events: none;

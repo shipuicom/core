@@ -5,6 +5,7 @@
         #alerts
         [type]="alert.type"
         [id]="alert.id"
+        [alertService]="alertService()"
         [style.transition-delay]="transitionDelay($index, true)"
         [class.sparkle-alert-animate-in]="alert.animateIn"
         [class.sparkle-alert-animate-out]="alert.animateOut"

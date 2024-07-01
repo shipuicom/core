@@ -22,6 +22,10 @@ export const routes: Routes = [
         loadComponent: () => import('./chips/chips.component'),
       },
       {
+        path: 'loaders',
+        loadComponent: () => import('./loaders/loaders.component'),
+      },
+      {
         path: 'menus',
         loadComponent: () => import('./menus/menus.component'),
       },

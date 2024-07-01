@@ -1,5 +1,4 @@
-import { GlobalPositionStrategy, Overlay, OverlayRef } from '@angular/cdk/overlay';
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { SparkleAlertType } from './sparkle-alert.component';
 
 export type SparkleAlertItem = {
@@ -19,14 +18,9 @@ export type SparkleAlertItemInternal = SparkleAlertItem & {
   providedIn: 'root',
 })
 export class SparkleAlertService {
-  private overlay = inject(Overlay);
-
   alertHistory = signal<SparkleAlertItemInternal[]>([]);
   alertHistoryIsOpen = signal<boolean>(false);
   alertHistoryIsHidden = signal<boolean>(true);
-  overlayRef: OverlayRef | null = null;
-  positionStrategy = new GlobalPositionStrategy().bottom('70px').right('20px');
-  // containerComponent = new ComponentPortal(SparkleAlertContainerComponent);
 
   error(message: string | null | undefined) {
     this.addAlert({
@@ -71,10 +65,6 @@ export class SparkleAlertService {
       ...history,
     ]);
 
-    // if (this.overlayRef === null) {
-    //   this.addAlertContainer();
-    // }
-
     setTimeout(() => {
       this.alertHistory.update((history) =>
         history.map((item) => ({
@@ -99,10 +89,6 @@ export class SparkleAlertService {
 
     setTimeout(() => {
       this.alertHistory.update((history) => history.filter((item) => item.id !== id));
-
-      if (this.alertHistory().length === 0) {
-        this.removeAlertContainer();
-      }
     }, 300);
   }
 
@@ -117,20 +103,5 @@ export class SparkleAlertService {
 
   setHidden(isHidden: boolean) {
     this.alertHistoryIsHidden.set(isHidden);
-  }
-
-  // private addAlertContainer() {
-  //   this.overlayRef = this.overlay.create({
-  //     width: '100%',
-  //     maxWidth: '320px',
-  //     panelClass: 'sparkle-alert-overlay',
-  //   });
-
-  //   this.overlayRef.attach(this.containerComponent);
-  // }
-
-  private removeAlertContainer() {
-    this.overlayRef?.dispose();
-    this.overlayRef = null;
   }
 }

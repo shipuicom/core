@@ -1,4 +1,9 @@
 $matDividerTheme: true !default;
 
 @if $matDividerTheme == true {
+  body {
+    .mat-divider {
+      border-top-color: var(--base-level-40);
+    }
+  }
 }

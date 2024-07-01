@@ -3,7 +3,6 @@ $matButtonTheme: true !default;
 @if $matButtonTheme == true {
   body {
     .button-group {
-      // background-color: red;
       button.mdc-button.mat-mdc-button-base {
         &:not(:first-child) {
           border-top-left-radius: 0;
@@ -197,6 +196,15 @@ $matButtonTheme: true !default;
 
       &[disabled] {
         opacity: 0.5;
+      }
+
+      &[read-only],
+      &[read-only='true'],
+      &[readonly='true'],
+      &[readonly],
+      &.readonly {
+        pointer-events: none;
+        user-select: none;
       }
     }
 

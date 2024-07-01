@@ -1,6 +1,6 @@
-$matButtonTheme: true !default;
+$matButtonToggleTheme: true !default;
 
-@if $matButtonTheme == true {
+@if $matButtonToggleTheme == true {
   body.dark,
   body {
     .mat-button-toggle-group {

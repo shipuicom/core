@@ -6,7 +6,6 @@ import {
   QueryList,
   computed,
   effect,
-  inject,
   input,
   viewChild,
 } from '@angular/core';
@@ -23,15 +22,14 @@ import { SparkleAlertService } from './sparkle-alert.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleAlertContainerComponent {
-  private sparkleAlertService = inject(SparkleAlertService);
-
   inline = input<string | null>(null);
   alerts = viewChild.required<QueryList<SparkleAlertComponent>>('alerts');
   scroller = viewChild.required<ElementRef<HTMLDivElement>>('scroller');
+  alertService = input.required<SparkleAlertService>();
 
-  alertHistory = this.sparkleAlertService.alertHistory;
-  alertHistoryIsOpen = this.sparkleAlertService.alertHistoryIsOpen;
-  alertHistoryIsHidden = this.sparkleAlertService.alertHistoryIsHidden;
+  alertHistory = this.alertService()?.alertHistory;
+  alertHistoryIsOpen = this.alertService()?.alertHistoryIsOpen;
+  alertHistoryIsHidden = this.alertService()?.alertHistoryIsHidden;
 
   numberOfOpenAlerts = computed(() => {
     return this.alertHistory().filter((x) => x.isOpen).length;
@@ -56,14 +54,14 @@ export class SparkleAlertContainerComponent {
   onMouseOver() {
     if (typeof this.inline === 'string') return;
 
-    this.sparkleAlertService.setHidden(false);
+    this.alertService().setHidden(false);
   }
 
   @HostListener('mouseout')
   onMouseOut() {
     if (typeof this.inline === 'string') return;
 
-    this.sparkleAlertService.setHidden(true);
+    this.alertService().setHidden(true);
   }
 
   getElementHeight(i: number) {
@@ -80,9 +78,6 @@ export class SparkleAlertContainerComponent {
       totalHeight += height;
       return totalHeight - elementHeights[0];
     });
-    // .reverse();
-
-    // console.log('elementTransformPos: ', elementTransformPos);
 
     return elementTransformPos[i];
   }

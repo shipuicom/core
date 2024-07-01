@@ -59,6 +59,14 @@
 
       <button
         mat-list-item
+        routerLink="/loaders"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        Loaders
+      </button>
+
+      <button
+        mat-list-item
         routerLink="/menus"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">

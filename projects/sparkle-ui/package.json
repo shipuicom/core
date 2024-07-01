@@ -8,6 +8,9 @@
   "dependencies": {
     "tslib": "^2.3.0"
   },
+  "bin": {
+    "sparkle-fg": "./bin/font-generator/index.ts"
+  },
   "exports": {
     ".": {
       "sass": "./styles/*",

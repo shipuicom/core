@@ -1,39 +1,40 @@
-import { UnicodeRange } from '@japont/unicode-range';
+#!/usr/bin/env bun
+
 import { Glob } from 'bun';
+import { resolve } from 'path';
 import subsetFont from 'subset-font';
-import packageJson from '../package.json';
+import { parseArgs } from 'util';
+import { mapUnicodesToGlyphs } from './prep-font';
 
 type SupportedFontTypes = 'woff' | 'woff2' | 'ttf';
 
+const { values } = parseArgs({
+  args: Bun.argv,
+  options: {
+    src: {
+      type: 'string',
+    },
+    out: {
+      type: 'string',
+    },
+    rootPath: {
+      type: 'string',
+      default: '/',
+    },
+  },
+  allowPositionals: true,
+  strict: true,
+});
+
+if (values.src === undefined || values.out === undefined) {
+  throw new Error('src and out are both required arguments');
+}
+
 const startTime = performance.now();
-
-const FONT_TYPE: 'Bold' | 'Regular' = 'Regular';
-const PROJECT_SRC = './projects/design-system/src';
-const PROJECT_PUBLIC = './projects/design-system/public';
+const LIB_SRC = resolve(import.meta.dir, '../../lib');
+const PROJECT_SRC = values.src; //'./projects/design-system/src';
+const PROJECT_PUBLIC = values.out; //'./projects/design-system/public';
 const TARGET_FONT_TYPE: SupportedFontTypes = 'woff2' as SupportedFontTypes;
-
-const extraIcons: string[] = (packageJson as any).extraIcons ?? [];
-
-if (extraIcons.length) {
-  throw new Error('extraIcons in package.json should be an array of strings');
-}
-
-// util to handle passing unicode-range as a string
-function formatRange(range: any) {
-  if (typeof range === 'string') {
-    return range.replace(/\s*/g, '').split(',');
-  }
-  return range;
-}
-
-function getGlyphsFromUnicodeRange(range: any) {
-  // UnicodeRange currently requires an array of ranges …
-  const rangeArray = formatRange(range);
-
-  const glyphs = UnicodeRange.parse(rangeArray).map((cp) => String.fromCodePoint(cp));
-
-  return glyphs;
-}
 
 function formatFileSize(bytes: number, dm = 2) {
   if (bytes == 0) return '0 Bytes';
@@ -47,62 +48,60 @@ function formatFileSize(bytes: number, dm = 2) {
 
 const glob = new Glob('**/*.html');
 const tsGlob = new Glob('**/*.ts');
-const regex = /<mat-icon[^>]*>(.*?)<\/mat-icon>/g;
+const regex = /<mat-icon[^>]*>((?!{{.*?}})[^<]*)<\/mat-icon>/g;
 // const regex = /<mat-icon[^>]*fontIcon="([^"]*)"/g;
 // <mat-icon fontIcon="compass" />
 const regex2 = /ppicon:([^']+)/g;
 // Any ts file containing ppicon:ICON_NAME
 
-const preDefinedIcons = extraIcons;
 const iconsFound = new Set<string>();
 
-preDefinedIcons.forEach((icon) => iconsFound.add(icon));
+for await (const SRC of [PROJECT_SRC, LIB_SRC]) {
+  for await (const file of glob.scan(`${SRC}`)) {
+    const fileText = await Bun.file(`${SRC}/${file}`).text();
+    const matches = Array.from((fileText as any).matchAll(regex), (m: string) => m[1]);
 
-for await (const file of glob.scan(`${PROJECT_SRC}`)) {
-  const fileText = await Bun.file(`${PROJECT_SRC}/${file}`).text();
-  const matches = Array.from((fileText as any).matchAll(regex), (m: string) => m[1]);
+    if (matches?.length) {
+      for (let index = 0; index < matches.length; index++) {
+        if (matches[index]) {
+          iconsFound.add(matches[index]);
+        }
+      }
+    }
+  }
 
-  if (matches?.length) {
-    for (let index = 0; index < matches.length; index++) {
-      if (matches[index]) {
-        iconsFound.add(matches[index]);
+  for await (const file of tsGlob.scan(`${SRC}`)) {
+    const fileText = await Bun.file(`${SRC}/${file}`).text();
+    const matches = Array.from((fileText as any).matchAll(regex2), (m: string) => m[1]);
+
+    if (matches?.length) {
+      for (let index = 0; index < matches.length; index++) {
+        if (matches[index]) {
+          iconsFound.add(matches[index]);
+        }
       }
     }
   }
 }
 
-for await (const file of tsGlob.scan(`${PROJECT_SRC}`)) {
-  const fileText = await Bun.file(`${PROJECT_SRC}/${file}`).text();
-  const matches = Array.from((fileText as any).matchAll(regex2), (m: string) => m[1]);
-
-  if (matches?.length) {
-    for (let index = 0; index < matches.length; index++) {
-      if (matches[index]) {
-        iconsFound.add(matches[index]);
-      }
-    }
-  }
-}
-
-const iconJson = await Bun.file(`${import.meta.dir}/_available-phosphor-icons.json`).text();
-const fontArrayBuffer = await Bun.file(`${import.meta.dir}/fonts/Phosphor-${FONT_TYPE}.ttf`).arrayBuffer();
+// const glyphMap = await Bun.file(`${import.meta.dir}/config/glyphs.json`).json();
+const glyphMap = mapUnicodesToGlyphs();
+const fontArrayBuffer = await Bun.file(`${import.meta.dir}/config/Phosphor.ttf`).arrayBuffer();
 const fontBuffer = Buffer.from(fontArrayBuffer);
-
-const iconJsonObj = JSON.parse(iconJson);
-
 const missingIcons = new Set<string>();
-const selectedUnicodes = Array.from(iconsFound)
-  .map((iconName) => {
-    if (!iconJsonObj[iconName]) {
-      missingIcons.add(iconName);
+
+const iconsAsGlyphs = Array.from(iconsFound)
+  .map((icon) => {
+    const glyph = glyphMap[icon];
+
+    if (!glyph) {
+      missingIcons.add(icon);
       return undefined;
     }
 
-    return 'U+' + iconJsonObj[iconName].toUpperCase();
+    return glyph;
   })
   .filter((v) => v);
-
-const allIcons = Object.keys(iconJsonObj).filter((i) => !i.startsWith('__') && !i.endsWith('__'));
 
 const missingIconsArray = Array.from(missingIcons);
 
@@ -110,13 +109,9 @@ if (missingIconsArray.length) {
   console.log('Following icons does not exist in font: \n ', Array.from(missingIcons));
 }
 
-const glyphs = getGlyphsFromUnicodeRange(selectedUnicodes);
-
-// console.log(glyphs);
-
 const targetFormat = (TARGET_FONT_TYPE as SupportedFontTypes) === 'ttf' ? 'truetype' : TARGET_FONT_TYPE;
 // Create a new font with only the characters required to render "Hello, world!" in WOFF format:
-const subsetBuffer = await subsetFont(fontBuffer, [...glyphs, ...iconsFound].join(''), {
+const subsetBuffer = await subsetFont(fontBuffer, [...iconsAsGlyphs, ...iconsFound].join(''), {
   targetFormat,
   noLayoutClosure: true,
 } as any);
@@ -129,7 +124,7 @@ console.log(iconsFound);
 const cssFileContent = `
 @font-face {
   font-family: 'phb';
-  src: url('/phb-${FONT_TYPE}.${TARGET_FONT_TYPE}') format('${TARGET_FONT_TYPE}');
+  src: url('${values.rootPath}phb.${TARGET_FONT_TYPE}') format('${TARGET_FONT_TYPE}');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -172,25 +167,27 @@ const iconsSnippetContent = `
 {
   "Phospher mat-icon": {
     "prefix": ["pbh", "icon", "mat-icon"],
-    "body": "<mat-icon>\${1|${allIcons.join(',')}|}</mat-icon>",
+    "body": "<mat-icon>\${1|${Object.keys(glyphMap).join(',')}|}</mat-icon>",
     "description": "Add a material phoshor icon"
   }
 }
 `;
-// declare (property) MatIcon.fontIcon: ;
 
-// console.log(iconsSnippetContent);
-
-const fontWrites = await Bun.write(`${PROJECT_PUBLIC}/phb-${FONT_TYPE}.${TARGET_FONT_TYPE}`, subsetBuffer);
+const fontWrites = await Bun.write(`${PROJECT_PUBLIC}/phb.${TARGET_FONT_TYPE}`, subsetBuffer);
 const cssWrites = await Bun.write(`${PROJECT_PUBLIC}/phb.css`, cssFileContent);
 const iconsTsWrites = await Bun.write('./.vscode/html.code-snippets', iconsSnippetContent);
-// console.log(cssFileContent);
 
 const endTime = performance.now();
 const runtime = endTime - startTime;
-// console.log('subsetBuffer: ', subsetBuffer);
+
+const compressedFont = Bun.gzipSync(subsetBuffer);
+const compressedCss = Bun.gzipSync(cssFileContent);
 console.log('Generated font file size: ', formatFileSize(fontWrites));
 console.log('Generated css file size: ', formatFileSize(cssWrites));
+console.log('Generated total file size: ', formatFileSize(fontWrites + cssWrites));
+console.log('Generated compressed font file size: ', formatFileSize(compressedFont.length));
+console.log('Generated compressed css file size: ', formatFileSize(compressedCss.length));
+console.log('Generated total compressed file size: ', formatFileSize(compressedFont.length + compressedCss.length));
 console.log('Generated types file size: ', formatFileSize(iconsTsWrites));
 console.log('Time taken: ', runtime.toFixed(2) + 'ms');
 console.log(' ');

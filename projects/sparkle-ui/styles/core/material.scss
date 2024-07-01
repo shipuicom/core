@@ -1,18 +1,22 @@
 @use '@angular/material' as mat;
 @use './variables.scss' as var;
 
-// @include mat.core();
-// // @include mat.typography-hierarchy(var.$typography-config);
-// @include mat.all-component-themes(var.$light-theme);
+@include mat.core();
+// @include mat.typography-hierarchy(var.$typography-config);
+@include mat.all-component-themes(var.$light-theme);
 
-// body {
-//   &.dark {
-//     @include mat.all-component-colors(var.$dark-theme);
-//   }
-// }
+body {
+  &.dark {
+    @include mat.all-component-colors(var.$dark-theme);
+  }
+}
+
 // @import './material/cdk-overlay';
 
 // Components
+
+// Ripple
+@import './material/mat-ripple';
 
 @import './material/mat-button';
 @import './material/mat-button-toggle';
@@ -27,7 +31,7 @@
 // @import './material/mat-paginator';
 @import './material/mat-chip';
 // @import './material/mat-radio';
-// @import './material/mat-divider';
+@import './material/mat-divider';
 @import './material/mat-menu';
 @import './material/mat-select';
 // @import './material/mat-slide-toggle';

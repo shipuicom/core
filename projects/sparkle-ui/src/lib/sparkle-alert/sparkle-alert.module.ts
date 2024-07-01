@@ -5,6 +5,6 @@ import { SparkleAlertComponent } from './sparkle-alert.component';
 @NgModule({
   imports: [SparkleAlertComponent, SparkleAlertContainerComponent],
   exports: [SparkleAlertComponent, SparkleAlertContainerComponent],
-  // providers: [SparkleAlertService],
+  providers: [],
 })
 export class SparkleAlertModule {}

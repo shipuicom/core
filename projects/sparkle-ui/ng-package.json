@@ -4,6 +4,6 @@
   "lib": {
     "entryFile": "src/public-api.ts"
   },
-  "assets": ["styles/**/*", "assets/**/*"],
+  "assets": ["styles/**/*", "assets/**/*", "bin/**/*"],
   "inlineStyleLanguage": "scss"
 }
