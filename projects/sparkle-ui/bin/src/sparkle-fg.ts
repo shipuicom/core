@@ -159,7 +159,7 @@ const textMateSnippet = async (GLYPH_MAP: Record<string, string>) => {
       "prefix": ["pp:icon"],
       "body": "\${1|${Object.keys(GLYPH_MAP).join(',')}|}",
       "description": "Add a phosphor icon"
-    }
+    },
     "Phospher mat-icon": {
       "prefix": ["mat-icon"],
       "body": "<mat-icon>\${1|${Object.keys(GLYPH_MAP).join(',')}|}</mat-icon>",
