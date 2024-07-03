@@ -3,7 +3,9 @@
   "version": "0.1.19",
   "peerDependencies": {
     "@angular/common": "^18.0.0",
-    "@angular/core": "^18.0.0"
+    "@angular/core": "^18.0.0",
+    "@japont/unicode-range": "^1.0.0",
+    "subset-font": "^2.3.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"

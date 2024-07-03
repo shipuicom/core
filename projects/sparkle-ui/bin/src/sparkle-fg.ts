@@ -179,7 +179,6 @@ export const main = async (values: InputArguments) => {
   const PROJECT_SRC = values.src;
   const PROJECT_PUBLIC = values.out;
   
-  
   if (values.watch) {
     const excludeFolders = ['node_modules', '.git', '.vscode', 'bin', 'assets'].concat([LIB_SRC, PROJECT_PUBLIC]);
     watch(
@@ -194,23 +193,23 @@ export const main = async (values: InputArguments) => {
         }
       },
     );
-
-    if (values.watchLib) {
-      const excludeFoldersLib = ['node_modules', '.git', '.vscode', 'bin', 'assets'].concat([PROJECT_SRC, PROJECT_PUBLIC]);
-      watch(
-        LIB_SRC,
-        { recursive: true },
-        (_, filename) => {
-          if (
-            filename &&
-            !excludeFoldersLib.some(folder => resolve(join(LIB_SRC, filename)).includes(folder))
-          ) {
-            run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, values);
-          }
-        },
-      );
-    }
-  } else {
-    run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, values);
   }
+
+  if (values.watchLib) {
+    const excludeFoldersLib = ['node_modules', '.git', '.vscode', 'bin', 'assets'].concat([PROJECT_SRC, PROJECT_PUBLIC]);
+    watch(
+      LIB_SRC,
+      { recursive: true },
+      (_, filename) => {
+        if (
+          filename &&
+          !excludeFoldersLib.some(folder => resolve(join(LIB_SRC, filename)).includes(folder))
+        ) {
+          run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, values);
+        }
+      },
+    );
+  }
+  
+  run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, values);
 };
