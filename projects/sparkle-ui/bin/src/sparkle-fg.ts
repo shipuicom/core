@@ -2,7 +2,7 @@
 
 import { Glob } from 'bun';
 import { watch } from 'fs';
-import { resolve } from 'path';
+import { join, resolve } from 'path';
 import subsetFont from 'subset-font';
 import { mapUnicodesToGlyphs } from './prep-font';
 
@@ -93,17 +93,13 @@ const run = async (PROJECT_SRC: string, LIB_SRC: string, PROJECT_PUBLIC: string,
     console.log('Following icons does not exist in font: \n ', Array.from(missingIcons));
   }
 
-  const targetFormat = (TARGET_FONT_TYPE as SupportedFontTypes) === 'ttf' ? 'truetype' : TARGET_FONT_TYPE;
   // Create a new font with only the characters required to render "Hello, world!" in WOFF format:
+  const targetFormat = (TARGET_FONT_TYPE as SupportedFontTypes) === 'ttf' ? 'truetype' : TARGET_FONT_TYPE;
   const iconsToBuild = new Set([...iconsAsGlyphs, ...iconsFound]);
   const subsetBuffer = await subsetFont(fontBuffer, Array.from(iconsToBuild).join(''), {
     targetFormat,
     noLayoutClosure: true,
   } as any);
-
-  // Create new font
-
-  console.log(iconsFound);
 
   // Create a new css file
   const cssFileContent = `
@@ -162,32 +158,40 @@ const iconsSnippetContent = `
   const compressedCss = Bun.gzipSync(cssFileContent);
 
   if (values.verbose) {
-  console.log('Generated font file size: ', formatFileSize(fontWrites));
-  console.log('Generated css file size: ', formatFileSize(cssWrites));
-  console.log('Generated total file size: ', formatFileSize(fontWrites + cssWrites));
-  console.log('Generated compressed font file size: ', formatFileSize(compressedFont.length));
-  console.log('Generated compressed css file size: ', formatFileSize(compressedCss.length));
-  console.log('Generated total compressed file size: ', formatFileSize(compressedFont.length + compressedCss.length));
-  console.log('Generated types file size: ', formatFileSize(iconsTsWrites));
-  console.log('Time taken: ', runtime.toFixed(2) + 'ms');
-} else {
-  console.log(`Generated/Compressed size: ${formatFileSize(fontWrites + cssWrites)}/${formatFileSize(compressedFont.length + compressedCss.length)}`);
-  console.log('Time taken: ', runtime.toFixed(2) + 'ms');
-}
-console.log(' ');
+    console.log(iconsFound);
+    console.log('Generated font file size: ', formatFileSize(fontWrites));
+    console.log('Generated css file size: ', formatFileSize(cssWrites));
+    console.log('Generated total file size: ', formatFileSize(fontWrites + cssWrites));
+    console.log('Generated compressed font file size: ', formatFileSize(compressedFont.length));
+    console.log('Generated compressed css file size: ', formatFileSize(compressedCss.length));
+    console.log('Generated total compressed file size: ', formatFileSize(compressedFont.length + compressedCss.length));
+    console.log('Generated types file size: ', formatFileSize(iconsTsWrites));
+    console.log('Time taken: ', runtime.toFixed(2) + 'ms');
+  } else {
+    console.log(`Generated/Compressed size: ${formatFileSize(fontWrites + cssWrites)}/${formatFileSize(compressedFont.length + compressedCss.length)}`);
+    console.log('Time taken: ', runtime.toFixed(2) + 'ms');
+  }
+  console.log(' ');
 }
 
 export const main = async (values: InputArguments) => {
   const LIB_SRC = resolve(import.meta.dir, '../../lib');
   const PROJECT_SRC = values.src;
   const PROJECT_PUBLIC = values.out;
-
+  
+  
   if (values.watch) {
+    const excludeFolders = ['node_modules', '.git', '.vscode', 'bin', 'assets'].concat([LIB_SRC, PROJECT_PUBLIC]);
     watch(
       PROJECT_SRC,
       { recursive: true },
-      () => {
-        run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, values);
+      (_, filename) => {
+        if (
+          filename && // Ensure filename is provided (can be null in some cases)
+          !excludeFolders.some(folder => resolve(join(PROJECT_SRC, filename)).includes(folder))
+        ) {
+          run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, values);
+        }
       },
     );
 
