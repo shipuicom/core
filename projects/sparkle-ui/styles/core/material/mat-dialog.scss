@@ -37,6 +37,7 @@ $matDialogTheme: true !default;
         justify-content: flex-end;
         gap: p2r(8);
 
+        .mat-mdc-button-base+.mat-mdc-button-base,
         button {
           margin: 0;
         }
