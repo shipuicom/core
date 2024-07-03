@@ -27,9 +27,6 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Build Library
-        run: npm run build sparkle-ui --prod
-
       - name: Check if package.json was modified
         id: check_package_json_change
         run: |
@@ -41,6 +38,10 @@ jobs:
 
           # Write the output to the environment file
           echo "changed=$changed" >> $GITHUB_ENV
+
+      - name: Build Library
+        if: env.changed == 'true' && github.ref == 'refs/heads/main'
+        run: npm run build sparkle-ui --prod
 
       - name: Publish (if package.json changed)
         if: env.changed == 'true' && github.ref == 'refs/heads/main'

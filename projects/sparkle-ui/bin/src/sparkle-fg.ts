@@ -16,10 +16,12 @@ export type InputArguments = {
   verbose: boolean;
 };
 
-const run = async (PROJECT_SRC: string, LIB_SRC: string, PROJECT_PUBLIC: string, GLYPH_MAP: Record<string, string>, values: InputArguments) => {
+let writtenCssSize = 0;
+let compressedCssSize = 0;
+
+const run = async (PROJECT_SRC: string, LIB_SRC: string, PROJECT_PUBLIC: string, GLYPH_MAP: Record<string, string>, TARGET_FONT_TYPE: SupportedFontTypes, values: InputArguments) => {
   const startTime = performance.now();
 
-  const TARGET_FONT_TYPE: SupportedFontTypes = 'woff2' as SupportedFontTypes;
   const glob = new Glob('**/*.html');
   const tsGlob = new Glob('**/*.ts');
   const regex = /<mat-icon[^>]*>((?!{{.*?}})[^<]*)<\/mat-icon>/g;
@@ -83,6 +85,31 @@ const run = async (PROJECT_SRC: string, LIB_SRC: string, PROJECT_PUBLIC: string,
     noLayoutClosure: true,
   } as any);
 
+
+  const fontWrites = await Bun.write(`${PROJECT_PUBLIC}/phb.${TARGET_FONT_TYPE}`, subsetBuffer);
+
+  const endTime = performance.now();
+  const runtime = endTime - startTime;
+
+  const compressedFont = Bun.gzipSync(subsetBuffer);
+
+  if (values.verbose) {
+    console.log(iconsFound);
+    console.log('Generated font file size: ', formatFileSize(fontWrites));
+    console.log('Generated css file size: ', formatFileSize(writtenCssSize));
+    console.log('Generated total file size: ', formatFileSize(fontWrites + writtenCssSize));
+    console.log('Generated compressed font file size: ', formatFileSize(compressedFont.length));
+    console.log('Generated compressed css file size: ', formatFileSize(compressedCssSize));
+    console.log('Generated total compressed file size: ', formatFileSize(compressedFont.length + compressedCssSize));
+    console.log('Time taken: ', runtime.toFixed(2) + 'ms');
+  } else {
+    console.log(`Generated/Compressed size: ${formatFileSize(fontWrites + writtenCssSize)}/${formatFileSize(compressedFont.length + compressedCssSize)}`);
+    console.log('Time taken: ', runtime.toFixed(2) + 'ms');
+  }
+  console.log(' ');
+}
+
+const writeCssFile = async (PROJECT_PUBLIC: string, values: InputArguments, TARGET_FONT_TYPE = 'woff2') => {
   // Create a new css file
   const cssFileContent = `
 @font-face {
@@ -118,53 +145,37 @@ const run = async (PROJECT_SRC: string, LIB_SRC: string, PROJECT_PUBLIC: string,
   -moz-osx-font-smoothing: grayscale;
 }
 `;
-
-const NESTED_PLACEHOLDER = '$${TM_SELECTED_TEXT:';
-const iconsSnippetContent = `
-{
-  "Phospher mat-icon": {
-    "prefix": ["pbh", "icon", "mat-icon"],
-    "body": "<mat-icon>\${1:${NESTED_PLACEHOLDER}${Object.keys(GLYPH_MAP).join(',')}}}$0</mat-icon>",
-    "description": "Add a material phoshor icon"
-  }
-}
-`;
-
-
-  const fontWrites = await Bun.write(`${PROJECT_PUBLIC}/phb.${TARGET_FONT_TYPE}`, subsetBuffer);
   const cssWrites = await Bun.write(`${PROJECT_PUBLIC}/phb.css`, cssFileContent);
-  const iconsTsWrites = await Bun.write('./.vscode/html.code-snippets', iconsSnippetContent);
-
-  const endTime = performance.now();
-  const runtime = endTime - startTime;
-
-  const compressedFont = Bun.gzipSync(subsetBuffer);
   const compressedCss = Bun.gzipSync(cssFileContent);
 
-  if (values.verbose) {
-    console.log(iconsFound);
-    console.log('Generated font file size: ', formatFileSize(fontWrites));
-    console.log('Generated css file size: ', formatFileSize(cssWrites));
-    console.log('Generated total file size: ', formatFileSize(fontWrites + cssWrites));
-    console.log('Generated compressed font file size: ', formatFileSize(compressedFont.length));
-    console.log('Generated compressed css file size: ', formatFileSize(compressedCss.length));
-    console.log('Generated total compressed file size: ', formatFileSize(compressedFont.length + compressedCss.length));
-    console.log('Generated types file size: ', formatFileSize(iconsTsWrites));
-    console.log('Time taken: ', runtime.toFixed(2) + 'ms');
-  } else {
-    console.log(`Generated/Compressed size: ${formatFileSize(fontWrites + cssWrites)}/${formatFileSize(compressedFont.length + compressedCss.length)}`);
-    console.log('Time taken: ', runtime.toFixed(2) + 'ms');
+  writtenCssSize = cssWrites;
+  compressedCssSize = compressedCss.length;
+}
+
+const textMateSnippet = async (GLYPH_MAP: Record<string, string>) => {
+  const iconsSnippetContent = `
+  {
+    "Phospher mat-icon": {
+      "prefix": ["pbh", "icon", "mat-icon"],
+      "body": "<mat-icon>\${1|${Object.keys(GLYPH_MAP).join(',')}|}</mat-icon>",
+      "description": "Add a material phoshor icon"
+    }
   }
-  console.log(' ');
+  `;
+  
+  await Bun.write('./.vscode/html.code-snippets', iconsSnippetContent);
 }
 
 export const main = async (values: InputArguments) => {
+  const TARGET_FONT_TYPE: SupportedFontTypes = 'woff2' as SupportedFontTypes;
   const LIB_SRC = resolve(import.meta.dir, '../../lib');
   const PROJECT_SRC = values.src;
   const PROJECT_PUBLIC = values.out;
-
   const cssText = await Bun.file(`${import.meta.dir}/config/style.css`).text();
   const GLYPH_MAP = mapUnicodesToGlyphs(cssText);
+
+  textMateSnippet(GLYPH_MAP);
+  writeCssFile(PROJECT_PUBLIC, values, TARGET_FONT_TYPE)
   
   if (values.watch) {
     const excludeFolders = ['node_modules', '.git', '.vscode', 'bin', 'assets'].concat([LIB_SRC, PROJECT_PUBLIC]);
@@ -176,7 +187,7 @@ export const main = async (values: InputArguments) => {
           filename && // Ensure filename is provided (can be null in some cases)
           !excludeFolders.some(folder => resolve(join(PROJECT_SRC, filename)).includes(folder))
         ) {
-          run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, GLYPH_MAP, values);
+          run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
         }
       },
     );
@@ -192,11 +203,11 @@ export const main = async (values: InputArguments) => {
           filename &&
           !excludeFoldersLib.some(folder => resolve(join(LIB_SRC, filename)).includes(folder))
         ) {
-          run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, GLYPH_MAP, values);
+          run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
         }
       },
     );
   }
   
-  run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, GLYPH_MAP, values);
+  run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
 };
