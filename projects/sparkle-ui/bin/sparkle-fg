@@ -16,6 +16,18 @@ const { values } = parseArgs({
       type: 'string',
       default: '/',
     },
+    watch: {
+      type: 'boolean',
+      default: false,
+    },
+    watchLib: {
+      type: 'boolean',
+      default: false,
+    },
+    verbose: {
+      type: 'boolean',
+      default: false,
+    },
   },
   allowPositionals: true,
   strict: true,
