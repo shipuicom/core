@@ -18,7 +18,7 @@ export type InputArguments = {
 
 const run = async (PROJECT_SRC: string, LIB_SRC: string, PROJECT_PUBLIC: string, GLYPH_MAP: Record<string, string>, values: InputArguments) => {
   const startTime = performance.now();
-  
+
   const TARGET_FONT_TYPE: SupportedFontTypes = 'woff2' as SupportedFontTypes;
   const glob = new Glob('**/*.html');
   const tsGlob = new Glob('**/*.ts');
@@ -119,15 +119,17 @@ const run = async (PROJECT_SRC: string, LIB_SRC: string, PROJECT_PUBLIC: string,
 }
 `;
 
+const NESTED_PLACEHOLDER = '$${TM_SELECTED_TEXT:';
 const iconsSnippetContent = `
 {
   "Phospher mat-icon": {
     "prefix": ["pbh", "icon", "mat-icon"],
-    "body": "<mat-icon>\${1|${Object.keys(GLYPH_MAP).join(',')}|}</mat-icon>",
+    "body": "<mat-icon>\${1:${NESTED_PLACEHOLDER}${Object.keys(GLYPH_MAP).join(',')}}}$0</mat-icon>",
     "description": "Add a material phoshor icon"
   }
 }
 `;
+
 
   const fontWrites = await Bun.write(`${PROJECT_PUBLIC}/phb.${TARGET_FONT_TYPE}`, subsetBuffer);
   const cssWrites = await Bun.write(`${PROJECT_PUBLIC}/phb.css`, cssFileContent);
