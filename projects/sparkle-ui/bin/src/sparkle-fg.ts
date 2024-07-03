@@ -196,11 +196,17 @@ export const main = async (values: InputArguments) => {
     );
 
     if (values.watchLib) {
+      const excludeFoldersLib = ['node_modules', '.git', '.vscode', 'bin', 'assets'].concat([PROJECT_SRC, PROJECT_PUBLIC]);
       watch(
         LIB_SRC,
         { recursive: true },
-        () => {
-          run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, values);
+        (_, filename) => {
+          if (
+            filename &&
+            !excludeFoldersLib.some(folder => resolve(join(LIB_SRC, filename)).includes(folder))
+          ) {
+            run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, values);
+          }
         },
       );
     }
