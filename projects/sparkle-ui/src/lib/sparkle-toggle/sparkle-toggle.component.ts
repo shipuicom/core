@@ -12,22 +12,11 @@ export type SparkleToggleVariants = 'base' | 'stroked' | 'flat' | 'raised';
   styleUrl: './sparkle-toggle.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SparkleToggleComponent {
+export default class SparkleToggleComponent {
   active = input<boolean>(false);
   color = input<SparkleColorSchemes>('primary');
   variant = input<SparkleToggleVariants>('base');
 
   colorClass = computed(() => 'sc-' + this.color());
   variantClass = computed(() => 'sv-' + this.variant());
-
-  // colorClass = 'sc-';
-  // variantClass = 'sv-';
-
-  // @Input() active: boolean = false;
-  // @Input() set color(value: SparkleColorSchemes) {
-  //   this.colorClass = 'sc-' + value;
-  // }
-  // @Input() set variant(value: SparkleToggleVariants) {
-  //   this.variantClass = 'sv-' + value;
-  // }
 }

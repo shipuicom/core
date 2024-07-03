@@ -103,7 +103,7 @@ const run = async (PROJECT_SRC: string, LIB_SRC: string, PROJECT_PUBLIC: string,
     console.log('Generated total compressed file size: ', formatFileSize(compressedFont.length + compressedCssSize));
     console.log('Time taken: ', runtime.toFixed(2) + 'ms');
   } else {
-    console.log(`Generated/Compressed size: ${formatFileSize(fontWrites + writtenCssSize)}/${formatFileSize(compressedFont.length + compressedCssSize)}`);
+    console.log(`Font & CSS (Generated/Compressed size): ${formatFileSize(fontWrites + writtenCssSize)}/${formatFileSize(compressedFont.length + compressedCssSize)}`);
     console.log('Time taken: ', runtime.toFixed(2) + 'ms');
   }
   console.log(' ');
