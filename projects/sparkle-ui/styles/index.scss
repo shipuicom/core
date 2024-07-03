@@ -2,6 +2,8 @@
 @use 'sass:list';
 @use '@angular/material' as mat;
 
+$initialize-mat-core: true !default;
+
 @import './core/palette-variables.scss';
 
 @mixin palette($palette, $name) {
