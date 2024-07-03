@@ -16,9 +16,9 @@ console.log('process.env.NODE_ENV: ', process.env.NODE_ENV);
 
 export const main = async (values: InputArguments) => {
   const startTime = performance.now();
-  const LIB_SRC = resolve(import.meta.dir, '../../lib');
-  const PROJECT_SRC = values.src; //'./projects/design-system/src';
-  const PROJECT_PUBLIC = values.out; //'./projects/design-system/public';
+  const LIB_SRC = resolve(import.meta.dir, '../../');
+  const PROJECT_SRC = values.src;
+  const PROJECT_PUBLIC = values.out;
   const TARGET_FONT_TYPE: SupportedFontTypes = 'woff2' as SupportedFontTypes;
 
   function formatFileSize(bytes: number, dm = 2) {
@@ -34,10 +34,7 @@ export const main = async (values: InputArguments) => {
   const glob = new Glob('**/*.html');
   const tsGlob = new Glob('**/*.ts');
   const regex = /<mat-icon[^>]*>((?!{{.*?}})[^<]*)<\/mat-icon>/g;
-  // const regex = /<mat-icon[^>]*fontIcon="([^"]*)"/g;
-  // <mat-icon fontIcon="compass" />
   const regex2 = /ppicon:([^']+)/g;
-  // Any ts file containing ppicon:ICON_NAME
 
   const iconsFound = new Set<string>();
 
