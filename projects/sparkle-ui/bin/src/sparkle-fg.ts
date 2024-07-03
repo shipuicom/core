@@ -155,10 +155,15 @@ const writeCssFile = async (PROJECT_PUBLIC: string, values: InputArguments, TARG
 const textMateSnippet = async (GLYPH_MAP: Record<string, string>) => {
   const iconsSnippetContent = `
   {
+    "Phospher icons": {
+      "prefix": ["pp:icon"],
+      "body": "\${1|${Object.keys(GLYPH_MAP).join(',')}|}",
+      "description": "Add a phosphor icon"
+    }
     "Phospher mat-icon": {
-      "prefix": ["pbh", "icon", "mat-icon"],
+      "prefix": ["mat-icon"],
       "body": "<mat-icon>\${1|${Object.keys(GLYPH_MAP).join(',')}|}</mat-icon>",
-      "description": "Add a material phoshor icon"
+      "description": "Add a material phosphor icon"
     }
   }
   `;
