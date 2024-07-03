@@ -12,8 +12,6 @@ export type InputArguments = {
   rootPath?: string;
 };
 
-console.log('process.env.NODE_ENV: ', process.env.NODE_ENV);
-
 export const main = async (values: InputArguments) => {
   const startTime = performance.now();
   const LIB_SRC = resolve(import.meta.dir, '../../lib');
@@ -140,15 +138,8 @@ export const main = async (values: InputArguments) => {
   -moz-osx-font-smoothing: grayscale;
 }
 `;
-  // OLD
-  // {
-  //   "Phospher mat-icon": {
-  //     "prefix": ["pbh", "icon", "mat-icon"],
-  //     "body": "<mat-icon fontIcon=\\"\${1|${allIcons.join(',')}|}\\" />",
-  //     "description": "Add a material phoshor icon"
-  //   }
-  // }
-  const iconsSnippetContent = `
+
+const iconsSnippetContent = `
 {
   "Phospher mat-icon": {
     "prefix": ["pbh", "icon", "mat-icon"],
