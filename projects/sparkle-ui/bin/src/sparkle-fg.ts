@@ -94,7 +94,8 @@ export const main = async (values: InputArguments) => {
 
   const targetFormat = (TARGET_FONT_TYPE as SupportedFontTypes) === 'ttf' ? 'truetype' : TARGET_FONT_TYPE;
   // Create a new font with only the characters required to render "Hello, world!" in WOFF format:
-  const subsetBuffer = await subsetFont(fontBuffer, [...iconsAsGlyphs, ...iconsFound].join(''), {
+  const iconsToBuild = new Set([...iconsAsGlyphs, ...iconsFound]);
+  const subsetBuffer = await subsetFont(fontBuffer, Array.from(iconsToBuild).join(''), {
     targetFormat,
     noLayoutClosure: true,
   } as any);
