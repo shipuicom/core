@@ -48,10 +48,12 @@ $matFormFieldTheme: true !default;
           user-select: none;
         }
 
+        .mdc-floating-label,
         .mat-mdc-form-field-infix {
           opacity: 0.4;
         }
 
+        .mdc-floating-label,
         .mat-mdc-form-field-icon-suffix,
         .mat-mdc-form-field-icon-suffix > *,
         > * {
