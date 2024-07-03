@@ -16,7 +16,7 @@ console.log('process.env.NODE_ENV: ', process.env.NODE_ENV);
 
 export const main = async (values: InputArguments) => {
   const startTime = performance.now();
-  const LIB_SRC = resolve(import.meta.dir, '../../');
+  const LIB_SRC = resolve(import.meta.dir, '../../lib');
   const PROJECT_SRC = values.src;
   const PROJECT_PUBLIC = values.out;
   const TARGET_FONT_TYPE: SupportedFontTypes = 'woff2' as SupportedFontTypes;

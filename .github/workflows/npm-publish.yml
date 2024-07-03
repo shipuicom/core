@@ -44,7 +44,7 @@ jobs:
 
       - name: Publish (if package.json changed)
         if: env.changed == 'true' && github.ref == 'refs/heads/main'
-        working-directory: ./projects/sparkle-ui
+        working-directory: ./dist/sparkle-ui
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
           npm publish --access public
