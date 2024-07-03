@@ -4,7 +4,7 @@ import { Glob } from 'bun';
 import { watch } from 'fs';
 import { join, resolve } from 'path';
 import subsetFont from 'subset-font';
-import { mapUnicodesToGlyphs } from './prep-font';
+import { formatFileSize, mapUnicodesToGlyphs } from './utilities';
 
 type SupportedFontTypes = 'woff' | 'woff2' | 'ttf';
 export type InputArguments = {
@@ -16,26 +16,16 @@ export type InputArguments = {
   verbose: boolean;
 };
 
-const run = async (PROJECT_SRC: string, LIB_SRC: string, PROJECT_PUBLIC: string, values: InputArguments) => {
+const run = async (PROJECT_SRC: string, LIB_SRC: string, PROJECT_PUBLIC: string, GLYPH_MAP: Record<string, string>, values: InputArguments) => {
   const startTime = performance.now();
+  
   const TARGET_FONT_TYPE: SupportedFontTypes = 'woff2' as SupportedFontTypes;
-
-  function formatFileSize(bytes: number, dm = 2) {
-    if (bytes == 0) return '0 Bytes';
-
-    const k = 1000;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-  }
-
   const glob = new Glob('**/*.html');
   const tsGlob = new Glob('**/*.ts');
   const regex = /<mat-icon[^>]*>((?!{{.*?}})[^<]*)<\/mat-icon>/g;
   const regex2 = /ppicon:([^']+)/g;
-
   const iconsFound = new Set<string>();
+  const missingIcons = new Set<string>();
 
   for await (const SRC of [PROJECT_SRC, LIB_SRC]) {
     for await (const file of glob.scan(`${SRC}`)) {
@@ -65,18 +55,9 @@ const run = async (PROJECT_SRC: string, LIB_SRC: string, PROJECT_PUBLIC: string,
     }
   }
 
-  // const glyphMap = await Bun.file(`${import.meta.dir}/config/glyphs.json`).json();
-
-  const cssText = await Bun.file(`${import.meta.dir}/config/style.css`).text();
-  const fontArrayBuffer = await Bun.file(`${import.meta.dir}/config/Phosphor.ttf`).arrayBuffer();
-
-  const glyphMap = mapUnicodesToGlyphs(cssText);
-  const fontBuffer = Buffer.from(fontArrayBuffer);
-  const missingIcons = new Set<string>();
-
   const iconsAsGlyphs = Array.from(iconsFound)
     .map((icon) => {
-      const glyph = glyphMap[icon];
+      const glyph = GLYPH_MAP[icon];
 
       if (!glyph) {
         missingIcons.add(icon);
@@ -94,9 +75,10 @@ const run = async (PROJECT_SRC: string, LIB_SRC: string, PROJECT_PUBLIC: string,
   }
 
   // Create a new font with only the characters required to render "Hello, world!" in WOFF format:
+  const fontArrayBuffer = await Bun.file(`${import.meta.dir}/config/Phosphor.ttf`).arrayBuffer();
   const targetFormat = (TARGET_FONT_TYPE as SupportedFontTypes) === 'ttf' ? 'truetype' : TARGET_FONT_TYPE;
   const iconsToBuild = new Set([...iconsAsGlyphs, ...iconsFound]);
-  const subsetBuffer = await subsetFont(fontBuffer, Array.from(iconsToBuild).join(''), {
+  const subsetBuffer = await subsetFont(Buffer.from(fontArrayBuffer), Array.from(iconsToBuild).join(''), {
     targetFormat,
     noLayoutClosure: true,
   } as any);
@@ -141,7 +123,7 @@ const iconsSnippetContent = `
 {
   "Phospher mat-icon": {
     "prefix": ["pbh", "icon", "mat-icon"],
-    "body": "<mat-icon>\${1|${Object.keys(glyphMap).join(',')}|}</mat-icon>",
+    "body": "<mat-icon>\${1|${Object.keys(GLYPH_MAP).join(',')}|}</mat-icon>",
     "description": "Add a material phoshor icon"
   }
 }
@@ -178,6 +160,9 @@ export const main = async (values: InputArguments) => {
   const LIB_SRC = resolve(import.meta.dir, '../../lib');
   const PROJECT_SRC = values.src;
   const PROJECT_PUBLIC = values.out;
+
+  const cssText = await Bun.file(`${import.meta.dir}/config/style.css`).text();
+  const GLYPH_MAP = mapUnicodesToGlyphs(cssText);
   
   if (values.watch) {
     const excludeFolders = ['node_modules', '.git', '.vscode', 'bin', 'assets'].concat([LIB_SRC, PROJECT_PUBLIC]);
@@ -189,7 +174,7 @@ export const main = async (values: InputArguments) => {
           filename && // Ensure filename is provided (can be null in some cases)
           !excludeFolders.some(folder => resolve(join(PROJECT_SRC, filename)).includes(folder))
         ) {
-          run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, values);
+          run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, GLYPH_MAP, values);
         }
       },
     );
@@ -205,11 +190,11 @@ export const main = async (values: InputArguments) => {
           filename &&
           !excludeFoldersLib.some(folder => resolve(join(LIB_SRC, filename)).includes(folder))
         ) {
-          run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, values);
+          run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, GLYPH_MAP, values);
         }
       },
     );
   }
   
-  run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, values);
+  run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, GLYPH_MAP, values);
 };
