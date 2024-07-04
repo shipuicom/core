@@ -3,7 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { SparkleAlertComponent, SparkleAlertContainerComponent, SparkleAlertService } from '../../../../sparkle-ui/src/public-api';
+import { SparkleAlertComponent, SparkleAlertContainerComponent, SparkleAlertService } from '../../../../../dist/sparkle-ui';
 
 @Component({
   selector: 'app-snackbar',

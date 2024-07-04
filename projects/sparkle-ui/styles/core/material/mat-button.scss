@@ -233,6 +233,8 @@ $matButtonTheme: true !default;
 
       --btn-base-accent-color: var(--accent-500);
 
+      --btn-base-tertiary-color: var(--tertiary-500);
+
       --btn-base-warn-color: var(--warn-500);
 
       --btn-base-success-color: var(--success-500);
@@ -247,10 +249,10 @@ $matButtonTheme: true !default;
       --btn-stroked-primary-bg-hover: #{light-dark(var(--primary-100), var(--primary-900))};
       --btn-stroked-primary-border-color: #{light-dark(var(--primary-200), var(--primary-800))};
 
-      --btn-stroked-accent-color: var(--accent-500);
-      --btn-stroked-accent-bg: #{light-dark(var(--accent-50), var(--accent-950))};
-      --btn-stroked-accent-bg-hover: #{light-dark(var(--accent-100), var(--accent-900))};
-      --btn-stroked-accent-border-color: #{light-dark(var(--accent-200), var(--accent-800))};
+      --btn-stroked-tertiary-color: var(--tertiary-500);
+      --btn-stroked-tertiary-bg: #{light-dark(var(--tertiary-50), var(--tertiary-950))};
+      --btn-stroked-tertiary-bg-hover: #{light-dark(var(--tertiary-100), var(--tertiary-900))};
+      --btn-stroked-tertiary-border-color: #{light-dark(var(--tertiary-200), var(--tertiary-800))};
 
       --btn-stroked-warn-color: var(--warn-500);
       --btn-stroked-warn-bg: #{light-dark(var(--warn-50), var(--warn-950))};
@@ -275,6 +277,10 @@ $matButtonTheme: true !default;
       --btn-flat-accent-bg: var(--accent-500);
       --btn-flat-accent-bg-hover: var(--accent-600);
 
+      --btn-flat-tertiary-color: var(--tertiary-contrast-500);
+      --btn-flat-tertiary-bg: var(--tertiary-500);
+      --btn-flat-tertiary-bg-hover: var(--tertiary-600);
+
       --btn-flat-warn-color: var(--warn-contrast-500);
       --btn-flat-warn-bg: var(--warn-500);
       --btn-flat-warn-bg-hover: var(--warn-600);
@@ -295,6 +301,10 @@ $matButtonTheme: true !default;
       --btn-raised-accent-color: var(--accent-contrast-500);
       --btn-raised-accent-bg: linear-gradient(180deg, var(--accent-400) 0%, var(--accent-500) 50%);
       --btn-raised-accent-bg-hover: linear-gradient(180deg, var(--accent-300) 0%, var(--accent-500) 50%);
+
+      --btn-raised-tertiary-color: var(--tertiary-contrast-500);
+      --btn-raised-tertiary-bg: linear-gradient(180deg, var(--tertiary-400) 0%, var(--tertiary-500) 50%);
+      --btn-raised-tertiary-bg-hover: linear-gradient(180deg, var(--tertiary-300) 0%, var(--tertiary-500) 50%);
 
       --btn-raised-warn-color: var(--warn-contrast-500);
       --btn-raised-warn-bg: linear-gradient(180deg, var(--warn-400) 0%, var(--warn-500) 50%);
@@ -337,6 +347,18 @@ $matButtonTheme: true !default;
 
         &:hover {
           background: var(--btn-base-accent-bg-hover);
+        }
+      }
+
+      &.mat-tertiary {
+        background: var(--btn-base-tertiary-bg);
+
+        .mat-icon {
+          color: var(--btn-base-tertiary-color);
+        }
+
+        &:hover {
+          background: var(--btn-base-tertiary-bg-hover);
         }
       }
 
@@ -398,6 +420,19 @@ $matButtonTheme: true !default;
 
           &:hover {
             background: var(--btn-stroked-accent-bg-hover);
+          }
+        }
+
+        &.mat-tertiary {
+          background: var(--btn-stroked-tertiary-bg);
+          border-color: var(--btn-stroked-tertiary-border-color);
+
+          .mat-icon {
+            color: var(--btn-stroked-tertiary-color);
+          }
+
+          &:hover {
+            background: var(--btn-stroked-tertiary-bg-hover);
           }
         }
 
@@ -464,6 +499,15 @@ $matButtonTheme: true !default;
           }
         }
 
+        &.mat-tertiary {
+          color: var(--btn-flat-tertiary-color);
+          background: var(--btn-flat-tertiary-bg);
+
+          &:hover {
+            background: var(--btn-flat-tertiary-bg-hover);
+          }
+        }
+
         &.mat-warn {
           color: var(--btn-flat-warn-color);
           background: var(--btn-flat-warn-bg);
@@ -517,6 +561,15 @@ $matButtonTheme: true !default;
 
           &:hover {
             background: var(--btn-raised-accent-bg-hover);
+          }
+        }
+
+        &.mat-tertiary {
+          color: var(--btn-raised-tertiary-color);
+          background: var(--btn-raised-tertiary-bg);
+
+          &:hover {
+            background: var(--btn-raised-tertiary-bg-hover);
           }
         }
 
