@@ -166,6 +166,10 @@ $matButtonTheme: true !default;
         .mdc-button__label {
           font: var(--paragraph-30);
         }
+
+        > .mat-icon {
+          font-size: p2r(16);
+        }
       }
 
       &.active {
@@ -176,10 +180,10 @@ $matButtonTheme: true !default;
 
       > .mat-icon {
         margin: 0;
-        font-size: p2r(16);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+        font-size: p2r(18);
+        width: 1em;
+        height: 1em;
+        line-height: 1em;
 
         &[suffix] {
           order: 999;
