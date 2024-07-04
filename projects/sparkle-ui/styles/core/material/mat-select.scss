@@ -8,6 +8,10 @@ $matSelectTheme: true !default;
         display: none;
       }
 
+      .mat-mdc-select-value {
+        color: var(--base-level-60);
+      }
+      
       .mat-mdc-select-placeholder {
         color: var(--base-level-60R);
       }
