@@ -41,7 +41,7 @@ jobs:
 
       - name: Build Library
         if: env.changed == 'true' && github.ref == 'refs/heads/main'
-        run: npm run build sparkle-ui --prod
+        run: npm run build:prod
 
       - name: Publish (if package.json changed)
         if: env.changed == 'true' && github.ref == 'refs/heads/main'
