@@ -11,7 +11,7 @@ export type SparkleToggleVariants = 'base' | 'stroked' | 'flat' | 'raised';
   templateUrl: './sparkle-toggle.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class SparkleToggleComponent {
+export class SparkleToggleComponent {
   active = input<boolean>(false);
   color = input<SparkleColorSchemes>('primary');
   variant = input<SparkleToggleVariants>('base');
