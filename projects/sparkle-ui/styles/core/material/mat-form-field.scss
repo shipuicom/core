@@ -53,6 +53,15 @@ $matFormFieldTheme: true !default;
           opacity: 0.4;
         }
 
+
+        .mat-mdc-form-field-icon-prefix,
+        .mat-mdc-form-field-icon-suffix {
+          .mat-icon {
+            opacity: .6;
+          }
+        }
+        
+
         .mdc-floating-label,
         .mat-mdc-form-field-icon-suffix,
         .mat-mdc-form-field-icon-suffix > *,

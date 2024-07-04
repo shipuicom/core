@@ -7,6 +7,10 @@ $matSelectTheme: true !default;
       .mat-mdc-select-arrow-wrapper {
         display: none;
       }
+
+      .mat-mdc-select-placeholder {
+        color: var(--base-level-60R);
+      }
     }
     .mat-pseudo-checkbox-minimal.mat-pseudo-checkbox-checked::after,
     .mat-pseudo-checkbox-minimal.mat-pseudo-checkbox-indeterminate::after {
