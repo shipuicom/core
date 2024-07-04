@@ -1,1 +1,5 @@
+
+// @use 'index' as * with (
+//   $initMaterial: false,
+// );
 @use '../../sparkle-ui/styles/index.scss' as *;

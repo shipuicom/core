@@ -107,3 +107,5 @@ $use-apexcharts: true !default;
 // @if ($use-apexcharts == true) {
 @import './core/apexcharts/apexcharts';
 // }
+
+@import './components/sparkle-components.scss';

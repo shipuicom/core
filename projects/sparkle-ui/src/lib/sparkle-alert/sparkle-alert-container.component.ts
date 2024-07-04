@@ -18,7 +18,6 @@ import { SparkleAlertService } from './sparkle-alert.service';
   standalone: true,
   imports: [SparkleAlertComponent, MatIconModule],
   templateUrl: './sparkle-alert-container.component.html',
-  styleUrl: './sparkle-alert-container.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleAlertContainerComponent {
@@ -35,16 +34,14 @@ export class SparkleAlertContainerComponent {
     return this.alertHistory().filter((x) => x.isOpen).length;
   });
 
-  constructor() {
-    effect(() => {
-      const _ = this.alertHistory();
-      const _x = this.alertHistoryIsOpen();
+  readonly #e = effect(() => {
+    const _ = this.alertHistory();
+    const _x = this.alertHistoryIsOpen();
 
-      this.scrollToBottom();
-    });
-  }
+    this.#scrollToBottom();
+  });
 
-  private scrollToBottom() {
+  #scrollToBottom() {
     if (this.scroller() && this.scroller().nativeElement) {
       this.scroller().nativeElement.scrollTo(0, this.scroller().nativeElement.scrollHeight);
     }

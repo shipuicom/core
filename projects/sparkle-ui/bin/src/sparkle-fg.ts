@@ -19,39 +19,37 @@ export type InputArguments = {
 let writtenCssSize = 0;
 let compressedCssSize = 0;
 
-const run = async (PROJECT_SRC: string, LIB_SRC: string, PROJECT_PUBLIC: string, GLYPH_MAP: Record<string, string>, TARGET_FONT_TYPE: SupportedFontTypes, values: InputArguments) => {
+const run = async (PROJECT_SRC: string, LIB_ICONS: string[], PROJECT_PUBLIC: string, GLYPH_MAP: Record<string, string>, TARGET_FONT_TYPE: SupportedFontTypes, values: InputArguments) => {
   const startTime = performance.now();
 
   const glob = new Glob('**/*.html');
   const tsGlob = new Glob('**/*.ts');
   const regex = /<mat-icon[^>]*>((?!{{.*?}})[^<]*)<\/mat-icon>/g;
   const regex2 = /ppicon:([^']+)/g;
-  const iconsFound = new Set<string>();
+  const iconsFound = new Set<string>(LIB_ICONS);
   const missingIcons = new Set<string>();
 
-  for await (const SRC of [PROJECT_SRC, LIB_SRC]) {
-    for await (const file of glob.scan(`${SRC}`)) {
-      const fileText = await Bun.file(`${SRC}/${file}`).text();
-      const matches = Array.from((fileText as any).matchAll(regex), (m: string) => m[1]);
+  for await (const file of glob.scan(`${PROJECT_SRC}`)) {
+    const fileText = await Bun.file(`${PROJECT_SRC}/${file}`).text();
+    const matches = Array.from((fileText as any).matchAll(regex), (m: string) => m[1]);
 
-      if (matches?.length) {
-        for (let index = 0; index < matches.length; index++) {
-          if (matches[index]) {
-            iconsFound.add(matches[index]);
-          }
+    if (matches?.length) {
+      for (let index = 0; index < matches.length; index++) {
+        if (matches[index]) {
+          iconsFound.add(matches[index]);
         }
       }
     }
+  }
 
-    for await (const file of tsGlob.scan(`${SRC}`)) {
-      const fileText = await Bun.file(`${SRC}/${file}`).text();
-      const matches = Array.from((fileText as any).matchAll(regex2), (m: string) => m[1]);
+  for await (const file of tsGlob.scan(`${PROJECT_SRC}`)) {
+    const fileText = await Bun.file(`${PROJECT_SRC}/${file}`).text();
+    const matches = Array.from((fileText as any).matchAll(regex2), (m: string) => m[1]);
 
-      if (matches?.length) {
-        for (let index = 0; index < matches.length; index++) {
-          if (matches[index]) {
-            iconsFound.add(matches[index]);
-          }
+    if (matches?.length) {
+      for (let index = 0; index < matches.length; index++) {
+        if (matches[index]) {
+          iconsFound.add(matches[index]);
         }
       }
     }
@@ -173,17 +171,20 @@ const textMateSnippet = async (GLYPH_MAP: Record<string, string>) => {
 
 export const main = async (values: InputArguments) => {
   const TARGET_FONT_TYPE: SupportedFontTypes = 'woff2' as SupportedFontTypes;
-  const LIB_SRC = resolve(import.meta.dir, '../../lib');
+  const packageJsonPath = resolve(import.meta.dir, '../../package.json');
+  const packageJson = await Bun.file(packageJsonPath).json();
   const PROJECT_SRC = values.src;
   const PROJECT_PUBLIC = values.out;
   const cssText = await Bun.file(`${import.meta.dir}/config/style.css`).text();
   const GLYPH_MAP = mapUnicodesToGlyphs(cssText);
 
+  const LIB_ICONS = packageJson.libraryIcons as string[];
+
   textMateSnippet(GLYPH_MAP);
   writeCssFile(PROJECT_PUBLIC, values, TARGET_FONT_TYPE)
   
   if (values.watch) {
-    const excludeFolders = ['node_modules', '.git', '.vscode', 'bin', 'assets'].concat([LIB_SRC, PROJECT_PUBLIC]);
+    const excludeFolders = ['node_modules', '.git', '.vscode', 'bin', 'assets'].concat([PROJECT_PUBLIC]);
     watch(
       PROJECT_SRC,
       { recursive: true },
@@ -192,27 +193,20 @@ export const main = async (values: InputArguments) => {
           filename && // Ensure filename is provided (can be null in some cases)
           !excludeFolders.some(folder => resolve(join(PROJECT_SRC, filename)).includes(folder))
         ) {
-          run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
+          run(PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
         }
       },
     );
   }
 
   if (values.watchLib) {
-    const excludeFoldersLib = ['node_modules', '.git', '.vscode', 'bin', 'assets'].concat([PROJECT_SRC, PROJECT_PUBLIC]);
-    watch(
-      LIB_SRC,
-      { recursive: true },
-      (_, filename) => {
-        if (
-          filename &&
-          !excludeFoldersLib.some(folder => resolve(join(LIB_SRC, filename)).includes(folder))
-        ) {
-          run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
-        }
-      },
-    );
+    watch(packageJsonPath, {}, async (_, filename) => {
+      const packageJson = await Bun.file(packageJsonPath).json();
+      const newLibIcons = packageJson.libraryIcons as string[];
+
+      run(PROJECT_SRC, newLibIcons, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
+    })
   }
   
-  run(PROJECT_SRC, LIB_SRC, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
+  run(PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
 };

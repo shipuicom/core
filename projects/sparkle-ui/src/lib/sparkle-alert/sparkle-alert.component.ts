@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject, input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { SparkleAlertService } from './sparkle-alert.service';
 
@@ -9,31 +9,22 @@ export type SparkleAlertType = 'error' | 'success' | 'error' | 'warning' | 'prim
   standalone: true,
   imports: [MatIconModule],
   templateUrl: './sparkle-alert.component.html',
-  styleUrl: './sparkle-alert.component.scss',
-  // encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  // host: {
-  //   '[class.sparkle-alert]': 'true',
-  //   '[class]': 'typeClass',
-  // },
+  host: {
+    '[class.sparkle-alert]': 'true',
+    '[class]': '"sparkle-alert-" + type()',
+  },
 })
 export class SparkleAlertComponent {
-  _type: SparkleAlertType = 'error';
-  typeClass = 'sparkle-alert-error';
+  _el = inject(ElementRef);
 
-  @Input() alertService: SparkleAlertService | null = null;
-  @Input() set type(value: SparkleAlertType) {
-    this._type = value;
-    this.typeClass = 'sparkle-alert-' + value;
-  }
-
-  @Input() id: string | null = null;
-
-  constructor(public _el: ElementRef) {}
+  alertService = input<SparkleAlertService | null>(null);
+  type = input<SparkleAlertType>('error');
+  id = input<string | null>(null);
 
   removeAlert() {
-    if (this.id && this.alertService) {
-      this.alertService.removeAlert(this.id as string);
+    if (this.id() && this.alertService()) {
+      this.alertService()?.removeAlert(this.id() as string);
     }
   }
 }

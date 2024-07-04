@@ -9,7 +9,6 @@ export type SparkleToggleVariants = 'base' | 'stroked' | 'flat' | 'raised';
   standalone: true,
   imports: [NgClass],
   templateUrl: './sparkle-toggle.component.html',
-  styleUrl: './sparkle-toggle.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class SparkleToggleComponent {
