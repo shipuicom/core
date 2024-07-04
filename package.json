@@ -7,7 +7,7 @@
     "watch:font": "bun ./dist/sparkle-ui/bin/sparkle-fg --src='./projects/design-system/src' --out='./projects/design-system/public' --rootPath='/' --watch --verbose",
     "start": "bun run watch:font & ng serve",
     "build": "ng build sparkle-ui",
-    "build:prod": "ng build sparkle-ui --prod",
+    "build:prod": "ng build sparkle-ui --configuration production",
     "watch": "ng build sparkle-ui --watch --configuration development",
     "serve:ssr:design-system": "node dist/design-system/server/server.mjs"
   },
