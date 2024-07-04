@@ -35,7 +35,7 @@ sparkle-alert {
       'stateIcon title closeIcon'
       '. alertContent .';
     padding: p2r(8 12);
-    align-items: center;
+    align-items: flex-start;
     gap: p2r(12);
     border: 1px solid var(--sparkle-alert-border-color);
     border-radius: var(--shape-2);
