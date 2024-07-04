@@ -79,7 +79,7 @@ $matButtonTheme: true !default;
       justify-content: center;
       gap: p2r(8);
       position: relative;
-      padding: p2r(0 12 0 13);
+      padding: p2r(0 12);
       transition: color 80ms linear;
       min-width: auto;
       border: 1px solid var(--base-level-40);
@@ -90,7 +90,7 @@ $matButtonTheme: true !default;
 
       &.mdc-button--unelevated,
       &.mdc-button--raised {
-        padding: p2r(0 13 0 14);
+        padding: p2r(0 13);
       }
 
       .mat-mdc-button-touch-target {
@@ -134,11 +134,11 @@ $matButtonTheme: true !default;
         --mdc-outlined-button-container-height: #{p2r(33)};
         --mdc-filled-button-container-height: #{p2r(33)};
 
-        padding: p2r(0 7 0 8);
+        padding: p2r(0 8);
 
         &.mdc-button--unelevated,
         &.mdc-button--raised {
-          padding: p2r(0 8 0 9);
+          padding: p2r(0 9);
         }
 
         &.loader {
@@ -211,6 +211,16 @@ $matButtonTheme: true !default;
         user-select: none;
       }
     }
+
+
+    .mdc-icon-button.mat-mdc-button-base {
+      padding: p2r(0 8);
+
+      &[small],
+      &.small {
+        padding: p2r(0 6);
+      }
+    } 
 
     .mdc-icon-button.mat-mdc-button-base,
     .mdc-button.mat-mdc-button-base {
