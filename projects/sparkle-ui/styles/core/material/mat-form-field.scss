@@ -15,7 +15,7 @@ $matFormFieldTheme: true !default;
           .mat-mdc-form-field-flex {
             min-height: p2r(33);
 
-            .mat-icon {
+            spk-icon {
               color: var(--base-level-60);
               font-size: p2r(16);
               padding: 0;
@@ -53,14 +53,12 @@ $matFormFieldTheme: true !default;
           opacity: 0.4;
         }
 
-
         .mat-mdc-form-field-icon-prefix,
         .mat-mdc-form-field-icon-suffix {
-          .mat-icon {
-            opacity: .6;
+          spk-icon {
+            opacity: 0.6;
           }
         }
-        
 
         mat-label,
         label,
@@ -138,7 +136,7 @@ $matFormFieldTheme: true !default;
           border-radius: var(--shape-2);
           padding: p2r(0 12);
 
-          .mat-icon {
+          spk-icon {
             color: var(--base-level-60);
             font-weight: 600;
             font-size: p2r(16);
@@ -240,7 +238,7 @@ $matFormFieldTheme: true !default;
             order: 2;
           }
 
-          .mat-icon {
+          spk-icon {
             font-size: p2r(16);
             font-weight: 400;
             color: var(--base-level-60);

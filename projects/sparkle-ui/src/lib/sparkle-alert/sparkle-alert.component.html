@@ -1,43 +1,43 @@
-<div class="sparkle-alert-item">
-  <div #ref class="sparkle-alert-icon" [style.display]="!ref.children.length ? 'none' : 'block'">
-    <ng-content select="[sparkle-alert-icon]"></ng-content>
+<div class="spk-alert-item">
+  <div #ref class="spk-alert-icon" [style.display]="!ref.children.length ? 'none' : 'block'">
+    <ng-content select="[spk-alert-icon]"></ng-content>
   </div>
 
   @if (!ref.children.length) {
-    <div class="sparkle-alert-icon">
+    <div class="spk-alert-icon">
       @switch (type()) {
         @case ('primary') {
-          <mat-icon class="sparkle-alert-state-icon">info</mat-icon>
+          <spk-icon class="spk-alert-state-icon">info</spk-icon>
         }
         @case ('accent') {
-          <mat-icon class="sparkle-alert-state-icon">info</mat-icon>
+          <spk-icon class="spk-alert-state-icon">info</spk-icon>
         }
         @case ('success') {
-          <mat-icon class="sparkle-alert-state-icon">check-circle</mat-icon>
+          <spk-icon class="spk-alert-state-icon">check-circle</spk-icon>
         }
         @case ('error') {
-          <mat-icon class="sparkle-alert-state-icon">warning-octagon</mat-icon>
+          <spk-icon class="spk-alert-state-icon">warning-octagon</spk-icon>
         }
         @case ('warning') {
-          <mat-icon class="sparkle-alert-state-icon">warning</mat-icon>
+          <spk-icon class="spk-alert-state-icon">warning</spk-icon>
         }
         @default {
-          <mat-icon class="sparkle-alert-state-icon">question</mat-icon>
+          <spk-icon class="spk-alert-state-icon">question</spk-icon>
         }
       }
     </div>
   }
 
-  <div class="sparkle-alert-title">
-    <ng-content select="[sparkle-alert-title]"></ng-content>
+  <div class="spk-alert-title">
+    <ng-content select="[spk-alert-title]"></ng-content>
     <ng-content></ng-content>
   </div>
 
   @if (id()) {
-    <mat-icon class="sparkle-alert-close-icon" (click)="removeAlert()">plus</mat-icon>
+    <spk-icon class="spk-alert-close-icon" (click)="removeAlert()">plus</spk-icon>
   }
 
-  <div class="sparkle-alert-content">
-    <ng-content select="[sparkle-alert-content]"></ng-content>
+  <div class="spk-alert-content">
+    <ng-content select="[spk-alert-content]"></ng-content>
   </div>
 </div>

@@ -1,0 +1,16 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding: 40px;
+}
+
+div.wrap {
+  display: block;
+  width: 180px;
+  height: 100px;
+  overflow: hidden;
+  border: 1px solid var(--base-level-40);
+  border-radius: var(--shape-2);
+  padding: 20px;
+}

@@ -1,0 +1,12 @@
+$sparkleDivider: false !default;
+
+@if $sparkleDivider == true {
+  spk-divider {
+    display: block;
+    background-color: var(--base-level-40);
+    margin: p2r(8 0);
+    border: 0;
+    height: 1px;
+    width: 100%;
+  }
+}

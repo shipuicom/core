@@ -15,13 +15,34 @@ app-root {
 body {
   margin: 0;
   font: var(--paragraph-30);
-  color: var(--mat-sidenav-content-text-color);
+  color: var(--base-level-70);
 }
 
 .spacer {
   flex: 1 0;
 }
 
+.spk-primary {
+  color: var(--primary-500);
+}
+
+.spk-accent {
+  color: var(--accent-500);
+}
+
+.spk-tertiary {
+  color: var(--tertiary-500);
+}
+
+.spk-warn {
+  color: var(--warn-500);
+}
+
+.spk-success {
+  color: var(--success-500);
+}
+
+// Removeable
 .mat-success {
   color: var(--success-500);
 }

@@ -44,12 +44,15 @@ $matMenuTheme: true !default;
         color: var(--base-level-60);
       }
 
-      .mat-icon {
+      spk-icon {
         font-size: p2r(16);
       }
 
       .mat-mdc-menu-item-text {
         --mat-menu-item-label-text-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: p2r(8);
       }
 
       &:after {

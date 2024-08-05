@@ -1,48 +1,217 @@
-@import '../helpers.scss';
+$sparkleToggle: false !default;
 
-sparkle-toggle {
-  display: block;
-  width: p2r(34);
-  height: p2r(20);
-  cursor: pointer;
-  
-  .bg {
+@if $sparkleToggle == true {
+  spk-toggle {
+    display: flex;
+    align-items: center;
+    gap: p2r(8);
+    cursor: pointer;
+    user-select: none;
     position: relative;
-    width: 100%;
-    height: 100%;
-    border-radius: 999px;
-    background: var(--base-level-40);
-    transition: background 150ms linear;
-  
+
+    .box {
+      display: block;
+      width: p2r(34);
+      height: p2r(20);
+      cursor: pointer;
+      position: relative;
+      border-radius: 999px;
+      background: var(--base-level-40);
+      transition: background 150ms linear;
+    }
+
+    > input[type='checkbox'] {
+      appearance: none;
+      position: absolute;
+      inset: 0;
+      cursor: pointer;
+    }
+
+    &:has(input[type='checkbox']:checked),
     &.active {
-      background: linear-gradient(to right, var(--primary-400), var(--primary-500));
-  
       .knob {
         left: p2r(16);
+        background-color: var(--base-level-60);
+      }
+
+      &.primary .box {
+        background: var(--primary-level-30);
+
+        .knob {
+          background-color: var(--primary-500);
+        }
+      }
+
+      &.accent .box {
+        background: var(--accent-level-30);
+
+        .knob {
+          background-color: var(--accent-500);
+        }
+      }
+
+      &.tertiary .box {
+        background: var(--tertiary-level-30);
+
+        .knob {
+          background-color: var(--tertiary-500);
+        }
+      }
+
+      &.warn .box {
+        background: var(--warn-level-30);
+
+        .knob {
+          background-color: var(--warn-500);
+        }
+      }
+
+      &.success .box {
+        background: var(--success-level-30);
+
+        .knob {
+          background-color: var(--success-500);
+        }
       }
     }
-  
+
     .knob {
+      --knob-base-color: var(--base-level-30);
       position: absolute;
       top: p2r(2);
       left: p2r(2);
       width: p2r(16);
       height: p2r(16);
       border-radius: 50%;
-      background-color: #fff;
+      background-color: var(--knob-base-color);
       box-shadow: var(--box-shadow-20);
       transition: left 125ms ease-in-out;
     }
-  
-    &.sv-stroked {
+
+    &.outlined {
+      .box {
+        background: var(--base-level-10);
+        border: 1px solid var(--base-level-40);
+      }
+
+      &.primary,
+      &.accent,
+      &.tertiary,
+      &.warn,
+      &.success {
+        .box {
+          background: var(--base-level-10);
+        }
+      }
+
+      .knob {
+        --knob-base-color: var(--base-level-40);
+        width: p2r(14);
+        height: p2r(14);
+        box-shadow: none;
+      }
     }
-  
-    &.sv-flat {
+
+    &.flat {
+      &:has(input[type='checkbox']:checked),
+      &.active {
+        .box {
+          background: var(--base-level-60);
+        }
+
+        &.primary .box {
+          background: var(--primary-500);
+        }
+
+        &.accent .box {
+          background: var(--accent-500);
+        }
+
+        &.tertiary .box {
+          background: var(--tertiary-500);
+        }
+
+        &.warn .box {
+          background: var(--warn-500);
+        }
+
+        &.success .box {
+          background: var(--success-500);
+        }
+      }
+
+      &:has(input[type='checkbox']:checked) .knob,
+      &.active .knob {
+        background-color: #fff;
+      }
+
+      &:has(input[type='checkbox']:checked),
+      &.active {
+        &.primary,
+        &.accent,
+        &.tertiary,
+        &.warn,
+        &.success {
+          .knob {
+            background-color: #fff;
+          }
+        }
+      }
+
+      .knob {
+        background-color: #fff;
+      }
     }
-  
-    &.sv-flat {
+
+    &.raised {
+      &:has(input[type='checkbox']:checked),
+      &.active {
+        .box {
+          background: var(--base-gradient-20);
+        }
+
+        &.primary .box {
+          background: var(--primary-gradient-20);
+        }
+
+        &.accent .box {
+          background: var(--accent-gradient-20);
+        }
+
+        &.tertiary .box {
+          background: var(--tertiary-gradient-20);
+        }
+
+        &.warn .box {
+          background: var(--warn-gradient-20);
+        }
+
+        &.success .box {
+          background: var(--success-gradient-20);
+        }
+      }
+
+      &:has(input[type='checkbox']:checked) .knob,
+      &.active .knob {
+        background-color: #fff;
+      }
+
+      &:has(input[type='checkbox']:checked),
+      &.active {
+        &.primary,
+        &.accent,
+        &.tertiary,
+        &.warn,
+        &.success {
+          .knob {
+            background-color: #fff;
+          }
+        }
+      }
+
+      .knob {
+        background-color: #fff;
+      }
     }
   }
-  
 }
-

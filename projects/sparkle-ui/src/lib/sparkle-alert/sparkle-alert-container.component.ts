@@ -9,14 +9,14 @@ import {
   input,
   viewChild,
 } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
+import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 import { SparkleAlertComponent } from './sparkle-alert.component';
 import { SparkleAlertService } from './sparkle-alert.service';
 
 @Component({
   selector: 'sparkle-alert-container',
   standalone: true,
-  imports: [SparkleAlertComponent, MatIconModule],
+  imports: [SparkleAlertComponent, SparkleIconComponent],
   templateUrl: './sparkle-alert-container.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

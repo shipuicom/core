@@ -84,7 +84,7 @@
             "stylePreprocessorOptions": {
               "includePaths": ["projects/sparkle-ui/styles"]
             },
-            "styles": ["projects/design-system/public/phb.css", "projects/design-system/src/styles.scss"],
+            "styles": ["projects/design-system/src/styles.scss"],
             "scripts": []
           },
           "configurations": {

@@ -18,6 +18,7 @@ $matButtonTheme: true !default;
         &[disabled] {
           opacity: 1;
 
+          spk-icon,
           .mat-icon {
             opacity: 0.5;
           }
@@ -120,7 +121,7 @@ $matButtonTheme: true !default;
           width: p2r(24);
         }
 
-        mat-icon,
+        spk-icon,
         .mat-icon,
         .mdc-button__label {
           opacity: 0;
@@ -167,6 +168,7 @@ $matButtonTheme: true !default;
           font: var(--paragraph-30);
         }
 
+        > spk-icon,
         > .mat-icon {
           font-size: p2r(16);
         }
@@ -178,6 +180,7 @@ $matButtonTheme: true !default;
         }
       }
 
+      > spk-icon,
       > .mat-icon {
         margin: 0;
         font-size: p2r(18);
@@ -212,7 +215,6 @@ $matButtonTheme: true !default;
       }
     }
 
-
     .mdc-icon-button.mat-mdc-button-base {
       padding: p2r(0 8);
 
@@ -220,7 +222,7 @@ $matButtonTheme: true !default;
       &.small {
         padding: p2r(0 6);
       }
-    } 
+    }
 
     .mdc-icon-button.mat-mdc-button-base,
     .mdc-button.mat-mdc-button-base {
@@ -245,24 +247,29 @@ $matButtonTheme: true !default;
       --btn-stroked-bg-hover: var(--base-level-30);
 
       --btn-stroked-primary-color: var(--primary-500);
-      --btn-stroked-primary-bg: #{light-dark(var(--primary-50), var(--primary-950))};
-      --btn-stroked-primary-bg-hover: #{light-dark(var(--primary-100), var(--primary-900))};
-      --btn-stroked-primary-border-color: #{light-dark(var(--primary-200), var(--primary-800))};
+      --btn-stroked-primary-bg: var(--primary-level-20);
+      --btn-stroked-primary-bg-hover: var(--primary-level-30);
+      --btn-stroked-primary-border-color: var(--primary-level-40);
+
+      --btn-stroked-accent-color: var(--accent-500);
+      --btn-stroked-accent-bg: var(--accent-level-20);
+      --btn-stroked-accent-bg-hover: var(--accent-level-30);
+      --btn-stroked-accent-border-color: var(--accent-level-40);
 
       --btn-stroked-tertiary-color: var(--tertiary-500);
-      --btn-stroked-tertiary-bg: #{light-dark(var(--tertiary-50), var(--tertiary-950))};
-      --btn-stroked-tertiary-bg-hover: #{light-dark(var(--tertiary-100), var(--tertiary-900))};
-      --btn-stroked-tertiary-border-color: #{light-dark(var(--tertiary-200), var(--tertiary-800))};
+      --btn-stroked-tertiary-bg: var(--tertiary-level-20);
+      --btn-stroked-tertiary-bg-hover: var(--tertiary-level-30);
+      --btn-stroked-tertiary-border-color: var(--tertiary-level-40);
 
       --btn-stroked-warn-color: var(--warn-500);
-      --btn-stroked-warn-bg: #{light-dark(var(--warn-50), var(--warn-950))};
-      --btn-stroked-warn-bg-hover: #{light-dark(var(--warn-100), var(--warn-900))};
-      --btn-stroked-warn-border-color: #{light-dark(var(--warn-200), var(--warn-800))};
+      --btn-stroked-warn-bg: var(--warn-level-20);
+      --btn-stroked-warn-bg-hover: var(--warn-level-30);
+      --btn-stroked-warn-border-color: var(--warn-level-40);
 
       --btn-stroked-success-color: var(--success-500);
-      --btn-stroked-success-bg: #{light-dark(var(--success-50), var(--success-950))};
-      --btn-stroked-success-bg-hover: #{light-dark(var(--success-100), var(--success-900))};
-      --btn-stroked-success-border-color: #{light-dark(var(--success-200), var(--success-800))};
+      --btn-stroked-success-bg: var(--success-level-20);
+      --btn-stroked-success-bg-hover: var(--success-level-30);
+      --btn-stroked-success-border-color: var(--success-level-40);
 
       // Flat (Colors)
       --btn-flat-color: #fff;
@@ -291,32 +298,33 @@ $matButtonTheme: true !default;
 
       // Raised (Gradients)
       --btn-raised-color: var(--grey-contrast-900);
-      --btn-raised-bg: linear-gradient(180deg, var(--grey-700) 0%, var(--grey-900) 50%);
-      --btn-raised-bg-hover: linear-gradient(180deg, var(--grey-600) 0%, var(--grey-900) 50%);
+      --btn-raised-bg: var(--base-gradient-60);
+      --btn-raised-bg-hover: var(--base-gradient-70);
 
       --btn-raised-primary-color: var(--primary-contrast-500);
-      --btn-raised-primary-bg: linear-gradient(180deg, var(--primary-400) 0%, var(--primary-500) 50%);
-      --btn-raised-primary-bg-hover: linear-gradient(180deg, var(--primary-300) 0%, var(--primary-500) 50%);
+      --btn-raised-primary-bg: var(--primary-gradient-20);
+      --btn-raised-primary-bg-hover: var(--primary-gradient-30);
 
       --btn-raised-accent-color: var(--accent-contrast-500);
-      --btn-raised-accent-bg: linear-gradient(180deg, var(--accent-400) 0%, var(--accent-500) 50%);
-      --btn-raised-accent-bg-hover: linear-gradient(180deg, var(--accent-300) 0%, var(--accent-500) 50%);
+      --btn-raised-accent-bg: var(--accent-gradient-20);
+      --btn-raised-accent-bg-hover: var(--accent-gradient-30);
 
       --btn-raised-tertiary-color: var(--tertiary-contrast-500);
-      --btn-raised-tertiary-bg: linear-gradient(180deg, var(--tertiary-400) 0%, var(--tertiary-500) 50%);
-      --btn-raised-tertiary-bg-hover: linear-gradient(180deg, var(--tertiary-300) 0%, var(--tertiary-500) 50%);
+      --btn-raised-tertiary-bg: var(--tertiary-gradient-20);
+      --btn-raised-tertiary-bg-hover: var(--tertiary-gradient-30);
 
       --btn-raised-warn-color: var(--warn-contrast-500);
-      --btn-raised-warn-bg: linear-gradient(180deg, var(--warn-400) 0%, var(--warn-500) 50%);
-      --btn-raised-warn-bg-hover: linear-gradient(180deg, var(--warn-300) 0%, var(--warn-500) 50%);
+      --btn-raised-warn-bg: var(--warn-gradient-20);
+      --btn-raised-warn-bg-hover: var(--warn-gradient-30);
 
       --btn-raised-success-color: var(--success-contrast-500);
-      --btn-raised-success-bg: linear-gradient(180deg, var(--success-400) 0%, var(--success-500) 50%);
-      --btn-raised-success-bg-hover: linear-gradient(180deg, var(--success-300) 0%, var(--success-500) 50%);
+      --btn-raised-success-bg: var(--success-gradient-20);
+      --btn-raised-success-bg-hover: var(--success-gradient-30);
 
       background: var(--btn-base-bg);
       color: var(--btn-base-color);
 
+      spk-icon,
       .mat-icon {
         color: var(--btn-base-color);
       }
@@ -329,6 +337,7 @@ $matButtonTheme: true !default;
       &.mat-primary {
         background: var(--btn-base-primary-bg);
 
+        spk-icon,
         .mat-icon {
           color: var(--btn-base-primary-color);
         }
@@ -341,6 +350,7 @@ $matButtonTheme: true !default;
       &.mat-accent {
         background: var(--btn-base-accent-bg);
 
+        spk-icon,
         .mat-icon {
           color: var(--btn-base-accent-color);
         }
@@ -353,6 +363,7 @@ $matButtonTheme: true !default;
       &.mat-tertiary {
         background: var(--btn-base-tertiary-bg);
 
+        spk-icon,
         .mat-icon {
           color: var(--btn-base-tertiary-color);
         }
@@ -365,6 +376,7 @@ $matButtonTheme: true !default;
       &.mat-warn {
         background: var(--btn-base-warn-bg);
 
+        spk-icon,
         .mat-icon {
           color: var(--btn-base-warn-color);
         }
@@ -377,6 +389,7 @@ $matButtonTheme: true !default;
       &.mat-success {
         background: var(--btn-base-success-bg);
 
+        spk-icon,
         .mat-icon {
           color: var(--btn-base-success-color);
         }
@@ -401,6 +414,7 @@ $matButtonTheme: true !default;
           background: var(--btn-stroked-primary-bg);
           border-color: var(--btn-stroked-primary-border-color);
 
+          spk-icon,
           .mat-icon {
             color: var(--btn-stroked-primary-color);
           }
@@ -414,6 +428,7 @@ $matButtonTheme: true !default;
           background: var(--btn-stroked-accent-bg);
           border-color: var(--btn-stroked-accent-border-color);
 
+          spk-icon,
           .mat-icon {
             color: var(--btn-stroked-accent-color);
           }
@@ -427,6 +442,7 @@ $matButtonTheme: true !default;
           background: var(--btn-stroked-tertiary-bg);
           border-color: var(--btn-stroked-tertiary-border-color);
 
+          spk-icon,
           .mat-icon {
             color: var(--btn-stroked-tertiary-color);
           }
@@ -440,6 +456,7 @@ $matButtonTheme: true !default;
           background: var(--btn-stroked-warn-bg);
           border-color: var(--btn-stroked-warn-border-color);
 
+          spk-icon,
           .mat-icon {
             color: var(--btn-stroked-warn-color);
           }
@@ -453,6 +470,7 @@ $matButtonTheme: true !default;
           background: var(--btn-stroked-success-bg);
           border-color: var(--btn-stroked-success-border-color);
 
+          spk-icon,
           .mat-icon {
             color: var(--btn-stroked-success-color);
           }
@@ -469,6 +487,7 @@ $matButtonTheme: true !default;
         background: var(--btn-flat-bg);
         border: 0;
 
+        spk-icon,
         .mat-icon {
           color: var(--btn-flat-color);
         }
@@ -534,6 +553,7 @@ $matButtonTheme: true !default;
         border: 0;
         box-shadow: none;
 
+        spk-icon,
         .mat-icon {
           color: var(--btn-raised-color);
         }

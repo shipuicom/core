@@ -34,7 +34,7 @@ $matExpansionPanelTheme: true !default;
           color: var(--base-level-70);
           margin-right: 0;
 
-          .mat-icon {
+          spk-icon {
             font-size: p2r(16);
             line-height: 1em;
             color: var(--base-level-60);
@@ -51,7 +51,7 @@ $matExpansionPanelTheme: true !default;
         margin-bottom: p2r(16);
       }
 
-      mat-expansion-panel-header:has(.mat-expansion-panel-header-title .mat-icon)
+      mat-expansion-panel-header:has(.mat-expansion-panel-header-title spk-icon)
         + .mat-expansion-panel-content
         .mat-expansion-panel-body {
         padding: p2r(0 36 12);

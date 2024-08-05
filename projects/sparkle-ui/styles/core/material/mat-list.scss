@@ -39,7 +39,7 @@ $matListTheme: true !default;
           .mdc-list-item__primary-text {
             color: var(--base-level-70);
 
-            .mat-icon {
+            spk-icon {
               color: var(--primary-500);
             }
           }
@@ -57,13 +57,12 @@ $matListTheme: true !default;
           .mdc-list-item__primary-text {
             color: var(--base-level-70);
 
-            .mat-icon {
+            spk-icon {
               color: var(--primary-500);
             }
           }
         }
 
-        .mdc-list-item__primary-text.mat-icon,
         .mdc-list-item__primary-text {
           transition: color 125ms linear;
         }

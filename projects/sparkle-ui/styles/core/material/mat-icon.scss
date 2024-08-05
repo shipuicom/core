@@ -16,6 +16,10 @@ $matIconTheme: true !default;
       &.small {
         font-size: p2r(16);
       }
+
+      &.inherit {
+        font-size: inherit;
+      }
     }
   }
 }

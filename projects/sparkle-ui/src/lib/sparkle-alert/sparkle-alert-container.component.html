@@ -1,23 +1,23 @@
 <div class="scroller" #scroller>
   <div class="container">
     @for (alert of alertHistory(); track $index) {
-      <sparkle-alert
+      <spk-alert
         #alerts
         [type]="alert.type"
         [id]="alert.id"
         [alertService]="alertService()"
         [style.transition-delay]="transitionDelay($index, true)"
-        [class.sparkle-alert-animate-in]="alert.animateIn"
-        [class.sparkle-alert-animate-out]="alert.animateOut"
-        [class.sparkle-alert-is-hidden]="alertHistoryIsHidden() && !alert.isOpen">
-        <div sparkle-alert-title>{{ alert.title }}</div>
+        [class.spk-alert-animate-in]="alert.animateIn"
+        [class.spk-alert-animate-out]="alert.animateOut"
+        [class.spk-alert-is-hidden]="alertHistoryIsHidden() && !alert.isOpen">
+        <div spk-alert-title>{{ alert.title }}</div>
 
         @if (alert.content) {
-          <div sparkle-alert-content>
+          <div spk-alert-content>
             {{ alert.content }}
           </div>
         }
-      </sparkle-alert>
+      </spk-alert>
     }
   </div>
 </div>
@@ -26,5 +26,5 @@
   [class.alert-tray-is-hidden]="!alertHistoryIsHidden()"
   (mouseover)="this.onMouseOver()"
   (mouseout)="this.onMouseOut()">
-  <mat-icon class="small">info</mat-icon>
+  <spk-icon class="small">info</spk-icon>
 </div>

@@ -7,4 +7,11 @@ export * from './lib/sparkle-alert/sparkle-alert.component';
 export * from './lib/sparkle-alert/sparkle-alert.module';
 export * from './lib/sparkle-alert/sparkle-alert.service';
 
+export * from './lib/sparkle-button/sparkle-button.component';
+export * from './lib/sparkle-checkbox/sparkle-checkbox.component';
+export * from './lib/sparkle-chip/sparkle-chip.component';
+export * from './lib/sparkle-divider/sparkle-divider.component';
+export * from './lib/sparkle-icon/sparkle-icon.component';
+export * from './lib/sparkle-menu/sparkle-menu.component';
+export * from './lib/sparkle-progress-bar/sparkle-progress-bar.component';
 export * from './lib/sparkle-toggle/sparkle-toggle.component';

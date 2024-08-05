@@ -1,23 +1,21 @@
 import { ChangeDetectionStrategy, Component, ElementRef, inject, input } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
+import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 import { SparkleAlertService } from './sparkle-alert.service';
 
 export type SparkleAlertType = 'error' | 'success' | 'error' | 'warning' | 'primary' | 'accent' | 'question';
 
 @Component({
-  selector: 'sparkle-alert',
+  selector: 'spk-alert',
   standalone: true,
-  imports: [MatIconModule],
+  imports: [SparkleIconComponent],
   templateUrl: './sparkle-alert.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '[class.sparkle-alert]': 'true',
-    '[class]': '"sparkle-alert-" + type()',
+    '[class]': 'type()',
   },
 })
 export class SparkleAlertComponent {
   _el = inject(ElementRef);
-
   alertService = input<SparkleAlertService | null>(null);
   type = input<SparkleAlertType>('error');
   id = input<string | null>(null);

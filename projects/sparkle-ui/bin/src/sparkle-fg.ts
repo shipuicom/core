@@ -19,12 +19,19 @@ export type InputArguments = {
 let writtenCssSize = 0;
 let compressedCssSize = 0;
 
-const run = async (PROJECT_SRC: string, LIB_ICONS: string[], PROJECT_PUBLIC: string, GLYPH_MAP: Record<string, string>, TARGET_FONT_TYPE: SupportedFontTypes, values: InputArguments) => {
+const run = async (
+  PROJECT_SRC: string,
+  LIB_ICONS: string[],
+  PROJECT_PUBLIC: string,
+  GLYPH_MAP: Record<string, string>,
+  TARGET_FONT_TYPE: SupportedFontTypes,
+  values: InputArguments
+) => {
   const startTime = performance.now();
 
   const glob = new Glob('**/*.html');
   const tsGlob = new Glob('**/*.ts');
-  const regex = /<mat-icon[^>]*>((?!{{.*?}})[^<]*)<\/mat-icon>/g;
+  const regex = /<spk-icon[^>]*>((?!{{.*?}})[^<]*)<\/spk-icon>/g;
   const regex2 = /ppicon:([^']+)/g;
   const iconsFound = new Set<string>(LIB_ICONS);
   const missingIcons = new Set<string>();
@@ -83,8 +90,7 @@ const run = async (PROJECT_SRC: string, LIB_ICONS: string[], PROJECT_PUBLIC: str
     noLayoutClosure: true,
   } as any);
 
-
-  const fontWrites = await Bun.write(`${PROJECT_PUBLIC}/phb.${TARGET_FONT_TYPE}`, subsetBuffer);
+  const fontWrites = await Bun.write(`${PROJECT_PUBLIC}/spk.${TARGET_FONT_TYPE}`, subsetBuffer);
 
   const endTime = performance.now();
   const runtime = endTime - startTime;
@@ -101,26 +107,28 @@ const run = async (PROJECT_SRC: string, LIB_ICONS: string[], PROJECT_PUBLIC: str
     console.log('Generated total compressed file size: ', formatFileSize(compressedFont.length + compressedCssSize));
     console.log('Time taken: ', runtime.toFixed(2) + 'ms');
   } else {
-    console.log(`Font & CSS (Generated/Compressed size): ${formatFileSize(fontWrites + writtenCssSize)}/${formatFileSize(compressedFont.length + compressedCssSize)}`);
+    console.log(
+      `Font & CSS (Generated/Compressed size): ${formatFileSize(fontWrites + writtenCssSize)}/${formatFileSize(compressedFont.length + compressedCssSize)}`
+    );
     console.log('Time taken: ', runtime.toFixed(2) + 'ms');
   }
   console.log(' ');
-}
+};
 
 const writeCssFile = async (PROJECT_PUBLIC: string, values: InputArguments, TARGET_FONT_TYPE = 'woff2') => {
   // Create a new css file
   const cssFileContent = `
 @font-face {
-  font-family: 'phb';
-  src: url('${values.rootPath}phb.${TARGET_FONT_TYPE}') format('${TARGET_FONT_TYPE}');
+  font-family: 'spk';
+  src: url('${values.rootPath}spk.${TARGET_FONT_TYPE}') format('${TARGET_FONT_TYPE}');
   font-weight: normal;
   font-style: normal;
   font-display: block;
 }
 
-.phb {
+spk-icon {
   /* use !important to prevent issues with browser extensions that change fonts */
-  font-family: "phb" !important;
+  font-family: "spk" !important;
   speak: never;
   font-style: normal;
   font-weight: normal;
@@ -143,31 +151,31 @@ const writeCssFile = async (PROJECT_PUBLIC: string, values: InputArguments, TARG
   -moz-osx-font-smoothing: grayscale;
 }
 `;
-  const cssWrites = await Bun.write(`${PROJECT_PUBLIC}/phb.css`, cssFileContent);
+  const cssWrites = await Bun.write(`${PROJECT_PUBLIC}/spk.css`, cssFileContent);
   const compressedCss = Bun.gzipSync(cssFileContent);
 
   writtenCssSize = cssWrites;
   compressedCssSize = compressedCss.length;
-}
+};
 
 const textMateSnippet = async (GLYPH_MAP: Record<string, string>) => {
   const iconsSnippetContent = `
   {
-    "Phospher icons": {
+    "Phosphor icons": {
       "prefix": ["pp:icon"],
       "body": "\${1|${Object.keys(GLYPH_MAP).join(',')}|}",
       "description": "Add a phosphor icon"
     },
-    "Phospher mat-icon": {
-      "prefix": ["mat-icon"],
-      "body": "<mat-icon>\${1|${Object.keys(GLYPH_MAP).join(',')}|}</mat-icon>",
-      "description": "Add a material phosphor icon"
+    "Sparkle spk-icon": {
+      "prefix": ["spk-icon"],
+      "body": "<spk-icon>\${1|${Object.keys(GLYPH_MAP).join(',')}|}</spk-icon>",
+      "description": "Add a sparkle phosphor icon"
     }
   }
   `;
-  
+
   await Bun.write('./.vscode/html.code-snippets', iconsSnippetContent);
-}
+};
 
 export const main = async (values: InputArguments) => {
   const TARGET_FONT_TYPE: SupportedFontTypes = 'woff2' as SupportedFontTypes;
@@ -181,22 +189,18 @@ export const main = async (values: InputArguments) => {
   const LIB_ICONS = packageJson.libraryIcons as string[];
 
   textMateSnippet(GLYPH_MAP);
-  writeCssFile(PROJECT_PUBLIC, values, TARGET_FONT_TYPE)
-  
+  writeCssFile(PROJECT_PUBLIC, values, TARGET_FONT_TYPE);
+
   if (values.watch) {
     const excludeFolders = ['node_modules', '.git', '.vscode', 'bin', 'assets'].concat([PROJECT_PUBLIC]);
-    watch(
-      PROJECT_SRC,
-      { recursive: true },
-      (_, filename) => {
-        if (
-          filename && // Ensure filename is provided (can be null in some cases)
-          !excludeFolders.some(folder => resolve(join(PROJECT_SRC, filename)).includes(folder))
-        ) {
-          run(PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
-        }
-      },
-    );
+    watch(PROJECT_SRC, { recursive: true }, (_, filename) => {
+      if (
+        filename && // Ensure filename is provided (can be null in some cases)
+        !excludeFolders.some((folder) => resolve(join(PROJECT_SRC, filename)).includes(folder))
+      ) {
+        run(PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
+      }
+    });
   }
 
   if (values.watchLib) {
@@ -205,8 +209,8 @@ export const main = async (values: InputArguments) => {
       const newLibIcons = packageJson.libraryIcons as string[];
 
       run(PROJECT_SRC, newLibIcons, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
-    })
+    });
   }
-  
+
   run(PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
 };

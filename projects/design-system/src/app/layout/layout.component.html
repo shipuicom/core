@@ -5,9 +5,9 @@
 
       <button mat-stroked-button class="small" (click)="toggleBodyClass()">
         @if (isDarkMode()) {
-          <mat-icon>sun</mat-icon>
+          <spk-icon>sun</spk-icon>
         } @else {
-          <mat-icon>moon</mat-icon>
+          <spk-icon>moon</spk-icon>
         }
       </button>
     </header>
@@ -15,21 +15,21 @@
     <mat-action-list class="variant-a">
       <h3>Design system</h3>
 
-      <button
+      <!-- <button
         mat-list-item
         routerLink="/"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
-        <mat-icon>circle</mat-icon>
+        <spk-icon class="spk-primary">spinner</spk-icon>
         Design system
-      </button>
+      </button> -->
 
       <button
         mat-list-item
         routerLink="/colors"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
-        <mat-icon>circle</mat-icon>
+        <spk-icon class="spk-primary">check</spk-icon>
         Colors
       </button>
 
@@ -38,14 +38,235 @@
         routerLink="/typography"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check</spk-icon>
         Typography
       </button>
 
+      <h3>Sparkle Components</h3>
+
+      <button
+        mat-list-item
+        routerLink="/spk-toggle"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check</spk-icon>
+        Sparkle Toggle
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-buttons"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check</spk-icon>
+        Sparkle Buttons
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-loaders"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check</spk-icon>
+        Sparkle Loaders
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-checkbox"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check</spk-icon>
+        Sparkle Checkbox
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-alerts"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check</spk-icon>
+        Sparkle Alerts
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-menu"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check</spk-icon>
+        Sparkle Menu
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-icon"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check</spk-icon>
+        Sparkle Icon
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-divider"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check</spk-icon>
+        Sparkle Divider
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-chips"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check</spk-icon>
+        Sparkle Chips
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-form-fields"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner-ball</spk-icon>
+        Sparkle Form Fields
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-radio"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
+        Sparkle Radio
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-button-group"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
+        Sparkle Button Group
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-tabs"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
+        Sparkle Tabs
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-expansion-panel"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
+        Sparkle Expansion Panel
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-select"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
+        Sparkle Select
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-datepicker"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
+        Sparkle Datepicker
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-dialog"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
+        Sparkle Dialog
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-list"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
+        Sparkle List
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-table"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
+        Sparkle Table
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-tooltip"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
+        Sparkle Tooltip
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-range-slider"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
+        Sparkle Range Slider
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-card"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
+        Sparkle Card
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-badge"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
+        Sparkle Badge
+      </button>
+
+      <button
+        mat-list-item
+        routerLink="/spk-autocomplete"
+        routerLinkActive="mdc-list-item--selected"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
+        Sparkle Autocomplete
+      </button>
+
+      <h3>Material Components</h3>
       <button
         mat-list-item
         routerLink="/buttons"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check</spk-icon>
         Buttons
       </button>
 
@@ -54,6 +275,7 @@
         routerLink="/chips"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
         Chips
       </button>
 
@@ -62,6 +284,7 @@
         routerLink="/loaders"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check</spk-icon>
         Loaders
       </button>
 
@@ -70,6 +293,7 @@
         routerLink="/menus"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check</spk-icon>
         Menus
       </button>
 
@@ -78,6 +302,7 @@
         routerLink="/expansion-panel"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
         Expansion panel
       </button>
 
@@ -86,6 +311,7 @@
         routerLink="/snackbar"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check</spk-icon>
         Snackbar
       </button>
 
@@ -94,6 +320,7 @@
         routerLink="/form-fields"
         routerLinkActive="mdc-list-item--selected"
         [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
         Form fields
       </button>
     </mat-action-list>

@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { SparkleIconComponent } from '../../../../sparkle-ui/src/public-api';
 import { LayoutState } from './layout.state';
 
 @Component({
@@ -11,7 +11,7 @@ import { LayoutState } from './layout.state';
   standalone: true,
   imports: [
     MatButtonModule,
-    MatIconModule,
+    SparkleIconComponent,
     MatListModule,
     MatSidenavModule,
     RouterLink,

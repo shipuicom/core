@@ -81,6 +81,47 @@ html body {
   --base-level-70: #{light-dark(var(--grey-900), #fff)};
   --base-level-70R: #{light-dark(#fff, var(--grey-900))};
 
+  --base-gradient-20: linear-gradient(180deg, var(--grey-400) 0%, var(--grey-500) 50%);
+  --base-gradient-30: linear-gradient(180deg, var(--grey-300) 0%, var(--grey-500) 50%);
+  --base-gradient-60: linear-gradient(180deg, var(--grey-700) 0%, var(--grey-900) 50%);
+  --base-gradient-70: linear-gradient(180deg, var(--grey-600) 0%, var(--grey-900) 50%);
+
+  // Palette light/dark variants
+  --primary-level-20: #{light-dark(var(--primary-50), var(--primary-950))};
+  --primary-level-30: #{light-dark(var(--primary-100), var(--primary-900))};
+  --primary-level-40: #{light-dark(var(--primary-200), var(--primary-800))};
+  --primary-level-80: #{light-dark(var(--primary-900), var(--primary-300))};
+  --primary-gradient-20: linear-gradient(180deg, var(--primary-400) 0%, var(--primary-500) 50%);
+  --primary-gradient-30: linear-gradient(180deg, var(--primary-300) 0%, var(--primary-500) 50%);
+
+  --accent-level-20: #{light-dark(var(--accent-50), var(--accent-950))};
+  --accent-level-30: #{light-dark(var(--accent-100), var(--accent-900))};
+  --accent-level-40: #{light-dark(var(--accent-200), var(--accent-800))};
+  --accent-level-80: #{light-dark(var(--accent-900), var(--accent-300))};
+  --accent-gradient-20: linear-gradient(180deg, var(--accent-400) 0%, var(--accent-500) 50%);
+  --accent-gradient-30: linear-gradient(180deg, var(--accent-300) 0%, var(--accent-500) 50%);
+
+  --tertiary-level-20: #{light-dark(var(--tertiary-50), var(--tertiary-950))};
+  --tertiary-level-30: #{light-dark(var(--tertiary-100), var(--tertiary-900))};
+  --tertiary-level-40: #{light-dark(var(--tertiary-200), var(--tertiary-800))};
+  --tertiary-level-80: #{light-dark(var(--tertiary-900), var(--tertiary-300))};
+  --tertiary-gradient-20: linear-gradient(180deg, var(--tertiary-400) 0%, var(--tertiary-500) 50%);
+  --tertiary-gradient-30: linear-gradient(180deg, var(--tertiary-300) 0%, var(--tertiary-500) 50%);
+
+  --warn-level-20: #{light-dark(var(--warn-50), var(--warn-950))};
+  --warn-level-30: #{light-dark(var(--warn-100), var(--warn-900))};
+  --warn-level-40: #{light-dark(var(--warn-200), var(--warn-800))};
+  --warn-level-80: #{light-dark(var(--warn-900), var(--warn-300))};
+  --warn-gradient-20: linear-gradient(180deg, var(--warn-400) 0%, var(--warn-500) 50%);
+  --warn-gradient-30: linear-gradient(180deg, var(--warn-300) 0%, var(--warn-500) 50%);
+
+  --success-level-20: #{light-dark(var(--success-50), var(--success-950))};
+  --success-level-30: #{light-dark(var(--success-100), var(--success-900))};
+  --success-level-40: #{light-dark(var(--success-200), var(--success-800))};
+  --success-level-80: #{light-dark(var(--success-900), var(--success-300))};
+  --success-gradient-20: linear-gradient(180deg, var(--success-400) 0%, var(--success-500) 50%);
+  --success-gradient-30: linear-gradient(180deg, var(--success-300) 0%, var(--success-500) 50%);
+
   --dark-primary-text: var(--grey-900);
   --light-primary-text: #fff;
 
@@ -108,4 +149,4 @@ $use-apexcharts: true !default;
 @import './core/apexcharts/apexcharts';
 // }
 
-@import './components/sparkle-components.scss';
+@import './components/_sparkle-components.scss';

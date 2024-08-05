@@ -1,5 +1,26 @@
-
 // @use 'index' as * with (
 //   $initMaterial: false,
 // );
-@use '../../sparkle-ui/styles/index.scss' as *;
+
+@use '../../sparkle-ui/styles/index.scss' as * with (
+  // $initMaterial: false,
+  $sparkleButton: true,
+  $sparkleToggle: true,
+  $sparkleProgressBar: true,
+  $sparkleCheckbox: true,
+  $sparkleAlert: true,
+  $sparkleMenu: true,
+  $sparkleDivider: true,
+  $sparkleIcon: true,
+  $sparkleChip: true,
+  // $sparkleFormField: true,
+  // $sparkleRadio: true,
+  // $sparkleCard: true,
+  // $sparkleBadge: true,
+  // $sparkleAutocomplete: true,
+  // $sparkleTabs: true,
+  // $sparkleDialog: true,
+  // $sparkleList: true,
+  // $sparkleSelect: true,
+  // $sparkleDatepicker: true
+);

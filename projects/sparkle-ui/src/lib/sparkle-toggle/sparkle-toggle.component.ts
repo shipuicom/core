@@ -1,23 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-
-export type SparkleColorSchemes = 'base' | 'primary' | 'accent' | 'tertiary' | 'warn' | 'success';
-export type SparkleToggleVariants = 'base' | 'stroked' | 'flat' | 'raised';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-  selector: 'sparkle-toggle',
+  selector: 'spk-toggle',
   standalone: true,
-  imports: [], 
-  templateUrl: './sparkle-toggle.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    '[class]': 'colorClass() + " " + variantClass()'
-  }
-})
-export class SparkleToggleComponent {
-  active = input<boolean>(false);
-  color = input<SparkleColorSchemes>('primary');
-  variant = input<SparkleToggleVariants>('base');
+  imports: [],
+  template: `
+    <div class="box">
+      <div class="knob"></div>
+    </div>
 
-  colorClass = computed(() => 'sc-' + this.color());
-  variantClass = computed(() => 'sv-' + this.variant());
-}
+    <ng-content />
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class SparkleToggleComponent {}

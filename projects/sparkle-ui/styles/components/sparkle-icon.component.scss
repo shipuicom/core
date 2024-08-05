@@ -1,0 +1,23 @@
+$sparkleIcon: false !default;
+
+@if $sparkleIcon == true {
+  spk-icon {
+    font-size: p2r(20);
+    line-height: 1em;
+    width: 1em;
+    height: 1em;
+    text-align: left;
+
+    &.large {
+      font-size: p2r(32);
+    }
+
+    &.small {
+      font-size: p2r(16);
+    }
+
+    &.inherit {
+      font-size: inherit;
+    }
+  }
+}
