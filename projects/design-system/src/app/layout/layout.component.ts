@@ -3,13 +3,19 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { SparkleIconComponent } from '../../../../sparkle-ui/src/public-api';
+import {
+  SparkleIconComponent,
+  SparkleListComponent,
+  SparkleSidenavComponent,
+} from '../../../../sparkle-ui/src/public-api';
 import { LayoutState } from './layout.state';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
   imports: [
+    SparkleSidenavComponent,
+    SparkleListComponent,
     MatButtonModule,
     SparkleIconComponent,
     MatListModule,

@@ -1,5 +1,5 @@
-<mat-drawer-container>
-  <mat-drawer mode="side" opened>
+<spk-sidenav>
+  <div sidenav>
     <header>
       <div>✨ Sparkle UI</div>
 
@@ -12,323 +12,320 @@
       </button>
     </header>
 
-    <mat-action-list class="variant-a">
-      <h3>Design system</h3>
+    <spk-list class="base-level-20">
+      <h3 title>Design system</h3>
 
       <!-- <button
-        mat-list-item
+        spk-action-item
         routerLink="/"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">spinner</spk-icon>
         Design system
       </button> -->
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/colors"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check</spk-icon>
         Colors
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/typography"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check</spk-icon>
         Typography
       </button>
 
-      <h3>Sparkle Components</h3>
+      <h3 title>Sparkle Components</h3>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-toggle"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check</spk-icon>
         Sparkle Toggle
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-buttons"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check</spk-icon>
         Sparkle Buttons
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-loaders"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check</spk-icon>
         Sparkle Loaders
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-checkbox"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check</spk-icon>
         Sparkle Checkbox
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-alerts"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check</spk-icon>
         Sparkle Alerts
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-menu"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check</spk-icon>
         Sparkle Menu
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-icon"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check</spk-icon>
         Sparkle Icon
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-divider"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check</spk-icon>
         Sparkle Divider
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-chips"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check</spk-icon>
         Sparkle Chips
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-form-fields"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">spinner-ball</spk-icon>
+        <spk-icon class="spk-primary">check</spk-icon>
         Sparkle Form Fields
       </button>
 
       <button
-        mat-list-item
-        routerLink="/spk-radio"
-        routerLinkActive="mdc-list-item--selected"
+        spk-action-item
+        routerLink="/spk-sidenav"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">spinner</spk-icon>
+        <spk-icon class="spk-primary">check</spk-icon>
+        Sparkle Sidenav
+      </button>
+
+      <button
+        spk-action-item
+        routerLink="/spk-list"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check</spk-icon>
+        Sparkle List
+      </button>
+
+      <button
+        spk-action-item
+        routerLink="/spk-radio"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check</spk-icon>
         Sparkle Radio
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-button-group"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">spinner</spk-icon>
+        <spk-icon class="spk-primary">spinner-ball</spk-icon>
         Sparkle Button Group
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-tabs"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">spinner</spk-icon>
         Sparkle Tabs
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-expansion-panel"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">spinner</spk-icon>
         Sparkle Expansion Panel
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-select"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">spinner</spk-icon>
         Sparkle Select
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-datepicker"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">spinner</spk-icon>
         Sparkle Datepicker
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-dialog"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">spinner</spk-icon>
         Sparkle Dialog
       </button>
 
       <button
-        mat-list-item
-        routerLink="/spk-list"
-        routerLinkActive="mdc-list-item--selected"
-        [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">spinner</spk-icon>
-        Sparkle List
-      </button>
-
-      <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-table"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">spinner</spk-icon>
         Sparkle Table
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-tooltip"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">spinner</spk-icon>
         Sparkle Tooltip
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-range-slider"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">spinner</spk-icon>
         Sparkle Range Slider
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-card"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">spinner</spk-icon>
         Sparkle Card
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-badge"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">spinner</spk-icon>
         Sparkle Badge
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/spk-autocomplete"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">spinner</spk-icon>
         Sparkle Autocomplete
       </button>
 
-      <h3>Material Components</h3>
+      <h3 title>Material Components</h3>
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/buttons"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check</spk-icon>
         Buttons
       </button>
 
-      <button
-        mat-list-item
-        routerLink="/chips"
-        routerLinkActive="mdc-list-item--selected"
-        [routerLinkActiveOptions]="{ exact: true }">
+      <button spk-action-item routerLink="/chips" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">spinner</spk-icon>
         Chips
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/loaders"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check</spk-icon>
         Loaders
       </button>
 
-      <button
-        mat-list-item
-        routerLink="/menus"
-        routerLinkActive="mdc-list-item--selected"
-        [routerLinkActiveOptions]="{ exact: true }">
+      <button spk-action-item routerLink="/menus" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check</spk-icon>
         Menus
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/expansion-panel"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">spinner</spk-icon>
         Expansion panel
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/snackbar"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check</spk-icon>
         Snackbar
       </button>
 
       <button
-        mat-list-item
+        spk-action-item
         routerLink="/form-fields"
-        routerLinkActive="mdc-list-item--selected"
+        routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">spinner</spk-icon>
         Form fields
       </button>
-    </mat-action-list>
-  </mat-drawer>
+    </spk-list>
+  </div>
 
-  <mat-drawer-content>
-    <main>
-      <router-outlet />
-    </main>
-  </mat-drawer-content>
-</mat-drawer-container>
+  <router-outlet />
+</spk-sidenav>

@@ -1,0 +1,45 @@
+$sparkleSidenav: false !default;
+
+@if $sparkleSidenav == true {
+  spk-sidenav {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+
+    &.closed {
+      .sidenav {
+        width: p2r(48);
+      }
+    }
+
+    .sidenav {
+      width: p2r(280);
+      transition: width 200ms linear;
+      height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: auto;
+    }
+
+    .main-wrap {
+      position: relative;
+      z-index: 1;
+      flex: 1 0;
+      display: block;
+      height: 100%;
+      overflow: auto;
+      padding: p2r(16 16 16 0);
+    }
+
+    main {
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: auto;
+      background-color: var(--base-level-10);
+      border: 1px solid var(--base-level-40);
+      border-radius: var(--shape-3);
+      height: calc(100vh - 2rem);
+      box-shadow: var(--box-shadow-35);
+    }
+  }
+}

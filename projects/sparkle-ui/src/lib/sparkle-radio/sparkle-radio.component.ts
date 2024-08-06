@@ -1,20 +1,17 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } from '@angular/core';
-import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 
 @Component({
-  selector: 'spk-checkbox',
+  selector: 'spk-radio',
   standalone: true,
-  imports: [SparkleIconComponent],
+  imports: [],
   template: `
-    <div class="box">
-      <spk-icon class="inherit">check</spk-icon>
-    </div>
+    <div class="radio"></div>
 
     <ng-content />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SparkleCheckboxComponent {
+export class SparkleRadioComponent {
   #selfRef = inject(ElementRef);
 
   @HostListener('click')

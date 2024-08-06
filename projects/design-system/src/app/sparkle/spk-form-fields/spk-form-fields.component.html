@@ -1,1 +1,132 @@
-<p>spk-form-fields works!</p>,
+<section>
+  <h3>Simple form field</h3>
+
+  <div class="example">
+    <spk-form-field>
+      <input spkInput placeholder="Placeholder no label..." />
+    </spk-form-field>
+
+    <spk-form-field>
+      <label spkLabel>
+        Label
+        <spk-icon>question</spk-icon>
+      </label>
+      <input spkInput placeholder="Placeholder..." />
+    </spk-form-field>
+
+    <spk-form-field>
+      <label spkLabel>
+        Label
+        <spk-icon>question</spk-icon>
+      </label>
+      <input spkInput placeholder="Placeholder..." />
+      <spk-icon spkPrefix>circle</spk-icon>
+      <spk-icon>circle</spk-icon>
+    </spk-form-field>
+
+    <spk-form-field>
+      <label spkLabel>
+        Label
+        <spk-icon>question</spk-icon>
+      </label>
+      <input spkInput [formControl]="disabledCtrl" placeholder="Placeholder..." />
+      <spk-icon spkPrefix>circle</spk-icon>
+      <spk-icon>circle</spk-icon>
+    </spk-form-field>
+
+    <spk-form-field>
+      <label spkLabel>
+        Label
+        <spk-icon>question</spk-icon>
+      </label>
+      <input spkInput [formControl]="baseCtrl" placeholder="Placeholder..." #input />
+      <span spkHint>Hint</span>
+
+      <span spkHint>{{ baseCtrl.value?.length ?? 0 }}/10</span>
+
+      @if ((baseCtrl.value?.length ?? 0) > 10) {
+        <span spkError>Write a message in this alert area</span>
+      }
+    </spk-form-field>
+
+    <spk-form-field>
+      <label spkLabel>
+        Label
+        <spk-icon>question</spk-icon>
+      </label>
+
+      <input spkInput placeholder="Placeholder with error ..." [formControl]="errorCtrl" />
+
+      <spk-icon spkPrefix>circle</spk-icon>
+      <spk-icon spkSuffix>circle</spk-icon>
+
+      @if (errorCtrl.invalid && errorCtrl.touched) {
+        <span spkError>Write a message in this alert area</span>
+      }
+
+      <span spkHint>{{ errorCtrl.value?.length ?? 0 }}/10</span>
+    </spk-form-field>
+
+    <spk-form-field>
+      <label spkLabel>
+        Label
+        <spk-icon>question</spk-icon>
+      </label>
+      <input spkInput type="number" placeholder="0" />
+      <spk-icon spkPrefix>circle</spk-icon>
+      <span spkTextPrefix>Hello</span>
+      <span spkTextSuffix>.00</span>
+    </spk-form-field>
+
+    <spk-form-field>
+      <label spkLabel>
+        Label
+        <spk-icon>question</spk-icon>
+      </label>
+      <input spkInput type="number" placeholder="0" />
+      <span spkTextPrefix>$&nbsp;</span>
+      <span spkTextSuffix>.00</span>
+    </spk-form-field>
+
+    <spk-form-field>
+      <label spkLabel>
+        Label
+        <spk-icon>question</spk-icon>
+      </label>
+      <input spkInput [formControl]="disabledCtrl" type="number" placeholder="0" />
+      <span spkTextPrefix>$&nbsp;</span>
+      <span spkTextSuffix>.00</span>
+    </spk-form-field>
+
+    <spk-form-field>
+      <label spkLabel>Textarea</label>
+      <textarea spkInput></textarea>
+    </spk-form-field>
+
+    <spk-form-field>
+      <label spkLabel>Textarea</label>
+      <textarea spkInput>
+with some value very long text with some value very long text with some value very long text with some value very long text with some value very long text </textarea
+      >
+    </spk-form-field>
+
+    <spk-form-field>
+      <label spkLabel>Textarea</label>
+      <textarea spkInput [formControl]="disabledCtrl"></textarea>
+    </spk-form-field>
+  </div>
+
+  <div class="example">
+    <spk-form-field class="small">
+      <input spkInput placeholder="Placeholder no label..." />
+    </spk-form-field>
+
+    <spk-form-field class="small">
+      <label spkLabel>
+        Label
+        <spk-icon>question</spk-icon>
+      </label>
+      <input spkInput placeholder="Placeholder..." />
+    </spk-form-field>
+  </div>
+</section>

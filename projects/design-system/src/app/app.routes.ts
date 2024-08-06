@@ -71,6 +71,10 @@ export const routes: Routes = [
         loadComponent: () => import('./sparkle/spk-form-fields/spk-form-fields.component'),
       },
       {
+        path: 'spk-sidenav',
+        loadComponent: () => import('./sparkle/spk-sidenav/spk-sidenav.component'),
+      },
+      {
         path: 'spk-radio',
         loadComponent: () => import('./sparkle/spk-radio/spk-radio.component'),
       },
@@ -129,6 +133,10 @@ export const routes: Routes = [
       {
         path: 'spk-datepicker',
         loadComponent: () => import('./sparkle/spk-datepicker/spk-datepicker.component'),
+      },
+      {
+        path: 'spk-expansion-panel',
+        loadComponent: () => import('./sparkle/spk-expansion-panel/spk-expansion-panel.component'),
       },
     ],
   },

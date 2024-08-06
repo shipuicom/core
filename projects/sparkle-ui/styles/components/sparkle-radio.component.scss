@@ -1,0 +1,184 @@
+$sparkleRadio: false !default;
+
+@if $sparkleRadio == true {
+  spk-radio {
+    --spk-radio-dot-opacity: 0;
+    --spk-radio-dot-color: var(--base-level-60);
+
+    display: flex;
+    align-items: center;
+    gap: p2r(8);
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+
+    > input[type='radio'] {
+      appearance: none;
+      position: absolute;
+      inset: 0;
+      cursor: pointer;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    &:has(input[type='radio']:checked),
+    &.active {
+      --spk-radio-dot-opacity: 1;
+    }
+
+    .radio {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: p2r(20);
+      height: p2r(20);
+      cursor: pointer;
+      position: relative;
+      border-radius: 50%;
+      border: 1px solid var(--base-level-40);
+      background: var(--base-level-30);
+      font-size: p2r(12);
+      color: var(--base-level-60);
+
+      &:after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        width: p2r(6);
+        height: p2r(6);
+        background-color: var(--spk-radio-dot-color);
+        opacity: var(--spk-radio-dot-opacity);
+        transition: opacity 125ms linear;
+      }
+    }
+
+    &.primary .radio {
+      --spk-radio-dot-color: var(--primary-500);
+      background: var(--primary-level-30);
+      border-color: var(--primary-level-40);
+      color: var(--primary-500);
+    }
+
+    &.accent .radio {
+      --spk-radio-dot-color: var(--accent-500);
+      background: var(--accent-level-30);
+      border-color: var(--accent-level-40);
+      color: var(--accent-500);
+    }
+
+    &.tertiary .radio {
+      --spk-radio-dot-color: var(--tertiary-500);
+      background: var(--tertiary-level-30);
+      border-color: var(--tertiary-level-40);
+      color: var(--tertiary-500);
+    }
+
+    &.warn .radio {
+      --spk-radio-dot-color: var(--warn-500);
+      background: var(--warn-level-30);
+      border-color: var(--warn-level-40);
+      color: var(--warn-500);
+    }
+
+    &.success .radio {
+      --spk-radio-dot-color: var(--success-500);
+      background: var(--success-level-30);
+      border-color: var(--success-level-40);
+      color: var(--success-500);
+    }
+
+    &.outlined {
+      .radio {
+        background: var(--base-level-10);
+      }
+
+      &.primary,
+      &.accent,
+      &.tertiary,
+      &.warn,
+      &.success {
+        .radio {
+          background: var(--base-level-10);
+          border-color: var(--base-level-40);
+        }
+      }
+    }
+
+    &.flat,
+    &.raised {
+      .radio {
+        --spk-radio-dot-color: #fff;
+        border-color: var(--base-level-40);
+        background: var(--base-level-30);
+        color: #fff;
+      }
+    }
+
+    &.flat:has(input[type='radio']:checked),
+    &.flat.active {
+      .radio {
+        border-width: 0;
+        background: var(--grey-500);
+        color: #fff;
+      }
+
+      &.primary .radio {
+        background: var(--primary-500);
+        color: #fff;
+      }
+
+      &.accent .radio {
+        background: var(--accent-500);
+        color: #fff;
+      }
+
+      &.tertiary .radio {
+        background: var(--tertiary-500);
+        color: #fff;
+      }
+
+      &.warn .radio {
+        background: var(--warn-500);
+        color: #fff;
+      }
+
+      &.success .radio {
+        background: var(--success-500);
+        color: #fff;
+      }
+    }
+
+    &.raised:has(input[type='radio']:checked),
+    &.raised.active {
+      .radio {
+        border-width: 0;
+        background: var(--base-gradient-20);
+      }
+
+      &.primary .radio {
+        background: var(--primary-gradient-20);
+      }
+
+      &.accent .radio {
+        background: var(--accent-gradient-20);
+      }
+
+      &.tertiary .radio {
+        background: var(--tertiary-gradient-20);
+      }
+
+      &.warn .radio {
+        background: var(--warn-gradient-20);
+      }
+
+      &.success .radio {
+        background: var(--success-gradient-20);
+      }
+    }
+  }
+}

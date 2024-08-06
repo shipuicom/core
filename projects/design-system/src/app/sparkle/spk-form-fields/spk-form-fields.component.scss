@@ -1,3 +1,11 @@
 :host {
   display: block;
 }
+
+.example {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 40px;
+  max-width: 600px;
+}
