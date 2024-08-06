@@ -7,6 +7,7 @@ export * from './lib/sparkle-alert/sparkle-alert.component';
 export * from './lib/sparkle-alert/sparkle-alert.module';
 export * from './lib/sparkle-alert/sparkle-alert.service';
 
+export * from './lib/sparkle-button-group/sparkle-button-group.component';
 export * from './lib/sparkle-button/sparkle-button.component';
 export * from './lib/sparkle-checkbox/sparkle-checkbox.component';
 export * from './lib/sparkle-chip/sparkle-chip.component';
