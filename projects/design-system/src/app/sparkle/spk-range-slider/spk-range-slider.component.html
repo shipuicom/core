@@ -1,1 +1,121 @@
-<p>spk-range-slider works!</p>,
+<section>
+  <h3>Basic</h3>
+
+  <spk-toggle [class.active]="active()" class="primary" (click)="active.set(!active())"></spk-toggle>
+  <br />
+
+  <spk-range-slider unit="%">
+    <label spkLabel>
+      Label
+      <spk-icon>circle</spk-icon>
+    </label>
+    <input type="range" min="0" [max]="active() ? 100 : 200" value="50" />
+  </spk-range-slider>
+
+  <br />
+
+  <spk-range-slider unit="%" class="primary">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="accent">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="tertiary">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="warn">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="success">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <h3>Outlined</h3>
+  <spk-range-slider unit="%" class="outlined">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="outlined primary">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="outlined accent">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="outlined tertiary">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="outlined warn">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="outlined success">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <h3>Flat</h3>
+  <spk-range-slider unit="%" class="flat">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="flat primary">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="flat accent">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="flat tertiary">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="flat warn">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="flat success">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <h3>Raised</h3>
+  <spk-range-slider unit="%" class="raised">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="raised primary">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="raised accent">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="raised tertiary">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="raised warn">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="raised success">
+    <input type="range" min="0" max="100" value="50" />
+  </spk-range-slider>
+
+  <h3>As form elements</h3>
+
+  <form [formGroup]="fg">
+    <spk-range-slider unit="%">
+      <input type="range" min="0" max="100" formControlName="rangeCtrl" />
+    </spk-range-slider>
+
+    <pre>{{ fg.value | json }}</pre>
+  </form>
+</section>
