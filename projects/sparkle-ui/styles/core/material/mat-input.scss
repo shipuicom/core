@@ -1,4 +1,4 @@
 $matInputTheme: true !default;
 
-@if $matInputTheme == true {
+@if $matInputTheme == true and $initMaterial == true {
 }

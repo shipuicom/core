@@ -1,6 +1,6 @@
 $matSlideToggleTheme: true !default;
 
-@if $matSlideToggleTheme == true {
+@if $matSlideToggleTheme == true and $initMaterial == true {
   .mat-mdc-slide-toggle {
     &.mat-primary {
       // Size

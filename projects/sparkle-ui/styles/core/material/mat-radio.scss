@@ -1,6 +1,6 @@
 $matRadioTheme: true !default;
 
-@if $matRadioTheme == true {
+@if $matRadioTheme == true and $initMaterial == true {
   .mat-mdc-radio-group {
     display: flex;
     gap: 48px;

@@ -1,6 +1,6 @@
 $matTableTheme: true !default;
 
-@if $matTableTheme == true {
+@if $matTableTheme == true and $initMaterial == true {
   body.dark,
   body {
     --mat-table-container-shape: var(--shape-2);

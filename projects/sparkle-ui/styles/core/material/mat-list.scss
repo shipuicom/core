@@ -1,6 +1,6 @@
 $matListTheme: true !default;
 
-@if $matListTheme == true {
+@if $matListTheme == true and $initMaterial == true {
   body.dark,
   body {
     --list-item-height: #{p2r(38)};

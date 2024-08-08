@@ -1,6 +1,6 @@
 $matExpansionPanelTheme: true !default;
 
-@if $matExpansionPanelTheme == true {
+@if $matExpansionPanelTheme == true and $initMaterial == true {
   body.dark,
   body {
     --expansion-box-shadow: var(--box-shadow-10);

@@ -1,6 +1,6 @@
 $matSelectTheme: true !default;
 
-@if $matSelectTheme == true {
+@if $matSelectTheme == true and $initMaterial == true {
   body.dark,
   body {
     .mat-mdc-select {

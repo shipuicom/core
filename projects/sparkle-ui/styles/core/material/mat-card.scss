@@ -1,6 +1,6 @@
 $matCardSparkleTheme: true !default;
 
-@if $matCardSparkleTheme == true {
+@if $matCardSparkleTheme == true and $initMaterial == true {
   body {
     --mat-card-container-shape: var(--shape-2);
     --mdc-elevated-card-container-color: var(--base-level-10);

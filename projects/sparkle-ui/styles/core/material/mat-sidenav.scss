@@ -1,6 +1,6 @@
 $matDrawerTheme: true !default;
 
-@if $matDrawerTheme == true {
+@if $matDrawerTheme == true and $initMaterial == true {
   body.dark,
   body {
     --mat-sidenav-content-background-color: var(--base-level-20);

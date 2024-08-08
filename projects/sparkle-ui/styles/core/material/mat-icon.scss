@@ -1,6 +1,6 @@
 $matIconTheme: true !default;
 
-@if $matIconTheme == true {
+@if $matIconTheme == true and $initMaterial == true {
   body {
     .mat-icon {
       font-size: p2r(20);

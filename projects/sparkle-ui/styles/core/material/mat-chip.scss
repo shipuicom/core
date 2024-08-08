@@ -1,6 +1,6 @@
 $matChipTheme: true !default;
 
-@if $matChipTheme == true {
+@if $matChipTheme == true and $initMaterial == true {
   body {
     .mat-mdc-chip {
       --mdc-chip-elevated-container-color: var(--grey-50);

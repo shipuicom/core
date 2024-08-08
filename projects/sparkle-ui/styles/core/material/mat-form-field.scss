@@ -1,6 +1,6 @@
 $matFormFieldTheme: true !default;
 
-@if $matFormFieldTheme == true {
+@if $matFormFieldTheme == true and $initMaterial == true {
   body {
     --mat-input-height: #{p2r(43)};
     --mat-form-field-error-text-color: var(--warn-500);

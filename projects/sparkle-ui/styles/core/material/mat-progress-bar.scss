@@ -1,6 +1,6 @@
 $matProgressBarTheme: true !default;
 
-@if $matProgressBarTheme == true {
+@if $matProgressBarTheme == true and $initMaterial == true {
   body {
     .mat-mdc-progress-bar {
       .mdc-linear-progress__buffer-bar {

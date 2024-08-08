@@ -1,6 +1,6 @@
 $matRippleTheme: true !default;
 
-@if $matRippleTheme == true {
+@if $matRippleTheme == true and $initMaterial == true {
   .mat-ripple {
     overflow: hidden;
     position: relative;

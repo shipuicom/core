@@ -1,4 +1,4 @@
 $matCheckboxTheme: true !default;
 
-@if $matCheckboxTheme == true {
+@if $matCheckboxTheme == true and $initMaterial == true {
 }

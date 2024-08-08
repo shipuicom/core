@@ -1,6 +1,6 @@
 $matMenuTheme: true !default;
 
-@if $matMenuTheme == true {
+@if $matMenuTheme == true and $initMaterial == true {
   html body,
   html body.dark {
     --mat-menu-container-shape: var(--shape-2);

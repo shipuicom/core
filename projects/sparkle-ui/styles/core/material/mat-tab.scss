@@ -1,6 +1,6 @@
 $matTabTheme: true !default;
 
-@if $matTabTheme == true {
+@if $matTabTheme == true and $initMaterial == true {
   body.dark,
   body {
     .mat-mdc-tab-group,

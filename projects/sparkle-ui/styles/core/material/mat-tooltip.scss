@@ -1,4 +1,4 @@
 $matTooltipTheme: true !default;
 
-@if $matTooltipTheme == true {
+@if $matTooltipTheme == true and $initMaterial == true {
 }

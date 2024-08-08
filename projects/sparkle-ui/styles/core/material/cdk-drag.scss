@@ -1,4 +1,4 @@
 $cdkDragTheme: true !default;
 
-@if $cdkDragTheme == true {
+@if $cdkDragTheme == true and $initMaterial == true {
 }

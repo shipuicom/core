@@ -1,6 +1,6 @@
 $matToolbarTheme: true !default;
 
-@if $matToolbarTheme == true {
+@if $matToolbarTheme == true and $initMaterial == true {
   body.dark,
   body {
     .mat-toolbar {

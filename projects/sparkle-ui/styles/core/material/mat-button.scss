@@ -1,6 +1,6 @@
 $matButtonTheme: true !default;
 
-@if $matButtonTheme == true {
+@if $matButtonTheme == true and $initMaterial == true {
   body {
     .button-group {
       button.mdc-button.mat-mdc-button-base {

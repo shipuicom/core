@@ -1,4 +1,4 @@
 $matDatepickerTheme: true !default;
 
-@if $matDatepickerTheme == true {
+@if $matDatepickerTheme == true and $initMaterial == true {
 }
