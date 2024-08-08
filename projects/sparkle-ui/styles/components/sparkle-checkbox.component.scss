@@ -14,6 +14,10 @@ $sparkleCheckbox: false !default;
       position: absolute;
       inset: 0;
       cursor: pointer;
+
+      &:focus {
+        outline: none;
+      }
     }
 
     .box {
