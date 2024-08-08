@@ -19,16 +19,15 @@
     <div spk-list-item (click)="checkbox1.setValue(!checkbox1.value)">
       <spk-icon>circle</spk-icon>
       Item 3
-      <spk-checkbox>
+      <spk-checkbox suffix>
         <input type="checkbox" [formControl]="checkbox1" />
       </spk-checkbox>
     </div>
     <div spk-list-item (click)="checkbox2.setValue(!checkbox2.value)">
-      <spk-icon>circle</spk-icon>
-      Item 3
       <spk-checkbox>
         <input type="checkbox" [formControl]="checkbox2" />
       </spk-checkbox>
+      Item 3
     </div>
   </spk-list>
 </div>
@@ -54,7 +53,7 @@
     <div spk-list-item (click)="checkbox1.setValue(!checkbox1.value)">
       <spk-icon>circle</spk-icon>
       Item 3
-      <spk-checkbox>
+      <spk-checkbox suffix>
         <input type="checkbox" [formControl]="checkbox1" />
       </spk-checkbox>
     </div>
