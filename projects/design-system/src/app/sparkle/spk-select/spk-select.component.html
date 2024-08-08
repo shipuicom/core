@@ -1,1 +1,18 @@
-<p>spk-select works!</p>,
+<section>
+  <h3>Basic</h3>
+
+  <spk-select>
+    <spk-icon open-indicator>circle</spk-icon>
+    <input type="search" />
+    @for (food of foods; track $index) {
+      <option option [value]="food.value">{{ food.label }}</option>
+    }
+  </spk-select>
+
+  <spk-select>
+    <input type="text" [formControl]="inputCtrl" />
+    @for (food of foods; track $index) {
+      <option option [value]="food.value" (click)="inputCtrl.setValue(food.value)">{{ food.label }}</option>
+    }
+  </spk-select>
+</section>

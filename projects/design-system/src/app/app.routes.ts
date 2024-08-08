@@ -107,14 +107,6 @@ export const routes: Routes = [
         loadComponent: () => import('./sparkle/spk-card/spk-card.component'),
       },
       {
-        path: 'spk-badge',
-        loadComponent: () => import('./sparkle/spk-badge/spk-badge.component'),
-      },
-      {
-        path: 'spk-autocomplete',
-        loadComponent: () => import('./sparkle/spk-autocomplete/spk-autocomplete.component'),
-      },
-      {
         path: 'spk-tabs',
         loadComponent: () => import('./sparkle/spk-tabs/spk-tabs.component'),
       },

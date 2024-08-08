@@ -1,0 +1,16 @@
+$sparkleSelect: false !default;
+
+@if $sparkleSelect == true {
+  spk-select {
+    .select-open-indicator {
+      > * + .default-indicator {
+        display: none;
+      }
+    }
+
+    // :not(input[type='search']) {
+    //   user-select: none;
+    //   pointer-events: none;
+    // }
+  }
+}

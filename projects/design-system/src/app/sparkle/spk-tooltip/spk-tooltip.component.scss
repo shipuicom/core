@@ -1,3 +1,7 @@
-:host {
-  display: block;
+section {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 40px;
+  padding: 80px;
 }

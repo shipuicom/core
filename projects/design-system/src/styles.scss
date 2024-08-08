@@ -3,7 +3,7 @@
 // );
 
 @use '../../sparkle-ui/styles/index.scss' as * with (
-  // $initMaterial: false,
+  $initMaterial: false,
   $sparkleButton: true,
   $sparkleToggle: true,
   $sparkleProgressBar: true,
@@ -19,11 +19,10 @@
   $sparkleSidenav: true,
   $sparkleButtonGroup: true,
   $sparkleRangeSlider: true,
+  $sparkleTooltip: true,
+  $sparkleSelect: true,
   // $sparkleCard: true,
-  // $sparkleBadge: true,
-  // $sparkleAutocomplete: true,
   // $sparkleTabs: true,
   // $sparkleDialog: true,
-  // $sparkleSelect: true,
   // $sparkleDatepicker: true
 );

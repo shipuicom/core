@@ -19,5 +19,6 @@ export * from './lib/sparkle-menu/sparkle-menu.component';
 export * from './lib/sparkle-progress-bar/sparkle-progress-bar.component';
 export * from './lib/sparkle-radio/sparkle-radio.component';
 export * from './lib/sparkle-range-slider/sparkle-range-slider.component';
+export * from './lib/sparkle-select/sparkle-select.component';
 export * from './lib/sparkle-sidenav/sparkle-sidenav.component';
 export * from './lib/sparkle-toggle/sparkle-toggle.component';
