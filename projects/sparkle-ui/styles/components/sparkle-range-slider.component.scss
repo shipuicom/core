@@ -14,7 +14,7 @@ $sparkleRangeSlider: false !default;
     --spk-range-slider-height: #{p2r(40)};
     --spk-range-slider-thumb-size: #{p2r(16)};
     --spk-range-slider-font: var(--paragraph-30);
-    --spk-range-slider-unit-gap: #{p2r(20)};
+    --spk-range-slider-unit-gap: #{p2r(12)};
     --spk-range-slider-unit-color: var(--base-level-60);
 
     display: flex;
