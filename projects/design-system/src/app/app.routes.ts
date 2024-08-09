@@ -43,8 +43,8 @@ export const routes: Routes = [
         loadComponent: () => import('./sparkle/spk-buttons/spk-buttons.component'),
       },
       {
-        path: 'spk-loaders',
-        loadComponent: () => import('./sparkle/spk-loaders/spk-loaders.component'),
+        path: 'spk-progress-bar',
+        loadComponent: () => import('./sparkle/spk-progress-bar/spk-progress-bar.component'),
       },
       {
         path: 'spk-toggle',

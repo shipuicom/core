@@ -3,7 +3,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
-  selector: 'app-spk-loaders',
+  selector: 'app-spk-progress-bar',
   standalone: true,
   imports: [MatProgressBarModule, MatProgressSpinnerModule],
   templateUrl: './loaders.component.html',
