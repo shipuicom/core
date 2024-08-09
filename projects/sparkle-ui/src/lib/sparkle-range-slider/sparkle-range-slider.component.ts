@@ -64,7 +64,7 @@ export class SparkleRangeSliderComponent {
         this.inputState.update((state) => ({ ...state, value: parseInt((e.target as HTMLInputElement).value) ?? 0 }));
       };
 
-      const MUTATION_FIELDS = ['min', 'max'];
+      const MUTATION_FIELDS = ['min', 'max', 'value'];
 
       this.#observer = new MutationObserver((mutationList, _) => {
         for (const mutation of mutationList) {
