@@ -9,6 +9,14 @@
       Label
       <spk-icon>circle</spk-icon>
     </label>
+    <input type="range" min="0" [max]="active() ? 100 : 200" value="50" readonly />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%">
+    <label spkLabel>
+      Label
+      <spk-icon>circle</spk-icon>
+    </label>
     <input type="range" min="0" [max]="active() ? 100 : 200" value="50" />
   </spk-range-slider>
 

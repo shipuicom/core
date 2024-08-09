@@ -154,6 +154,19 @@ $sparkleRangeSlider: false !default;
       }
     }
 
+    input[type='range'][readonly] {
+      user-select: none;
+      pointer-events: none;
+
+      ~ .track .track-filled {
+        border-radius: var(--spk-range-slider-track-shape);
+      }
+
+      ~ .thumb-wrap {
+        display: none;
+      }
+    }
+
     &.primary {
       --spk-range-slider-track-filled-color: var(--primary-500);
       --spk-range-slider-track: var(--primary-level-40);

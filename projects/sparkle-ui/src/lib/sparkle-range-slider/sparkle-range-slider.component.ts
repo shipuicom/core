@@ -12,11 +12,11 @@ import { ChangeDetectionStrategy, Component, ElementRef, HostBinding, inject, in
     <div class="input-wrap">
       <div class="min-indicator">{{ inputState().min }}{{ unit() }}</div>
 
-      <div class="track-wrap">
+      <div class="track-wrap" (click)="trackEvent($event)">
+        <ng-content></ng-content>
         <div class="track">
           <div class="track-filled" [style]="trackFilledStyle()"></div>
         </div>
-        <ng-content></ng-content>
         <div class="thumb-wrap" [style]="thumbWrapStyle()">
           <div class="thumb" [style]="thumbStyle()">
             <div class="value-indicator">{{ inputState().value }}{{ unit() }}</div>
@@ -43,6 +43,13 @@ export class SparkleRangeSliderComponent {
   @HostBinding('class.has-input')
   get inputField(): HTMLInputElement | null {
     return this.#selfRef.nativeElement.querySelector('input[type="range"]') ?? null;
+  }
+
+  trackEvent(e: Event) {
+    if (this.inputField?.readOnly) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
   }
 
   ngOnInit() {
