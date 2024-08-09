@@ -119,6 +119,14 @@
 
   <h3>As form elements</h3>
 
+  <spk-range-slider unit="%" [value]="fg.value.rangeCtrl ?? 0">
+    <label spkLabel>
+      Label
+      <spk-icon>circle</spk-icon>
+    </label>
+    <input type="range" min="0" [max]="active() ? 100 : 200" value="50" readonly />
+  </spk-range-slider>
+
   <form [formGroup]="fg">
     <spk-range-slider unit="hello">
       <input type="range" min="0" max="100" formControlName="rangeCtrl" />

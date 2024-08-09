@@ -159,6 +159,7 @@ $sparkleRangeSlider: false !default;
       pointer-events: none;
 
       ~ .track .track-filled {
+        transition: width 125ms linear;
         border-radius: var(--spk-range-slider-track-shape);
       }
 
