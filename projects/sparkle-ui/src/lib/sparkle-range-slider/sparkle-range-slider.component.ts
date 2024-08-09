@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostBinding, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  ElementRef,
+  HostBinding,
+  inject,
+  input,
+  model,
+  signal,
+} from '@angular/core';
 
 @Component({
   selector: 'spk-range-slider',
@@ -19,7 +29,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, HostBinding, inject, in
         </div>
         <div class="thumb-wrap" [style]="thumbWrapStyle()">
           <div class="thumb" [style]="thumbStyle()">
-            <div class="value-indicator">{{ inputState().value }}{{ unit() }}</div>
+            <div class="value-indicator">{{ value() }}{{ unit() }}</div>
           </div>
         </div>
       </div>
@@ -34,16 +44,25 @@ export class SparkleRangeSliderComponent {
   #observer: MutationObserver | null = null;
 
   unit = input<string>('');
+  value = model<number>(0);
   inputState = signal({
     min: 0,
     max: 100,
-    value: 0,
+    // value: 0,
   });
 
   @HostBinding('class.has-input')
   get inputField(): HTMLInputElement | null {
     return this.#selfRef.nativeElement.querySelector('input[type="range"]') ?? null;
   }
+
+  inputEffect = effect(() => {
+    const newVal = this.value();
+
+    if (this.inputField && newVal !== parseInt(this.inputField.value)) {
+      this.inputField!.value = newVal + '';
+    }
+  });
 
   trackEvent(e: Event) {
     if (this.inputField?.readOnly) {
@@ -57,11 +76,12 @@ export class SparkleRangeSliderComponent {
       this.inputState.set({
         max: parseInt(this.inputField!.max ?? '') ?? 100,
         min: parseInt(this.inputField!.min ?? '') ?? 0,
-        value: parseInt(this.inputField!.value ?? '') ?? 0,
       });
 
+      this.value.set(parseInt(this.inputField!.value ?? '') ?? 0);
+
       this.inputField.oninput = (e) => {
-        this.inputState.update((state) => ({ ...state, value: parseInt((e.target as HTMLInputElement).value) ?? 0 }));
+        this.value.set(parseInt(this.inputField!.value ?? '') ?? 0);
       };
 
       const MUTATION_FIELDS = ['min', 'max', 'value'];
@@ -70,12 +90,11 @@ export class SparkleRangeSliderComponent {
         for (const mutation of mutationList) {
           if (mutation.type === 'attributes' && MUTATION_FIELDS.includes(mutation.attributeName ?? '')) {
             this.inputState.set({
-              value: parseInt(this.inputField!.value ?? ''),
-              max: parseInt(this.inputField!.max ?? '') ?? 0,
+              max: parseInt(this.inputField!.max ?? '') ?? 100,
               min: parseInt(this.inputField!.min ?? '') ?? 0,
             });
 
-            this.inputField!.value = this.inputState().value + '';
+            this.value.set(parseInt(this.inputField!.value ?? '') ?? 0);
           }
         }
       });
@@ -88,27 +107,21 @@ export class SparkleRangeSliderComponent {
 
   thumbWrapStyle() {
     return {
-      left: `${(this.inputState().value / this.inputState().max) * 100}%`,
+      left: `${(this.value() / this.inputState().max) * 100}%`,
     };
   }
 
   thumbStyle() {
     return {
-      transform: `translateX(-${(this.inputState().value / this.inputState().max) * 100}%)`,
+      transform: `translateX(-${(this.value() / this.inputState().max) * 100}%)`,
     };
   }
 
   trackFilledStyle() {
     return {
-      width: `${(this.inputState().value / this.inputState().max) * 100}%`,
+      width: `${(this.value() / this.inputState().max) * 100}%`,
     };
   }
-
-  // valueIndicatorStyle() {
-  //   return {
-  //     left: `${(this.inputState().value / this.inputState().max) * 100}%`,
-  //   };
-  // }
 
   ngOnDestroy() {
     if (this.#observer) {
