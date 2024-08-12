@@ -3,25 +3,37 @@ $sparkleCard: false !default;
 @if $sparkleCard == true {
   spk-card {
     --card-bg: var(--base-level-10);
-    --card-content-bg: var(--base-level-20);
+    --card-inner-bg: var(--base-level-20);
     --card-border-color: var(--base-level-40);
     --card-shadow: var(--box-shadow-10);
-    --card-content-padding: #{p2r(16)};
+    --card-padding: #{p2r(24)};
+    --card-shadow-padding: #{p2r(8)};
 
     display: block;
-    background-color: var(--card-bg);
-    border: 1px solid var(--card-border-color);
-    box-shadow: var(--card-shadow);
-    border-radius: var(--shape-3);
+    padding: var(--card-padding);
+    position: relative;
+    z-index: 0;
 
-    .card-content {
-      background-color: var(--card-content-bg);
+    &:before,
+    &:after {
+      content: '';
+      position: absolute;
+      inset: 0;
       border-radius: var(--shape-3);
-      padding: var(--card-content-padding);
     }
 
-    &.type-a {
-      padding: p2r(8);
+    &:before {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border-color);
+      box-shadow: var(--card-shadow);
+      border-radius: var(--shape-3);
+      z-index: -2;
+    }
+
+    &:after {
+      background-color: var(--card-inner-bg);
+      inset: var(--card-shadow-padding);
+      z-index: -1;
     }
   }
 }
