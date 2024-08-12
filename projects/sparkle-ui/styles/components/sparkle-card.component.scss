@@ -6,6 +6,7 @@ $sparkleCard: false !default;
     --card-content-bg: var(--base-level-20);
     --card-border-color: var(--base-level-40);
     --card-shadow: var(--box-shadow-10);
+    --card-content-padding: p2r(16);
 
     display: block;
     background-color: var(--card-bg);
@@ -16,6 +17,7 @@ $sparkleCard: false !default;
     .card-content {
       background-color: var(--card-content-bg);
       border-radius: var(--shape-3);
+      padding: var(--card-content-padding);
     }
 
     &.type-a {
