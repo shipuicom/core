@@ -1,0 +1,25 @@
+$sparkleCard: false !default;
+
+@if $sparkleCard == true {
+  spk-card {
+    --card-bg: var(--base-level-10);
+    --card-content-bg: var(--base-level-20);
+    --card-border-color: var(--base-level-40);
+    --card-shadow: var(--box-shadow-10);
+
+    display: block;
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border-color);
+    box-shadow: var(--card-shadow);
+    border-radius: var(--shape-3);
+
+    .card-content {
+      background-color: var(--card-content-bg);
+      border-radius: var(--shape-3);
+    }
+
+    &.type-a {
+      padding: p2r(8);
+    }
+  }
+}
