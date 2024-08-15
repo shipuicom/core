@@ -3,14 +3,33 @@ $sparkleSelect: false !default;
 @if $sparkleSelect == true {
   spk-select {
     .select-open-indicator {
+      height: 20px;
+      transform: rotate(0deg);
+      transition: transform 75ms linear;
+      transform-origin: center;
+
+      &.open {
+        transform: rotate(540deg);
+      }
+
+      > * {
+        height: 20px;
+        display: inline-block;
+      }
+
       > * + .default-indicator {
         display: none;
       }
     }
 
-    // :not(input[type='search']) {
-    //   user-select: none;
-    //   pointer-events: none;
-    // }
+    .display-value + input {
+      display: none;
+    }
+
+    .select-options {
+      .active {
+        background-color: red;
+      }
+    }
   }
 }

@@ -27,7 +27,6 @@ import { LayoutState } from './layout.state';
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  // schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export default class LayoutComponent {
   #layoutState = inject(LayoutState);

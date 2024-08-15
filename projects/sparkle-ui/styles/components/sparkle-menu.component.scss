@@ -4,23 +4,23 @@ $sparkleMenu: false !default;
   spk-menu {
     display: inline-block;
     position: relative;
+  }
 
-    .menu-backdrop {
-      position: absolute;
-      inset: 0;
-      min-width: p2r(180);
-      background-color: var(--base-level-10);
-      opacity: 0;
-      transition: opacity 125ms linear;
-    }
+  .sparkle-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    opacity: 0;
+    z-index: 1;
+    background-color: red;
+    transition: opacity 125ms linear;
+  }
+
+  .sparkle-options {
+    position: relative;
+    z-index: 2;
   }
 
   .sparkle-popup-menu {
-    // transition:
-    //   opacity 125ms linear,
-    //   visibility 125ms linear;
-    // opacity: 0;
-    // visibility: hidden;
     position: fixed;
     min-width: p2r(180);
     z-index: 5000;
@@ -28,7 +28,20 @@ $sparkleMenu: false !default;
     background-color: var(--base-level-10);
     border: 1px solid var(--base-level-40);
     border-radius: var(--shape-2);
-    // margin-top: p2r(8);
+
+    transition:
+      opacity 125ms linear,
+      visibility 125ms linear;
+    opacity: 0;
+    visibility: hidden;
+
+    &.active {
+      opacity: 1;
+      visibility: visible;
+      transition:
+        opacity 125ms linear,
+        visibility 125ms linear;
+    }
 
     [spk-menu-title] {
       font: var(--paragraph-30);
@@ -39,6 +52,7 @@ $sparkleMenu: false !default;
       user-select: none;
     }
 
+    [option],
     [spk-menu-item] {
       display: flex;
       justify-content: flex-start;
@@ -82,6 +96,15 @@ $sparkleMenu: false !default;
       &:hover {
         background-color: var(--base-level-30);
         color: var(--base-level-70);
+      }
+
+      &.focused {
+        background-color: var(--primary-level-20);
+        color: var(--base-level-70);
+
+        &:hover {
+          background-color: var(--primary-level-30);
+        }
       }
     }
   }
