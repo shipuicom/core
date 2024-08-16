@@ -81,6 +81,28 @@ $sparkleChip: false !default;
 
     &.simple {
       border: 0;
+
+      --chip-color: var(--base-level-70);
+
+      &.primary {
+        --chip-color: var(--primary-500);
+      }
+
+      &.accent {
+        --chip-color: var(--accent-500);
+      }
+
+      &.tertiary {
+        --chip-color: var(--tertiary-500);
+      }
+
+      &.warn {
+        --chip-color: var(--warn-500);
+      }
+
+      &.success {
+        --chip-color: var(--success-500);
+      }
     }
 
     &.simple,
