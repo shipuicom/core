@@ -2,11 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   ElementRef,
-  HostListener,
   inject,
   input,
+  output,
   signal,
+  viewChild,
 } from '@angular/core';
 import { SparkleFormFieldComponent } from '../sparkle-form-field/sparkle-form-field.component';
 import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
@@ -21,20 +23,36 @@ import { SparkleMenuComponent } from '../sparkle-menu/sparkle-menu.component';
       [(isActive)]="isOpen"
       [(optionInFocus)]="optionInFocus"
       [(selectedOption)]="selectedOption"
-      (closeAction)="closeAction($event)">
+      (closeAction)="closeAction($event)"
+      #menuRef>
       <div class="select-wrap">
         <spk-form-field>
+          <ng-container spkLabel>
+            <ng-content select="[spkLabel]"></ng-content>
+          </ng-container>
+
           <div class="input" spkInput>
-            @if (_displayValue()) {
+            @if ((_displayValue() && hasSearchInput() && !isOpen()) || (_displayValue() && !hasSearchInput())) {
               <div class="display-value">{{ _displayValue() }}</div>
             }
             <ng-content select="input"></ng-content>
           </div>
 
-          <div class="select-open-indicator" [class.open]="isOpen()" spkSuffix>
-            <ng-content select="[open-indicator]"></ng-content>
-            <spk-icon class="default-indicator">caret-down</spk-icon>
-          </div>
+          @if (!!selectedOption() && !!hasSearchInput()) {
+            <div class="deselect-indicator" (click)="deselect($event)" spkSuffix>
+              <ng-content select="[deselect-indicator]"></ng-content>
+              <spk-icon class="default-indicator">x-circle</spk-icon>
+            </div>
+          } @else {
+            <div class="select-open-indicator" [class.open]="isOpen()" spkSuffix>
+              <ng-content select="[open-indicator]"></ng-content>
+              <spk-icon class="default-indicator">caret-down</spk-icon>
+            </div>
+          }
+
+          <!-- <ng-container spkHint>
+            <ng-content select="[spkHint]"></ng-content>
+          </ng-container> -->
         </spk-form-field>
       </div>
 
@@ -53,31 +71,97 @@ export class SparkleSelectComponent {
   optionInFocus = signal<number | null>(null);
   selectedOption = signal<HTMLElement | null>(null);
   _displayValue = computed(() => this.displayValue() ?? this.selectedOption()?.innerText ?? '');
+
   storedValue = signal<string | null>(null);
+  menuRef = viewChild.required<SparkleMenuComponent>('menuRef');
+  selectedChange = output<string>();
+  hasSearchInput = computed(() => this.inputSearchField != null);
+  #previousSearchValue = signal<string | null>(null);
 
-  @HostListener('click')
-  onClick() {
-    if (this.inputField) {
-      this.isOpen.set(true);
-      this.inputField.blur();
+  controller: AbortController | null = null;
+  focusController: AbortController | null = null;
+
+  e = effect(() => {
+    if (this.isOpen()) {
+      this.controller = new AbortController();
+
+      window.addEventListener(
+        'click',
+        (e) => {
+          if ((e.target as HTMLElement).hasAttribute('option')) {
+            this.selectedOption.set(e.target as HTMLElement);
+          }
+
+          setTimeout(() => {
+            if (this.inputSearchField && this.inputSearchField.value === this.#previousSearchValue()) {
+              this.optionInFocus.set(0);
+            }
+            if (this.inputSearchField) {
+              this.#previousSearchValue.set(this.inputSearchField.value);
+            }
+          }, 0);
+        },
+        { signal: this.controller.signal }
+      );
+
+      this.inputSearchField?.addEventListener(
+        'keydown',
+        (e) => {
+          if (e.key !== 'Enter' && e.key !== 'Escape') {
+            this.optionInFocus.set(0);
+          }
+        },
+        {
+          signal: this.controller.signal,
+        }
+      );
+    } else {
+      setTimeout(() => {
+        this.controller?.abort();
+      }, 0);
+    }
+  });
+
+  ngOnInit() {
+    this.focusController = new AbortController();
+
+    this.currentInput?.addEventListener(
+      'focus',
+      () => {
+        this.isOpen.set(true);
+        this.optionInFocus.set(0);
+
+        if (this.inputSearchField) {
+          this.storedValue.set(this.inputSearchField.value + '');
+          this.inputSearchField.value = '';
+          this.inputSearchField.dispatchEvent(new Event('input'));
+        }
+      },
+      {
+        signal: this.focusController.signal,
+      }
+    );
+  }
+
+  setSelectedOption(byInputValue: string) {
+    this.menuRef().setSelectedOption(byInputValue);
+  }
+
+  deselect($event: Event) {
+    $event.stopPropagation();
+
+    if (this.currentInput) {
+      this.currentInput!.value = '';
+      this.currentInput!.dispatchEvent(new Event('input'));
     }
 
-    if (this.inputSearchField) {
-      this.inputSearchField.focus();
-      this.storedValue.set(this.inputSearchField.value + '');
-      this.inputSearchField.value = '';
-      this.inputSearchField.dispatchEvent(new Event('input'));
-      this.optionInFocus.set(0);
-    }
+    this.menuRef().deselectOption();
   }
 
   closeAction(action: 'closed' | 'selected') {
     if (this.inputSearchField) {
-      // console.log('this.storedValue(): ', this.storedValue());
-
       if (action === 'closed' && this.storedValue()) {
-        this.inputSearchField.setAttribute('value', this.storedValue() as string);
-        // console.log('this.inputSearchField: ', this.inputSearchField);
+        this.menuRef().selectCurrentOption();
       }
 
       this.inputSearchField.blur();
@@ -92,5 +176,13 @@ export class SparkleSelectComponent {
     const input = this.#selfRef.nativeElement.querySelector('input');
 
     return input && input.type !== 'search' ? input : null;
+  }
+
+  get currentInput(): HTMLInputElement | null {
+    return this.inputSearchField ?? this.inputField;
+  }
+
+  ngOnDestroy() {
+    this.focusController?.abort();
   }
 }

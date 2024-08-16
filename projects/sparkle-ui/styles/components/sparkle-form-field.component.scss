@@ -80,6 +80,10 @@ $sparkleFormField: false !default;
       overflow: hidden;
       transition: border-color 125ms linear;
 
+      .input {
+        flex: 1 0;
+      }
+
       textarea {
         resize: none;
         margin: p2r(8 0);

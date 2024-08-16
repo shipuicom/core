@@ -1,19 +1,51 @@
 <section>
   <h3>Basic</h3>
 
-  <pre>{{ this.search() }}</pre>
+  <pre>
+    search: {{ this.search() }}
+    inputCtrl: {{ inputCtrl.value }}
+    inputSearchCtrl: {{ inputSearchCtrl.value }}
+  </pre>
+
   <spk-select>
+    <label spkLabel>
+      Label
+      <spk-icon>question</spk-icon>
+    </label>
+
     <spk-icon open-indicator>circle</spk-icon>
+
     <input type="search" [(ngModel)]="search" />
+
     @for (food of filteredFoods(); track $index) {
-      <option option [value]="food.value" (click)="search.set(food.value)">{{ food.label }}</option>
+      <option option [value]="food.value" (click)="clicked(food.value)">{{ food.label }} - ({{ $index }})</option>
+    }
+
+    <span spkHint>Hint</span>
+
+    <span spkHint>{{ search()?.length ?? 0 }}/10</span>
+  </spk-select>
+
+  <spk-select [displayValue]="displayFn(inputCtrl.value ?? '')" [displayString]="'el.label (el.value)'">
+    <option option [value]="null" (click)="inputCtrl.setValue(null)">Select...</option>
+    @for (food of foods(); track $index) {
+      <option option [value]="food.value" (click)="inputCtrl.setValue(food.value)">{{ food.label }}</option>
     }
   </spk-select>
 
   <spk-select [displayValue]="displayFn(inputCtrl.value ?? '')" [displayString]="'el.label (el.value)'">
     <input type="text" [formControl]="inputCtrl" />
+
     @for (food of foods(); track $index) {
       <option option [value]="food.value" (click)="inputCtrl.setValue(food.value)">{{ food.label }}</option>
+    }
+  </spk-select>
+
+  <spk-select [displayValue]="displayFn(inputSearchCtrl.value ?? '')" [displayString]="'el.label (el.value)'">
+    <input type="search" [formControl]="inputSearchCtrl" />
+
+    @for (food of otherFilteredFoods(); track $index) {
+      <option option [value]="food.value" (click)="inputSearchCtrl.setValue(food.value)">{{ food.label }}</option>
     }
   </spk-select>
 </section>

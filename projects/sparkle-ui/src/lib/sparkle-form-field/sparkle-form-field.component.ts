@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } 
   standalone: true,
   imports: [],
   template: `
-    <ng-content select="label"></ng-content>
+    <ng-content select="[spkLabel]"></ng-content>
 
     <div class="input-wrap">
       <div class="prefix">

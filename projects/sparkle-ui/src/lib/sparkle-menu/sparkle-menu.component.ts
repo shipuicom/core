@@ -20,14 +20,9 @@ import {
       <ng-content />
     </div>
 
-    <div
-      class="sparkle-popup-menu"
-      [class.active]="isActive()"
-      #menuRef
-      [style]="menuStyle()"
-      (click)="close('selected')">
+    <div class="sparkle-popup-menu" [class.active]="isActive()" #menuRef [style]="menuStyle()">
       <div class="sparkle-menu-backdrop" (click)="close('closed')"></div>
-      <div class="sparkle-options">
+      <div class="sparkle-options" (click)="close('selected')">
         <ng-content select="[menu]" />
       </div>
     </div>
@@ -39,7 +34,6 @@ import {
 })
 export class SparkleMenuComponent {
   #BASE_SPACE = 8;
-  hasBeenOpened = signal(false);
   above = input<boolean>(false);
   right = input<boolean>(false);
   closeAction = output<'closed' | 'selected'>();
@@ -52,9 +46,11 @@ export class SparkleMenuComponent {
     left: '0px',
     top: '0px',
   });
+  optionsElTrigger = signal(false);
   options = computed(() => {
     const _options = this.menuEl().querySelectorAll<HTMLElement>('[option]:not([disabled])');
 
+    this.optionsElTrigger();
     this.isActive();
 
     return Array.from(_options);
@@ -95,39 +91,18 @@ export class SparkleMenuComponent {
     }
   );
 
-  selectedOptionEffect = effect(() => {
-    if (this.selectedOption()) {
-      this.selectedOption();
-    }
-  });
-
   controller: AbortController | null = null;
-  signal: AbortSignal | null = null;
 
   #whenActive = effect(
     () => {
-      this.controller = new AbortController();
-      this.signal = this.controller.signal;
-
       if (this.isActive()) {
+        this.controller = new AbortController();
+
         this.#setMenuElement();
         this.calculateMenuPosition();
-        this.optionInFocus.set(null);
-        this.hasBeenOpened.set(true);
 
-        window.addEventListener('resize', () => this.calculateMenuPosition(), { signal: this.signal });
-        window.addEventListener('scroll', () => this.calculateMenuPosition(), { signal: this.signal });
-        window.addEventListener(
-          'click',
-          (e) => {
-            if (this.menuEl().contains(e.target as Node)) {
-              this.optionInFocus.set(null);
-              this.isActive.set(false);
-              this.#selectOption(e.target as HTMLElement);
-            }
-          },
-          { signal: this.signal }
-        );
+        window.addEventListener('resize', () => this.calculateMenuPosition(), { signal: this.controller.signal });
+        window.addEventListener('scroll', () => this.calculateMenuPosition(), { signal: this.controller.signal });
         window.addEventListener(
           'keydown',
           (e) => {
@@ -137,49 +112,72 @@ export class SparkleMenuComponent {
               } else {
                 this.optionInFocus.set((this.optionInFocus() as number) + 1);
               }
-            }
-
-            if (e.key === 'ArrowUp') {
+            } else if (e.key === 'ArrowUp') {
               if (this.optionInFocus() === null || (this.optionInFocus() as number) === 0) {
                 this.optionInFocus.set(this.options().length - 1);
               } else {
                 this.optionInFocus.set((this.optionInFocus() as number) - 1);
               }
-            }
-
-            if (e.key === 'Enter') {
+            } else if (e.key === 'Enter') {
               if (this.optionElementInFocus()) {
-                this.optionElementInFocus()!.dispatchEvent(new Event('click'));
-                this.#selectOption(this.optionElementInFocus()!);
+                this.selectOption(this.optionElementInFocus()!);
               }
 
               this.close('selected');
-            }
-
-            if (e.key === 'Escape') {
+            } else if (e.key === 'Escape') {
               this.close('closed');
+            } else {
+              setTimeout(() => {
+                this.optionsElTrigger.set(!this.optionsElTrigger());
+              }, 0);
             }
           },
-          { signal: this.signal }
+          { signal: this.controller.signal }
         );
       } else {
-        if (this.hasBeenOpened()) {
-          this.#hideMenuElement();
-        }
+        this.#hideMenuElement();
       }
     },
     { allowSignalWrites: true }
   );
 
-  #selectOption(el: HTMLElement) {
-    if (this.selectedOption() === el) return;
+  setSelectedOption(byInputValue: string) {
+    const option = this.options().find((x) => x.hasAttribute('value') && x.getAttribute('value') === byInputValue);
 
+    if (option) {
+      this.selectOption(option);
+    }
+  }
+
+  deselectOption() {
+    this.#previousSelectedOption.set(null);
+    this.selectedOption.set(null);
+    this.selectedOptionIndex.set(null);
+  }
+
+  selectOption(el: HTMLElement) {
     if (this.selectedOption()) {
       this.#previousSelectedOption.set(this.selectedOption());
     }
 
     this.selectedOption.set(el);
     this.selectedOptionIndex.set(this.options().indexOf(el));
+
+    el.dispatchEvent(
+      new Event('click', {
+        bubbles: true,
+        cancelable: true,
+      })
+    );
+  }
+
+  selectCurrentOption() {
+    const selectedOption = this.selectedOptionIndex();
+    const option = this.options().at(selectedOption as number);
+
+    if (option) {
+      this.selectOption(option!);
+    }
   }
 
   #setMenuElement() {
@@ -192,7 +190,6 @@ export class SparkleMenuComponent {
 
   ngOnInit() {
     this.#setMenuElement();
-    this.#hideMenuElement();
   }
 
   toggle() {
@@ -209,7 +206,7 @@ export class SparkleMenuComponent {
   private calculateMenuPosition() {
     if (this.isActive()) {
       const triggerRect = this.actionRef()?.nativeElement.getBoundingClientRect();
-      const menuRect = this.menuRef()?.nativeElement.getBoundingClientRect();
+      const menuRect = this.menuEl().getBoundingClientRect();
 
       const actionLeftInViewport = triggerRect.left;
       const actionBottomInViewport = triggerRect.bottom;
@@ -253,7 +250,7 @@ export class SparkleMenuComponent {
   }
 
   ngOnDestroy() {
-    if (this.#body.contains(this.menuRef().nativeElement)) {
+    if (this.#body.contains(this.menuEl())) {
       this.#hideMenuElement();
     }
   }

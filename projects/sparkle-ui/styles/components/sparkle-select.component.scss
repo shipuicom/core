@@ -2,6 +2,7 @@ $sparkleSelect: false !default;
 
 @if $sparkleSelect == true {
   spk-select {
+    .deselect-indicator,
     .select-open-indicator {
       height: 20px;
       transform: rotate(0deg);
@@ -23,13 +24,19 @@ $sparkleSelect: false !default;
     }
 
     .display-value + input {
-      display: none;
+      opacity: 0;
+      position: absolute;
+      top: 200%;
     }
 
     .select-options {
       .active {
         background-color: red;
       }
+    }
+
+    spk-form-field {
+      min-width: p2r(210);
     }
   }
 }
