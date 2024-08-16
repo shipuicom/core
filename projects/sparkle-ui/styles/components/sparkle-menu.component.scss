@@ -11,13 +11,15 @@ $sparkleMenu: false !default;
     inset: 0;
     opacity: 0;
     z-index: 1;
-    background-color: red;
     transition: opacity 125ms linear;
   }
 
   .sparkle-options {
     position: relative;
     z-index: 2;
+    max-height: p2r(180);
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .sparkle-popup-menu {

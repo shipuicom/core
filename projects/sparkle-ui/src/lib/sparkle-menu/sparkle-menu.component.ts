@@ -81,6 +81,7 @@ export class SparkleMenuComponent {
 
       if (el) {
         el.classList.add('focused');
+        el.scrollIntoView({ block: 'nearest' });
         this.#previousOptionElementInFocus.set(el);
       }
 

@@ -7,11 +7,11 @@
     inputSearchCtrl: {{ inputSearchCtrl.value }}
   </pre>
 
-  <spk-select>
-    <label spkLabel>
+  <spk-select (selectedChange)="selectedChange($event)">
+    <!-- <label spkLabel>
       Label
       <spk-icon>question</spk-icon>
-    </label>
+    </label> -->
 
     <spk-icon open-indicator>circle</spk-icon>
 
@@ -21,9 +21,9 @@
       <option option [value]="food.value" (click)="clicked(food.value)">{{ food.label }} - ({{ $index }})</option>
     }
 
-    <span spkHint>Hint</span>
+    <!-- <span spkHint>Hint</span>
 
-    <span spkHint>{{ search()?.length ?? 0 }}/10</span>
+    <span spkHint>{{ search()?.length ?? 0 }}/10</span> -->
   </spk-select>
 
   <spk-select [displayValue]="displayFn(inputCtrl.value ?? '')" [displayString]="'el.label (el.value)'">
