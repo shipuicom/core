@@ -1,6 +1,6 @@
 {
   "name": "@sparkle-ui/core",
-  "version": "0.1.71",
+  "version": "0.1.72",
   "peerDependencies": {
     "@angular/common": "^18.0.0",
     "@angular/core": "^18.0.0"
@@ -15,6 +15,7 @@
   },
   "libraryIcons": [
     "x-circle",
+    "caret-down",
     "info",
     "check",
     "check-circle",
