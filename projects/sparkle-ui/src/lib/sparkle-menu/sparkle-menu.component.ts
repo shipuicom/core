@@ -4,6 +4,8 @@ import {
   computed,
   effect,
   ElementRef,
+  inject,
+  Injector,
   input,
   model,
   output,
@@ -33,6 +35,7 @@ import {
   },
 })
 export class SparkleMenuComponent {
+  private injector = inject(Injector);
   #BASE_SPACE = 8;
   above = input<boolean>(false);
   right = input<boolean>(false);
@@ -83,27 +86,44 @@ export class SparkleMenuComponent {
         el.classList.add('focused');
         el.scrollIntoView({ block: 'nearest' });
         this.#previousOptionElementInFocus.set(el);
+        this.optionElementInFocus.set(el);
+      } else {
+        this.optionElementInFocus.set(null);
       }
-
-      this.optionElementInFocus.set(el);
     },
     {
       allowSignalWrites: true,
+      injector: this.injector,
     }
   );
 
   controller: AbortController | null = null;
 
-  #whenActive = effect(
+  // TODO cleanup so that we dont have multiple controller effects
+  // Its due to the whenActive effect being called in a loop try tracking by only isActive
+  setNewController() {
+    this.controller?.abort();
+    this.controller = new AbortController();
+  }
+
+  whenActive = effect(
     () => {
       if (this.isActive()) {
-        this.controller = new AbortController();
+        this.setNewController();
 
         this.#setMenuElement();
         this.calculateMenuPosition();
 
-        window.addEventListener('resize', () => this.calculateMenuPosition(), { signal: this.controller.signal });
-        window.addEventListener('scroll', () => this.calculateMenuPosition(), { signal: this.controller.signal });
+        setTimeout(() => {
+          const selectedIndex = this.options().findIndex(
+            (el) => el.getAttribute('value') === this.selectedOption()?.getAttribute('value')
+          );
+
+          this.optionInFocus.set(selectedIndex > -1 ? selectedIndex : 0);
+        }, 0);
+
+        window.addEventListener('resize', () => this.calculateMenuPosition(), { signal: this.controller?.signal });
+        window.addEventListener('scroll', () => this.calculateMenuPosition(), { signal: this.controller?.signal });
         window.addEventListener(
           'keydown',
           (e) => {
@@ -129,18 +149,28 @@ export class SparkleMenuComponent {
               this.close('closed');
             } else {
               setTimeout(() => {
+                this.optionInFocus.set(0);
                 this.optionsElTrigger.set(!this.optionsElTrigger());
               }, 0);
             }
           },
-          { signal: this.controller.signal }
+          { signal: this.controller?.signal }
         );
       } else {
         this.#hideMenuElement();
       }
     },
-    { allowSignalWrites: true }
+    {
+      allowSignalWrites: true,
+      injector: this.injector,
+    }
   );
+
+  deselectOption() {
+    this.#previousSelectedOption.set(null);
+    this.selectedOption.set(null);
+    this.selectedOptionIndex.set(null);
+  }
 
   setSelectedOption(byInputValue: string) {
     const option = this.options().find((x) => x.hasAttribute('value') && x.getAttribute('value') === byInputValue);
@@ -148,12 +178,6 @@ export class SparkleMenuComponent {
     if (option) {
       this.selectOption(option);
     }
-  }
-
-  deselectOption() {
-    this.#previousSelectedOption.set(null);
-    this.selectedOption.set(null);
-    this.selectedOptionIndex.set(null);
   }
 
   selectOption(el: HTMLElement) {

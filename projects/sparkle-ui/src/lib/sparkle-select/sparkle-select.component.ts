@@ -85,36 +85,43 @@ export class SparkleSelectComponent {
     if (this.isOpen()) {
       this.controller = new AbortController();
 
-      window.addEventListener(
-        'click',
-        (e) => {
-          if ((e.target as HTMLElement).hasAttribute('option')) {
-            this.selectedOption.set(e.target as HTMLElement);
-          }
+      // window.addEventListener(
+      //   'click',
+      //   (e) => {
+      //     if ((e.target as HTMLElement).hasAttribute('option')) {
+      //       const options = this.menuRef().options();
+      //       const selectedIndex = options.findIndex(
+      //         (el) => el.getAttribute('value') === (e.target as HTMLElement)?.getAttribute('value')
+      //       );
 
-          setTimeout(() => {
-            if (this.inputSearchField && this.inputSearchField.value === this.#previousSearchValue()) {
-              this.optionInFocus.set(0);
-            }
-            if (this.inputSearchField) {
-              this.#previousSearchValue.set(this.inputSearchField.value);
-            }
-          }, 0);
-        },
-        { signal: this.controller.signal }
-      );
+      //       if (selectedIndex > -1) {
+      //         this.menuRef().optionInFocus.set(selectedIndex);
+      //       }
+      //     }
 
-      this.inputSearchField?.addEventListener(
-        'keydown',
-        (e) => {
-          if (e.key !== 'Enter' && e.key !== 'Escape') {
-            this.optionInFocus.set(0);
-          }
-        },
-        {
-          signal: this.controller.signal,
-        }
-      );
+      //     // setTimeout(() => {
+      //     //   // if (this.inputSearchField && this.inputSearchField.value === this.#previousSearchValue()) {
+      //     //   //   this.optionInFocus.set(0);
+      //     //   // }
+      //     //   if (this.inputSearchField) {
+      //     //     this.#previousSearchValue.set(this.inputSearchField.value);
+      //     //   }
+      //     // }, 0);
+      //   },
+      //   { signal: this.controller.signal }
+      // );
+
+      // this.inputSearchField?.addEventListener(
+      //   'keydown',
+      //   (e) => {
+      //     if (e.key !== 'Enter' && e.key !== 'Escape') {
+      //       this.optionInFocus.set(0);
+      //     }
+      //   },
+      //   {
+      //     signal: this.controller.signal,
+      //   }
+      // );
     } else {
       setTimeout(() => {
         this.controller?.abort();
@@ -129,7 +136,11 @@ export class SparkleSelectComponent {
       'focus',
       () => {
         this.isOpen.set(true);
-        this.optionInFocus.set(0);
+        // this.optionInFocus.set(0);
+
+        if (this.inputField) {
+          this.inputField.blur();
+        }
 
         if (this.inputSearchField) {
           this.storedValue.set(this.inputSearchField.value + '');
@@ -141,10 +152,6 @@ export class SparkleSelectComponent {
         signal: this.focusController.signal,
       }
     );
-  }
-
-  setSelectedOption(byInputValue: string) {
-    this.menuRef().setSelectedOption(byInputValue);
   }
 
   deselect($event: Event) {
