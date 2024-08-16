@@ -2,6 +2,9 @@ $sparkleSelect: false !default;
 
 @if $sparkleSelect == true {
   spk-select {
+    display: flex;
+    flex: 1 0;
+
     .deselect-indicator,
     .select-open-indicator {
       height: 20px;
@@ -37,6 +40,17 @@ $sparkleSelect: false !default;
 
     spk-form-field {
       min-width: p2r(210);
+    }
+
+    spk-menu {
+      display: flex;
+      flex: 1 0;
+      width: 100%;
+
+      .select-wrap,
+      .action {
+        width: 100%;
+      }
     }
   }
 }
