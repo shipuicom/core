@@ -9,7 +9,7 @@ $sparkleStepper: false !default;
     overflow: hidden;
 
     [spk-step] {
-      flex: 1 0;
+      flex: 2 0;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -17,20 +17,23 @@ $sparkleStepper: false !default;
       gap: p2r(8);
       position: relative;
       color: var(--base-level-60R);
+      cursor: pointer;
 
       &:first-child {
         align-items: flex-start;
+        flex: 1 0;
       }
 
       &:last-child {
         align-items: flex-end;
+        flex: 1 0;
       }
 
-      &:has(> spk-radio.active) {
-        color: var(--primary-500);
+      &:not(.active) spk-radio {
+        z-index: 10;
       }
 
-      &:has(~ [spk-step] spk-radio.active) {
+      &:has(~ [spk-step].active) {
         spk-radio {
           --spk-radio-dot-opacity: 1;
 
@@ -42,18 +45,19 @@ $sparkleStepper: false !default;
       }
 
       spk-radio {
-        &:not(.active) {
-          z-index: 10;
-        }
-
         .radio {
           --spk-radio-dot-color: var(--base-level-10);
 
           width: p2r(16);
           height: p2r(16);
         }
+      }
 
-        &.active {
+      &.active {
+        color: var(--primary-500);
+        outline: none;
+
+        spk-radio {
           z-index: 0;
           --spk-radio-dot-opacity: 1;
 
