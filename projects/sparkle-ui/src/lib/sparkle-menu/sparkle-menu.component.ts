@@ -119,7 +119,9 @@ export class SparkleMenuComponent {
             (el) => el.getAttribute('value') === this.selectedOption()?.getAttribute('value')
           );
 
-          this.optionInFocus.set(selectedIndex > -1 ? selectedIndex : 0);
+          if (this.optionInFocus() === null) {
+            this.optionInFocus.set(selectedIndex > -1 ? selectedIndex : 0);
+          }
         }, 0);
 
         window.addEventListener('resize', () => this.calculateMenuPosition(), { signal: this.controller?.signal });
@@ -223,7 +225,6 @@ export class SparkleMenuComponent {
 
   close(action: 'closed' | 'selected' = 'closed') {
     this.controller?.abort();
-    this.optionInFocus.set(null);
     this.isActive.set(false);
     this.closeAction.emit(action);
   }

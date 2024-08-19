@@ -136,7 +136,6 @@ export class SparkleSelectComponent {
       'focus',
       () => {
         this.isOpen.set(true);
-        // this.optionInFocus.set(0);
 
         if (this.inputField) {
           this.inputField.blur();

@@ -111,6 +111,37 @@ export const routes: Routes = [
         loadComponent: () => import('./sparkle/spk-tabs/spk-tabs.component'),
       },
       {
+        path: 'spk-stepper',
+        loadComponent: () => import('./sparkle/spk-stepper/spk-stepper.component'),
+        children: [
+          {
+            path: '',
+            redirectTo: 'step-1',
+            pathMatch: 'full',
+          },
+          {
+            path: 'step-1',
+            loadComponent: () => import('./sparkle/spk-stepper/step-1.component'),
+          },
+          {
+            path: 'step-2',
+            loadComponent: () => import('./sparkle/spk-stepper/step-2.component'),
+          },
+          {
+            path: 'step-3',
+            loadComponent: () => import('./sparkle/spk-stepper/step-3.component'),
+          },
+          {
+            path: 'step-4',
+            loadComponent: () => import('./sparkle/spk-stepper/step-4.component'),
+          },
+          {
+            path: 'step-5',
+            loadComponent: () => import('./sparkle/spk-stepper/step-5.component'),
+          },
+        ],
+      },
+      {
         path: 'spk-dialog',
         loadComponent: () => import('./sparkle/spk-dialog/spk-dialog.component'),
       },

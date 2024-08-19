@@ -5,7 +5,7 @@
     "ng": "ng",
     "gen:font": "bun ./dist/sparkle-ui/bin/sparkle-fg --src='./projects/design-system/src' --out='./projects/design-system/public' --rootPath='/' --verbose",
     "watch:font": "bun ./dist/sparkle-ui/bin/sparkle-fg --src='./projects/design-system/src' --out='./projects/design-system/public' --rootPath='/' --watch --verbose",
-    "start": "bun run watch:font & ng serve",
+    "start": "bun run watch:font & ng serve --port=4205",
     "build": "ng build sparkle-ui",
     "build:prod": "ng build sparkle-ui --configuration production",
     "watch": "ng build sparkle-ui --watch --configuration development",
