@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import { Glob } from 'bun';
-import { watch } from 'fs';
+import { FSWatcher, watch } from 'fs';
 import { join, resolve } from 'path';
 import subsetFont from 'subset-font';
 import { formatFileSize, mapUnicodesToGlyphs } from './utilities';
@@ -187,13 +187,14 @@ export const main = async (values: InputArguments) => {
   const GLYPH_MAP = mapUnicodesToGlyphs(cssText);
 
   const LIB_ICONS = packageJson.libraryIcons as string[];
+  let watchers: FSWatcher[] = [];
 
   textMateSnippet(GLYPH_MAP);
   writeCssFile(PROJECT_PUBLIC, values, TARGET_FONT_TYPE);
 
   if (values.watch) {
     const excludeFolders = ['node_modules', '.git', '.vscode', 'bin', 'assets'].concat([PROJECT_PUBLIC]);
-    watch(PROJECT_SRC, { recursive: true }, (_, filename) => {
+    const watcher = watch(PROJECT_SRC, { recursive: true }, (_, filename) => {
       if (
         filename && // Ensure filename is provided (can be null in some cases)
         !excludeFolders.some((folder) => resolve(join(PROJECT_SRC, filename)).includes(folder))
@@ -201,16 +202,35 @@ export const main = async (values: InputArguments) => {
         run(PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
       }
     });
+
+    watchers.push(watcher);
   }
 
   if (values.watchLib) {
-    watch(packageJsonPath, {}, async (_, filename) => {
+    const watcher = watch(packageJsonPath, {}, async (_, filename) => {
       const packageJson = await Bun.file(packageJsonPath).json();
       const newLibIcons = packageJson.libraryIcons as string[];
 
       run(PROJECT_SRC, newLibIcons, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
     });
+
+    watchers.push(watcher);
   }
 
   run(PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
+
+  let callAmount = 0;
+
+  process.on('SIGINT', function () {
+    if (callAmount < 1) {
+      console.log(`✅ The icon font generation watch process has been stopped.`);
+
+      setTimeout(() => {
+        watchers.forEach((watcher) => watcher.close());
+        process.exit();
+      }, 1000);
+    }
+
+    callAmount++;
+  });
 };
