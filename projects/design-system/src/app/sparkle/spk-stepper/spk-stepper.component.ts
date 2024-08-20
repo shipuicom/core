@@ -1,7 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { SparkleIconComponent, SparkleRadioComponent } from '@sparkle-ui/core';
-import { SparkleStepperComponent } from '../../../../../sparkle-ui/src/public-api';
+import {
+  SparkleIconComponent,
+  SparkleRadioComponent,
+  SparkleStepperComponent,
+} from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-stepper',
