@@ -19,11 +19,9 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
   template: `
     <div #inputWrapper>
       <spk-form-field (click)="open($event)">
-        <ng-container spkLabel>
-          <ng-content select="[spkLabel]"></ng-content>
-        </ng-container>
+        <ng-content select="label" ngProjectAs="label"></ng-content>
 
-        <div class="input" spkInput>
+        <div class="input" ngProjectAs="input">
           @if ((_displayValue() && isSearchInput() && !isOpen()) || (_displayValue() && !isSearchInput())) {
             <div class="display-value">{{ _displayValue() }}</div>
           }

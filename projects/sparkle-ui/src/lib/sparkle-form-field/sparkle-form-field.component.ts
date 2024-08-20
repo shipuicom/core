@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } 
   standalone: true,
   imports: [],
   template: `
-    <ng-content select="[spkLabel]"></ng-content>
+    <ng-content select="label"></ng-content>
 
     <div class="input-wrap">
       <div class="prefix">
@@ -15,7 +15,8 @@ import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } 
 
       <div class="prefix-spacer"></div>
 
-      <ng-content select="[spkInput]"></ng-content>
+      <ng-content select="input"></ng-content>
+      <ng-content select="textarea"></ng-content>
 
       <ng-content select="[spkTextSuffix]"></ng-content>
       <div class="suffix-spacer"></div>

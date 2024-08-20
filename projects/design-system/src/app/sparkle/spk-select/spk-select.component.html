@@ -10,7 +10,8 @@
   <spk-icon>magnifying-glass</spk-icon>
 
   <spk-select>
-    <input type="search" tabindex="1" placeholder="Search..." [formControl]="inputSearchCtrl" />
+    <label for="search">Search</label>
+    <input type="search" id="search" tabindex="1" placeholder="Search..." [formControl]="inputSearchCtrl" />
 
     <ng-container options>
       @for (food of localFilteredFoods(); track $index) {
