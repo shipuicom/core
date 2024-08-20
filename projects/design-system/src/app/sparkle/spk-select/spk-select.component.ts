@@ -1,17 +1,26 @@
 import { ChangeDetectionStrategy, Component, computed, model, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { SparkleIconComponent, SparkleSelectComponent } from '../../../../../sparkle-ui/src/public-api';
+import {
+  SparkleIconComponent,
+  SparkleSelectComponent,
+  SparkleSelectOldComponent,
+} from '../../../../../sparkle-ui/src/public-api';
 
 type Food = {
   value: string;
   label: string;
 };
 
+type FoodGroup = {
+  label: string;
+  foods: Food[];
+};
+
 @Component({
   selector: 'app-spk-select',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, SparkleSelectComponent, SparkleIconComponent],
+  imports: [FormsModule, ReactiveFormsModule, SparkleSelectComponent, SparkleIconComponent, SparkleSelectOldComponent],
   templateUrl: './spk-select.component.html',
   styleUrl: './spk-select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,8 +28,54 @@ type Food = {
 export default class SpkSelectComponent {
   inputCtrl = new FormControl<string | null>(null);
   inputSearchCtrl = new FormControl<string>('');
+  inputSearchCtrl2 = new FormControl<string>('');
+  inputSearchCtrl3 = new FormControl<string>('');
   inputSearchCtrlSignal = toSignal(this.inputSearchCtrl.valueChanges);
+  inputSearchCtrl2Signal = toSignal(this.inputSearchCtrl2.valueChanges);
+  inputSearchCtrl3Signal = toSignal(this.inputSearchCtrl3.valueChanges);
   search = model('');
+
+  foodGroups = signal<FoodGroup[]>([
+    {
+      label: 'Meat',
+      foods: [
+        { value: 'steak-0', label: 'Steak' },
+        { value: 'pizza-1', label: 'Pizza' },
+      ],
+    },
+    {
+      label: 'Vegetables',
+      foods: [
+        { value: 'tacos-2', label: 'Tacos' },
+        { value: 'burger-3', label: 'Burger' },
+      ],
+    },
+    {
+      label: 'Fruits',
+      foods: [
+        { value: 'sushi-4', label: 'Sushi' },
+        { value: 'pasta-5', label: 'Pasta' },
+      ],
+    },
+    {
+      label: 'Snacks',
+      foods: [
+        { value: 'salad-6', label: 'Salad' },
+        { value: 'sandwich-7', label: 'Sandwich' },
+      ],
+    },
+  ]);
+
+  filteredFoodGroups = computed(() => {
+    return this.inputSearchCtrl3Signal()
+      ? this.foodGroups()
+          .filter((x) => x.foods.some((y) => y.label.toLowerCase().includes(this.inputSearchCtrl3Signal()!)))
+          .map((x) => ({
+            ...x,
+            foods: x.foods.filter((y) => y.label.toLowerCase().includes(this.inputSearchCtrl3Signal()!)),
+          }))
+      : this.foodGroups();
+  });
 
   foods = signal<Food[]>([
     { value: 'steak-0', label: 'Steak' },
@@ -80,11 +135,27 @@ export default class SpkSelectComponent {
     this.search() ? this.foods().filter((x) => x.label.toLowerCase().includes(this.search())) : this.foods()
   );
 
-  otherFilteredFoods = computed(() =>
+  localFilteredFoods = computed(() =>
     this.inputSearchCtrlSignal()
       ? this.foods().filter((x) => x.label.toLowerCase().includes(this.inputSearchCtrlSignal()!))
       : this.foods()
   );
+
+  apiFilteredFoods = signal<Food[]>(this.foods());
+  otherFilteredFoods = computed(() => {
+    this.fakeApi(this.inputSearchCtrl2Signal() ?? '')
+      .then((x) => this.apiFilteredFoods.set(x as Food[]))
+      .catch((err) => console.error(err));
+    return this.apiFilteredFoods();
+  });
+
+  fakeApi(search: string) {
+    return new Promise((resolve) =>
+      setTimeout(() => {
+        resolve(search ? this.foods().filter((x) => x.label.toLowerCase().includes(search)) : this.foods());
+      }, 150)
+    );
+  }
 
   clicked(val: Food['value']) {
     console.log('clicked: ', val);

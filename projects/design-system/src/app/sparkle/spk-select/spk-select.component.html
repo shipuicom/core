@@ -6,13 +6,54 @@
     inputCtrl: {{ inputCtrl.value }}
     inputSearchCtrl: {{ inputSearchCtrl.value }}
   </pre>
+  <spk-icon>x-circle</spk-icon>
+  <spk-icon>magnifying-glass</spk-icon>
 
-  <spk-select (selectedChange)="selectedChange($event)">
-    <!-- <label spkLabel>
-      Label
-      <spk-icon>question</spk-icon>
-    </label> -->
+  <spk-select>
+    <input type="search" placeholder="Search..." [formControl]="inputSearchCtrl" />
 
+    <ng-container options>
+      @for (food of localFilteredFoods(); track $index) {
+        <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
+      }
+    </ng-container>
+  </spk-select>
+
+  <spk-select>
+    <input type="search" placeholder="Search..." [formControl]="inputSearchCtrl2" />
+
+    <ng-container options>
+      @for (food of otherFilteredFoods(); track $index) {
+        <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
+      }
+    </ng-container>
+  </spk-select>
+
+  <spk-select [displayValue]="displayFn(inputCtrl.value ?? '')">
+    <input type="text" placeholder="Select an option..." [formControl]="inputCtrl" />
+
+    <ng-container options>
+      @for (food of foods(); track $index) {
+        <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
+      }
+    </ng-container>
+  </spk-select>
+
+  <spk-select [displayValue]="displayFn(inputSearchCtrl3.value ?? '')">
+    <input type="search" placeholder="Search..." [formControl]="inputSearchCtrl3" />
+
+    <ng-container options>
+      @for (foodGroup of filteredFoodGroups(); track $index) {
+        <div spk-title>{{ foodGroup.label }}</div>
+
+        @for (food of foodGroup.foods; track $index) {
+          <option [value]="food.value">{{ food.label }}</option>
+        }
+      }
+    </ng-container>
+  </spk-select>
+
+  <!-- <spk-select-old (selectedChange)="selectedChange($event)">
     <spk-icon open-indicator>circle</spk-icon>
 
     <input type="search" [(ngModel)]="search" />
@@ -20,32 +61,28 @@
     @for (food of filteredFoods(); track $index) {
       <option option [value]="food.value" (click)="clicked(food.value)">{{ food.label }} - ({{ $index }})</option>
     }
+  </spk-select-old>
 
-    <!-- <span spkHint>Hint</span>
-
-    <span spkHint>{{ search()?.length ?? 0 }}/10</span> -->
-  </spk-select>
-
-  <spk-select [displayValue]="displayFn(inputCtrl.value ?? '')" [displayString]="'el.label (el.value)'">
+  <spk-select-old [displayValue]="displayFn(inputCtrl.value ?? '')" [displayString]="'el.label (el.value)'">
     <option option [value]="null" (click)="inputCtrl.setValue(null)">Select...</option>
     @for (food of foods(); track $index) {
       <option option [value]="food.value" (click)="inputCtrl.setValue(food.value)">{{ food.label }}</option>
     }
-  </spk-select>
+  </spk-select-old>
 
-  <spk-select [displayValue]="displayFn(inputCtrl.value ?? '')" [displayString]="'el.label (el.value)'">
+  <spk-select-old [displayValue]="displayFn(inputCtrl.value ?? '')" [displayString]="'el.label (el.value)'">
     <input type="text" [formControl]="inputCtrl" />
 
     @for (food of foods(); track $index) {
       <option option [value]="food.value" (click)="inputCtrl.setValue(food.value)">{{ food.label }}</option>
     }
-  </spk-select>
+  </spk-select-old>
 
-  <spk-select [displayValue]="displayFn(inputSearchCtrl.value ?? '')" [displayString]="'el.label (el.value)'">
+  <spk-select-old [displayValue]="displayFn(inputSearchCtrl.value ?? '')" [displayString]="'el.label (el.value)'">
     <input type="search" [formControl]="inputSearchCtrl" />
 
     @for (food of otherFilteredFoods(); track $index) {
       <option option [value]="food.value" (click)="inputSearchCtrl.setValue(food.value)">{{ food.label }}</option>
     }
-  </spk-select>
+  </spk-select-old> -->
 </section>
