@@ -50,10 +50,10 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
     </div>
 
     @if (isOpen()) {
-      <div class="options sparkle-popup-menu active" #optionsRef [style]="optionsStyle()">
-        <div class="sparkle-menu-backdrop" (click)="close()"></div>
+      <div class="sparkle-popup-menu" [class.active]="delayedIsOpen()" #optionsRef [style]="optionsStyle()">
+        <div class="sparkle-options-backdrop" (click)="close()"></div>
         <div class="sparkle-options">
-          <div class="placerholder"><ng-content select="[placeholder-text]" /></div>
+          <div class="sparkle-options-placerholder"><ng-content select="[placeholder-text]" /></div>
           <ng-content select="[options]"></ng-content>
         </div>
       </div>
@@ -64,6 +64,7 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 export class SparkleSelectComponent {
   above = input<boolean>(false);
   right = input<boolean>(false);
+  onlyOptionsAllowed = input<boolean>(false);
   displayValue = input<string | null>('');
 
   #BASE_SPACE = 8;
@@ -84,6 +85,7 @@ export class SparkleSelectComponent {
   isSearchInput = computed(() => this.#inputRef()?.type === 'search');
   optionsEl = computed(() => this.optionsRef()?.nativeElement);
   isOpen = signal(false);
+  delayedIsOpen = signal(false);
   hasBeenOpened = signal(false);
   abortController: AbortController | null = null;
   optionInFocus = signal<number>(0);
@@ -99,7 +101,16 @@ export class SparkleSelectComponent {
 
   optionsOpenController: AbortController | null = null;
 
-  #optionInFocusEffect = effect(() => this.isOpen() && this.computeFocusedElement());
+  #optionInFocusEffect = effect(() => {
+    if (this.isOpen()) {
+      this.computeFocusedElement();
+    }
+
+    setTimeout(() => {
+      this.delayedIsOpen.set(this.isOpen());
+    }, 0);
+  });
+
   #whenInputValueChanged = effect(
     () => {
       if (this.#inputRef()) {
@@ -137,8 +148,9 @@ export class SparkleSelectComponent {
   ngOnInit() {
     this.abortController = new AbortController();
 
+    this.#setOptionsElement();
+
     this.#inputRef()?.addEventListener('focus', (e: FocusEvent) => this.open(e));
-    this.#inputRef()?.addEventListener('blur', () => this.close());
     this.#inputRef()?.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         this.close();
@@ -158,6 +170,8 @@ export class SparkleSelectComponent {
         if (this.optionInFocus() > -1) {
           this.selected(this.getOptionElement(this.optionInFocus() as number));
         }
+      } else if (e.key === 'Tab') {
+        this.close(true);
       } else {
         this.optionInFocus.set(0);
       }
@@ -194,20 +208,49 @@ export class SparkleSelectComponent {
   }
 
   selected(el: HTMLOptionElement) {
-    this.#inputValue.set(el.getAttribute('value') ?? '');
-    this.isOpen.set(false);
-    this.hasBeenOpened.set(false);
-    this.#inputRef()?.blur();
+    if (el) {
+      this.#inputValue.set(el.getAttribute('value') ?? '');
+    }
+
+    if (this.onlyOptionsAllowed() && !el) {
+      this.#inputValue.set('');
+    } else {
+      this.isOpen.set(false);
+      this.hasBeenOpened.set(false);
+      this.#inputRef()?.blur();
+    }
   }
 
-  close() {
+  #body = document.getElementsByTagName('body')[0];
+
+  #setOptionsElement() {
+    setTimeout(() => {
+      if (this.optionsEl()) {
+        this.#body.appendChild(this.optionsEl()!);
+        this.#triggerOption.set(!this.#triggerOption());
+      }
+    });
+  }
+
+  #hideOptionsElement() {
+    setTimeout(() => {
+      if (this.optionsEl()) {
+        this.#body.removeChild(this.optionsEl()!);
+        this.#triggerOption.set(!this.#triggerOption());
+      }
+    });
+  }
+
+  close(noBlur = false) {
     if (this.isSearchInput() && this.#previousInputValue()) {
       setTimeout(() => this.#inputValue.set(this.#previousInputValue()));
     }
 
+    this.#hideOptionsElement();
+
     this.isOpen.set(false);
     this.hasBeenOpened.set(false);
-    this.#inputRef()?.blur();
+    noBlur || this.#inputRef()?.blur();
     this.#killMenuCalculation();
     this.#childListObserver.disconnect();
   }
@@ -216,6 +259,7 @@ export class SparkleSelectComponent {
     e.preventDefault();
 
     this.isOpen.set(true);
+    this.#setOptionsElement();
 
     if (this.isSearchInput() && !this.hasBeenOpened()) {
       this.#previousInputValue.set(this.#inputValue());

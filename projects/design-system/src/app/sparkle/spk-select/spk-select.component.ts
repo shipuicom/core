@@ -1,11 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, model, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import {
-  SparkleIconComponent,
-  SparkleSelectComponent,
-  SparkleSelectOldComponent,
-} from '../../../../../sparkle-ui/src/public-api';
+import { SparkleIconComponent, SparkleSelectComponent } from '../../../../../sparkle-ui/src/public-api';
 
 type Food = {
   value: string;
@@ -20,7 +16,7 @@ type FoodGroup = {
 @Component({
   selector: 'app-spk-select',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, SparkleSelectComponent, SparkleIconComponent, SparkleSelectOldComponent],
+  imports: [FormsModule, ReactiveFormsModule, SparkleSelectComponent, SparkleIconComponent],
   templateUrl: './spk-select.component.html',
   styleUrl: './spk-select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

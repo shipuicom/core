@@ -1,6 +1,6 @@
 {
   "name": "@sparkle-ui/core",
-  "version": "0.1.76",
+  "version": "0.1.77",
   "peerDependencies": {
     "@angular/common": "^18.0.0",
     "@angular/core": "^18.0.0"
