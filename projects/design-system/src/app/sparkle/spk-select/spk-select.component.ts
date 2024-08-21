@@ -145,6 +145,16 @@ export default class SpkSelectComponent {
     return this.apiFilteredFoods();
   });
 
+  ngOnInit() {
+    const randomFood = this.foods()[Math.floor(Math.random() * this.foods().length)];
+
+    setTimeout(() => {
+      console.log('randomFood: ', randomFood);
+      this.inputSearchCtrl.setValue(randomFood.value);
+      this.inputSearchCtrl3.setValue(randomFood.value);
+    }, 500);
+  }
+
   fakeApi(search: string) {
     return new Promise((resolve) =>
       setTimeout(() => {
