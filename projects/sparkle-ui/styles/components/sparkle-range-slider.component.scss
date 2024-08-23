@@ -144,13 +144,13 @@ $sparkleRangeSlider: false !default;
 
       &:after {
         content: '';
-        border-top: 6px solid var(--spk-range-slider-thumb-value-bg);
-        border-left: 6px solid transparent;
-        border-right: 6px solid transparent;
+        border-top: p2r(6) solid var(--spk-range-slider-thumb-value-bg);
+        border-left: p2r(6) solid transparent;
+        border-right: p2r(6) solid transparent;
         position: absolute;
         top: 100%;
         left: 50%;
-        margin-left: -6px;
+        margin-left: -p2r(6);
       }
     }
 

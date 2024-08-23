@@ -1,25 +1,27 @@
+@use 'helpers' as *;
+
 :host {
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  padding: 40px;
+  gap: p2r(40);
+  padding: p2r(40);
 }
 
 .wrap {
   display: grid;
-  grid-template-columns: 60px 60px 60px 60px;
-  gap: 40px;
+  grid-template-columns: p2r(60 60 60 60);
+  gap: p2r(40);
 }
 
 .elements {
   display: grid;
-  grid-template-columns: 20px 20px;
-  gap: 20px 10px;
+  grid-template-columns: p2r(20 20);
+  gap: p2r(20 10);
 }
 
 .example-radio-row {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: p2r(10);
 }

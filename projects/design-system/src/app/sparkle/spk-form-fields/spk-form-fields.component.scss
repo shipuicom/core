@@ -1,3 +1,5 @@
+@use 'helpers' as *;
+
 :host {
   display: block;
 }
@@ -5,7 +7,7 @@
 .example {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 40px;
-  max-width: 600px;
+  gap: p2r(20);
+  padding: p2r(40);
+  max-width: p2r(600);
 }

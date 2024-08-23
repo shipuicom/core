@@ -13,7 +13,7 @@ $sparkleAlert: false !default;
     --spk-alert-box-shadow: var(--box-shadow-10);
     --spk-alert-box-shadow: light-dark(var(--box-shadow-10), var(--box-shadow-60));
 
-    max-height: 300px;
+    max-height: #{p2r(300)};
     padding-top: 0;
     padding-bottom: 0;
     margin-bottom: 0;

@@ -4,6 +4,7 @@
 
 $initialize-mat-core: true !default;
 
+@import './helpers.scss';
 @import './core/palette-variables.scss';
 
 @mixin palette($palette, $name) {
@@ -33,35 +34,35 @@ html body {
   @include palette($ruby-palette, warn);
   @include palette($emerald-palette, success);
 
-  --display-10: 600 80px / normal Inter Tight, sans-serif;
-  --display-20: 600 72px / normal Inter Tight, sans-serif;
-  --display-30: 600 64px / normal Inter Tight, sans-serif;
-  --display-40: 600 56px / normal Inter Tight, sans-serif;
-  --display-50: 600 48px / normal Inter Tight, sans-serif;
+  --display-10: 600 #{p2r(80)} / normal Inter Tight, sans-serif;
+  --display-20: 600 #{p2r(72)} / normal Inter Tight, sans-serif;
+  --display-30: 600 #{p2r(64)} / normal Inter Tight, sans-serif;
+  --display-40: 600 #{p2r(56)} / normal Inter Tight, sans-serif;
+  --display-50: 600 #{p2r(48)} / normal Inter Tight, sans-serif;
 
-  --title-10: 500 40px / normal Inter Tight, sans-serif;
-  --title-20: 500 32px / normal Inter Tight, sans-serif;
-  --title-30: 500 24px / normal Inter Tight, sans-serif;
+  --title-10: 500 #{p2r(40)} / normal Inter Tight, sans-serif;
+  --title-20: 500 #{p2r(32)} / normal Inter Tight, sans-serif;
+  --title-30: 500 #{p2r(24)} / normal Inter Tight, sans-serif;
 
-  --title-10B: 600 40px / normal Inter Tight, sans-serif;
-  --title-20B: 600 32px / normal Inter Tight, sans-serif;
-  --title-30B: 600 24px / normal Inter Tight, sans-serif;
+  --title-10B: 600 #{p2r(40)} / normal Inter Tight, sans-serif;
+  --title-20B: 600 #{p2r(32)} / normal Inter Tight, sans-serif;
+  --title-30B: 600 #{p2r(24)} / normal Inter Tight, sans-serif;
 
-  --paragraph-10: 500 18px / normal Inter Tight, sans-serif;
-  --paragraph-20: 500 16px / normal Inter Tight, sans-serif;
-  --paragraph-30: 500 14px / normal Inter Tight, sans-serif;
-  --paragraph-40: 500 12px / normal Inter Tight, sans-serif;
+  --paragraph-10: 500 #{p2r(18)} / normal Inter Tight, sans-serif;
+  --paragraph-20: 500 #{p2r(16)} / normal Inter Tight, sans-serif;
+  --paragraph-30: 500 #{p2r(14)} / normal Inter Tight, sans-serif;
+  --paragraph-40: 500 #{p2r(12)} / normal Inter Tight, sans-serif;
 
-  --paragraph-10B: 600 18px / normal Inter Tight, sans-serif;
-  --paragraph-20B: 600 16px / normal Inter Tight, sans-serif;
-  --paragraph-30B: 600 14px / normal Inter Tight, sans-serif;
-  --paragraph-40B: 600 12px / normal Inter Tight, sans-serif;
+  --paragraph-10B: 600 #{p2r(18)} / normal Inter Tight, sans-serif;
+  --paragraph-20B: 600 #{p2r(16)} / normal Inter Tight, sans-serif;
+  --paragraph-30B: 600 #{p2r(14)} / normal Inter Tight, sans-serif;
+  --paragraph-40B: 600 #{p2r(12)} / normal Inter Tight, sans-serif;
 
-  --shape-1: 4px;
-  --shape-2: 8px;
-  --shape-3: 12px;
-  --shape-4: 16px;
-  --shape-5: 20px;
+  --shape-1: #{p2r(4)};
+  --shape-2: #{p2r(8)};
+  --shape-3: #{p2r(12)};
+  --shape-4: #{p2r(16)};
+  --shape-5: #{p2r(20)};
 
   --box-shadow-10: 0 1px 2px 0 rgba(18, 18, 23, 0.07);
   --box-shadow-20: 0 1px 3px 0 rgba(18, 18, 23, 0.1);
@@ -147,7 +148,6 @@ html body {
 $use-inter-tight: true !default;
 $use-apexcharts: true !default;
 
-@import './helpers.scss';
 // @import './core/fonts/phosphor-icons';
 // @if ($use-inter-tight == true) {
 @import './core/fonts/inter-tight';

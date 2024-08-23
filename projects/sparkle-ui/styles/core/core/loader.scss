@@ -1,6 +1,6 @@
 .loader {
-  width: 48px;
-  height: 48px;
+  width: p2r(48);
+  height: p2r(48);
   display: grid;
   place-content: center;
   color: var(--base-level-60);
@@ -12,8 +12,8 @@
 
   &:before {
     content: '';
-    width: 16px;
-    height: 16px;
+    width: p2r(16);
+    height: p2r(16);
     border: 2px solid var(--loading-color);
     border-bottom-color: transparent;
     border-radius: 50%;

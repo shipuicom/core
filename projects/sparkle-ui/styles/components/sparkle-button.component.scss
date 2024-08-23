@@ -2,7 +2,7 @@ $sparkleButton: false !default;
 
 @if $sparkleButton == true {
   [spk-button] {
-    --btn-height: 40px;
+    --btn-height: #{p2r(40)};
     --btn-shape: var(--shape-2);
     --btn-font: var(--paragraph-20);
     --loading-color: var(--base-level-60);
@@ -66,7 +66,7 @@ $sparkleButton: false !default;
     }
 
     &.small {
-      --btn-height: 32px;
+      --btn-height: #{p2r(32)};
       --btn-font: var(--paragraph-30);
 
       padding: p2r(0 8);

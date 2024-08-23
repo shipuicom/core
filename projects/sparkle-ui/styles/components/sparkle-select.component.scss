@@ -8,7 +8,7 @@ $sparkleSelect: false !default;
 
     .deselect-indicator,
     .select-open-indicator {
-      height: 20px;
+      height: p2r(20);
       transform: rotate(0deg);
       transition: transform 75ms linear;
       transform-origin: center;
@@ -18,7 +18,7 @@ $sparkleSelect: false !default;
       }
 
       > * {
-        height: 20px;
+        height: p2r(20);
         display: inline-block;
       }
 
@@ -29,7 +29,7 @@ $sparkleSelect: false !default;
 
     .search-indicator {
       > * {
-        height: 20px;
+        height: p2r(20);
         display: inline-block;
       }
 
