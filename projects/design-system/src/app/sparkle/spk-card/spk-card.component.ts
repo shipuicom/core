@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import SparkleToggleCardComponent from '../../../../../sparkle-ui/src/lib/sparkle-toggle-card/sparkle-toggle-card.component';
 import { SparkleCardComponent } from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-card',
   standalone: true,
-  imports: [SparkleCardComponent],
+  imports: [SparkleCardComponent, SparkleToggleCardComponent],
   templateUrl: './spk-card.component.html',
   styleUrl: './spk-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,0 +1,51 @@
+$sparkleToggleCard: false !default;
+
+@if $sparkleToggleCard == true {
+  spk-toggle-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--shape-3);
+    background-color: var(--base-level-20);
+
+    &.active {
+      .content {
+        max-height: 1000px;
+        transition: max-height 1s linear;
+        padding: p2r(0 16 16);
+      }
+
+      spk-icon {
+        transform: rotate(180deg);
+      }
+    }
+
+    h3 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font: var(--paragraph-10);
+      padding: p2r(16);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    spk-icon {
+      transform: rotate(0);
+      transform-origin: center;
+      transition: transform 200ms ease;
+    }
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: p2r(16);
+
+      padding: p2r(0 16 0);
+      overflow: hidden;
+      max-height: 0;
+      transition:
+        max-height 250ms linear,
+        padding 250ms linear;
+    }
+  }
+}

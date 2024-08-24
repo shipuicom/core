@@ -2,3 +2,23 @@
   <h3>Type A</h3>
   <spk-card class="type-a">hello world</spk-card>
 </div>
+
+<div class="example">
+  <h3>Toggle card</h3>
+
+  <spk-toggle-card [isActive]="false">
+    <ng-container title>Advanced options</ng-container>
+
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+  </spk-toggle-card>
+</div>
+
+<div class="example">
+  <h3>Toggle card with toggle disallowed</h3>
+
+  <spk-toggle-card [disallowToggle]="true">
+    <ng-container title>Advanced options</ng-container>
+
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+  </spk-toggle-card>
+</div>

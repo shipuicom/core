@@ -1,0 +1,14 @@
+$sparkleFileUpload: false !default;
+
+@if $sparkleFileUpload == true {
+  spk-file-upload {
+    display: flex;
+    flex-direction: column;
+    gap: p2r(12);
+
+    spk-list {
+      border-radius: var(--shape-3);
+      background-color: var(--base-level-20);
+    }
+  }
+}

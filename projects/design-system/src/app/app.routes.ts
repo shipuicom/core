@@ -142,6 +142,10 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'spk-file-upload',
+        loadComponent: () => import('./sparkle/spk-file-upload/spk-file-upload.component'),
+      },
+      {
         path: 'spk-dialog',
         loadComponent: () => import('./sparkle/spk-dialog/spk-dialog.component'),
       },
