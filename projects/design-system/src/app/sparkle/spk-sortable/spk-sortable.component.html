@@ -1,0 +1,32 @@
+<spk-sortable [(items)]="items">
+  <ng-template #templateOne let-item>
+    <h1 sort-handle style="color: red">{{ item.header }}</h1>
+    <div>{{ item.content }}</div>
+  </ng-template>
+
+  <ng-template #templateTwo let-item>
+    <h1 sort-handle>{{ item.header }}</h1>
+    <div>{{ item.content }}</div>
+  </ng-template>
+</spk-sortable>
+
+<!-- 
+  Perfect world for sortable
+  
+  Challange 
+    - Updating the items signal after ended sorting
+
+  <spk-sortable>
+    @for(item of items(); track $index) {
+      <div sort-item>{{ item() }}</div>
+    }
+  </spk-sortable>
+
+  Alternative:
+
+  <spk-sortable [(items)]="items">
+    @for(item of items(); track $index) {
+      <div sort-item>{{ item() }}</div>
+    }
+  </spk-sortable>
+-->

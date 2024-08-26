@@ -23,6 +23,7 @@ export * from './lib/sparkle-radio/sparkle-radio.component';
 export * from './lib/sparkle-range-slider/sparkle-range-slider.component';
 export * from './lib/sparkle-select/sparkle-select.component';
 export * from './lib/sparkle-sidenav/sparkle-sidenav.component';
+export * from './lib/sparkle-sortable/sparkle-sortable.component';
 export * from './lib/sparkle-stepper/sparkle-stepper.component';
 export * from './lib/sparkle-toggle-card/sparkle-toggle-card.component';
 export * from './lib/sparkle-toggle/sparkle-toggle.component';

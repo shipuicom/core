@@ -39,6 +39,8 @@ $sparkleList: false !default;
       user-select: none;
       appearance: none;
       border: 0;
+      text-align: left;
+      text-wrap: balance;
       background-color: transparent;
 
       &:focus {
