@@ -2,6 +2,8 @@ $sparkleSidenav: false !default;
 
 @if $sparkleSidenav == true {
   spk-sidenav {
+    --sidenav-width: #{p2r(280)};
+
     display: flex;
     width: 100vw;
     height: 100vh;
@@ -13,7 +15,7 @@ $sparkleSidenav: false !default;
     }
 
     .sidenav {
-      width: p2r(280);
+      width: var(--sidenav-width);
       transition: width 200ms linear;
       height: 100%;
       overflow-x: hidden;
@@ -40,6 +42,134 @@ $sparkleSidenav: false !default;
       border-radius: var(--shape-3);
       height: calc(100vh - 2rem);
       box-shadow: var(--box-shadow-35);
+    }
+
+    .closed-topbar {
+      display: none;
+      min-height: p2r(60);
+      background-color: var(--base-level-10);
+      align-items: center;
+      justify-content: space-between;
+      padding: p2r(0 16);
+      border-bottom: 1px solid var(--base-level-40);
+      z-index: 10000;
+      position: relative;
+    }
+
+    .dragable {
+      display: none;
+    }
+
+    .drag-image {
+      display: none;
+    }
+
+    &.overlay {
+      overflow: hidden;
+
+      .drag-image {
+        display: block;
+        width: p2r(4);
+        height: 40%;
+        background-color: var(--base-level-30);
+        border-radius: p2r(2);
+        box-shadow: none;
+      }
+
+      .sidenav {
+        position: fixed;
+        z-index: 0;
+      }
+
+      .dragable {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 9999;
+        width: 50px;
+        padding-right: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: grab;
+
+        &:active {
+          cursor: grabbing;
+        }
+
+        &:after {
+          content: '';
+          display: block;
+          width: p2r(4);
+          height: 40%;
+          background-color: var(--base-level-30);
+          border-radius: p2r(2);
+        }
+
+        &:hover {
+          &:after {
+            background-color: var(--base-level-40);
+          }
+        }
+      }
+
+      .dropping-surface {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        z-index: 100000;
+        // background: rgba(0, 0, 0, 0.5);
+      }
+
+      .main-wrap {
+        z-index: 1;
+        padding: 0;
+        display: flex;
+        height: 100vh;
+        position: relative;
+        flex-direction: column;
+        transform: translateX(0);
+        transition: transform 200ms linear;
+      }
+
+      &.is-dragging {
+        user-select: none;
+
+        .main-wrap {
+          transition: none;
+        }
+
+        cursor: grabbing;
+
+        > * {
+          cursor: grabbing;
+        }
+
+        .dragable {
+          cursor: grabbing;
+        }
+      }
+
+      &.open .main-wrap {
+        transform: translateX(var(--sidenav-width));
+      }
+
+      .closed-topbar {
+        display: flex;
+
+        &:empty {
+          display: none;
+        }
+      }
+
+      main {
+        border: 0;
+        box-shadow: none;
+        flex: 1 0;
+      }
     }
   }
 }

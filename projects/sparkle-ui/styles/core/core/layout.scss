@@ -16,6 +16,10 @@ body {
   margin: 0;
   font: var(--paragraph-30);
   color: var(--base-level-70);
+
+  &.dragging {
+    overflow: hidden;
+  }
 }
 
 .spacer {

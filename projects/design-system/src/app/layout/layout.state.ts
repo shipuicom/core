@@ -17,11 +17,10 @@ export class LayoutState {
   #storedDarkMode = this.#ls.getItemParsed<boolean>('darkTheme', true);
   #isDarkMode = signal(false);
   #isMobile = signal(this.window?.innerWidth <= 768);
-  #isNavOpen = signal(false);
 
   isDarkMode = this.#isDarkMode.asReadonly();
   isMobile = this.#isMobile.asReadonly();
-  isNavOpen = this.#isNavOpen.asReadonly();
+  isNavOpen = signal(false);
 
   constructor(@Inject('Window') private window: Window) {
     if (isPlatformBrowser(this.#platformId)) {
@@ -49,7 +48,7 @@ export class LayoutState {
   }
 
   toggleNav() {
-    this.#isNavOpen.set(!this.isNavOpen());
+    this.isNavOpen.set(!this.isNavOpen());
   }
 
   toggleBodyClass() {

@@ -1,9 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatListModule } from '@angular/material/list';
-import { MatSidenavModule } from '@angular/material/sidenav';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
+  SparkleButtonComponent,
   SparkleIconComponent,
   SparkleListComponent,
   SparkleSidenavComponent,
@@ -16,10 +14,8 @@ import { LayoutState } from './layout.state';
   imports: [
     SparkleSidenavComponent,
     SparkleListComponent,
-    MatButtonModule,
     SparkleIconComponent,
-    MatListModule,
-    MatSidenavModule,
+    SparkleButtonComponent,
     RouterLink,
     RouterLinkActive,
     RouterOutlet,
@@ -31,9 +27,15 @@ import { LayoutState } from './layout.state';
 export default class LayoutComponent {
   #layoutState = inject(LayoutState);
 
+  isOpen = signal(false);
+  isNavOpen = this.#layoutState.isNavOpen;
   isDarkMode = this.#layoutState.isDarkMode;
 
   toggleBodyClass() {
     this.#layoutState.toggleBodyClass();
+  }
+
+  toggleNav() {
+    this.#layoutState.toggleNav();
   }
 }
