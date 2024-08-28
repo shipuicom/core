@@ -29,5 +29,5 @@ export * from './lib/sparkle-toggle-card/sparkle-toggle-card.component';
 export * from './lib/sparkle-toggle/sparkle-toggle.component';
 
 // Global directives
-export * from './lib/directives/sparkle-drag-drop.directive';
+export * from './lib/directives/sparkle-file-drag-drop.directive';
 export * from './lib/directives/sparkle-prevent-wheel.directive';
