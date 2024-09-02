@@ -12,11 +12,5 @@ import { SparkleSidenavComponent } from '../../../../../sparkle-ui/src/public-ap
 export default class SpkSidenavComponent {
   constructor() {}
 
-  ngOnInit() {
-    for (let count = 0; count < 1000; count++) {
-      console.log('count: ', count);
-
-      const hi = () => {};
-    }
-  }
+  ngOnInit() {}
 }

@@ -37,6 +37,7 @@ import { SparkleButtonComponent } from '../sparkle-button/sparkle-button.compone
           class="dragable"
           draggable="true"
           (dragstart)="dragStart($event)"
+          (dragend)="dragEnd($event)"
           (drag)="drag($event)"
           (touchstart)="touchStart($event)"
           (touchmove)="touchMove($event)"
@@ -68,7 +69,7 @@ export class SparkleSidenavComponent {
 
   dragImageElement = viewChild.required<ElementRef<HTMLDivElement>>('dragImageElement');
   dragIsEnding = signal<boolean>(false);
-  dragIsOnScreen = signal<boolean>(false);
+  dragIsOnScreen = signal<boolean>(true);
   isDragging = signal<boolean>(false);
   dragPositionX = signal<number>(0);
   dragActualPositionX = computed(() => {
@@ -104,8 +105,9 @@ export class SparkleSidenavComponent {
 
   #drop(clientX: number) {
     this.isDragging.set(false);
-
-    if (clientX > this.openWidthTreshold) {
+    if (clientX <= 0) {
+      this.isOpen.set(false);
+    } else if (clientX > this.openWidthTreshold) {
       this.isOpen.set(true);
     } else if (clientX < this.openWidthTreshold) {
       if (!this.isOpen() && clientX < this.openWidthTreshold * 0.6) {
@@ -113,6 +115,12 @@ export class SparkleSidenavComponent {
       } else {
         this.isOpen.set(false);
       }
+    }
+  }
+
+  dragEnd(e: DragEvent) {
+    if (e.clientX < 0 || !this.dragIsOnScreen()) {
+      this.#drop(0);
     }
   }
 

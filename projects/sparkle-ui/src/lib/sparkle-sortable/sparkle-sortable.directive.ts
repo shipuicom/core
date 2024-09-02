@@ -4,6 +4,7 @@ export type AfterDropResponse = {
   fromIndex: number;
   toIndex: number;
 };
+
 @Directive({
   selector: '[spkSortable]',
   standalone: true,
