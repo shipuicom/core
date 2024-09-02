@@ -6,6 +6,7 @@ import {
   ElementRef,
   inject,
   input,
+  Renderer2,
   signal,
   viewChild,
 } from '@angular/core';
@@ -60,6 +61,7 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleSelectComponent {
+  #renderer = inject(Renderer2);
   above = input<boolean>(false);
   right = input<boolean>(false);
   onlyOptionsAllowed = input<boolean>(false);
@@ -211,10 +213,10 @@ export class SparkleSelectComponent {
     for (let i = 0; i < this.#options().length; i++) {
       const option = this.#options()[i];
 
-      option.classList.remove('focused');
+      this.#renderer.removeClass(option, 'focused');
 
       if (this.optionInFocus() === i) {
-        option.classList.add('focused');
+        this.#renderer.addClass(option, 'focused');
         option.scrollIntoView({ block: 'nearest' });
       }
     }
@@ -277,7 +279,7 @@ export class SparkleSelectComponent {
   #setOptionsElement() {
     setTimeout(() => {
       if (this.optionsEl()) {
-        this.#body.appendChild(this.optionsEl()!);
+        this.#renderer.appendChild(this.#body, this.optionsEl()!);
         this.#triggerOption.set(!this.#triggerOption());
       }
     });
@@ -286,7 +288,7 @@ export class SparkleSelectComponent {
   #hideOptionsElement() {
     setTimeout(() => {
       if (this.optionsEl()) {
-        this.#body.removeChild(this.optionsEl()!);
+        this.#renderer.removeChild(this.#body, this.optionsEl()!);
         this.#triggerOption.set(!this.#triggerOption());
       }
     });
@@ -311,10 +313,6 @@ export class SparkleSelectComponent {
 
     this.isOpen.set(true);
     this.#setOptionsElement();
-
-    console.log('this.isSearchInput(): ', this.isSearchInput());
-    console.log('!this.hasBeenOpened(): ', !this.hasBeenOpened());
-    console.log('this.#inputRef(): ', this.#inputRef());
 
     if (this.isSearchInput() && !this.hasBeenOpened()) {
       this.#previousInputValue.set(this.#inputValue() ?? '');

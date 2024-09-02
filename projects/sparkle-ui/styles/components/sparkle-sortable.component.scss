@@ -1,15 +1,18 @@
 $sparkleSortable: false !default;
 
 @if $sparkleSortable == true {
-  spk-sortable {
-    background-color: red;
-
+  [spkSortable] {
     [sort-item] {
       background-color: blue;
     }
 
     [sort-handle] {
       background-color: green;
+    }
+
+    [draggable] {
+      transform: translate(0);
+      transition: transform 80ms linear;
     }
   }
 }
