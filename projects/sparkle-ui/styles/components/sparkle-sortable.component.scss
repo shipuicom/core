@@ -2,17 +2,32 @@ $sparkleSortable: false !default;
 
 @if $sparkleSortable == true {
   [spkSortable] {
-    [sort-item] {
-      background-color: blue;
-    }
+    position: relative;
 
-    [sort-handle] {
-      background-color: green;
+    &.dragging {
+      [draggable] {
+        transition: transform 40ms linear;
+      }
     }
 
     [draggable] {
+      height: auto;
       transform: translate(0);
-      transition: transform 80ms linear;
+      transition: none;
+      z-index: 2;
+    }
+
+    .spk-placeholder {
+      position: absolute;
+      top: 0;
+      z-index: 1;
+    }
+
+    [sort-handle] {
+      cursor: move;
     }
   }
+}
+.sorting-handle {
+  /* or grab */
 }

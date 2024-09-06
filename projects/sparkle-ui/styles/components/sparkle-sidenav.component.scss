@@ -137,12 +137,11 @@ $sparkleSidenav: false !default;
 
       &.is-dragging {
         user-select: none;
+        cursor: grabbing;
 
         .main-wrap {
           transition: none;
         }
-
-        cursor: grabbing;
 
         > * {
           cursor: grabbing;

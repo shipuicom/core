@@ -12,7 +12,8 @@ const CONTENT_EXAMPLE = [
   {
     id: 'id1',
     header: 'Hello',
-    content: 'hello again',
+    content:
+      'hello again, hello againhello againhello againhello againhello againhello againhello againhello againhello againhello againhello againhello again',
   },
 
   {
@@ -43,7 +44,35 @@ const CONTENT_EXAMPLE = [
   },
 ];
 
+const TODOS = [
+  {
+    title: 'Simple sorting of list',
+    done: true,
+  },
+  {
+    title: 'Sorting animation',
+    done: true,
+  },
+  {
+    title: 'Support sortable handle',
+    done: true,
+  },
+  {
+    title: 'Support gap in sorting list ',
+    done: true,
+  },
+  {
+    title: 'Support placeholder',
+    done: true,
+  },
+  {
+    title: 'Support animation only when dragging',
+    done: true,
+  },
+];
+
 type ItemType = (typeof CONTENT_EXAMPLE)[0];
+type Todo = (typeof TODOS)[0];
 
 @Component({
   selector: 'app-spk-sortable',
@@ -54,24 +83,6 @@ type ItemType = (typeof CONTENT_EXAMPLE)[0];
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class SpkSortableComponent {
-  todos = signal([
-    {
-      title: 'Simple sorting of list',
-      done: true,
-    },
-    {
-      title: 'Sorting animation',
-      done: true,
-    },
-    {
-      title: 'Support sortable handle',
-      done: false,
-    },
-    {
-      title: 'Support gap in sorting list ',
-      done: false,
-    },
-  ]);
   items = signal(CONTENT_EXAMPLE);
 
   ngOnInit() {
@@ -80,12 +91,18 @@ export default class SpkSortableComponent {
     }, 800);
   }
 
+  todos = signal(TODOS);
+
   toggleTodo(index: number) {
     this.todos.update((todos) => {
       todos[index].done = !todos[index].done;
 
       return todos;
     });
+  }
+
+  reorderTodo(event: AfterDropResponse) {
+    this.todos.update((arr) => moveIndex<Todo>(arr, event));
   }
 
   reorder(event: AfterDropResponse) {

@@ -1,8 +1,11 @@
-<spk-list>
+<spk-list spkSortable (afterDrop)="reorderTodo($event)">
   @for (todo of todos(); track $index) {
-    <div spk-action-item [class.active]="todo.done" (click)="toggleTodo($index)">
-      <spk-checkbox [class.active]="todo.done" class="primary raised" />
+    <div spk-action-item [attr.draggable]="true" [class.active]="todo.done" (click)="toggleTodo($index)">
+      <spk-icon sort-handle>arrows-out-line-vertical</spk-icon>
+
       {{ todo.title }}
+
+      <spk-checkbox [class.active]="todo.done" class="primary raised" />
     </div>
   }
 </spk-list>
@@ -11,8 +14,13 @@
   <spk-list class="primary" spkSortable (afterDrop)="reorder($event)">
     @for (item of items(); track $index) {
       <div [attr.draggable]="true" spk-list-item>
+        <div sort-handle>
+          <spk-icon>arrows-out-line-vertical</spk-icon>
+        </div>
+
         <spk-icon>circle</spk-icon>
         {{ item.header }} - {{ item.id }}
+        <p>{{ item.content }}</p>
       </div>
     }
   </spk-list>

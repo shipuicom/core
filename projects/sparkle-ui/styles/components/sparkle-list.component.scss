@@ -3,7 +3,6 @@ $sparkleList: false !default;
 @if $sparkleList == true {
   spk-list {
     --list-shape: var(--shape-2);
-    --list-item-height: #{p2r(38)};
     --list-active-bg: var(--base-level-20);
     --list-active-box-shadow: none;
 
@@ -28,8 +27,7 @@ $sparkleList: false !default;
     [spk-action-item],
     [spk-list-item] {
       border-radius: var(--list-shape);
-      padding: p2r(0 12);
-      height: var(--list-item-height);
+      padding: p2r(8 12);
       font: var(--paragraph-30);
       color: var(--base-level-60);
       display: flex;

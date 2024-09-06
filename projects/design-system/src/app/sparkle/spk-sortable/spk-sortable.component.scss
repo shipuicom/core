@@ -1,10 +1,15 @@
 :host {
   display: block;
+  padding: 60px;
 }
 
 spk-list {
   width: 500px;
-  gap: 0;
+  gap: 8px;
+
+  spk-checkbox {
+    margin-left: auto;
+  }
 }
 
 .example {
