@@ -1,4 +1,4 @@
-import { Directive, effect, ElementRef, HostListener, inject, output, signal } from '@angular/core';
+import { Directive, effect, ElementRef, HostListener, inject, output, Renderer2, signal } from '@angular/core';
 
 export type AfterDropResponse = {
   fromIndex: number;
@@ -11,12 +11,13 @@ export type AfterDropResponse = {
 })
 export class SparkleSortableDirective {
   #selfEl = inject(ElementRef<HTMLElement>);
+  #renderer = inject(Renderer2);
   #placeholderEl = signal<HTMLElement | null>(null);
+  #parentGap = signal<number>(0);
 
   dragStartIndex = signal<number>(-1);
   dragToIndex = signal<number>(-1);
   dragables = signal<HTMLElement[]>([]);
-  dragablesHeights = signal<number[]>([]);
   afterDrop = output<AfterDropResponse>();
 
   abortController: AbortController | null = null;
@@ -27,38 +28,44 @@ export class SparkleSortableDirective {
 
     if (currentDragPosIndex > -1 && startIndex > -1) {
       const dragables = this.dragables();
+      const placeholderEl = this.#placeholderEl();
+      const gapValue = this.#parentGap();
       const draggedElement = dragables[startIndex];
-      const parentElement = this.#selfEl.nativeElement; // Get the parent element
-
-      const parentStyle = window.getComputedStyle(parentElement);
-      const gapValue = parseFloat(parentStyle.gap) || 0;
 
       const totalShift = draggedElement.offsetHeight + gapValue;
-      let placeholderElementShift = 0;
+      let placeholderElShift = 0;
 
       if (currentDragPosIndex > startIndex) {
         for (let i = startIndex + 1; i <= currentDragPosIndex; i++) {
-          placeholderElementShift += dragables[i].offsetHeight + gapValue;
+          placeholderElShift += dragables[i].offsetHeight + gapValue;
         }
       } else if (currentDragPosIndex < startIndex) {
         for (let i = startIndex - 1; i >= currentDragPosIndex; i--) {
-          placeholderElementShift -= dragables[i].offsetHeight + gapValue;
+          placeholderElShift -= dragables[i].offsetHeight + gapValue;
         }
       }
 
-      if (this.#placeholderEl()) {
-        this.#placeholderEl()!.style.transform = `translateY(${placeholderElementShift}px)`;
+      if (placeholderEl) {
+        const newTransform = `translateY(${placeholderElShift}px)`;
+
+        if (placeholderEl.style.transform !== newTransform) {
+          this.#renderer.setStyle(placeholderEl!, 'transform', newTransform);
+        }
       }
 
       for (let i = 0; i < dragables.length; i++) {
-        if (i === startIndex || i === dragables.length - 1) {
-          continue; // Skip the dragged element
-        } else if (currentDragPosIndex > startIndex && currentDragPosIndex >= i && startIndex < i) {
-          dragables[i].style.transform = `translateY(-${totalShift}px)`;
+        if (i === startIndex || i === dragables.length - 1) continue;
+
+        let newTransform = 'translateY(0)';
+
+        if (currentDragPosIndex > startIndex && currentDragPosIndex >= i && startIndex < i) {
+          newTransform = `translateY(${-totalShift}px)`;
         } else if (currentDragPosIndex < startIndex && currentDragPosIndex <= i && startIndex > i) {
-          dragables[i].style.transform = `translateY(${totalShift}px)`;
-        } else {
-          dragables[i].style.transform = 'translateY(0)';
+          newTransform = `translateY(${totalShift}px)`;
+        }
+
+        if (dragables[i].style.transform !== newTransform) {
+          this.#renderer.setStyle(dragables[i], 'transform', newTransform);
         }
       }
     }
@@ -89,8 +96,8 @@ export class SparkleSortableDirective {
   }
 
   dragEnter(e: DragEvent) {
-    // Find the closest draggable ancestor
     const draggableAncestor = (e.target as HTMLElement).closest('[draggable]');
+
     if (draggableAncestor && !draggableAncestor.classList.contains('spk-placeholder')) {
       this.dragToIndex.set(this.getIndexOfElement(draggableAncestor as HTMLElement));
     }
@@ -107,39 +114,33 @@ export class SparkleSortableDirective {
       let draggedElement: HTMLElement;
 
       if (isSortingHandle) {
-        // If it's a sorting handle, find the closest draggable ancestor
         draggedElement = targetElement.closest('[draggable]') as HTMLElement;
       } else {
-        // If not a sorting handle, use the target element itself
         draggedElement = targetElement;
 
-        // If the dragged element's parent contains a sort-handle, prevent dragging
-        if (draggedElement.parentElement?.querySelector('[sort-handle]') !== null) {
-          e.preventDefault();
-          return;
-        }
-
-        // If the target element is not draggable, prevent default drag behavior
-        if (!draggedElement.draggable) {
+        if (draggedElement.parentElement?.querySelector('[sort-handle]') !== null || !draggedElement.draggable) {
           e.preventDefault();
           return;
         }
       }
 
+      const parentStyle = window.getComputedStyle(draggedElement.parentElement!);
+      this.#parentGap.set(parseFloat(parentStyle.gap) || 0);
+
       const draggedElementIndex = this.getIndexOfElement(draggedElement);
       this.dragStartIndex.set(draggedElementIndex);
-      this.dragables()[draggedElementIndex].style.opacity = '0';
-      this.dragables()[draggedElementIndex].style.zIndex = '2';
-      this.#selfEl.nativeElement.classList.add('dragging');
+      this.#renderer.setStyle(this.dragables()[draggedElementIndex], 'opacity', '0');
+      this.#renderer.setStyle(this.dragables()[draggedElementIndex], 'zIndex', '2');
+      this.#renderer.addClass(this.#selfEl.nativeElement, 'dragging');
 
       setTimeout(() => {
         const placeholderElement = draggedElement.cloneNode(true) as HTMLElement;
-        placeholderElement.classList.add('spk-placeholder');
-        placeholderElement.style.left = `${draggedElement.offsetLeft}px`;
-        placeholderElement.style.width = `${draggedElement.offsetWidth}px`;
-        placeholderElement.style.top = `${draggedElement.offsetTop}px`;
-        placeholderElement.style.zIndex = '1';
-        placeholderElement.style.opacity = '.4';
+        this.#renderer.addClass(placeholderElement, 'spk-placeholder');
+        this.#renderer.setStyle(placeholderElement, 'left', `${draggedElement.offsetLeft}px`);
+        this.#renderer.setStyle(placeholderElement, 'width', `${draggedElement.offsetWidth}px`);
+        this.#renderer.setStyle(placeholderElement, 'top', `${draggedElement.offsetTop}px`);
+        this.#renderer.setStyle(placeholderElement, 'zIndex', '1');
+        this.#renderer.setStyle(placeholderElement, 'opacity', '.4');
         this.#placeholderEl.set(placeholderElement);
         this.#selfEl.nativeElement.appendChild(placeholderElement);
       });
@@ -158,8 +159,8 @@ export class SparkleSortableDirective {
     e.preventDefault();
   }
 
-  @HostListener('drop', ['$event'])
-  drop(e: DragEvent) {
+  @HostListener('drop')
+  drop() {
     this.#resetStyles();
 
     this.afterDrop.emit({
@@ -177,10 +178,13 @@ export class SparkleSortableDirective {
   }
 
   #resetStyles() {
-    for (let index = 0; index < this.dragables().length; index++) {
-      this.dragables()[index].style.transform = '';
-      this.dragables()[index].style.opacity = '1';
-      this.dragables()[index].style.zIndex = '1';
+    const dragables = this.dragables();
+
+    for (let i = 0; i < dragables.length; i++) {
+      const el = dragables[i];
+      this.#renderer.setStyle(el, 'transform', '');
+      this.#renderer.setStyle(el, 'opacity', '1');
+      this.#renderer.setStyle(el, 'zIndex', '1');
     }
   }
 
@@ -188,11 +192,6 @@ export class SparkleSortableDirective {
     for (var mutation of mutations) {
       if (mutation.type == 'childList') {
         this.dragables.set(Array.from(this.#selfEl.nativeElement.querySelectorAll('[draggable]')));
-        this.dragablesHeights.set(
-          this.dragables().map((el) => {
-            return el.offsetHeight;
-          })
-        );
       }
     }
   });

@@ -69,6 +69,14 @@ const TODOS = [
     title: 'Support animation only when dragging',
     done: true,
   },
+  {
+    title: 'Support multiple lists',
+    done: false,
+  },
+  {
+    title: 'Support draggable grids',
+    done: false,
+  },
 ];
 
 type ItemType = (typeof CONTENT_EXAMPLE)[0];
