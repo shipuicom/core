@@ -6,6 +6,7 @@ import {
   ElementRef,
   inject,
   input,
+  output,
   Renderer2,
   signal,
   viewChild,
@@ -62,10 +63,12 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 })
 export class SparkleSelectComponent {
   #renderer = inject(Renderer2);
+
   above = input<boolean>(false);
   right = input<boolean>(false);
   onlyOptionsAllowed = input<boolean>(false);
   displayValue = input<string | null>('');
+  onSelectedOption = output<string>()
 
   #BASE_SPACE = 8;
   #selfRef = inject<ElementRef<HTMLElement>>(ElementRef<HTMLElement>);
@@ -90,6 +93,7 @@ export class SparkleSelectComponent {
   );
   #inputValue = signal<string | null>(null);
   #previousInputValue = signal<string>('');
+  #previousInputValueEffect = effect(() => this.onSelectedOption.emit(this.#previousInputValue() ?? ''));
   #triggerOption = signal(false);
 
   #options = computed(() => {

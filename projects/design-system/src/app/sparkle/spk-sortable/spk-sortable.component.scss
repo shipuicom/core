@@ -15,3 +15,16 @@ spk-list {
 .example {
   padding: 40px;
 }
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Adjust column sizing as needed */
+  gap: 10px;
+}
+
+.grid-item {
+  background-color: #f0f0f0;
+  padding: 20px;
+  border: 1px solid #ccc;
+  cursor: move; /* Indicate draggability */
+}

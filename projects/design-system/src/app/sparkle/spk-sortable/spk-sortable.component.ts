@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import {
   AfterDropResponse,
+  GridSortableDirective,
   moveIndex,
   SparkleCheckboxComponent,
   SparkleIconComponent,
@@ -85,7 +86,13 @@ type Todo = (typeof TODOS)[0];
 @Component({
   selector: 'app-spk-sortable',
   standalone: true,
-  imports: [SparkleListComponent, SparkleCheckboxComponent, SparkleIconComponent, SparkleSortableDirective],
+  imports: [
+    SparkleListComponent,
+    SparkleCheckboxComponent,
+    SparkleIconComponent,
+    SparkleSortableDirective,
+    GridSortableDirective,
+  ],
   templateUrl: './spk-sortable.component.html',
   styleUrl: './spk-sortable.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
