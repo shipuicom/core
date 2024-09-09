@@ -8,8 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { SparkleFormFieldComponent, SparkleIconComponent, SparkleListComponent } from '@sparkle-ui/core';
-import { SparkleFileDragDropDirective } from '../directives/sparkle-file-drag-drop.directive';
+import { SparkleFileDragDropDirective, SparkleFormFieldComponent, SparkleIconComponent, SparkleListComponent } from '../../public-api';
 
 @Component({
   selector: 'spk-file-upload',
