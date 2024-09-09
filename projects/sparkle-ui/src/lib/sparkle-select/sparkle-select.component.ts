@@ -69,6 +69,7 @@ export class SparkleSelectComponent {
   right = input<boolean>(false);
   onlyOptionsAllowed = input<boolean>(false);
   displayValue = input<string | null>('');
+  displayFn = input<Function | null>(null);
   onSelectedOption = output<string>();
 
   #BASE_SPACE = 8;
@@ -101,7 +102,9 @@ export class SparkleSelectComponent {
     return Array.from(this.optionsRef()?.nativeElement.querySelectorAll<HTMLOptionElement>('option') ?? []);
   });
 
-  _displayValue = computed(() => this.displayValue() ?? this.selectedOption()?.innerText ?? '');
+  _displayValue = computed(() =>
+    this.displayFn() ? this.displayFn()!(this.inputValue() ?? '') : this.displayValue() ?? this.inputValue() ?? ''
+  );
   optionsRef = viewChild<ElementRef<HTMLDivElement>>('optionsRef');
   formFieldWrapperRef = viewChild.required<ElementRef<HTMLDivElement>>('formFieldWrapper');
   inputWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('inputWrap');

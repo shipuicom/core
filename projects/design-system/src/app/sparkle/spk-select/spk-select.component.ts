@@ -179,12 +179,14 @@ export default class SpkSelectComponent {
     console.log('selectedChange: ', val);
   }
 
-  displayFn(val: Food['value']) {
-    const food = this.foods().find((x) => x.value === val);
+  displayFn(foods: Food[]) {
+    return (val: Food['value']) => {
+      const food = foods.find((x) => x.value === val);
 
-    if (!food) {
-      return '';
-    }
-    return `${food.label} (${food.value})`;
+      if (!food) {
+        return '';
+      }
+      return `${food.label} (${food.value})`;
+    };
   }
 }

@@ -30,7 +30,7 @@
     </ng-container>
   </spk-select>
 
-  <spk-select [displayValue]="displayFn(inputCtrl.value ?? '')" (inputValueChange)="valueChange($event)">
+  <spk-select [displayFn]="displayFn(foods())" (inputValueChange)="valueChange($event)">
     <input type="text" placeholder="Select an option..." [formControl]="inputCtrl" />
 
     <ng-container options>
@@ -40,7 +40,7 @@
     </ng-container>
   </spk-select>
 
-  <spk-select [displayValue]="displayFn(inputCtrl.value ?? '')">
+  <!-- <spk-select [displayValue]="displayFn(inputCtrl.value ?? '')">
     <input type="text" placeholder="Select an option..." [formControl]="inputCtrl" />
 
     <ng-container options>
@@ -62,5 +62,5 @@
         }
       }
     </ng-container>
-  </spk-select>
+  </spk-select> -->
 </section>
