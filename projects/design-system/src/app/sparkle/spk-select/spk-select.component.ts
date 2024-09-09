@@ -163,6 +163,13 @@ export default class SpkSelectComponent {
     );
   }
 
+  valueChange(val: string | null) {
+    const option = this.foods().find((x) => x.value === val);
+
+    console.log('valueChange: ', val);
+    console.log('option: ', option);
+  }
+
   clicked(val: Food['value']) {
     console.log('clicked: ', val);
     this.search.set(val);

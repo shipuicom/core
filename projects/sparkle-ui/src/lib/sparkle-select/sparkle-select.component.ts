@@ -6,6 +6,7 @@ import {
   ElementRef,
   inject,
   input,
+  model,
   output,
   Renderer2,
   signal,
@@ -30,7 +31,7 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
           <ng-content select="input"></ng-content>
         </div>
 
-        @if ((inputVal() && !isOpen() && inputVal()!.length > 0) || !!selectedOption()) {
+        @if ((inputValue() && !isOpen() && inputValue()!.length > 0) || !!selectedOption()) {
           <div class="deselect-indicator" (click)="deselect($event)" spkSuffix>
             <ng-content select="[deselect-indicator]"></ng-content>
             <spk-icon class="default-indicator">x-circle</spk-icon>
@@ -68,7 +69,7 @@ export class SparkleSelectComponent {
   right = input<boolean>(false);
   onlyOptionsAllowed = input<boolean>(false);
   displayValue = input<string | null>('');
-  onSelectedOption = output<string>()
+  onSelectedOption = output<string>();
 
   #BASE_SPACE = 8;
   #selfRef = inject<ElementRef<HTMLElement>>(ElementRef<HTMLElement>);
@@ -86,14 +87,13 @@ export class SparkleSelectComponent {
       }
 
       if (input && typeof input.value === 'string') {
-        this.#inputValue.set(input.value);
+        this.inputValue.set(input.value);
       }
     },
     { allowSignalWrites: true }
   );
-  #inputValue = signal<string | null>(null);
+  inputValue = model<string | null>(null);
   #previousInputValue = signal<string>('');
-  #previousInputValueEffect = effect(() => this.onSelectedOption.emit(this.#previousInputValue() ?? ''));
   #triggerOption = signal(false);
 
   #options = computed(() => {
@@ -105,7 +105,6 @@ export class SparkleSelectComponent {
   optionsRef = viewChild<ElementRef<HTMLDivElement>>('optionsRef');
   formFieldWrapperRef = viewChild.required<ElementRef<HTMLDivElement>>('formFieldWrapper');
   inputWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('inputWrap');
-  inputVal = this.#inputValue.asReadonly();
   isSearchInput = computed(() => this.#inputRef()?.type === 'search');
   optionsEl = computed(() => this.optionsRef()?.nativeElement);
   isOpen = signal(false);
@@ -186,7 +185,7 @@ export class SparkleSelectComponent {
 
   #whenInputValueChanged = effect(
     () => {
-      const val = this.#inputValue();
+      const val = this.inputValue();
 
       if (this.#inputRef()) {
         this.#inputRef()!.value = val ?? '';
@@ -266,11 +265,11 @@ export class SparkleSelectComponent {
 
   selected(el: HTMLOptionElement) {
     if (el) {
-      this.#inputValue.set(el.getAttribute('value') ?? '');
+      this.inputValue.set(el.getAttribute('value') ?? '');
     }
 
     if (this.onlyOptionsAllowed() && !el) {
-      this.#inputValue.set('');
+      this.inputValue.set('');
     } else {
       this.isOpen.set(false);
       this.hasBeenOpened.set(false);
@@ -300,7 +299,7 @@ export class SparkleSelectComponent {
 
   close(noBlur = false) {
     if (this.isSearchInput() && this.#previousInputValue()) {
-      setTimeout(() => this.#inputValue.set(this.#previousInputValue()));
+      setTimeout(() => this.inputValue.set(this.#previousInputValue()));
     }
 
     this.#hideOptionsElement();
@@ -319,8 +318,8 @@ export class SparkleSelectComponent {
     this.#setOptionsElement();
 
     if (this.isSearchInput() && !this.hasBeenOpened()) {
-      this.#previousInputValue.set(this.#inputValue() ?? '');
-      this.#inputValue.set(null);
+      this.#previousInputValue.set(this.inputValue() ?? '');
+      this.inputValue.set(null);
       this.#inputRef()!.focus();
     } else if (this.isSearchInput()) {
       this.#inputRef()!.focus();

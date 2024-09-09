@@ -30,6 +30,16 @@
     </ng-container>
   </spk-select>
 
+  <spk-select [displayValue]="displayFn(inputCtrl.value ?? '')" (inputValueChange)="valueChange($event)">
+    <input type="text" placeholder="Select an option..." [formControl]="inputCtrl" />
+
+    <ng-container options>
+      @for (food of foods(); track $index) {
+        <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
+      }
+    </ng-container>
+  </spk-select>
+
   <spk-select [displayValue]="displayFn(inputCtrl.value ?? '')">
     <input type="text" placeholder="Select an option..." [formControl]="inputCtrl" />
 
