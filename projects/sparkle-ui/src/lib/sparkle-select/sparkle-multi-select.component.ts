@@ -161,8 +161,6 @@ export class SparkleMultiSelectComponent {
     const options = this.optionsRef()?.nativeElement.querySelectorAll<HTMLOptionElement>('option');
     const spkOptions = this.optionsRef()?.nativeElement.querySelectorAll<HTMLElement>('spk-option');
 
-    console.log('options: ', options);
-
     if (options?.length) {
       return Array.from(options);
     } else if (spkOptions?.length) {
@@ -381,10 +379,6 @@ export class SparkleMultiSelectComponent {
 
     if (this.selectMultiple()) {
       setTimeout(() => this.#inputRef()?.focus());
-      // !isClick &&
-      //   el.scrollIntoView({
-      //     block: 'center',
-      //   });
     } else {
       this.isOpen.set(false);
       this.#inputRef()?.blur();
@@ -470,13 +464,7 @@ export class SparkleMultiSelectComponent {
         const closestSpkOption = (e.target as HTMLElement).closest('spk-option');
 
         const option = closestOption || closestSpkOption;
-
-        console.log('option: ', option);
-        console.log('this.#options(): ', this.#options());
-
         const indexOfOption = this.#options().indexOf(option as HTMLElement);
-
-        console.log('indexOfOption: ', indexOfOption);
 
         if (indexOfOption > -1) {
           this.selected(option as HTMLElement);
@@ -625,6 +613,14 @@ export class SparkleMultiSelectComponent {
   ngOnDestroy() {
     if (this.clickController) {
       this.clickController.abort();
+    }
+
+    if (this.inputController) {
+      this.inputController.abort();
+    }
+
+    if (this.optionsOpenController) {
+      this.optionsOpenController.abort();
     }
 
     this.#inputObserver.disconnect();

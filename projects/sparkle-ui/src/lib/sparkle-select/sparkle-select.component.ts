@@ -112,7 +112,6 @@ export class SparkleSelectComponent {
   isOpen = signal(false);
   delayedIsOpen = signal(false);
   hasBeenOpened = signal(false);
-  abortController: AbortController | null = null;
   optionInFocus = signal<number>(0);
   optionsStyle = signal({
     left: '0px',
@@ -125,8 +124,9 @@ export class SparkleSelectComponent {
   );
 
   optionsOpenController: AbortController | null = null;
-
+  clickController: AbortController | null = null;
   inputController: AbortController | null = null;
+
   #onNewInputRef = effect(() => {
     if (this.inputController) {
       this.inputController.abort();
@@ -228,19 +228,7 @@ export class SparkleSelectComponent {
   }
 
   ngOnInit() {
-    this.abortController = new AbortController();
-
     this.#setOptionsElement();
-
-    window.addEventListener(
-      'click',
-      (e) => {
-        if (this.#options().indexOf(e.target as HTMLOptionElement) > -1) {
-          this.selected(e.target as HTMLOptionElement);
-        }
-      },
-      { signal: this.abortController?.signal }
-    );
 
     this.#inputObserver.observe(this.inputWrapRef().nativeElement, {
       childList: true,
@@ -310,6 +298,7 @@ export class SparkleSelectComponent {
     this.hasBeenOpened.set(false);
     noBlur || this.#inputRef()?.blur();
     this.#killMenuCalculation();
+    this.#killClickListener();
     this.#childListObserver.disconnect();
   }
 
@@ -331,6 +320,7 @@ export class SparkleSelectComponent {
 
     this.hasBeenOpened.set(true);
     this.#initMenuCalculation();
+    this.#initClickListener();
     this.#triggerOption.set(!this.#triggerOption());
 
     setTimeout(() => {
@@ -343,6 +333,30 @@ export class SparkleSelectComponent {
     }, 0);
   }
 
+  #initClickListener() {
+    if (this.clickController) {
+      this.clickController.abort();
+    }
+
+    this.clickController = new AbortController();
+
+    window.addEventListener(
+      'click',
+      (e) => {
+        if (this.#options().indexOf(e.target as HTMLOptionElement) > -1) {
+          this.selected(e.target as HTMLOptionElement);
+        }
+      },
+      { signal: this.clickController?.signal }
+    );
+  }
+
+  #killClickListener() {
+    if (this.clickController) {
+      this.clickController.abort();
+    }
+  }
+
   getIndexOfSelectedOption() {
     const selected = this.selectedOption();
 
@@ -350,6 +364,10 @@ export class SparkleSelectComponent {
   }
 
   #initMenuCalculation() {
+    if (this.optionsOpenController) {
+      this.optionsOpenController.abort();
+    }
+
     this.optionsOpenController = new AbortController();
 
     setTimeout(() => this.#calculateMenuPosition());
@@ -414,8 +432,16 @@ export class SparkleSelectComponent {
   }
 
   ngOnDestroy() {
-    if (this.abortController) {
-      this.abortController.abort();
+    if (this.clickController) {
+      this.clickController.abort();
+    }
+
+    if (this.inputController) {
+      this.inputController.abort();
+    }
+
+    if (this.optionsOpenController) {
+      this.optionsOpenController.abort();
     }
 
     this.#inputObserver.disconnect();
