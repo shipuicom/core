@@ -13,6 +13,8 @@ $sparkleToggle: false !default;
       display: flex;
       align-items: center;
       gap: p2r(8);
+      position: relative;
+      z-index: 1;
     }
 
     .box {
@@ -31,6 +33,7 @@ $sparkleToggle: false !default;
       position: absolute;
       inset: 0;
       cursor: pointer;
+      z-index: 0;
     }
 
     &:has(input[type='checkbox']:checked),
