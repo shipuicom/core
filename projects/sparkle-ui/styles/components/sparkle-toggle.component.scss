@@ -9,6 +9,12 @@ $sparkleToggle: false !default;
     user-select: none;
     position: relative;
 
+    label {
+      display: flex;
+      align-items: center;
+      gap: p2r(8);
+    }
+
     .box {
       display: block;
       width: p2r(34);
