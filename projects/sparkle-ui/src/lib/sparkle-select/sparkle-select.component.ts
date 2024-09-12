@@ -81,12 +81,13 @@ export class SparkleSelectComponent {
       this.#triggerInput();
       const input = this.#selfRef.nativeElement.querySelector('input');
 
-      if (input) {
-        this.#inputRef.set(input);
-        input.autocomplete = 'off';
-      }
+      if (!input) return;
 
-      if (input && typeof input.value === 'string') {
+      this.#createCustomInputEventListener(input);
+      this.#inputRef.set(input);
+      input.autocomplete = 'off';
+
+      if (typeof input.value === 'string') {
         this.inputValue.set(input.value);
       }
     },
@@ -174,6 +175,33 @@ export class SparkleSelectComponent {
       );
     }
   });
+
+  #createCustomInputEventListener(input: HTMLInputElement) {
+    Object.defineProperty(input, 'value', {
+      get() {
+        const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+        return descriptor!.get!.call(this);
+      },
+      set(newVal) {
+        const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+        descriptor!.set!.call(this, newVal);
+
+        const inputEvent = new CustomEvent('inputValueChanged', {
+          bubbles: true,
+          cancelable: true,
+          detail: {
+            value: newVal,
+          },
+        });
+
+        this.dispatchEvent(inputEvent);
+
+        return newVal; // Maintain consistency with the original setter
+      },
+    });
+
+    return input;
+  }
 
   #optionInFocusEffect = effect(() => {
     if (this.isOpen()) {
