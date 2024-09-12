@@ -4,12 +4,62 @@
   <pre>
     search: {{ this.search() }}
     inputCtrl: {{ inputCtrl.value }}
+    inputCtrl2: {{ inputCtrl2.value }}
     inputSearchCtrl: {{ inputSearchCtrl.value }}
   </pre>
   <spk-icon>x-circle</spk-icon>
   <spk-icon>magnifying-glass</spk-icon>
 
-  <spk-select>
+  <spk-select-multiple [displayFn]="displayFn(foods())" class="primary">
+    <label for="text">Multiple select with search</label>
+    <input type="text" id="text" tabindex="1" placeholder="Text..." [formControl]="inputCtrl2" />
+
+    <ng-container options>
+      <spk-option deselect>Hello remove me</spk-option>
+
+      @for (food of foods(); track $index) {
+        <spk-option [value]="food.value">
+          {{ food.label }} - ({{ $index }})
+
+          <spk-checkbox class="raised primary" />
+        </spk-option>
+      }
+    </ng-container>
+  </spk-select-multiple>
+
+  <!-- <spk-select [displayFn]="displayFn(foods())" class="primary">
+    <label for="text">Multiple select with search</label>
+    <input type="text" id="text" tabindex="1" placeholder="Text..." [formControl]="inputCtrl2" />
+
+    <ng-container options>
+      <spk-option deselect>Hello remove me</spk-option>
+
+      @for (food of foods(); track $index) {
+        <spk-option [value]="food.value">
+          {{ food.label }} - ({{ $index }})
+
+          <spk-checkbox class="raised primary" />
+        </spk-option>
+      }
+    </ng-container>
+  </spk-sel> -->
+
+  <!-- <spk-select [displayFn]="displayFn(foods())" class="primary">
+    <label for="search">Multiple select with search</label>
+    <input type="search" id="search" tabindex="1" placeholder="Search..." [formControl]="inputSearchCtrl" />
+
+    <ng-container options>
+
+      @for (food of localFilteredFoods(); track $index) {
+        <spk-option [value]="food.value">
+          {{ food.label }} - ({{ $index }})
+
+        </spk-option>
+      }
+    </ng-container>
+  </spk-select> -->
+
+  <!-- <spk-select>
     <label for="search">Search</label>
     <input type="search" id="search" tabindex="1" placeholder="Search..." [formControl]="inputSearchCtrl" />
 
@@ -18,10 +68,10 @@
         <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
       }
     </ng-container>
-  </spk-select>
+  </spk-select> -->
 
-  <spk-select [onlyOptionsAllowed]="true">
-    <input type="search" tabindex="2" placeholder="Search..." [formControl]="inputSearchCtrl2" />
+  <spk-select>
+    <input type="search" tabindex="2" placeholder="Search hi..." [formControl]="inputSearchCtrl2" />
 
     <ng-container options>
       @for (food of otherFilteredFoods(); track $index) {
@@ -30,7 +80,7 @@
     </ng-container>
   </spk-select>
 
-  <spk-select [displayFn]="displayFn(foods())" (inputValueChange)="valueChange($event)">
+  <!-- <spk-select [displayFn]="displayFn(foods())" (inputValueChange)="valueChange($event)">
     <input type="text" placeholder="Select an option..." [formControl]="inputCtrl" />
 
     <ng-container options>
@@ -38,7 +88,7 @@
         <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
       }
     </ng-container>
-  </spk-select>
+  </spk-select> -->
 
   <!-- <spk-select [displayValue]="displayFn(inputCtrl.value ?? '')">
     <input type="text" placeholder="Select an option..." [formControl]="inputCtrl" />

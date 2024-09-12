@@ -1,6 +1,7 @@
 $sparkleSelect: false !default;
 
 @if $sparkleSelect == true {
+  spk-select-multiple,
   spk-select {
     spk-form-field {
       min-width: p2r(210);
@@ -12,6 +13,7 @@ $sparkleSelect: false !default;
       transform: rotate(0deg);
       transition: transform 75ms linear;
       transform-origin: center;
+      cursor: pointer;
 
       &.open {
         transform: rotate(540deg);
@@ -38,10 +40,32 @@ $sparkleSelect: false !default;
       }
     }
 
-    .display-value + input {
-      opacity: 0;
-      position: absolute;
-      top: 200%;
+    .display-value {
+      display: flex;
+      flex-wrap: wrap;
+      gap: p2r(4);
+
+      + input {
+        opacity: 0;
+        position: absolute;
+        top: -200%;
+        height: 0;
+        width: 0;
+      }
+
+      spk-chip {
+        cursor: pointer;
+        user-select: none;
+
+        spk-icon {
+          color: inherit;
+          font-size: p2r(16);
+        }
+      }
+    }
+
+    input {
+      width: 100%;
     }
   }
   .sparkle-popup-menu {
@@ -76,6 +100,7 @@ $sparkleSelect: false !default;
       user-select: none;
     }
 
+    spk-option,
     option {
       display: flex;
       justify-content: flex-start;
@@ -91,6 +116,11 @@ $sparkleSelect: false !default;
       border: 0;
       cursor: pointer;
       color: var(--base-level-70);
+      user-select: none;
+
+      spk-checkbox {
+        margin-left: auto;
+      }
 
       &[disabled] {
         opacity: 0.3;
@@ -101,21 +131,12 @@ $sparkleSelect: false !default;
         }
       }
 
-      // [suffix] {
-      //   order: 999;
-      //   color: var(--base-level-60);
-      //   font: var(--paragraph-30);
-      //   justify-self: flex-end;
-      //   display: inline-flex;
-      //   flex: 1 0;
-      //   justify-content: flex-end;
-      // }
-
       spk-icon {
         font-size: p2r(16);
       }
 
       &.active,
+      &:checked,
       &:hover {
         background-color: var(--base-level-30);
         color: var(--base-level-70);
@@ -157,6 +178,7 @@ $sparkleSelect: false !default;
         content: 'No results found';
       }
 
+      &:has(~ spk-option),
       &:has(~ option) {
         display: none;
       }

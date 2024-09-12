@@ -1,7 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, model, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { SparkleIconComponent, SparkleSelectComponent } from '../../../../../sparkle-ui/src/public-api';
+import { SparkleMultiSelectComponent } from '../../../../../sparkle-ui/src/lib/sparkle-select/sparkle-select-multiple.component';
+import {
+  SparkleCheckboxComponent,
+  SparkleIconComponent,
+  SparkleOptionComponent,
+  SparkleSelectComponent,
+} from '../../../../../sparkle-ui/src/public-api';
 
 type Food = {
   value: string;
@@ -16,13 +22,22 @@ type FoodGroup = {
 @Component({
   selector: 'app-spk-select',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, SparkleSelectComponent, SparkleIconComponent],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    SparkleSelectComponent,
+    SparkleIconComponent,
+    SparkleCheckboxComponent,
+    SparkleOptionComponent,
+    SparkleMultiSelectComponent,
+  ],
   templateUrl: './spk-select.component.html',
   styleUrl: './spk-select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class SpkSelectComponent {
   inputCtrl = new FormControl<string | null>(null);
+  inputCtrl2 = new FormControl<string>('');
   inputSearchCtrl = new FormControl<string>('');
   inputSearchCtrl2 = new FormControl<string>('');
   inputSearchCtrl3 = new FormControl<string>('');
@@ -152,6 +167,7 @@ export default class SpkSelectComponent {
       console.log('randomFood: ', randomFood);
       this.inputSearchCtrl.setValue(randomFood.value);
       this.inputSearchCtrl3.setValue(randomFood.value);
+      this.inputCtrl2.setValue(randomFood.value);
     }, 500);
   }
 
@@ -165,9 +181,6 @@ export default class SpkSelectComponent {
 
   valueChange(val: string | null) {
     const option = this.foods().find((x) => x.value === val);
-
-    console.log('valueChange: ', val);
-    console.log('option: ', option);
   }
 
   clicked(val: Food['value']) {

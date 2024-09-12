@@ -1,3 +1,15 @@
+<div class="todo-list">
+  <spk-list spkSortable (afterDrop)="reorderTodo($event)">
+    @for (todo of todos(); track $index) {
+      <div spk-action-item draggable="true" [class.active]="todo.done" (click)="toggleTodo($index)">
+        <spk-icon sort-handle>arrows-out-line-vertical</spk-icon>
+        {{ todo.title }}
+        <spk-checkbox [class.active]="todo.done" class="primary raised" />
+      </div>
+    }
+  </spk-list>
+</div>
+
 <div class="wrap">
   <section>
     <h4>Basic</h4>

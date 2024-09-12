@@ -52,6 +52,7 @@ $sparkleFormField: false !default;
       background-color: var(--spk-input-prefix-bg);
       padding: p2r(0 12);
       height: 100%;
+      min-height: calc(var(--spk-input-height) - #{p2r(2)});
       transition: background-color 125ms linear;
 
       [spkPrefix] + [spkTextPrefix] {
@@ -77,8 +78,8 @@ $sparkleFormField: false !default;
       border: 1px solid var(--spk-input-border-color);
       border-radius: var(--spk-input-shape);
       background: var(--spk-input-background-color);
-      padding: p2r(0 12);
-      height: var(--spk-input-height);
+      padding: p2r(7 12);
+      min-height: var(--spk-input-height);
       overflow: hidden;
       transition: border-color 125ms linear;
 

@@ -105,64 +105,88 @@ $sparkleCheckbox: false !default;
 
     &.flat:has(input[type='checkbox']:checked),
     &.flat.active {
-      .box {
-        border-width: 0;
-        background: var(--grey-500);
-        color: #fff;
-      }
-
-      &.primary .box {
-        background: var(--primary-500);
-        color: #fff;
-      }
-
-      &.accent .box {
-        background: var(--accent-500);
-        color: #fff;
-      }
-
-      &.tertiary .box {
-        background: var(--tertiary-500);
-        color: #fff;
-      }
-
-      &.warn .box {
-        background: var(--warn-500);
-        color: #fff;
-      }
-
-      &.success .box {
-        background: var(--success-500);
-        color: #fff;
-      }
+      @extend %flat;
     }
 
     &.raised:has(input[type='checkbox']:checked),
     &.raised.active {
-      .box {
-        border-width: 0;
-        background: var(--base-gradient-20);
+      @extend %raised;
+    }
+  }
+
+  .sparkle-popup-menu spk-option[selected] {
+    spk-checkbox {
+      spk-icon {
+        opacity: 1;
       }
 
-      &.primary .box {
-        background: var(--primary-gradient-20);
+      &.flat {
+        @extend %flat;
       }
 
-      &.accent .box {
-        background: var(--accent-gradient-20);
-      }
-
-      &.tertiary .box {
-        background: var(--tertiary-gradient-20);
-      }
-
-      &.warn .box {
-        background: var(--warn-gradient-20);
-      }
-
-      &.success .box {
-        background: var(--success-gradient-20);
+      &.raised {
+        @extend %raised;
       }
     }
+  }
+}
+
+%flat {
+  .box {
+    border-width: 0;
+    background: var(--grey-500);
+    color: #fff;
+  }
+
+  &.primary .box {
+    background: var(--primary-500);
+    color: #fff;
+  }
+
+  &.accent .box {
+    background: var(--accent-500);
+    color: #fff;
+  }
+
+  &.tertiary .box {
+    background: var(--tertiary-500);
+    color: #fff;
+  }
+
+  &.warn .box {
+    background: var(--warn-500);
+    color: #fff;
+  }
+
+  &.success .box {
+    background: var(--success-500);
+    color: #fff;
+  }
+}
+
+%raised {
+  .box {
+    border-width: 0;
+    background: var(--base-gradient-20);
+  }
+
+  &.primary .box {
+    background: var(--primary-gradient-20);
+  }
+
+  &.accent .box {
+    background: var(--accent-gradient-20);
+  }
+
+  &.tertiary .box {
+    background: var(--tertiary-gradient-20);
+  }
+
+  &.warn .box {
+    background: var(--warn-gradient-20);
+  }
+
+  &.success .box {
+    background: var(--success-gradient-20);
   }
 }
