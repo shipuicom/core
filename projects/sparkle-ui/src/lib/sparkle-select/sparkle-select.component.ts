@@ -63,8 +63,6 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleSelectComponent {
-  #renderer = inject(Renderer2);
-
   above = input<boolean>(false);
   right = input<boolean>(false);
   onlyOptionsAllowed = input<boolean>(false);
@@ -73,6 +71,7 @@ export class SparkleSelectComponent {
   onSelectedOption = output<string>();
 
   #BASE_SPACE = 8;
+  #renderer = inject(Renderer2);
   #selfRef = inject<ElementRef<HTMLElement>>(ElementRef<HTMLElement>);
   #triggerInput = signal(false);
   #inputRef = signal<HTMLInputElement | null>(null);

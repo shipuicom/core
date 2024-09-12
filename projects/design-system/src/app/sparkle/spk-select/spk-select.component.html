@@ -10,7 +10,7 @@
   <spk-icon>x-circle</spk-icon>
   <spk-icon>magnifying-glass</spk-icon>
 
-  <spk-select-multiple [displayFn]="displayFn(foods())" class="primary">
+  <spk-multi-select [displayFn]="displayFn(foods())" class="primary">
     <label for="text">Multiple select with search</label>
     <input type="text" id="text" tabindex="1" placeholder="Text..." [formControl]="inputCtrl2" />
 
@@ -25,7 +25,7 @@
         </spk-option>
       }
     </ng-container>
-  </spk-select-multiple>
+  </spk-multi-select>
 
   <!-- <spk-select [displayFn]="displayFn(foods())" class="primary">
     <label for="text">Multiple select with search</label>
