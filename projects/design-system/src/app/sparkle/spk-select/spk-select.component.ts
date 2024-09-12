@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, model, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { SparkleMultiSelectComponent } from '../../../../../sparkle-ui/src/lib/sparkle-select/sparkle-select-multiple.component';
+import { SparkleMultiSelectComponent } from '../../../../../sparkle-ui/src/lib/sparkle-select/sparkle-multi-select.component';
 import {
   SparkleCheckboxComponent,
   SparkleIconComponent,

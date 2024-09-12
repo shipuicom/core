@@ -1,7 +1,7 @@
 $sparkleSelect: false !default;
 
 @if $sparkleSelect == true {
-  spk-select-multiple,
+  spk-multi-select,
   spk-select {
     spk-form-field {
       min-width: p2r(210);
