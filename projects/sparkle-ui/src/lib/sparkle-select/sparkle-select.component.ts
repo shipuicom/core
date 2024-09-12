@@ -178,6 +178,7 @@ export class SparkleSelectComponent {
 
   #createCustomInputEventListener(input: HTMLInputElement) {
     Object.defineProperty(input, 'value', {
+      configurable: true,
       get() {
         const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
         return descriptor!.get!.call(this);

@@ -70,6 +70,26 @@
     </ng-container>
   </spk-select> -->
 
+  <spk-multi-select [selectMultiple]="false" [displayFn]="displayFn(foods())" class="primary">
+    <input type="text" tabindex="2" placeholder="Search hi..." [formControl]="inputSearchCtrl2" />
+
+    <ng-container options>
+      @for (food of foods(); track $index) {
+        <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
+      }
+    </ng-container>
+  </spk-multi-select>
+
+  <spk-select>
+    <input type="text" tabindex="2" placeholder="Search hi..." [formControl]="inputSearchCtrl2" />
+
+    <ng-container options>
+      @for (food of foods(); track $index) {
+        <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
+      }
+    </ng-container>
+  </spk-select>
+
   <spk-select>
     <input type="search" tabindex="2" placeholder="Search hi..." [formControl]="inputSearchCtrl2" />
 

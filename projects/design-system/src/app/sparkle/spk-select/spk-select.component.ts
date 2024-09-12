@@ -39,7 +39,7 @@ export default class SpkSelectComponent {
   inputCtrl = new FormControl<string | null>(null);
   inputCtrl2 = new FormControl<string>('');
   inputSearchCtrl = new FormControl<string>('');
-  inputSearchCtrl2 = new FormControl<string>('');
+  inputSearchCtrl2 = new FormControl<string>('pizza-1');
   inputSearchCtrl3 = new FormControl<string>('');
   inputSearchCtrlSignal = toSignal(this.inputSearchCtrl.valueChanges);
   inputSearchCtrl2Signal = toSignal(this.inputSearchCtrl2.valueChanges);
