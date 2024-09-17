@@ -8,7 +8,6 @@ import {
   inject,
   input,
   model,
-  output,
   Renderer2,
   signal,
   viewChild,
@@ -111,25 +110,70 @@ export class SparkleSelectComponent {
   #renderer = inject(Renderer2);
   #body = document.getElementsByTagName('body')[0];
   #selfRef = inject<ElementRef<HTMLElement>>(ElementRef<HTMLElement>);
-  #triggerInput = signal(false);
-  #inputRef = signal<HTMLInputElement | null>(null);
+  optionsRef = viewChild<ElementRef<HTMLDivElement>>('optionsRef');
+  formFieldWrapperRef = viewChild.required<ElementRef<HTMLDivElement>>('formFieldWrapper');
+  inputWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('inputWrap');
 
+  inputValue = model<string>('');
   selectMultiple = input<boolean>(false);
-  above = input<boolean>(false);
-  right = input<boolean>(false);
   hideClearButton = input<boolean>(false);
   displayValue = input<string | null>('');
   displayFn = input<Function | null>(null);
-  onSelectedOption = output<string>();
+  above = input<boolean>(false);
+  right = input<boolean>(false);
+
+  // TODO refactor these signals and their effects to be a computed that returns a signal instead of using effects
+  #triggerInput = signal(false);
+  #triggerOption = signal(false);
+  #inputRef = signal<HTMLInputElement | null>(null);
+
+  #previousInputValue = signal<string>('');
+  #firstOptionIndex = signal<number>(-1);
+  #hasBeenOpened = signal(false);
+  #optionInFocus = signal<number>(-1);
+  isOpen = signal(false);
+  delayedIsOpen = signal(false);
+  optionsStyle = signal({
+    left: '0px',
+    top: '0px',
+  });
+
+  isSearchInput = computed(() => this.#inputRef()?.type === 'search');
+  optionsEl = computed(() => this.optionsRef()?.nativeElement);
+  #options = computed(() => {
+    this.#triggerOption();
+
+    const options = this.optionsRef()?.nativeElement.querySelectorAll<HTMLOptionElement>('option');
+    const spkOptions = this.optionsRef()?.nativeElement.querySelectorAll<HTMLElement>('spk-option');
+
+    if (options?.length) {
+      return Array.from(options);
+    } else if (spkOptions?.length) {
+      return Array.from(spkOptions);
+    }
+
+    return [];
+  });
   chipClass = computed(() =>
     Array.from(this.#selfRef.nativeElement.classList)
       .filter((x) => COLOR_CLASSES.includes(x))
       .join(' ')
   );
+  _displayValue = computed(() =>
+    this.displayFn() ? this.displayFn()!(this.inputValue()) : this.displayValue() ?? this.inputValue()
+  );
+  selectedOption = computed(() =>
+    this.#previousInputValue()
+      ? this.#options().find((x) => x.getAttribute('value') === this.#previousInputValue())
+      : null
+  );
 
+  optionsOpenController: AbortController | null = null;
+  inputController: AbortController | null = null;
+  clickController: AbortController | null = null;
   inputAbortController: AbortController | null = null;
 
-  inputRefEffect = effect(
+  #inputRefEffect = effect(
     () => {
       this.#triggerInput();
       const input = this.#selfRef.nativeElement.querySelector('input');
@@ -156,51 +200,6 @@ export class SparkleSelectComponent {
     { allowSignalWrites: true }
   );
 
-  inputValue = model<string>('');
-  #previousInputValue = signal<string>('');
-  #triggerOption = signal(false);
-  #firstOptionIndex = signal<number>(-1);
-  #options = computed(() => {
-    this.#triggerOption();
-
-    const options = this.optionsRef()?.nativeElement.querySelectorAll<HTMLOptionElement>('option');
-    const spkOptions = this.optionsRef()?.nativeElement.querySelectorAll<HTMLElement>('spk-option');
-
-    if (options?.length) {
-      return Array.from(options);
-    } else if (spkOptions?.length) {
-      return Array.from(spkOptions);
-    }
-
-    return [];
-  });
-
-  _displayValue = computed(() =>
-    this.displayFn() ? this.displayFn()!(this.inputValue()) : this.displayValue() ?? this.inputValue()
-  );
-  optionsRef = viewChild<ElementRef<HTMLDivElement>>('optionsRef');
-  formFieldWrapperRef = viewChild.required<ElementRef<HTMLDivElement>>('formFieldWrapper');
-  inputWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('inputWrap');
-  isSearchInput = computed(() => this.#inputRef()?.type === 'search');
-  optionsEl = computed(() => this.optionsRef()?.nativeElement);
-  isOpen = signal(false);
-  delayedIsOpen = signal(false);
-  hasBeenOpened = signal(false);
-  optionInFocus = signal<number>(-1);
-  optionsStyle = signal({
-    left: '0px',
-    top: '0px',
-  });
-  selectedOption = computed(() =>
-    this.#previousInputValue()
-      ? this.#options().find((x) => x.getAttribute('value') === this.#previousInputValue())
-      : null
-  );
-
-  optionsOpenController: AbortController | null = null;
-  inputController: AbortController | null = null;
-  clickController: AbortController | null = null;
-
   #onNewInputRef = effect(() => {
     if (this.inputController) {
       this.inputController.abort();
@@ -226,23 +225,27 @@ export class SparkleSelectComponent {
             this.close();
           } else if (e.key === 'ArrowDown') {
             if (
-              this.optionInFocus() === null ||
-              this.optionInFocus() < 0 ||
-              (this.optionInFocus() as number) === this.#options().length - 1
+              this.#optionInFocus() === null ||
+              this.#optionInFocus() < 0 ||
+              (this.#optionInFocus() as number) === this.#options().length - 1
             ) {
-              this.optionInFocus.set(this.#firstOptionIndex());
+              this.#optionInFocus.set(this.#firstOptionIndex());
             } else {
-              this.optionInFocus.set((this.optionInFocus() as number) + 1);
+              this.#optionInFocus.set((this.#optionInFocus() as number) + 1);
             }
           } else if (e.key === 'ArrowUp') {
-            if (this.optionInFocus() === null || this.optionInFocus() < 0 || (this.optionInFocus() as number) === 0) {
-              this.optionInFocus.set(this.#options().length - 1);
+            if (
+              this.#optionInFocus() === null ||
+              this.#optionInFocus() < 0 ||
+              (this.#optionInFocus() as number) === 0
+            ) {
+              this.#optionInFocus.set(this.#options().length - 1);
             } else {
-              this.optionInFocus.set((this.optionInFocus() as number) - 1);
+              this.#optionInFocus.set((this.#optionInFocus() as number) - 1);
             }
           } else if (e.key === 'Enter') {
-            if (this.optionInFocus() > -1) {
-              this.selected(this.getOptionElement(this.optionInFocus() as number));
+            if (this.#optionInFocus() > -1) {
+              this.selected(this.getOptionElement(this.#optionInFocus() as number));
             }
           } else if (e.key === 'Tab') {
             this.close(true);
@@ -257,7 +260,7 @@ export class SparkleSelectComponent {
 
   #optionInFocusEffect = effect(() => {
     if (this.isOpen()) {
-      this.computeFocusedElement();
+      this.#computeFocusedElement();
     }
 
     setTimeout(() => {
@@ -276,19 +279,6 @@ export class SparkleSelectComponent {
     },
     { allowSignalWrites: true }
   );
-
-  computeFocusedElement() {
-    for (let i = 0; i < this.#options().length; i++) {
-      const option = this.#options()[i];
-
-      this.#renderer.removeClass(option, 'focused');
-
-      if (this.optionInFocus() === i) {
-        this.#renderer.addClass(option, 'focused');
-        option.scrollIntoView({ block: 'center' });
-      }
-    }
-  }
 
   ngOnInit() {
     this.#setOptionsElement();
@@ -312,8 +302,8 @@ export class SparkleSelectComponent {
       this.#inputRef()!.dispatchEvent(new Event('input'));
     }
 
-    this.optionInFocus.set(this.#firstOptionIndex());
-    this.hasBeenOpened.set(false);
+    this.#optionInFocus.set(this.#firstOptionIndex());
+    this.#hasBeenOpened.set(false);
 
     if (forceClose || !this.selectMultiple()) {
       this.isOpen.set(false);
@@ -331,7 +321,7 @@ export class SparkleSelectComponent {
       return this.deselect(null, true);
     }
 
-    this.optionInFocus.set(elIndex);
+    this.#optionInFocus.set(elIndex);
 
     if (el && !this.selectMultiple()) {
       this.inputValue.set(newSelectedValue);
@@ -355,7 +345,7 @@ export class SparkleSelectComponent {
       }
     }
 
-    this.hasBeenOpened.set(false);
+    this.#hasBeenOpened.set(false);
 
     if (this.selectMultiple()) {
       setTimeout(() => this.#inputRef()?.focus());
@@ -388,11 +378,10 @@ export class SparkleSelectComponent {
     this.#hideOptionsElement();
 
     this.isOpen.set(false);
-    this.hasBeenOpened.set(false);
+    this.#hasBeenOpened.set(false);
     noBlur || this.#inputRef()?.blur();
     this.#killMenuCalculation();
     this.#killClickController();
-    // this.#childListObserver.disconnect();
   }
 
   open(e: MouseEvent | FocusEvent) {
@@ -401,29 +390,21 @@ export class SparkleSelectComponent {
     this.isOpen.set(true);
     this.#setOptionsElement();
 
-    if (this.isSearchInput() && !this.hasBeenOpened()) {
+    if (this.isSearchInput() && !this.#hasBeenOpened()) {
       this.#previousInputValue.set(this.inputValue());
       this.inputValue.set('');
       this.#inputRef()!.focus();
       this.#inputRef()!.value = '';
       this.#inputRef()!.dispatchEvent(new Event('input'));
-      this.optionInFocus.set(-1);
+      this.#optionInFocus.set(-1);
     } else if (this.isSearchInput() || this.selectMultiple()) {
       this.#inputRef()!.focus();
     }
 
-    this.hasBeenOpened.set(true);
+    this.#hasBeenOpened.set(true);
     this.#initMenuCalculation();
     this.#listenForClicks();
     this.#triggerOption.set(!this.#triggerOption());
-
-    // if (this.optionsEl()) {
-    //   // this.#childListObserver.observe(this.optionsEl()!, {
-    //   //   childList: true,
-    //   //   subtree: true,
-    //   // });
-    // }
-
     this.#updateValueFromInput();
   }
 
@@ -459,6 +440,19 @@ export class SparkleSelectComponent {
     }
   }
 
+  #computeFocusedElement() {
+    for (let i = 0; i < this.#options().length; i++) {
+      const option = this.#options()[i];
+
+      this.#renderer.removeClass(option, 'focused');
+
+      if (this.#optionInFocus() === i) {
+        this.#renderer.addClass(option, 'focused');
+        option.scrollIntoView({ block: 'center' });
+      }
+    }
+  }
+
   #updateValueFromInput() {
     const input = this.#inputRef();
 
@@ -481,12 +475,6 @@ export class SparkleSelectComponent {
         }
       }
     });
-  }
-
-  getIndexOfSelectedOption() {
-    const selected = this.selectedOption();
-
-    return selected ? this.#options().indexOf(selected) : -1;
   }
 
   #setOptionsElement() {
@@ -519,15 +507,6 @@ export class SparkleSelectComponent {
       }
     });
   }
-
-  // #childListObserver = new MutationObserver((mutations) => {
-  //   for (var mutation of mutations) {
-  //     if (mutation.type == 'childList') {
-  //       this.#triggerOption.set(!this.#triggerOption());
-  //       this.optionInFocus.set(this.getIndexOfSelectedOption() > -1 ? this.getIndexOfSelectedOption() : 0);
-  //     }
-  //   }
-  // });
 
   #inputObserver = new MutationObserver((mutations) => {
     for (var mutation of mutations) {
