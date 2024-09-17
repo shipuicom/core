@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { SparkleFileUploadComponent } from '../../../../../sparkle-ui/src/public-api';
+import { SparkleFileUploadComponent, SparkleIconComponent } from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-file-upload',
   standalone: true,
-  imports: [SparkleFileUploadComponent],
+  imports: [SparkleFileUploadComponent, SparkleIconComponent],
   templateUrl: './spk-file-upload.component.html',
   styleUrl: './spk-file-upload.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

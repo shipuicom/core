@@ -6,6 +6,11 @@ export const routes: Routes = [
     loadComponent: () => import('./layout/layout.component'),
     children: [
       {
+        path: '',
+        redirectTo: 'spk-tabs',
+        pathMatch: 'full',
+      },
+      {
         path: 'colors',
         loadComponent: () => import('./material/colors/colors.component'),
       },

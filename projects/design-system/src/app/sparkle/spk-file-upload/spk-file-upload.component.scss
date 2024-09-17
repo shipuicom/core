@@ -5,14 +5,15 @@
   padding: 40px;
 }
 
+h3 {
+  margin: 0;
+  font: var(--title-30);
+}
+
 .example {
   display: flex;
   flex-direction: column;
   gap: 20px;
   max-width: 500px;
   width: 100%;
-
-  h3 {
-    margin: 0;
-  }
 }
