@@ -1,3 +1,4 @@
+import { NgClass } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -12,26 +13,69 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { SparkleChipComponent } from '../sparkle-chip/sparkle-chip.component';
 import { SparkleFormFieldComponent } from '../sparkle-form-field/sparkle-form-field.component';
 import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
+
+type InputValueChangedEvent = CustomEvent<{ value: string }>;
+
+interface CustomEventMap {
+  inputValueChanged: InputValueChangedEvent;
+}
+
+declare global {
+  interface HTMLInputElement {
+    // Extend HTMLElement to cover input elements
+    addEventListener<K extends keyof CustomEventMap>(
+      type: K,
+      listener: (this: HTMLElement, ev: CustomEventMap[K]) => any,
+      options?: boolean | AddEventListenerOptions
+    ): void;
+  }
+}
+
+@Component({
+  selector: 'spk-option',
+  standalone: true,
+  template: `
+    <ng-content></ng-content>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class SparkleOptionComponent {
+  value = input<string | null>(null);
+}
+
+const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
 
 @Component({
   selector: 'spk-select',
   standalone: true,
-  imports: [SparkleFormFieldComponent, SparkleIconComponent],
+  imports: [SparkleFormFieldComponent, SparkleIconComponent, SparkleOptionComponent, SparkleChipComponent, NgClass],
   template: `
     <div #formFieldWrapper>
       <spk-form-field (click)="open($event)">
         <ng-content select="label" ngProjectAs="label"></ng-content>
 
         <div class="input" ngProjectAs="input" #inputWrap>
-          @if ((_displayValue() && isSearchInput() && !isOpen()) || (_displayValue() && !isSearchInput())) {
+          @if (selectMultiple()) {
+            <div class="display-value">
+              @if (inputValue().length > 0) {
+                @for (option of inputValue().split(','); track $index) {
+                  <spk-chip class="small simple" [ngClass]="chipClass()" (click)="toggleOption(option, $event)">
+                    {{ displayFn()?.(option) ?? option }}
+                    <spk-icon>x-circle</spk-icon>
+                  </spk-chip>
+                }
+              }
+            </div>
+          } @else if ((_displayValue() && isSearchInput() && !isOpen()) || (_displayValue() && !isSearchInput())) {
             <div class="display-value">{{ _displayValue() }}</div>
           }
           <ng-content select="input"></ng-content>
         </div>
 
-        @if ((inputValue() && !isOpen() && inputValue()!.length > 0) || !!selectedOption()) {
+        @if (((inputValue() && !isOpen() && inputValue()!.length > 0) || !!selectedOption()) && !hideClearButton()) {
           <div class="deselect-indicator" (click)="deselect($event)" spkSuffix>
             <ng-content select="[deselect-indicator]"></ng-content>
             <spk-icon class="default-indicator">x-circle</spk-icon>
@@ -63,18 +107,27 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleSelectComponent {
-  above = input<boolean>(false);
-  right = input<boolean>(false);
-  onlyOptionsAllowed = input<boolean>(false);
-  displayValue = input<string | null>('');
-  displayFn = input<Function | null>(null);
-  onSelectedOption = output<string>();
-
   #BASE_SPACE = 8;
   #renderer = inject(Renderer2);
+  #body = document.getElementsByTagName('body')[0];
   #selfRef = inject<ElementRef<HTMLElement>>(ElementRef<HTMLElement>);
   #triggerInput = signal(false);
   #inputRef = signal<HTMLInputElement | null>(null);
+
+  selectMultiple = input<boolean>(false);
+  above = input<boolean>(false);
+  right = input<boolean>(false);
+  hideClearButton = input<boolean>(false);
+  displayValue = input<string | null>('');
+  displayFn = input<Function | null>(null);
+  onSelectedOption = output<string>();
+  chipClass = computed(() =>
+    Array.from(this.#selfRef.nativeElement.classList)
+      .filter((x) => COLOR_CLASSES.includes(x))
+      .join(' ')
+  );
+
+  inputAbortController: AbortController | null = null;
 
   inputRefEffect = effect(
     () => {
@@ -84,6 +137,15 @@ export class SparkleSelectComponent {
       if (!input) return;
 
       this.#createCustomInputEventListener(input);
+
+      input.addEventListener('inputValueChanged', (event) => {
+        this.inputValue.set(event.detail.value);
+
+        if (this.selectMultiple()) {
+          this.#updateValueFromInput();
+        }
+      });
+
       this.#inputRef.set(input);
       input.autocomplete = 'off';
 
@@ -93,17 +155,28 @@ export class SparkleSelectComponent {
     },
     { allowSignalWrites: true }
   );
-  inputValue = model<string | null>(null);
+
+  inputValue = model<string>('');
   #previousInputValue = signal<string>('');
   #triggerOption = signal(false);
-
+  #firstOptionIndex = signal<number>(-1);
   #options = computed(() => {
     this.#triggerOption();
-    return Array.from(this.optionsRef()?.nativeElement.querySelectorAll<HTMLOptionElement>('option') ?? []);
+
+    const options = this.optionsRef()?.nativeElement.querySelectorAll<HTMLOptionElement>('option');
+    const spkOptions = this.optionsRef()?.nativeElement.querySelectorAll<HTMLElement>('spk-option');
+
+    if (options?.length) {
+      return Array.from(options);
+    } else if (spkOptions?.length) {
+      return Array.from(spkOptions);
+    }
+
+    return [];
   });
 
   _displayValue = computed(() =>
-    this.displayFn() ? this.displayFn()!(this.inputValue() ?? '') : this.displayValue() ?? this.inputValue() ?? ''
+    this.displayFn() ? this.displayFn()!(this.inputValue()) : this.displayValue() ?? this.inputValue()
   );
   optionsRef = viewChild<ElementRef<HTMLDivElement>>('optionsRef');
   formFieldWrapperRef = viewChild.required<ElementRef<HTMLDivElement>>('formFieldWrapper');
@@ -113,7 +186,7 @@ export class SparkleSelectComponent {
   isOpen = signal(false);
   delayedIsOpen = signal(false);
   hasBeenOpened = signal(false);
-  optionInFocus = signal<number>(0);
+  optionInFocus = signal<number>(-1);
   optionsStyle = signal({
     left: '0px',
     top: '0px',
@@ -125,8 +198,8 @@ export class SparkleSelectComponent {
   );
 
   optionsOpenController: AbortController | null = null;
-  clickController: AbortController | null = null;
   inputController: AbortController | null = null;
+  clickController: AbortController | null = null;
 
   #onNewInputRef = effect(() => {
     if (this.inputController) {
@@ -145,16 +218,24 @@ export class SparkleSelectComponent {
       input.addEventListener(
         'keydown',
         (e) => {
+          if (this.selectMultiple() || !this.isSearchInput()) {
+            e.preventDefault();
+          }
+
           if (e.key === 'Escape') {
             this.close();
           } else if (e.key === 'ArrowDown') {
-            if (this.optionInFocus() === null || (this.optionInFocus() as number) === this.#options().length - 1) {
-              this.optionInFocus.set(0);
+            if (
+              this.optionInFocus() === null ||
+              this.optionInFocus() < 0 ||
+              (this.optionInFocus() as number) === this.#options().length - 1
+            ) {
+              this.optionInFocus.set(this.#firstOptionIndex());
             } else {
               this.optionInFocus.set((this.optionInFocus() as number) + 1);
             }
           } else if (e.key === 'ArrowUp') {
-            if (this.optionInFocus() === null || (this.optionInFocus() as number) === 0) {
+            if (this.optionInFocus() === null || this.optionInFocus() < 0 || (this.optionInFocus() as number) === 0) {
               this.optionInFocus.set(this.#options().length - 1);
             } else {
               this.optionInFocus.set((this.optionInFocus() as number) - 1);
@@ -165,14 +246,296 @@ export class SparkleSelectComponent {
             }
           } else if (e.key === 'Tab') {
             this.close(true);
-          } else {
-            this.optionInFocus.set(0);
           }
         },
         {
           signal: this.inputController?.signal,
         }
       );
+    }
+  });
+
+  #optionInFocusEffect = effect(() => {
+    if (this.isOpen()) {
+      this.computeFocusedElement();
+    }
+
+    setTimeout(() => {
+      this.delayedIsOpen.set(this.isOpen());
+    }, 0);
+  });
+
+  #whenInputValueChanged = effect(
+    () => {
+      const val = this.inputValue();
+
+      if (this.#inputRef()) {
+        this.#inputRef()!.value = val ?? '';
+        this.#inputRef()!.dispatchEvent(new Event('input'));
+      }
+    },
+    { allowSignalWrites: true }
+  );
+
+  computeFocusedElement() {
+    for (let i = 0; i < this.#options().length; i++) {
+      const option = this.#options()[i];
+
+      this.#renderer.removeClass(option, 'focused');
+
+      if (this.optionInFocus() === i) {
+        this.#renderer.addClass(option, 'focused');
+        option.scrollIntoView({ block: 'center' });
+      }
+    }
+  }
+
+  ngOnInit() {
+    this.#setOptionsElement();
+
+    this.#inputObserver.observe(this.inputWrapRef().nativeElement, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  getOptionElement(index: number) {
+    return this.#options()[index];
+  }
+
+  deselect($event: Event | null | undefined, forceClose = false) {
+    $event?.stopPropagation();
+
+    if (this.#inputRef()) {
+      this.#inputRef()!.value = '';
+      this.#inputRef()!.dispatchEvent(new Event('input'));
+    }
+
+    this.optionInFocus.set(this.#firstOptionIndex());
+    this.hasBeenOpened.set(false);
+
+    if (forceClose || !this.selectMultiple()) {
+      this.isOpen.set(false);
+      this.#inputRef()?.blur();
+    }
+  }
+
+  selected(el: HTMLElement) {
+    if (!el) return;
+
+    const newSelectedValue = (el.getAttribute('value') || el.getAttribute('ng-reflect-value')) ?? '';
+    const elIndex = this.#options().indexOf(el);
+
+    if (el.hasAttribute('deselect')) {
+      return this.deselect(null, true);
+    }
+
+    this.optionInFocus.set(elIndex);
+
+    if (el && !this.selectMultiple()) {
+      this.inputValue.set(newSelectedValue);
+
+      for (let i = 0; i < this.#options().length; i++) {
+        const option = this.#options()[i];
+
+        if (option.getAttribute('value') === newSelectedValue) {
+          this.#renderer.setAttribute(option, 'selected', 'selected');
+        } else {
+          this.#renderer.removeAttribute(option, 'selected');
+        }
+      }
+    } else if (el && this.selectMultiple()) {
+      if (this.inputValue().includes(newSelectedValue)) {
+        this.#renderer.removeAttribute(el, 'selected');
+        this.toggleOption(newSelectedValue);
+      } else {
+        this.#renderer.setAttribute(el, 'selected', 'selected');
+        this.inputValue.set(this.inputValue().length ? `${this.inputValue()},${newSelectedValue}` : newSelectedValue);
+      }
+    }
+
+    this.hasBeenOpened.set(false);
+
+    if (this.selectMultiple()) {
+      setTimeout(() => this.#inputRef()?.focus());
+    } else {
+      this.isOpen.set(false);
+      this.#inputRef()?.blur();
+    }
+  }
+
+  toggleOption(option: string, $event?: Event) {
+    if ($event) {
+      $event.preventDefault();
+      $event.stopPropagation();
+    }
+
+    this.inputValue.set(
+      this.inputValue().startsWith(option + ',')
+        ? this.inputValue().replace(option + ',', '')
+        : this.inputValue().includes(',' + option)
+          ? this.inputValue().replace(',' + option, '')
+          : this.inputValue().replace(option, '')
+    );
+  }
+
+  close(noBlur = false) {
+    if (this.isSearchInput() && this.#previousInputValue()) {
+      setTimeout(() => this.inputValue.set(this.#previousInputValue()));
+    }
+
+    this.#hideOptionsElement();
+
+    this.isOpen.set(false);
+    this.hasBeenOpened.set(false);
+    noBlur || this.#inputRef()?.blur();
+    this.#killMenuCalculation();
+    this.#killClickController();
+    // this.#childListObserver.disconnect();
+  }
+
+  open(e: MouseEvent | FocusEvent) {
+    e.preventDefault();
+
+    this.isOpen.set(true);
+    this.#setOptionsElement();
+
+    if (this.isSearchInput() && !this.hasBeenOpened()) {
+      this.#previousInputValue.set(this.inputValue());
+      this.inputValue.set('');
+      this.#inputRef()!.focus();
+      this.#inputRef()!.value = '';
+      this.#inputRef()!.dispatchEvent(new Event('input'));
+      this.optionInFocus.set(-1);
+    } else if (this.isSearchInput() || this.selectMultiple()) {
+      this.#inputRef()!.focus();
+    }
+
+    this.hasBeenOpened.set(true);
+    this.#initMenuCalculation();
+    this.#listenForClicks();
+    this.#triggerOption.set(!this.#triggerOption());
+
+    // if (this.optionsEl()) {
+    //   // this.#childListObserver.observe(this.optionsEl()!, {
+    //   //   childList: true,
+    //   //   subtree: true,
+    //   // });
+    // }
+
+    this.#updateValueFromInput();
+  }
+
+  #listenForClicks() {
+    if (this.clickController) {
+      this.clickController.abort();
+    }
+
+    this.clickController = new AbortController();
+
+    window.addEventListener(
+      'click',
+      (e) => {
+        if (!e.target) return;
+
+        const closestOption = (e.target as HTMLElement).closest('option');
+        const closestSpkOption = (e.target as HTMLElement).closest('spk-option');
+
+        const option = closestOption || closestSpkOption;
+        const indexOfOption = this.#options().indexOf(option as HTMLElement);
+
+        if (indexOfOption > -1) {
+          this.selected(option as HTMLElement);
+        }
+      },
+      { signal: this.clickController?.signal }
+    );
+  }
+
+  #killClickController() {
+    if (this.clickController) {
+      this.clickController.abort();
+    }
+  }
+
+  #updateValueFromInput() {
+    const input = this.#inputRef();
+
+    if (!input) return;
+
+    this.inputValue.set(input.value);
+
+    const inputOptions = input.value.split(',');
+
+    setTimeout(() => {
+      const options = this.#options();
+
+      for (let index = 0; index < options.length; index++) {
+        const val = options[index].getAttribute('ng-reflect-value');
+
+        if (val && inputOptions.includes(val)) {
+          this.#renderer.setAttribute(options[index], 'selected', 'selected');
+        } else {
+          this.#renderer.removeAttribute(options[index], 'selected');
+        }
+      }
+    });
+  }
+
+  getIndexOfSelectedOption() {
+    const selected = this.selectedOption();
+
+    return selected ? this.#options().indexOf(selected) : -1;
+  }
+
+  #setOptionsElement() {
+    setTimeout(() => {
+      if (this.optionsEl()) {
+        this.#renderer.appendChild(this.#body, this.optionsEl()!);
+        this.#firstOptionIndex.set(this.#getIndexOfFirstNonDeselectedOption());
+        this.#triggerOption.set(!this.#triggerOption());
+      }
+    });
+  }
+
+  #getIndexOfFirstNonDeselectedOption() {
+    const options = this.#options();
+
+    for (let i = 0; i < options.length; i++) {
+      if (!options[i].hasAttribute('deselect')) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
+
+  #hideOptionsElement() {
+    setTimeout(() => {
+      if (this.optionsEl()) {
+        this.#renderer.removeChild(this.#body, this.optionsEl()!);
+        this.#triggerOption.set(!this.#triggerOption());
+      }
+    });
+  }
+
+  // #childListObserver = new MutationObserver((mutations) => {
+  //   for (var mutation of mutations) {
+  //     if (mutation.type == 'childList') {
+  //       this.#triggerOption.set(!this.#triggerOption());
+  //       this.optionInFocus.set(this.getIndexOfSelectedOption() > -1 ? this.getIndexOfSelectedOption() : 0);
+  //     }
+  //   }
+  // });
+
+  #inputObserver = new MutationObserver((mutations) => {
+    for (var mutation of mutations) {
+      if (mutation.type == 'childList' && (mutation.target as HTMLElement).classList.contains('input')) {
+        this.#triggerInput.set(!this.#triggerInput());
+      }
+      if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+      }
     }
   });
 
@@ -197,206 +560,14 @@ export class SparkleSelectComponent {
 
         this.dispatchEvent(inputEvent);
 
-        return newVal; // Maintain consistency with the original setter
+        return newVal;
       },
     });
 
     return input;
   }
 
-  #optionInFocusEffect = effect(() => {
-    if (this.isOpen()) {
-      this.computeFocusedElement();
-    }
-
-    setTimeout(() => {
-      this.delayedIsOpen.set(this.isOpen());
-    }, 0);
-  });
-
-  #whenInputValueChanged = effect(
-    () => {
-      const val = this.inputValue();
-
-      if (this.#inputRef()) {
-        this.#inputRef()!.value = val ?? '';
-        this.#inputRef()!.dispatchEvent(new Event('input'));
-      }
-    },
-    { allowSignalWrites: true }
-  );
-
-  #childListObserver = new MutationObserver((mutations) => {
-    for (var mutation of mutations) {
-      if (mutation.type == 'childList') {
-        this.#triggerOption.set(!this.#triggerOption());
-        this.optionInFocus.set(this.getIndexOfSelectedOption() > -1 ? this.getIndexOfSelectedOption() : 0);
-      }
-    }
-  });
-
-  #inputObserver = new MutationObserver((mutations) => {
-    for (var mutation of mutations) {
-      if (mutation.type == 'childList') {
-        this.#triggerInput.set(!this.#triggerInput());
-      }
-    }
-  });
-
-  computeFocusedElement() {
-    for (let i = 0; i < this.#options().length; i++) {
-      const option = this.#options()[i];
-
-      this.#renderer.removeClass(option, 'focused');
-
-      if (this.optionInFocus() === i) {
-        this.#renderer.addClass(option, 'focused');
-        option.scrollIntoView({ block: 'nearest' });
-      }
-    }
-  }
-
-  ngOnInit() {
-    this.#setOptionsElement();
-
-    this.#inputObserver.observe(this.inputWrapRef().nativeElement, {
-      childList: true,
-      subtree: true,
-    });
-  }
-
-  getOptionElement(index: number) {
-    return this.#options()[index];
-  }
-
-  deselect($event: Event) {
-    $event.stopPropagation();
-
-    if (this.#inputRef()) {
-      this.#inputRef()!.value = '';
-      this.#inputRef()!.dispatchEvent(new Event('input'));
-    }
-
-    this.isOpen.set(false);
-    this.hasBeenOpened.set(false);
-    this.#inputRef()?.blur();
-  }
-
-  selected(el: HTMLOptionElement) {
-    if (el) {
-      this.inputValue.set(el.getAttribute('value') ?? '');
-    }
-
-    if (this.onlyOptionsAllowed() && !el) {
-      this.inputValue.set('');
-    } else {
-      this.isOpen.set(false);
-      this.hasBeenOpened.set(false);
-      this.#inputRef()?.blur();
-    }
-  }
-
-  #body = document.getElementsByTagName('body')[0];
-
-  #setOptionsElement() {
-    setTimeout(() => {
-      if (this.optionsEl()) {
-        this.#renderer.appendChild(this.#body, this.optionsEl()!);
-        this.#triggerOption.set(!this.#triggerOption());
-      }
-    });
-  }
-
-  #hideOptionsElement() {
-    setTimeout(() => {
-      if (this.optionsEl()) {
-        this.#renderer.removeChild(this.#body, this.optionsEl()!);
-        this.#triggerOption.set(!this.#triggerOption());
-      }
-    });
-  }
-
-  close(noBlur = false) {
-    if (this.isSearchInput() && this.#previousInputValue()) {
-      setTimeout(() => this.inputValue.set(this.#previousInputValue()));
-    }
-
-    this.#hideOptionsElement();
-
-    this.isOpen.set(false);
-    this.hasBeenOpened.set(false);
-    noBlur || this.#inputRef()?.blur();
-    this.#killMenuCalculation();
-    this.#killClickListener();
-    this.#childListObserver.disconnect();
-  }
-
-  open(e: MouseEvent | FocusEvent) {
-    e.preventDefault();
-
-    this.isOpen.set(true);
-    this.#setOptionsElement();
-
-    if (this.isSearchInput() && !this.hasBeenOpened()) {
-      this.#previousInputValue.set(this.inputValue() ?? '');
-      this.inputValue.set(null);
-      this.#inputRef()!.focus();
-    } else if (this.isSearchInput()) {
-      this.#inputRef()!.focus();
-    } else {
-      this.#inputRef()?.blur();
-    }
-
-    this.hasBeenOpened.set(true);
-    this.#initMenuCalculation();
-    this.#initClickListener();
-    this.#triggerOption.set(!this.#triggerOption());
-
-    setTimeout(() => {
-      if (this.optionsEl()) {
-        this.#childListObserver.observe(this.optionsEl()!, {
-          childList: true,
-          subtree: true,
-        });
-      }
-    }, 0);
-  }
-
-  #initClickListener() {
-    if (this.clickController) {
-      this.clickController.abort();
-    }
-
-    this.clickController = new AbortController();
-
-    window.addEventListener(
-      'click',
-      (e) => {
-        if (this.#options().indexOf(e.target as HTMLOptionElement) > -1) {
-          this.selected(e.target as HTMLOptionElement);
-        }
-      },
-      { signal: this.clickController?.signal }
-    );
-  }
-
-  #killClickListener() {
-    if (this.clickController) {
-      this.clickController.abort();
-    }
-  }
-
-  getIndexOfSelectedOption() {
-    const selected = this.selectedOption();
-
-    return selected ? this.#options().indexOf(selected) : -1;
-  }
-
   #initMenuCalculation() {
-    if (this.optionsOpenController) {
-      this.optionsOpenController.abort();
-    }
-
     this.optionsOpenController = new AbortController();
 
     setTimeout(() => this.#calculateMenuPosition());

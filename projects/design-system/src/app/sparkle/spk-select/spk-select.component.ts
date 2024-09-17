@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, model, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { SparkleMultiSelectComponent } from '../../../../../sparkle-ui/src/lib/sparkle-select/sparkle-multi-select.component';
 import {
   SparkleCheckboxComponent,
   SparkleIconComponent,
@@ -29,7 +28,6 @@ type FoodGroup = {
     SparkleIconComponent,
     SparkleCheckboxComponent,
     SparkleOptionComponent,
-    SparkleMultiSelectComponent,
   ],
   templateUrl: './spk-select.component.html',
   styleUrl: './spk-select.component.scss',
@@ -45,6 +43,7 @@ export default class SpkSelectComponent {
   inputSearchCtrl2Signal = toSignal(this.inputSearchCtrl2.valueChanges);
   inputSearchCtrl3Signal = toSignal(this.inputSearchCtrl3.valueChanges);
   search = model('');
+  some = signal('');
 
   foodGroups = signal<FoodGroup[]>([
     {
