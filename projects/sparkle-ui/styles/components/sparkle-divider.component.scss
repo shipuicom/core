@@ -3,10 +3,41 @@ $sparkleDivider: false !default;
 @if $sparkleDivider == true {
   spk-divider {
     display: block;
-    background-color: var(--base-level-40);
+    background-color: inherit;
     margin: p2r(8 0);
     border: 0;
     height: 1px;
     width: 100%;
+    position: relative;
+    font: inherit;
+    font-size: inherit;
+    color: inherit;
+
+    &::before {
+      display: block;
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: var(--base-level-40);
+      border: 0;
+      height: 1px;
+      width: 100%;
+    }
+
+    &:after {
+      display: block;
+      content: attr(label);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: p2r(0 8);
+      background-color: inherit;
+      font: inherit;
+      font-size: inherit;
+      color: inherit;
+    }
   }
 }
