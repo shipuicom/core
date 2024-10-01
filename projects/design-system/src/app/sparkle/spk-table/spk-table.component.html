@@ -1,1 +1,31 @@
-<p>spk-table works!</p>,
+<section>
+  <h3>Basic table - sorted by : {{ sortByColumn() }}</h3>
+
+  <spk-table
+    [tableColumns]="$any(displayedColumns())"
+    [(data)]="dataSource"
+    [loading]="isLoading()"
+    [sortByColumn]="sortByColumn()">
+    <tr table-header>
+      @for (col of displayedColumns(); track col) {
+        <th (click)="toggleSort(col)">{{ col }}</th>
+      }
+    </tr>
+
+    @for (row of dataSource(); track $index) {
+      <tr (click)="toggleRow($index)">
+        @for (col of displayedColumns(); track col) {
+          <td>{{ row[col] }}</td>
+        }
+      </tr>
+
+      @if ($index === openRowIndex()) {
+        <tr>
+          <td [style.grid-column]="'1 / -1'">hi im a secondary row</td>
+        </tr>
+      }
+    }
+
+    <div table-no-rows>No data available</div>
+  </spk-table>
+</section>
