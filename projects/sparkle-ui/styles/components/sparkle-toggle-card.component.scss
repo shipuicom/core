@@ -1,6 +1,6 @@
-$sparkleToggleCard: false !default;
+$sparkleToggleCard: true !default;
 
-@if $sparkleToggleCard == true {
+@if $initSparkle == true and $sparkleToggleCard == true {
   spk-toggle-card {
     display: flex;
     flex-direction: column;

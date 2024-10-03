@@ -1,6 +1,6 @@
-$sparkleDivider: false !default;
+$sparkleDivider: true !default;
 
-@if $sparkleDivider == true {
+@if $initSparkle == true and $sparkleDivider == true {
   spk-divider {
     --divider-color: var(--base-level-40);
     --divider-height: #{p2r(1)};

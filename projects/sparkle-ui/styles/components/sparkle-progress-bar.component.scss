@@ -1,6 +1,6 @@
-$sparkleProgressBar: false !default;
+$sparkleProgressBar: true !default;
 
-@if $sparkleProgressBar == true {
+@if $initSparkle == true and $sparkleProgressBar == true {
   spk-progress-bar {
     display: block;
     width: 100%;

@@ -1,6 +1,6 @@
-$sparkleAlert: false !default;
+$sparkleAlert: true !default;
 
-@if $sparkleAlert == true {
+@if $initSparkle == true and $sparkleAlert == true {
   spk-alert {
     --spk-alert-animation-duration: 400ms;
     --spk-alert-background-color: var(--base-level-10);

@@ -1,6 +1,6 @@
-$sparkleSidenav: false !default;
+$sparkleSidenav: true !default;
 
-@if $sparkleSidenav == true {
+@if $initSparkle == true and $sparkleSidenav == true {
   spk-sidenav {
     --sidenav-width: #{p2r(280)};
 

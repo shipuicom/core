@@ -1,6 +1,6 @@
-$sparkleSortable: false !default;
+$sparkleSortable: true !default;
 
-@if $sparkleSortable == true {
+@if $initSparkle == true and $sparkleSortable == true {
   [spkSortable] {
     position: relative;
 

@@ -1,6 +1,6 @@
-$sparkleRangeSlider: false !default;
+$sparkleRangeSlider: true !default;
 
-@if $sparkleRangeSlider == true {
+@if $initSparkle == true and $sparkleRangeSlider == true {
   spk-range-slider {
     --spk-range-slider-track: var(--base-level-30);
     --spk-range-slider-track-border-color: var(--base-level-10);

@@ -1,6 +1,6 @@
-$sparkleMenu: false !default;
+$sparkleMenu: true !default;
 
-@if $sparkleMenu == true {
+@if $initSparkle == true and $sparkleMenu == true {
   spk-menu {
     display: inline-block;
     position: relative;

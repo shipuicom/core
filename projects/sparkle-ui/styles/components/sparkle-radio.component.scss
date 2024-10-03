@@ -1,6 +1,6 @@
-$sparkleRadio: false !default;
+$sparkleRadio: true !default;
 
-@if $sparkleRadio == true {
+@if $initSparkle == true and $sparkleRadio == true {
   spk-radio {
     --spk-radio-dot-opacity: 0;
     --spk-radio-dot-color: var(--base-level-60);

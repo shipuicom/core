@@ -1,6 +1,6 @@
-$sparkleAlert: false !default;
+$sparkleAlert: true !default;
 
-@if $sparkleAlert == true {
+@if $initSparkle == true and $sparkleAlert == true {
   spk-alert-container {
     width: 100%;
     position: relative;

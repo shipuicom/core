@@ -1,6 +1,6 @@
-$sparkleCheckbox: false !default;
+$sparkleCheckbox: true !default;
 
-@if $sparkleCheckbox == true {
+@if $initSparkle == true and $sparkleCheckbox == true {
   spk-checkbox {
     display: flex;
     align-items: center;

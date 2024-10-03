@@ -1,6 +1,6 @@
-$sparkleList: false !default;
+$sparkleList: true !default;
 
-@if $sparkleList == true {
+@if $initSparkle == true and $sparkleList == true {
   spk-list {
     --list-shape: var(--shape-2);
     --list-active-bg: var(--base-level-20);

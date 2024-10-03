@@ -1,6 +1,6 @@
-$sparkleFormField: false !default;
+$sparkleFormField: true !default;
 
-@if $sparkleFormField == true {
+@if $initSparkle == true and $sparkleFormField == true {
   spk-form-field {
     --spk-input-height: #{p2r(40)};
     --spk-input-shape: var(--shape-2);

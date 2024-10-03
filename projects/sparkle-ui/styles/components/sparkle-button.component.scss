@@ -1,6 +1,6 @@
-$sparkleButton: false !default;
+$sparkleButton: true !default;
 
-@if $sparkleButton == true {
+@if $initSparkle == true and $sparkleButton == true {
   [spk-button] {
     --btn-height: #{p2r(40)};
     --btn-shape: var(--shape-2);

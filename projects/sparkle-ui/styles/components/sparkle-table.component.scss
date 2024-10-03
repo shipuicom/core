@@ -1,6 +1,6 @@
-$sparkleTable: false !default;
+$sparkleTable: true !default;
 
-@if $sparkleTable == true {
+@if $initSparkle == true and $sparkleTable == true {
   spk-table {
     --table-border-color: var(--base-level-40);
     --table-header-bg: var(--base-level-20);

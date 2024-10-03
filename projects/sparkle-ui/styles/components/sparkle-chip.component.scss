@@ -1,6 +1,6 @@
-$sparkleChip: false !default;
+$sparkleChip: true !default;
 
-@if $sparkleChip == true {
+@if $initSparkle == true and $sparkleChip == true {
   spk-chip {
     --chip-height: #{p2r(32)};
     --chip-shape: #{p2r(16)};

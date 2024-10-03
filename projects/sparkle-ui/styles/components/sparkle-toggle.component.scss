@@ -1,6 +1,6 @@
-$sparkleToggle: false !default;
+$sparkleToggle: true !default;
 
-@if $sparkleToggle == true {
+@if $initSparkle == true and $sparkleToggle == true {
   spk-toggle {
     display: flex;
     align-items: center;

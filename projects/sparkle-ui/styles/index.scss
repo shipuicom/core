@@ -1,8 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
 @use 'sass:list';
-// @use '@angular/material' as mat;
 
-$initMaterial: true !default;
+$initMaterial: false !default;
+$initSparkle: true !default;
 
 @import './helpers.scss';
 @import './core/palette-variables.scss';

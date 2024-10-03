@@ -1,6 +1,6 @@
-$sparkleStepper: false !default;
+$sparkleStepper: true !default;
 
-@if $sparkleStepper == true {
+@if $initSparkle == true and $sparkleStepper == true {
   spk-stepper {
     display: flex;
     flex-wrap: nowrap;

@@ -1,6 +1,6 @@
-$sparkleCard: false !default;
+$sparkleCard: true !default;
 
-@if $sparkleCard == true {
+@if $initSparkle == true and $sparkleCard == true {
   spk-card {
     --card-bg: var(--base-level-10);
     --card-inner-bg: var(--base-level-20);

@@ -1,6 +1,6 @@
-$sparkleButtonGroup: false !default;
+$sparkleButtonGroup: true !default;
 
-@if $sparkleButtonGroup == true {
+@if $initSparkle == true and $sparkleButtonGroup == true {
   spk-button-group {
     --spk-button-group-bg: var(--base-level-10);
     --spk-button-group-color: var(--base-level-70);

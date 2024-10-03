@@ -1,6 +1,6 @@
-$sparkleTooltip: false !default;
+$sparkleTooltip: true !default;
 
-@if $sparkleTooltip == true {
+@if $initSparkle == true and $sparkleTooltip == true {
   [spk-tooltip],
   [spk-tooltip-primary],
   [spk-tooltip-accent],

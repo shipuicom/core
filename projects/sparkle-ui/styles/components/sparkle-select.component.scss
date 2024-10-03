@@ -1,6 +1,6 @@
-$sparkleSelect: false !default;
+$sparkleSelect: true !default;
 
-@if $sparkleSelect == true {
+@if $initSparkle == true and $sparkleSelect == true {
   spk-multi-select,
   spk-select {
     spk-form-field {
