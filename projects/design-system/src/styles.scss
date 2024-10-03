@@ -2,32 +2,4 @@
 //   $initMaterial: false,
 // );
 
-@use '../../sparkle-ui/styles/index.scss' as * with (
-  $initMaterial: false,
-  $sparkleButton: true,
-  $sparkleToggle: true,
-  $sparkleProgressBar: true,
-  $sparkleCheckbox: true,
-  $sparkleAlert: true,
-  $sparkleMenu: true,
-  $sparkleDivider: true,
-  $sparkleIcon: true,
-  $sparkleChip: true,
-  $sparkleFormField: true,
-  $sparkleRadio: true,
-  $sparkleList: true,
-  $sparkleSidenav: true,
-  $sparkleButtonGroup: true,
-  $sparkleRangeSlider: true,
-  $sparkleTooltip: true,
-  $sparkleTable: true,
-  $sparkleSelect: true,
-  $sparkleCard: true,
-  $sparkleToggleCard: true,
-  $sparkleStepper: true,
-  $sparkleSortable: true,
-  $sparkleFileUpload: true,
-  // $sparkleTabs: true,
-  // $sparkleDialog: true,
-  // $sparkleDatepicker: true
-);
+@use '../../sparkle-ui/styles/index.scss' as *;

@@ -3,6 +3,7 @@
 
 $initMaterial: false !default;
 $initSparkle: true !default;
+$initSparkleBeta: false !default;
 
 @import './helpers.scss';
 @import './core/palette-variables.scss';
