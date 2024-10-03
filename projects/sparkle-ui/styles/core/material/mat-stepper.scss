@@ -1,4 +1,6 @@
-@if $initMaterial == true {
+$matStepperTheme: true !default;
+
+@if $matStepperTheme == true and $initMaterial == true {
   body.dark,
   body {
     --mat-stepper-background-color: transparent;

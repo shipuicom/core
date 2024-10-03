@@ -13,11 +13,8 @@
   }
 }
 
-$initMaterial: true !default;
 @if ($initMaterial == true) {
   @include initMaterial();
-} @else {
-  @warn 'Material is not initialized should only be used for development purposes.';
 }
 
 @import './material/cdk-overlay';

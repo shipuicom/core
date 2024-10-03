@@ -1,8 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
 @use 'sass:list';
-@use '@angular/material' as mat;
+// @use '@angular/material' as mat;
 
-$initialize-mat-core: true !default;
+$initMaterial: true !default;
 
 @import './helpers.scss';
 @import './core/palette-variables.scss';
@@ -153,7 +153,7 @@ $use-apexcharts: true !default;
 @import './core/fonts/inter-tight';
 // }
 
-@import './core/material';
+// @import './core/material';
 @import './core/core';
 
 // @if ($use-apexcharts == true) {
