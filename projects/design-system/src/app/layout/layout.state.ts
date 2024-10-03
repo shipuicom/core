@@ -20,7 +20,7 @@ export class LayoutState {
 
   isDarkMode = this.#isDarkMode.asReadonly();
   isMobile = this.#isMobile.asReadonly();
-  isNavOpen = signal(false);
+  isNavOpen = signal(true);
 
   constructor(@Inject('Window') private window: Window) {
     if (isPlatformBrowser(this.#platformId)) {

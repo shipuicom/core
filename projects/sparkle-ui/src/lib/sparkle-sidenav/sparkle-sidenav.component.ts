@@ -59,6 +59,7 @@ export type SparkleSidenavType = 'overlay' | 'simple' | '';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class.open]': 'isOpen()',
+    '[class.closed]': '!isOpen()',
     '[class.overlay]': 'type() === "overlay"',
     '[class.simple]': 'type() === "simple"',
     '[class.is-dragging]': 'isDragging()',

@@ -9,9 +9,7 @@ $sparkleSidenav: true !default;
     height: 100vh;
 
     &.closed {
-      .sidenav {
-        width: p2r(48);
-      }
+      --sidenav-width: #{p2r(48)};
     }
 
     .sidenav {
@@ -73,6 +71,10 @@ $sparkleSidenav: true !default;
           border-radius: 0;
           border-width: 0 0 0 1px;
         }
+      }
+
+      &.closed {
+        --sidenav-width: #{p2r(100)};
       }
     }
 
