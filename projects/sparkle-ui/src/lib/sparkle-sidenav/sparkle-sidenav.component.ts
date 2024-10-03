@@ -11,6 +11,8 @@ import {
 } from '@angular/core';
 import { SparkleButtonComponent } from '../sparkle-button/sparkle-button.component';
 
+export type SparkleSidenavType = 'overlay' | 'simple' | '';
+
 @Component({
   selector: 'spk-sidenav',
   standalone: true,
@@ -57,6 +59,8 @@ import { SparkleButtonComponent } from '../sparkle-button/sparkle-button.compone
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class.open]': 'isOpen()',
+    '[class.overlay]': 'type() === "overlay"',
+    '[class.simple]': 'type() === "simple"',
     '[class.is-dragging]': 'isDragging()',
   },
 })
@@ -66,6 +70,7 @@ export class SparkleSidenavComponent {
 
   disableDrag = input<boolean>(false);
   isOpen = model<boolean>(false);
+  type = input<SparkleSidenavType>('');
 
   dragImageElement = viewChild.required<ElementRef<HTMLDivElement>>('dragImageElement');
   dragIsEnding = signal<boolean>(false);
@@ -88,7 +93,7 @@ export class SparkleSidenavComponent {
       return `translateX(${this.dragActualPositionX()}px)`;
     }
 
-    return this.isOpen() ? `translateX(${this.openWidth}px)` : `translateX(0px)`;
+    return this.isOpen() && this.type() === 'overlay' ? `translateX(${this.openWidth}px)` : `translateX(0px)`;
   });
 
   draggingEffect = effect(() => {

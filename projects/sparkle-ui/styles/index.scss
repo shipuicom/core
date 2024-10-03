@@ -1,6 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 @use 'sass:list';
 
+$useInterTight: true !default;
 $initMaterial: false !default;
 $initSparkle: true !default;
 $initSparkleBeta: false !default;
@@ -150,9 +151,7 @@ $use-inter-tight: true !default;
 $use-apexcharts: true !default;
 
 // @import './core/fonts/phosphor-icons';
-// @if ($use-inter-tight == true) {
 @import './core/fonts/inter-tight';
-// }
 
 // @import './core/material';
 @import './core/core';

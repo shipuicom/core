@@ -64,6 +64,18 @@ $sparkleSidenav: true !default;
       display: none;
     }
 
+    &.simple {
+      .main-wrap {
+        padding: 0;
+
+        main {
+          height: 100vh;
+          border-radius: 0;
+          border-width: 0 0 0 1px;
+        }
+      }
+    }
+
     &.overlay {
       overflow: hidden;
 

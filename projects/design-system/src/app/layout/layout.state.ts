@@ -56,6 +56,10 @@ export class LayoutState {
     this.#isDarkMode.set(!this.isDarkMode());
   }
 
+  closeSidenav() {
+    this.isNavOpen.set(false);
+  }
+
   setDarkMode() {
     this.#ls.setItemParsed('darkTheme', true, true);
     this.#isDarkMode.set(true);
