@@ -35,6 +35,7 @@ $sparkleButtonGroup: true !default;
       appearance: none;
       overflow: visible;
       vertical-align: middle;
+      white-space: nowrap;
       background: var(--spk-button-group-bg);
       color: var(--spk-button-group-color);
       font: var(--spk-button-group-font);
