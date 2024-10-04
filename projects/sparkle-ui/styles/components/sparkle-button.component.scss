@@ -40,6 +40,10 @@ $sparkleButton: true !default;
       color: var(--btn-icon-color);
     }
 
+    &:has(spk-icon:only-child) {
+      padding: p2r(0 9);
+    }
+
     &:hover {
       --btn-color: var(--base-level-70);
       background: var(--btn-bg-hover);
@@ -173,6 +177,10 @@ $sparkleButton: true !default;
 
       border: 0;
 
+      &:has(spk-icon:only-child) {
+        padding: p2r(0 10);
+      }
+
       &.primary {
         --btn-color: var(--primary-contrast-500);
         --btn-bg: var(--primary-500);
@@ -213,6 +221,10 @@ $sparkleButton: true !default;
 
       border: 0;
       box-shadow: none;
+
+      &:has(spk-icon:only-child) {
+        padding: p2r(0 10);
+      }
 
       &.primary {
         --btn-color: var(--primary-contrast-500);
