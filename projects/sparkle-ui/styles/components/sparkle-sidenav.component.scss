@@ -8,10 +8,6 @@ $sparkleSidenav: true !default;
     width: 100vw;
     height: 100vh;
 
-    &.closed {
-      --sidenav-width: #{p2r(48)};
-    }
-
     .sidenav {
       width: var(--sidenav-width);
       transition: width 200ms linear;

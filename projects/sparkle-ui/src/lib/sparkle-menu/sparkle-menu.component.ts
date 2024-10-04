@@ -22,7 +22,13 @@ import {
       <ng-content />
     </div>
 
-    <div class="sparkle-popup-menu" [class.active]="isActive()" #menuRef [style]="menuStyle()">
+    <div
+      #menuRef
+      class="sparkle-popup-menu"
+      [class.right]="right()"
+      [class.above]="above()"
+      [class.active]="isActive()"
+      [style]="menuStyle()">
       <div class="sparkle-menu-backdrop" (click)="close('closed')"></div>
       <div class="sparkle-options" (click)="close('selected')">
         <ng-content select="[menu]" />
