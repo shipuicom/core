@@ -53,7 +53,7 @@ const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
   imports: [SparkleFormFieldComponent, SparkleIconComponent, SparkleOptionComponent, SparkleChipComponent, NgClass],
   template: `
     <div #formFieldWrapper>
-      <spk-form-field (click)="open($event)">
+      <spk-form-field (click)="open($event)" [attr.readonly]="readonly">
         <ng-content select="label" ngProjectAs="label"></ng-content>
 
         <div class="input" ngProjectAs="input" #inputWrap>
@@ -116,6 +116,7 @@ export class SparkleSelectComponent {
   inputWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('inputWrap');
 
   inputValue = model<string>('');
+  readonly = input<boolean>(false);
   selectMultiple = input<boolean>(false);
   hideClearButton = input<boolean>(false);
   displayValue = input<string | null>('');
