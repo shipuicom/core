@@ -33,7 +33,7 @@ export class SparkleColumnComponent {}
     </thead>
 
     @if (loading()) {
-      <spk-progress-bar class="indeterminate" />
+      <spk-progress-bar class="indeterminate primary" />
     }
 
     <tbody>

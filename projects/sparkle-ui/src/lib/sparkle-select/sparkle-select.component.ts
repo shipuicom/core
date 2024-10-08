@@ -110,6 +110,7 @@ export class SparkleSelectComponent {
   #renderer = inject(Renderer2);
   #body = document.getElementsByTagName('body')[0];
   #selfRef = inject<ElementRef<HTMLElement>>(ElementRef<HTMLElement>);
+
   optionsRef = viewChild<ElementRef<HTMLDivElement>>('optionsRef');
   formFieldWrapperRef = viewChild.required<ElementRef<HTMLDivElement>>('formFieldWrapper');
   inputWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('inputWrap');
@@ -118,7 +119,7 @@ export class SparkleSelectComponent {
   selectMultiple = input<boolean>(false);
   hideClearButton = input<boolean>(false);
   displayValue = input<string | null>('');
-  displayFn = input<Function | null>(null);
+  displayFn = input<Function | null>((option: any) => `${option}`);
   above = input<boolean>(false);
   right = input<boolean>(false);
 
