@@ -22,7 +22,10 @@
     </ng-container>
   </spk-new-select> -->
 
-  <spk-select class="primary">
+  <spk-select [displayFn]="displayFn(foods())" class="primary">
+    <label for="text">Simple select one from list</label>
+    <input type="text" id="text" [formControl]="inputCtrl" />
+
     <ng-container options>
       @for (food of foods(); track $index) {
         <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
@@ -30,7 +33,7 @@
     </ng-container>
   </spk-select>
 
-  <spk-select [displayFn]="displayFn(foods())" class="primary">
+  <spk-select [displayFn]="displayFn(foods())" class="primary" [readonly]="true">
     <label for="text">Simple select one from list</label>
     <input type="text" id="text" [formControl]="inputCtrl" />
 
