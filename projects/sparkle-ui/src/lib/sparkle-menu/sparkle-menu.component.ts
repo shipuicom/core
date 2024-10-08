@@ -28,7 +28,8 @@ import {
       [class.right]="right()"
       [class.above]="above()"
       [class.active]="isActive()"
-      [style]="menuStyle()">
+      [style]="menuStyle()"
+      [class]="popupClass()">
       <div class="sparkle-menu-backdrop" (click)="close('closed')"></div>
       <div class="sparkle-options" (click)="close('selected')">
         <ng-content select="[menu]" />
@@ -45,6 +46,7 @@ export class SparkleMenuComponent {
   #BASE_SPACE = 8;
   above = input<boolean>(false);
   right = input<boolean>(false);
+  popupClass = input<string | null>(null);
   closeAction = output<'closed' | 'selected'>();
   isActive = model<boolean>(false);
   optionInFocus = model<number | null>(null);

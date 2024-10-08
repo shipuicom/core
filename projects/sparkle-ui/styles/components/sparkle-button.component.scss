@@ -75,6 +75,10 @@ $sparkleButton: true !default;
 
       padding: p2r(0 8);
       gap: p2r(4);
+
+      &:has(spk-icon:only-child) {
+        padding: p2r(0 6);
+      }
     }
 
     &[disabled] {

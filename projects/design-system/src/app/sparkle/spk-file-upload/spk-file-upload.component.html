@@ -4,7 +4,9 @@
 </h3>
 
 <div class="example">
-  <spk-file-upload>
-    <input type="file" multiple />
-  </spk-file-upload>
+  <form [formGroup]="form">
+    <spk-file-upload>
+      <input type="file" multiple formControlName="file" />
+    </spk-file-upload>
+  </form>
 </div>
