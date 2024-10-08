@@ -37,6 +37,12 @@ $sparkleMenu: true !default;
     opacity: 0;
     visibility: hidden;
 
+    &.no-scroll {
+      .sparkle-options {
+        max-height: initial;
+      }
+    }
+
     &.active {
       opacity: 1;
       visibility: visible;

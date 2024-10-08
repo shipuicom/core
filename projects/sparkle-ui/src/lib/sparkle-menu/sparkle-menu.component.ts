@@ -28,6 +28,7 @@ import {
       [class.right]="right()"
       [class.above]="above()"
       [class.active]="isActive()"
+      [class.no-scroll]="noScroll()"
       [style]="menuStyle()"
       [class]="popupClass()">
       <div class="sparkle-menu-backdrop" (click)="close('closed')"></div>
@@ -47,6 +48,7 @@ export class SparkleMenuComponent {
   above = input<boolean>(false);
   right = input<boolean>(false);
   popupClass = input<string | null>(null);
+  noScroll = input<boolean>(false);
   closeAction = output<'closed' | 'selected'>();
   isActive = model<boolean>(false);
   optionInFocus = model<number | null>(null);
