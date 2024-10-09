@@ -1,6 +1,6 @@
 $cdkOverlayTheme: true !default;
 
-@if $cdkOverlayTheme == true and $initMaterial == true {
+@if $cdkOverlayTheme == true {
   .cdk-overlay-container,
   .cdk-global-overlay-wrapper {
     pointer-events: none;

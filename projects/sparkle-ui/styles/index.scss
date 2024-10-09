@@ -5,6 +5,7 @@ $useInterTight: true !default;
 $initMaterial: false !default;
 $initSparkle: true !default;
 $initSparkleBeta: false !default;
+$cdkOverlayTheme: false !default;
 
 @import './helpers.scss';
 @import './core/palette-variables.scss';
@@ -153,7 +154,8 @@ $use-apexcharts: true !default;
 // @import './core/fonts/phosphor-icons';
 @import './core/fonts/inter-tight';
 
-// @import './core/material';
+@import './core/cdk/cdk';
+@import './core/material';
 @import './core/core';
 
 // @if ($use-apexcharts == true) {

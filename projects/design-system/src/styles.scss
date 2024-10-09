@@ -1,3 +1,4 @@
 @use '../../sparkle-ui/styles/index.scss' as * with (
-  $initSparkleBeta: true
+  $initSparkleBeta: true,
+  $cdkOverlayTheme: true
 );
