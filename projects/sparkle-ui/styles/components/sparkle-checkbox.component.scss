@@ -38,6 +38,22 @@ $sparkleCheckbox: true !default;
     spk-icon {
       opacity: 0;
       font-weight: bold;
+
+      &.indeterminate-indicator {
+        display: none;
+      }
+    }
+
+    &.indeterminate {
+      .box spk-icon {
+        &.indeterminate-indicator {
+          display: block;
+        }
+
+        &.default-indicator {
+          display: none;
+        }
+      }
     }
 
     &:has(input[type='checkbox']:checked),

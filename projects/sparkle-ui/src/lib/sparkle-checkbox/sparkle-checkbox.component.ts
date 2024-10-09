@@ -7,7 +7,8 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
   imports: [SparkleIconComponent],
   template: `
     <div class="box">
-      <spk-icon class="inherit">check</spk-icon>
+      <spk-icon class="inherit default-indicator">check</spk-icon>
+      <spk-icon class="inherit indeterminate-indicator">minus</spk-icon>
     </div>
 
     <ng-content />

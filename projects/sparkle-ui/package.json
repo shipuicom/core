@@ -14,6 +14,7 @@
     "sparkle-fg": "./bin/sparkle-fg"
   },
   "libraryIcons": [
+    "minus",
     "upload-simple",
     "magnifying-glass",
     "x-circle",
