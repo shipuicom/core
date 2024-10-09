@@ -114,6 +114,12 @@ export const routes: Routes = [
       {
         path: 'spk-tabs',
         loadComponent: () => import('./sparkle/spk-tabs/spk-tabs.component'),
+        children: [
+          {
+            path: 'tab/:id',
+            loadComponent: () => import('./sparkle/spk-tabs/tab/tab.component'),
+          },
+        ],
       },
       {
         path: 'spk-stepper',

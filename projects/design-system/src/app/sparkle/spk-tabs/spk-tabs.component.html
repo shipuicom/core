@@ -1,1 +1,20 @@
-<h3>This is a work in progress.</h3>
+<h3>Tabs example</h3>
+
+<spk-tabs>
+  <button spk-tab routerLink="/spk-tabs/tab/1" routerLinkActive="active">
+    <spk-icon>spinner</spk-icon>
+    Tab 1
+  </button>
+
+  <button spk-tab routerLink="/spk-tabs/tab/2" routerLinkActive="active">
+    <spk-icon>hand-palm</spk-icon>
+    Tab 2
+  </button>
+
+  <button spk-tab routerLink="/spk-tabs/tab/3" routerLinkActive="active">
+    <spk-icon>check</spk-icon>
+    Tab 3
+  </button>
+</spk-tabs>
+
+<router-outlet></router-outlet>

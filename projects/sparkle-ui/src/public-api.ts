@@ -29,6 +29,7 @@ export * from './lib/sparkle-sortable/sparkle-sortable.component';
 export * from './lib/sparkle-sortable/sparkle-sortable.directive';
 export * from './lib/sparkle-stepper/sparkle-stepper.component';
 export * from './lib/sparkle-table/sparkle-table.component';
+export * from './lib/sparkle-tabs/sparkle-tabs.component';
 export * from './lib/sparkle-toggle-card/sparkle-toggle-card.component';
 export * from './lib/sparkle-toggle/sparkle-toggle.component';
 
