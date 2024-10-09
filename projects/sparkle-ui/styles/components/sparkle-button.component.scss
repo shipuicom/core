@@ -185,6 +185,10 @@ $sparkleButton: true !default;
         padding: p2r(0 10);
       }
 
+      &.small:has(spk-icon:only-child) {
+        padding: p2r(0 7);
+      }
+
       &.primary {
         --btn-color: var(--primary-contrast-500);
         --btn-bg: var(--primary-500);
@@ -228,6 +232,10 @@ $sparkleButton: true !default;
 
       &:has(spk-icon:only-child) {
         padding: p2r(0 10);
+      }
+
+      &.small:has(spk-icon:only-child) {
+        padding: p2r(0 7);
       }
 
       &.primary {
