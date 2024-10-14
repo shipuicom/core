@@ -1,4 +1,3 @@
-import { NgClass } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -50,7 +49,7 @@ const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
 @Component({
   selector: 'spk-select',
   standalone: true,
-  imports: [SparkleFormFieldComponent, SparkleIconComponent, SparkleOptionComponent, SparkleChipComponent, NgClass],
+  imports: [SparkleFormFieldComponent, SparkleIconComponent, SparkleOptionComponent, SparkleChipComponent],
   template: `
     <div #formFieldWrapper>
       <spk-form-field (click)="open($event)" [class]="readonly() ? 'readonly' : ''">
@@ -61,7 +60,7 @@ const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
             <div class="display-value">
               @if (inputValue().length > 0) {
                 @for (option of inputValue().split(','); track $index) {
-                  <spk-chip class="small simple" [ngClass]="chipClass()" (click)="toggleOption(option, $event)">
+                  <spk-chip class="small simple" [class]="chipClass()" (click)="toggleOption(option, $event)">
                     {{ displayFn()?.(option) ?? option }}
                     <spk-icon>x-circle</spk-icon>
                   </spk-chip>

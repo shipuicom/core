@@ -1,0 +1,56 @@
+spk-dialog {
+  --dialog-padding: #{p2r(16)};
+  --dialog-gap: #{p2r(8)};
+
+  dialog {
+    border: 1px solid var(--base-level-40);
+    border-radius: var(--shape-2);
+    background-color: var(--base-level-10);
+    box-shadow: var(--box-shadow-40);
+    color: var(--base-level-60);
+    font: var(--paragraph-30);
+    padding: 0;
+
+    &:focus {
+      outline: none;
+    }
+
+    .dialog-content {
+      position: relative;
+      z-index: 2;
+
+      header,
+      section,
+      footer {
+        width: 100%;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--dialog-padding);
+        gap: var(--dialog-gap);
+      }
+
+      section {
+        padding: var(--dialog-padding);
+      }
+
+      footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: var(--dialog-padding);
+        gap: var(--dialog-gap);
+      }
+    }
+
+    .dialog-backdrop {
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      z-index: 1;
+    }
+  }
+}

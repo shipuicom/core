@@ -1,0 +1,64 @@
+$sparklePopover: true !default;
+
+@if $initSparkle == true and $sparklePopover == true {
+  spk-popover {
+    display: inline-flex;
+
+    .popover-trigger {
+      cursor: pointer;
+      display: inline-flex;
+
+      [spk-button] {
+        display: none;
+      }
+
+      .popover-trigger-wrapper {
+        display: inline-flex;
+
+        &:empty + * {
+          display: inherit;
+        }
+      }
+    }
+
+    .popover-overlay {
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .popover {
+      position: absolute;
+      margin: 0;
+      min-width: p2r(180);
+      z-index: 5000;
+      background-color: var(--base-level-10);
+      border: 1px solid var(--base-level-40);
+      border-radius: var(--shape-2);
+      font: var(--paragraph-30);
+      color: var(--base-level-60);
+
+      transition:
+        opacity 125ms linear,
+        visibility 125ms linear;
+      opacity: 0;
+      visibility: hidden;
+
+      @supports (left: anchor(left)) and (top: anchor(bottom)) {
+        left: anchor(left);
+        top: anchor(bottom);
+        margin-top: p2r(4);
+      }
+
+      &:popover-open {
+        opacity: 1;
+        visibility: visible;
+        transition:
+          opacity 125ms linear,
+          visibility 125ms linear;
+      }
+    }
+  }
+}

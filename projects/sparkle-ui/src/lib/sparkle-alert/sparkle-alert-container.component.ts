@@ -35,9 +35,8 @@ export class SparkleAlertContainerComponent {
   });
 
   readonly #e = effect(() => {
-    const _ = this.alertHistory();
-    const _x = this.alertHistoryIsOpen();
-
+    this.alertHistory();
+    this.alertHistoryIsOpen();
     this.#scrollToBottom();
   });
 

@@ -85,6 +85,15 @@
 
       <button
         spk-action-item
+        routerLink="/spk-popover"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner</spk-icon>
+        Sparkle Popover
+      </button>
+
+      <button
+        spk-action-item
         routerLink="/spk-datepicker"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">

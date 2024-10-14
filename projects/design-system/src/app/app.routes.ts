@@ -92,6 +92,14 @@ export const routes: Routes = [
         loadComponent: () => import('./sparkle/spk-divider/spk-divider.component'),
       },
       {
+        path: 'spk-dialog',
+        loadComponent: () => import('./sparkle/spk-dialog/spk-dialog.component'),
+      },
+      {
+        path: 'spk-popover',
+        loadComponent: () => import('./sparkle/spk-popover/spk-popover.component'),
+      },
+      {
         path: 'spk-icon',
         loadComponent: () => import('./sparkle/spk-icon/spk-icon.component'),
       },

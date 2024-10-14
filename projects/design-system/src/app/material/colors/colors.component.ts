@@ -1,11 +1,10 @@
-import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { MatDividerModule } from '@angular/material/divider';
 
 @Component({
   selector: 'app-colors',
   standalone: true,
-  imports: [NgClass, MatDividerModule],
+  imports: [MatDividerModule],
   templateUrl: './colors.component.html',
   styleUrl: './colors.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

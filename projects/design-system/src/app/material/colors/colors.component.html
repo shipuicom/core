@@ -7,7 +7,7 @@
 
       <div class="colors">
         @for (color of colorsL(); track color) {
-          <div class="color" [ngClass]="'palette-' + palette + '-' + color">
+          <div class="color" [class]="'palette-' + palette + '-' + color">
             {{ color }}
           </div>
         }
@@ -24,7 +24,7 @@
 
     <div class="colors">
       @for (color of baseL(); track color) {
-        <div class="color" [ngClass]="'base-level-' + color">
+        <div class="color" [class]="'base-level-' + color">
           {{ color }}
         </div>
       }
@@ -39,7 +39,7 @@
 
   <div class="shadows">
     @for (shadow of shadows(); track shadow) {
-      <div class="shadow" [ngClass]="'box-shadow-' + shadow">
+      <div class="shadow" [class]="'box-shadow-' + shadow">
         {{ shadow }}
       </div>
     }
@@ -51,7 +51,7 @@
 
   <div class="shapes">
     @for (shape of shapes(); track shape) {
-      <div class="shape" [ngClass]="'shape-' + shape">
+      <div class="shape" [class]="'shape-' + shape">
         {{ shape }}
       </div>
     }

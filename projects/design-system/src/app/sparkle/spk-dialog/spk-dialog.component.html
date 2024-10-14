@@ -1,1 +1,19 @@
-<p>spk-dialog works!</p>,
+<h1>Sparkle Dialog</h1>
+
+<section>
+  <h3>Basic</h3>
+  <button spk-button class="outlined" (click)="isOpen.set(true)">Open dialog</button>
+</section>
+<!-- 
+<spk-dialog [(isOpen)]="isOpen">
+  <h3>Hello world</h3>
+</spk-dialog> -->
+
+<spk-dialog [(isOpen)]="isOpen">
+  <header>
+    <h3>Hello world</h3>
+    <spk-icon (click)="isOpen.set(false)">x-circle</spk-icon>
+  </header>
+  <section>Hello world</section>
+  <footer><button spk-button class="outlined" (click)="isOpen.set(false)">Close</button></footer>
+</spk-dialog>

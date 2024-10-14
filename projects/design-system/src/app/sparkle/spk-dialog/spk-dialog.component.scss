@@ -1,3 +1,61 @@
+@use 'helpers' as *;
+
 :host {
   display: block;
 }
+
+section {
+  width: 200px;
+  overflow: hidden;
+}
+
+button {
+  anchor-name: --owner;
+  position: relative;
+}
+
+.popover {
+  background-color: red;
+  position-anchor: --owner;
+  position: absolute;
+  left: anchor(left);
+  top: anchor(bottom);
+  margin: 0;
+}
+
+// [spk-dialog] {
+//   background-color: #fff;
+//   border: 1px solid var(--base-level-40);
+//   box-shadow: var(--box-shadow-40);
+//   border-radius: var(--shape-2);
+
+//   &:focus {
+//     outline: none;
+//   }
+
+//   &:modal {
+//     position-anchor: --owner;
+//     position: absolute;
+//     left: anchor(left);
+//     top: anchor(bottom);
+//     margin: 0;
+//   }
+// }
+
+// dialog {
+//   background-color: #fff;
+//   border: 1px solid #e4e4e7;
+//   box-shadow: 0 10px 15px -3px rgba(18, 18, 23, 0.08);
+//   border-radius: 8px;
+
+//   &:focus {
+//     outline: none;
+//   }
+
+//   &:modal {
+//     position: absolute;
+//     left: anchor(left);
+//     top: anchor(bottom);
+//     margin: 4px 0 0 0;
+//   }
+// }
