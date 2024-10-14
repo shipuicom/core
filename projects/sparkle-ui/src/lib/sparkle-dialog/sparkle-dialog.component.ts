@@ -58,45 +58,50 @@ export class SparkleDialogComponent {
   }));
 
   abortController: AbortController | null = null;
-  isOpenEffect = effect(() => {
-    const dialogEl = this.dialogRef()?.nativeElement;
+  isOpenEffect = effect(
+    () => {
+      const dialogEl = this.dialogRef()?.nativeElement;
 
-    if (this.abortController) {
-      this.abortController.abort();
-    }
+      if (this.abortController) {
+        this.abortController.abort();
+      }
 
-    this.abortController = new AbortController();
+      this.abortController = new AbortController();
 
-    if (this.isOpen()) {
-      dialogEl?.showModal();
-      dialogEl?.addEventListener(
-        'close',
-        () => {
-          this.isOpen.set(false);
-        },
-        {
-          signal: this.abortController?.signal,
-        }
-      );
-
-      document.addEventListener(
-        'keydown',
-        (e) => {
-          if (e.key === 'Escape' && !this.defaultOptionMerge().closeOnEsc) {
-            e.preventDefault();
-          }
-
-          if (e.key === 'Escape' && this.defaultOptionMerge().closeOnEsc) {
+      if (this.isOpen()) {
+        dialogEl?.showModal();
+        dialogEl?.addEventListener(
+          'close',
+          () => {
             this.isOpen.set(false);
+          },
+          {
+            signal: this.abortController?.signal,
           }
-        },
-        {
-          signal: this.abortController?.signal,
-        }
-      );
-    } else {
-      this.close.emit();
-      dialogEl?.close();
+        );
+
+        document.addEventListener(
+          'keydown',
+          (e) => {
+            if (e.key === 'Escape' && !this.defaultOptionMerge().closeOnEsc) {
+              e.preventDefault();
+            }
+
+            if (e.key === 'Escape' && this.defaultOptionMerge().closeOnEsc) {
+              this.isOpen.set(false);
+            }
+          },
+          {
+            signal: this.abortController?.signal,
+          }
+        );
+      } else {
+        this.close.emit();
+        dialogEl?.close();
+      }
+    },
+    {
+      allowSignalWrites: true,
     }
-  });
+  );
 }
