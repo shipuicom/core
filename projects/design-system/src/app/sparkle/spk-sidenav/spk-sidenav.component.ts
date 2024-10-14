@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { SparkleButtonGroupComponent } from '@sparkle-ui/core';
-import { SparkleSidenavComponent } from '../../../../../sparkle-ui/src/public-api';
+import { SparkleButtonGroupComponent, SparkleSidenavComponent } from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-sidenav',

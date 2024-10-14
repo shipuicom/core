@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { SparkleIconComponent } from '@sparkle-ui/core';
-import { SparkleTabsComponent } from '../../../../../sparkle-ui/src/public-api';
+import { SparkleIconComponent, SparkleTabsComponent } from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-tabs',

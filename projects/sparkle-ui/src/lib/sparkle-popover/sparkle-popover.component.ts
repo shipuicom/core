@@ -9,7 +9,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { SparkleButtonComponent } from '@sparkle-ui/core';
+import { SparkleButtonComponent } from '../sparkle-button/sparkle-button.component';
 
 // TODOS
 // - Dynamic location where if outside of the window automatically position it to the top or left

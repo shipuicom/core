@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, TemplateRef, viewChild } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { SparkleButtonComponent } from '@sparkle-ui/core';
+import { SparkleButtonComponent } from '../../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-tab',

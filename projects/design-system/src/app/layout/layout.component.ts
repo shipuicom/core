@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { SparkleButtonGroupComponent } from '@sparkle-ui/core';
 import {
   SparkleButtonComponent,
+  SparkleButtonGroupComponent,
   SparkleIconComponent,
   SparkleListComponent,
   SparkleSidenavComponent,
