@@ -6,6 +6,7 @@ import {
   ElementRef,
   input,
   model,
+  output,
   viewChild,
 } from '@angular/core';
 
@@ -49,6 +50,7 @@ export class SparkleDialogComponent {
   dialogRef = viewChild<ElementRef<HTMLDialogElement>>('dialogRef');
   isOpen = model<boolean>(false);
   options = input<Partial<SparkleDialogOptions>>();
+  close = output<void>();
 
   defaultOptionMerge = computed(() => ({
     ...DEFAULT_OPTIONS,
@@ -93,6 +95,7 @@ export class SparkleDialogComponent {
         }
       );
     } else {
+      this.close.emit();
       dialogEl?.close();
     }
   });
