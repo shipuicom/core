@@ -74,6 +74,7 @@ export class SparkleDialogComponent {
           'close',
           () => {
             this.isOpen.set(false);
+            this.closed.emit();
           },
           {
             signal: this.abortController?.signal,
