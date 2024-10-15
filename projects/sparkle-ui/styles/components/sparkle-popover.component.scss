@@ -2,30 +2,21 @@ $sparklePopover: true !default;
 
 @if $initSparkle == true and $sparklePopover == true {
   spk-popover {
-    display: inline-flex;
+    --popover-display: inherit;
+
+    display: var(--popover-display);
 
     .popover-trigger {
       cursor: pointer;
-      display: inline-flex;
+      display: var(--popover-display);
       position: relative;
-
-      .popover-trigger-clickable {
-        position: absolute;
-        inset: 0;
-        content: '';
-        pointer-events: none;
-        user-select: none;
-        opacity: 0.1;
-        background-color: red;
-        z-index: 100;
-      }
 
       [spk-button] {
         display: none;
       }
 
       .popover-trigger-wrapper {
-        display: inline-flex;
+        display: var(--popover-display);
 
         &:empty + * {
           display: inherit;
@@ -52,25 +43,11 @@ $sparklePopover: true !default;
       font: var(--paragraph-30);
       color: var(--base-level-60);
 
-      // transition:
-      //   opacity 125ms linear,
-      //   visibility 125ms linear;
-      // opacity: 0;
-      // visibility: hidden;
-
       @supports (left: anchor(left)) and (top: anchor(bottom)) {
         left: anchor(left);
         top: anchor(bottom);
         margin-top: p2r(4);
       }
-
-      // &:popover-open {
-      //   opacity: 1;
-      //   visibility: visible;
-      //   transition:
-      //     opacity 125ms linear,
-      //     visibility 125ms linear;
-      // }
     }
   }
 }

@@ -20,10 +20,11 @@ $sparkleDialog: true !default;
 
       .dialog-content {
         position: relative;
-        z-index:
-          2 header,
-          section,
-          footer {
+        z-index: 2;
+
+        header,
+        section,
+        footer {
           width: 100%;
         }
 
