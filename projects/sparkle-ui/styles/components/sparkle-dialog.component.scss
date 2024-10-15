@@ -5,6 +5,32 @@ $sparkleDialog: true !default;
     --dialog-padding: #{p2r(16)};
     --dialog-gap: #{p2r(8)};
 
+    [spk-header],
+    [spk-content],
+    [spk-footer] {
+      width: 100%;
+    }
+
+    [spk-header] {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--dialog-padding);
+      gap: var(--dialog-gap);
+    }
+
+    [spk-content] {
+      padding: var(--dialog-padding);
+    }
+
+    [spk-footer] {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: var(--dialog-padding);
+      gap: var(--dialog-gap);
+    }
+
     dialog {
       border: 1px solid var(--base-level-40);
       border-radius: var(--shape-2);
@@ -21,32 +47,6 @@ $sparkleDialog: true !default;
       .dialog-content {
         position: relative;
         z-index: 2;
-
-        header,
-        section,
-        footer {
-          width: 100%;
-        }
-
-        header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: var(--dialog-padding);
-          gap: var(--dialog-gap);
-        }
-
-        section {
-          padding: var(--dialog-padding);
-        }
-
-        footer {
-          display: flex;
-          align-items: center;
-          justify-content: flex-end;
-          padding: var(--dialog-padding);
-          gap: var(--dialog-gap);
-        }
       }
 
       .dialog-backdrop {
