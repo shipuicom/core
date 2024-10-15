@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   SparkleCheckboxComponent,
+  SparkleDialogComponent,
   SparkleIconComponent,
   SparkleOptionComponent,
   SparkleSelectComponent,
@@ -24,6 +25,7 @@ type FoodGroup = {
   imports: [
     FormsModule,
     ReactiveFormsModule,
+    SparkleDialogComponent,
     SparkleSelectComponent,
     SparkleIconComponent,
     SparkleCheckboxComponent,

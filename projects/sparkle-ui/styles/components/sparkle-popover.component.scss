@@ -7,6 +7,18 @@ $sparklePopover: true !default;
     .popover-trigger {
       cursor: pointer;
       display: inline-flex;
+      position: relative;
+
+      .popover-trigger-clickable {
+        position: absolute;
+        inset: 0;
+        content: '';
+        pointer-events: none;
+        user-select: none;
+        opacity: 0.1;
+        background-color: red;
+        z-index: 100;
+      }
 
       [spk-button] {
         display: none;
@@ -33,18 +45,18 @@ $sparklePopover: true !default;
       position: absolute;
       margin: 0;
       min-width: p2r(180);
-      z-index: 5000;
+      z-index: 0;
       background-color: var(--base-level-10);
       border: 1px solid var(--base-level-40);
       border-radius: var(--shape-2);
       font: var(--paragraph-30);
       color: var(--base-level-60);
 
-      transition:
-        opacity 125ms linear,
-        visibility 125ms linear;
-      opacity: 0;
-      visibility: hidden;
+      // transition:
+      //   opacity 125ms linear,
+      //   visibility 125ms linear;
+      // opacity: 0;
+      // visibility: hidden;
 
       @supports (left: anchor(left)) and (top: anchor(bottom)) {
         left: anchor(left);
@@ -52,13 +64,13 @@ $sparklePopover: true !default;
         margin-top: p2r(4);
       }
 
-      &:popover-open {
-        opacity: 1;
-        visibility: visible;
-        transition:
-          opacity 125ms linear,
-          visibility 125ms linear;
-      }
+      // &:popover-open {
+      //   opacity: 1;
+      //   visibility: visible;
+      //   transition:
+      //     opacity 125ms linear,
+      //     visibility 125ms linear;
+      // }
     }
   }
 }

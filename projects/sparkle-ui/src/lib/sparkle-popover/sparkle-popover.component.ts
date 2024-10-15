@@ -6,6 +6,7 @@ import {
   ElementRef,
   input,
   model,
+  output,
   signal,
   viewChild,
 } from '@angular/core';
@@ -14,12 +15,26 @@ import { SparkleButtonComponent } from '../sparkle-button/sparkle-button.compone
 // TODOS
 // - Dynamic location where if outside of the window automatically position it to the top or left
 
+export type SparklePopoverOptions = {
+  width?: string;
+  height?: string;
+  closeOnButton?: boolean;
+  closeOnEsc?: boolean;
+};
+
+const DEFAULT_OPTIONS: SparklePopoverOptions = {
+  width: undefined,
+  height: undefined,
+  closeOnButton: true,
+  closeOnEsc: true,
+};
+
 @Component({
   selector: 'spk-popover',
   standalone: true,
   imports: [SparkleButtonComponent],
   template: `
-    <div class="popover-trigger" #triggerRef [style.anchor-name]="id()" (click)="isActive.set(!isActive())">
+    <div class="popover-trigger" #triggerRef [style.anchor-name]="id()" (click)="toggleIsOpen($event)">
       <div class="popover-trigger-wrapper">
         <ng-content select="[popover-trigger]" />
       </div>
@@ -39,7 +54,15 @@ export class SparklePopoverComponent {
 
   above = input<boolean>(false);
   right = input<boolean>(false);
-  isActive = model<boolean>(false);
+  disableOpenByClick = input<boolean>(false);
+  isOpen = model<boolean>(false);
+  options = input<Partial<SparklePopoverOptions>>();
+  closed = output<void>();
+
+  defaultOptionMerge = computed(() => ({
+    ...DEFAULT_OPTIONS,
+    ...this.options(),
+  }));
 
   triggerRef = viewChild.required<ElementRef<HTMLElement>>('triggerRef');
   popoverRef = viewChild.required<ElementRef<HTMLElement>>('popoverRef');
@@ -47,15 +70,51 @@ export class SparklePopoverComponent {
   id = signal('--' + crypto.randomUUID());
   menuStyle = signal<any>(null);
 
+  toggleIsOpen(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!this.disableOpenByClick()) {
+      this.isOpen.set(!this.isOpen());
+    }
+  }
+
+  openAbort: AbortController | null = null;
   isCalculatingPosition = computed(() => {
     const popoverEl = this.popoverRef()?.nativeElement;
+    const open = this.isOpen();
 
-    if (this.isActive()) {
-      popoverEl.showPopover();
+    if (open) {
+      if (this.openAbort) {
+        this.openAbort.abort();
+      }
+
+      this.openAbort = new AbortController();
+      popoverEl?.showPopover();
+
+      document.addEventListener(
+        'keydown',
+        (e) => {
+          if (e.key === 'Escape' && !this.defaultOptionMerge().closeOnEsc) {
+            e.preventDefault();
+          }
+
+          if (e.key === 'Escape' && this.defaultOptionMerge().closeOnEsc) {
+            this.isOpen.set(false);
+          }
+        },
+        {
+          capture: true,
+          signal: this.abortController?.signal,
+        }
+      );
+
       return true;
     } else {
-      popoverEl.hidePopover();
       this.abortController?.abort();
+      this.openAbort?.abort();
+      popoverEl.hidePopover();
+      this.closed.emit();
       return false;
     }
   });
@@ -108,6 +167,12 @@ export class SparklePopoverComponent {
     return document.documentElement;
   }
 
+  ngOnInit() {
+    (this.popoverRef()?.nativeElement as any)?.addEventListener('beforetoggle', (event: ToggleEvent) => {
+      event.newState === 'closed' && this.isOpen.set(false);
+    });
+  }
+
   ngOnDestroy() {
     if (this.abortController) {
       this.abortController.abort();
@@ -115,7 +180,7 @@ export class SparklePopoverComponent {
   }
 
   private calculateMenuPosition() {
-    if (this.isActive()) {
+    if (this.isOpen()) {
       const triggerRect = this.triggerRef()?.nativeElement.getBoundingClientRect();
       const menuRect = this.popoverRef()?.nativeElement.getBoundingClientRect();
 

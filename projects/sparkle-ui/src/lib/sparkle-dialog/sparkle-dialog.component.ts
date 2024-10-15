@@ -39,9 +39,9 @@ const DEFAULT_OPTIONS: SparkleDialogOptions = {
         <ng-content />
       </div>
 
-      @if (isOpen()) {
+      <!-- @if (isOpen()) {
         <div class="dialog-backdrop" (click)="defaultOptionMerge().closeOnOutsideClick && isOpen.set(false)"></div>
-      }
+      } -->
     </dialog>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,7 +50,7 @@ export class SparkleDialogComponent {
   dialogRef = viewChild<ElementRef<HTMLDialogElement>>('dialogRef');
   isOpen = model<boolean>(false);
   options = input<Partial<SparkleDialogOptions>>();
-  close = output<void>();
+  closed = output<void>();
 
   defaultOptionMerge = computed(() => ({
     ...DEFAULT_OPTIONS,
@@ -96,7 +96,7 @@ export class SparkleDialogComponent {
           }
         );
       } else {
-        this.close.emit();
+        this.closed.emit();
         dialogEl?.close();
       }
     },

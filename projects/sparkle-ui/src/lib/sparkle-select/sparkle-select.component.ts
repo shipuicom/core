@@ -14,6 +14,7 @@ import {
 import { SparkleChipComponent } from '../sparkle-chip/sparkle-chip.component';
 import { SparkleFormFieldComponent } from '../sparkle-form-field/sparkle-form-field.component';
 import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
+import { SparklePopoverComponent } from '../sparkle-popover/sparkle-popover.component';
 
 type InputValueChangedEvent = CustomEvent<{ value: string }>;
 
@@ -49,10 +50,26 @@ const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
 @Component({
   selector: 'spk-select',
   standalone: true,
-  imports: [SparkleFormFieldComponent, SparkleIconComponent, SparkleOptionComponent, SparkleChipComponent],
+  imports: [
+    SparkleFormFieldComponent,
+    SparkleIconComponent,
+    SparkleOptionComponent,
+    SparkleChipComponent,
+    SparklePopoverComponent,
+  ],
   template: `
-    <div #formFieldWrapper>
-      <spk-form-field (click)="open($event)" [class]="readonly() ? 'readonly' : ''">
+    <spk-popover
+      #formFieldWrapper
+      [(isOpen)]="isOpen"
+      [disableOpenByClick]="true"
+      (closed)="close()"
+      [options]="{
+        closeOnButton: false,
+        closeOnEsc: false,
+      }">
+      <div class="overlay" (click)="isOpen() && close()"></div>
+
+      <spk-form-field popover-trigger (click)="open($event)" [class]="readonly() ? 'readonly' : ''">
         <ng-content select="label" ngProjectAs="label"></ng-content>
 
         <div class="input" ngProjectAs="input" #inputWrap>
@@ -90,25 +107,35 @@ const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
           </div>
         }
       </spk-form-field>
-    </div>
 
-    @if (isOpen()) {
-      <div class="sparkle-popup-menu" [class.active]="delayedIsOpen()" #optionsRef [style]="optionsStyle()">
-        <div class="sparkle-options-backdrop" (click)="close()"></div>
-        <div class="sparkle-options">
-          <div class="sparkle-options-placerholder"><ng-content select="[placeholder-text]" /></div>
-          <ng-content select="[options]"></ng-content>
-        </div>
+      <div class="sparkle-options" #optionsRef>
+        <ng-content select="[options]"></ng-content>
       </div>
-    }
+    </spk-popover>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleSelectComponent {
-  #BASE_SPACE = 8;
   #renderer = inject(Renderer2);
   #body = document.getElementsByTagName('body')[0];
   #selfRef = inject<ElementRef<HTMLElement>>(ElementRef<HTMLElement>);
+
+  #optionsObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.type === 'childList' && mutation.target instanceof HTMLElement) {
+        // Combine added and removed nodes into a single array
+        const allNodes = [...Array.from(mutation.addedNodes), ...Array.from(mutation.removedNodes)];
+
+        for (let i = 0; i < allNodes.length; i++) {
+          const node = allNodes[i];
+
+          if (node.nodeName === 'OPTION' || node.nodeName === 'SPK-OPTION') {
+            this.#triggerOption.set(!this.#triggerOption());
+          }
+        }
+      }
+    }
+  });
 
   optionsRef = viewChild<ElementRef<HTMLDivElement>>('optionsRef');
   formFieldWrapperRef = viewChild.required<ElementRef<HTMLDivElement>>('formFieldWrapper');
@@ -128,16 +155,11 @@ export class SparkleSelectComponent {
   #triggerOption = signal(false);
   #inputRef = signal<HTMLInputElement | null>(null);
 
-  #previousInputValue = signal<string>('');
+  #previousInputValue = signal<string | null>(null);
   #firstOptionIndex = signal<number>(-1);
   #hasBeenOpened = signal(false);
   #optionInFocus = signal<number>(-1);
   isOpen = signal(false);
-  delayedIsOpen = signal(false);
-  optionsStyle = signal({
-    left: '0px',
-    top: '0px',
-  });
 
   isSearchInput = computed(() => this.#inputRef()?.type === 'search');
   optionsEl = computed(() => this.optionsRef()?.nativeElement);
@@ -155,17 +177,22 @@ export class SparkleSelectComponent {
 
     return [];
   });
+
   chipClass = computed(() =>
     Array.from(this.#selfRef.nativeElement.classList)
       .filter((x) => COLOR_CLASSES.includes(x))
       .join(' ')
   );
+
   _displayValue = computed(() =>
-    this.displayFn() ? this.displayFn()!(this.inputValue()) : this.displayValue() ?? this.inputValue()
+    this.displayFn() ? this.displayFn()!(this.inputValue()) : (this.displayValue() ?? this.inputValue())
   );
+
   selectedOption = computed(() =>
     this.#previousInputValue()
-      ? this.#options().find((x) => x.getAttribute('value') === this.#previousInputValue())
+      ? this.#options().find(
+          (x) => (x.getAttribute('value') || x.getAttribute('ng-reflect-value')) === this.#previousInputValue()
+        )
       : null
   );
 
@@ -211,10 +238,6 @@ export class SparkleSelectComponent {
     const input = this.#inputRef();
 
     if (input) {
-      input.addEventListener('focus', (e: FocusEvent) => this.open(e), {
-        signal: this.inputController?.signal,
-      });
-
       input.addEventListener(
         'keydown',
         (e) => {
@@ -260,13 +283,11 @@ export class SparkleSelectComponent {
   });
 
   #optionInFocusEffect = effect(() => {
-    if (this.isOpen()) {
+    const open = this.isOpen();
+
+    if (open) {
       this.#computeFocusedElement();
     }
-
-    setTimeout(() => {
-      this.delayedIsOpen.set(this.isOpen());
-    }, 0);
   });
 
   #whenInputValueChanged = effect(
@@ -282,8 +303,6 @@ export class SparkleSelectComponent {
   );
 
   ngOnInit() {
-    this.#setOptionsElement();
-
     this.#inputObserver.observe(this.inputWrapRef().nativeElement, {
       attributes: true,
       childList: true,
@@ -329,8 +348,9 @@ export class SparkleSelectComponent {
 
       for (let i = 0; i < this.#options().length; i++) {
         const option = this.#options()[i];
+        const optionValue = option.getAttribute('value') || option.getAttribute('ng-reflect-value');
 
-        if (option.getAttribute('value') === newSelectedValue) {
+        if (optionValue === newSelectedValue) {
           this.#renderer.setAttribute(option, 'selected', 'selected');
         } else {
           this.#renderer.removeAttribute(option, 'selected');
@@ -347,9 +367,10 @@ export class SparkleSelectComponent {
     }
 
     this.#hasBeenOpened.set(false);
+    this.#previousInputValue.set(null);
 
     if (this.selectMultiple()) {
-      setTimeout(() => this.#inputRef()?.focus());
+      this.#inputRef()?.focus();
     } else {
       this.isOpen.set(false);
       this.#inputRef()?.blur();
@@ -372,24 +393,31 @@ export class SparkleSelectComponent {
   }
 
   close(noBlur = false) {
-    if (this.isSearchInput() && this.#previousInputValue()) {
-      setTimeout(() => this.inputValue.set(this.#previousInputValue()));
+    this.#triggerOption.set(!this.#triggerOption());
+    const prevValue = this.#previousInputValue();
+
+    if (this.isSearchInput() && prevValue) {
+      setTimeout(() => this.inputValue.set(prevValue));
     }
 
-    this.#hideOptionsElement();
-
     this.isOpen.set(false);
+
     this.#hasBeenOpened.set(false);
     noBlur || this.#inputRef()?.blur();
-    this.#killMenuCalculation();
+    this.#optionsObserver.disconnect();
     this.#killClickController();
   }
 
   open(e: MouseEvent | FocusEvent) {
     e.preventDefault();
 
+    if (this.isOpen()) return;
+
     this.isOpen.set(true);
-    this.#setOptionsElement();
+    this.#optionsObserver.observe(this.optionsEl()!, {
+      childList: true,
+      subtree: true,
+    });
 
     if (this.isSearchInput() && !this.#hasBeenOpened()) {
       this.#previousInputValue.set(this.inputValue());
@@ -403,10 +431,12 @@ export class SparkleSelectComponent {
     }
 
     this.#hasBeenOpened.set(true);
-    this.#initMenuCalculation();
     this.#listenForClicks();
-    this.#triggerOption.set(!this.#triggerOption());
     this.#updateValueFromInput();
+
+    setTimeout(() => {
+      this.#firstOptionIndex.set(this.#getIndexOfFirstNonDeselectedOption());
+    });
   }
 
   #listenForClicks() {
@@ -416,10 +446,12 @@ export class SparkleSelectComponent {
 
     this.clickController = new AbortController();
 
-    window.addEventListener(
+    this.optionsEl()?.addEventListener(
       'click',
       (e) => {
         if (!e.target) return;
+
+        this.#triggerOption.set(!this.#triggerOption());
 
         const closestOption = (e.target as HTMLElement).closest('option');
         const closestSpkOption = (e.target as HTMLElement).closest('spk-option');
@@ -478,16 +510,6 @@ export class SparkleSelectComponent {
     });
   }
 
-  #setOptionsElement() {
-    setTimeout(() => {
-      if (this.optionsEl()) {
-        this.#renderer.appendChild(this.#body, this.optionsEl()!);
-        this.#firstOptionIndex.set(this.#getIndexOfFirstNonDeselectedOption());
-        this.#triggerOption.set(!this.#triggerOption());
-      }
-    });
-  }
-
   #getIndexOfFirstNonDeselectedOption() {
     const options = this.#options();
 
@@ -500,21 +522,10 @@ export class SparkleSelectComponent {
     return -1;
   }
 
-  #hideOptionsElement() {
-    setTimeout(() => {
-      if (this.optionsEl()) {
-        this.#renderer.removeChild(this.#body, this.optionsEl()!);
-        this.#triggerOption.set(!this.#triggerOption());
-      }
-    });
-  }
-
   #inputObserver = new MutationObserver((mutations) => {
     for (var mutation of mutations) {
       if (mutation.type == 'childList' && (mutation.target as HTMLElement).classList.contains('input')) {
         this.#triggerInput.set(!this.#triggerInput());
-      }
-      if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
       }
     }
   });
@@ -545,70 +556,6 @@ export class SparkleSelectComponent {
     });
 
     return input;
-  }
-
-  #initMenuCalculation() {
-    this.optionsOpenController = new AbortController();
-
-    setTimeout(() => this.#calculateMenuPosition());
-    window.addEventListener('resize', () => this.#calculateMenuPosition(), {
-      signal: this.optionsOpenController?.signal,
-    });
-    window.addEventListener('scroll', () => this.#calculateMenuPosition(), {
-      signal: this.optionsOpenController?.signal,
-    });
-  }
-
-  #killMenuCalculation() {
-    if (this.optionsOpenController) {
-      this.optionsOpenController.abort();
-    }
-  }
-
-  #calculateMenuPosition() {
-    if (this.optionsEl()) {
-      const triggerRect = this.formFieldWrapperRef()?.nativeElement.getBoundingClientRect();
-      const menuRect = this.optionsEl()!.getBoundingClientRect();
-
-      const actionLeftInViewport = triggerRect.left;
-      const actionBottomInViewport = triggerRect.bottom;
-
-      let newLeft = actionLeftInViewport;
-      let newTop = actionBottomInViewport + this.#BASE_SPACE;
-
-      const outOfBoundsRight = newLeft + menuRect.width > window.innerWidth;
-      const outOfBoundsBottom = newTop + menuRect.height > window.innerHeight;
-
-      if (this.above()) {
-        const _newTop = triggerRect.top - menuRect.height - this.#BASE_SPACE;
-
-        if (_newTop >= 0) {
-          newTop = _newTop;
-        }
-      } else {
-        if (outOfBoundsBottom) {
-          newTop = triggerRect.top - menuRect.height - this.#BASE_SPACE;
-        }
-      }
-
-      if (this.right()) {
-        const _newLeft = triggerRect.right - menuRect.width;
-
-        if (_newLeft >= 0) {
-          newLeft = _newLeft;
-        }
-      } else {
-        if (outOfBoundsRight) {
-          newTop = outOfBoundsBottom ? triggerRect.top + triggerRect.height - menuRect.height : triggerRect.top;
-          newLeft = triggerRect.left - menuRect.width - this.#BASE_SPACE;
-        }
-      }
-
-      this.optionsStyle.set({
-        left: newLeft + 'px',
-        top: newTop + 'px',
-      });
-    }
   }
 
   ngOnDestroy() {

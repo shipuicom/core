@@ -22,16 +22,18 @@
     </ng-container>
   </spk-new-select> -->
 
-  <spk-select [displayFn]="displayFn(foods())" class="primary">
-    <label for="text">Simple select one from list</label>
-    <input type="text" id="text" [formControl]="inputCtrl" />
+  <spk-dialog [isOpen]="true">
+    <spk-select [displayFn]="displayFn(foods())" class="primary">
+      <label for="text">Simple select one from list</label>
+      <input type="text" id="text" [formControl]="inputCtrl" />
 
-    <ng-container options>
-      @for (food of foods(); track $index) {
-        <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
-      }
-    </ng-container>
-  </spk-select>
+      <ng-container options>
+        @for (food of foods(); track $index) {
+          <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
+        }
+      </ng-container>
+    </spk-select>
+  </spk-dialog>
 
   <spk-select [displayFn]="displayFn(foods())" class="primary" [readonly]="true">
     <label for="text">Simple select one from list</label>
@@ -60,10 +62,10 @@
     <input type="search" id="search" [formControl]="inputSearchCtrl" />
 
     <ng-container options>
-      <spk-option deselect>Hello remove me</spk-option>
+      <option deselect>Hello remove me</option>
 
       @for (food of localFilteredFoods(); track $index) {
-        <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
+        <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
       }
     </ng-container>
   </spk-select>
