@@ -10,6 +10,10 @@ $sparkleSelect: true !default;
       min-width: p2r(210);
     }
 
+    spk-popover {
+      flex: 1 0;
+    }
+
     .overlay {
       position: fixed;
       inset: 0;
