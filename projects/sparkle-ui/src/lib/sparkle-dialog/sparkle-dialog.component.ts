@@ -12,7 +12,9 @@ import {
 
 export type SparkleDialogOptions = {
   width?: string;
+  maxWidth?: string;
   height?: string;
+  maxHeight?: string;
   closeOnButton?: boolean;
   closeOnEsc?: boolean;
   closeOnOutsideClick?: boolean;
@@ -20,7 +22,9 @@ export type SparkleDialogOptions = {
 
 const DEFAULT_OPTIONS: SparkleDialogOptions = {
   width: undefined,
+  maxWidth: undefined,
   height: undefined,
+  maxHeight: undefined,
   closeOnButton: true,
   closeOnEsc: true,
   closeOnOutsideClick: true,
@@ -34,14 +38,12 @@ const DEFAULT_OPTIONS: SparkleDialogOptions = {
     <dialog
       #dialogRef
       [style.width]="defaultOptionMerge().width ?? ''"
+      [style.max-width]="defaultOptionMerge().maxWidth ?? ''"
+      [style.max-height]="defaultOptionMerge().maxHeight ?? ''"
       [style.height]="defaultOptionMerge().height ?? ''">
       <div class="dialog-content">
         <ng-content />
       </div>
-
-      <!-- @if (isOpen()) {
-        <div class="dialog-backdrop" (click)="defaultOptionMerge().closeOnOutsideClick && isOpen.set(false)"></div>
-      } -->
     </dialog>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
