@@ -1,8 +1,25 @@
+<div class="row">
+  <spk-button-group>
+    <button [class.active]="type() === 'none'" (click)="type.set('none')">None</button>
+    <button [class.active]="type() === 'raised'" (click)="type.set('raised')">Raised</button>
+    <button [class.active]="type() === 'outlined'" (click)="type.set('outlined')">Outlined</button>
+  </spk-button-group>
+
+  <spk-button-group>
+    <button [class.active]="colors() === 'none'" (click)="colors.set('none')">None</button>
+    <button [class.active]="colors() === 'primary'" (click)="colors.set('primary')">Primary</button>
+    <button [class.active]="colors() === 'accent'" (click)="colors.set('accent')">Accent</button>
+    <button [class.active]="colors() === 'tertiary'" (click)="colors.set('tertiary')">Tertiary</button>
+    <button [class.active]="colors() === 'warn'" (click)="colors.set('warn')">Warn</button>
+    <button [class.active]="colors() === 'success'" (click)="colors.set('success')">Success</button>
+  </spk-button-group>
+</div>
+
 <h3>With date: {{ someDate() }}</h3>
-<spk-datepicker [(date)]="someDate" />
+<spk-datepicker [(date)]="someDate" [class]="class()" />
 
 <h3>With other date: {{ someOtherDate() }}</h3>
-<spk-datepicker [(date)]="someOtherDate" />
+<spk-datepicker [(date)]="someOtherDate" [class]="class()" />
 
 <h3>TODO</h3>
 <p>

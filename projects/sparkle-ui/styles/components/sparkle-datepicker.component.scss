@@ -2,11 +2,87 @@ $sparkleDatepicker: true !default;
 
 @if $initSparkle == true and $sparkleDatepicker == true {
   spk-datepicker {
+    --selected-bg: var(--base-level-60);
+    --border-width: 0;
+    --border-color: transparent;
+    --selected-color: #fff;
+
     background-color: var(--base-level-20);
     width: 100%;
     max-width: p2r(400);
     display: flex;
     flex-direction: column;
+
+    &.primary {
+      --selected-bg: var(--primary-500);
+    }
+
+    &.accent {
+      --selected-bg: var(--accent-500);
+    }
+
+    &.tertiary {
+      --selected-bg: var(--tertiary-500);
+    }
+
+    &.warn {
+      --selected-bg: var(--warn-500);
+    }
+
+    &.success {
+      --selected-bg: var(--success-500);
+    }
+
+    &.outlined {
+      --selected-bg: var(--base-level-10);
+      --selected-color: var(--base-level-70);
+      --border-width: 2px;
+      --border-color: var(--base-level-40);
+
+      &.primary {
+        --border-color: var(--primary-500);
+      }
+
+      &.accent {
+        --border-color: var(--accent-500);
+      }
+
+      &.tertiary {
+        --border-color: var(--tertiary-500);
+      }
+
+      &.warn {
+        --border-color: var(--warn-500);
+      }
+
+      &.success {
+        --border-color: var(--success-500);
+      }
+    }
+
+    &.raised {
+      --selected-bg: var(--base-gradient-20);
+
+      &.primary {
+        --selected-bg: var(--primary-gradient-20);
+      }
+
+      &.accent {
+        --selected-bg: var(--accent-gradient-20);
+      }
+
+      &.tertiary {
+        --selected-bg: var(--tertiary-gradient-20);
+      }
+
+      &.warn {
+        --selected-bg: var(--warn-gradient-20);
+      }
+
+      &.success {
+        --selected-bg: var(--success-gradient-20);
+      }
+    }
 
     header {
       display: flex;
@@ -60,7 +136,7 @@ $sparkleDatepicker: true !default;
           user-select: none;
 
           &.selected {
-            color: #fff;
+            color: var(--selected-color);
             transition: color 75ms linear;
           }
 
@@ -75,9 +151,11 @@ $sparkleDatepicker: true !default;
             transition:
               transform 75ms linear,
               opacity 75ms linear;
-            background-color: var(--warn-500);
+            background: var(--selected-bg);
             border-radius: 50%;
+            border: var(--border-width) solid var(--border-color);
             opacity: 0;
+            box-sizing: border-box;
           }
         }
       }
