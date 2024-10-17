@@ -18,7 +18,7 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
   template: `
     <header>
       <button (click)="previousMonth()"><spk-icon>caret-left</spk-icon></button>
-      {{ getMonthName(currentDate()) }} {{ getFullYear(currentDate()) }}
+      <div class="title">{{ getMonthName(currentDate()) }} {{ getFullYear(currentDate()) }}</div>
       <button (click)="nextMonth()"><spk-icon>caret-right</spk-icon></button>
     </header>
 
@@ -52,8 +52,8 @@ export class SparkleDatepickerComponent {
   #INIT_DATE = this.#getUTCDate(new Date());
 
   date = model<Date>(this.#INIT_DATE);
-  startOfWeek = input<number>(0);
-  weekdayLabels = input<string[]>(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']);
+  startOfWeek = input<number>(1);
+  weekdayLabels = input<string[]>(['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']);
 
   daysRef = viewChild<ElementRef<HTMLDivElement>>('daysRef');
   currentDate = signal<Date>(this.#INIT_DATE);
