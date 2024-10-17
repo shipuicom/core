@@ -12,6 +12,7 @@ export * from './lib/sparkle-button/sparkle-button.component';
 export * from './lib/sparkle-card/sparkle-card.component';
 export * from './lib/sparkle-checkbox/sparkle-checkbox.component';
 export * from './lib/sparkle-chip/sparkle-chip.component';
+export * from './lib/sparkle-datepicker/sparkle-datepicker.component';
 export * from './lib/sparkle-dialog/sparkle-dialog.component';
 export * from './lib/sparkle-divider/sparkle-divider.component';
 export * from './lib/sparkle-file-upload/sparkle-file-upload.component';

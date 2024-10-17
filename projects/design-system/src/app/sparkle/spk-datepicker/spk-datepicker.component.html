@@ -1,1 +1,10 @@
-<p>spk-datepicker works!</p>,
+<h3>With date: {{ someDate() }}</h3>
+<spk-datepicker [(date)]="someDate" />
+
+<h3>With other date: {{ someOtherDate() }}</h3>
+<spk-datepicker [(date)]="someOtherDate" />
+
+<h3>TODO</h3>
+<p>
+  Make a spk-datepicker-input component that uses the above datepicker component internally and just displays the date
+</p>

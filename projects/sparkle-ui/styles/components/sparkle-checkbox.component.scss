@@ -2,6 +2,13 @@ $sparkleCheckbox: true !default;
 
 @if $initSparkle == true and $sparkleCheckbox == true {
   spk-checkbox {
+    --checkbox-base-bg: var(--base-level-30);
+    --checkbox-base-color: var(--base-level-60);
+    --checkbox-base-border-color: var(--base-level-40);
+    --checkbox-active-bg: var(--base-level-20);
+    --checkbox-active-color: var(--base-level-70);
+    --checkbox-active-border-color: var(--base-level-30);
+
     display: flex;
     align-items: center;
     gap: p2r(8);
@@ -145,64 +152,64 @@ $sparkleCheckbox: true !default;
       }
     }
   }
-}
 
-%flat {
-  .box {
-    border-width: 0;
-    background: var(--grey-500);
-    color: #fff;
+  %flat {
+    .box {
+      border-width: 0;
+      background: var(--grey-500);
+      color: #fff;
+    }
+
+    &.primary .box {
+      background: var(--primary-500);
+      color: #fff;
+    }
+
+    &.accent .box {
+      background: var(--accent-500);
+      color: #fff;
+    }
+
+    &.tertiary .box {
+      background: var(--tertiary-500);
+      color: #fff;
+    }
+
+    &.warn .box {
+      background: var(--warn-500);
+      color: #fff;
+    }
+
+    &.success .box {
+      background: var(--success-500);
+      color: #fff;
+    }
   }
 
-  &.primary .box {
-    background: var(--primary-500);
-    color: #fff;
-  }
+  %raised {
+    .box {
+      border-width: 0;
+      background: var(--base-gradient-20);
+    }
 
-  &.accent .box {
-    background: var(--accent-500);
-    color: #fff;
-  }
+    &.primary .box {
+      background: var(--primary-gradient-20);
+    }
 
-  &.tertiary .box {
-    background: var(--tertiary-500);
-    color: #fff;
-  }
+    &.accent .box {
+      background: var(--accent-gradient-20);
+    }
 
-  &.warn .box {
-    background: var(--warn-500);
-    color: #fff;
-  }
+    &.tertiary .box {
+      background: var(--tertiary-gradient-20);
+    }
 
-  &.success .box {
-    background: var(--success-500);
-    color: #fff;
-  }
-}
+    &.warn .box {
+      background: var(--warn-gradient-20);
+    }
 
-%raised {
-  .box {
-    border-width: 0;
-    background: var(--base-gradient-20);
-  }
-
-  &.primary .box {
-    background: var(--primary-gradient-20);
-  }
-
-  &.accent .box {
-    background: var(--accent-gradient-20);
-  }
-
-  &.tertiary .box {
-    background: var(--tertiary-gradient-20);
-  }
-
-  &.warn .box {
-    background: var(--warn-gradient-20);
-  }
-
-  &.success .box {
-    background: var(--success-gradient-20);
+    &.success .box {
+      background: var(--success-gradient-20);
+    }
   }
 }
