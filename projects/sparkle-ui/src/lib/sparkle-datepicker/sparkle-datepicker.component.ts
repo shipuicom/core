@@ -34,14 +34,14 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
           <div
             #elementRef
             [class.out-of-scope]="!isCurrentMonth(calDate)"
-            [class.selected]="calDate.toDateString() === date().toDateString()"
+            [class.sel]="calDate.toDateString() === date().toDateString()"
             (click)="setDate(calDate, elementRef)">
             {{ calDate.getDate() }}
           </div>
         }
 
         <article class="days">
-          <div class="selected-element" [style]="selectedDateStylePosition()"></div>
+          <div class="sel-el" [style]="selectedDateStylePosition()"></div>
         </article>
       </div>
     </section>
@@ -85,7 +85,7 @@ export class SparkleDatepickerComponent {
 
   #findSelectedAndCalc() {
     setTimeout(() => {
-      const selectedElement = this.daysRef()?.nativeElement.querySelector('.selected');
+      const selectedElement = this.daysRef()?.nativeElement.querySelector('.sel');
 
       if (!selectedElement) {
         return this.selectedDateStylePosition.update((x) => (x ? { ...x, opacity: '0' } : null));

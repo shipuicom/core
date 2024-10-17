@@ -2,12 +2,10 @@ $sparkleCheckbox: true !default;
 
 @if $initSparkle == true and $sparkleCheckbox == true {
   spk-checkbox {
-    --checkbox-base-bg: var(--base-level-30);
-    --checkbox-base-color: var(--base-level-60);
-    --checkbox-base-border-color: var(--base-level-40);
-    --checkbox-active-bg: var(--base-level-20);
-    --checkbox-active-color: var(--base-level-70);
-    --checkbox-active-border-color: var(--base-level-30);
+    --box-border-width: #{p2r(1)};
+    --box-border-color: var(--base-level-40);
+    --box-color: var(--base-level-60);
+    --box-bg: var(--base-level-30);
 
     display: flex;
     align-items: center;
@@ -36,10 +34,10 @@ $sparkleCheckbox: true !default;
       cursor: pointer;
       position: relative;
       border-radius: var(--shape-1);
-      border: 1px solid var(--base-level-40);
-      background: var(--base-level-30);
+      border: var(--box-border-width) solid var(--box-border-color);
+      background: var(--box-bg);
       font-size: p2r(12);
-      color: var(--base-level-60);
+      color: var(--box-color);
     }
 
     spk-icon {
@@ -71,38 +69,38 @@ $sparkleCheckbox: true !default;
     }
 
     &.primary .box {
-      background: var(--primary-level-30);
-      border-color: var(--primary-level-40);
-      color: var(--primary-500);
+      --box-bg: var(--primary-level-30);
+      --box-border-color: var(--primary-level-40);
+      --box-color: var(--primary-500);
     }
 
     &.accent .box {
-      background: var(--accent-level-30);
-      border-color: var(--accent-level-40);
-      color: var(--accent-500);
+      --box-bg: var(--accent-level-30);
+      --box-border-color: var(--accent-level-40);
+      --box-color: var(--accent-500);
     }
 
     &.tertiary .box {
-      background: var(--tertiary-level-30);
-      border-color: var(--tertiary-level-40);
-      color: var(--tertiary-500);
+      --box-bg: var(--tertiary-level-30);
+      --box-border-color: var(--tertiary-level-40);
+      --box-color: var(--tertiary-500);
     }
 
     &.warn .box {
-      background: var(--warn-level-30);
-      border-color: var(--warn-level-40);
-      color: var(--warn-500);
+      --box-bg: var(--warn-level-30);
+      --box-border-color: var(--warn-level-40);
+      --box-color: var(--warn-500);
     }
 
     &.success .box {
-      background: var(--success-level-30);
-      border-color: var(--success-level-40);
-      color: var(--success-500);
+      --box-bg: var(--success-level-30);
+      --box-border-color: var(--success-level-40);
+      --box-color: var(--success-500);
     }
 
     &.outlined {
       .box {
-        background: var(--base-level-10);
+        --box-bg: var(--base-level-10);
       }
 
       &.primary,
@@ -111,18 +109,9 @@ $sparkleCheckbox: true !default;
       &.warn,
       &.success {
         .box {
-          background: var(--base-level-10);
-          border-color: var(--base-level-40);
+          --box-bg: var(--base-level-10);
+          --box-border-color: var(--base-level-40);
         }
-      }
-    }
-
-    &.flat,
-    &.raised {
-      .box {
-        border-color: var(--base-level-40);
-        background: var(--base-level-30);
-        color: #fff;
       }
     }
 
@@ -155,61 +144,57 @@ $sparkleCheckbox: true !default;
 
   %flat {
     .box {
-      border-width: 0;
-      background: var(--grey-500);
-      color: #fff;
+      --box-border-width: 0;
+      --box-bg: var(--grey-500);
+      --box-color: #fff;
     }
 
     &.primary .box {
-      background: var(--primary-500);
-      color: #fff;
+      --box-bg: var(--primary-500);
     }
 
     &.accent .box {
-      background: var(--accent-500);
-      color: #fff;
+      --box-bg: var(--accent-500);
     }
 
     &.tertiary .box {
-      background: var(--tertiary-500);
-      color: #fff;
+      --box-bg: var(--tertiary-500);
     }
 
     &.warn .box {
-      background: var(--warn-500);
-      color: #fff;
+      --box-bg: var(--warn-500);
     }
 
     &.success .box {
-      background: var(--success-500);
-      color: #fff;
+      --box-bg: var(--success-500);
     }
   }
 
   %raised {
     .box {
-      border-width: 0;
-      background: var(--base-gradient-20);
+      --box-border-width: 0;
+      --box-bg: var(--base-gradient-20);
+      --box-color: #fff;
     }
 
     &.primary .box {
-      background: var(--primary-gradient-20);
+      --box-bg: var(--primary-gradient-20);
     }
 
     &.accent .box {
-      background: var(--accent-gradient-20);
+      --box-bg: var(--accent-gradient-20);
     }
 
     &.tertiary .box {
-      background: var(--tertiary-gradient-20);
+      --box-bg: var(--tertiary-gradient-20);
     }
 
     &.warn .box {
-      background: var(--warn-gradient-20);
+      --box-bg: var(--warn-gradient-20);
     }
 
     &.success .box {
-      background: var(--success-gradient-20);
+      --box-bg: var(--success-gradient-20);
     }
   }
 }

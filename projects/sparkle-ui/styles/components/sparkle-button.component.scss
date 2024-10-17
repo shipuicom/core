@@ -5,7 +5,7 @@ $sparkleButton: true !default;
     --btn-height: #{p2r(40)};
     --btn-shape: var(--shape-2);
     --btn-font: var(--paragraph-20);
-    --loading-color: var(--base-level-60);
+    --loader-c: var(--base-level-60);
     --btn-color: var(--base-level-70);
     --btn-icon-color: var(--base-level-70);
     --btn-bg: var(--base-level-10);
@@ -132,7 +132,7 @@ $sparkleButton: true !default;
       transition: color 80ms linear;
 
       &.primary {
-        --loading-color: var(--primary-500);
+        --loader-c: var(--primary-500);
 
         --btn-bg: var(--primary-level-20);
         --btn-bg-hover: var(--primary-level-30);
@@ -140,7 +140,7 @@ $sparkleButton: true !default;
       }
 
       &.accent {
-        --loading-color: var(--accent-500);
+        --loader-c: var(--accent-500);
 
         --btn-bg: var(--accent-level-20);
         --btn-bg-hover: var(--accent-level-30);
@@ -148,7 +148,7 @@ $sparkleButton: true !default;
       }
 
       &.tertiary {
-        --loading-color: var(--tertiary-500);
+        --loader-c: var(--tertiary-500);
 
         --btn-bg: var(--tertiary-level-20);
         --btn-bg-hover: var(--tertiary-level-30);
@@ -156,7 +156,7 @@ $sparkleButton: true !default;
       }
 
       &.warn {
-        --loading-color: var(--warn-500);
+        --loader-c: var(--warn-500);
 
         --btn-bg: var(--warn-level-20);
         --btn-bg-hover: var(--warn-level-30);
@@ -164,7 +164,7 @@ $sparkleButton: true !default;
       }
 
       &.success {
-        --loading-color: var(--success-500);
+        --loader-c: var(--success-500);
 
         --btn-bg: var(--success-level-20);
         --btn-bg-hover: var(--success-level-30);
@@ -173,7 +173,7 @@ $sparkleButton: true !default;
     }
 
     &.flat {
-      --loading-color: var(--base-level-10);
+      --loader-c: var(--base-level-10);
       --btn-color: #fff;
       --btn-icon-color: #fff;
       --btn-bg: #{light-dark(var(--grey-600), var(--grey-600))};
@@ -221,7 +221,7 @@ $sparkleButton: true !default;
     }
 
     &.raised {
-      --loading-color: var(--base-level-10);
+      --loader-c: var(--base-level-10);
       --btn-color: #fff;
       --btn-icon-color: #fff;
       --btn-bg: var(--base-gradient-60);

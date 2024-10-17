@@ -2,13 +2,13 @@ $sparkleDatepicker: true !default;
 
 @if $initSparkle == true and $sparkleDatepicker == true {
   spk-datepicker {
-    --selected-bg: var(--base-level-60);
-    --border-width: 0;
-    --border-color: transparent;
-    --selected-color: #fff;
-    --day-color: var(--base-level-60);
-    --day-gap: #{p2r(4)};
-    --day-font: var(--paragraph-20);
+    --sel-bg: var(--base-level-60);
+    --sel-bw: 0;
+    --sel-bc: transparent;
+    --sel-c: #fff;
+    --day-c: var(--base-level-60);
+    --day-g: #{p2r(4)};
+    --day-f: var(--paragraph-20);
 
     width: 100%;
     max-width: p2r(300);
@@ -19,7 +19,7 @@ $sparkleDatepicker: true !default;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: p2r(4 0 0);
+      padding: p2r(4 0);
       gap: p2r(8);
 
       .title {
@@ -43,13 +43,13 @@ $sparkleDatepicker: true !default;
     section {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: var(--day-gap);
+      gap: var(--day-g);
 
       .days,
       .weekdays {
         display: grid;
         grid-column: 1 / -1;
-        gap: var(--day-gap);
+        gap: var(--day-g);
         grid-template-columns: subgrid;
         position: relative;
 
@@ -62,7 +62,7 @@ $sparkleDatepicker: true !default;
           display: grid;
           grid-template-columns: repeat(7, 1fr);
           grid-template-rows: repeat(7, 1fr);
-          gap: var(--day-gap);
+          gap: var(--day-g);
           z-index: 0;
         }
 
@@ -74,12 +74,12 @@ $sparkleDatepicker: true !default;
           cursor: pointer;
           position: relative;
           z-index: 1;
-          color: var(--day-color);
-          font: var(--day-font);
+          color: var(--day-c);
+          font: var(--day-f);
           user-select: none;
 
-          &.selected {
-            color: var(--selected-color);
+          &.sel {
+            color: var(--sel-c);
             transition: color 75ms linear;
           }
 
@@ -87,16 +87,16 @@ $sparkleDatepicker: true !default;
             opacity: 0.4;
           }
 
-          &.selected-element {
+          &.sel-el {
             position: relative;
             top: 0;
             left: 0;
             transition:
               transform 75ms linear,
               opacity 75ms linear;
-            background: var(--selected-bg);
+            background: var(--sel-bg);
             border-radius: 50%;
-            border: var(--border-width) solid var(--border-color);
+            border: var(--sel-bw) solid var(--sel-bc);
             opacity: 0;
             box-sizing: border-box;
           }
@@ -111,73 +111,73 @@ $sparkleDatepicker: true !default;
     }
 
     &.primary {
-      --selected-bg: var(--primary-500);
+      --sel-bg: var(--primary-500);
     }
 
     &.accent {
-      --selected-bg: var(--accent-500);
+      --sel-bg: var(--accent-500);
     }
 
     &.tertiary {
-      --selected-bg: var(--tertiary-500);
+      --sel-bg: var(--tertiary-500);
     }
 
     &.warn {
-      --selected-bg: var(--warn-500);
+      --sel-bg: var(--warn-500);
     }
 
     &.success {
-      --selected-bg: var(--success-500);
+      --sel-bg: var(--success-500);
     }
 
     &.outlined {
-      --selected-bg: var(--base-level-10);
-      --selected-color: var(--base-level-70);
-      --border-width: 2px;
-      --border-color: var(--base-level-40);
+      --sel-bg: var(--base-level-10);
+      --sel-c: var(--base-level-70);
+      --sel-bw: 2px;
+      --sel-bc: var(--base-level-40);
 
       &.primary {
-        --border-color: var(--primary-500);
+        --sel-bc: var(--primary-500);
       }
 
       &.accent {
-        --border-color: var(--accent-500);
+        --sel-bc: var(--accent-500);
       }
 
       &.tertiary {
-        --border-color: var(--tertiary-500);
+        --sel-bc: var(--tertiary-500);
       }
 
       &.warn {
-        --border-color: var(--warn-500);
+        --sel-bc: var(--warn-500);
       }
 
       &.success {
-        --border-color: var(--success-500);
+        --sel-bc: var(--success-500);
       }
     }
 
     &.raised {
-      --selected-bg: var(--base-gradient-20);
+      --sel-bg: var(--base-gradient-20);
 
       &.primary {
-        --selected-bg: var(--primary-gradient-20);
+        --sel-bg: var(--primary-gradient-20);
       }
 
       &.accent {
-        --selected-bg: var(--accent-gradient-20);
+        --sel-bg: var(--accent-gradient-20);
       }
 
       &.tertiary {
-        --selected-bg: var(--tertiary-gradient-20);
+        --sel-bg: var(--tertiary-gradient-20);
       }
 
       &.warn {
-        --selected-bg: var(--warn-gradient-20);
+        --sel-bg: var(--warn-gradient-20);
       }
 
       &.success {
-        --selected-bg: var(--success-gradient-20);
+        --sel-bg: var(--success-gradient-20);
       }
     }
   }
