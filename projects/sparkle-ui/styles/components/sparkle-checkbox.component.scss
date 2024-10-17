@@ -19,7 +19,7 @@ $sparkleCheckbox: true !default;
       position: absolute;
       inset: 0;
       cursor: pointer;
-
+ 
       &:focus {
         outline: none;
       }
@@ -68,50 +68,46 @@ $sparkleCheckbox: true !default;
       }
     }
 
-    &.primary .box {
+    &.primary {
       --box-bg: var(--primary-level-30);
       --box-bc: var(--primary-level-40);
       --box-c: var(--primary-500);
     }
 
-    &.accent .box {
+    &.accent {
       --box-bg: var(--accent-level-30);
       --box-bc: var(--accent-level-40);
       --box-c: var(--accent-500);
     }
 
-    &.tertiary .box {
+    &.tertiary {
       --box-bg: var(--tertiary-level-30);
       --box-bc: var(--tertiary-level-40);
       --box-c: var(--tertiary-500);
     }
 
-    &.warn .box {
+    &.warn {
       --box-bg: var(--warn-level-30);
       --box-bc: var(--warn-level-40);
       --box-c: var(--warn-500);
     }
 
-    &.success .box {
+    &.success {
       --box-bg: var(--success-level-30);
       --box-bc: var(--success-level-40);
       --box-c: var(--success-500);
     }
 
     &.outlined {
-      .box {
-        --box-bg: var(--base-level-10);
-      }
+      --box-bg: var(--base-level-10);
 
       &.primary,
       &.accent,
       &.tertiary,
       &.warn,
       &.success {
-        .box {
-          --box-bg: var(--base-level-10);
-          --box-bc: var(--base-level-40);
-        }
+        --box-bg: var(--base-level-10);
+        --box-bc: var(--base-level-40);
       }
     }
 
@@ -143,57 +139,53 @@ $sparkleCheckbox: true !default;
   }
 
   %flat {
-    .box {
-      --box-bw: 0;
-      --box-bg: var(--grey-500);
-      --box-c: #fff;
-    }
+    --box-bw: 0;
+    --box-bg: var(--grey-500);
+    --box-c: #fff;
 
-    &.primary .box {
+    &.primary {
       --box-bg: var(--primary-500);
     }
 
-    &.accent .box {
+    &.accent {
       --box-bg: var(--accent-500);
     }
 
-    &.tertiary .box {
+    &.tertiary {
       --box-bg: var(--tertiary-500);
     }
 
-    &.warn .box {
+    &.warn {
       --box-bg: var(--warn-500);
     }
 
-    &.success .box {
+    &.success {
       --box-bg: var(--success-500);
     }
   }
 
   %raised {
-    .box {
-      --box-bw: 0;
-      --box-bg: var(--base-gradient-20);
-      --box-c: #fff;
-    }
+    --box-bw: 0;
+    --box-bg: var(--base-gradient-20);
+    --box-c: #fff;
 
-    &.primary .box {
+    &.primary {
       --box-bg: var(--primary-gradient-20);
     }
 
-    &.accent .box {
+    &.accent {
       --box-bg: var(--accent-gradient-20);
     }
 
-    &.tertiary .box {
+    &.tertiary {
       --box-bg: var(--tertiary-gradient-20);
     }
 
-    &.warn .box {
+    &.warn {
       --box-bg: var(--warn-gradient-20);
     }
 
-    &.success .box {
+    &.success {
       --box-bg: var(--success-gradient-20);
     }
   }
