@@ -2,6 +2,7 @@ $sparkleStepper: true !default;
 
 @if $initSparkle == true and $sparkleStepper == true {
   spk-stepper {
+    // TODO add variables
     display: flex;
     flex-wrap: nowrap;
     width: 100%;

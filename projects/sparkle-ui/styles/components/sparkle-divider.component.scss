@@ -2,8 +2,8 @@ $sparkleDivider: true !default;
 
 @if $initSparkle == true and $sparkleDivider == true {
   spk-divider {
-    --divider-color: var(--base-level-40);
-    --divider-height: #{p2r(1)};
+    --divider-c: var(--base-level-40);
+    --divider-h: #{p2r(1)};
 
     display: flex;
     gap: p2r(8);
@@ -16,8 +16,8 @@ $sparkleDivider: true !default;
     &::before,
     &::after {
       content: '';
-      background: var(--divider-color);
-      height: var(--divider-height);
+      background: var(--divider-c);
+      height: var(--divider-h);
       flex: 1 0;
     }
   }

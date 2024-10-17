@@ -2,13 +2,13 @@ $sparklePopover: true !default;
 
 @if $initSparkle == true and $sparklePopover == true {
   spk-popover {
-    --popover-display: inherit;
+    --po-d: inherit;
 
-    display: var(--popover-display);
+    display: var(--po-d);
 
     .popover-trigger {
       cursor: pointer;
-      display: var(--popover-display);
+      display: var(--po-d);
       position: relative;
 
       [spk-button] {
@@ -16,7 +16,7 @@ $sparklePopover: true !default;
       }
 
       .popover-trigger-wrapper {
-        display: var(--popover-display);
+        display: var(--po-d);
 
         &:empty + * {
           display: inherit;

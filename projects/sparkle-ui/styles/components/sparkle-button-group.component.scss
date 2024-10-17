@@ -2,18 +2,18 @@ $sparkleButtonGroup: true !default;
 
 @if $initSparkle == true and $sparkleButtonGroup == true {
   spk-button-group {
-    --spk-button-group-bg: var(--base-level-10);
-    --spk-button-group-color: var(--base-level-70);
-    --spk-button-group-icon-color: var(--base-level-70);
-    --spk-button-group-border-color: var(--base-level-40);
-    --spk-button-group-height: #{p2r(40)};
-    --spk-button-group-shape: var(--shape-2);
-    --spk-button-group-font: var(--paragraph-30);
+    --btng-bg: var(--base-level-10);
+    --btng-c: var(--base-level-70);
+    --btng-ic: var(--base-level-70);
+    --btng-bc: var(--base-level-40);
+    --btng-h: #{p2r(40)};
+    --btng-s: var(--shape-2);
+    --btng-f: var(--paragraph-30);
 
     display: inline-flex;
-    border: 1px solid var(--spk-button-group-border-color);
-    border-radius: var(--spk-button-group-shape);
-    height: var(--spk-button-group-height);
+    border: 1px solid var(--btng-bc);
+    border-radius: var(--btng-s);
+    height: var(--btng-h);
     overflow: hidden;
 
     button {
@@ -36,10 +36,10 @@ $sparkleButtonGroup: true !default;
       overflow: visible;
       vertical-align: middle;
       white-space: nowrap;
-      background: var(--spk-button-group-bg);
-      color: var(--spk-button-group-color);
-      font: var(--spk-button-group-font);
-      border-left: 1px solid var(--spk-button-group-border-color);
+      background: var(--btng-bg);
+      color: var(--btng-c);
+      font: var(--btng-f);
+      border-left: 1px solid var(--btng-bc);
 
       &:first-child {
         border-left: 0;
@@ -47,9 +47,9 @@ $sparkleButtonGroup: true !default;
 
       &:hover,
       &.active {
-        --spk-button-group-color: var(--base-level-70);
-        --spk-button-group-icon-color: var(--base-level-70);
-        --spk-button-group-bg: var(--base-level-30);
+        --btng-c: var(--base-level-70);
+        --btng-ic: var(--base-level-70);
+        --btng-bg: var(--base-level-30);
       }
     }
   }

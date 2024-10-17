@@ -2,10 +2,14 @@ $sparkleTable: true !default;
 
 @if $initSparkle == true and $sparkleTable == true {
   spk-table {
-    --table-border-color: var(--base-level-40);
-    --table-header-bg: var(--base-level-20);
-    --table-row-bg: var(--base-level-10);
-    --table-row-border-color: var(--base-level-40);
+    --table-bc: var(--base-level-40);
+    --table-tr-bg: var(--base-level-10);
+    --table-th-bg: var(--base-level-10);
+    --table-th-c: var(--base-level-60R);
+    --table-th-f: var(--paragraph-30);
+    --table-td-c: var(--base-level-60);
+    --table-td-f: var(--paragraph-30);
+
     --table-columns: 1fr 1fr 1fr max-content;
 
     width: 100%;
@@ -24,16 +28,21 @@ $sparkleTable: true !default;
       grid-template-columns: subgrid;
     }
 
+    tr {
+      background: var(--table-tr-bg);
+    }
+
     th {
       display: flex;
       align-items: center;
       padding: p2r(0 0 0 20);
       height: p2r(48);
-      font: var(--paragraph-30);
+      font: var(--table-th-f);
       line-height: 1em;
       white-space: nowrap;
-      color: var(--base-level-60R);
+      color: var(--table-th-c);
       border: 0;
+      background: var(--table-th-bg);
 
       &:last-child {
         padding: p2r(0 20);
@@ -47,10 +56,10 @@ $sparkleTable: true !default;
       padding: p2r(16 20);
       height: p2r(78);
       gap: p2r(8);
-      font-weight: 500;
       white-space: nowrap;
-      color: var(--base-level-60);
-      border-top: 1px solid var(--base-level-30);
+      color: var(--table-td-c);
+      font: var(--table-td-f);
+      border-top: 1px solid var(--table-bc);
       border-bottom: 0;
     }
 

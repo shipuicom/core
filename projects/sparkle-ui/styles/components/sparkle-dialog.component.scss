@@ -2,8 +2,8 @@ $sparkleDialog: true !default;
 
 @if $initSparkle == true and $sparkleDialog == true {
   spk-dialog {
-    --dialog-padding: #{p2r(16)};
-    --dialog-gap: #{p2r(8)};
+    --dialog-p: #{p2r(16)};
+    --dialog-g: #{p2r(8)};
 
     [spk-header],
     [spk-content],
@@ -15,20 +15,20 @@ $sparkleDialog: true !default;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: var(--dialog-padding);
-      gap: var(--dialog-gap);
+      padding: var(--dialog-p);
+      gap: var(--dialog-g);
     }
 
     [spk-content] {
-      padding: var(--dialog-padding);
+      padding: var(--dialog-p);
     }
 
     [spk-footer] {
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      padding: var(--dialog-padding);
-      gap: var(--dialog-gap);
+      padding: var(--dialog-p);
+      gap: var(--dialog-g);
     }
 
     dialog {

@@ -2,14 +2,21 @@ $sparkleProgressBar: true !default;
 
 @if $initSparkle == true and $sparkleProgressBar == true {
   spk-progress-bar {
+    --pb-h: #{p2r(8)};
+    --pb-b: var(--base-level-40);
+    --pb-bg: var(--base-level-30);
+    --pb-br: var(--shape-2);
+    --pbt-bg: var(--base-level-20);
+    --pbt-br: inherit;
+
     display: block;
     width: 100%;
-    height: p2r(8);
+    height: var(--pb-h);
     position: relative;
     overflow: hidden;
 
-    border-radius: var(--shape-2);
-    background-color: var(--base-level-30);
+    border-radius: var(--pb-br);
+    background: var(--pb-bg);
 
     .progress-bar {
       position: absolute;
@@ -19,8 +26,8 @@ $sparkleProgressBar: true !default;
       height: 100%;
       transform-origin: top left;
 
-      border-radius: var(--shape-2);
-      background-color: var(--base-level-60);
+      border-radius: var(--pbt-br);
+      background: var(--pbt-bg);
     }
 
     &.indeterminate {
@@ -43,38 +50,28 @@ $sparkleProgressBar: true !default;
     }
 
     &.primary {
-      .progress-bar {
-        background-color: var(--primary-500);
-      }
+      --pbt-bg: var(--primary-500);
     }
 
     &.accent {
-      .progress-bar {
-        background-color: var(--accent-500);
-      }
+      --pbt-bg: var(--accent-500);
     }
 
     &.tertiary {
-      .progress-bar {
-        background-color: var(--tertiary-500);
-      }
+      --pbt-bg: var(--tertiary-500);
     }
 
     &.warn {
-      .progress-bar {
-        background-color: var(--warn-500);
-      }
+      --pbt-bg: var(--warn-500);
     }
 
     &.success {
-      .progress-bar {
-        background-color: var(--success-500);
-      }
+      --pbt-bg: var(--success-500);
     }
 
     &.outlined {
-      border: 1px solid var(--base-level-40);
-      background-color: var(--base-level-10);
+      --pb-b: 1px solid var(--base-level-40);
+      --pb-bg: var(--base-level-10);
 
       &:after {
         background-color: inherit;
@@ -82,56 +79,54 @@ $sparkleProgressBar: true !default;
     }
 
     &.flat {
-      background-color: var(--base-level-30);
+      --pbt-bg: var(--base-level-30);
 
       &:after {
         background-color: inherit;
       }
 
       &.primary {
-        background-color: var(--primary-level-30);
+        --pbt-bg: var(--primary-level-30);
       }
 
       &.accent {
-        background-color: var(--accent-level-30);
+        --pbt-bg: var(--accent-level-30);
       }
 
       &.tertiary {
-        background-color: var(--tertiary-level-30);
+        --pbt-bg: var(--tertiary-level-30);
       }
 
       &.warn {
-        background-color: var(--warn-level-30);
+        --pbt-bg: var(--warn-level-30);
       }
 
       &.success {
-        background-color: var(--success-level-30);
+        --pbt-bg: var(--success-level-30);
       }
     }
 
     &.raised {
-      .progress-bar {
-        background: var(--base-gradient-30);
+      --pbt-bg: var(--base-gradient-30);
+
+      &.primary {
+        --pbt-bg: var(--primary-gradient-30);
       }
 
-      &.primary .progress-bar {
-        background: var(--primary-gradient-30);
+      &.accent {
+        --pbt-bg: var(--accent-gradient-30);
       }
 
-      &.accent .progress-bar {
-        background: var(--accent-gradient-30);
+      &.tertiary {
+        --pbt-bg: var(--tertiary-gradient-30);
       }
 
-      &.tertiary .progress-bar {
-        background: var(--tertiary-gradient-30);
+      &.warn {
+        --pbt-bg: var(--warn-gradient-30);
       }
 
-      &.warn .progress-bar {
-        background: var(--warn-gradient-30);
-      }
-
-      &.success .progress-bar {
-        background: var(--success-gradient-30);
+      &.success {
+        --pbt-bg: var(--success-gradient-30);
       }
     }
   }

@@ -2,15 +2,15 @@ $sparkleButton: true !default;
 
 @if $initSparkle == true and $sparkleButton == true {
   [spk-button] {
-    --btn-height: #{p2r(40)};
-    --btn-shape: var(--shape-2);
-    --btn-font: var(--paragraph-20);
+    --btn-h: #{p2r(40)};
+    --btn-s: var(--shape-2);
+    --btn-f: var(--paragraph-20);
     --loader-c: var(--base-level-60);
-    --btn-color: var(--base-level-70);
-    --btn-icon-color: var(--base-level-70);
+    --btn-c: var(--base-level-70);
+    --btn-ic: var(--base-level-70);
     --btn-bg: var(--base-level-10);
-    --btn-bg-hover: var(--base-level-20);
-    --btn-border-color: var(--base-level-40);
+    --btn-bg-h: var(--base-level-20);
+    --btn-bc: var(--base-level-40);
 
     display: inline-flex;
     align-items: center;
@@ -28,16 +28,16 @@ $sparkleButton: true !default;
     overflow: visible;
     vertical-align: middle;
 
-    border-radius: var(--btn-shape);
-    height: var(--btn-height);
-    border: 1px solid var(--btn-border-color);
-    font: var(--btn-font);
+    border-radius: var(--btn-s);
+    height: var(--btn-h);
+    border: 1px solid var(--btn-bc);
+    font: var(--btn-f);
 
     background: var(--btn-bg);
-    color: var(--btn-color);
+    color: var(--btn-c);
 
     spk-icon {
-      color: var(--btn-icon-color);
+      color: var(--btn-ic);
     }
 
     &:has(spk-icon:only-child) {
@@ -45,8 +45,8 @@ $sparkleButton: true !default;
     }
 
     &:hover {
-      --btn-color: var(--base-level-70);
-      background: var(--btn-bg-hover);
+      --btn-c: var(--base-level-70);
+      background: var(--btn-bg-h);
     }
 
     &.loading.outlined,
@@ -70,8 +70,8 @@ $sparkleButton: true !default;
     }
 
     &.small {
-      --btn-height: #{p2r(32)};
-      --btn-font: var(--paragraph-30);
+      --btn-h: #{p2r(32)};
+      --btn-f: var(--paragraph-30);
 
       padding: p2r(0 8);
       gap: p2r(4);
@@ -96,23 +96,23 @@ $sparkleButton: true !default;
 
     // Base
     &.primary {
-      --btn-icon-color: var(--primary-500);
+      --btn-ic: var(--primary-500);
     }
 
     &.accent {
-      --btn-icon-color: var(--accent-500);
+      --btn-ic: var(--accent-500);
     }
 
     &.tertiary {
-      --btn-icon-color: var(--tertiary-500);
+      --btn-ic: var(--tertiary-500);
     }
 
     &.warn {
-      --btn-icon-color: var(--warn-500);
+      --btn-ic: var(--warn-500);
     }
 
     &.success {
-      --btn-icon-color: var(--success-500);
+      --btn-ic: var(--success-500);
     }
 
     &.icon {
@@ -125,9 +125,9 @@ $sparkleButton: true !default;
 
     &.icon,
     &.outlined {
-      --btn-color: var(--base-level-70);
+      --btn-c: var(--base-level-70);
       --btn-bg: var(--base-level-20);
-      --btn-bg-hover: var(--base-level-30);
+      --btn-bg-h: var(--base-level-30);
 
       transition: color 80ms linear;
 
@@ -135,49 +135,49 @@ $sparkleButton: true !default;
         --loader-c: var(--primary-500);
 
         --btn-bg: var(--primary-level-20);
-        --btn-bg-hover: var(--primary-level-30);
-        --btn-border-color: var(--primary-level-40);
+        --btn-bg-h: var(--primary-level-30);
+        --btn-bc: var(--primary-level-40);
       }
 
       &.accent {
         --loader-c: var(--accent-500);
 
         --btn-bg: var(--accent-level-20);
-        --btn-bg-hover: var(--accent-level-30);
-        --btn-border-color: var(--accent-level-40);
+        --btn-bg-h: var(--accent-level-30);
+        --btn-bc: var(--accent-level-40);
       }
 
       &.tertiary {
         --loader-c: var(--tertiary-500);
 
         --btn-bg: var(--tertiary-level-20);
-        --btn-bg-hover: var(--tertiary-level-30);
-        --btn-border-color: var(--tertiary-level-40);
+        --btn-bg-h: var(--tertiary-level-30);
+        --btn-bc: var(--tertiary-level-40);
       }
 
       &.warn {
         --loader-c: var(--warn-500);
 
         --btn-bg: var(--warn-level-20);
-        --btn-bg-hover: var(--warn-level-30);
-        --btn-border-color: var(--warn-level-40);
+        --btn-bg-h: var(--warn-level-30);
+        --btn-bc: var(--warn-level-40);
       }
 
       &.success {
         --loader-c: var(--success-500);
 
         --btn-bg: var(--success-level-20);
-        --btn-bg-hover: var(--success-level-30);
-        --btn-border-color: var(--success-level-40);
+        --btn-bg-h: var(--success-level-30);
+        --btn-bc: var(--success-level-40);
       }
     }
 
     &.flat {
       --loader-c: var(--base-level-10);
-      --btn-color: #fff;
-      --btn-icon-color: #fff;
+      --btn-c: #fff;
+      --btn-ic: #fff;
       --btn-bg: #{light-dark(var(--grey-600), var(--grey-600))};
-      --btn-bg-hover: #{light-dark(var(--grey-700), var(--grey-700))};
+      --btn-bg-h: #{light-dark(var(--grey-700), var(--grey-700))};
 
       border: 0;
 
@@ -190,42 +190,42 @@ $sparkleButton: true !default;
       }
 
       &.primary {
-        --btn-color: var(--primary-contrast-500);
+        --btn-c: var(--primary-contrast-500);
         --btn-bg: var(--primary-500);
-        --btn-bg-hover: var(--primary-500);
+        --btn-bg-h: var(--primary-500);
       }
 
       &.accent {
-        --btn-color: var(--accent-contrast-500);
+        --btn-c: var(--accent-contrast-500);
         --btn-bg: var(--accent-500);
-        --btn-bg-hover: var(--accent-500);
+        --btn-bg-h: var(--accent-500);
       }
 
       &.tertiary {
-        --btn-color: var(--tertiary-contrast-500);
+        --btn-c: var(--tertiary-contrast-500);
         --btn-bg: var(--tertiary-500);
-        --btn-bg-hover: var(--tertiary-500);
+        --btn-bg-h: var(--tertiary-500);
       }
 
       &.warn {
-        --btn-color: var(--warn-contrast-500);
+        --btn-c: var(--warn-contrast-500);
         --btn-bg: var(--warn-500);
-        --btn-bg-hover: var(--warn-500);
+        --btn-bg-h: var(--warn-500);
       }
 
       &.success {
-        --btn-color: var(--success-contrast-500);
+        --btn-c: var(--success-contrast-500);
         --btn-bg: var(--success-500);
-        --btn-bg-hover: var(--success-500);
+        --btn-bg-h: var(--success-500);
       }
     }
 
     &.raised {
       --loader-c: var(--base-level-10);
-      --btn-color: #fff;
-      --btn-icon-color: #fff;
+      --btn-c: #fff;
+      --btn-ic: #fff;
       --btn-bg: var(--base-gradient-60);
-      --btn-bg-hover: var(--base-gradient-70);
+      --btn-bg-h: var(--base-gradient-70);
 
       border: 0;
       box-shadow: none;
@@ -239,33 +239,33 @@ $sparkleButton: true !default;
       }
 
       &.primary {
-        --btn-color: var(--primary-contrast-500);
+        --btn-c: var(--primary-contrast-500);
         --btn-bg: var(--primary-gradient-20);
-        --btn-bg-hover: var(--primary-gradient-30);
+        --btn-bg-h: var(--primary-gradient-30);
       }
 
       &.accent {
-        --btn-color: var(--accent-contrast-500);
+        --btn-c: var(--accent-contrast-500);
         --btn-bg: var(--accent-gradient-20);
-        --btn-bg-hover: var(--accent-gradient-30);
+        --btn-bg-h: var(--accent-gradient-30);
       }
 
       &.tertiary {
-        --btn-color: var(--tertiary-contrast-500);
+        --btn-c: var(--tertiary-contrast-500);
         --btn-bg: var(--tertiary-gradient-20);
-        --btn-bg-hover: var(--tertiary-gradient-30);
+        --btn-bg-h: var(--tertiary-gradient-30);
       }
 
       &.warn {
-        --btn-color: var(--warn-contrast-500);
+        --btn-c: var(--warn-contrast-500);
         --btn-bg: var(--warn-gradient-20);
-        --btn-bg-hover: var(--warn-gradient-30);
+        --btn-bg-h: var(--warn-gradient-30);
       }
 
       &.success {
-        --btn-color: var(--success-contrast-500);
+        --btn-c: var(--success-contrast-500);
         --btn-bg: var(--success-gradient-20);
-        --btn-bg-hover: var(--success-gradient-30);
+        --btn-bg-h: var(--success-gradient-30);
       }
     }
   }

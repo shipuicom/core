@@ -3,14 +3,14 @@ $sparkleCard: true !default;
 @if $initSparkle == true and $sparkleCard == true {
   spk-card {
     --card-bg: var(--base-level-10);
-    --card-inner-bg: var(--base-level-20);
-    --card-border-color: var(--base-level-40);
-    --card-shadow: var(--box-shadow-10);
-    --card-padding: #{p2r(24)};
-    --card-shadow-padding: #{p2r(8)};
+    --card-ibg: var(--base-level-20);
+    --card-bc: var(--base-level-40);
+    --card-sh: var(--box-shadow-10);
+    --card-p: #{p2r(24)};
+    --card-shp: #{p2r(8)};
 
     display: block;
-    padding: var(--card-padding);
+    padding: var(--card-p);
     position: relative;
     z-index: 0;
 
@@ -24,15 +24,15 @@ $sparkleCard: true !default;
 
     &:before {
       background-color: var(--card-bg);
-      border: 1px solid var(--card-border-color);
-      box-shadow: var(--card-shadow);
+      border: 1px solid var(--card-bc);
+      box-shadow: var(--card-sh);
       border-radius: var(--shape-3);
       z-index: -2;
     }
 
     &:after {
-      background-color: var(--card-inner-bg);
-      inset: var(--card-shadow-padding);
+      background-color: var(--card-ibg);
+      inset: var(--card-shp);
       z-index: -1;
     }
   }

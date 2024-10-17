@@ -2,8 +2,12 @@ $sparkleRadio: true !default;
 
 @if $initSparkle == true and $sparkleRadio == true {
   spk-radio {
-    --spk-radio-dot-opacity: 0;
-    --spk-radio-dot-color: var(--base-level-60);
+    --radio-bw: #{p2r(1)};
+    --radio-bg: var(--base-level-30);
+    --radio-bc: var(--base-level-40);
+    --radio-c: var(--base-level-60);
+    --radiod-o: 0;
+    --radiod-c: var(--base-level-60);
 
     display: flex;
     align-items: center;
@@ -25,7 +29,7 @@ $sparkleRadio: true !default;
 
     &:has(input[type='radio']:checked),
     &.active {
-      --spk-radio-dot-opacity: 1;
+      --radiod-o: 1;
     }
 
     .radio {
@@ -37,10 +41,10 @@ $sparkleRadio: true !default;
       cursor: pointer;
       position: relative;
       border-radius: 50%;
-      border: 1px solid var(--base-level-40);
-      background: var(--base-level-30);
+      border: var(--radio-bw) solid var(--radio-bc);
+      background: var(--radio-bg);
       font-size: p2r(12);
-      color: var(--base-level-60);
+      color: var(--radio-c);
 
       &:after {
         content: '';
@@ -51,133 +55,117 @@ $sparkleRadio: true !default;
         border-radius: 50%;
         width: p2r(6);
         height: p2r(6);
-        background-color: var(--spk-radio-dot-color);
-        opacity: var(--spk-radio-dot-opacity);
+        background-color: var(--radiod-c);
+        opacity: var(--radiod-o);
         transition: opacity 125ms linear;
       }
     }
 
-    &.primary .radio {
-      --spk-radio-dot-color: var(--primary-500);
-      background: var(--primary-level-30);
-      border-color: var(--primary-level-40);
-      color: var(--primary-500);
+    &.primary {
+      --radio-c: var(--primary-500);
+      --radiod-c: var(--primary-500);
+      --radio-bg: var(--primary-level-30);
+      --radio-bc: var(--primary-level-40);
     }
 
-    &.accent .radio {
-      --spk-radio-dot-color: var(--accent-500);
-      background: var(--accent-level-30);
-      border-color: var(--accent-level-40);
-      color: var(--accent-500);
+    &.accent {
+      --radio-c: var(--accent-500);
+      --radiod-c: var(--accent-500);
+      --radio-bg: var(--accent-level-30);
+      --radio-bc: var(--accent-level-40);
     }
 
-    &.tertiary .radio {
-      --spk-radio-dot-color: var(--tertiary-500);
-      background: var(--tertiary-level-30);
-      border-color: var(--tertiary-level-40);
-      color: var(--tertiary-500);
+    &.tertiary {
+      --radio-c: var(--tertiary-500);
+      --radiod-c: var(--tertiary-500);
+      --radio-bg: var(--tertiary-level-30);
+      --radio-bc: var(--tertiary-level-40);
     }
 
-    &.warn .radio {
-      --spk-radio-dot-color: var(--warn-500);
-      background: var(--warn-level-30);
-      border-color: var(--warn-level-40);
-      color: var(--warn-500);
+    &.warn {
+      --radio-c: var(--warn-500);
+      --radiod-c: var(--warn-500);
+      --radio-bg: var(--warn-level-30);
+      --radio-bc: var(--warn-level-40);
     }
 
-    &.success .radio {
-      --spk-radio-dot-color: var(--success-500);
-      background: var(--success-level-30);
-      border-color: var(--success-level-40);
-      color: var(--success-500);
+    &.success {
+      --radio-c: var(--success-500);
+      --radiod-c: var(--success-500);
+      --radio-bg: var(--success-level-30);
+      --radio-bc: var(--success-level-40);
     }
 
     &.outlined {
-      .radio {
-        background: var(--base-level-10);
-      }
+      --radio-bg: var(--base-level-10);
 
       &.primary,
       &.accent,
       &.tertiary,
       &.warn,
       &.success {
-        .radio {
-          background: var(--base-level-10);
-          border-color: var(--base-level-40);
-        }
+        --radio-bc: var(--base-level-40);
       }
     }
 
     &.flat,
     &.raised {
-      .radio {
-        --spk-radio-dot-color: #fff;
-        border-color: var(--base-level-40);
-        background: var(--base-level-30);
-        color: #fff;
-      }
+      --radio-c: #fff;
+      --radio-bc: var(--base-level-40);
+      --radio-bg: var(--base-level-30);
+      --radiod-c: #fff;
     }
 
     &.flat:has(input[type='radio']:checked),
     &.flat.active {
-      .radio {
-        border-width: 0;
-        background: var(--grey-500);
-        color: #fff;
+      --radio-bw: 0;
+      --radio-bg: var(--grey-500);
+      --radiod-c: #fff;
+
+      &.primary {
+        --radio-bg: var(--primary-500);
       }
 
-      &.primary .radio {
-        background: var(--primary-500);
-        color: #fff;
+      &.accent {
+        --radio-bg: var(--accent-500);
       }
 
-      &.accent .radio {
-        background: var(--accent-500);
-        color: #fff;
+      &.tertiary {
+        --radio-bg: var(--tertiary-500);
       }
 
-      &.tertiary .radio {
-        background: var(--tertiary-500);
-        color: #fff;
+      &.warn {
+        --radio-bg: var(--warn-500);
       }
 
-      &.warn .radio {
-        background: var(--warn-500);
-        color: #fff;
-      }
-
-      &.success .radio {
-        background: var(--success-500);
-        color: #fff;
+      &.success {
+        --radio-bg: var(--success-500);
       }
     }
 
     &.raised:has(input[type='radio']:checked),
     &.raised.active {
-      .radio {
-        border-width: 0;
-        background: var(--base-gradient-20);
+      --radio-bw: 0;
+      --radio-bg: var(--base-gradient-20);
+
+      &.primary {
+        --radio-bg: var(--primary-gradient-20);
       }
 
-      &.primary .radio {
-        background: var(--primary-gradient-20);
+      &.accent {
+        --radio-bg: var(--accent-gradient-20);
       }
 
-      &.accent .radio {
-        background: var(--accent-gradient-20);
+      &.tertiary {
+        --radio-bg: var(--tertiary-gradient-20);
       }
 
-      &.tertiary .radio {
-        background: var(--tertiary-gradient-20);
+      &.warn {
+        --radio-bg: var(--warn-gradient-20);
       }
 
-      &.warn .radio {
-        background: var(--warn-gradient-20);
-      }
-
-      &.success .radio {
-        background: var(--success-gradient-20);
+      &.success {
+        --radio-bg: var(--success-gradient-20);
       }
     }
   }

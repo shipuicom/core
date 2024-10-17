@@ -2,9 +2,9 @@ $sparkleList: true !default;
 
 @if $initSparkle == true and $sparkleList == true {
   spk-list {
-    --list-shape: var(--shape-2);
+    --list-s: var(--shape-2);
     --list-active-bg: var(--base-level-20);
-    --list-active-box-shadow: none;
+    --list-active-bs: none;
 
     width: 100%;
     padding: p2r(20 16);
@@ -14,7 +14,7 @@ $sparkleList: true !default;
 
     &.base-level-20 {
       --list-active-bg: var(--base-level-10);
-      --list-active-box-shadow: var(--box-shadow-20);
+      --list-active-bs: var(--box-shadow-20);
     }
 
     [title] {
@@ -26,7 +26,7 @@ $sparkleList: true !default;
 
     [spk-action-item],
     [spk-list-item] {
-      border-radius: var(--list-shape);
+      border-radius: var(--list-s);
       padding: p2r(8 12);
       font: var(--paragraph-30);
       color: var(--base-level-60);
@@ -64,7 +64,7 @@ $sparkleList: true !default;
     [spk-action-item].active,
     [spk-action-item].selected {
       background-color: var(--list-active-bg);
-      box-shadow: var(--list-active-box-shadow);
+      box-shadow: var(--list-active-bs);
     }
 
     &.primary {
