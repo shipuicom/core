@@ -2,9 +2,9 @@ $sparkleCheckbox: true !default;
 
 @if $initSparkle == true and $sparkleCheckbox == true {
   spk-checkbox {
-    --box-border-width: #{p2r(1)};
-    --box-border-color: var(--base-level-40);
-    --box-color: var(--base-level-60);
+    --box-bw: #{p2r(1)};
+    --box-bc: var(--base-level-40);
+    --box-c: var(--base-level-60);
     --box-bg: var(--base-level-30);
 
     display: flex;
@@ -34,10 +34,10 @@ $sparkleCheckbox: true !default;
       cursor: pointer;
       position: relative;
       border-radius: var(--shape-1);
-      border: var(--box-border-width) solid var(--box-border-color);
+      border: var(--box-bw) solid var(--box-bc);
       background: var(--box-bg);
       font-size: p2r(12);
-      color: var(--box-color);
+      color: var(--box-c);
     }
 
     spk-icon {
@@ -70,32 +70,32 @@ $sparkleCheckbox: true !default;
 
     &.primary .box {
       --box-bg: var(--primary-level-30);
-      --box-border-color: var(--primary-level-40);
-      --box-color: var(--primary-500);
+      --box-bc: var(--primary-level-40);
+      --box-c: var(--primary-500);
     }
 
     &.accent .box {
       --box-bg: var(--accent-level-30);
-      --box-border-color: var(--accent-level-40);
-      --box-color: var(--accent-500);
+      --box-bc: var(--accent-level-40);
+      --box-c: var(--accent-500);
     }
 
     &.tertiary .box {
       --box-bg: var(--tertiary-level-30);
-      --box-border-color: var(--tertiary-level-40);
-      --box-color: var(--tertiary-500);
+      --box-bc: var(--tertiary-level-40);
+      --box-c: var(--tertiary-500);
     }
 
     &.warn .box {
       --box-bg: var(--warn-level-30);
-      --box-border-color: var(--warn-level-40);
-      --box-color: var(--warn-500);
+      --box-bc: var(--warn-level-40);
+      --box-c: var(--warn-500);
     }
 
     &.success .box {
       --box-bg: var(--success-level-30);
-      --box-border-color: var(--success-level-40);
-      --box-color: var(--success-500);
+      --box-bc: var(--success-level-40);
+      --box-c: var(--success-500);
     }
 
     &.outlined {
@@ -110,7 +110,7 @@ $sparkleCheckbox: true !default;
       &.success {
         .box {
           --box-bg: var(--base-level-10);
-          --box-border-color: var(--base-level-40);
+          --box-bc: var(--base-level-40);
         }
       }
     }
@@ -144,9 +144,9 @@ $sparkleCheckbox: true !default;
 
   %flat {
     .box {
-      --box-border-width: 0;
+      --box-bw: 0;
       --box-bg: var(--grey-500);
-      --box-color: #fff;
+      --box-c: #fff;
     }
 
     &.primary .box {
@@ -172,9 +172,9 @@ $sparkleCheckbox: true !default;
 
   %raised {
     .box {
-      --box-border-width: 0;
+      --box-bw: 0;
       --box-bg: var(--base-gradient-20);
-      --box-color: #fff;
+      --box-c: #fff;
     }
 
     &.primary .box {
