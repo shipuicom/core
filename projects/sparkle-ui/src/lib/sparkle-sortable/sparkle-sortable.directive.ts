@@ -98,7 +98,7 @@ export class SparkleSortableDirective {
   dragEnter(e: DragEvent) {
     const draggableAncestor = (e.target as HTMLElement).closest('[draggable]');
 
-    if (draggableAncestor && !draggableAncestor.classList.contains('spk-placeholder')) {
+    if (draggableAncestor && !draggableAncestor.classList.contains('sortable-placeholder')) {
       this.dragToIndex.set(this.getIndexOfElement(draggableAncestor as HTMLElement));
     }
   }
@@ -135,7 +135,7 @@ export class SparkleSortableDirective {
 
       setTimeout(() => {
         const placeholderElement = draggedElement.cloneNode(true) as HTMLElement;
-        this.#renderer.addClass(placeholderElement, 'spk-placeholder');
+        this.#renderer.addClass(placeholderElement, 'sortable-placeholder');
         this.#renderer.setStyle(placeholderElement, 'left', `${draggedElement.offsetLeft}px`);
         this.#renderer.setStyle(placeholderElement, 'width', `${draggedElement.offsetWidth}px`);
         this.#renderer.setStyle(placeholderElement, 'top', `${draggedElement.offsetTop}px`);
