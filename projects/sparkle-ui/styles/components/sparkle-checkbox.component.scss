@@ -19,7 +19,7 @@ $sparkleCheckbox: true !default;
       position: absolute;
       inset: 0;
       cursor: pointer;
- 
+
       &:focus {
         outline: none;
       }
@@ -108,6 +108,19 @@ $sparkleCheckbox: true !default;
       &.success {
         --box-bg: var(--base-level-10);
         --box-bc: var(--base-level-40);
+      }
+    }
+
+    &.flat,
+    &.raised {
+      &.primary,
+      &.accent,
+      &.tertiary,
+      &.warn,
+      &.success {
+        --box-bc: var(--base-level-40);
+        --box-c: var(--base-level-60);
+        --box-bg: var(--base-level-30);
       }
     }
 
