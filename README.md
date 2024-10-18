@@ -25,4 +25,9 @@ Just before release
 
 - [ ] Create a color picker component
 - [ ] Create a gantt chart component
+- [ ] Create simple chart components
+  - [ ] Line chart
+  - [ ] Bar chart
+  - [ ] Pie chart
+  - [ ] Doughnut chart
 - [ ] CLI util to figure out which components and styles are used in a project as a production build trimmer
