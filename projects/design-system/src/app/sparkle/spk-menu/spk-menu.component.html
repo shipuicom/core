@@ -1,24 +1,56 @@
 <section>
   <h3>Menu example</h3>
 
-  <div class="wrap">
-    <spk-menu [noScroll]="true">
+  <spk-dialog [isOpen]="false">
+    <spk-menu>
       <button spk-button class="outlined">Open menu</button>
 
       <ng-container menu>
-        <div spk-menu-title>Section 1</div>
-        <button spk-menu-item option (click)="fireHello()">
+        <div title>Section 1</div>
+
+        <button item (click)="fireHello()">
           <spk-icon>circle</spk-icon>
           Item 1
           <span suffix>⌘O</span>
         </button>
-        <button spk-menu-item option (click)="fireHello()">
+
+        <button item (click)="fireHello()">
           <spk-icon>circle</spk-icon>
           Item 2
           <span suffix>⌘K</span>
         </button>
         <spk-divider />
-        <button spk-menu-item option (click)="fireHello()" disabled>
+
+        <button item (click)="fireHello()" disabled>
+          <spk-icon>circle</spk-icon>
+          Item 3
+          <span suffix>⌘L</span>
+        </button>
+      </ng-container>
+    </spk-menu>
+  </spk-dialog>
+
+  <div class="wrap">
+    <spk-menu>
+      <button spk-button class="outlined">Open menu</button>
+
+      <ng-container menu>
+        <div title>Section 1</div>
+
+        <button item (click)="fireHello()">
+          <spk-icon>circle</spk-icon>
+          Item 1
+          <span suffix>⌘O</span>
+        </button>
+
+        <button item (click)="fireHello()">
+          <spk-icon>circle</spk-icon>
+          Item 2
+          <span suffix>⌘K</span>
+        </button>
+        <spk-divider />
+
+        <button item (click)="fireHello()" disabled>
           <spk-icon>circle</spk-icon>
           Item 3
           <span suffix>⌘L</span>
@@ -26,17 +58,4 @@
       </ng-container>
     </spk-menu>
   </div>
-  <!-- <button
-    mat-button
-    [class.active]="languageMenuTrigger.menuOpen"
-    [matMenuTriggerFor]="languageMenu"
-    #languageMenuTrigger="matMenuTrigger">
-    Language
-    <spk-icon>circle</spk-icon>
-  </button>
-  <button mat-menu-item>Spanish</button>
-  <mat-menu #languageMenu="matMenu">
-    <button mat-menu-item>English</button>
-    <button mat-menu-item>French</button>
-  </mat-menu> -->
 </section>

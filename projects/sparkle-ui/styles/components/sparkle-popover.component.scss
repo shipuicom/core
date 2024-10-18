@@ -11,15 +11,15 @@ $sparklePopover: true !default;
       display: var(--po-d);
       position: relative;
 
-      [spk-button] {
-        display: none;
-      }
-
       .trigger-wrapper {
         display: var(--po-d);
 
         &:empty + * {
           display: inherit;
+        }
+
+        + [spk-button] {
+          display: none;
         }
       }
     }
@@ -29,7 +29,6 @@ $sparklePopover: true !default;
       inset: 0;
       opacity: 0;
       z-index: 1;
-      pointer-events: none;
     }
 
     .popover {

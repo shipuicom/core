@@ -67,8 +67,6 @@ const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
         closeOnButton: false,
         closeOnEsc: false,
       }">
-      <div class="overlay" (click)="isOpen() && close()"></div>
-
       <spk-form-field trigger (click)="open($event)" [class]="readonly() ? 'readonly' : ''">
         <ng-content select="label" ngProjectAs="label"></ng-content>
 

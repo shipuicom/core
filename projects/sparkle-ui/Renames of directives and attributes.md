@@ -35,6 +35,9 @@ Directives attributes should be using kebab-case
   - spkLabel -> label
 - spk-stepper
   - spk-step -> step
+- spk-menu
+  - spk-menu-item -> item
+  - spk-menu-title -> title
 
 ### Removed select annotations
 

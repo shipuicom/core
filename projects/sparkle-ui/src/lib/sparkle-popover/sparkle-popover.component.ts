@@ -43,6 +43,7 @@ const DEFAULT_OPTIONS: SparklePopoverOptions = {
     </div>
 
     <div class="popover" #popoverRef [style.position-anchor]="id()" [style]="menuStyle()" popover>
+      <div class="overlay" (click)="isOpen() && eventClose($event)"></div>
       <ng-content />
     </div>
   `,
@@ -111,9 +112,9 @@ export class SparklePopoverComponent {
 
       return true;
     } else {
+      popoverEl.hidePopover();
       this.abortController?.abort();
       this.openAbort?.abort();
-      popoverEl.hidePopover();
       this.closed.emit();
       return false;
     }
@@ -167,10 +168,10 @@ export class SparklePopoverComponent {
     return document.documentElement;
   }
 
-  ngOnInit() {
-    (this.popoverRef()?.nativeElement as any)?.addEventListener('beforetoggle', (event: ToggleEvent) => {
-      event.newState === 'closed' && this.isOpen.set(false);
-    });
+  eventClose($event: MouseEvent) {
+    $event.stopPropagation();
+    $event.preventDefault();
+    this.isOpen.set(false);
   }
 
   ngOnDestroy() {

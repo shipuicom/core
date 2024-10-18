@@ -8,6 +8,8 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Remove all the spk- prefixes inside components
 - [x] Make default content projection on spk-select be options
 - [x] Minimize attributes to carry less naming complexity
+- [x] Have the spk-menu use a popover
+- [ ] spk-menu should support arrow keys to navigate options
 - [ ] Streamline general color variables
 - [ ] Move tooltips from style to a directive
 - [ ] Create a datepicker input component
@@ -27,6 +29,7 @@ Just before release
 
 ## Nice to haves for v1 beta
 
+- [ ] Add hotkeys to navigate spk-menu options
 - [ ] Add flat and raised versions of alerts
 - [ ] Create a color picker component
 - [ ] Create a gantt chart component
