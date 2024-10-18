@@ -7,13 +7,13 @@
         [id]="alert.id"
         [alertService]="alertService()"
         [style.transition-delay]="transitionDelay($index, true)"
-        [class.spk-alert-animate-in]="alert.animateIn"
-        [class.spk-alert-animate-out]="alert.animateOut"
-        [class.spk-alert-is-hidden]="alertHistoryIsHidden() && !alert.isOpen">
-        <div spk-alert-title>{{ alert.title }}</div>
+        [class.animate-in]="alert.animateIn"
+        [class.animate-out]="alert.animateOut"
+        [class.is-hidden]="alertHistoryIsHidden() && !alert.isOpen">
+        <div title>{{ alert.title }}</div>
 
         @if (alert.content) {
-          <div spk-alert-content>
+          <div content>
             {{ alert.content }}
           </div>
         }
@@ -22,8 +22,8 @@
   </div>
 </div>
 <div
-  class="alert-tray"
-  [class.alert-tray-is-hidden]="!alertHistoryIsHidden()"
+  class="tray"
+  [class.tray-is-hidden]="!alertHistoryIsHidden()"
   (mouseover)="this.onMouseOver()"
   (mouseout)="this.onMouseOut()">
   <spk-icon class="small">info</spk-icon>

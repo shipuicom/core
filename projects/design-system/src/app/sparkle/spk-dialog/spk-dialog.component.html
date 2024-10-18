@@ -10,10 +10,10 @@
 </spk-dialog> -->
 
 <spk-dialog [(isOpen)]="isOpen">
-  <header>
+  <header header>
     <h3>Hello world</h3>
     <spk-icon (click)="isOpen.set(false)">x-circle</spk-icon>
   </header>
-  <section>Hello world</section>
-  <footer><button spk-button class="outlined" (click)="isOpen.set(false)">Close</button></footer>
+  <section content>Hello world</section>
+  <footer footer><button spk-button class="outlined" (click)="isOpen.set(false)">Close</button></footer>
 </spk-dialog>

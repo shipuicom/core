@@ -1,39 +1,39 @@
 import { Directive, HostListener, output, signal } from '@angular/core';
 
 @Directive({
-  selector: '[spkFileDragDrop]',
+  selector: '[spkDragDrop]',
   standalone: true,
   host: {
-    '[class.fileover]': 'fileOver()',
+    '[class.filesover]': 'filesOver()',
   },
 })
 export class SparkleFileDragDropDirective {
-  fileOver = signal(false);
-  fileDropped = output<FileList>();
+  filesOver = signal(false);
+  filesDropped = output<FileList>();
 
   @HostListener('dragover', ['$event']) onDragOver(e: DragEvent) {
     e.preventDefault();
     e.stopPropagation();
 
-    this.fileOver.set(true);
+    this.filesOver.set(true);
   }
 
   @HostListener('dragleave', ['$event']) onDragLeave(e: DragEvent) {
     e.preventDefault();
     e.stopPropagation();
 
-    this.fileOver.set(false);
+    this.filesOver.set(false);
   }
 
   @HostListener('drop', ['$event']) ondrop(e: DragEvent) {
     e.preventDefault();
     e.stopPropagation();
 
-    this.fileOver.set(false);
+    this.filesOver.set(false);
     const files = e.dataTransfer?.files;
 
     if (files && files.length > 0) {
-      this.fileDropped.emit(files);
+      this.filesDropped.emit(files);
     }
   }
 }

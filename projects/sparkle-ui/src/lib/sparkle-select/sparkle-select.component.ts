@@ -69,7 +69,7 @@ const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
       }">
       <div class="overlay" (click)="isOpen() && close()"></div>
 
-      <spk-form-field popover-trigger (click)="open($event)" [class]="readonly() ? 'readonly' : ''">
+      <spk-form-field trigger (click)="open($event)" [class]="readonly() ? 'readonly' : ''">
         <ng-content select="label" ngProjectAs="label"></ng-content>
 
         <div class="input" ngProjectAs="input" #inputWrap>
@@ -91,17 +91,17 @@ const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
         </div>
 
         @if (((inputValue() && !isOpen() && inputValue()!.length > 0) || !!selectedOption()) && !hideClearButton()) {
-          <div class="deselect-indicator" (click)="deselect($event)" spkSuffix>
+          <div class="deselect-indicator" (click)="deselect($event)" suffix>
             <ng-content select="[deselect-indicator]"></ng-content>
             <spk-icon class="default-indicator">x-circle</spk-icon>
           </div>
         } @else if (isSearchInput() && !selectedOption()) {
-          <div class="search-indicator" spkSuffix>
+          <div class="search-indicator" suffix>
             <ng-content select="[search-indicator]"></ng-content>
             <spk-icon class="default-indicator">magnifying-glass</spk-icon>
           </div>
         } @else {
-          <div class="select-open-indicator" [class.open]="isOpen()" spkSuffix>
+          <div class="select-open-indicator" [class.open]="isOpen()" suffix>
             <ng-content select="[open-indicator]"></ng-content>
             <spk-icon class="default-indicator">caret-down</spk-icon>
           </div>
@@ -109,7 +109,7 @@ const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
       </spk-form-field>
 
       <div class="sparkle-options" #optionsRef>
-        <ng-content select="[options]"></ng-content>
+        <ng-content />
       </div>
     </spk-popover>
   `,

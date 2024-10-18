@@ -1,29 +1,29 @@
 <div class="example">
   <spk-list class="primary">
     <h3 title>Basic</h3>
-    <div spk-list-item>
+    <div item>
       <spk-icon>circle</spk-icon>
       Item 1
       <span suffix>⌘O</span>
     </div>
-    <div spk-list-item>
+    <div item>
       <spk-icon>circle</spk-icon>
       Item 2
       <span suffix>⌘O</span>
     </div>
-    <div spk-action-item [class.active]="active()" (click)="active.set(!active())">
+    <div action [class.active]="active()" (click)="active.set(!active())">
       <spk-icon>circle</spk-icon>
       Item 2
       <span suffix>⌘O</span>
     </div>
-    <div spk-list-item (click)="checkbox1.setValue(!checkbox1.value)">
+    <div item (click)="checkbox1.setValue(!checkbox1.value)">
       <spk-icon>circle</spk-icon>
       Item 3
       <spk-checkbox suffix>
         <input type="checkbox" [formControl]="checkbox1" />
       </spk-checkbox>
     </div>
-    <div spk-list-item (click)="checkbox2.setValue(!checkbox2.value)">
+    <div item (click)="checkbox2.setValue(!checkbox2.value)">
       <spk-checkbox>
         <input type="checkbox" [formControl]="checkbox2" />
       </spk-checkbox>
@@ -35,29 +35,29 @@
 <div class="l20-example">
   <spk-list class="base-level-20">
     <h3 title>Basic</h3>
-    <div spk-list-item>
+    <div item>
       <spk-icon>circle</spk-icon>
       Item 1
       <span suffix>⌘O</span>
     </div>
-    <div spk-list-item>
+    <div item>
       <spk-icon>circle</spk-icon>
       Item 2
       <span suffix>⌘O</span>
     </div>
-    <div spk-action-item [class.active]="active()" (click)="active.set(!active())">
+    <div action [class.active]="active()" (click)="active.set(!active())">
       <spk-icon class="spk-primary">circle</spk-icon>
       Item 2
       <span suffix>⌘O</span>
     </div>
-    <div spk-list-item (click)="checkbox1.setValue(!checkbox1.value)">
+    <div item (click)="checkbox1.setValue(!checkbox1.value)">
       <spk-icon>circle</spk-icon>
       Item 3
       <spk-checkbox suffix>
         <input type="checkbox" [formControl]="checkbox1" />
       </spk-checkbox>
     </div>
-    <div spk-list-item (click)="checkbox2.setValue(!checkbox2.value)">
+    <div item (click)="checkbox2.setValue(!checkbox2.value)">
       <spk-icon>circle</spk-icon>
       Item 3
       <spk-checkbox>

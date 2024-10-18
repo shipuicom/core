@@ -9,7 +9,7 @@ $sparkleStepper: true !default;
     position: relative;
     overflow: hidden;
 
-    [spk-step] {
+    [step] {
       flex: 2 0;
       display: flex;
       flex-direction: column;
@@ -19,6 +19,7 @@ $sparkleStepper: true !default;
       position: relative;
       color: var(--base-level-60R);
       cursor: pointer;
+      user-select: none;
 
       &:first-child {
         align-items: flex-start;
@@ -34,9 +35,9 @@ $sparkleStepper: true !default;
         z-index: 10;
       }
 
-      &:has(~ [spk-step].active) {
+      &:has(~ [step].active) {
         spk-radio {
-          --spk-radio-dot-opacity: 1;
+          --radiod-o: 1;
 
           .radio {
             border-width: 0;
@@ -47,7 +48,7 @@ $sparkleStepper: true !default;
 
       spk-radio {
         .radio {
-          --spk-radio-dot-color: var(--base-level-10);
+          --radiod-c: var(--base-level-10);
 
           width: p2r(16);
           height: p2r(16);
@@ -60,7 +61,7 @@ $sparkleStepper: true !default;
 
         spk-radio {
           z-index: 0;
-          --spk-radio-dot-opacity: 1;
+          --radiod-o: 1;
 
           .radio {
             border-width: 0;

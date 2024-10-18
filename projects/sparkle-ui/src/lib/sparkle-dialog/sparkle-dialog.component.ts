@@ -41,7 +41,7 @@ const DEFAULT_OPTIONS: SparkleDialogOptions = {
       [style.max-width]="defaultOptionMerge().maxWidth ?? ''"
       [style.max-height]="defaultOptionMerge().maxHeight ?? ''"
       [style.height]="defaultOptionMerge().height ?? ''">
-      <div class="dialog-content">
+      <div class="content">
         <ng-content />
       </div>
     </dialog>

@@ -14,7 +14,7 @@ $sparkleTabs: true !default;
     gap: p2r(16);
     border-bottom: 1px solid var(--base-level-40);
 
-    [spk-tab] {
+    [tab] {
       display: flex;
       align-items: center;
       gap: p2r(8);

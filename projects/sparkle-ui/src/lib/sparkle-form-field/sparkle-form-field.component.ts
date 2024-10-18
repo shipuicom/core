@@ -9,27 +9,27 @@ import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } 
 
     <div class="input-wrap">
       <div class="prefix">
-        <ng-content select="[spkPrefix]"></ng-content>
-        <ng-content select="[spkTextPrefix]"></ng-content>
+        <ng-content select="[prefix]"></ng-content>
+        <ng-content select="[textPrefix]"></ng-content>
       </div>
 
-      <div class="prefix-spacer"></div>
+      <div class="prefix-space"></div>
 
       <ng-content select="input"></ng-content>
       <ng-content select="textarea"></ng-content>
 
-      <ng-content select="[spkTextSuffix]"></ng-content>
-      <div class="suffix-spacer"></div>
-      <ng-content select="[spkSuffix]"></ng-content>
+      <ng-content select="[textSuffix]"></ng-content>
+      <div class="suffix-space"></div>
+      <ng-content select="[suffix]"></ng-content>
     </div>
 
     <div class="helpers">
       <div class="error">
-        <ng-content select="[spkError]"></ng-content>
+        <ng-content select="[error]"></ng-content>
       </div>
 
       <div class="hint">
-        <ng-content select="[spkHint]"></ng-content>
+        <ng-content select="[hint]"></ng-content>
       </div>
     </div>
   `,

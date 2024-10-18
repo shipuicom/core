@@ -12,7 +12,7 @@ $sparkleAlert: true !default;
         margin-bottom: 0;
       }
 
-      &.spk-alert-is-hidden {
+      &.alert-is-hidden {
         margin-bottom: 0;
       }
     }
@@ -28,11 +28,9 @@ $sparkleAlert: true !default;
     .container {
       flex-direction: column-reverse;
       display: flex;
-      // gap: 10px;
-      // transform: translateY(10px);
     }
 
-    .alert-tray {
+    .tray {
       display: flex;
       align-items: center;
       justify-content: center;

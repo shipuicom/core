@@ -51,6 +51,7 @@ If they are not overwritten we have them as direct styles and can be overwritten
 - font = f
 - display = d
 - opacity = o
+- animation-duration = ad
 
 ### Here is a list of state specific abbreviations
 

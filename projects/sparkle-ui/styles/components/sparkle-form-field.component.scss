@@ -55,13 +55,13 @@ $sparkleFormField: true !default;
       min-height: calc(var(--ff-h) - #{p2r(2)});
       transition: background-color 125ms linear;
 
-      [spkPrefix] + [spkTextPrefix] {
+      [prefix] + [textPrefix] {
         margin-left: p2r(4);
       }
     }
 
-    .prefix-spacer,
-    .suffix-spacer {
+    .prefix-space,
+    .suffix-space {
       width: 0;
       height: 100%;
     }
@@ -133,21 +133,21 @@ $sparkleFormField: true !default;
         }
       }
 
-      &:has([spkSuffix]) {
-        .suffix-spacer {
+      &:has([suffix]) {
+        .suffix-space {
           width: p2r(8);
         }
       }
 
-      &:has([spkPrefix]),
-      &:has([spkTextPrefix]) {
+      &:has([prefix]),
+      &:has([textPrefix]) {
         padding: p2r(0 12 0 0);
 
         .prefix {
           display: flex;
         }
 
-        .prefix-spacer {
+        .prefix-space {
           width: p2r(8);
         }
       }
@@ -172,7 +172,7 @@ $sparkleFormField: true !default;
         }
       }
 
-      [spkHint] {
+      [hint] {
         color: var(--base-level-60R);
 
         &[suffix] {

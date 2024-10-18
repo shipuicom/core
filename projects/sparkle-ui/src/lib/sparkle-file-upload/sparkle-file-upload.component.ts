@@ -8,35 +8,21 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import {
-  SparkleFileDragDropDirective,
-  SparkleFormFieldComponent,
-  SparkleIconComponent,
-  SparkleListComponent,
-} from '../../public-api';
+import { SparkleFormFieldComponent, SparkleIconComponent } from '../../public-api';
 
 @Component({
   selector: 'spk-file-upload',
   standalone: true,
-  imports: [SparkleFileDragDropDirective, SparkleFormFieldComponent, SparkleIconComponent, SparkleListComponent],
+  imports: [SparkleFormFieldComponent, SparkleIconComponent],
   template: `
-    <!-- <spk-list class="primary">
-      @for (file of files(); track $index) {
-        <div spk-list-item>
-          <spk-icon>circle</spk-icon>
-          {{ file.name }}
-        </div>
-      }
-    </spk-list> -->
-
-    <spk-form-field spkDragDrop (fileDropped)="onFileDropped($any($event))">
+    <spk-form-field (fileDropped)="onFileDropped($any($event))">
       <ng-content select="label" ngProjectAs="label"></ng-content>
 
       <div class="input" ngProjectAs="input" #inputWrap>
         <ng-content select="input"></ng-content>
       </div>
 
-      <spk-icon spkSuffix>upload-simple</spk-icon>
+      <spk-icon suffix>upload-simple</spk-icon>
     </spk-form-field>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

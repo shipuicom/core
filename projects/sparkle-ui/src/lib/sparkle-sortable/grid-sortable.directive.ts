@@ -2,7 +2,7 @@ import { Directive, ElementRef, HostListener, inject, Renderer2 } from '@angular
 
 @Directive({
   standalone: true,
-  selector: '[gridSortable]',
+  selector: '[spkGridSortable]',
 })
 export class GridSortableDirective {
   #selfRef = inject(ElementRef<HTMLElement>);

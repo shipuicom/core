@@ -1,7 +1,7 @@
 $sparkleSortable: true !default;
 
 @if $initSparkle == true and $sparkleSortable == true {
-  [spkSortable] {
+  [spk-sortable] {
     position: relative;
 
     &.dragging {

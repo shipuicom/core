@@ -24,8 +24,8 @@ $sparkleList: true !default;
       line-height: 1.25rem;
     }
 
-    [spk-action-item],
-    [spk-list-item] {
+    [action],
+    [item] {
       border-radius: var(--list-s);
       padding: p2r(8 12);
       font: var(--paragraph-30);
@@ -53,27 +53,27 @@ $sparkleList: true !default;
 
     :has(input[type='checkbox']),
     :has(input[type='radio']),
-    [spk-action-item] {
+    [action] {
       cursor: pointer;
     }
 
-    [spk-list-item]:has(input[type='checkbox']:checked),
-    [spk-action-item]:has(input[type='checkbox']:checked),
-    [spk-list-item]:has(input[type='radio']:checked),
-    [spk-action-item]:has(input[type='radio']:checked),
-    [spk-action-item].active,
-    [spk-action-item].selected {
+    [item]:has(input[type='checkbox']:checked),
+    [action]:has(input[type='checkbox']:checked),
+    [item]:has(input[type='radio']:checked),
+    [action]:has(input[type='radio']:checked),
+    [action].active,
+    [action].selected {
       background-color: var(--list-active-bg);
       box-shadow: var(--list-active-bs);
     }
 
     &.primary {
-      [spk-list-item]:has(input[type='checkbox']:checked),
-      [spk-action-item]:has(input[type='checkbox']:checked),
-      [spk-list-item]:has(input[type='radio']:checked),
-      [spk-action-item]:has(input[type='radio']:checked),
-      [spk-action-item].active,
-      [spk-action-item].selected {
+      [item]:has(input[type='checkbox']:checked),
+      [action]:has(input[type='checkbox']:checked),
+      [item]:has(input[type='radio']:checked),
+      [action]:has(input[type='radio']:checked),
+      [action].active,
+      [action].selected {
         spk-icon:first-child {
           color: var(--primary-500);
         }
@@ -81,12 +81,12 @@ $sparkleList: true !default;
     }
 
     &.accent {
-      [spk-list-item]:has(input[type='checkbox']:checked),
-      [spk-action-item]:has(input[type='checkbox']:checked),
-      [spk-list-item]:has(input[type='radio']:checked),
-      [spk-action-item]:has(input[type='radio']:checked),
-      [spk-action-item].active,
-      [spk-action-item].selected {
+      [item]:has(input[type='checkbox']:checked),
+      [action]:has(input[type='checkbox']:checked),
+      [item]:has(input[type='radio']:checked),
+      [action]:has(input[type='radio']:checked),
+      [action].active,
+      [action].selected {
         spk-icon:first-child {
           color: var(--accent-500);
         }
@@ -94,12 +94,12 @@ $sparkleList: true !default;
     }
 
     &.tertiary {
-      [spk-list-item]:has(input[type='checkbox']:checked),
-      [spk-action-item]:has(input[type='checkbox']:checked),
-      [spk-list-item]:has(input[type='radio']:checked),
-      [spk-action-item]:has(input[type='radio']:checked),
-      [spk-action-item].active,
-      [spk-action-item].selected {
+      [item]:has(input[type='checkbox']:checked),
+      [action]:has(input[type='checkbox']:checked),
+      [item]:has(input[type='radio']:checked),
+      [action]:has(input[type='radio']:checked),
+      [action].active,
+      [action].selected {
         spk-icon:first-child {
           color: var(--tertiary-500);
         }
@@ -107,12 +107,12 @@ $sparkleList: true !default;
     }
 
     &.warn {
-      [spk-list-item]:has(input[type='checkbox']:checked),
-      [spk-action-item]:has(input[type='checkbox']:checked),
-      [spk-list-item]:has(input[type='radio']:checked),
-      [spk-action-item]:has(input[type='radio']:checked),
-      [spk-action-item].active,
-      [spk-action-item].selected {
+      [item]:has(input[type='checkbox']:checked),
+      [action]:has(input[type='checkbox']:checked),
+      [item]:has(input[type='radio']:checked),
+      [action]:has(input[type='radio']:checked),
+      [action].active,
+      [action].selected {
         spk-icon:first-child {
           color: var(--warn-500);
         }
@@ -120,12 +120,12 @@ $sparkleList: true !default;
     }
 
     &.success {
-      [spk-list-item]:has(input[type='checkbox']:checked),
-      [spk-action-item]:has(input[type='checkbox']:checked),
-      [spk-list-item]:has(input[type='radio']:checked),
-      [spk-action-item]:has(input[type='radio']:checked),
-      [spk-action-item].active,
-      [spk-action-item].selected {
+      [item]:has(input[type='checkbox']:checked),
+      [action]:has(input[type='checkbox']:checked),
+      [item]:has(input[type='radio']:checked),
+      [action]:has(input[type='radio']:checked),
+      [action].active,
+      [action].selected {
         spk-icon:first-child {
           color: var(--success-500);
         }

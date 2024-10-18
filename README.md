@@ -4,7 +4,10 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 
 ## Todos for v1 beta
 
-- [ ] Streamline the css attributes vs directives
+- [x] Streamline the css attributes vs directives
+- [x] Remove all the spk- prefixes inside components
+- [x] Make default content projection on spk-select be options
+- [x] Minimize attributes to carry less naming complexity
 - [ ] Streamline general color variables
 - [ ] Move tooltips from style to a directive
 - [ ] Create a datepicker input component
@@ -16,6 +19,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [ ] Make colors optional/configurable (primary, accent, tertiary, warn, success) on a component level and generally
 - [ ] Create a dialog service
 - [ ] Create documentation with examples for all components
+- [ ] Add a spinner component
 
 Just before release
 
@@ -23,6 +27,7 @@ Just before release
 
 ## Nice to haves for v1 beta
 
+- [ ] Add flat and raised versions of alerts
 - [ ] Create a color picker component
 - [ ] Create a gantt chart component
 - [ ] Create simple chart components

@@ -27,7 +27,7 @@ $sparkleChip: true !default;
       font-weight: inherit;
     }
 
-    [spkChipAvatar] {
+    [avatar] {
       height: calc(var(--chip-h) - #{p2r(12)});
       width: calc(var(--chip-h) - #{p2r(12)});
       border-radius: 50%;

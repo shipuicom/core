@@ -2,16 +2,15 @@ $sparkleAlert: true !default;
 
 @if $initSparkle == true and $sparkleAlert == true {
   spk-alert {
-    --spk-alert-animation-duration: 400ms;
-    --spk-alert-background-color: var(--base-level-10);
+    --alert-ad: 400ms;
+    --alert-bg: var(--base-level-10);
 
-    --spk-alert-border-color: var(--base-level-40);
-    --spk-alert-state-icon-color: var(--base-level-70);
-    --spk-alert-close-icon-color: var(--base-level-60);
-    --spk-alert-title-color: var(--base-level-70);
-    --spk-alert-content-color: var(--base-level-60);
-    --spk-alert-box-shadow: var(--box-shadow-10);
-    --spk-alert-box-shadow: light-dark(var(--box-shadow-10), var(--box-shadow-60));
+    --alert-bc: var(--base-level-40);
+    --alert-state-ic: var(--base-level-70);
+    --alert-close-ic: var(--base-level-60);
+    --alert-title-c: var(--base-level-70);
+    --alert-content-c: var(--base-level-60);
+    --alert-bs: var(--box-shadow-10);
 
     max-height: #{p2r(300)};
     padding-top: 0;
@@ -20,31 +19,31 @@ $sparkleAlert: true !default;
     opacity: 1;
     overflow: hidden;
     transition:
-      max-height var(--spk-alert-animation-duration) ease-in-out,
-      transform var(--spk-alert-animation-duration) ease-in-out,
-      opacity var(--spk-alert-animation-duration) ease-in-out,
-      margin-bottom var(--spk-alert-animation-duration) ease-in-out,
-      padding-top var(--spk-alert-animation-duration) ease-in-out,
-      padding-bottom var(--spk-alert-animation-duration) ease-in-out;
+      max-height var(--alert-ad) ease-in-out,
+      transform var(--alert-ad) ease-in-out,
+      opacity var(--alert-ad) ease-in-out,
+      margin-bottom var(--alert-ad) ease-in-out,
+      padding-top var(--alert-ad) ease-in-out,
+      padding-bottom var(--alert-ad) ease-in-out;
     transform: translateY(0);
-    box-shadow: var(--spk-alert-box-shadow);
+    box-shadow: var(--alert-bs);
 
-    .spk-alert-item {
+    .alert {
       display: grid;
       grid-template-columns: auto 1fr auto;
       grid-template-rows: auto auto;
       grid-template-areas:
         'stateIcon title closeIcon'
-        '. alertContent .';
+        '. content .';
       padding: p2r(8 12);
       align-items: flex-start;
       gap: p2r(8 12);
-      border: 1px solid var(--spk-alert-border-color);
+      border: 1px solid var(--alert-bc);
       border-radius: var(--shape-2);
-      background-color: var(--spk-alert-background-color);
+      background-color: var(--alert-bg);
     }
 
-    &.spk-alert-is-hidden {
+    &.is-hidden {
       max-height: 0;
       padding-top: 0;
       padding-bottom: 0;
@@ -58,7 +57,7 @@ $sparkleAlert: true !default;
       }
     }
 
-    &.spk-alert-animate-in {
+    &.animate-in {
       transition: none;
       max-height: 0;
       margin-bottom: 0;
@@ -73,7 +72,7 @@ $sparkleAlert: true !default;
       }
     }
 
-    &.spk-alert-animate-out {
+    &.animate-out {
       max-height: 0;
       padding: 0;
       opacity: 0;
@@ -85,70 +84,70 @@ $sparkleAlert: true !default;
       }
     }
 
-    &.primary .spk-alert-item {
-      --spk-alert-state-icon-color: var(--primary-500);
-      --spk-alert-close-icon-color: var(--primary-500);
-      --spk-alert-title-color: var(--primary-level-80);
-      --spk-alert-content-color: var(--primary-level-80);
-      --spk-alert-background-color: var(--primary-level-20);
-      --spk-alert-border-color: var(--primary-level-40);
+    &.primary {
+      --alert-state-ic: var(--primary-500);
+      --alert-close-ic: var(--primary-500);
+      --alert-title-c: var(--primary-level-80);
+      --alert-content-c: var(--primary-level-80);
+      --alert-bg: var(--primary-level-20);
+      --alert-bc: var(--primary-level-40);
     }
 
-    &.accent .spk-alert-item {
-      --spk-alert-state-icon-color: var(--accent-500);
-      --spk-alert-close-icon-color: var(--accent-500);
-      --spk-alert-title-color: var(--accent-level-80);
-      --spk-alert-content-color: var(--accent-level-80);
-      --spk-alert-background-color: var(--accent-level-20);
-      --spk-alert-border-color: var(--accent-level-40);
+    &.accent {
+      --alert-state-ic: var(--accent-500);
+      --alert-close-ic: var(--accent-500);
+      --alert-title-c: var(--accent-level-80);
+      --alert-content-c: var(--accent-level-80);
+      --alert-bg: var(--accent-level-20);
+      --alert-bc: var(--accent-level-40);
     }
 
-    &.error .spk-alert-item {
-      --spk-alert-state-icon-color: var(--warn-500);
-      --spk-alert-close-icon-color: var(--warn-500);
-      --spk-alert-title-color: var(--warn-level-80);
-      --spk-alert-content-color: var(--warn-level-80);
-      --spk-alert-background-color: var(--warn-level-20);
-      --spk-alert-border-color: var(--warn-level-40);
+    &.error {
+      --alert-state-ic: var(--warn-500);
+      --alert-close-ic: var(--warn-500);
+      --alert-title-c: var(--warn-level-80);
+      --alert-content-c: var(--warn-level-80);
+      --alert-bg: var(--warn-level-20);
+      --alert-bc: var(--warn-level-40);
     }
 
-    &.success .spk-alert-item {
-      --spk-alert-state-icon-color: var(--success-500);
-      --spk-alert-close-icon-color: var(--success-500);
-      --spk-alert-title-color: var(--success-level-80);
-      --spk-alert-content-color: var(--success-level-80);
-      --spk-alert-background-color: var(--success-level-20);
-      --spk-alert-border-color: var(--success-level-40);
+    &.success {
+      --alert-state-ic: var(--success-500);
+      --alert-close-ic: var(--success-500);
+      --alert-title-c: var(--success-level-80);
+      --alert-content-c: var(--success-level-80);
+      --alert-bg: var(--success-level-20);
+      --alert-bc: var(--success-level-40);
     }
 
-    &.warning .spk-alert-item {
-      --spk-alert-state-icon-color: var(--tertiary-500);
-      --spk-alert-close-icon-color: var(--tertiary-500);
-      --spk-alert-title-color: var(--tertiary-level-80);
-      --spk-alert-content-color: var(--tertiary-level-80);
-      --spk-alert-background-color: var(--tertiary-level-20);
-      --spk-alert-border-color: var(--tertiary-level-40);
+    &.warning {
+      --alert-state-ic: var(--tertiary-500);
+      --alert-close-ic: var(--tertiary-500);
+      --alert-title-c: var(--tertiary-level-80);
+      --alert-content-c: var(--tertiary-level-80);
+      --alert-bg: var(--tertiary-level-20);
+      --alert-bc: var(--tertiary-level-40);
     }
 
-    &:not(:has([spk-alert-content])) .spk-alert-item {
+    &:not(:has([content])) .alert {
       grid-template-rows: auto;
       grid-template-areas: 'stateIcon title closeIcon';
     }
 
-    &:has([spk-alert-content]) .spk-alert-item {
+    &:has([content]) .alert {
       background-color: var(--base-level-10);
       border: 1px solid var(--base-level-40);
       box-shadow: var(--box-shadow-50);
 
-      .spk-alert-title {
+      .title {
         color: var(--base-level-70);
       }
 
-      .spk-alert-close-icon {
+      .close-icon {
         color: var(--grey-400);
       }
 
-      .spk-alert-content {
+      .content {
         color: var(--base-level-60);
       }
 
@@ -158,36 +157,40 @@ $sparkleAlert: true !default;
       }
     }
 
-    .spk-alert-icon {
+    .icon {
       grid-area: stateIcon;
       height: p2r(20);
       width: p2r(20);
       display: flex;
       align-items: center;
       justify-content: center;
+
+      &:first-of-type:not(:empty) + .icon {
+        display: none;
+      }
     }
 
-    [spk-alert-icon],
-    .spk-alert-state-icon {
-      color: var(--spk-alert-state-icon-color);
+    [icon],
+    .state-icon {
+      color: var(--alert-state-ic);
     }
 
-    .spk-alert-close-icon {
+    .close-icon {
       grid-area: closeIcon;
-      color: var(--spk-alert-close-icon-color);
+      color: var(--alert-close-ic);
       transform: rotate(45deg);
       transform-origin: center;
     }
 
-    .spk-alert-title {
+    .title {
       grid-area: title;
-      color: var(--spk-alert-title-color);
+      color: var(--alert-title-c);
       padding-top: p2r(2);
     }
 
-    .spk-alert-content {
-      grid-area: alertContent;
-      color: var(--spk-alert-content-color);
+    .content {
+      grid-area: content;
+      color: var(--alert-content-c);
 
       &:empty {
         display: none;

@@ -5,13 +5,13 @@ $sparkleDialog: true !default;
     --dialog-p: #{p2r(16)};
     --dialog-g: #{p2r(8)};
 
-    [spk-header],
-    [spk-content],
-    [spk-footer] {
+    [header],
+    [content],
+    [footer] {
       width: 100%;
     }
 
-    [spk-header] {
+    [header] {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -19,11 +19,11 @@ $sparkleDialog: true !default;
       gap: var(--dialog-g);
     }
 
-    [spk-content] {
-      padding: var(--dialog-p);
+    [content] {
+      padding: 0 var(--dialog-p);
     }
 
-    [spk-footer] {
+    [footer] {
       display: flex;
       align-items: center;
       justify-content: flex-end;

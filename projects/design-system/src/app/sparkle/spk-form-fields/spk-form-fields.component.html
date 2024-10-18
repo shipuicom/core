@@ -20,7 +20,7 @@
         <spk-icon>question</spk-icon>
       </label>
       <input placeholder="Placeholder..." />
-      <spk-icon spkPrefix>circle</spk-icon>
+      <spk-icon prefix>circle</spk-icon>
       <spk-icon>circle</spk-icon>
     </spk-form-field>
 
@@ -30,7 +30,7 @@
         <spk-icon>question</spk-icon>
       </label>
       <input [formControl]="disabledCtrl" placeholder="Placeholder..." />
-      <spk-icon spkPrefix>circle</spk-icon>
+      <spk-icon prefix>circle</spk-icon>
       <spk-icon>circle</spk-icon>
     </spk-form-field>
 
@@ -40,12 +40,12 @@
         <spk-icon>question</spk-icon>
       </label>
       <input [formControl]="baseCtrl" placeholder="Placeholder..." #input />
-      <span spkHint>Hint</span>
+      <span hint>Hint</span>
 
-      <span spkHint>{{ baseCtrl.value?.length ?? 0 }}/10</span>
+      <span hint>{{ baseCtrl.value?.length ?? 0 }}/10</span>
 
       @if ((baseCtrl.value?.length ?? 0) > 10) {
-        <span spkError>Write a message in this alert area</span>
+        <span error>Write a message in this alert area</span>
       }
     </spk-form-field>
 
@@ -57,14 +57,14 @@
 
       <input placeholder="Placeholder with error ..." [formControl]="errorCtrl" />
 
-      <spk-icon spkPrefix>circle</spk-icon>
-      <spk-icon spkSuffix>circle</spk-icon>
+      <spk-icon prefix>circle</spk-icon>
+      <spk-icon suffix>circle</spk-icon>
 
       @if (errorCtrl.invalid && errorCtrl.touched) {
-        <span spkError>Write a message in this alert area</span>
+        <span error>Write a message in this alert area</span>
       }
 
-      <span spkHint>{{ errorCtrl.value?.length ?? 0 }}/10</span>
+      <span hint>{{ errorCtrl.value?.length ?? 0 }}/10</span>
     </spk-form-field>
 
     <spk-form-field>
@@ -73,9 +73,9 @@
         <spk-icon>question</spk-icon>
       </label>
       <input type="number" placeholder="0" />
-      <spk-icon spkPrefix>circle</spk-icon>
-      <span spkTextPrefix>Hello</span>
-      <span spkTextSuffix>.00</span>
+      <spk-icon prefix>circle</spk-icon>
+      <span textPrefix>Hello</span>
+      <span textSuffix>.00</span>
     </spk-form-field>
 
     <spk-form-field>
@@ -84,8 +84,8 @@
         <spk-icon>question</spk-icon>
       </label>
       <input type="number" placeholder="0" />
-      <span spkTextPrefix>$&nbsp;</span>
-      <span spkTextSuffix>.00</span>
+      <span textPrefix>$&nbsp;</span>
+      <span textSuffix>.00</span>
     </spk-form-field>
 
     <spk-form-field>
@@ -94,8 +94,8 @@
         <spk-icon>question</spk-icon>
       </label>
       <input [formControl]="disabledCtrl" type="number" placeholder="0" />
-      <span spkTextPrefix>$&nbsp;</span>
-      <span spkTextSuffix>.00</span>
+      <span textPrefix>$&nbsp;</span>
+      <span textSuffix>.00</span>
     </spk-form-field>
 
     <spk-form-field>

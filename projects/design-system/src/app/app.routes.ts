@@ -124,6 +124,11 @@ export const routes: Routes = [
         loadComponent: () => import('./sparkle/spk-tabs/spk-tabs.component'),
         children: [
           {
+            path: '',
+            redirectTo: 'tab/1',
+            pathMatch: 'full',
+          },
+          {
             path: 'tab/:id',
             loadComponent: () => import('./sparkle/spk-tabs/tab/tab.component'),
           },

@@ -16,7 +16,7 @@ import {
   imports: [],
   template: `
     <div class="label">
-      <ng-content select="[spkLabel]"></ng-content>
+      <ng-content select="label"></ng-content>
     </div>
 
     <div class="input-wrap">

@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   standalone: true,
   imports: [],
   template: `
-    <ng-content></ng-content>
+    <ng-content />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

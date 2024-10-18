@@ -34,9 +34,9 @@ const DEFAULT_OPTIONS: SparklePopoverOptions = {
   standalone: true,
   imports: [SparkleButtonComponent],
   template: `
-    <div class="popover-trigger" #triggerRef [style.anchor-name]="id()" (click)="toggleIsOpen($event)">
-      <div class="popover-trigger-wrapper">
-        <ng-content select="[popover-trigger]" />
+    <div class="trigger" #triggerRef [style.anchor-name]="id()" (click)="toggleIsOpen($event)">
+      <div class="trigger-wrapper">
+        <ng-content select="[trigger]" />
       </div>
 
       <button spk-button class="outlined">Open popover</button>

@@ -15,11 +15,11 @@
     <label for="search">New search</label>
     <input type="search" id="search" [formControl]="inputSearchCtrl" />
 
-    <ng-container options>
+    
       @for (food of foods(); track $index) {
         <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
       }
-    </ng-container>
+    
   </spk-new-select> -->
 
   <spk-dialog [isOpen]="true">
@@ -27,11 +27,9 @@
       <label for="text">Simple select one from list</label>
       <input type="text" id="text" [formControl]="inputCtrl" />
 
-      <ng-container options>
-        @for (food of foods(); track $index) {
-          <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
-        }
-      </ng-container>
+      @for (food of foods(); track $index) {
+        <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
+      }
     </spk-select>
   </spk-dialog>
 
@@ -39,59 +37,51 @@
     <label for="text">Simple select one from list</label>
     <input type="text" id="text" [formControl]="inputCtrl" />
 
-    <ng-container options>
-      @for (food of foods(); track $index) {
-        <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
-      }
-    </ng-container>
+    @for (food of foods(); track $index) {
+      <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
+    }
   </spk-select>
 
   <spk-select [displayFn]="displayFn(foods())" class="primary">
     <label for="text">Simple select one from list</label>
     <input type="text" id="text" [formControl]="inputSearchCtrl2" />
 
-    <ng-container options>
-      @for (food of foods(); track $index) {
-        <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
-      }
-    </ng-container>
+    @for (food of foods(); track $index) {
+      <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
+    }
   </spk-select>
 
   <spk-select [displayFn]="displayFn(foods())" class="primary">
     <label for="search">Select one from filtered list</label>
     <input type="search" id="search" [formControl]="inputSearchCtrl" />
 
-    <ng-container options>
-      <option deselect>Hello remove me</option>
+    <option deselect>Hello remove me</option>
 
-      @for (food of localFilteredFoods(); track $index) {
-        <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
-      }
-    </ng-container>
+    @for (food of localFilteredFoods(); track $index) {
+      <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
+    }
   </spk-select>
 
   <spk-select [selectMultiple]="true" [displayFn]="displayFn(foods())" class="primary">
     <label for="text">Multiple select with search</label>
     <input type="text" id="text" tabindex="1" placeholder="Text..." [formControl]="inputCtrl2" />
 
-    <ng-container options>
-      <spk-option deselect>Hello remove me</spk-option>
+    <spk-option deselect>Hello remove me</spk-option>
 
-      @for (food of foods(); track $index) {
-        <spk-option [value]="food.value">
-          {{ food.label }} - ({{ $index }})
+    @for (food of foods(); track $index) {
+      <spk-option [value]="food.value">
+        {{ food.label }} - ({{ $index }})
 
-          <spk-checkbox class="raised primary" />
-        </spk-option>
-      }
-    </ng-container>
+        <spk-checkbox class="raised primary" [class.active]="inputCtrl2.value?.includes(food.value)" />
+      </spk-option>
+    }
   </spk-select>
 
   <!-- <spk-select [displayFn]="displayFn(foods())" class="primary">
     <label for="search">Multiple select with search</label>
     <input type="search" id="search" tabindex="1" placeholder="Search..." [formControl]="inputSearchCtrl" />
 
-    <ng-container options>
+    
 
       @for (food of localFilteredFoods(); track $index) {
         <spk-option [value]="food.value">
@@ -99,74 +89,74 @@
 
         </spk-option>
       }
-    </ng-container>
+    
   </spk-select> -->
 
   <!-- <spk-select>
     <label for="search">Search</label>
     <input type="search" id="search" tabindex="1" placeholder="Search..." [formControl]="inputSearchCtrl" />
 
-    <ng-container options>
+    
       @for (food of localFilteredFoods(); track $index) {
         <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
       }
-    </ng-container>
+    
   </spk-select> -->
 
   <!-- <spk-multi-select [selectMultiple]="false" [displayFn]="displayFn(foods())" class="primary">
     <input type="text" tabindex="2" placeholder="Search hi..." [formControl]="inputSearchCtrl2" />
 
-    <ng-container options>
+    
       @for (food of foods(); track $index) {
         <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
       }
-    </ng-container>
+    
   </spk-multi-select>
 
   <spk-select>
     <input type="text" tabindex="2" placeholder="Search hi..." [formControl]="inputSearchCtrl2" />
 
-    <ng-container options>
+    
       @for (food of foods(); track $index) {
         <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
       }
-    </ng-container>
+    
   </spk-select>
 
   <spk-select>
     <input type="search" tabindex="2" placeholder="Search hi..." [formControl]="inputSearchCtrl2" />
 
-    <ng-container options>
+    
       @for (food of otherFilteredFoods(); track $index) {
         <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
       }
-    </ng-container>
+    
   </spk-select> -->
 
   <!-- <spk-select [displayFn]="displayFn(foods())" (inputValueChange)="valueChange($event)">
     <input type="text" placeholder="Select an option..." [formControl]="inputCtrl" />
 
-    <ng-container options>
+    
       @for (food of foods(); track $index) {
         <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
       }
-    </ng-container>
+    
   </spk-select> -->
 
   <!-- <spk-select [displayValue]="displayFn(inputCtrl.value ?? '')">
     <input type="text" placeholder="Select an option..." [formControl]="inputCtrl" />
 
-    <ng-container options>
+    
       @for (food of foods(); track $index) {
         <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
       }
-    </ng-container>
+    
   </spk-select>
 
   <spk-select [displayValue]="displayFn(inputSearchCtrl3.value ?? '')">
     <input type="search" tabindex="3" placeholder="Search..." [formControl]="inputSearchCtrl3" />
 
-    <ng-container options>
+    
       @for (foodGroup of filteredFoodGroups(); track $index) {
         <div spk-title>{{ foodGroup.label }}</div>
 
@@ -174,6 +164,6 @@
           <option [value]="food.value">{{ food.label }}</option>
         }
       }
-    </ng-container>
+    
   </spk-select> -->
 </section>

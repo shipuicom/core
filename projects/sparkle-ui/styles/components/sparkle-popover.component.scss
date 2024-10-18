@@ -6,7 +6,7 @@ $sparklePopover: true !default;
 
     display: var(--po-d);
 
-    .popover-trigger {
+    .trigger {
       cursor: pointer;
       display: var(--po-d);
       position: relative;
@@ -15,7 +15,7 @@ $sparklePopover: true !default;
         display: none;
       }
 
-      .popover-trigger-wrapper {
+      .trigger-wrapper {
         display: var(--po-d);
 
         &:empty + * {
@@ -24,7 +24,7 @@ $sparklePopover: true !default;
       }
     }
 
-    .popover-overlay {
+    .overlay {
       position: fixed;
       inset: 0;
       opacity: 0;
