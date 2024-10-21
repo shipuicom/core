@@ -8,6 +8,7 @@ $sparkleDivider: true !default;
     display: flex;
     gap: p2r(8);
     align-items: center;
+    text-align: center;
 
     &:empty {
       gap: 0;
