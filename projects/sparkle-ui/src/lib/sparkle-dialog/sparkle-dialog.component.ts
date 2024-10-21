@@ -45,6 +45,10 @@ const DEFAULT_OPTIONS: SparkleDialogOptions = {
       <div class="content">
         <ng-content />
       </div>
+
+      @if (this.defaultOptionMerge().closeOnOutsideClick) {
+        <div class="closeable-overlay" (click)="isOpen.set(false)"></div>
+      }
     </dialog>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

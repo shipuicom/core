@@ -2,18 +2,19 @@
 
 <section>
   <h3>Basic</h3>
-  <button spk-button class="outlined" (click)="isOpen.set(true)">Open dialog</button>
+  <!-- <button spk-button class="outlined" (click)="isOpen.set(true)">Open dialog</button> -->
+  <button spk-button class="outlined" (click)="openDynamicDialog()">Open dialog</button>
 </section>
 <!-- 
 <spk-dialog [(isOpen)]="isOpen">
   <h3>Hello world</h3>
 </spk-dialog> -->
 
-<spk-dialog [(isOpen)]="isOpen">
+<!-- <spk-dialog [(isOpen)]="isOpen">
   <header header>
     <h3>Hello world</h3>
     <spk-icon (click)="isOpen.set(false)">x-circle</spk-icon>
   </header>
   <section content>Hello world</section>
   <footer footer><button spk-button class="outlined" (click)="isOpen.set(false)">Close</button></footer>
-</spk-dialog>
+</spk-dialog> -->

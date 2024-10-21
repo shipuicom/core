@@ -1,18 +1,26 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import {
   SparkleButtonComponent,
-  SparkleDialogComponent,
+  SparkleDialogService,
   SparkleIconComponent,
 } from '../../../../../sparkle-ui/src/public-api';
+import SpkDatepickerComponent from '../spk-datepicker/spk-datepicker.component';
 
 @Component({
   selector: 'app-spk-dialog',
   standalone: true,
-  imports: [SparkleButtonComponent, SparkleDialogComponent, SparkleIconComponent],
+  imports: [SparkleButtonComponent, SparkleIconComponent],
   templateUrl: './spk-dialog.component.html',
   styleUrl: './spk-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class SpkDialogComponent {
+  #dialog = inject(SparkleDialogService);
   isOpen = signal(false);
+
+  openDynamicDialog() {
+    const comp = this.#dialog.open(SpkDatepickerComponent);
+
+    console.log('comp.someDate(): ', comp.someDate());
+  }
 }

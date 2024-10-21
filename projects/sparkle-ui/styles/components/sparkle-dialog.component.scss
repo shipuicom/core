@@ -12,6 +12,23 @@ $sparkleDialog: true !default;
     color: var(--base-level-60);
     font: var(--paragraph-30);
     padding: 0;
+    margin: auto;
+    max-width: initial;
+    max-height: initial;
+    position: relative;
+    z-index: 0;
+
+    .closeable-overlay {
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      z-index: 1;
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+    }
 
     &:focus {
       outline: none;

@@ -7,13 +7,15 @@ export * from './lib/sparkle-alert/sparkle-alert.component';
 export * from './lib/sparkle-alert/sparkle-alert.module';
 export * from './lib/sparkle-alert/sparkle-alert.service';
 
+export * from './lib/sparkle-dialog/sparkle-dialog.component';
+export * from './lib/sparkle-dialog/sparkle-dialog.service';
+
 export * from './lib/sparkle-button-group/sparkle-button-group.component';
 export * from './lib/sparkle-button/sparkle-button.component';
 export * from './lib/sparkle-card/sparkle-card.component';
 export * from './lib/sparkle-checkbox/sparkle-checkbox.component';
 export * from './lib/sparkle-chip/sparkle-chip.component';
 export * from './lib/sparkle-datepicker/sparkle-datepicker.component';
-export * from './lib/sparkle-dialog/sparkle-dialog.component';
 export * from './lib/sparkle-divider/sparkle-divider.component';
 export * from './lib/sparkle-file-upload/sparkle-file-upload.component';
 export * from './lib/sparkle-form-field/sparkle-form-field.component';
@@ -25,7 +27,6 @@ export * from './lib/sparkle-progress-bar/sparkle-progress-bar.component';
 export * from './lib/sparkle-radio/sparkle-radio.component';
 export * from './lib/sparkle-range-slider/sparkle-range-slider.component';
 export * from './lib/sparkle-select/sparkle-select.component';
-// export * from './lib/sparkle-select/sparkle-old-select.component';
 export * from './lib/sparkle-sidenav/sparkle-sidenav.component';
 export * from './lib/sparkle-sortable/grid-sortable.directive';
 export * from './lib/sparkle-sortable/sparkle-sortable.component';
