@@ -18,9 +18,11 @@ export type SparkleSidenavType = 'overlay' | 'simple' | '';
   standalone: true,
   imports: [SparkleButtonComponent],
   template: `
-    <div #dragImageElement class="drag-image"></div>
+    @if (type() === 'overlay') {
+      <div #dragImageElement class="drag-image"></div>
+    }
 
-    @if (isDragging()) {
+    @if (type() === 'overlay' && isDragging()) {
       <div
         class="dropping-surface"
         (drop)="drop($event)"
@@ -34,7 +36,7 @@ export type SparkleSidenavType = 'overlay' | 'simple' | '';
     </div>
 
     <div class="main-wrap" [style.transform]="draggingStyle()">
-      @if (!disableDrag()) {
+      @if (type() === 'overlay' && !disableDrag()) {
         <div
           class="dragable"
           draggable="true"
@@ -90,11 +92,15 @@ export class SparkleSidenavComponent {
   });
 
   draggingStyle = computed(() => {
+    if (this.type() !== 'overlay') {
+      return null;
+    }
+
     if (this.isDragging()) {
       return `translateX(${this.dragActualPositionX()}px)`;
     }
 
-    return this.isOpen() && this.type() === 'overlay' ? `translateX(${this.openWidth}px)` : `translateX(0px)`;
+    return this.isOpen() ? `translateX(${this.openWidth}px)` : `translateX(0px)`;
   });
 
   draggingEffect = effect(() => {
