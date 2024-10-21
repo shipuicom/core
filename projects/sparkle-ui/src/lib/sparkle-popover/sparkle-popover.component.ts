@@ -48,6 +48,10 @@ const DEFAULT_OPTIONS: SparklePopoverOptions = {
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.above]': '_above()',
+    '[class.right]': '_right()',
+  },
 })
 export class SparklePopoverComponent {
   #BASE_SPACE = 4;
@@ -55,6 +59,9 @@ export class SparklePopoverComponent {
 
   above = input<boolean>(false);
   right = input<boolean>(false);
+
+  _above = signal<boolean>(this.above());
+  _right = signal<boolean>(this.right());
   disableOpenByClick = input<boolean>(false);
   isOpen = model<boolean>(false);
   options = input<Partial<SparklePopoverOptions>>();
@@ -125,25 +132,21 @@ export class SparklePopoverComponent {
     () => {
       const isCalculatingPosition = this.isCalculatingPosition();
 
-      if (!isCalculatingPosition || this.SUPPORTS_ANCHOR) return;
+      if (!isCalculatingPosition) return;
 
       if (this.abortController) {
         this.abortController.abort();
       }
 
       this.abortController = new AbortController();
+      const signal = this.abortController.signal;
 
       this.calculateMenuPosition();
 
       const scrollableParent = this.#findScrollableParent(this.popoverRef()?.nativeElement);
 
-      scrollableParent.addEventListener('scroll', () => this.calculateMenuPosition(), {
-        signal: this.abortController?.signal,
-      });
-
-      document.addEventListener('resize', () => this.calculateMenuPosition(), {
-        signal: this.abortController?.signal,
-      });
+      scrollableParent.addEventListener('scroll', () => this.calculateMenuPosition(), { signal });
+      document.addEventListener('resize', () => this.calculateMenuPosition(), { signal });
     },
     {
       allowSignalWrites: true,
@@ -181,19 +184,22 @@ export class SparklePopoverComponent {
   }
 
   private calculateMenuPosition() {
-    if (this.isOpen()) {
-      const triggerRect = this.triggerRef()?.nativeElement.getBoundingClientRect();
-      const menuRect = this.popoverRef()?.nativeElement.getBoundingClientRect();
+    const triggerRect = this.triggerRef()?.nativeElement.getBoundingClientRect();
+    const menuRect = this.popoverRef()?.nativeElement.getBoundingClientRect();
 
-      const actionLeftInViewport = triggerRect.left;
-      const actionBottomInViewport = triggerRect.bottom;
+    const actionLeftInViewport = triggerRect.left;
+    const actionBottomInViewport = triggerRect.bottom;
 
-      let newLeft = actionLeftInViewport;
-      let newTop = actionBottomInViewport + this.#BASE_SPACE;
+    let newLeft = actionLeftInViewport;
+    let newTop = actionBottomInViewport + this.#BASE_SPACE;
 
-      const outOfBoundsRight = newLeft + menuRect.width > window.innerWidth;
-      const outOfBoundsBottom = newTop + menuRect.height > window.innerHeight;
+    const outOfBoundsRight = newLeft + menuRect.width > window.innerWidth;
+    const outOfBoundsBottom = newTop + menuRect.height > window.innerHeight;
 
+    if (this.SUPPORTS_ANCHOR) {
+      this._above.set(outOfBoundsBottom);
+      this._right.set(outOfBoundsRight);
+    } else {
       if (this.above()) {
         const _newTop = triggerRect.top - menuRect.height - this.#BASE_SPACE;
 

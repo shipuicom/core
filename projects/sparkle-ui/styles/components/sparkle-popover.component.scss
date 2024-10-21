@@ -48,5 +48,21 @@ $sparklePopover: true !default;
         margin-top: p2r(4);
       }
     }
+
+    &.above .popover {
+      @supports (bottom: anchor(top)) {
+        bottom: anchor(top);
+        margin-bottom: p2r(4);
+        top: auto;
+      }
+    }
+
+    &.right .popover {
+      @supports (right: anchor(right)) {
+        right: anchor(right);
+        margin-right: 0;
+        left: auto;
+      }
+    }
   }
 }

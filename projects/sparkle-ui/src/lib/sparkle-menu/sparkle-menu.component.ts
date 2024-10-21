@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, model, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model, output } from '@angular/core';
 import { SparklePopoverComponent } from '../sparkle-popover/sparkle-popover.component';
 
 @Component({
@@ -11,6 +11,8 @@ import { SparklePopoverComponent } from '../sparkle-popover/sparkle-popover.comp
       [(isOpen)]="isOpen"
       [disableOpenByClick]="true"
       (closed)="close()"
+      [above]="above()"
+      [right]="right()"
       [options]="{
         closeOnButton: false,
         closeOnEsc: true,
@@ -27,6 +29,8 @@ import { SparklePopoverComponent } from '../sparkle-popover/sparkle-popover.comp
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleMenuComponent {
+  above = input<boolean>(false);
+  right = input<boolean>(false);
   isOpen = model<boolean>(false);
   closed = output<boolean>();
 
