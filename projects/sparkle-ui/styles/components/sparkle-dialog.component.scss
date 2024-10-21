@@ -1,9 +1,33 @@
 $sparkleDialog: true !default;
 
 @if $initSparkle == true and $sparkleDialog == true {
-  spk-dialog {
+  dialog[spkDialog] {
     --dialog-p: #{p2r(16)};
     --dialog-g: #{p2r(8)};
+
+    border: 1px solid var(--base-level-40);
+    border-radius: var(--shape-2);
+    background-color: var(--base-level-10);
+    box-shadow: var(--box-shadow-40);
+    color: var(--base-level-60);
+    font: var(--paragraph-30);
+    padding: 0;
+
+    &:focus {
+      outline: none;
+    }
+
+    .dialog-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .dialog-backdrop {
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      z-index: 1;
+    }
 
     [header],
     [content],
@@ -29,32 +53,6 @@ $sparkleDialog: true !default;
       justify-content: flex-end;
       padding: var(--dialog-p);
       gap: var(--dialog-g);
-    }
-
-    dialog {
-      border: 1px solid var(--base-level-40);
-      border-radius: var(--shape-2);
-      background-color: var(--base-level-10);
-      box-shadow: var(--box-shadow-40);
-      color: var(--base-level-60);
-      font: var(--paragraph-30);
-      padding: 0;
-
-      &:focus {
-        outline: none;
-      }
-
-      .dialog-content {
-        position: relative;
-        z-index: 2;
-      }
-
-      .dialog-backdrop {
-        position: fixed;
-        inset: 0;
-        opacity: 0;
-        z-index: 1;
-      }
     }
   }
 }

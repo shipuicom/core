@@ -36,6 +36,7 @@ const DEFAULT_OPTIONS: SparkleDialogOptions = {
   imports: [],
   template: `
     <dialog
+      spkDialog
       #dialogRef
       [style.width]="defaultOptionMerge().width ?? ''"
       [style.max-width]="defaultOptionMerge().maxWidth ?? ''"

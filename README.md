@@ -22,6 +22,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [ ] Create a dialog service
 - [ ] Create documentation with examples for all components
 - [ ] Add a spinner component
+- [ ] Rewrite range-slider (dosn't really work or isn't easy enough)
 
 Just before release
 
