@@ -49,11 +49,12 @@ $sparkleButton: true !default;
       background: var(--btn-bg-h);
     }
 
-    &.loading.outlined,
-    &.loading.flat,
-    &.loading.raised,
-    &.loading {
+    &.loader.outlined,
+    &.loader.flat,
+    &.loader.raised,
+    &.loader {
       color: transparent;
+      width: inherit;
 
       &:hover,
       &.primary,
