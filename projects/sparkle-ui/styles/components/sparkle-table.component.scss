@@ -15,9 +15,16 @@ $sparkleTable: true !default;
     width: 100%;
     display: grid;
     grid-template-columns: var(--table-columns);
+    position: relative;
 
+    thead {
+      position: relative;
+    }
     spk-progress-bar {
       grid-column: 1 / -1;
+      position: absolute;
+      top: 100%;
+      transform: translateY(-50%);
     }
 
     tbody,

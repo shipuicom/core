@@ -30,11 +30,11 @@ export class SparkleColumnComponent {}
   template: `
     <thead>
       <ng-content select="[table-header]" />
-    </thead>
 
-    @if (loading()) {
-      <spk-progress-bar class="indeterminate primary" />
-    }
+      @if (loading()) {
+        <spk-progress-bar class="indeterminate primary" />
+      }
+    </thead>
 
     <tbody>
       <ng-content />
