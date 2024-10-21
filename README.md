@@ -38,3 +38,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
   - [ ] Pie chart
   - [ ] Doughnut chart
 - [ ] CLI util to figure out which components and styles are used in a project as a production build trimmer
+
+## Blocked changes
+
+- [ ] required inputs on dialogs, since its not supported by angular yet [angular/51878](https://github.com/angular/angular/issues/51878)

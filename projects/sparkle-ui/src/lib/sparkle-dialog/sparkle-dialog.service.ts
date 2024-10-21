@@ -3,7 +3,7 @@ import { SparkleDialogComponent, SparkleDialogOptions } from './sparkle-dialog.c
 
 export interface SparkleDialogServiceOptions<T = any> extends SparkleDialogOptions {
   data?: T;
-  closed?: (data: T | undefined) => void;
+  closed?: (...args: any[]) => void;
 }
 
 @Injectable({
@@ -30,23 +30,23 @@ export class SparkleDialogService {
       environmentInjector,
     });
 
-    if (this.insertedCompRef.instance.data) {
-      this.insertedCompRef.setInput('data', data);
-    }
-
-    if (this.insertedCompRef.instance.close) {
-      this.insertedCompRef.instance.close.subscribe((closeData: any) => {
-        closed?.(closeData);
-
-        setTimeout(() => this.#cleanupRefs());
-      });
-    }
-
     this.compRef = createComponent(SparkleDialogComponent, {
       hostElement,
       environmentInjector,
       projectableNodes: [[this.insertedCompRef.location.nativeElement]],
     });
+
+    if (this.insertedCompRef.instance.data) {
+      this.insertedCompRef.setInput('data', data);
+    }
+
+    if (this.insertedCompRef.instance.close) {
+      this.insertedCompRef.instance.close.subscribe((...args: any[]) => {
+        closed?.(...args);
+
+        setTimeout(() => this.#cleanupRefs());
+      });
+    }
 
     this.#appRef.attachView(this.insertedCompRef.hostView);
     this.#appRef.attachView(this.compRef.hostView);
