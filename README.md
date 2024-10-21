@@ -4,13 +4,13 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 
 ## Todos for v1 beta
 
+- [x] Create a datepicker component
 - [x] Streamline the css attributes vs directives
 - [x] Remove all the spk- prefixes inside components
 - [x] Make default content projection on spk-select be options
 - [x] Minimize attributes to carry less naming complexity
 - [x] Have the spk-menu use a popover
 - [x] Create a dialog service
-- [x] Create a timepicker component
 - [x] Go through all components and see if we can trim down the css maybe combine styles from different components
 - [ ] spk-menu should support arrow keys to navigate options
 - [ ] Streamline general color variables
@@ -21,12 +21,13 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [ ] Create a accordion component
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
 - [ ] Make colors optional/configurable (primary, accent, tertiary, warn, success) on a component level and generally
-- [ ] Create documentation with examples for all components
 - [ ] Add a spinner component
-- [ ] Rewrite range-slider (dosn't really work or isn't easy enough)
+- [ ] Rewrite range-slider (dosn't really work or isn't easy enough to use)
+- [ ] Create documentation with examples for all components
 
 ## Nice to haves for v1 beta
 
+- [ ] Create a timepicker component
 - [ ] Add hotkeys to navigate spk-menu options
 - [ ] Add flat and raised versions of alerts
 - [ ] Create a color picker component

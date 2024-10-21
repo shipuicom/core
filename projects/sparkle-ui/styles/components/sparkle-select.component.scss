@@ -23,14 +23,17 @@ $sparkleSelect: true !default;
 
     .deselect-indicator,
     .select-open-indicator {
-      height: p2r(20);
-      transform: rotate(0deg);
-      transition: transform 75ms linear;
-      transform-origin: center;
       cursor: pointer;
+      height: p2r(20);
 
-      &.open {
-        transform: rotate(540deg);
+      &:not(:has([open-indicator])) {
+        transform: rotate(0deg);
+        transition: transform 75ms linear;
+        transform-origin: center;
+
+        &.open {
+          transform: rotate(540deg);
+        }
       }
 
       > * {

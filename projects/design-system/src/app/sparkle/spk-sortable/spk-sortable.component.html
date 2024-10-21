@@ -1,6 +1,6 @@
 <spk-list spkSortable (afterDrop)="reorderTodo($event)">
   @for (todo of todos(); track $index) {
-    <div spk-action-item [attr.draggable]="true" [class.active]="todo.done" (click)="toggleTodo($index)">
+    <div action [attr.draggable]="true" [class.active]="todo.done" (click)="toggleTodo($index)">
       <spk-icon sort-handle>arrows-out-line-vertical</spk-icon>
 
       {{ todo.title }}
@@ -13,7 +13,7 @@
 <div class="example">
   <spk-list class="primary" spkSortable (afterDrop)="reorder($event)">
     @for (item of items(); track $index) {
-      <div [attr.draggable]="true" spk-list-item>
+      <div [attr.draggable]="true" item>
         <div sort-handle>
           <spk-icon>arrows-out-line-vertical</spk-icon>
         </div>
