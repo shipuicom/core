@@ -26,7 +26,7 @@ import { SparklePopoverComponent } from '../sparkle-popover/sparkle-popover.comp
       [above]="above()"
       [right]="right()"
       [options]="{
-        closeOnButton: true,
+        closeOnButton: false,
         closeOnEsc: true,
       }">
       <div trigger (click)="isOpen.set(true)">

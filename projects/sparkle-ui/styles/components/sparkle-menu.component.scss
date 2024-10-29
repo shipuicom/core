@@ -11,20 +11,13 @@ $sparkleMenu: true !default;
       flex: 1 0;
     }
 
-    .overlay {
-      position: fixed;
-      inset: 0;
-      opacity: 0.1;
-      z-index: 1;
-      background-color: red;
-    }
-
     .options {
       z-index: 2;
       position: relative;
       display: flex;
       flex-direction: column;
       gap: p2r(4);
+      padding: p2r(4) 0;
       max-height: var(--menu-mh);
 
       [title] {
