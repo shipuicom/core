@@ -1,7 +1,7 @@
 <section>
   <h3>Menu example</h3>
 
-  <spk-dialog [isOpen]="false">
+  <!-- <spk-dialog [isOpen]="false">
     <spk-menu>
       <button spk-button class="outlined">Open menu</button>
 
@@ -28,33 +28,43 @@
         </button>
       </ng-container>
     </spk-menu>
-  </spk-dialog>
+  </spk-dialog> -->
+
+  <button spk-button class="outlined" (click)="addOption()">Add option</button>
 
   <div class="wrap">
-    <spk-menu [above]="true" [right]="true">
+    <spk-menu [above]="true" [right]="true" [isOpen]="true">
       <button spk-button class="outlined">Open menu</button>
 
       <ng-container menu>
         <div title>Section 1</div>
 
-        <button item (click)="fireHello()">
+        <button #option (click)="fireHello()">
           <spk-icon>circle</spk-icon>
           Item 1
           <span suffix>⌘O</span>
         </button>
 
-        <button item (click)="fireHello()">
+        <button #option (click)="fireHello()">
           <spk-icon>circle</spk-icon>
           Item 2
           <span suffix>⌘K</span>
         </button>
         <spk-divider />
 
-        <button item (click)="fireHello()" disabled>
+        <button #option (click)="fireHello()" disabled>
           <spk-icon>circle</spk-icon>
           Item 3
           <span suffix>⌘L</span>
         </button>
+
+        @for (item of menuItems(); track $index) {
+          <button #option (click)="fireHello()" [attr.disabled]="$index % 2 === 0 ? '' : null">
+            <spk-icon>circle</spk-icon>
+            Item {{ $index }}
+            <span suffix>⌘L</span>
+          </button>
+        }
       </ng-container>
     </spk-menu>
   </div>

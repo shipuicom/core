@@ -1,6 +1,6 @@
 # ✨ Sparkle UI
 
-This is a early stage alpha version of the Sparkle UI. It is not ready for production use.
+This is a early stage alpha version of the Sparkle UI. It is not ready for production use not because the compoents are not polished but because their APIs can change drastically and often.
 
 ## Todos for v1 beta
 
@@ -12,20 +12,21 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Have the spk-menu use a popover
 - [x] Create a dialog service
 - [x] Go through all components and see if we can trim down the css maybe combine styles from different components
-- [ ] spk-menu should support arrow keys to navigate options
-- [ ] Streamline general color variables
+- [x] spk-menu should support arrow keys to navigate options
 - [ ] Move tooltips from style to a directive to use popovers
+- [ ] Streamline general color variables 10-70 instead of 100-900 (align with figma)
 - [ ] Create a datepicker input component
 - [ ] Create a datepicker range input component
 - [ ] Create a CSV input that create chips on comma (or enter) press
 - [ ] Create a accordion component
+- [ ] Create a spinner component
+- [ ] Rewrite range-slider (dosn't really work or isn't easy enough to use)
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
 - [ ] Make colors optional/configurable (primary, accent, tertiary, warn, success) on a component level and generally
-- [ ] Add a spinner component
-- [ ] Rewrite range-slider (dosn't really work or isn't easy enough to use)
 - [ ] Create documentation with examples for all components
+- [ ] Refactor select component once again
 
-## Nice to haves for v1 beta
+### Nice to haves for v1 beta
 
 - [ ] Create a timepicker component
 - [ ] Add hotkeys to navigate spk-menu options
@@ -38,7 +39,30 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
   - [ ] Pie chart
   - [ ] Doughnut chart
 - [ ] CLI util to figure out which components and styles are used in a project as a production build trimmer
+- [ ] On spk-menu, add focus with a hidden input similar to native select
+- [ ] On spk-select move over to using contentChildren requiring #prefix to the option elements
 
-## Blocked changes
+### Testing to add
+
+- [ ] E2E testing
+- [ ] Fuzz testing
+- [ ] Simulation testing
+
+### Blocked changes
 
 - [ ] required inputs on dialogs, since its not supported by angular yet [angular/51878](https://github.com/angular/angular/issues/51878)
+
+## Contributors
+
+### Creators
+
+- [Simon - development](https://github.com/sp90)
+- [Morten - design](https://x.com/mortenpx)
+
+### Sponsors
+
+- [Duplicati](https://duplicati.com)
+
+## License
+
+MIT

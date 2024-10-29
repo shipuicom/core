@@ -1,6 +1,7 @@
 {
   "name": "sparkle-ui",
   "version": "0.0.4",
+  "license": "MIT",
   "scripts": {
     "ng": "ng",
     "gen:font": "bun ./dist/sparkle-ui/bin/sparkle-fg --src='./projects/design-system/src' --out='./projects/design-system/public' --rootPath='/' --verbose",

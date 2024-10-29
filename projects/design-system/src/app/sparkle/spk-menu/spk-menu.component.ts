@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { SparkleDividerComponent } from '../../../../../sparkle-ui/src/lib/sparkle-divider/sparkle-divider.component';
 import {
   SparkleButtonComponent,
@@ -22,7 +22,13 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class SpkMenuComponent {
+  menuItems = signal<any[]>([]);
+
   fireHello() {
     console.log('Hello');
+  }
+
+  addOption() {
+    this.menuItems.update((items) => [...items, Math.random()]);
   }
 }
