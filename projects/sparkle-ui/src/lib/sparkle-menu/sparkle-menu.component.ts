@@ -10,6 +10,7 @@ import {
   model,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
 import { SparklePopoverComponent } from '../sparkle-popover/sparkle-popover.component';
 
@@ -33,7 +34,7 @@ import { SparklePopoverComponent } from '../sparkle-popover/sparkle-popover.comp
         <ng-content />
       </div>
 
-      <div class="options" (click)="close('active')">
+      <div class="options" #optionsRef (click)="close('active')">
         <ng-content select="[menu]" />
       </div>
     </spk-popover>
@@ -48,6 +49,7 @@ export class SparkleMenuComponent {
   closed = output<boolean>();
 
   activeOptionIndex = signal<number>(-1);
+  optionsWrapperRef = viewChild.required<ElementRef<HTMLDivElement>>('optionsRef');
   options = contentChildren<ElementRef<HTMLButtonElement>>('option');
   optionsEl = computed(() =>
     Array.from(this.options())
@@ -65,6 +67,7 @@ export class SparkleMenuComponent {
     if (activeOptionIndex > -1) {
       for (let index = 0; index < optionElements.length; index++) {
         if (index === activeOptionIndex) {
+          optionElements[index].scrollIntoView({ block: 'center' });
           optionElements[index].classList.add('active');
           continue;
         }
@@ -78,7 +81,7 @@ export class SparkleMenuComponent {
   onKeyDown(event: KeyboardEvent) {
     if (!this.isOpen()) return;
 
-    // event.stopPropagation();
+    event.preventDefault();
 
     const optionElements = this.optionsEl();
     const activeOptionIndex = this.activeOptionIndex();

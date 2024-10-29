@@ -47,7 +47,9 @@ If they are not overwritten we have them as direct styles and can be overwritten
 - icon-width = iw
 - icon-color = ic
 - height = h
+- max-height = mh
 - width = w
+- max-width = mw
 - font = f
 - display = d
 - opacity = o

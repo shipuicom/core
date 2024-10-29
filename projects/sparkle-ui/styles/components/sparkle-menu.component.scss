@@ -2,6 +2,8 @@ $sparkleMenu: true !default;
 
 @if $initSparkle == true and $sparkleMenu == true {
   spk-menu {
+    --menu-mh: #{p2r(320)};
+
     display: inline-flex;
     position: relative;
 
@@ -23,6 +25,7 @@ $sparkleMenu: true !default;
       display: flex;
       flex-direction: column;
       gap: p2r(4);
+      max-height: var(--menu-mh);
 
       [title] {
         font: var(--paragraph-30);

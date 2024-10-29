@@ -22,10 +22,10 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class SpkMenuComponent {
-  menuItems = signal<any[]>([]);
+  menuItems = signal<any[]>(new Array(500).fill(0));
 
-  fireHello() {
-    console.log('Hello');
+  fireHello(index: number) {
+    console.log('Hello', index);
   }
 
   addOption() {
