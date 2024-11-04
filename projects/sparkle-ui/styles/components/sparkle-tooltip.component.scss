@@ -67,7 +67,7 @@ $sparkleTooltip: true !default;
         transform 125ms linear,
         color 75ms linear 50ms;
 
-      &.animate-open {
+      &:popover-open {
         opacity: 1;
         transform: translateX(-50%) scale(1);
         color: var(--tt-c);
@@ -79,7 +79,7 @@ $sparkleTooltip: true !default;
         top: 100%;
         left: 50%;
         transform: translateX(-50%);
-        border-width: p2r(8);
+        border-width: p2r(6);
         border-style: solid;
         border-color: transparent;
         border-top-color: var(--tt-bg);
@@ -91,9 +91,14 @@ $sparkleTooltip: true !default;
       @supports (left: anchor(center)) and (top: anchor(bottom)) {
         left: anchor(center);
         bottom: anchor(top);
-        margin-bottom: p2r(4);
+        margin-bottom: p2r(10);
         top: auto;
       }
+
+      // \@starting-style .tooltip {
+      //   display: block;
+      //   transition-behavior: allow-discrete;
+      // }
     }
   }
 

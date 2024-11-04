@@ -62,11 +62,9 @@ export class SparkleTooltipComponent {
 
     if (open) {
       tooltipEl?.showPopover();
-      tooltipEl?.classList.add('animate-open');
 
       return true;
     } else {
-      tooltipEl?.classList.remove('animate-open');
       tooltipEl.hidePopover();
       this.abortController?.abort();
       this.closed.emit();
