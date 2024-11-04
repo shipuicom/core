@@ -37,6 +37,14 @@ $sparkleTooltip: true !default;
       --tt-c: var(--success-level-50R);
     }
 
+    &.disabled .tooltip,
+    &.disabled .tooltip::before {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      user-select: none;
+    }
+
     .tooltip {
       position: relative;
       margin: 0;

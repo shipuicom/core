@@ -33,12 +33,14 @@ import {
   host: {
     '[class.above]': '_above()',
     '[class.right]': '_right()',
+    '[class.disabled]': 'disabled()',
   },
 })
 export class SparkleTooltipComponent {
   #BASE_SPACE = 4;
   SUPPORTS_ANCHOR = CSS.supports('position-anchor', '--abc') && CSS.supports('anchor-name', '--abc');
 
+  disabled = input<boolean>(false);
   above = input<boolean>(false);
   right = input<boolean>(false);
 
