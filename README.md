@@ -13,7 +13,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Create a dialog service
 - [x] Go through all components and see if we can trim down the css maybe combine styles from different components
 - [x] spk-menu should support arrow keys to navigate options
-- [ ] Move tooltips from style to a directive to use popovers
+- [x] Move tooltips from style to a component to use popovers
 - [ ] Streamline general color variables 10-70 instead of 100-900 (align with figma)
 - [ ] Create a datepicker input component
 - [ ] Create a datepicker range input component
