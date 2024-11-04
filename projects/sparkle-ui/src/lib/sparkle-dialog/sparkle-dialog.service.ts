@@ -1,9 +1,14 @@
-import { ApplicationRef, ComponentRef, createComponent, inject, Injectable, Type } from '@angular/core';
+import { ApplicationRef, ComponentRef, createComponent, EventEmitter, inject, Injectable, Type } from '@angular/core';
 import { SparkleDialogComponent, SparkleDialogOptions } from './sparkle-dialog.component';
 
 export interface SparkleDialogServiceOptions<T = any> extends SparkleDialogOptions {
   data?: T;
   closed?: (...args: any[]) => void;
+}
+
+interface CustomSparkleDialogComponent {
+  data?: any;
+  close?: EventEmitter<any>;
 }
 
 @Injectable({
@@ -13,10 +18,10 @@ export class SparkleDialogService {
   #bodyEl = document.querySelector('body')!;
   #appRef = inject(ApplicationRef);
 
-  compRef: ComponentRef<any> | null = null;
-  insertedCompRef: ComponentRef<any> | null = null;
+  compRef: ComponentRef<SparkleDialogComponent> | null = null;
+  insertedCompRef: ComponentRef<unknown> | null = null;
 
-  open<T = any, K = any>(component: Type<T>, options?: SparkleDialogServiceOptions<K>) {
+  open<T, K = any>(component: Type<T>, options?: SparkleDialogServiceOptions<K>) {
     const environmentInjector = this.#appRef.injector;
     const hostElement = this.#createEl();
 
@@ -36,12 +41,12 @@ export class SparkleDialogService {
       projectableNodes: [[this.insertedCompRef.location.nativeElement]],
     });
 
-    if (this.insertedCompRef.instance.data) {
+    if ((this.insertedCompRef.instance as any)?.data !== undefined) {
       this.insertedCompRef.setInput('data', data);
     }
 
-    if (this.insertedCompRef.instance.close) {
-      this.insertedCompRef.instance.close.subscribe((...args: any[]) => {
+    if ((this.insertedCompRef.instance as any)?.closed) {
+      (this.insertedCompRef.instance as any).closed.subscribe((...args: any[]) => {
         closed?.(...args);
 
         setTimeout(() => this.#cleanupRefs());
