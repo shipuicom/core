@@ -36,6 +36,7 @@ export * from './lib/sparkle-table/sparkle-table.component';
 export * from './lib/sparkle-tabs/sparkle-tabs.component';
 export * from './lib/sparkle-toggle-card/sparkle-toggle-card.component';
 export * from './lib/sparkle-toggle/sparkle-toggle.component';
+export * from './lib/sparkle-tooltip/sparkle-tooltip.component';
 
 // Global directives
 export * from './lib/directives/sparkle-file-drag-drop.directive';
