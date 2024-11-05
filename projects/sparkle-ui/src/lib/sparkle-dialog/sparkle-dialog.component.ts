@@ -112,4 +112,8 @@ export class SparkleDialogComponent {
       allowSignalWrites: true,
     }
   );
+
+  ngOnDestroy() {
+    this.abortController?.abort();
+  }
 }

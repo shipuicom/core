@@ -22,6 +22,10 @@ export default class SpkDatepickerComponent {
   data = input<any>();
   closed = output<boolean>();
 
+  close() {
+    this.closed.emit(true);
+  }
+
   class = computed(() => {
     return `${this.type()} ${this.colors()}`;
   });

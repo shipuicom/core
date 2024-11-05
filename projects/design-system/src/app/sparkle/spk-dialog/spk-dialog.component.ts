@@ -21,6 +21,10 @@ export default class SpkDialogComponent {
   openDynamicDialog() {
     const comp = this.#dialog.open(SpkDatepickerComponent, {
       data: { someDate: new Date(), someOtherDate: new Date() },
+
+      // closed: (data: any) => {
+      //   console.log('closed: ', data);
+      // },
     });
   }
 }

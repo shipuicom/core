@@ -6,6 +6,7 @@ import {
   Injectable,
   isSignal,
   OutputEmitterRef,
+  OutputRefSubscription,
   Type,
 } from '@angular/core';
 import { SparkleDialogComponent, SparkleDialogOptions } from './sparkle-dialog.component';
@@ -29,6 +30,9 @@ export class SparkleDialogService {
 
   compRef: ComponentRef<SparkleDialogComponent> | null = null;
   insertedCompRef: ComponentRef<unknown> | null = null;
+
+  closedFieldSub: OutputRefSubscription | null = null;
+  compClosedSub: OutputRefSubscription | null = null;
 
   open<T, K = any>(component: Type<T>, options?: SparkleDialogServiceOptions<K>) {
     const environmentInjector = this.#appRef.injector;
@@ -61,11 +65,11 @@ export class SparkleDialogService {
       }
     }
 
-    if (closed && closedField instanceof OutputEmitterRef) {
-      closedField.subscribe((...args: any[]) => {
-        closed(...args);
+    if (closedField instanceof OutputEmitterRef) {
+      this.closedFieldSub = closedField.subscribe((...args: any[]) => {
+        closed?.(...args);
 
-        setTimeout(() => this.#cleanupRefs());
+        this.#cleanupRefs();
       });
     }
 
@@ -81,13 +85,13 @@ export class SparkleDialogService {
     const _self = this;
 
     function closeAction() {
-      if ((_self.insertedCompRef?.instance as any)?.closed instanceof OutputEmitterRef) {
-        (_self.insertedCompRef?.instance as any).closed.emit(false);
+      if (closedField && closedField instanceof OutputEmitterRef) {
+        closedField.emit(false);
       } else {
         closed?.(undefined);
-
-        _self.#cleanupRefs();
       }
+
+      _self.#cleanupRefs();
     }
 
     return this.insertedCompRef.instance as T;
@@ -107,12 +111,14 @@ export class SparkleDialogService {
   #cleanupRefs() {
     if (this.insertedCompRef) {
       this.#appRef.detachView(this.insertedCompRef.hostView);
+      this.closedFieldSub?.unsubscribe();
       this.insertedCompRef.destroy();
     }
 
     if (!this.compRef) return;
 
     this.#appRef.detachView(this.compRef.hostView);
+    this.compClosedSub?.unsubscribe();
     this.compRef.destroy();
   }
 
