@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SparkleButtonGroupComponent, SparkleDatepickerComponent } from '../../../../../sparkle-ui/src/public-api';
 
@@ -18,6 +18,9 @@ export default class SpkDatepickerComponent {
 
   type = signal<'none' | 'raised' | 'outlined'>('none');
   colors = signal<'none' | 'primary' | 'accent' | 'tertiary' | 'warn' | 'success'>('primary');
+
+  data = input<any>();
+  closed = output<boolean>();
 
   class = computed(() => {
     return `${this.type()} ${this.colors()}`;

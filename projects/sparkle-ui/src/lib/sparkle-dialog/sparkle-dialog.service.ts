@@ -1,4 +1,13 @@
-import { ApplicationRef, ComponentRef, createComponent, EventEmitter, inject, Injectable, Type } from '@angular/core';
+import {
+  ApplicationRef,
+  ComponentRef,
+  createComponent,
+  inject,
+  Injectable,
+  isSignal,
+  OutputEmitterRef,
+  Type,
+} from '@angular/core';
 import { SparkleDialogComponent, SparkleDialogOptions } from './sparkle-dialog.component';
 
 export interface SparkleDialogServiceOptions<T = any> extends SparkleDialogOptions {
@@ -6,10 +15,10 @@ export interface SparkleDialogServiceOptions<T = any> extends SparkleDialogOptio
   closed?: (...args: any[]) => void;
 }
 
-interface CustomSparkleDialogComponent {
-  data?: any;
-  close?: EventEmitter<any>;
-}
+// interface CustomSparkleDialogComponent {
+//   data?: any;
+//   close?: EventEmitter<any>;
+// }
 
 @Injectable({
   providedIn: 'root',
@@ -41,13 +50,20 @@ export class SparkleDialogService {
       projectableNodes: [[this.insertedCompRef.location.nativeElement]],
     });
 
-    if ((this.insertedCompRef.instance as any)?.data !== undefined) {
-      this.insertedCompRef.setInput('data', data);
+    const dataField = (this.insertedCompRef.instance as any)?.data;
+    const closedField = (this.insertedCompRef.instance as any)?.closed;
+
+    if (data) {
+      if (isSignal(dataField)) {
+        this.insertedCompRef.setInput('data', data);
+      } else if (!isSignal(dataField)) {
+        throw new Error('data is not an input signal on the passed component');
+      }
     }
 
-    if ((this.insertedCompRef.instance as any)?.closed) {
-      (this.insertedCompRef.instance as any).closed.subscribe((...args: any[]) => {
-        closed?.(...args);
+    if (closed && closedField instanceof OutputEmitterRef) {
+      closedField.subscribe((...args: any[]) => {
+        closed(...args);
 
         setTimeout(() => this.#cleanupRefs());
       });
@@ -65,9 +81,13 @@ export class SparkleDialogService {
     const _self = this;
 
     function closeAction() {
-      closed?.(undefined);
+      if ((_self.insertedCompRef?.instance as any)?.closed instanceof OutputEmitterRef) {
+        (_self.insertedCompRef?.instance as any).closed.emit(false);
+      } else {
+        closed?.(undefined);
 
-      _self.#cleanupRefs();
+        _self.#cleanupRefs();
+      }
     }
 
     return this.insertedCompRef.instance as T;
