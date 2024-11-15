@@ -14,21 +14,27 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Go through all components and see if we can trim down the css maybe combine styles from different components
 - [x] spk-menu should support arrow keys to navigate options
 - [x] Move tooltips from style to a component to use popovers
+- [x] Support free text in spk-select
+- [x] Support displayWith in spk-select
+
 - [ ] Streamline general color variables 10-70 instead of 100-900 (align with figma)
 - [ ] Create a datepicker input component
-- [ ] Create a datepicker range input component
 - [ ] Create a CSV input that create chips on comma (or enter) press
 - [ ] Create a accordion component
 - [ ] Create a spinner component
-- [ ] Rewrite range-slider (dosn't really work or isn't easy enough to use)
+
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
 - [ ] Make colors optional/configurable (primary, accent, tertiary, warn, success) on a component level and generally
 - [ ] Create documentation with examples for all components
+
+- [ ] Refactor range-slider (dosn't really work or isn't easy enough to use)
 - [ ] Refactor select component once again
 
 ### Nice to haves for v1 beta
 
 - [ ] Create a timepicker component
+- [ ] Multi select menu's that dosn't close when checking an option
+- [ ] Create a datepicker range input component
 - [ ] Add hotkeys to navigate spk-menu options
 - [ ] Add flat and raised versions of alerts
 - [ ] Create a color picker component

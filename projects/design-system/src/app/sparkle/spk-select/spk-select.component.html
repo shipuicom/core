@@ -22,7 +22,7 @@
     
   </spk-new-select> -->
 
-  <spk-dialog [isOpen]="true">
+  <!-- <spk-dialog [isOpen]="true">
     <spk-select [displayFn]="displayFn(foods())" class="primary">
       <label for="text">Simple select one from list</label>
       <input type="text" id="text" [formControl]="inputCtrl" />
@@ -31,7 +31,7 @@
         <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
       }
     </spk-select>
-  </spk-dialog>
+  </spk-dialog> -->
 
   <spk-select [displayFn]="displayFn(foods())" class="primary" [readonly]="true">
     <label for="text">Simple select one from list</label>
@@ -51,11 +51,22 @@
     }
   </spk-select>
 
-  <spk-select [displayFn]="displayFn(foods())" class="primary">
+  <!-- <spk-select [displayFn]="displayFn(foods())" class="primary">
     <label for="search">Select one from filtered list</label>
     <input type="search" id="search" [formControl]="inputSearchCtrl" />
 
     <option deselect>Hello remove me</option>
+
+    @for (food of localFilteredFoods(); track $index) {
+      <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
+    }
+  </spk-select> -->
+
+  <spk-select [displayWith]="displayWith" [isFreeText]="true" class="primary">
+    <label for="search">Select one from filtered list</label>
+    <input type="search" id="search" [formControl]="inputSearchCtrl" />
+
+    <!-- <option deselect>Hello remove me</option> -->
 
     @for (food of localFilteredFoods(); track $index) {
       <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
