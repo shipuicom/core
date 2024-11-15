@@ -147,11 +147,16 @@ export default class SpkSelectComponent {
     this.search() ? this.foods().filter((x) => x.label.toLowerCase().includes(this.search())) : this.foods()
   );
 
-  localFilteredFoods = computed(() =>
-    this.inputSearchCtrlSignal()
-      ? this.foods().filter((x) => x.label.toLowerCase().includes(this.inputSearchCtrlSignal()!))
-      : this.foods()
-  );
+  localFilteredFoods = computed(() => {
+    const input = this.inputSearchCtrlSignal();
+    const foods = this.foods();
+
+    if (input) {
+      return foods.filter((x) => x.label.toLowerCase().includes(input) || x.value.toLowerCase().includes(input));
+    }
+
+    return foods;
+  });
 
   apiFilteredFoods = signal<Food[]>(this.foods());
   otherFilteredFoods = computed(() => {

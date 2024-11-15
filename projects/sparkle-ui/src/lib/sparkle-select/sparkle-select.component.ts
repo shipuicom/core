@@ -54,9 +54,9 @@ const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
   template: `
     <spk-popover
       #formFieldWrapper
-      [(isOpen)]="_isOpen"
+      [(isOpen)]="isOpen"
       [disableOpenByClick]="true"
-      (closed)="!isFreeText() && close()"
+      (closed)="close()"
       [options]="{
         closeOnButton: false,
         closeOnEsc: false,
@@ -279,6 +279,10 @@ export class SparkleSelectComponent {
             this.close(true);
           } else {
             this.#optionInFocus.set(-1);
+
+            if (this.isFreeText()) {
+              this.calculateSelectedOptions();
+            }
           }
         },
         {
@@ -381,6 +385,25 @@ export class SparkleSelectComponent {
       this.isOpen.set(false);
       this.#inputRef()?.blur();
     }
+  }
+
+  calculateSelectedOptions() {
+    setTimeout(() => {
+      const options = this.#options();
+      const inputRef = this.#inputRef();
+      const value = inputRef?.value;
+
+      for (let index = 0; index < options.length; index++) {
+        const option = options[index];
+        const optionValue = option.getAttribute('value') || option.getAttribute('ng-reflect-value');
+
+        if (optionValue === value) {
+          this.#renderer.setAttribute(option, 'selected', 'selected');
+        } else {
+          this.#renderer.removeAttribute(option, 'selected');
+        }
+      }
+    });
   }
 
   toggleOption(option: string, $event?: Event) {

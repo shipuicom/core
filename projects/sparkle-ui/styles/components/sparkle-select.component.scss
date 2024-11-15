@@ -12,6 +12,10 @@ $sparkleSelect: true !default;
 
     spk-popover {
       flex: 1 0;
+
+      &:has(.sparkle-options:empty) .popover {
+        opacity: 0;
+      }
     }
 
     .overlay {

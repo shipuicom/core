@@ -47,7 +47,7 @@
     <input type="text" id="text" [formControl]="inputSearchCtrl2" />
 
     @for (food of foods(); track $index) {
-      <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
+      <spk-option [value]="food.value">{{ food.label }}</spk-option>
     }
   </spk-select>
 

@@ -42,7 +42,7 @@ const DEFAULT_OPTIONS: SparklePopoverOptions = {
       <button spk-button class="outlined">Open popover</button>
     </div>
 
-    <div class="popover" #popoverRef [style.position-anchor]="id()" [style]="menuStyle()" popover>
+    <div popover #popoverRef class="popover" [style.position-anchor]="id()" [style]="menuStyle()">
       <div class="overlay" (click)="isOpen() && eventClose($event)"></div>
       <ng-content />
     </div>
