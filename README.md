@@ -15,7 +15,6 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] spk-menu should support arrow keys to navigate options
 - [x] Move tooltips from style to a component to use popovers
 - [x] Support free text in spk-select
-- [x] Support displayWith in spk-select
 
 - [ ] Streamline general color variables 10-70 instead of 100-900 (align with figma)
 - [ ] Create a datepicker input component
@@ -29,6 +28,8 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 
 - [ ] Refactor range-slider (dosn't really work or isn't easy enough to use)
 - [ ] Refactor select component once again
+  - [ ] Support displayWith in spk-select
+  - [ ] use templates to template options and have the list inside the select
 
 ### Nice to haves for v1 beta
 

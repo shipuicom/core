@@ -47,12 +47,6 @@ export class SparkleOptionComponent {
 
 const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
 
-export type SelectedOption = {
-  key: string | null;
-  value: string | null;
-  textContent: string | null;
-};
-
 @Component({
   selector: 'spk-select',
   standalone: true,
@@ -145,8 +139,7 @@ export class SparkleSelectComponent {
   hideClearButton = input<boolean>(false);
   displayValue = input<string | null>('');
   // TODO add an option where it returns key and value instead of just value
-  displayWith = input<Function | null>((option: SelectedOption) => `${option.textContent}`);
-  displayFn = input<Function | null>((option: string) => `${option}`);
+  displayFn = input<Function | null>((option: any) => `${option}`);
   above = input<boolean>(false);
   right = input<boolean>(false);
 
@@ -192,25 +185,9 @@ export class SparkleSelectComponent {
       .join(' ')
   );
 
-  _displayValue = computed(() => {
-    const displayWith = this.displayWith();
-
-    if (displayWith) {
-      return displayWith(this._selectedOption());
-    }
-
-    const displayFn = this.displayFn();
-
-    if (displayFn) {
-      return displayFn(this.inputValue());
-    }
-
-    if (this.displayValue()) {
-      return this.displayValue();
-    }
-
-    return this.inputValue();
-  });
+  _displayValue = computed(() =>
+    this.displayFn() ? this.displayFn()!(this.inputValue()) : (this.displayValue() ?? this.inputValue())
+  );
 
   selectedOption = computed(() =>
     this.#previousInputValue()
@@ -219,20 +196,6 @@ export class SparkleSelectComponent {
         )
       : null
   );
-
-  _selectedOption = computed(() => {
-    const val = this.inputValue();
-    const options = this.#options();
-    const option = val
-      ? options.find((x) => (x.getAttribute('value') || x.getAttribute('ng-reflect-value')) === val)
-      : null;
-
-    const key = option?.getAttribute('key');
-    const value = option?.getAttribute('value') || option?.getAttribute('ng-reflect-value');
-    const textContent = option?.textContent;
-
-    return { key, value, textContent };
-  });
 
   optionsOpenController: AbortController | null = null;
   inputController: AbortController | null = null;

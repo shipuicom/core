@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, computed, model, signal } from '@an
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
-  SelectedOption,
   SparkleCheckboxComponent,
   SparkleDialogComponent,
   SparkleIconComponent,
@@ -196,6 +195,8 @@ export default class SpkSelectComponent {
 
   displayFn(foods: Food[]) {
     return (val: Food['value']) => {
+      // console.log('val: ', val);
+
       const food = foods.find((x) => x.value === val);
 
       if (!food) {
@@ -203,9 +204,5 @@ export default class SpkSelectComponent {
       }
       return `${food.label} (${food.value})`;
     };
-  }
-
-  displayWith(option: SelectedOption) {
-    return `${option.textContent}`;
   }
 }
