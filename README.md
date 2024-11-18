@@ -15,9 +15,9 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] spk-menu should support arrow keys to navigate options
 - [x] Move tooltips from style to a component to use popovers
 - [x] Support free text in spk-select
+- [x] Create a datepicker input component
 
 - [ ] Streamline general color variables 10-70 instead of 100-900 (align with figma)
-- [ ] Create a datepicker input component
 - [ ] Create a CSV input that create chips on comma (or enter) press
 - [ ] Create a accordion component
 - [ ] Create a spinner component

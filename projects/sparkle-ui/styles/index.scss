@@ -75,6 +75,22 @@ html body {
   --box-shadow-50: 0 20px 25px -5px rgba(18, 18, 23, 0.1);
   --box-shadow-60: 0 25px 50px -12px rgba(18, 18, 23, 0.25);
 
+  // --10: #fff;
+  // --20: #fafafa;
+  // --30: #efeff1;
+  // --40: #e4e4e7;
+  // --50: #a1a1aa;
+  // --60: #71717a;
+  // --70: #18181b;
+
+  // --10R: #09090c;
+  // --20R: #18181b;
+  // --30R: #2e2e33;
+  // --40R: #51515a;
+  // --50R: #71717a;
+  // --60R: #a1a1aa;
+  // --70R: #f3f3f3;
+
   --base-level-10: #{light-dark(#fff, var(--grey-950))};
   --base-level-20: #{light-dark(var(--grey-50), var(--grey-900))};
   --base-level-30: #{light-dark(var(--grey-100), var(--grey-900))};

@@ -22,7 +22,13 @@
 <h3>With other date: {{ someOtherDate() }}</h3>
 <spk-datepicker [(date)]="someOtherDate" [class]="class()" />
 
-<h3>TODO</h3>
-<p>
-  Make a spk-datepicker-input component that uses the above datepicker component internally and just displays the date
-</p>
+<h3>Date picker input</h3>
+
+<spk-datepicker-input [class]="class()">
+  <label>
+    Date
+    <spk-icon>question</spk-icon>
+  </label>
+
+  <input type="text" id="date" tabindex="2" [formControl]="someDateCtrl" />
+</spk-datepicker-input>

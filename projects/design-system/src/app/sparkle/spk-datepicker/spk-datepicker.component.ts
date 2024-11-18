@@ -1,13 +1,25 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { SparkleButtonGroupComponent, SparkleDatepickerComponent } from '../../../../../sparkle-ui/src/public-api';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  SparkleButtonGroupComponent,
+  SparkleDatepickerComponent,
+  SparkleDatepickerInputComponent,
+  SparkleIconComponent,
+} from '../../../../../sparkle-ui/src/public-api';
 
 const now = new Date();
 
 @Component({
   selector: 'app-spk-datepicker',
   standalone: true,
-  imports: [SparkleDatepickerComponent, SparkleButtonGroupComponent, FormsModule],
+  imports: [
+    SparkleDatepickerComponent,
+    SparkleDatepickerInputComponent,
+    SparkleButtonGroupComponent,
+    SparkleIconComponent,
+    FormsModule,
+    ReactiveFormsModule,
+  ],
   templateUrl: './spk-datepicker.component.html',
   styleUrl: './spk-datepicker.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,6 +33,8 @@ export default class SpkDatepickerComponent {
 
   data = input<any>();
   closed = output<boolean>();
+
+  someDateCtrl = new FormControl(now);
 
   close() {
     this.closed.emit(true);

@@ -42,26 +42,12 @@ $sparklePopover: true !default;
       font: var(--paragraph-30);
       color: var(--base-level-60);
 
-      @supports (left: anchor(left)) and (top: anchor(bottom)) {
+      @supports (anchor-name: --anchor) {
+        inset: unset;
         left: anchor(left);
         top: anchor(bottom);
-        margin-top: p2r(4);
-      }
-    }
-
-    &.above .popover {
-      @supports (bottom: anchor(top)) {
-        bottom: anchor(top);
-        margin-bottom: p2r(4);
-        top: auto;
-      }
-    }
-
-    &.right .popover {
-      @supports (right: anchor(right)) {
-        right: anchor(right);
-        margin-right: 0;
-        left: auto;
+        position-try-options: flip-block, flip-inline;
+        position-try-fallbacks: flip-block, flip-inline;
       }
     }
   }

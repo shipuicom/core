@@ -1,6 +1,34 @@
 $sparkleDatepicker: true !default;
 
 @if $initSparkle == true and $sparkleDatepicker == true {
+  spk-datepicker-input {
+    spk-form-field {
+      .input-wrap .input {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+      }
+
+      .masked-value {
+        font: var(--paragraph-30B);
+        color: var(--base-level-60);
+
+        + input {
+          opacity: 0;
+        }
+      }
+
+      [suffix] + [suffix].default-indicator {
+        display: none;
+      }
+    }
+
+    spk-datepicker {
+      z-index: 10000;
+      position: relative;
+      width: p2r(240);
+    }
+  }
   spk-datepicker {
     --dp-sel-bg: var(--base-level-60);
     --dp-sel-bw: 0;
