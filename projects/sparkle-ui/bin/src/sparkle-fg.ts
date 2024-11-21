@@ -120,7 +120,7 @@ const writeCssFile = async (PROJECT_PUBLIC: string, values: InputArguments, TARG
   const cssFileContent = `
 @font-face {
   font-family: 'spk';
-  src: url('${PROJECT_PUBLIC}spk.${TARGET_FONT_TYPE}') format('${TARGET_FONT_TYPE}');
+  src: url('${values.rootPath}spk.${TARGET_FONT_TYPE}') format('${TARGET_FONT_TYPE}');
   font-weight: normal;
   font-style: normal;
   font-display: block;
