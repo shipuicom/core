@@ -10,38 +10,6 @@ export const routes: Routes = [
         redirectTo: 'spk-tabs',
         pathMatch: 'full',
       },
-      {
-        path: 'colors',
-        loadComponent: () => import('./material/colors/colors.component'),
-      },
-      {
-        path: 'typography',
-        loadComponent: () => import('./typography/typography.component'),
-      },
-      {
-        path: 'buttons',
-        loadComponent: () => import('./material/buttons/buttons.component'),
-      },
-      {
-        path: 'chips',
-        loadComponent: () => import('./material/chips/chips.component'),
-      },
-      {
-        path: 'loaders',
-        loadComponent: () => import('./material/loaders/loaders.component'),
-      },
-      {
-        path: 'menus',
-        loadComponent: () => import('./material/menus/menus.component'),
-      },
-      {
-        path: 'expansion-panel',
-        loadComponent: () => import('./material/expansion-panel/expansion-panel.component'),
-      },
-      {
-        path: 'form-fields',
-        loadComponent: () => import('./material/form-fields/form-fields.component'),
-      },
 
       {
         path: 'spk-buttons',

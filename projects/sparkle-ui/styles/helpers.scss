@@ -1,18 +1,18 @@
-@import './core/variables';
+// @import './core/variables';
 
 // Functions
-@import './core/helpers/fn/dp';
+// @import './core/helpers/fn/dp';
 @import './core/helpers/fn/p2r';
-@import './core/helpers/fn/color';
-@import './core/helpers/fn/typography';
+// @import './core/helpers/fn/color';
+// @import './core/helpers/fn/typography';
 
 // light-dark polyfill
 @import './core/polyfill/light-dark.scss';
 
 // Mixins
-@import './core/helpers/mixins/font';
+// @import './core/helpers/mixins/font';
 @import './core/helpers/mixins/breakpoint';
-@import './core/helpers/mixins/wrapper';
+// @import './core/helpers/mixins/wrapper';
 @import './core/helpers/mixins/ellipsis';
 @import './core/helpers/mixins/overflow-scrolling';
-@import './core/helpers/mixins/border-gradient';
+// @import './core/helpers/mixins/border-gradient';

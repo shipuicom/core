@@ -18,8 +18,6 @@ $sparkleCard: true !default;
     &:after {
       content: '';
       position: absolute;
-      inset: 0;
-      border-radius: var(--shape-3);
     }
 
     &:before {
@@ -27,11 +25,13 @@ $sparkleCard: true !default;
       border: 1px solid var(--card-bc);
       box-shadow: var(--card-sh);
       border-radius: var(--shape-3);
+      inset: 0;
       z-index: -2;
     }
 
     &:after {
       background-color: var(--card-ibg);
+      border-radius: var(--shape-2);
       inset: var(--card-shp);
       z-index: -1;
     }
