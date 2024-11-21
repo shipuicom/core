@@ -170,8 +170,8 @@ $use-apexcharts: true !default;
 // @import './core/fonts/phosphor-icons';
 @import './core/fonts/inter-tight';
 
-@import './core/cdk/cdk';
-@import './core/material';
+// @import './core/cdk/cdk';
+// @import './core/material';
 @import './core/core';
 
 // @if ($use-apexcharts == true) {
