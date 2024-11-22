@@ -3,11 +3,13 @@ $sparkleSelect: true !default;
 @if $initSparkle == true and $sparkleSelect == true {
   spk-multi-select,
   spk-select {
+    --miw: p2r(210);
+
     display: flex;
 
     spk-form-field {
       display: flex;
-      min-width: p2r(210);
+      min-width: var(--miw);
     }
 
     spk-popover {
