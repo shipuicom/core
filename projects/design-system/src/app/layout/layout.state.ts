@@ -26,9 +26,6 @@ export class LayoutState {
     if (isPlatformBrowser(this.#platformId)) {
       const prefersDarkMode = window.matchMedia('(prefers-color-scheme:dark)').matches;
 
-      console.log(prefersDarkMode);
-      console.log(this.#storedDarkMode);
-
       if (prefersDarkMode && this.#storedDarkMode) {
         this.setDarkMode();
       }
@@ -36,8 +33,10 @@ export class LayoutState {
       effect(() => {
         if (this.#isDarkMode()) {
           document.body.classList.add('dark');
+          // document.body.classList.remove('light');
         } else {
           document.body.classList.remove('dark');
+          // document.body.classList.add('light');
         }
       });
 

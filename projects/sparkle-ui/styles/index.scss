@@ -159,9 +159,22 @@ html body {
   &.dark {
     --sparkle-light: ;
     --sparkle-dark: initial;
-
     color-scheme: dark;
   }
+
+  // TODO add a good way to toggle between light and dark mode served from the ui lib
+  //
+  // @media (prefers-color-scheme: dark) {
+  //   --sparkle-light: ;
+  //   --sparkle-dark: initial;
+  //   color-scheme: dark;
+
+  //   &.light {
+  //     --sparkle-light: initial;
+  //     --sparkle-dark: ;
+  //     color-scheme: light;
+  //   }
+  // }
 }
 
 $use-inter-tight: true !default;

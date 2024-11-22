@@ -221,18 +221,17 @@ export const main = async (values: InputArguments) => {
 
   run(PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
 
-  let callAmount = 0;
+  process.on('SIGKILL', killWatchers);
+  process.on('SIGINT', killWatchers);
+  process.on('SIGTERM', killWatchers);
+  process.on('SIGBREAK', killWatchers);
 
-  process.on('SIGINT', function () {
-    if (callAmount < 1) {
-      console.log(`✅ The icon font generation watch process has been stopped.`);
+  function killWatchers() {
+    console.log(`✅ The icon font generation watch process has been stopped.`);
 
-      setTimeout(() => {
-        watchers.forEach((watcher) => watcher.close());
-        process.exit();
-      }, 1000);
-    }
-
-    callAmount++;
-  });
+    setTimeout(() => {
+      watchers.forEach((watcher) => watcher.close());
+      process.exit();
+    }, 1000);
+  }
 };
