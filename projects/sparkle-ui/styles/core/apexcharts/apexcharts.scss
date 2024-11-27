@@ -1,6 +1,6 @@
-$spkApexcharts: true !default;
+$useApexcharts: true !default;
 
-@if $spkApexcharts == true {
+@if $useApexcharts == true {
   body {
     .apexcharts-text {
       fill: var(--base-level-70);

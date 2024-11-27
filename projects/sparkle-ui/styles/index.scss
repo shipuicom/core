@@ -1,7 +1,16 @@
-@use './core/fonts/inter-tight';
+$useInterTight: true !default;
+$useApexcharts: true !default;
+
+@use './core/fonts/inter-tight' with (
+  $useInterTight: $useInterTight
+);
+
+@use './core/apexcharts/apexcharts' with (
+  $useApexcharts: $useApexcharts
+);
+
 @use './core/core';
 
-$spkApexcharts: true !default;
 $spkAlert: true !default;
 $spkToggle: true !default;
 $spkButton: true !default;
@@ -29,10 +38,6 @@ $spkToggleCard: true !default;
 $spkTable: true !default;
 $spkTabs: true !default;
 $spkFileUpload: true !default;
-
-@use './core/apexcharts/apexcharts' with (
-  $spkApexcharts: $spkApexcharts
-);
 
 @use './components/sparkle-alert-container.component.scss' with (
   $spkAlert: $spkAlert

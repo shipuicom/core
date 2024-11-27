@@ -1,3 +1,4 @@
 @use '../../sparkle-ui/styles/index.scss' with (
-  $spkApexcharts: true
+  $useApexcharts: true,
+  $useInterTight: true
 );
