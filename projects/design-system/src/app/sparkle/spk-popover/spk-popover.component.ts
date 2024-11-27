@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { SparklePopoverComponent } from 'spk/public';
+import { SparklePopoverComponent } from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-popover',

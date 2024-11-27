@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, TemplateRef, viewChild } from '@angular/core';
-import { SparkleButtonComponent } from 'spk/public';
+import { SparkleButtonComponent } from '../../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-tab',

@@ -5,7 +5,7 @@ import {
   SparkleDatepickerComponent,
   SparkleDatepickerInputComponent,
   SparkleIconComponent,
-} from 'spk/public';
+} from '../../../../../sparkle-ui/src/public-api';
 
 const now = new Date();
 

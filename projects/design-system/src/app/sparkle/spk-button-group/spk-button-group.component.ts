@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { SparkleButtonGroupComponent, SparkleIconComponent } from 'spk/public';
+import { SparkleButtonGroupComponent, SparkleIconComponent } from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-button-group',

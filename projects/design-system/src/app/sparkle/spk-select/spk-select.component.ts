@@ -6,7 +6,7 @@ import {
   SparkleIconComponent,
   SparkleOptionComponent,
   SparkleSelectComponent,
-} from 'spk/public';
+} from '../../../../../sparkle-ui/src/public-api';
 
 type Food = {
   value: string;

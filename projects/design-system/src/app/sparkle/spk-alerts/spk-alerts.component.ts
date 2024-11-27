@@ -1,5 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { SparkleAlertComponent, SparkleAlertService, SparkleDividerComponent, SparkleIconComponent } from 'spk/public';
+import {
+  SparkleAlertComponent,
+  SparkleAlertService,
+  SparkleDividerComponent,
+  SparkleIconComponent,
+} from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-alerts',

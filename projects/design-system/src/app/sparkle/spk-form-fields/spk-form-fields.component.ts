@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { SparkleFormFieldComponent, SparkleIconComponent } from 'spk/public';
+import { SparkleFormFieldComponent, SparkleIconComponent } from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-form-fields',

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { SparkleCardComponent } from 'spk/public';
 import SparkleToggleCardComponent from '../../../../../sparkle-ui/src/lib/sparkle-toggle-card/sparkle-toggle-card.component';
+import { SparkleCardComponent } from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-card',

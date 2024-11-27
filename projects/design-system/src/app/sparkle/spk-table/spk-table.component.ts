@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { SparkleTableComponent } from 'spk/public';
+import { SparkleTableComponent } from '../../../../../sparkle-ui/src/public-api';
 
 export interface PeriodicElement {
   name: string;

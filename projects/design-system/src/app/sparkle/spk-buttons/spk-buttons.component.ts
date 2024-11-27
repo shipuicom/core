@@ -1,5 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { SparkleButtonComponent, SparkleDividerComponent, SparkleIconComponent } from 'spk/public';
+import {
+  SparkleButtonComponent,
+  SparkleDividerComponent,
+  SparkleIconComponent,
+} from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-buttons',

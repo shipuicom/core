@@ -6,7 +6,7 @@ import {
   SparkleIconComponent,
   SparkleListComponent,
   SparkleSortableDirective,
-} from 'spk/public';
+} from '../../../../../sparkle-ui/src/public-api';
 
 const CONTENT_EXAMPLE = [
   {

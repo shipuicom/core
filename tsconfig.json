@@ -24,10 +24,7 @@
       "node_modules/apexcharts/types",
       "node_modules/@angular/core/rxjs-interop",
       "node_modules/ngxtension"
-    ],
-    "paths": {
-      "spk/public": ["./projects/sparkle-ui/src/public-api.ts"]
-    }
+    ]
   },
   "exclude": ["dist"],
   "angularCompilerOptions": {

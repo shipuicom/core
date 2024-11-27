@@ -8,7 +8,8 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { SparkleFormFieldComponent, SparkleIconComponent } from 'spk/public';
+import { SparkleFormFieldComponent } from '../sparkle-form-field/sparkle-form-field.component';
+import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 
 @Component({
   selector: 'spk-file-upload',

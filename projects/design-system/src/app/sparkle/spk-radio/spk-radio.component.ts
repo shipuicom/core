@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { SparkleRadioComponent } from 'spk/public';
+import { SparkleRadioComponent } from '../../../../../sparkle-ui/src/public-api';
 
 const fb = new FormBuilder();
 @Component({

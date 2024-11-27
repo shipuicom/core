@@ -1,7 +1,11 @@
 import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { SparkleIconComponent, SparkleRangeSliderComponent, SparkleToggleComponent } from 'spk/public';
+import {
+  SparkleIconComponent,
+  SparkleRangeSliderComponent,
+  SparkleToggleComponent,
+} from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-range-slider',

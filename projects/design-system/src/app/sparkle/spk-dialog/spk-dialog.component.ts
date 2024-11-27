@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { SparkleButtonComponent, SparkleDialogService } from 'spk/public';
+import { SparkleButtonComponent, SparkleDialogService } from '../../../../../sparkle-ui/src/public-api';
 import SpkDatepickerComponent from '../spk-datepicker/spk-datepicker.component';
 
 @Component({

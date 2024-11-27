@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
-import { SparkleIconComponent } from 'spk/public';
+import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 
 @Component({
   selector: 'spk-toggle-card',

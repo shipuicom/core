@@ -7,7 +7,7 @@ import {
   SparkleListComponent,
   SparkleSidenavComponent,
   SparkleSidenavType,
-} from 'spk/public';
+} from '../../../../sparkle-ui/src/public-api';
 import { LayoutState } from './layout.state';
 
 @Component({

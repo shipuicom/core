@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { SparkleToggleComponent } from 'spk/public';
+import { SparkleToggleComponent } from '../../../../../sparkle-ui/src/public-api';
 
 const fb = new FormBuilder();
 

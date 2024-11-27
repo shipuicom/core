@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { SparkleFileUploadComponent, SparkleIconComponent } from 'spk/public';
+import { SparkleFileUploadComponent, SparkleIconComponent } from '../../../../../sparkle-ui/src/public-api';
 
 const fb = new FormBuilder();
 
