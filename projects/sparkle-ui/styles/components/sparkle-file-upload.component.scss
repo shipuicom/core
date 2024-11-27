@@ -1,6 +1,8 @@
-$sparkleFileUpload: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleFileUpload == true {
+$spkFileUpload: true !default;
+
+@if $spkFileUpload == true {
   spk-file-upload {
     display: flex;
     flex-direction: column;

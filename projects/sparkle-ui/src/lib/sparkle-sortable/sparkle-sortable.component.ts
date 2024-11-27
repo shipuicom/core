@@ -10,10 +10,9 @@ import {
 } from '@angular/core';
 
 @Component({
-  selector: 'spk-sortable',
-  standalone: true,
-  imports: [NgTemplateOutlet],
-  template: `
+    selector: 'spk-sortable',
+    imports: [NgTemplateOutlet],
+    template: `
     <div class="placeholder" #placeholderRef></div>
 
     @for (item of items(); track $index) {
@@ -24,7 +23,7 @@ import {
       }
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SparkleSortableComponent<T> {
   templateOne = contentChild.required<TemplateRef<any>>('templateOne');

@@ -1,6 +1,8 @@
-$sparkleChip: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleChip == true {
+$spkChip: true !default;
+
+@if $spkChip == true {
   spk-chip {
     --chip-h: #{p2r(32)};
     --chip-s: #{p2r(16)};

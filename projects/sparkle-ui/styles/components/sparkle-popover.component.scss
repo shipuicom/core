@@ -1,6 +1,8 @@
-$sparklePopover: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparklePopover == true {
+$spkPopover: true !default;
+
+@if $spkPopover == true {
   spk-popover {
     --po-d: inherit;
 

@@ -13,7 +13,6 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 
 @Component({
   selector: 'spk-datepicker',
-  standalone: true,
   imports: [SparkleIconComponent],
   template: `
     <header>
@@ -73,15 +72,10 @@ export class SparkleDatepickerComponent {
     return weekdayLabels.slice(startOfWeek).concat(weekdayLabels.slice(0, startOfWeek));
   });
 
-  #newDateEffect = effect(
-    () => {
-      this.currentDate.set(this.date());
-      this.#findSelectedAndCalc();
-    },
-    {
-      allowSignalWrites: true,
-    }
-  );
+  #newDateEffect = effect(() => {
+    this.currentDate.set(this.date());
+    this.#findSelectedAndCalc();
+  });
 
   #findSelectedAndCalc() {
     setTimeout(() => {

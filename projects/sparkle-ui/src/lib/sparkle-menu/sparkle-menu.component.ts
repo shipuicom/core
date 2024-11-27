@@ -14,10 +14,9 @@ import {
 import { SparklePopoverComponent } from '../sparkle-popover/sparkle-popover.component';
 
 @Component({
-  selector: 'spk-menu',
-  standalone: true,
-  imports: [SparklePopoverComponent],
-  template: `
+    selector: 'spk-menu',
+    imports: [SparklePopoverComponent],
+    template: `
     <spk-popover
       #formFieldWrapper
       [(isOpen)]="isOpen"
@@ -38,7 +37,7 @@ import { SparklePopoverComponent } from '../sparkle-popover/sparkle-popover.comp
       </div>
     </spk-popover>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SparkleMenuComponent {
   above = input<boolean>(false);

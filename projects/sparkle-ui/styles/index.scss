@@ -1,194 +1,120 @@
-/* You can add global styles to this file, and also import other style files */
-@use 'sass:list';
+@use './core/fonts/inter-tight';
+@use './core/core';
 
-$useInterTight: true !default;
-$initMaterial: false !default;
-$initSparkle: true !default;
-$initSparkleBeta: false !default;
-$cdkOverlayTheme: false !default;
+$spkApexcharts: true !default;
+$spkAlert: true !default;
+$spkToggle: true !default;
+$spkButton: true !default;
+$spkProgressBar: true !default;
+$spkCheckbox: true !default;
+$spkDatepicker: true !default;
+$spkIcon: true !default;
+$spkMenu: true !default;
+$spkDivider: true !default;
+$spkDialog: true !default;
+$spkPopover: true !default;
+$spkChip: true !default;
+$spkFormField: true !default;
+$spkSidenav: true !default;
+$spkList: true !default;
+$spkRadio: true !default;
+$spkButtonGroup: true !default;
+$spkRangeSlider: true !default;
+$spkTooltip: true !default;
+$spkSelect: true !default;
+$spkCard: true !default;
+$spkStepper: true !default;
+$spkSortable: true !default;
+$spkToggleCard: true !default;
+$spkTable: true !default;
+$spkTabs: true !default;
+$spkFileUpload: true !default;
 
-@import './helpers.scss';
-@import './core/palette-variables.scss';
+@use './core/apexcharts/apexcharts' with (
+  $spkApexcharts: $spkApexcharts
+);
 
-@mixin palette($palette, $name) {
-  @each $key, $value in $palette {
-    --#{"" + $name}-#{$key}: #{list.nth($value, 1)};
-    --#{"" + $name}-rgb-#{$key}: #{list.nth($value, 2)};
-    --#{"" + $name}-contrast-#{$key}: var(--#{nth($value, 3)}-primary-text);
-  }
-}
-
-@import './core/polyfill/light-dark.scss';
-
-:root {
-  --font-size: 16px;
-  font-size: var(--font-size);
-}
-
-html body {
-  --sparkle-light: initial;
-  --sparkle-dark: ;
-  color-scheme: light dark;
-
-  @include palette($topaz-palette, primary);
-  @include palette($violet-palette, accent);
-  @include palette($amber-palette, tertiary);
-  @include palette($mono-palette, grey);
-  @include palette($ruby-palette, warn);
-  @include palette($emerald-palette, success);
-
-  --display-10: 600 #{p2r(80)} / normal Inter Tight, sans-serif;
-  --display-20: 600 #{p2r(72)} / normal Inter Tight, sans-serif;
-  --display-30: 600 #{p2r(64)} / normal Inter Tight, sans-serif;
-  --display-40: 600 #{p2r(56)} / normal Inter Tight, sans-serif;
-  --display-50: 600 #{p2r(48)} / normal Inter Tight, sans-serif;
-
-  --title-10: 500 #{p2r(40)} / normal Inter Tight, sans-serif;
-  --title-20: 500 #{p2r(32)} / normal Inter Tight, sans-serif;
-  --title-30: 500 #{p2r(24)} / normal Inter Tight, sans-serif;
-
-  --title-10B: 600 #{p2r(40)} / normal Inter Tight, sans-serif;
-  --title-20B: 600 #{p2r(32)} / normal Inter Tight, sans-serif;
-  --title-30B: 600 #{p2r(24)} / normal Inter Tight, sans-serif;
-
-  --paragraph-10: 500 #{p2r(18)} / normal Inter Tight, sans-serif;
-  --paragraph-20: 500 #{p2r(16)} / normal Inter Tight, sans-serif;
-  --paragraph-30: 500 #{p2r(14)} / normal Inter Tight, sans-serif;
-  --paragraph-40: 500 #{p2r(12)} / normal Inter Tight, sans-serif;
-
-  --paragraph-10B: 600 #{p2r(18)} / normal Inter Tight, sans-serif;
-  --paragraph-20B: 600 #{p2r(16)} / normal Inter Tight, sans-serif;
-  --paragraph-30B: 600 #{p2r(14)} / normal Inter Tight, sans-serif;
-  --paragraph-40B: 600 #{p2r(12)} / normal Inter Tight, sans-serif;
-
-  --shape-1: #{p2r(4)};
-  --shape-2: #{p2r(8)};
-  --shape-3: #{p2r(12)};
-  --shape-4: #{p2r(16)};
-  --shape-5: #{p2r(20)};
-
-  --box-shadow-10: 0 1px 2px 0 rgba(18, 18, 23, 0.07);
-  --box-shadow-20: 0 1px 3px 0 rgba(18, 18, 23, 0.1);
-  --box-shadow-30: 0 1px 4px -1px rgba(18, 18, 23, 0.08);
-  --box-shadow-35: 0 4px 6px -1px rgba(18, 18, 23, 0.08);
-  --box-shadow-40: 0 10px 15px -3px rgba(18, 18, 23, 0.08);
-  --box-shadow-50: 0 20px 25px -5px rgba(18, 18, 23, 0.1);
-  --box-shadow-60: 0 25px 50px -12px rgba(18, 18, 23, 0.25);
-
-  // --10: #fff;
-  // --20: #fafafa;
-  // --30: #efeff1;
-  // --40: #e4e4e7;
-  // --50: #a1a1aa;
-  // --60: #71717a;
-  // --70: #18181b;
-
-  // --10R: #09090c;
-  // --20R: #18181b;
-  // --30R: #2e2e33;
-  // --40R: #51515a;
-  // --50R: #71717a;
-  // --60R: #a1a1aa;
-  // --70R: #f3f3f3;
-
-  --base-level-10: #{light-dark(#fff, var(--grey-950))};
-  --base-level-20: #{light-dark(var(--grey-50), var(--grey-900))};
-  --base-level-30: #{light-dark(var(--grey-100), var(--grey-900))};
-  --base-level-30R: #{light-dark(var(--grey-900), var(--grey-100))};
-  --base-level-40: #{light-dark(var(--grey-200), var(--grey-700))};
-  --base-level-50: #{light-dark(var(--grey-300), var(--grey-800))};
-  --base-level-60: #{light-dark(var(--grey-500), var(--grey-400))};
-  --base-level-60R: #{light-dark(var(--grey-400), var(--grey-500))};
-  --base-level-70: #{light-dark(var(--grey-900), #fff)};
-  --base-level-70R: #{light-dark(#fff, var(--grey-900))};
-
-  --base-gradient-20: linear-gradient(180deg, var(--grey-400) 0%, var(--grey-500) 50%);
-  --base-gradient-30: linear-gradient(180deg, var(--grey-300) 0%, var(--grey-500) 50%);
-  --base-gradient-60: linear-gradient(180deg, var(--grey-700) 0%, var(--grey-900) 50%);
-  --base-gradient-70: linear-gradient(180deg, var(--grey-600) 0%, var(--grey-900) 50%);
-
-  // Palette light/dark variants
-  --primary-level-20: #{light-dark(var(--primary-50), var(--primary-950))};
-  --primary-level-30: #{light-dark(var(--primary-100), var(--primary-900))};
-  --primary-level-40: #{light-dark(var(--primary-200), var(--primary-800))};
-  --primary-level-50: #{light-dark(var(--primary-300), var(--primary-800))};
-  --primary-level-50R: #{light-dark(var(--primary-800), var(--primary-300))};
-  --primary-level-80: #{light-dark(var(--primary-900), var(--primary-300))};
-  --primary-gradient-20: linear-gradient(180deg, var(--primary-400) 0%, var(--primary-500) 50%);
-  --primary-gradient-30: linear-gradient(180deg, var(--primary-300) 0%, var(--primary-500) 50%);
-
-  --accent-level-20: #{light-dark(var(--accent-50), var(--accent-950))};
-  --accent-level-30: #{light-dark(var(--accent-100), var(--accent-900))};
-  --accent-level-40: #{light-dark(var(--accent-200), var(--accent-800))};
-  --accent-level-50: #{light-dark(var(--accent-300), var(--accent-800))};
-  --accent-level-50R: #{light-dark(var(--accent-800), var(--accent-300))};
-  --accent-level-80: #{light-dark(var(--accent-900), var(--accent-300))};
-  --accent-gradient-20: linear-gradient(180deg, var(--accent-400) 0%, var(--accent-500) 50%);
-  --accent-gradient-30: linear-gradient(180deg, var(--accent-300) 0%, var(--accent-500) 50%);
-
-  --tertiary-level-20: #{light-dark(var(--tertiary-50), var(--tertiary-950))};
-  --tertiary-level-30: #{light-dark(var(--tertiary-100), var(--tertiary-900))};
-  --tertiary-level-40: #{light-dark(var(--tertiary-200), var(--tertiary-800))};
-  --tertiary-level-50: #{light-dark(var(--tertiary-300), var(--tertiary-800))};
-  --tertiary-level-50R: #{light-dark(var(--tertiary-800), var(--tertiary-300))};
-  --tertiary-level-80: #{light-dark(var(--tertiary-900), var(--tertiary-300))};
-  --tertiary-gradient-20: linear-gradient(180deg, var(--tertiary-400) 0%, var(--tertiary-500) 50%);
-  --tertiary-gradient-30: linear-gradient(180deg, var(--tertiary-300) 0%, var(--tertiary-500) 50%);
-
-  --warn-level-20: #{light-dark(var(--warn-50), var(--warn-950))};
-  --warn-level-30: #{light-dark(var(--warn-100), var(--warn-900))};
-  --warn-level-40: #{light-dark(var(--warn-200), var(--warn-800))};
-  --warn-level-50: #{light-dark(var(--warn-300), var(--warn-800))};
-  --warn-level-50R: #{light-dark(var(--warn-800), var(--warn-300))};
-  --warn-level-80: #{light-dark(var(--warn-900), var(--warn-300))};
-  --warn-gradient-20: linear-gradient(180deg, var(--warn-400) 0%, var(--warn-500) 50%);
-  --warn-gradient-30: linear-gradient(180deg, var(--warn-300) 0%, var(--warn-500) 50%);
-
-  --success-level-20: #{light-dark(var(--success-50), var(--success-950))};
-  --success-level-30: #{light-dark(var(--success-100), var(--success-900))};
-  --success-level-40: #{light-dark(var(--success-200), var(--success-800))};
-  --success-level-50: #{light-dark(var(--success-300), var(--success-800))};
-  --success-level-50R: #{light-dark(var(--success-800), var(--success-300))};
-  --success-level-80: #{light-dark(var(--success-900), var(--success-300))};
-  --success-gradient-20: linear-gradient(180deg, var(--success-400) 0%, var(--success-500) 50%);
-  --success-gradient-30: linear-gradient(180deg, var(--success-300) 0%, var(--success-500) 50%);
-
-  --dark-primary-text: var(--grey-900);
-  --light-primary-text: #fff;
-
-  &.dark {
-    --sparkle-light: ;
-    --sparkle-dark: initial;
-    color-scheme: dark;
-  }
-
-  // TODO add a good way to toggle between light and dark mode served from the ui lib
-  //
-  // @media (prefers-color-scheme: dark) {
-  //   --sparkle-light: ;
-  //   --sparkle-dark: initial;
-  //   color-scheme: dark;
-
-  //   &.light {
-  //     --sparkle-light: initial;
-  //     --sparkle-dark: ;
-  //     color-scheme: light;
-  //   }
-  // }
-}
-
-$use-inter-tight: true !default;
-$use-apexcharts: true !default;
-
-// @import './core/fonts/phosphor-icons';
-@import './core/fonts/inter-tight';
-
-// @import './core/cdk/cdk';
-// @import './core/material';
-@import './core/core';
-
-// @if ($use-apexcharts == true) {
-@import './core/apexcharts/apexcharts';
-// }
-
-@import './components/_sparkle-components.scss';
+@use './components/sparkle-alert-container.component.scss' with (
+  $spkAlert: $spkAlert
+);
+@use './components/sparkle-alert.component.scss' with (
+  $spkAlert: $spkAlert
+);
+@use './components/sparkle-toggle.component.scss' with (
+  $spkToggle: $spkToggle
+);
+@use './components/sparkle-button.component.scss' with (
+  $spkButton: $spkButton
+);
+@use './components/sparkle-progress-bar.component.scss' with (
+  $spkProgressBar: $spkProgressBar
+);
+@use './components/sparkle-checkbox.component.scss' with (
+  $spkCheckbox: $spkCheckbox
+);
+@use './components/sparkle-datepicker.component.scss' with (
+  $spkDatepicker: $spkDatepicker
+);
+@use './components/sparkle-icon.component.scss' with (
+  $spkIcon: $spkIcon
+);
+@use './components/sparkle-menu.component.scss' with (
+  $spkMenu: $spkMenu
+);
+@use './components/sparkle-divider.component.scss' with (
+  $spkDivider: $spkDivider
+);
+@use './components/sparkle-dialog.component.scss' with (
+  $spkDialog: $spkDialog
+);
+@use './components/sparkle-popover.component.scss' with (
+  $spkPopover: $spkPopover
+);
+@use './components/sparkle-chip.component.scss' with (
+  $spkChip: $spkChip
+);
+@use './components/sparkle-form-field.component.scss' with (
+  $spkFormField: $spkFormField
+);
+@use './components/sparkle-sidenav.component.scss' with (
+  $spkSidenav: $spkSidenav
+);
+@use './components/sparkle-list.component.scss' with (
+  $spkList: $spkList
+);
+@use './components/sparkle-radio.component.scss' with (
+  $spkRadio: $spkRadio
+);
+@use './components/sparkle-button-group.component.scss' with (
+  $spkButtonGroup: $spkButtonGroup
+);
+@use './components/sparkle-range-slider.component.scss' with (
+  $spkRangeSlider: $spkRangeSlider
+);
+@use './components/sparkle-tooltip.component.scss' with (
+  $spkTooltip: $spkTooltip
+);
+@use './components/sparkle-select.component.scss' with (
+  $spkSelect: $spkSelect
+);
+@use './components/sparkle-card.component.scss' with (
+  $spkCard: $spkCard
+);
+@use './components/sparkle-stepper.component.scss' with (
+  $spkStepper: $spkStepper
+);
+@use './components/sparkle-sortable.component.scss' with (
+  $spkSortable: $spkSortable
+);
+@use './components/sparkle-toggle-card.component.scss' with (
+  $spkToggleCard: $spkToggleCard
+);
+@use './components/sparkle-table.component.scss' with (
+  $spkTable: $spkTable
+);
+@use './components/sparkle-tabs.component.scss' with (
+  $spkTabs: $spkTabs
+);
+@use './components/sparkle-file-upload.component.scss' with (
+  $spkFileUpload: $spkFileUpload
+);

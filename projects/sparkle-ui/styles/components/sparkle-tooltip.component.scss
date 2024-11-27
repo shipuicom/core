@@ -1,6 +1,8 @@
-$sparkleTooltip: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleTooltip == true {
+$spkTooltip: true !default;
+
+@if $spkTooltip == true {
   spk-tooltip {
     --tt-bg: var(--base-level-30);
     --tt-c: var(--base-level-30R);

@@ -11,10 +11,9 @@ import {
 } from '@angular/core';
 
 @Component({
-  selector: 'spk-range-slider',
-  standalone: true,
-  imports: [],
-  template: `
+    selector: 'spk-range-slider',
+    imports: [],
+    template: `
     <div class="label">
       <ng-content select="label"></ng-content>
     </div>
@@ -37,7 +36,7 @@ import {
       <div class="max-indicator">{{ inputState().max }}{{ unit() }}</div>
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SparkleRangeSliderComponent {
   #selfRef = inject(ElementRef<SparkleRangeSliderComponent>);

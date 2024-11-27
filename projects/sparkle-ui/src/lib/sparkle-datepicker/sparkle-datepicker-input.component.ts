@@ -18,7 +18,6 @@ import { SparkleDatepickerComponent } from './sparkle-datepicker.component';
 
 @Component({
   selector: 'spk-datepicker-input',
-  standalone: true,
   imports: [SparkleDatepickerComponent, SparkleFormFieldComponent, SparklePopoverComponent, SparkleIconComponent],
   providers: [DatePipe],
   template: `
@@ -129,33 +128,30 @@ export class SparkleDatepickerInputComponent {
     });
   });
 
-  #inputRefEffect = effect(
-    () => {
-      this.#triggerInput();
-      const input = this.inputWrapRef()?.nativeElement.querySelector('input');
+  #inputRefEffect = effect(() => {
+    this.#triggerInput();
+    const input = this.inputWrapRef()?.nativeElement.querySelector('input');
 
-      if (!input) return;
+    if (!input) return;
 
-      this.#createCustomInputEventListener(input);
+    this.#createCustomInputEventListener(input);
 
-      input.addEventListener('inputValueChanged', (event) => {
-        this.internalDate.set(new Date(event.detail.value));
-      });
+    input.addEventListener('inputValueChanged', (event) => {
+      this.internalDate.set(new Date(event.detail.value));
+    });
 
-      input.addEventListener('focus', () => {
-        this.isOpen.set(true);
-        input.blur();
-      });
+    input.addEventListener('focus', () => {
+      this.isOpen.set(true);
+      input.blur();
+    });
 
-      this.#inputRef.set(input);
-      input.autocomplete = 'off';
+    this.#inputRef.set(input);
+    input.autocomplete = 'off';
 
-      if (typeof input.value === 'string') {
-        this.internalDate.set(new Date(input.value));
-      }
-    },
-    { allowSignalWrites: true }
-  );
+    if (typeof input.value === 'string') {
+      this.internalDate.set(new Date(input.value));
+    }
+  });
 
   #inputObserver = new MutationObserver((mutations) => {
     for (var mutation of mutations) {

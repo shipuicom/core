@@ -3,11 +3,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   SparkleCheckboxComponent,
-  SparkleDialogComponent,
   SparkleIconComponent,
   SparkleOptionComponent,
   SparkleSelectComponent,
-} from '../../../../../sparkle-ui/src/public-api';
+} from 'spk/public';
 
 type Food = {
   value: string;
@@ -21,11 +20,10 @@ type FoodGroup = {
 
 @Component({
   selector: 'app-spk-select',
-  standalone: true,
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    SparkleDialogComponent,
+    // SparkleDialogComponent,
     SparkleSelectComponent,
     SparkleIconComponent,
     SparkleCheckboxComponent,

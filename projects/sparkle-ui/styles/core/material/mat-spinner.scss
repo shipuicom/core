@@ -1,9 +1,0 @@
-$matSpinnerTheme: true !default;
-
-@if $matSpinnerTheme == true and $initMaterial == true {
-  body {
-    .mdc-button.mat-primary {
-      --mdc-circular-progress-active-indicator-color: #fff;
-    }
-  }
-}

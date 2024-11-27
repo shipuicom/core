@@ -1,6 +1,8 @@
-$sparkleSelect: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleSelect == true {
+$spkSelect: true !default;
+
+@if $spkSelect == true {
   spk-multi-select,
   spk-select {
     --miw: p2r(210);

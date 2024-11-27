@@ -14,11 +14,10 @@ import { SparkleAlertComponent } from './sparkle-alert.component';
 import { SparkleAlertService } from './sparkle-alert.service';
 
 @Component({
-  selector: 'sparkle-alert-container',
-  standalone: true,
-  imports: [SparkleAlertComponent, SparkleIconComponent],
-  templateUrl: './sparkle-alert-container.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'sparkle-alert-container',
+    imports: [SparkleAlertComponent, SparkleIconComponent],
+    templateUrl: './sparkle-alert-container.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SparkleAlertContainerComponent {
   inline = input<string | null>(null);

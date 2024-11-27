@@ -1,6 +1,8 @@
-$sparkleProgressBar: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleProgressBar == true {
+$spkProgressBar: true !default;
+
+@if $spkProgressBar == true {
   spk-progress-bar {
     --pb-h: #{p2r(8)};
     --pb-b: var(--base-level-40);

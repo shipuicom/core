@@ -1,6 +1,8 @@
-$sparkleMenu: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleMenu == true {
+$spkMenu: true !default;
+
+@if $spkMenu == true {
   spk-menu {
     --menu-mh: #{p2r(320)};
 

@@ -9,14 +9,11 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { SparkleButtonComponent } from '../sparkle-button/sparkle-button.component';
 
 export type SparkleSidenavType = 'overlay' | 'simple' | '';
 
 @Component({
   selector: 'spk-sidenav',
-  standalone: true,
-  imports: [SparkleButtonComponent],
   template: `
     @if (type() === 'overlay') {
       <div #dragImageElement class="drag-image"></div>

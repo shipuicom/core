@@ -1,6 +1,8 @@
-$sparkleSortable: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleSortable == true {
+$spkSortable: true !default;
+
+@if $spkSortable == true {
   [spkSortable] {
     position: relative;
 

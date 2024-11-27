@@ -1,15 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import {
-  SparkleButtonComponent,
-  SparkleDialogService,
-  SparkleIconComponent,
-} from '../../../../../sparkle-ui/src/public-api';
+import { SparkleButtonComponent, SparkleDialogService } from 'spk/public';
 import SpkDatepickerComponent from '../spk-datepicker/spk-datepicker.component';
 
 @Component({
   selector: 'app-spk-dialog',
-  standalone: true,
-  imports: [SparkleButtonComponent, SparkleIconComponent],
+  imports: [SparkleButtonComponent],
   templateUrl: './spk-dialog.component.html',
   styleUrl: './spk-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

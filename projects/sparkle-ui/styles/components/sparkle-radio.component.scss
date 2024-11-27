@@ -1,6 +1,8 @@
-$sparkleRadio: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleRadio == true {
+$spkRadio: true !default;
+
+@if $spkRadio == true {
   spk-radio {
     --radio-bw: #{p2r(1)};
     --radio-bg: var(--base-level-30);

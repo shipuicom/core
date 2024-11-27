@@ -1,25 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
-import {
-  SparkleAlertComponent,
-  SparkleAlertContainerComponent,
-  SparkleAlertService,
-  SparkleIconComponent,
-} from '../../../../../sparkle-ui/src/public-api';
+import { SparkleAlertComponent, SparkleAlertService, SparkleDividerComponent, SparkleIconComponent } from 'spk/public';
 
 @Component({
   selector: 'app-spk-alerts',
-  standalone: true,
-  imports: [
-    MatSnackBarModule,
-    MatButtonModule,
-    MatDividerModule,
-    SparkleIconComponent,
-    SparkleAlertComponent,
-    SparkleAlertContainerComponent,
-  ],
+  imports: [SparkleDividerComponent, SparkleIconComponent, SparkleAlertComponent],
   templateUrl: './spk-alerts.component.html',
   styleUrl: './spk-alerts.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

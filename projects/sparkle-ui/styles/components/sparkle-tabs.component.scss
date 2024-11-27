@@ -1,6 +1,8 @@
-$sparkleTabs: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleTabs == true {
+$spkTabs: true !default;
+
+@if $spkTabs == true {
   spk-tabs {
     --tabs-bc: var(--base-level-40);
     --tabs-bg: var(--base-level-10);

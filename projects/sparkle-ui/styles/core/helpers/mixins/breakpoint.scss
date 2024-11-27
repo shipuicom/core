@@ -1,3 +1,9 @@
+@use 'sass:list' as list;
+@use 'sass:math' as math;
+@use 'sass:meta' as meta;
+@use 'sass:map' as map;
+@use 'sass:string' as string;
+
 /**
  * $bp-giga:  2500px;
  * $bp-mega:  1900px;
@@ -18,35 +24,35 @@ $bp-pico: 320px;
 
 $breakpoint-map: (
   giga: (
-    $bp-giga
+    $bp-giga,
   ),
   mega: (
-    $bp-mega
+    $bp-mega,
   ),
   kilo: (
-    $bp-kilo
+    $bp-kilo,
   ),
   centi: (
-    $bp-centi
+    $bp-centi,
   ),
   milli: (
-    $bp-milli
+    $bp-milli,
   ),
   nano: (
-    $bp-nano
+    $bp-nano,
   ),
   pico: (
-    $bp-pico
-  )
+    $bp-pico,
+  ),
 );
 
 @function to-string($value) {
-  @return inspect($value);
+  @return meta.inspect($value);
 }
 
 /**
    *  First section controls media quries that contains from-to values
-   *  if numbers are parsed unitless it will default to px's, if you need to use em's just parse the unit in the end
+   *  if numbers are parsed math.is-unitless it will default to px's, if you need to use em's just parse the unit in the end
    *
    *  Example:
     @include breakpoint (0 nano) {
@@ -83,37 +89,37 @@ $breakpoint-map: (
    */
 @mixin breakpoint($point) {
   @if length($point) > 1 {
-    $point1: nth($point, 1);
-    $point2: nth($point, 2);
+    $point1: list.nth($point, 1);
+    $point2: list.nth($point, 2);
 
-    @if type-of($point1) == 'number' and unitless($point1) {
-      $point1: nth($point, 1) + 0px;
+    @if meta.type-of($point1) == 'number' and math.is-unitless($point1) {
+      $point1: list.nth($point, 1) + 0px;
     }
 
-    @if type-of($point2) == 'number' and unitless($point2) {
-      $point2: nth($point, 2) + 0px;
+    @if meta.type-of($point2) == 'number' and math.is-unitless($point2) {
+      $point2: list.nth($point, 2) + 0px;
     }
 
-    @if type-of($point1) == 'number' and type-of($point2) == 'number' {
+    @if meta.type-of($point1) == 'number' and meta.type-of($point2) == 'number' {
       @media only screen and (min-width: $point1) and (max-width: $point2) {
         @content;
       }
-    } @else if type-of($point1) == 'number' {
-      @media only screen and (min-width: $point1) and (max-width: map-get($breakpoint-map, $point2)) {
+    } @else if meta.type-of($point1) == 'number' {
+      @media only screen and (min-width: $point1) and (max-width: map.map-get($breakpoint-map, $point2)) {
         @content;
       }
-    } @else if type-of($point2) == 'number' {
-      @media only screen and (min-width: map-get($breakpoint-map, $point1)) and (max-width: $point2) {
+    } @else if meta.type-of($point2) == 'number' {
+      @media only screen and (min-width: map.map-get($breakpoint-map, $point1)) and (max-width: $point2) {
         @content;
       }
     } @else {
-      @media only screen and (min-width: map-get($breakpoint-map, $point1)) and (max-width: map-get($breakpoint-map, $point2)) {
+      @media only screen and (min-width: map.map-get($breakpoint-map, $point1)) and (max-width: map.map-get($breakpoint-map, $point2)) {
         @content;
       }
     }
   } @else {
     @if $point == giga or $point == -giga {
-      @if str-index(to-string($point), '-') == 1 {
+      @if string.index(to-string($point), '-') == 1 {
         @media only screen and (max-width: $bp-giga) {
           @content;
         }
@@ -123,7 +129,7 @@ $breakpoint-map: (
         }
       }
     } @else if $point == mega or $point == -mega {
-      @if str-index(to-string($point), '-') == 1 {
+      @if string.index(to-string($point), '-') == 1 {
         @media only screen and (max-width: $bp-mega) {
           @content;
         }
@@ -133,7 +139,7 @@ $breakpoint-map: (
         }
       }
     } @else if $point == kilo or $point == -kilo {
-      @if str-index(to-string($point), '-') == 1 {
+      @if string.index(to-string($point), '-') == 1 {
         @media only screen and (max-width: $bp-kilo) {
           @content;
         }
@@ -143,7 +149,7 @@ $breakpoint-map: (
         }
       }
     } @else if $point == centi or $point == -centi {
-      @if str-index(to-string($point), '-') == 1 {
+      @if string.index(to-string($point), '-') == 1 {
         @media only screen and (max-width: $bp-centi) {
           @content;
         }
@@ -153,7 +159,7 @@ $breakpoint-map: (
         }
       }
     } @else if $point == milli or $point == -milli {
-      @if str-index(to-string($point), '-') == 1 {
+      @if string.index(to-string($point), '-') == 1 {
         @media only screen and (max-width: $bp-milli) {
           @content;
         }
@@ -163,7 +169,7 @@ $breakpoint-map: (
         }
       }
     } @else if $point == nano or $point == -nano {
-      @if str-index(to-string($point), '-') == 1 {
+      @if string.index(to-string($point), '-') == 1 {
         @media only screen and (max-width: $bp-nano) {
           @content;
         }
@@ -173,7 +179,7 @@ $breakpoint-map: (
         }
       }
     } @else if $point == pico or $point == -pico {
-      @if str-index(to-string($point), '-') == 1 {
+      @if string.index(to-string($point), '-') == 1 {
         @media only screen and (max-width: $bp-pico) {
           @content;
         }
@@ -198,11 +204,11 @@ $breakpoint-map: (
       @media print {
         @content;
       }
-    } @else if type-of($point) == 'number' {
+    } @else if meta.type-of($point) == 'number' {
       @media only screen and (min-width: $point) {
         @content;
       }
-    } @else if str-index($point, max) == 1 or str-index($point, min) == 1 {
+    } @else if string.index($point, max) == 1 or string.index($point, min) == 1 {
       @media only screen and (#{$point}) {
         @content;
       }

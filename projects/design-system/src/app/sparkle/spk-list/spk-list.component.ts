@@ -1,14 +1,9 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import {
-  SparkleCheckboxComponent,
-  SparkleIconComponent,
-  SparkleListComponent,
-} from '../../../../../sparkle-ui/src/public-api';
+import { SparkleCheckboxComponent, SparkleIconComponent, SparkleListComponent } from 'spk/public';
 
 @Component({
   selector: 'app-spk-list',
-  standalone: true,
   imports: [ReactiveFormsModule, SparkleListComponent, SparkleIconComponent, SparkleCheckboxComponent],
   templateUrl: './spk-list.component.html',
   styleUrl: './spk-list.component.scss',

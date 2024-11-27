@@ -1,10 +1,9 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } from '@angular/core';
 
 @Component({
-  selector: 'spk-form-field',
-  standalone: true,
-  imports: [],
-  template: `
+    selector: 'spk-form-field',
+    imports: [],
+    template: `
     <ng-content select="label"></ng-content>
 
     <div class="input-wrap">
@@ -33,7 +32,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } 
       </div>
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SparkleFormFieldComponent {
   #selfRef = inject(ElementRef);

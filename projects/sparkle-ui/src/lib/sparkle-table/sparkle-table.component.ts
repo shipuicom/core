@@ -3,7 +3,6 @@ import { SparkleProgressBarComponent } from '../sparkle-progress-bar/sparkle-pro
 
 @Component({
   selector: 'spk-row',
-  standalone: true,
   imports: [],
   template: `
     <ng-content></ng-content>
@@ -14,7 +13,6 @@ export class SparkleRowComponent {}
 
 @Component({
   selector: 'spk-column',
-  standalone: true,
   imports: [],
   template: `
     <ng-content></ng-content>
@@ -25,7 +23,6 @@ export class SparkleColumnComponent {}
 
 @Component({
   selector: 'spk-table',
-  standalone: true,
   imports: [SparkleProgressBarComponent],
   template: `
     <thead>
@@ -74,47 +71,44 @@ export class SparkleTableComponent {
 
   sortByColumn = model<string | null>(null);
 
-  e = effect(
-    () => {
-      const sortByColumn = this.sortByColumn();
+  e = effect(() => {
+    const sortByColumn = this.sortByColumn();
 
-      if (sortByColumn === null) {
-        if (!this.#initialDataSet()) {
-          this.#initialData = this.data();
-          this.#initialDataSet.set(true);
-        }
-
-        return this.dataChange.emit(JSON.parse(JSON.stringify(this.#initialData)));
+    if (sortByColumn === null) {
+      if (!this.#initialDataSet()) {
+        this.#initialData = this.data();
+        this.#initialDataSet.set(true);
       }
 
-      const column = sortByColumn.startsWith('-') ? sortByColumn.slice(1) : sortByColumn;
-      const isDescending = sortByColumn.startsWith('-');
+      return this.dataChange.emit(JSON.parse(JSON.stringify(this.#initialData)));
+    }
 
-      const sortedData = this.data().sort((a: any, b: any) => {
-        const valueA = a[column] as any;
-        const valueB = b[column] as any;
+    const column = sortByColumn.startsWith('-') ? sortByColumn.slice(1) : sortByColumn;
+    const isDescending = sortByColumn.startsWith('-');
 
-        let comparison = 0;
+    const sortedData = this.data().sort((a: any, b: any) => {
+      const valueA = a[column] as any;
+      const valueB = b[column] as any;
 
-        if (typeof valueA === 'number' && typeof valueB === 'number') {
-          comparison = valueA - valueB;
-        }
+      let comparison = 0;
 
-        if (valueA instanceof Date && valueB instanceof Date) {
-          comparison = valueA.getTime() - valueB.getTime();
-        }
+      if (typeof valueA === 'number' && typeof valueB === 'number') {
+        comparison = valueA - valueB;
+      }
 
-        if (typeof valueA === 'string' && typeof valueB === 'string') {
-          comparison = valueA.localeCompare(valueB, undefined, { sensitivity: 'base' });
-        }
+      if (valueA instanceof Date && valueB instanceof Date) {
+        comparison = valueA.getTime() - valueB.getTime();
+      }
 
-        return isDescending ? -comparison : comparison;
-      });
+      if (typeof valueA === 'string' && typeof valueB === 'string') {
+        comparison = valueA.localeCompare(valueB, undefined, { sensitivity: 'base' });
+      }
 
-      this.dataChange.emit(sortedData);
-    },
-    { allowSignalWrites: true }
-  );
+      return isDescending ? -comparison : comparison;
+    });
+
+    this.dataChange.emit(sortedData);
+  });
 
   toggleSort(column: string) {
     const currentSort = this.sortByColumn();

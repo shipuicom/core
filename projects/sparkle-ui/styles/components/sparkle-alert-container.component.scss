@@ -1,6 +1,7 @@
-$sparkleAlert: true !default;
+@use '../helpers.scss' as *;
+$spkAlert: true !default;
 
-@if $initSparkle == true and $sparkleAlert == true {
+@if $spkAlert == true {
   spk-alert-container {
     width: 100%;
     position: relative;

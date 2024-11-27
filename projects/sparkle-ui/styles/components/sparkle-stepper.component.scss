@@ -1,6 +1,8 @@
-$sparkleStepper: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleStepper == true {
+$spkStepper: true !default;
+
+@if $spkStepper == true {
   spk-stepper {
     // TODO add variables
     display: flex;

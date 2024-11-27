@@ -1,11 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatDividerModule } from '@angular/material/divider';
-import { SparkleButtonComponent, SparkleIconComponent } from '../../../../../sparkle-ui/src/public-api';
+import { SparkleButtonComponent, SparkleDividerComponent, SparkleIconComponent } from 'spk/public';
 
 @Component({
   selector: 'app-spk-buttons',
-  standalone: true,
-  imports: [MatDividerModule, SparkleIconComponent, SparkleButtonComponent],
+  imports: [SparkleDividerComponent, SparkleIconComponent, SparkleButtonComponent],
   templateUrl: './spk-buttons.component.html',
   styleUrl: './spk-buttons.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

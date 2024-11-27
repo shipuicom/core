@@ -2,12 +2,11 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet],
-  template: `
+    selector: 'app-root',
+    imports: [RouterOutlet],
+    template: `
     <router-outlet />
   `,
-  styles: [],
+    styles: []
 })
 export default class AppComponent {}

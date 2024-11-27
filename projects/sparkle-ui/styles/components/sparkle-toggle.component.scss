@@ -1,6 +1,8 @@
-$sparkleToggle: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleToggle == true {
+$spkToggle: true !default;
+
+@if $spkToggle == true {
   spk-toggle {
     --toggle-bg: var(--base-level-40);
     --toggle-b: 0;

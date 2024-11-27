@@ -1,6 +1,8 @@
-$sparkleCard: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleCard == true {
+$spkCard: true !default;
+
+@if $spkCard == true {
   spk-card {
     --card-bg: var(--base-level-10);
     --card-ibg: var(--base-level-20);

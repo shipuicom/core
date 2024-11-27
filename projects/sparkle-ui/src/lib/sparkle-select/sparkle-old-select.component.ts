@@ -17,7 +17,6 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 
 @Component({
   selector: 'spk-select',
-  standalone: true,
   imports: [SparkleFormFieldComponent, SparkleIconComponent],
   template: `
     <div #formFieldWrapper>
@@ -76,23 +75,20 @@ export class SparkleSelectComponent {
   #triggerInput = signal(false);
   #inputRef = signal<HTMLInputElement | null>(null);
 
-  inputRefEffect = effect(
-    () => {
-      this.#triggerInput();
-      const input = this.#selfRef.nativeElement.querySelector('input');
+  inputRefEffect = effect(() => {
+    this.#triggerInput();
+    const input = this.#selfRef.nativeElement.querySelector('input');
 
-      if (!input) return;
+    if (!input) return;
 
-      this.#createCustomInputEventListener(input);
-      this.#inputRef.set(input);
-      input.autocomplete = 'off';
+    this.#createCustomInputEventListener(input);
+    this.#inputRef.set(input);
+    input.autocomplete = 'off';
 
-      if (typeof input.value === 'string') {
-        this.inputValue.set(input.value);
-      }
-    },
-    { allowSignalWrites: true }
-  );
+    if (typeof input.value === 'string') {
+      this.inputValue.set(input.value);
+    }
+  });
   inputValue = model<string | null>(null);
   #previousInputValue = signal<string>('');
   #triggerOption = signal(false);
@@ -103,7 +99,7 @@ export class SparkleSelectComponent {
   });
 
   _displayValue = computed(() =>
-    this.displayFn() ? this.displayFn()!(this.inputValue() ?? '') : this.displayValue() ?? this.inputValue() ?? ''
+    this.displayFn() ? this.displayFn()!(this.inputValue() ?? '') : (this.displayValue() ?? this.inputValue() ?? '')
   );
   optionsRef = viewChild<ElementRef<HTMLDivElement>>('optionsRef');
   formFieldWrapperRef = viewChild.required<ElementRef<HTMLDivElement>>('formFieldWrapper');
@@ -214,17 +210,14 @@ export class SparkleSelectComponent {
     }, 0);
   });
 
-  #whenInputValueChanged = effect(
-    () => {
-      const val = this.inputValue();
+  #whenInputValueChanged = effect(() => {
+    const val = this.inputValue();
 
-      if (this.#inputRef()) {
-        this.#inputRef()!.value = val ?? '';
-        this.#inputRef()!.dispatchEvent(new Event('input'));
-      }
-    },
-    { allowSignalWrites: true }
-  );
+    if (this.#inputRef()) {
+      this.#inputRef()!.value = val ?? '';
+      this.#inputRef()!.dispatchEvent(new Event('input'));
+    }
+  });
 
   #childListObserver = new MutationObserver((mutations) => {
     for (var mutation of mutations) {

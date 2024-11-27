@@ -7,7 +7,7 @@ import {
   SparkleIconComponent,
   SparkleListComponent,
   SparkleSortableDirective,
-} from '../../../../../sparkle-ui/src/public-api';
+} from 'spk/public';
 
 const fb = new FormBuilder();
 
@@ -33,7 +33,6 @@ const CONTENT_EXAMPLE = [
 type Todo = (typeof CONTENT_EXAMPLE)[0];
 @Component({
   selector: 'app-spk-checkbox',
-  standalone: true,
   imports: [
     SparkleCheckboxComponent,
     SparkleListComponent,

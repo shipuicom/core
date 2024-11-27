@@ -1,6 +1,8 @@
-$sparkleTable: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleTable == true {
+$spkTable: true !default;
+
+@if $spkTable == true {
   spk-table {
     --table-bc: var(--base-level-40);
     --table-tr-bg: var(--base-level-10);

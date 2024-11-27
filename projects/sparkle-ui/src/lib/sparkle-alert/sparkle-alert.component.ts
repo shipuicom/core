@@ -5,14 +5,13 @@ import { SparkleAlertService } from './sparkle-alert.service';
 export type SparkleAlertType = 'error' | 'success' | 'error' | 'warning' | 'primary' | 'accent' | 'question';
 
 @Component({
-  selector: 'spk-alert',
-  standalone: true,
-  imports: [SparkleIconComponent],
-  templateUrl: './sparkle-alert.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    '[class]': 'type()',
-  },
+    selector: 'spk-alert',
+    imports: [SparkleIconComponent],
+    templateUrl: './sparkle-alert.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: {
+        '[class]': 'type()',
+    }
 })
 export class SparkleAlertComponent {
   _el = inject(ElementRef);

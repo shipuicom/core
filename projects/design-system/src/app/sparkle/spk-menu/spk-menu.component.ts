@@ -1,17 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { SparkleButtonComponent, SparkleIconComponent, SparkleMenuComponent } from 'spk/public';
 import { SparkleDividerComponent } from '../../../../../sparkle-ui/src/lib/sparkle-divider/sparkle-divider.component';
-import {
-  SparkleButtonComponent,
-  SparkleDialogComponent,
-  SparkleIconComponent,
-  SparkleMenuComponent,
-} from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-menu',
-  standalone: true,
   imports: [
-    SparkleDialogComponent,
+    // SparkleDialogComponent,
     SparkleMenuComponent,
     SparkleIconComponent,
     SparkleButtonComponent,

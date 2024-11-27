@@ -1,6 +1,8 @@
-$sparkleDatepicker: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleDatepicker == true {
+$spkDatepicker: true !default;
+
+@if $spkDatepicker == true {
   spk-datepicker-input {
     spk-form-field {
       .input-wrap .input {

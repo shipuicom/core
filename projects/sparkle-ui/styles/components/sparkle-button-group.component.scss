@@ -1,6 +1,7 @@
-$sparkleButtonGroup: true !default;
+@use '../helpers.scss' as *;
+$spkButtonGroup: true !default;
 
-@if $initSparkle == true and $sparkleButtonGroup == true {
+@if $spkButtonGroup == true {
   spk-button-group {
     --btng-bg: var(--base-level-10);
     --btng-c: var(--base-level-70);

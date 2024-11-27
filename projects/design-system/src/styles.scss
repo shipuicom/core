@@ -1,4 +1,3 @@
-@use '../../sparkle-ui/styles/index.scss' as * with (
-  $initSparkleBeta: true,
-  $cdkOverlayTheme: true
+@use '../../sparkle-ui/styles/index.scss' with (
+  $spkApexcharts: true
 );

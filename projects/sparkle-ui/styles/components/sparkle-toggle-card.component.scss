@@ -1,6 +1,8 @@
-$sparkleToggleCard: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleToggleCard == true {
+$spkToggleCard: true !default;
+
+@if $spkToggleCard == true {
   spk-toggle-card {
     display: flex;
     flex-direction: column;

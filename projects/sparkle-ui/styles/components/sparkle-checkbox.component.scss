@@ -1,6 +1,8 @@
-$sparkleCheckbox: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleCheckbox == true {
+$spkCheckbox: true !default;
+
+@if $spkCheckbox == true {
   spk-checkbox {
     --box-bw: #{p2r(1)};
     --box-bc: var(--base-level-40);

@@ -1,6 +1,8 @@
-$sparkleRangeSlider: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleRangeSlider == true {
+$spkRangeSlider: true !default;
+
+@if $spkRangeSlider == true {
   spk-range-slider {
     --rs-h: #{p2r(40)};
     --rs-f: var(--paragraph-30);

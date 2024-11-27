@@ -8,11 +8,10 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { SparkleFormFieldComponent, SparkleIconComponent } from '../../public-api';
+import { SparkleFormFieldComponent, SparkleIconComponent } from 'spk/public';
 
 @Component({
   selector: 'spk-file-upload',
-  standalone: true,
   imports: [SparkleFormFieldComponent, SparkleIconComponent],
   template: `
     <spk-form-field (fileDropped)="onFileDropped($any($event))">
@@ -34,19 +33,16 @@ export class SparkleFileUploadComponent {
   #triggerInput = signal(false);
   files = model<File[]>([]);
 
-  inputRefEffect = effect(
-    () => {
-      this.#triggerInput();
-      const input = this.#selfRef.nativeElement.querySelector('input');
+  inputRefEffect = effect(() => {
+    this.#triggerInput();
+    const input = this.#selfRef.nativeElement.querySelector('input');
 
-      if (input) {
-        input.autocomplete = 'off';
-        this.#inputRef.set(input);
-        this.#newInput();
-      }
-    },
-    { allowSignalWrites: true }
-  );
+    if (input) {
+      input.autocomplete = 'off';
+      this.#inputRef.set(input);
+      this.#newInput();
+    }
+  });
 
   ngOnInit() {
     this.#inputObserver.observe(this.inputWrapRef().nativeElement, {

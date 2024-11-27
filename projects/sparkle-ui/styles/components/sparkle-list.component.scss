@@ -1,6 +1,8 @@
-$sparkleList: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleList == true {
+$spkList: true !default;
+
+@if $spkList == true {
   spk-list {
     --list-s: var(--shape-2);
     --list-active-bg: var(--base-level-20);

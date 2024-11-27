@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-  selector: 'spk-tabs',
-  standalone: true,
-  imports: [],
-  template: `
+    selector: 'spk-tabs',
+    imports: [],
+    template: `
     <ng-content />
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SparkleTabsComponent {}

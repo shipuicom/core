@@ -8,5 +8,5 @@
   },
   "files": ["src/main.ts"],
   "include": ["src/**/*.d.ts"],
-  "exclude": ["node_modules/@types/bun"]
+  "exclude": ["node_modules/@types/bun", "dist/**/*"]
 }

@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-  selector: 'spk-divider',
-  standalone: true,
-  imports: [],
-  template: `
+    selector: 'spk-divider',
+    imports: [],
+    template: `
     <ng-content />
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SparkleDividerComponent {}

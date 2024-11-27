@@ -1,7 +1,7 @@
 {
   "name": "@sparkle-ui/core",
   "license": "MIT",
-  "version": "0.4.31",
+  "version": "0.5.0",
   "peerDependencies": {
     "@angular/common": ">=18",
     "@angular/core": ">=18"

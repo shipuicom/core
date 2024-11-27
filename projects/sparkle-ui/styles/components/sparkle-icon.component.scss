@@ -1,6 +1,8 @@
-$sparkleIcon: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleIcon == true {
+$spkIcon: true !default;
+
+@if $spkIcon == true {
   spk-icon {
     font-size: p2r(20);
     line-height: 1em;

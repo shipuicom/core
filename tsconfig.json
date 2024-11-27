@@ -16,20 +16,20 @@
     "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "ES2022",
-    "paths": {
-      "@sparkle-ui/core": ["./dist/sparkle-ui"]
-    },
     "module": "ES2022",
     "useDefineForClassFields": false,
     "lib": ["ES2022", "dom"],
     "typeRoots": [
       "node_modules/@types",
       "node_modules/apexcharts/types",
-      "node_modules/@angular/material",
       "node_modules/@angular/core/rxjs-interop",
       "node_modules/ngxtension"
-    ]
+    ],
+    "paths": {
+      "spk/public": ["./projects/sparkle-ui/src/public-api.ts"]
+    }
   },
+  "exclude": ["dist"],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,

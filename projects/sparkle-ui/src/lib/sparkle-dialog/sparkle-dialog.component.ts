@@ -32,7 +32,6 @@ const DEFAULT_OPTIONS: SparkleDialogOptions = {
 
 @Component({
   selector: 'spk-dialog',
-  standalone: true,
   imports: [],
   template: `
     <dialog
@@ -65,53 +64,48 @@ export class SparkleDialogComponent {
   }));
 
   abortController: AbortController | null = null;
-  isOpenEffect = effect(
-    () => {
-      const dialogEl = this.dialogRef()?.nativeElement;
+  isOpenEffect = effect(() => {
+    const dialogEl = this.dialogRef()?.nativeElement;
 
-      if (this.abortController) {
-        this.abortController.abort();
-      }
-
-      this.abortController = new AbortController();
-
-      if (this.isOpen()) {
-        dialogEl?.showModal();
-        dialogEl?.addEventListener(
-          'close',
-          () => {
-            this.isOpen.set(false);
-            this.closed.emit();
-          },
-          {
-            signal: this.abortController?.signal,
-          }
-        );
-
-        document.addEventListener(
-          'keydown',
-          (e) => {
-            if (e.key === 'Escape' && !this.defaultOptionMerge().closeOnEsc) {
-              e.preventDefault();
-            }
-
-            if (e.key === 'Escape' && this.defaultOptionMerge().closeOnEsc) {
-              this.isOpen.set(false);
-            }
-          },
-          {
-            signal: this.abortController?.signal,
-          }
-        );
-      } else {
-        this.closed.emit();
-        dialogEl?.close();
-      }
-    },
-    {
-      allowSignalWrites: true,
+    if (this.abortController) {
+      this.abortController.abort();
     }
-  );
+
+    this.abortController = new AbortController();
+
+    if (this.isOpen()) {
+      dialogEl?.showModal();
+      dialogEl?.addEventListener(
+        'close',
+        () => {
+          this.isOpen.set(false);
+          this.closed.emit();
+        },
+        {
+          signal: this.abortController?.signal,
+        }
+      );
+
+      document.addEventListener(
+        'keydown',
+        (e) => {
+          if (e.key === 'Escape' && !this.defaultOptionMerge().closeOnEsc) {
+            e.preventDefault();
+          }
+
+          if (e.key === 'Escape' && this.defaultOptionMerge().closeOnEsc) {
+            this.isOpen.set(false);
+          }
+        },
+        {
+          signal: this.abortController?.signal,
+        }
+      );
+    } else {
+      this.closed.emit();
+      dialogEl?.close();
+    }
+  });
 
   ngOnDestroy() {
     this.abortController?.abort();

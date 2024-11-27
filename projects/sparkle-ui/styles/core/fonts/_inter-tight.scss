@@ -1,3 +1,5 @@
+$useInterTight: true !default;
+
 @if ($useInterTight == true) {
   @font-face {
     font-family: 'Inter Tight';

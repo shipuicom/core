@@ -1,6 +1,8 @@
-$sparkleDialog: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleDialog == true {
+$spkDialog: true !default;
+
+@if $spkDialog == true {
   dialog[spkDialog] {
     --dialog-p: #{p2r(16)};
     --dialog-g: #{p2r(8)};

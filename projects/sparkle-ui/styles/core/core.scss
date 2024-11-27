@@ -1,3 +1,4 @@
-@import './core/layout';
-@import './core/loader';
-@import './core/typography';
+@forward './core/variables';
+@forward './core/layout';
+@forward './core/loader';
+@forward './core/typography';

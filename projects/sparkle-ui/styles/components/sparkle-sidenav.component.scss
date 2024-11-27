@@ -1,6 +1,8 @@
-$sparkleSidenav: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleSidenav == true {
+$spkSidenav: true !default;
+
+@if $spkSidenav == true {
   spk-sidenav {
     --sidenav-width: #{p2r(280)};
 

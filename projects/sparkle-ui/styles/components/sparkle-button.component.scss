@@ -1,6 +1,7 @@
-$sparkleButton: true !default;
+@use '../helpers.scss' as *;
+$spkButton: true !default;
 
-@if $initSparkle == true and $sparkleButton == true {
+@if $spkButton == true {
   [spk-button] {
     --btn-h: #{p2r(40)};
     --btn-s: var(--shape-2);

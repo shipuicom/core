@@ -13,7 +13,6 @@ import {
 
 @Component({
   selector: 'spk-tooltip',
-  standalone: true,
   imports: [],
   template: `
     <div
@@ -74,30 +73,25 @@ export class SparkleTooltipComponent {
   });
 
   abortController: AbortController | null = null;
-  calcPositionEffect = effect(
-    () => {
-      const isCalculatingPosition = this.isCalculatingPosition();
+  calcPositionEffect = effect(() => {
+    const isCalculatingPosition = this.isCalculatingPosition();
 
-      if (!isCalculatingPosition) return;
+    if (!isCalculatingPosition) return;
 
-      if (this.abortController) {
-        this.abortController.abort();
-      }
-
-      this.abortController = new AbortController();
-      const signal = this.abortController.signal;
-
-      this.calculateMenuPosition();
-
-      const scrollableParent = this.#findScrollableParent(this.tooltipRef()?.nativeElement);
-
-      scrollableParent.addEventListener('scroll', () => this.calculateMenuPosition(), { signal });
-      document.addEventListener('resize', () => this.calculateMenuPosition(), { signal });
-    },
-    {
-      allowSignalWrites: true,
+    if (this.abortController) {
+      this.abortController.abort();
     }
-  );
+
+    this.abortController = new AbortController();
+    const signal = this.abortController.signal;
+
+    this.calculateMenuPosition();
+
+    const scrollableParent = this.#findScrollableParent(this.tooltipRef()?.nativeElement);
+
+    scrollableParent.addEventListener('scroll', () => this.calculateMenuPosition(), { signal });
+    document.addEventListener('resize', () => this.calculateMenuPosition(), { signal });
+  });
 
   scrollableStyles = ['scroll', 'auto'];
   #findScrollableParent(element: HTMLElement) {

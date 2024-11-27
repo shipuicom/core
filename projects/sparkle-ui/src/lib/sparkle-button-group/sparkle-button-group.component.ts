@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-  selector: 'spk-button-group',
-  standalone: true,
-  imports: [],
-  template: `
+    selector: 'spk-button-group',
+    imports: [],
+    template: `
     <ng-content></ng-content>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SparkleButtonGroupComponent {}

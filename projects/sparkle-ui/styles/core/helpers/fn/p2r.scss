@@ -1,5 +1,6 @@
-@use 'sass:list';
-@use 'sass:math'; // Include math module for division
+@use 'sass:list' as list;
+@use 'sass:meta' as meta;
+@use 'sass:math' as math; // Include math module for division
 
 $base-font-size-in-px: 16 !default;
 
@@ -9,7 +10,7 @@ $base-font-size-in-px: 16 !default;
   @each $pxValue in $pxValues {
     @if $pxValue == auto {
       $remValues: list.append($remValues, auto);
-    } @else if type-of($pxValue) != number {
+    } @else if meta.type-of($pxValue) != number {
       $pxValue: math.div($pxValue, 1px);
     } @else if $pxValue == 0 {
       $remValues: list.append($remValues, 0);

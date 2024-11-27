@@ -1,15 +1,14 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } from '@angular/core';
 
 @Component({
-  selector: 'spk-radio',
-  standalone: true,
-  imports: [],
-  template: `
+    selector: 'spk-radio',
+    imports: [],
+    template: `
     <div class="radio"></div>
 
     <ng-content />
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SparkleRadioComponent {
   #selfRef = inject(ElementRef);

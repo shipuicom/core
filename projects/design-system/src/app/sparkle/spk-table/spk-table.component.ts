@@ -1,9 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import {
-  SparkleColumnComponent,
-  SparkleRowComponent,
-  SparkleTableComponent,
-} from '../../../../../sparkle-ui/src/public-api';
+import { SparkleTableComponent } from 'spk/public';
 
 export interface PeriodicElement {
   name: string;
@@ -32,8 +28,7 @@ type Column = Columns[number];
 
 @Component({
   selector: 'app-spk-table',
-  standalone: true,
-  imports: [SparkleColumnComponent, SparkleTableComponent, SparkleRowComponent],
+  imports: [SparkleTableComponent],
   templateUrl: './spk-table.component.html',
   styleUrl: './spk-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

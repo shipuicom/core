@@ -49,7 +49,6 @@ const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
 
 @Component({
   selector: 'spk-select',
-  standalone: true,
   imports: [SparkleFormFieldComponent, SparkleIconComponent, SparkleChipComponent, SparklePopoverComponent],
   template: `
     <spk-popover
@@ -153,14 +152,9 @@ export class SparkleSelectComponent {
   isOpen = signal(false);
   _isOpen = signal(false);
 
-  #isOpenEffect = effect(
-    () => {
-      this._isOpen.set(this.isOpen() && this.#options().length > 0);
-    },
-    {
-      allowSignalWrites: true,
-    }
-  );
+  #isOpenEffect = effect(() => {
+    this._isOpen.set(this.isOpen() && this.#options().length > 0);
+  });
 
   isSearchInput = computed(() => this.#inputRef()?.type === 'search');
   optionsEl = computed(() => this.optionsRef()?.nativeElement);
@@ -202,32 +196,29 @@ export class SparkleSelectComponent {
   clickController: AbortController | null = null;
   inputAbortController: AbortController | null = null;
 
-  #inputRefEffect = effect(
-    () => {
-      this.#triggerInput();
-      const input = this.#selfRef.nativeElement.querySelector('input');
+  #inputRefEffect = effect(() => {
+    this.#triggerInput();
+    const input = this.#selfRef.nativeElement.querySelector('input');
 
-      if (!input) return;
+    if (!input) return;
 
-      this.#createCustomInputEventListener(input);
+    this.#createCustomInputEventListener(input);
 
-      input.addEventListener('inputValueChanged', (event) => {
-        this.inputValue.set(event.detail.value);
+    input.addEventListener('inputValueChanged', (event) => {
+      this.inputValue.set(event.detail.value);
 
-        if (this.selectMultiple()) {
-          this.#updateValueFromInput();
-        }
-      });
-
-      this.#inputRef.set(input);
-      input.autocomplete = 'off';
-
-      if (typeof input.value === 'string') {
-        this.inputValue.set(input.value);
+      if (this.selectMultiple()) {
+        this.#updateValueFromInput();
       }
-    },
-    { allowSignalWrites: true }
-  );
+    });
+
+    this.#inputRef.set(input);
+    input.autocomplete = 'off';
+
+    if (typeof input.value === 'string') {
+      this.inputValue.set(input.value);
+    }
+  });
 
   #onNewInputRef = effect(() => {
     if (this.inputController) {
@@ -300,17 +291,14 @@ export class SparkleSelectComponent {
     }
   });
 
-  #whenInputValueChanged = effect(
-    () => {
-      const val = this.inputValue();
+  #whenInputValueChanged = effect(() => {
+    const val = this.inputValue();
 
-      if (this.#inputRef()) {
-        this.#inputRef()!.value = val ?? '';
-        this.#inputRef()!.dispatchEvent(new Event('input'));
-      }
-    },
-    { allowSignalWrites: true }
-  );
+    if (this.#inputRef()) {
+      this.#inputRef()!.value = val ?? '';
+      this.#inputRef()!.dispatchEvent(new Event('input'));
+    }
+  });
 
   ngOnInit() {
     this.#inputObserver.observe(this.inputWrapRef().nativeElement, {

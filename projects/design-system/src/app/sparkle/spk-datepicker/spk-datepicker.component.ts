@@ -5,13 +5,12 @@ import {
   SparkleDatepickerComponent,
   SparkleDatepickerInputComponent,
   SparkleIconComponent,
-} from '../../../../../sparkle-ui/src/public-api';
+} from 'spk/public';
 
 const now = new Date();
 
 @Component({
   selector: 'app-spk-datepicker',
-  standalone: true,
   imports: [
     SparkleDatepickerComponent,
     SparkleDatepickerInputComponent,

@@ -1,6 +1,8 @@
-$sparkleDivider: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleDivider == true {
+$spkDivider: true !default;
+
+@if $spkDivider == true {
   spk-divider {
     --divider-c: var(--base-level-40);
     --divider-h: #{p2r(1)};

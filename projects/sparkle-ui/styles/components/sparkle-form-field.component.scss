@@ -1,6 +1,8 @@
-$sparkleFormField: true !default;
+@use '../helpers.scss' as *;
 
-@if $initSparkle == true and $sparkleFormField == true {
+$spkFormField: true !default;
+
+@if $spkFormField == true {
   spk-form-field {
     --ff-h: #{p2r(40)};
     --ff-s: var(--shape-2);

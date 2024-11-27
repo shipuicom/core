@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
-import { SparkleIconComponent } from '../../public-api';
+import { SparkleIconComponent } from 'spk/public';
 
 @Component({
   selector: 'spk-toggle-card',
-  standalone: true,
   imports: [SparkleIconComponent],
   template: `
     <h3 (click)="disallowToggle() || toggle()">

@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { SparkleProgressBarComponent } from '../../../../../sparkle-ui/src/public-api';
+import { SparkleProgressBarComponent } from 'spk/public';
 
 @Component({
   selector: 'app-spk-progress-bar',
-  standalone: true,
   imports: [SparkleProgressBarComponent],
   templateUrl: './spk-progress-bar.component.html',
   styleUrl: './spk-progress-bar.component.scss',
