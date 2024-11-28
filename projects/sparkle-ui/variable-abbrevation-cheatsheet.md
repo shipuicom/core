@@ -46,6 +46,7 @@ If they are not overwritten we have them as direct styles and can be overwritten
 - icon-height = ih
 - icon-width = iw
 - icon-color = ic
+- icon-rotate = ir
 - height = h
 - max-height = mh
 - min-height = mih

@@ -3,8 +3,11 @@
 <section>
   <div class="example-label">Basic</div>
   <div class="example-button-row">
-    <button spk-button>
-      <spk-icon>circle</spk-icon>
+    <button spk-button [class.rotated-icon]="rotated()" (click)="rotated.set(!rotated())">
+      <spk-icon>caret-down</spk-icon>
+    </button>
+    <button spk-button [class.rotated-icon]="rotated()">
+      <spk-icon>caret-down</spk-icon>
     </button>
     <button spk-button>
       <spk-icon>circle</spk-icon>

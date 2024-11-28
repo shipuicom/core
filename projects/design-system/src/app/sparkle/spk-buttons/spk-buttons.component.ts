@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import {
   SparkleButtonComponent,
   SparkleDividerComponent,
@@ -12,4 +12,6 @@ import {
   styleUrl: './spk-buttons.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class SpkButtonsComponent {}
+export default class SpkButtonsComponent {
+  rotated = signal(false);
+}

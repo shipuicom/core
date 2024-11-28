@@ -9,6 +9,7 @@ $spkButton: true !default;
     --loader-c: var(--base-level-60);
     --btn-c: var(--base-level-70);
     --btn-ic: var(--base-level-70);
+    --btn-ir: var(0deg);
     --btn-bg: var(--base-level-10);
     --btn-bg-h: var(--base-level-20);
     --btn-bc: var(--base-level-40);
@@ -39,6 +40,8 @@ $spkButton: true !default;
 
     spk-icon {
       color: var(--btn-ic);
+      rotate: var(--btn-ir);
+      transition: rotate 125ms ease-in-out;
     }
 
     &:has(spk-icon:only-child) {
@@ -69,6 +72,10 @@ $spkButton: true !default;
       > * {
         opacity: 0;
       }
+    }
+
+    &.rotated-icon spk-icon {
+      --btn-ir: 180deg;
     }
 
     &.small {
