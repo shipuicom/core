@@ -1,3 +1,5 @@
+@use '../../helpers.scss' as *;
+
 * {
   box-sizing: border-box;
 }
@@ -44,13 +46,4 @@ body {
 
 .spk-success {
   color: var(--success-500);
-}
-
-// Removeable
-.mat-success {
-  color: var(--success-500);
-}
-
-.mat-tertiary {
-  color: var(--tertiary-500);
 }
