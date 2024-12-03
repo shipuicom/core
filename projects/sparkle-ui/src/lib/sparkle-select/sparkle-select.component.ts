@@ -7,6 +7,7 @@ import {
   inject,
   input,
   model,
+  output,
   Renderer2,
   signal,
   viewChild,
@@ -141,6 +142,8 @@ export class SparkleSelectComponent {
   displayFn = input<Function | null>((option: any) => `${option}`);
   above = input<boolean>(false);
   right = input<boolean>(false);
+
+  change = output<string>();
 
   #triggerInput = signal(false);
   #triggerOption = signal(false);
@@ -373,6 +376,8 @@ export class SparkleSelectComponent {
       this.isOpen.set(false);
       this.#inputRef()?.blur();
     }
+
+    this.change.emit(this.inputValue());
   }
 
   calculateSelectedOptions() {
