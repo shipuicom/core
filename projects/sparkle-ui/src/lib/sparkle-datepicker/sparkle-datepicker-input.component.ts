@@ -85,6 +85,29 @@ export class SparkleDatepickerInputComponent {
   isOpen = signal(false);
   styleClasses = signal(null);
 
+  #styleObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        const classString = this.#elementRef.nativeElement.classList.value;
+
+        let classObj = classString.split(' ').reduce((acc: any, className: string) => {
+          acc[className] = true;
+          return acc;
+        }, {});
+
+        this.styleClasses.set(classObj);
+      }
+    });
+  });
+
+  #inputObserver = new MutationObserver((mutations) => {
+    for (var mutation of mutations) {
+      if (mutation.type == 'childList' && (mutation.target as HTMLElement).classList.contains('input')) {
+        this.#triggerInput.set(!this.#triggerInput());
+      }
+    }
+  });
+
   onDateChange(date: Date) {
     this.internalDate.set(date);
     const input = this.#inputRef();
@@ -113,21 +136,6 @@ export class SparkleDatepickerInputComponent {
     });
   }
 
-  #styleObserver = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-        const classString = this.#elementRef.nativeElement.classList.value;
-
-        let classObj = classString.split(' ').reduce((acc: any, className: string) => {
-          acc[className] = true;
-          return acc;
-        }, {});
-
-        this.styleClasses.set(classObj);
-      }
-    });
-  });
-
   #inputRefEffect = effect(() => {
     this.#triggerInput();
     const input = this.inputWrapRef()?.nativeElement.querySelector('input');
@@ -150,14 +158,6 @@ export class SparkleDatepickerInputComponent {
 
     if (typeof input.value === 'string') {
       this.internalDate.set(new Date(input.value));
-    }
-  });
-
-  #inputObserver = new MutationObserver((mutations) => {
-    for (var mutation of mutations) {
-      if (mutation.type == 'childList' && (mutation.target as HTMLElement).classList.contains('input')) {
-        this.#triggerInput.set(!this.#triggerInput());
-      }
     }
   });
 
