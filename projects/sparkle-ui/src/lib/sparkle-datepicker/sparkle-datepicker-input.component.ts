@@ -85,28 +85,32 @@ export class SparkleDatepickerInputComponent {
   isOpen = signal(false);
   styleClasses = signal(null);
 
-  #styleObserver = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-        const classString = this.#elementRef.nativeElement.classList.value;
+  #styleObserver =
+    typeof MutationObserver !== 'undefined' &&
+    new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          const classString = this.#elementRef.nativeElement.classList.value;
 
-        let classObj = classString.split(' ').reduce((acc: any, className: string) => {
-          acc[className] = true;
-          return acc;
-        }, {});
+          let classObj = classString.split(' ').reduce((acc: any, className: string) => {
+            acc[className] = true;
+            return acc;
+          }, {});
 
-        this.styleClasses.set(classObj);
+          this.styleClasses.set(classObj);
+        }
+      });
+    });
+
+  #inputObserver =
+    typeof MutationObserver !== 'undefined' &&
+    new MutationObserver((mutations) => {
+      for (var mutation of mutations) {
+        if (mutation.type == 'childList' && (mutation.target as HTMLElement).classList.contains('input')) {
+          this.#triggerInput.set(!this.#triggerInput());
+        }
       }
     });
-  });
-
-  #inputObserver = new MutationObserver((mutations) => {
-    for (var mutation of mutations) {
-      if (mutation.type == 'childList' && (mutation.target as HTMLElement).classList.contains('input')) {
-        this.#triggerInput.set(!this.#triggerInput());
-      }
-    }
-  });
 
   onDateChange(date: Date) {
     this.internalDate.set(date);
@@ -129,11 +133,14 @@ export class SparkleDatepickerInputComponent {
 
   ngOnInit() {
     this.styleClasses.set(this.#elementRef.nativeElement.classList.value);
-    this.#styleObserver.observe(this.#elementRef.nativeElement, { attributes: true });
-    this.#inputObserver.observe(this.inputWrapRef().nativeElement, {
-      attributes: true,
-      childList: true,
-    });
+
+    if (typeof MutationObserver !== 'undefined') {
+      (this.#styleObserver as MutationObserver).observe(this.#elementRef.nativeElement, { attributes: true });
+      (this.#inputObserver as MutationObserver).observe(this.inputWrapRef().nativeElement, {
+        attributes: true,
+        childList: true,
+      });
+    }
   }
 
   #inputRefEffect = effect(() => {

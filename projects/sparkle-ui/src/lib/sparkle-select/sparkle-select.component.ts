@@ -111,22 +111,24 @@ export class SparkleSelectComponent {
   #renderer = inject(Renderer2);
   #selfRef = inject<ElementRef<HTMLElement>>(ElementRef<HTMLElement>);
 
-  #optionsObserver = new MutationObserver((mutations) => {
-    for (const mutation of mutations) {
-      if (mutation.type === 'childList' && mutation.target instanceof HTMLElement) {
-        // Combine added and removed nodes into a single array
-        const allNodes = [...Array.from(mutation.addedNodes), ...Array.from(mutation.removedNodes)];
+  #optionsObserver =
+    typeof MutationObserver !== 'undefined' &&
+    new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'childList' && mutation.target instanceof HTMLElement) {
+          // Combine added and removed nodes into a single array
+          const allNodes = [...Array.from(mutation.addedNodes), ...Array.from(mutation.removedNodes)];
 
-        for (let i = 0; i < allNodes.length; i++) {
-          const node = allNodes[i];
+          for (let i = 0; i < allNodes.length; i++) {
+            const node = allNodes[i];
 
-          if (node.nodeName === 'OPTION' || node.nodeName === 'SPK-OPTION') {
-            this.#triggerOption.set(!this.#triggerOption());
+            if (node.nodeName === 'OPTION' || node.nodeName === 'SPK-OPTION') {
+              this.#triggerOption.set(!this.#triggerOption());
+            }
           }
         }
       }
-    }
-  });
+    });
 
   optionsRef = viewChild<ElementRef<HTMLDivElement>>('optionsRef');
   formFieldWrapperRef = viewChild.required<ElementRef<HTMLDivElement>>('formFieldWrapper');
@@ -304,11 +306,13 @@ export class SparkleSelectComponent {
   });
 
   ngOnInit() {
-    this.#inputObserver.observe(this.inputWrapRef().nativeElement, {
-      attributes: true,
-      childList: true,
-      subtree: true,
-    });
+    if (typeof MutationObserver !== 'undefined') {
+      (this.#inputObserver as MutationObserver).observe(this.inputWrapRef().nativeElement, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
+    }
   }
 
   getOptionElement(index: number) {
@@ -426,7 +430,9 @@ export class SparkleSelectComponent {
 
     this.#hasBeenOpened.set(false);
     noBlur || this.#inputRef()?.blur();
-    this.#optionsObserver.disconnect();
+    if (typeof MutationObserver !== 'undefined') {
+      (this.#optionsObserver as MutationObserver).disconnect();
+    }
     this.#killClickController();
   }
 
@@ -435,10 +441,12 @@ export class SparkleSelectComponent {
 
     if (this.isOpen()) return;
 
-    this.#optionsObserver.observe(this.optionsEl()!, {
-      childList: true,
-      subtree: true,
-    });
+    if (typeof MutationObserver !== 'undefined') {
+      (this.#optionsObserver as MutationObserver).observe(this.optionsEl()!, {
+        childList: true,
+        subtree: true,
+      });
+    }
 
     if (this.isSearchInput() && !this.#hasBeenOpened() && !this.isFreeText()) {
       this.#previousInputValue.set(this.inputValue());
@@ -541,13 +549,15 @@ export class SparkleSelectComponent {
     return -1;
   }
 
-  #inputObserver = new MutationObserver((mutations) => {
-    for (var mutation of mutations) {
-      if (mutation.type == 'childList' && (mutation.target as HTMLElement).classList.contains('input')) {
-        this.#triggerInput.set(!this.#triggerInput());
+  #inputObserver =
+    typeof MutationObserver !== 'undefined' &&
+    new MutationObserver((mutations) => {
+      for (var mutation of mutations) {
+        if (mutation.type == 'childList' && (mutation.target as HTMLElement).classList.contains('input')) {
+          this.#triggerInput.set(!this.#triggerInput());
+        }
       }
-    }
-  });
+    });
 
   #createCustomInputEventListener(input: HTMLInputElement) {
     Object.defineProperty(input, 'value', {
@@ -590,6 +600,9 @@ export class SparkleSelectComponent {
       this.optionsOpenController.abort();
     }
 
-    this.#inputObserver.disconnect();
+    if (typeof MutationObserver !== 'undefined') {
+      (this.#inputObserver as MutationObserver).disconnect();
+      (this.#optionsObserver as MutationObserver).disconnect();
+    }
   }
 }

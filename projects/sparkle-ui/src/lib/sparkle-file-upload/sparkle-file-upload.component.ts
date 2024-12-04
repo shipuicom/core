@@ -46,10 +46,12 @@ export class SparkleFileUploadComponent {
   });
 
   ngOnInit() {
-    this.#inputObserver.observe(this.inputWrapRef().nativeElement, {
-      childList: true,
-      subtree: true,
-    });
+    if (typeof MutationObserver !== 'undefined') {
+      (this.#inputObserver as MutationObserver).observe(this.inputWrapRef().nativeElement, {
+        childList: true,
+        subtree: true,
+      });
+    }
   }
 
   onFileDropped(files: FileList) {
@@ -82,13 +84,15 @@ export class SparkleFileUploadComponent {
     });
   }
 
-  #inputObserver = new MutationObserver((mutations) => {
-    for (var mutation of mutations) {
-      if (mutation.type == 'childList') {
-        this.#triggerInput.set(!this.#triggerInput());
+  #inputObserver =
+    typeof MutationObserver !== 'undefined' &&
+    new MutationObserver((mutations) => {
+      for (var mutation of mutations) {
+        if (mutation.type == 'childList') {
+          this.#triggerInput.set(!this.#triggerInput());
+        }
       }
-    }
-  });
+    });
 
   ngOnDestroy() {
     if (this.#inputObserver) {

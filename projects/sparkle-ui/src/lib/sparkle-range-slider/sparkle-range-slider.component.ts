@@ -11,9 +11,9 @@ import {
 } from '@angular/core';
 
 @Component({
-    selector: 'spk-range-slider',
-    imports: [],
-    template: `
+  selector: 'spk-range-slider',
+  imports: [],
+  template: `
     <div class="label">
       <ng-content select="label"></ng-content>
     </div>
@@ -36,7 +36,7 @@ import {
       <div class="max-indicator">{{ inputState().max }}{{ unit() }}</div>
     </div>
   `,
-    changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleRangeSliderComponent {
   #selfRef = inject(ElementRef<SparkleRangeSliderComponent>);
@@ -85,20 +85,22 @@ export class SparkleRangeSliderComponent {
 
       const MUTATION_FIELDS = ['min', 'max', 'value'];
 
-      this.#observer = new MutationObserver((mutationList, _) => {
-        for (const mutation of mutationList) {
-          if (mutation.type === 'attributes' && MUTATION_FIELDS.includes(mutation.attributeName ?? '')) {
-            this.inputState.set({
-              max: parseInt(this.inputField!.max ?? '') ?? 100,
-              min: parseInt(this.inputField!.min ?? '') ?? 0,
-            });
+      if (typeof MutationObserver !== 'undefined') {
+        this.#observer = new MutationObserver((mutationList, _) => {
+          for (const mutation of mutationList) {
+            if (mutation.type === 'attributes' && MUTATION_FIELDS.includes(mutation.attributeName ?? '')) {
+              this.inputState.set({
+                max: parseInt(this.inputField!.max ?? '') ?? 100,
+                min: parseInt(this.inputField!.min ?? '') ?? 0,
+              });
 
-            this.value.set(parseInt(this.inputField!.value ?? '') ?? 0);
+              this.value.set(parseInt(this.inputField!.value ?? '') ?? 0);
+            }
           }
-        }
-      });
+        });
 
-      this.#observer.observe(this.inputField, { attributes: true, childList: false, subtree: false });
+        this.#observer.observe(this.inputField, { attributes: true, childList: false, subtree: false });
+      }
     } else {
       console.warn('No input field found');
     }

@@ -148,10 +148,12 @@ export class SparkleSortableDirective {
   }
 
   ngOnInit() {
-    this.#dragableObserver.observe(this.#selfEl.nativeElement, {
-      childList: true,
-      subtree: false,
-    });
+    if (typeof MutationObserver !== 'undefined') {
+      (this.#dragableObserver as MutationObserver).observe(this.#selfEl.nativeElement, {
+        childList: true,
+        subtree: false,
+      });
+    }
   }
 
   @HostListener('dragover', ['$event'])
@@ -188,16 +190,20 @@ export class SparkleSortableDirective {
     }
   }
 
-  #dragableObserver = new MutationObserver((mutations) => {
-    for (var mutation of mutations) {
-      if (mutation.type == 'childList') {
-        this.dragables.set(Array.from(this.#selfEl.nativeElement.querySelectorAll('[draggable]')));
+  #dragableObserver =
+    typeof MutationObserver !== 'undefined' &&
+    new MutationObserver((mutations) => {
+      for (var mutation of mutations) {
+        if (mutation.type == 'childList') {
+          this.dragables.set(Array.from(this.#selfEl.nativeElement.querySelectorAll('[draggable]')));
+        }
       }
-    }
-  });
+    });
 
   ngOnDestroy() {
-    this.#dragableObserver.disconnect();
+    if (typeof MutationObserver !== 'undefined') {
+      (this.#dragableObserver as MutationObserver).disconnect();
+    }
 
     if (this.abortController) {
       this.abortController.abort();
