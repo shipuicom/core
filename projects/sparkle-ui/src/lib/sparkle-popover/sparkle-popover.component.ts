@@ -54,7 +54,8 @@ const DEFAULT_OPTIONS: SparklePopoverOptions = {
 })
 export class SparklePopoverComponent {
   #BASE_SPACE = 4;
-  SUPPORTS_ANCHOR = CSS.supports('position-anchor', '--abc') && CSS.supports('anchor-name', '--abc');
+  SUPPORTS_ANCHOR =
+    typeof CSS !== 'undefined' && CSS.supports('position-anchor', '--abc') && CSS.supports('anchor-name', '--abc');
 
   above = input<boolean>(false);
   right = input<boolean>(false);

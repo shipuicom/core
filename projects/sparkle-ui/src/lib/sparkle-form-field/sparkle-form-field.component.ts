@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } from '@angular/core';
 
 @Component({
-    selector: 'spk-form-field',
-    imports: [],
-    template: `
+  selector: 'spk-form-field',
+  imports: [],
+  template: `
     <ng-content select="label"></ng-content>
 
     <div class="input-wrap">
@@ -32,7 +32,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } 
       </div>
     </div>
   `,
-    changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleFormFieldComponent {
   #selfRef = inject(ElementRef);
@@ -49,7 +49,7 @@ export class SparkleFormFieldComponent {
   }
 
   ngOnInit() {
-    const supportFieldSizing = CSS.supports('field-sizing', 'content');
+    const supportFieldSizing = typeof CSS !== 'undefined' && CSS.supports('field-sizing', 'content');
     const text = this.#selfRef.nativeElement.querySelector('textarea');
 
     if (!supportFieldSizing && text !== null) {
