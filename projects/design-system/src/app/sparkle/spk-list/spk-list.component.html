@@ -64,5 +64,12 @@
         <input type="checkbox" [formControl]="checkbox2" />
       </spk-checkbox>
     </div>
+    <a href="#" item (click)="checkbox2.setValue(!checkbox2.value)">
+      <spk-icon>circle</spk-icon>
+      Item 4
+      <spk-checkbox>
+        <input type="checkbox" [formControl]="checkbox2" />
+      </spk-checkbox>
+    </a>
   </spk-list>
 </div>
