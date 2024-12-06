@@ -9,7 +9,7 @@
   padding: $padding;
 
   @include breakpoint(-milli) {
-    gap: math.div($gap, 2);
-    padding: math.div($padding, 2);
+    gap: calc($gap / 2);
+    padding: calc($padding / 2);
   }
 }
