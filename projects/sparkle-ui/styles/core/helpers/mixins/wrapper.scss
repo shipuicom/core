@@ -1,12 +1,12 @@
-@mixin wrapper {
+@mixin wrapper($gap: p2r(32), $padding: p2r(32)) {
   display: flex;
   flex-direction: column;
   width: 100%;
-  gap: p2r(32);
-  padding: p2r(32);
+  gap: $gap;
+  padding: $padding;
 
   @include breakpoint(-milli) {
-    padding: p2r(16);
-    gap: p2r(16);
+    gap: $gap / 2;
+    padding: $padding / 2;
   }
 }
