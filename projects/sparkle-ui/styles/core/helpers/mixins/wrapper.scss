@@ -1,4 +1,5 @@
 @use '../mixins/breakpoint.scss' as *;
+@use 'sass:math';
 
 @mixin wrapper($gap: p2r(32), $padding: p2r(32)) {
   display: flex;
@@ -8,7 +9,7 @@
   padding: $padding;
 
   @include breakpoint(-milli) {
-    gap: $gap / 2;
-    padding: $padding / 2;
+    gap: math.div($gap, 2);
+    padding: math.div($padding, 2);
   }
 }
