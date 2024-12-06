@@ -1,5 +1,6 @@
 @use '../mixins/breakpoint.scss' as *;
-@use 'sass:math';
+@use '../fn/p2r.scss' as *;
+@use 'sass:math' as mat;
 
 @mixin wrapper($gap: p2r(32), $padding: p2r(32)) {
   display: flex;
@@ -9,7 +10,7 @@
   padding: $padding;
 
   @include breakpoint(-milli) {
-    gap: calc($gap / 2);
-    padding: calc($padding / 2);
+    gap: $gap / 2;
+    padding: $padding / 2;
   }
 }

@@ -1,5 +1,7 @@
+@use '../../../../../sparkle-ui/styles/helpers.scss' as *;
+
 :host {
-  display: block;
+  @include wrapper();
 }
 
 spk-list {
