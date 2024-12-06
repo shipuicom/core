@@ -4,6 +4,9 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
+    "patch": "cd projects/sparkle-ui && npm version patch && cd ../../",
+    "minor": "cd projects/sparkle-ui && npm version minor && cd ../../",
+    "major": "cd projects/sparkle-ui && npm version major && cd ../../",
     "gen:font": "bun ./dist/sparkle-ui/bin/sparkle-fg --src='./projects/design-system/src' --out='./projects/design-system/public' --rootPath='/' --verbose",
     "watch:font": "bun ./dist/sparkle-ui/bin/sparkle-fg --src='./projects/design-system/src' --out='./projects/design-system/public' --rootPath='/' --watch --verbose",
     "start": "bun run watch:font & ng serve --port=4205",
