@@ -1,4 +1,5 @@
 import { Injectable, signal } from '@angular/core';
+import { generateUniqueId } from '../utilities/random-id';
 import { SparkleAlertType } from './sparkle-alert.component';
 
 export type SparkleAlertItem = {
@@ -58,7 +59,7 @@ export class SparkleAlertService {
   }
 
   addAlert(alert: SparkleAlertItem) {
-    const id = crypto.randomUUID();
+    const id = generateUniqueId();
 
     this.alertHistory.update((history) => [
       { ...alert, isOpen: true, animateIn: true, animateOut: false, id },

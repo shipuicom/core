@@ -11,6 +11,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { SparkleButtonComponent } from '../sparkle-button/sparkle-button.component';
+import { generateUniqueId } from '../utilities/random-id';
 
 // TODOS
 // - Dynamic location where if outside of the window automatically position it to the top or left
@@ -75,7 +76,7 @@ export class SparklePopoverComponent {
   triggerRef = viewChild.required<ElementRef<HTMLElement>>('triggerRef');
   popoverRef = viewChild.required<ElementRef<HTMLElement>>('popoverRef');
 
-  id = signal('--' + crypto.randomUUID());
+  id = signal('--' + generateUniqueId());
   menuStyle = signal<any>(null);
 
   toggleIsOpen(event: MouseEvent) {

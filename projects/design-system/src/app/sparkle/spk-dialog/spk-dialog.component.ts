@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { SparkleButtonComponent, SparkleDialogService } from '../../../../../sparkle-ui/src/public-api';
 import SpkDatepickerComponent from '../spk-datepicker/spk-datepicker.component';
+import TestComponent from './test/test.component';
 
 @Component({
   selector: 'app-spk-dialog',
@@ -21,5 +22,9 @@ export default class SpkDialogComponent {
       //   console.log('closed: ', data);
       // },
     });
+  }
+
+  openDynamicDialog2() {
+    this.#dialog.open(TestComponent);
   }
 }

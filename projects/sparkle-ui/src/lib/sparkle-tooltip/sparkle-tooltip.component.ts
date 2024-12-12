@@ -10,6 +10,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { generateUniqueId } from '../utilities/random-id';
 
 @Component({
   selector: 'spk-tooltip',
@@ -52,7 +53,7 @@ export class SparkleTooltipComponent {
   triggerRef = viewChild.required<ElementRef<HTMLElement>>('triggerRef');
   tooltipRef = viewChild.required<ElementRef<HTMLElement>>('tooltipRef');
 
-  id = signal('--' + crypto.randomUUID());
+  id = signal('--' + generateUniqueId());
   menuStyle = signal<any>(null);
 
   isCalculatingPosition = computed(() => {

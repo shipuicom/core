@@ -23,7 +23,6 @@ type FoodGroup = {
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    // SparkleDialogComponent,
     SparkleSelectComponent,
     SparkleIconComponent,
     SparkleCheckboxComponent,

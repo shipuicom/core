@@ -59,6 +59,10 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 
 - [ ] required inputs on dialogs, since its not supported by angular yet [angular/51878](https://github.com/angular/angular/issues/51878)
 
+### Notes
+
+- For safari `<17` the selects does not support using options so you must use `<spk-option>` instead of `<option>`
+
 ## Contributors
 
 ### Creators
