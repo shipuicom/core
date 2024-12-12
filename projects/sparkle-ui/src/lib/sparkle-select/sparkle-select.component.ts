@@ -43,7 +43,7 @@ declare global {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleOptionComponent {
-  value = input<string | null>(null);
+  value = input<string | number | Date | null>(null);
 }
 
 const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
