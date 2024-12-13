@@ -23,6 +23,7 @@ export type SparklePopoverOptions = {
   closeOnEsc?: boolean;
 };
 
+const SCROLLABLE_STYLES = ['scroll', 'auto'];
 const DEFAULT_OPTIONS: SparklePopoverOptions = {
   width: undefined,
   height: undefined,
@@ -79,17 +80,8 @@ export class SparklePopoverComponent {
   id = signal('--' + generateUniqueId());
   menuStyle = signal<any>(null);
 
-  toggleIsOpen(event: MouseEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (!this.disableOpenByClick()) {
-      this.isOpen.set(!this.isOpen());
-    }
-  }
-
   openAbort: AbortController | null = null;
-  isCalculatingPosition = computed(() => {
+  openEffect = effect(() => {
     const popoverEl = this.popoverRef()?.nativeElement;
     const open = this.isOpen();
 
@@ -99,6 +91,9 @@ export class SparklePopoverComponent {
       }
 
       this.openAbort = new AbortController();
+      const abortOptions = {
+        signal: this.openAbort?.signal,
+      };
       popoverEl?.showPopover();
 
       document.addEventListener(
@@ -112,50 +107,46 @@ export class SparklePopoverComponent {
             this.isOpen.set(false);
           }
         },
-        {
-          capture: true,
-          signal: this.abortController?.signal,
-        }
+        abortOptions
       );
 
-      return true;
+      setTimeout(() => {
+        const scrollableParent = this.#findScrollableParent(this.popoverRef()?.nativeElement);
+
+        scrollableParent.addEventListener('scroll', () => this.#calculateMenuPosition(), abortOptions);
+
+        window.addEventListener('resize', () => this.#calculateMenuPosition(), abortOptions);
+
+        this.#calculateMenuPosition();
+      });
     } else {
       popoverEl.hidePopover();
-      this.abortController?.abort();
       this.openAbort?.abort();
       this.closed.emit();
-      return false;
     }
   });
 
-  abortController: AbortController | null = null;
-  calcPositionEffect = effect(() => {
-    const isCalculatingPosition = this.isCalculatingPosition();
+  toggleIsOpen(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
 
-    if (!isCalculatingPosition) return;
-
-    if (this.abortController) {
-      this.abortController.abort();
+    if (!this.disableOpenByClick()) {
+      this.isOpen.set(!this.isOpen());
     }
+  }
 
-    this.abortController = new AbortController();
-    const signal = this.abortController.signal;
+  eventClose($event: MouseEvent) {
+    $event.stopPropagation();
+    $event.preventDefault();
+    this.isOpen.set(false);
+  }
 
-    this.calculateMenuPosition();
-
-    const scrollableParent = this.#findScrollableParent(this.popoverRef()?.nativeElement);
-
-    scrollableParent.addEventListener('scroll', () => this.calculateMenuPosition(), { signal });
-    document.addEventListener('resize', () => this.calculateMenuPosition(), { signal });
-  });
-
-  scrollableStyles = ['scroll', 'auto'];
   #findScrollableParent(element: HTMLElement) {
     let parent = element.parentElement;
 
     while (parent) {
       if (
-        this.scrollableStyles.indexOf(window.getComputedStyle(parent).overflowY) > -1 &&
+        SCROLLABLE_STYLES.indexOf(window.getComputedStyle(parent).overflowY) > -1 &&
         parent.scrollHeight > parent.clientHeight
       ) {
         return parent;
@@ -167,19 +158,7 @@ export class SparklePopoverComponent {
     return document.documentElement;
   }
 
-  eventClose($event: MouseEvent) {
-    $event.stopPropagation();
-    $event.preventDefault();
-    this.isOpen.set(false);
-  }
-
-  ngOnDestroy() {
-    if (this.abortController) {
-      this.abortController.abort();
-    }
-  }
-
-  private calculateMenuPosition() {
+  #calculateMenuPosition() {
     const triggerRect = this.triggerRef()?.nativeElement.getBoundingClientRect();
     const menuRect = this.popoverRef()?.nativeElement.getBoundingClientRect();
 
@@ -196,35 +175,36 @@ export class SparklePopoverComponent {
       this._above.set(outOfBoundsBottom);
       this._right.set(outOfBoundsRight);
     } else {
-      if (this.above()) {
+      // Default position below and left aligned
+      newLeft = actionLeftInViewport;
+      newTop = actionBottomInViewport + this.#BASE_SPACE;
+
+      if (outOfBoundsBottom) {
+        // If overflows bottom, try positioning above
         const _newTop = triggerRect.top - menuRect.height - this.#BASE_SPACE;
 
-        if (_newTop >= 0) {
-          newTop = _newTop;
-        }
-      } else {
-        if (outOfBoundsBottom) {
-          newTop = triggerRect.top - menuRect.height - this.#BASE_SPACE;
+        // Calculate outOfBoundsTop here
+        const outOfBoundsTop = _newTop < 0;
+
+        if (!outOfBoundsTop) newTop = _newTop;
+      }
+
+      if (outOfBoundsRight) {
+        // If overflows right, position left
+        newLeft = triggerRect.right - menuRect.width;
+
+        // Ensure it doesn't go off-screen to the left
+        if (newLeft < 0) {
+          newLeft = 0;
         }
       }
 
-      if (this.right()) {
-        const _newLeft = triggerRect.right - menuRect.width;
-
-        if (_newLeft >= 0) {
-          newLeft = _newLeft;
-        }
-      } else {
-        if (outOfBoundsRight) {
-          newTop = outOfBoundsBottom ? triggerRect.top + triggerRect.height - menuRect.height : triggerRect.top;
-          newLeft = triggerRect.left - menuRect.width - this.#BASE_SPACE;
-        }
-      }
-
-      this.menuStyle.set({
+      const style: any = {
         left: newLeft + 'px',
         top: newTop + 'px',
-      });
+      };
+
+      this.menuStyle.set(style);
     }
   }
 }

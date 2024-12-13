@@ -47,7 +47,7 @@ $spkPopover: true !default;
       @supports (anchor-name: --anchor) {
         inset: unset;
         left: anchor(left);
-        top: anchor(bottom);
+        top: calc(anchor(bottom) + #{p2r(4)});
         position-try-options: flip-block, flip-inline;
         position-try-fallbacks: flip-block, flip-inline;
       }

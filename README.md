@@ -16,17 +16,19 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Move tooltips from style to a component to use popovers
 - [x] Support free text in spk-select
 - [x] Create a datepicker input component
+- [x] Refactor range-slider
+- [x] Fix safari 17 and below popover positioning (this might also fix other legacy browsers)
+- [x] Fix datepicker popover positioning
+- [ ] Create a spinner component
+- [ ] Create a accordion component
+- [ ] Create a CSV input that create chips on comma (or enter) press
+- [ ] Finalize file upload component
 
 - [ ] Streamline general color variables 10-70 instead of 100-900 (align with figma)
-- [ ] Create a CSV input that create chips on comma (or enter) press
-- [ ] Create a accordion component
-- [ ] Create a spinner component
-
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
 - [ ] Make colors optional/configurable (primary, accent, tertiary, warn, success) on a component level and generally
 - [ ] Create documentation with examples for all components
 
-- [ ] Refactor range-slider (dosn't really work or isn't easy enough to use)
 - [ ] Refactor select component once again
   - [ ] Support displayWith in spk-select
   - [ ] use templates to template options and have the list inside the select
@@ -48,6 +50,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [ ] CLI util to figure out which components and styles are used in a project as a production build trimmer
 - [ ] On spk-menu, add focus with a hidden input similar to native select
 - [ ] On spk-select move over to using contentChildren requiring #prefix to the option elements
+- [ ] Add support of multiple phosphor icons types (bold, duotone, fill, light, regular, thin) in the same font by just prefixing with (duo-, bold-, etc)
 
 ### Testing to add
 
@@ -61,7 +64,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 
 ### Notes
 
-- For safari `<17` the selects does not support using options so you must use `<spk-option>` instead of `<option>`
+- For safari `<18` the selects does not support using options so you must use `<spk-option>` instead of `<option>`
 
 ## Contributors
 

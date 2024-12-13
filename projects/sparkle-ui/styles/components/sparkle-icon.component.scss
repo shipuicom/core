@@ -10,6 +10,7 @@ $spkIcon: true !default;
     height: 1em;
     text-align: left;
     overflow: hidden;
+    display: inline-block;
 
     &.large {
       font-size: p2r(32);

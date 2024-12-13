@@ -4,7 +4,7 @@ $spkDatepicker: true !default;
 
 @if $spkDatepicker == true {
   spk-datepicker-input {
-    spk-form-field {
+    spk-form-field-popover {
       .input-wrap .input {
         display: grid;
         grid-template-columns: 1fr auto;
@@ -31,6 +31,7 @@ $spkDatepicker: true !default;
       width: p2r(240);
     }
   }
+
   spk-datepicker {
     --dp-sel-bg: var(--base-level-60);
     --dp-sel-bw: 0;

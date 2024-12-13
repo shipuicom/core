@@ -8,7 +8,7 @@
     inputSearchCtrl: {{ inputSearchCtrl.value }}
     some {{ some() }}
   </pre>
-  <spk-icon>x-circle</spk-icon>
+  <spk-icon>x</spk-icon>
   <spk-icon>magnifying-glass</spk-icon>
 
   <!-- <spk-new-select>
@@ -58,7 +58,7 @@
     <option deselect>Hello remove me</option>
 
     @for (food of localFilteredFoods(); track $index) {
-      <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
+      <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
     }
   </spk-select> -->
 
@@ -69,7 +69,7 @@
     <!-- <option deselect>Hello remove me</option> -->
 
     @for (food of localFilteredFoods(); track $index) {
-      <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
+      <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
     }
   </spk-select>
 

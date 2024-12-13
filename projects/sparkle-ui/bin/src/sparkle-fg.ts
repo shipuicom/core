@@ -42,9 +42,9 @@ const run = async (
 
     if (matches?.length) {
       for (let index = 0; index < matches.length; index++) {
-        if (matches[index]) {
-          iconsFound.add(matches[index]);
-        }
+        const match = matches[index];
+
+        if (match) iconsFound.add(match);
       }
     }
   }
@@ -55,9 +55,9 @@ const run = async (
 
     if (matches?.length) {
       for (let index = 0; index < matches.length; index++) {
-        if (matches[index]) {
-          iconsFound.add(matches[index]);
-        }
+        const match = matches[index];
+
+        if (match) iconsFound.add(match);
       }
     }
   }
@@ -231,7 +231,7 @@ export const main = async (values: InputArguments) => {
 
     setTimeout(() => {
       watchers.forEach((watcher) => watcher.close());
-      process.exit();
-    }, 1000);
+      process.exit(0);
+    }, 100);
   }
 };

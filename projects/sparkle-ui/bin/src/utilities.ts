@@ -31,7 +31,6 @@ export const mapUnicodesToGlyphs = (cssText: string) => {
   return glyphMap;
 };
 
-
 export function formatFileSize(bytes: number, dm = 2) {
   if (bytes == 0) return '0 Bytes';
 

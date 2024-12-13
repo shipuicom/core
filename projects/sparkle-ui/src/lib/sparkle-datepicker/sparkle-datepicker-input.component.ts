@@ -7,55 +7,45 @@ import {
   ElementRef,
   inject,
   input,
+  model,
   output,
   signal,
   viewChild,
 } from '@angular/core';
-import { SparkleFormFieldComponent } from '../sparkle-form-field/sparkle-form-field.component';
+import { SparkleFormFieldPopoverComponent } from '../sparkle-form-field/sparkle-form-field-popover.component';
 import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
-import { SparklePopoverComponent } from '../sparkle-popover/sparkle-popover.component';
 import { SparkleDatepickerComponent } from './sparkle-datepicker.component';
 
 @Component({
   selector: 'spk-datepicker-input',
-  imports: [SparkleDatepickerComponent, SparkleFormFieldComponent, SparklePopoverComponent, SparkleIconComponent],
+  imports: [SparkleDatepickerComponent, SparkleFormFieldPopoverComponent, SparkleIconComponent],
   providers: [DatePipe],
   template: `
-    <spk-popover
-      #formFieldWrapper
-      [(isOpen)]="isOpen"
-      [disableOpenByClick]="true"
-      (closed)="close()"
-      [options]="{
-        closeOnButton: false,
-        closeOnEsc: true,
-      }">
-      <spk-form-field trigger (click)="open($event)">
-        <ng-content select="label" ngProjectAs="label" />
+    <spk-form-field-popover (click)="open($event)" (closed)="close()" [(isOpen)]="isOpen">
+      <ng-content select="label" ngProjectAs="label" />
 
-        <ng-content select="[prefix]" ngProjectAs="[prefix]" />
-        <ng-content select="[textPrefix]" ngProjectAs="[textPrefix]" />
+      <ng-content select="[prefix]" ngProjectAs="[prefix]" />
+      <ng-content select="[textPrefix]" ngProjectAs="[textPrefix]" />
 
-        <div class="input" ngProjectAs="input" #inputWrap>
-          @if (this.masking()) {
-            <div class="masked-value">
-              {{ _maskedDate() }}
-            </div>
-          }
-          <ng-content select="input" />
-        </div>
+      <div class="input" ngProjectAs="input" #inputWrap>
+        @if (this.masking()) {
+          <div class="masked-value" (click)="open($event)">
+            {{ _maskedDate() }}
+          </div>
+        }
+        <ng-content select="input" />
+      </div>
 
-        <ng-content select="[textSuffix]" ngProjectAs="[textSuffix]" />
-        <ng-content select="[suffix]" ngProjectAs="[suffix]" />
-        <spk-icon class="default-indicator" suffix>calendar</spk-icon>
-      </spk-form-field>
+      <ng-content select="[textSuffix]" ngProjectAs="[textSuffix]" />
+      <ng-content select="[suffix]" ngProjectAs="[suffix]" />
+      <spk-icon class="default-indicator" suffix>calendar</spk-icon>
 
-      <div>
-        @if (isOpen()) {
+      <div popoverContent>
+        @if (this.isOpen()) {
           <spk-datepicker [date]="internalDate()" (dateChange)="onDateChange($event)" [class]="styleClasses()" />
         }
       </div>
-    </spk-popover>
+    </spk-form-field-popover>
 
     <ng-template #defaultIndicator></ng-template>
   `,
@@ -68,7 +58,7 @@ export class SparkleDatepickerInputComponent {
   #triggerInput = signal(false);
   inputWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('inputWrap');
 
-  masking = input('d MMM yyyy');
+  masking = input('mediumDate');
   closed = output<Date>();
 
   _maskedDate = computed(() => {
@@ -82,7 +72,7 @@ export class SparkleDatepickerInputComponent {
   });
 
   internalDate = signal<Date>(new Date());
-  isOpen = signal(false);
+  isOpen = model<boolean>(false);
   styleClasses = signal(null);
 
   #styleObserver =

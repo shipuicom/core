@@ -1,7 +1,7 @@
 {
   "name": "@sparkle-ui/core",
   "license": "MIT",
-  "version": "0.5.21",
+  "version": "0.5.22",
   "peerDependencies": {
     "@angular/common": ">=19",
     "@angular/core": ">=19"
@@ -19,6 +19,7 @@
     "upload-simple",
     "magnifying-glass",
     "x-circle",
+    "x",
     "caret-left",
     "caret-right",
     "caret-down",

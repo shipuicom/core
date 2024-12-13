@@ -3,6 +3,7 @@
 $spkFormField: true !default;
 
 @if $spkFormField == true {
+  spk-form-field-popover,
   spk-form-field {
     --ff-h: #{p2r(40)};
     --ff-s: var(--shape-2);
@@ -85,6 +86,7 @@ $spkFormField: true !default;
       overflow: hidden;
       transition: border-color 125ms linear;
 
+      spk-popover,
       .input {
         flex: 1 0;
       }

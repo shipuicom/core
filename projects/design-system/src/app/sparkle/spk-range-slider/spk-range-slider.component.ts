@@ -1,6 +1,5 @@
-import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   SparkleIconComponent,
   SparkleRangeSliderComponent,
@@ -9,7 +8,13 @@ import {
 
 @Component({
   selector: 'app-spk-range-slider',
-  imports: [ReactiveFormsModule, SparkleRangeSliderComponent, SparkleToggleComponent, SparkleIconComponent, JsonPipe],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    SparkleRangeSliderComponent,
+    SparkleToggleComponent,
+    SparkleIconComponent,
+  ],
   templateUrl: './spk-range-slider.component.html',
   styleUrl: './spk-range-slider.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,6 +22,7 @@ import {
 export default class SpkRangeSliderComponent {
   active = signal(false);
 
+  someRangeValue = signal(50);
   fg = new FormGroup({
     rangeCtrl: new FormControl(50),
   });
