@@ -90,7 +90,10 @@ export default class SpkSelectComponent {
     { value: 'steak-0', label: 'Steak' },
     { value: 'pizza-1', label: 'Pizza' },
     { value: 'tacos-2', label: 'Tacos' },
-    { value: 'burger-3', label: 'Burger' },
+    {
+      value: 'burger-312æk3hj1ækj2h3ækj12h3jk12h3jkæ12hk3hj12ljk3hj1lk23hjkl12h3kjl12jh3ljk12h31lk2jh3',
+      label: 'Burger',
+    },
     { value: 'sushi-4', label: 'Sushi' },
     { value: 'pasta-5', label: 'Pasta' },
     { value: 'salad-6', label: 'Salad' },

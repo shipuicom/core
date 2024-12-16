@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChildren,
   effect,
   ElementRef,
   inject,
@@ -43,7 +44,44 @@ declare global {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleOptionComponent {
+  #selfRef = inject(ElementRef<HTMLElement>);
+
   value = input<string | number | Date | null | undefined>(null);
+
+  // Bind value property to the html element
+
+  #valueEffect = effect(() => {
+    this.#selfRef.nativeElement.value = this.value();
+  });
+
+  // Bind html element methods
+  hasAttribute(attribute: string) {
+    return this.#selfRef.nativeElement.hasAttribute(attribute);
+  }
+
+  removeAttribute(attribute: string) {
+    this.#selfRef.nativeElement.removeAttribute(attribute);
+  }
+
+  setAttribute(attribute: string, value: string) {
+    this.#selfRef.nativeElement.setAttribute(attribute, value);
+  }
+
+  getAttribute(attribute: string) {
+    return this.#selfRef.nativeElement.getAttribute(attribute);
+  }
+
+  addClass(className: string) {
+    this.#selfRef.nativeElement.classList.add(className);
+  }
+
+  removeClass(className: string) {
+    this.#selfRef.nativeElement.classList.remove(className);
+  }
+
+  scrollIntoView(options?: ScrollIntoViewOptions) {
+    this.#selfRef.nativeElement.scrollIntoView(options);
+  }
 }
 
 const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
@@ -110,27 +148,8 @@ const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
 export class SparkleSelectComponent {
   #renderer = inject(Renderer2);
   #selfRef = inject<ElementRef<HTMLElement>>(ElementRef<HTMLElement>);
-
-  #optionsObserver =
-    typeof MutationObserver !== 'undefined' &&
-    new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === 'childList' && mutation.target instanceof HTMLElement) {
-          // Combine added and removed nodes into a single array
-          const allNodes = [...Array.from(mutation.addedNodes), ...Array.from(mutation.removedNodes)];
-
-          for (let i = 0; i < allNodes.length; i++) {
-            const node = allNodes[i];
-
-            if (node.nodeName === 'OPTION' || node.nodeName === 'SPK-OPTION') {
-              this.#triggerOption.set(!this.#triggerOption());
-            }
-          }
-        }
-      }
-    });
-
   optionsRef = viewChild<ElementRef<HTMLDivElement>>('optionsRef');
+  options = contentChildren(SparkleOptionComponent);
   formFieldWrapperRef = viewChild.required<ElementRef<HTMLDivElement>>('formFieldWrapper');
   inputWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('inputWrap');
 
@@ -148,7 +167,6 @@ export class SparkleSelectComponent {
   change = output<string>();
 
   #triggerInput = signal(false);
-  #triggerOption = signal(false);
   #inputRef = signal<HTMLInputElement | null>(null);
 
   #previousInputValue = signal<string | null>(null);
@@ -157,26 +175,7 @@ export class SparkleSelectComponent {
   isOpen = signal(false);
   _isOpen = signal(false);
 
-  #isOpenEffect = effect(() => {
-    this._isOpen.set(this.isOpen() && this.#options().length > 0);
-  });
-
   isSearchInput = computed(() => this.#inputRef()?.type === 'search');
-  optionsEl = computed(() => this.optionsRef()?.nativeElement);
-  #options = computed(() => {
-    this.#triggerOption();
-
-    const options = this.optionsRef()?.nativeElement.querySelectorAll<HTMLOptionElement>('option');
-    const spkOptions = this.optionsRef()?.nativeElement.querySelectorAll<HTMLElement>('spk-option');
-
-    if (options?.length) {
-      return Array.from(options);
-    } else if (spkOptions?.length) {
-      return Array.from(spkOptions);
-    }
-
-    return [];
-  });
 
   chipClass = computed(() =>
     Array.from(this.#selfRef.nativeElement.classList)
@@ -190,9 +189,10 @@ export class SparkleSelectComponent {
 
   selectedOption = computed(() =>
     this.#previousInputValue()
-      ? this.#options().find(
-          (x) => (x.getAttribute('value') || x.getAttribute('ng-reflect-value')) === this.#previousInputValue()
-        )
+      ? this.options().find((x) => {
+          const value = x.value(); //x.getAttribute('value') || x.getAttribute('ng-reflect-value');
+          return value === this.#previousInputValue();
+        })
       : null
   );
 
@@ -248,7 +248,7 @@ export class SparkleSelectComponent {
             if (
               this.#optionInFocus() === null ||
               this.#optionInFocus() < 0 ||
-              (this.#optionInFocus() as number) === this.#options().length - 1
+              (this.#optionInFocus() as number) === this.options().length - 1
             ) {
               this.#optionInFocus.set(this.#getIndexOfFirstNonDeselectedOption());
             } else {
@@ -260,7 +260,7 @@ export class SparkleSelectComponent {
               this.#optionInFocus() < 0 ||
               (this.#optionInFocus() as number) === 0
             ) {
-              this.#optionInFocus.set(this.#options().length - 1);
+              this.#optionInFocus.set(this.options().length - 1);
             } else {
               this.#optionInFocus.set((this.#optionInFocus() as number) - 1);
             }
@@ -316,7 +316,7 @@ export class SparkleSelectComponent {
   }
 
   getOptionElement(index: number) {
-    return this.#options()[index];
+    return this.options()[index];
   }
 
   deselect($event: Event | null | undefined, forceClose = false) {
@@ -336,11 +336,13 @@ export class SparkleSelectComponent {
     }
   }
 
-  selected(el: HTMLElement) {
+  selected(el: SparkleOptionComponent) {
     if (!el) return;
 
-    const newSelectedValue = (el.getAttribute('value') || el.getAttribute('ng-reflect-value')) ?? '';
-    const elIndex = this.#options().indexOf(el);
+    console.log('el: ', el);
+
+    const newSelectedValue = el.value() as string; //(el.getAttribute('value') || el.getAttribute('ng-reflect-value')) ?? '';
+    const elIndex = this.options().indexOf(el);
 
     if (el.hasAttribute('deselect')) {
       return this.deselect(null, true);
@@ -351,9 +353,9 @@ export class SparkleSelectComponent {
     if (el && !this.selectMultiple()) {
       this.inputValue.set(newSelectedValue);
 
-      for (let i = 0; i < this.#options().length; i++) {
-        const option = this.#options()[i];
-        const optionValue = option.getAttribute('value') || option.getAttribute('ng-reflect-value');
+      for (let i = 0; i < this.options().length; i++) {
+        const option = this.options()[i];
+        const optionValue = option.value(); //option.getAttribute('value') || option.getAttribute('ng-reflect-value');
 
         if (optionValue === newSelectedValue) {
           this.#renderer.setAttribute(option, 'selected', 'selected');
@@ -386,13 +388,13 @@ export class SparkleSelectComponent {
 
   calculateSelectedOptions() {
     setTimeout(() => {
-      const options = this.#options();
+      const options = this.options();
       const inputRef = this.#inputRef();
       const value = inputRef?.value;
 
       for (let index = 0; index < options.length; index++) {
         const option = options[index];
-        const optionValue = option.getAttribute('value') || option.getAttribute('ng-reflect-value');
+        const optionValue = option.value(); //option.getAttribute('value') || option.getAttribute('ng-reflect-value');
 
         if (optionValue === value) {
           this.#renderer.setAttribute(option, 'selected', 'selected');
@@ -419,7 +421,7 @@ export class SparkleSelectComponent {
   }
 
   close(noBlur = false) {
-    this.#triggerOption.set(!this.#triggerOption());
+    // this.#triggerOption.set(!this.#triggerOption());
     const prevValue = this.#previousInputValue();
 
     if (this.isSearchInput() && !this.isFreeText() && prevValue) {
@@ -430,9 +432,6 @@ export class SparkleSelectComponent {
 
     this.#hasBeenOpened.set(false);
     noBlur || this.#inputRef()?.blur();
-    if (typeof MutationObserver !== 'undefined') {
-      (this.#optionsObserver as MutationObserver).disconnect();
-    }
     this.#killClickController();
   }
 
@@ -440,13 +439,6 @@ export class SparkleSelectComponent {
     e.preventDefault();
 
     if (this.isOpen()) return;
-
-    if (typeof MutationObserver !== 'undefined') {
-      (this.#optionsObserver as MutationObserver).observe(this.optionsEl()!, {
-        childList: true,
-        subtree: true,
-      });
-    }
 
     if (this.isSearchInput() && !this.#hasBeenOpened() && !this.isFreeText()) {
       this.#previousInputValue.set(this.inputValue());
@@ -459,7 +451,6 @@ export class SparkleSelectComponent {
       this.#inputRef()!.focus();
     }
 
-    this.#triggerOption.set(!this.#triggerOption());
     this.isOpen.set(true);
     this.#hasBeenOpened.set(true);
     this.#listenForClicks();
@@ -473,21 +464,16 @@ export class SparkleSelectComponent {
 
     this.clickController = new AbortController();
 
-    this.optionsEl()?.addEventListener(
+    this.optionsRef()?.nativeElement?.addEventListener(
       'click',
       (e) => {
         if (!e.target) return;
 
-        this.#triggerOption.set(!this.#triggerOption());
+        const closestSpkOption = (e.target as HTMLElement).closest('spk-option') as any as SparkleOptionComponent;
+        const option = this.options().find((x) => (x.value() as any) === closestSpkOption.value);
 
-        const closestOption = (e.target as HTMLElement).closest('option');
-        const closestSpkOption = (e.target as HTMLElement).closest('spk-option');
-
-        const option = closestOption || closestSpkOption;
-        const indexOfOption = this.#options().indexOf(option as HTMLElement);
-
-        if (indexOfOption > -1) {
-          this.selected(option as HTMLElement);
+        if (option) {
+          this.selected(option);
         }
       },
       { signal: this.clickController?.signal }
@@ -501,13 +487,13 @@ export class SparkleSelectComponent {
   }
 
   #computeFocusedElement() {
-    for (let i = 0; i < this.#options().length; i++) {
-      const option = this.#options()[i];
+    for (let i = 0; i < this.options().length; i++) {
+      const option = this.options()[i];
 
-      this.#renderer.removeClass(option, 'focused');
+      option.removeClass('focused');
 
       if (this.#optionInFocus() === i) {
-        this.#renderer.addClass(option, 'focused');
+        option.addClass('focused');
         option.scrollIntoView({ block: 'center' });
       }
     }
@@ -523,12 +509,12 @@ export class SparkleSelectComponent {
     const inputOptions = input.value.split(',');
 
     setTimeout(() => {
-      const options = this.#options();
+      const options = this.options();
 
       for (let index = 0; index < options.length; index++) {
-        const val = options[index].getAttribute('ng-reflect-value');
+        const val = options[index].value();
 
-        if (val && inputOptions.includes(val)) {
+        if (val && inputOptions.includes(val as string)) {
           this.#renderer.setAttribute(options[index], 'selected', 'selected');
         } else {
           this.#renderer.removeAttribute(options[index], 'selected');
@@ -538,7 +524,7 @@ export class SparkleSelectComponent {
   }
 
   #getIndexOfFirstNonDeselectedOption() {
-    const options = this.#options();
+    const options = this.options();
 
     for (let i = 0; i < options.length; i++) {
       if (!options[i].hasAttribute('deselect')) {
@@ -602,7 +588,6 @@ export class SparkleSelectComponent {
 
     if (typeof MutationObserver !== 'undefined') {
       (this.#inputObserver as MutationObserver).disconnect();
-      (this.#optionsObserver as MutationObserver).disconnect();
     }
   }
 }

@@ -19,6 +19,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Refactor range-slider
 - [x] Fix safari 17 and below popover positioning (this might also fix other legacy browsers)
 - [x] Fix datepicker popover positioning
+- [x] Add hotkeys to navigate spk-menu options
 - [ ] Create a spinner component
 - [ ] Create a accordion component
 - [ ] Create a CSV input that create chips on comma (or enter) press
@@ -38,7 +39,6 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [ ] Create a timepicker component
 - [ ] Multi select menu's that dosn't close when checking an option
 - [ ] Create a datepicker range input component
-- [ ] Add hotkeys to navigate spk-menu options
 - [ ] Add flat and raised versions of alerts
 - [ ] Create a color picker component
 - [ ] Create a gantt chart component
@@ -49,7 +49,6 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
   - [ ] Doughnut chart
 - [ ] CLI util to figure out which components and styles are used in a project as a production build trimmer
 - [ ] On spk-menu, add focus with a hidden input similar to native select
-- [ ] On spk-select move over to using contentChildren requiring #prefix to the option elements
 - [ ] Add support of multiple phosphor icons types (bold, duotone, fill, light, regular, thin) in the same font by just prefixing with (duo-, bold-, etc)
 
 ### Testing to add
