@@ -339,8 +339,6 @@ export class SparkleSelectComponent {
   selected(el: SparkleOptionComponent) {
     if (!el) return;
 
-    console.log('el: ', el);
-
     const newSelectedValue = el.value() as string; //(el.getAttribute('value') || el.getAttribute('ng-reflect-value')) ?? '';
     const elIndex = this.options().indexOf(el);
 
