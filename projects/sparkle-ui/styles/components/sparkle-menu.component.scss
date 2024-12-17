@@ -22,11 +22,18 @@ $spkMenu: true !default;
       padding: p2r(4) 0;
       max-height: var(--menu-mh);
 
+      &:after {
+        content: '';
+        display: block;
+        width: 100%;
+        min-height: p2r(4);
+      }
+
       [title] {
         font: var(--paragraph-30);
         color: var(--base-level-60);
         padding: p2r(8 12);
-        margin: p2r(0 8);
+        margin: 0;
         width: calc(100% - #{p2r(16)});
         user-select: none;
       }
