@@ -218,5 +218,17 @@ $spkFormField: true !default;
         // visibility: hidden;
       }
     }
+
+    &.error {
+      --ff-ic: var(--warn-500);
+    }
+
+    &.warn {
+      --ff-ic: var(--tertiary-500);
+    }
+
+    &.success {
+      --ff-ic: var(--success-500);
+    }
   }
 }
