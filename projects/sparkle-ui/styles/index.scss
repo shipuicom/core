@@ -24,6 +24,7 @@ $spkDialog: true !default;
 $spkPopover: true !default;
 $spkChip: true !default;
 $spkFormField: true !default;
+$spkColorPicker: true !default;
 $spkSidenav: true !default;
 $spkList: true !default;
 $spkRadio: true !default;
@@ -80,6 +81,9 @@ $spkFileUpload: true !default;
 );
 @use './components/sparkle-form-field.component.scss' with (
   $spkFormField: $spkFormField
+);
+@use './components/sparkle-color-picker.component.scss' with (
+  $spkColorPicker: $spkColorPicker
 );
 @use './components/sparkle-sidenav.component.scss' with (
   $spkSidenav: $spkSidenav

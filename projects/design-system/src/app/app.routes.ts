@@ -24,6 +24,10 @@ export const routes: Routes = [
         loadComponent: () => import('./sparkle/spk-toggle/spk-toggle.component'),
       },
       {
+        path: 'spk-color-picker',
+        loadComponent: () => import('./sparkle/spk-color-picker/spk-color-picker.component'),
+      },
+      {
         path: 'spk-checkbox',
         loadComponent: () => import('./sparkle/spk-checkbox/spk-checkbox.component'),
       },

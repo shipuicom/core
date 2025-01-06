@@ -20,6 +20,7 @@ export * from './lib/sparkle-datepicker/sparkle-datepicker.component';
 export * from './lib/sparkle-divider/sparkle-divider.component';
 export * from './lib/sparkle-file-upload/sparkle-file-upload.component';
 export * from './lib/sparkle-form-field/sparkle-form-field.component';
+export * from './lib/sparkle-color-picker/sparkle-color-picker.component';
 export * from './lib/sparkle-icon/sparkle-icon.component';
 export * from './lib/sparkle-list/sparkle-list.component';
 export * from './lib/sparkle-menu/sparkle-menu.component';

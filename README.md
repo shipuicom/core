@@ -20,6 +20,8 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Fix safari 17 and below popover positioning (this might also fix other legacy browsers)
 - [x] Fix datepicker popover positioning
 - [x] Add hotkeys to navigate spk-menu options
+- [x] Create a color picker component
+- [ ] Create a timepicker component
 - [ ] Create a spinner component
 - [ ] Create a accordion component
 - [ ] Create a CSV input that create chips on comma (or enter) press
@@ -36,11 +38,9 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 
 ### Nice to haves for v1 beta
 
-- [ ] Create a timepicker component
 - [ ] Multi select menu's that dosn't close when checking an option
 - [ ] Create a datepicker range input component
 - [ ] Add flat and raised versions of alerts
-- [ ] Create a color picker component
 - [ ] Create a gantt chart component
 - [ ] Create simple chart components
   - [ ] Line chart
