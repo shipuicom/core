@@ -32,3 +32,10 @@
 
   <input type="text" id="date" tabindex="2" [formControl]="someDateCtrl" />
 </spk-datepicker-input>
+
+<spk-datepicker-input>
+  <label>Date</label>
+  <input type="text" [(ngModel)]="myDate" />
+</spk-datepicker-input>
+
+<spk-datepicker [(date)]="someOtherDate" />

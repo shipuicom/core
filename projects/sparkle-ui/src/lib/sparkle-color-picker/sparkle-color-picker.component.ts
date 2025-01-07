@@ -15,14 +15,7 @@ import {
 type R = number;
 type G = number;
 type B = number;
-
-type CanvasData = {
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
-  centerX: number;
-  centerY: number;
-  radius: number;
-};
+type A = number;
 
 // TODOS
 // - Add a color picker input
@@ -40,7 +33,13 @@ type CanvasData = {
 })
 export class SparkleColorPickerComponent {
   readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('colorCanvas');
-  private canvasData = signal<CanvasData | null>(null);
+  private canvasData = signal<{
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+    centerX: number;
+    centerY: number;
+    radius: number;
+  } | null>(null);
 
   showDarkColors = input(false);
   renderingType = input<'hsl' | 'grid' | 'hue' | 'rgb' | 'saturation'>('hsl');

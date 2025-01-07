@@ -26,6 +26,7 @@ import {
 })
 export default class SpkColorPickerComponent {
   renderingType = signal<'hsl' | 'rgb' | 'grid' | 'hue' | 'saturation'>('hsl');
+  aColor = signal<[number, number, number]>([255, 255, 255]);
   currentColor = signal<{ rgb: string; hex: string; hsl: string; hue: number; saturation: number } | null>(null);
   showDarkColors = signal(false);
   direction = signal(false);

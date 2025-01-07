@@ -50,6 +50,8 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [ ] CLI util to figure out which components and styles are used in a project as a production build trimmer
 - [ ] On spk-menu, add focus with a hidden input similar to native select
 - [ ] Add support of multiple phosphor icons types (bold, duotone, fill, light, regular, thin) in the same font by just prefixing with (duo-, bold-, etc)
+- [ ] Add a A11y service to streamline accessibility, maybe be able to swap config based on page or on a method
+- [ ] Add a A11y VIM mode
 
 ### Testing to add
 

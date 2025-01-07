@@ -35,6 +35,8 @@ export default class SpkDatepickerComponent {
 
   someDateCtrl = new FormControl(now);
 
+  myDate = signal(now);
+
   close() {
     this.closed.emit(true);
   }
