@@ -1,0 +1,53 @@
+@use '../helpers.scss' as *;
+
+$spkSpinner: true !default;
+
+@if $spkSpinner == true {
+  spk-spinner {
+    --spinner-c: var(--base-level-60);
+    --spinner-size: #{p2r(40)};
+    --spinner-thickness: #{p2r(5)};
+
+    width: var(--spinner-size);
+    height: var(--spinner-size);
+    display: grid;
+    place-content: center;
+    color: var(--spinner-c);
+    position: relative;
+
+    &:before {
+      content: '';
+      width: var(--spinner-size);
+      height: var(--spinner-size);
+      border: var(--spinner-thickness) solid currentColor;
+      border-bottom-color: transparent;
+      border-radius: 50%;
+      display: flex;
+      box-sizing: border-box;
+      animation: rotation 1s linear infinite;
+      margin: auto;
+      inset: 0;
+      position: absolute;
+    }
+
+    &.primary {
+      --spinner-c: var(--primary-500);
+    }
+
+    &.accent {
+      --spinner-c: var(--accent-500);
+    }
+
+    &.tertiary {
+      --spinner-c: var(--tertiary-500);
+    }
+
+    &.warn {
+      --spinner-c: var(--warn-500);
+    }
+
+    &.success {
+      --spinner-c: var(--success-500);
+    }
+  }
+}

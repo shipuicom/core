@@ -21,8 +21,8 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Fix datepicker popover positioning
 - [x] Add hotkeys to navigate spk-menu options
 - [x] Create a color picker component
+- [x] Create a spinner component
 - [ ] Create a timepicker component
-- [ ] Create a spinner component
 - [ ] Create a accordion component
 - [ ] Create a CSV input that create chips on comma (or enter) press
 - [ ] Finalize file upload component

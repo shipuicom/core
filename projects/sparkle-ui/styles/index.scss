@@ -35,6 +35,7 @@ $spkSelect: true !default;
 $spkCard: true !default;
 $spkStepper: true !default;
 $spkSortable: true !default;
+$spkSpinner: true !default;
 $spkToggleCard: true !default;
 $spkTable: true !default;
 $spkTabs: true !default;
@@ -111,6 +112,9 @@ $spkFileUpload: true !default;
 );
 @use './components/sparkle-stepper.component.scss' with (
   $spkStepper: $spkStepper
+);
+@use './components/sparkle-spinner.component.scss' with (
+  $spkSpinner: $spkSpinner
 );
 @use './components/sparkle-sortable.component.scss' with (
   $spkSortable: $spkSortable
