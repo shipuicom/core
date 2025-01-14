@@ -58,7 +58,7 @@ $spkButton: true !default;
     &.loader.raised,
     &.loader {
       color: transparent;
-      width: inherit;
+      width: auto;
 
       &:hover,
       &.primary,
