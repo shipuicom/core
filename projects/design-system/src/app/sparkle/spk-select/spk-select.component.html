@@ -1,48 +1,61 @@
 <section>
   <h3>New select</h3>
 
-  <spk-select-new [options]="options()" [optionTemplate]="optionTemplate" [debugRef]="1">
-    <label for="reactive-form-input">Reactive Form and optionTemplate Select</label>
-    <input type="text" id="reactive-form-input" [formControl]="inputCtrl" placeholder="Select" />
+  <spk-select-new
+    [isClearable]="true"
+    [options]="options()"
+    [optionTemplate]="optionTemplate"
+    [debugRef]="1"
+    placeholder="Select some option NOW!!">
+    <label>Reactive Form and optionTemplate Select</label>
+    <input type="text" [formControl]="inputCtrlNew1" />
   </spk-select-new>
-  <p>form control value: {{ formControlValue() | json }}</p>
 
-  <spk-select-new [options]="flatOptions()" [debugRef]="2">
-    <label for="reactive-form-input">Inline Template flat options</label>
-    <input type="text" id="reactive-form-input" [formControl]="inputCtrl" placeholder="Select" />
+  <spk-select-new
+    [isClearable]="true"
+    [options]="flatOptions()"
+    [debugRef]="2"
+    [placeholderTemplate]="placeholderTemplate">
+    <label>Inline Template flat options</label>
+    <input type="text" [formControl]="inputCtrlNew2" />
 
     <ng-template let-option>
-      <div class="custom-option">{{ option }}</div>
+      <div class="custom-option">{{ option }} 🙂‍↔️🙂‍↔️</div>
     </ng-template>
   </spk-select-new>
-  <p>form control value: {{ formControlValue() | json }}</p>
-
-  <!-- ngModel -->
-  <!-- <spk-select-new [options]="options()" label="hello.world.value" value="id" [inlineSearch]="true" [debugRef]="3">
-    <label for="ngModel-input">ngModel Select</label>
-    <input type="text" id="ngModel-input" [(ngModel)]="selectedOption" placeholder="Select" />
-  </spk-select-new>
-  <p>ngModel selected option: {{ selectedOption | json }}</p> -->
-
-  <!-- Option Template -->
-  <ng-template #optionTemplate let-option>
-    <div>ID: {{ option.id }}, Name: {{ option.name }}</div>
-  </ng-template>
 
   <spk-select-new [options]="options()" label="hello.world.value" value="id" [inlineSearch]="true" [debugRef]="4">
-    <label for="ngModel-input">Searchable Select</label>
-    <input type="text" id="ngModel-input" [(ngModel)]="selectedOption" placeholder="Select" />
+    <label>Searchable Select</label>
+    <input type="text" [(ngModel)]="selectedOption" />
   </spk-select-new>
 
   <spk-select-new
     [options]="lazyOptions()"
     [isLoading]="lazyLoading()"
+    [isClearable]="true"
     label="hello.world.value"
     [lazySearch]="true"
     [debugRef]="5">
-    <label for="ngModel-input">Searchable Select</label>
-    <input type="text" id="ngModel-input" [(ngModel)]="lazySearchableOption" placeholder="Select" />
+    <label>Searchable Select</label>
+    <input type="text" [(ngModel)]="lazySearchableOption" />
   </spk-select-new>
+
+  <!-- Option Template -->
+  <ng-template #optionTemplate let-option>
+    <div>🙂‍↔️🙂‍↔️ ID: {{ option.id }}, Name: {{ option.name }}</div>
+  </ng-template>
+
+  <ng-template let-option #placeholderTemplate>
+    <div class="custom-option">Hell im a custom placeholder template 🙂‍↔️🙂‍↔️</div>
+  </ng-template>
+
+  <pre>
+    form control value - inputCtrlNew1: {{ inputCtrlNew1.value | json }} - {{ inputCtrlNew1.valid }}
+    form control value - inputCtrlNew2: {{ inputCtrlNew2.value | json }} - {{ inputCtrlNew2.valid }}
+    spk-select-new selected option: {{ selectedOption() | json }}
+    lazy selected option: {{ lazySearchableOption() | json }}
+
+  </pre>
 </section>
 
 <section>

@@ -38,6 +38,9 @@ type FoodGroup = {
 })
 export default class SpkSelectComponent {
   // New
+  inputCtrlNew1 = new FormControl<any | null>(null);
+  inputCtrlNew2 = new FormControl<any | null>(null);
+
   flatOptions = signal(['Pizza', 'Burger', 'Sushi', 'Pasta', 'Salad', 'Sandwich']);
   options = signal<{ id: number; name: string; hello: { world: { value: string } } }[]>([
     {

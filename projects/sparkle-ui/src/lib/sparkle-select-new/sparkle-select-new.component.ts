@@ -28,6 +28,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
     SparkleSpinnerComponent,
   ],
   template: `
+    @let _placeholderTemplate = placeholderTemplate();
     @let _optionTemplate = optionTemplate();
     @let _inlineTemplate = inlineTemplate();
     @let _selectOption = selectedOption();
@@ -60,7 +61,11 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
                 {{ selectedLabel() }}
               }
             } @else {
-              Select an option
+              @if (_placeholderTemplate) {
+                <ng-container *ngTemplateOutlet="_placeholderTemplate" />
+              } @else {
+                {{ placeholder() ?? 'Select an option' }}
+              }
             }
           </div>
         </div>
@@ -73,7 +78,9 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
           <spk-icon suffix>list-magnifying-glass</spk-icon>
         } @else if (_inputState === 'searching') {
           <spk-icon suffix>magnifying-glass</spk-icon>
-        } @else if (_inputState === 'selected') {
+        } @else if (_inputState === 'selected' && isClearable()) {
+          <spk-icon suffix (click)="clear($event)">backspace</spk-icon>
+        } @else if (_inputState === 'selected' && !isClearable()) {
           <spk-icon suffix>check</spk-icon>
         } @else {
           <spk-icon suffix>caret-up</spk-icon>
@@ -108,12 +115,16 @@ export class SparkleSelectNewComponent {
   options = input<unknown[]>([]);
   label = input<string>();
   value = input<string>();
+  placeholder = input<string>();
   inlineSearch = input<boolean>(false);
   lazySearch = input<boolean>(false);
   readonly = input<boolean>(false);
   isLoading = input<boolean>(false);
-  isValid = model<boolean>(false);
+  isClearable = input<boolean>(false);
   optionTemplate = input<TemplateRef<unknown> | null>(null);
+  placeholderTemplate = input<TemplateRef<unknown> | null>(null);
+  isValid = model<boolean>(false);
+  selectedOption = model<unknown | null>(null);
 
   inlineTemplate = contentChild<TemplateRef<unknown>>(TemplateRef);
   inputWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('inputWrap');
@@ -201,7 +212,6 @@ export class SparkleSelectNewComponent {
     return result;
   });
 
-  selectedOption = signal<unknown | null>(null);
   selectedLabel = computed(() => {
     const selected = this.selectedOption();
     const label = this.label();
@@ -347,31 +357,16 @@ export class SparkleSelectNewComponent {
     }
   }
 
-  #setOptionByValue(value: string) {
-    const options = this.options();
-    const valueKey = this.value();
+  clear($event?: MouseEvent) {
+    $event?.stopPropagation();
 
-    this.inputValue.set(value);
-
-    if (!valueKey) {
-      this.selectedOption.set(value);
-      return;
-    }
-
-    const option = options.find((x) => this.#getProperty(x, valueKey) === value);
-
-    if (option) {
-      this.selectedOption.set(option);
-    }
+    this.inputValue.set('');
+    this.selectedOption.set(null);
+    this.isOpen.set(false);
+    this.prevInputValue.set(null);
   }
 
   #getProperty(obj: unknown, path: string): unknown {
     return path.split('.').reduce((o: unknown, i: string) => (o as any)?.[i], obj);
   }
-
-  // #log(...message: any) {
-  //   if (this.debugRef()) {
-  //     console.log(`${this.debugRef()} - ${message}:`, message);
-  //   }
-  // }
 }

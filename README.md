@@ -26,6 +26,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
   - [x] Support displayWith in spk-select (through templates)
   - [x] use templates to template options and have the list inside the select
   - [x] Add lazy search
+  - [x] Add template placeholder
 - [ ] Create a CSV input that create chips on comma (or enter) press
 - [ ] Create a accordion component
 - [ ] Create a timepicker component
