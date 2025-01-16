@@ -31,6 +31,11 @@ $spkPopover: true !default;
       inset: 0;
       opacity: 0;
       z-index: 1;
+
+      + * {
+        z-index: 2;
+        position: relative;
+      }
     }
 
     .popover {

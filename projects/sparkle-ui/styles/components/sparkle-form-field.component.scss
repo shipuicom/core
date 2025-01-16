@@ -11,6 +11,8 @@ $spkFormField: true !default;
     --ff-prefix-bg: var(--base-level-20);
     --ff-ic: var(--base-level-60);
     --ff-bg: var(--base-level-10);
+    --ff-spinner-size: #{p2r(20)};
+    --ff-spinner-thickness: #{p2r(2)};
 
     display: flex;
     flex-direction: column;
@@ -106,6 +108,11 @@ $spkFormField: true !default;
       spk-icon {
         color: var(--ff-ic);
         transition: color 125ms linear;
+      }
+
+      spk-spinner {
+        --spinner-size: var(--ff-spinner-size);
+        --spinner-thickness: var(--ff-spinner-thickness);
       }
 
       textarea,

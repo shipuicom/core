@@ -173,6 +173,10 @@ export const routes: Routes = [
         path: 'spk-expansion-panel',
         loadComponent: () => import('./sparkle/spk-expansion-panel/spk-expansion-panel.component'),
       },
+      {
+        path: 'spk-virtual-scroll',
+        loadComponent: () => import('./sparkle/spk-virtual-scroll/spk-virtual-scroll.component'),
+      },
     ],
   },
 ];

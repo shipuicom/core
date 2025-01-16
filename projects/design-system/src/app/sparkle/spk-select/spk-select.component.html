@@ -1,4 +1,51 @@
 <section>
+  <h3>New select</h3>
+
+  <spk-select-new [options]="options()" [optionTemplate]="optionTemplate" [debugRef]="1">
+    <label for="reactive-form-input">Reactive Form and optionTemplate Select</label>
+    <input type="text" id="reactive-form-input" [formControl]="inputCtrl" placeholder="Select" />
+  </spk-select-new>
+  <p>form control value: {{ formControlValue() | json }}</p>
+
+  <spk-select-new [options]="flatOptions()" [debugRef]="2">
+    <label for="reactive-form-input">Inline Template flat options</label>
+    <input type="text" id="reactive-form-input" [formControl]="inputCtrl" placeholder="Select" />
+
+    <ng-template let-option>
+      <div class="custom-option">{{ option }}</div>
+    </ng-template>
+  </spk-select-new>
+  <p>form control value: {{ formControlValue() | json }}</p>
+
+  <!-- ngModel -->
+  <!-- <spk-select-new [options]="options()" label="hello.world.value" value="id" [inlineSearch]="true" [debugRef]="3">
+    <label for="ngModel-input">ngModel Select</label>
+    <input type="text" id="ngModel-input" [(ngModel)]="selectedOption" placeholder="Select" />
+  </spk-select-new>
+  <p>ngModel selected option: {{ selectedOption | json }}</p> -->
+
+  <!-- Option Template -->
+  <ng-template #optionTemplate let-option>
+    <div>ID: {{ option.id }}, Name: {{ option.name }}</div>
+  </ng-template>
+
+  <spk-select-new [options]="options()" label="hello.world.value" value="id" [inlineSearch]="true" [debugRef]="4">
+    <label for="ngModel-input">Searchable Select</label>
+    <input type="text" id="ngModel-input" [(ngModel)]="selectedOption" placeholder="Select" />
+  </spk-select-new>
+
+  <spk-select-new
+    [options]="lazyOptions()"
+    [isLoading]="lazyLoading()"
+    label="hello.world.value"
+    [lazySearch]="true"
+    [debugRef]="5">
+    <label for="ngModel-input">Searchable Select</label>
+    <input type="text" id="ngModel-input" [(ngModel)]="lazySearchableOption" placeholder="Select" />
+  </spk-select-new>
+</section>
+
+<section>
   <h3>Basic</h3>
 
   <pre>

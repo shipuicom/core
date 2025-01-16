@@ -1,9 +1,11 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   computed,
   effect,
   ElementRef,
+  inject,
   input,
   model,
   output,
@@ -55,12 +57,15 @@ const DEFAULT_OPTIONS: SparklePopoverOptions = {
   },
 })
 export class SparklePopoverComponent {
+  #cdr = inject(ChangeDetectorRef);
+
   #BASE_SPACE = 4;
   SUPPORTS_ANCHOR =
     typeof CSS !== 'undefined' && CSS.supports('position-anchor', '--abc') && CSS.supports('anchor-name', '--abc');
 
   above = input<boolean>(false);
   right = input<boolean>(false);
+  markForCheck = input<unknown>(null);
 
   _above = signal<boolean>(this.above());
   _right = signal<boolean>(this.right());
@@ -123,6 +128,12 @@ export class SparklePopoverComponent {
       popoverEl.hidePopover();
       this.openAbort?.abort();
       this.closed.emit();
+    }
+  });
+
+  markForCheckEffect = effect(() => {
+    if (this.markForCheck()) {
+      this.#cdr.markForCheck();
     }
   });
 

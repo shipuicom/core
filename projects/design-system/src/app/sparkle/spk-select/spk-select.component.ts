@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, model, signal } from '@angular/core';
+import { JsonPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, effect, model, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
@@ -6,6 +7,7 @@ import {
   SparkleIconComponent,
   SparkleOptionComponent,
   SparkleSelectComponent,
+  SparkleSelectNewComponent,
 } from '../../../../../sparkle-ui/src/public-api';
 
 type Food = {
@@ -24,15 +26,62 @@ type FoodGroup = {
     FormsModule,
     ReactiveFormsModule,
     SparkleSelectComponent,
+    SparkleSelectNewComponent,
     SparkleIconComponent,
     SparkleCheckboxComponent,
     SparkleOptionComponent,
+    JsonPipe,
   ],
   templateUrl: './spk-select.component.html',
   styleUrl: './spk-select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class SpkSelectComponent {
+  // New
+  flatOptions = signal(['Pizza', 'Burger', 'Sushi', 'Pasta', 'Salad', 'Sandwich']);
+  options = signal<{ id: number; name: string; hello: { world: { value: string } } }[]>([
+    {
+      id: 1,
+      name: 'Pizza',
+      hello: {
+        world: {
+          value: 'hello world pizza',
+        },
+      },
+    },
+    { id: 2, name: 'Burger', hello: { world: { value: 'hello world burger' } } },
+    { id: 3, name: 'Sushi', hello: { world: { value: 'hello world sushi' } } },
+    { id: 4, name: 'Pasta', hello: { world: { value: 'hello world pasta' } } },
+    { id: 5, name: 'Salad', hello: { world: { value: 'hello world salad' } } },
+    { id: 6, name: 'Sandwich', hello: { world: { value: 'hello world sandwich' } } },
+  ]);
+  selectedOption = signal<Food | null>(null);
+  lazySearchableOption = signal<string | null>(null);
+  lazyOptions = signal<{ id: number; name: string; hello: { world: { value: string } } }[]>([]);
+  lazyLoading = signal(false);
+  lazyOptionsEffect = effect(() => {
+    const input = this.lazySearchableOption();
+
+    if (!input) {
+      return this.lazyOptions.set(this.options());
+    }
+
+    this.lazyLoading.set(true);
+
+    setTimeout(() => {
+      const options = this.options().filter((x) => x.hello.world.value.toLowerCase().includes(input.toLowerCase()));
+      this.lazyOptions.set(options);
+      this.lazyLoading.set(false);
+    }, 500);
+
+    return;
+  });
+
+  formControlValue = computed(() => {
+    return this.inputCtrl.value;
+  });
+
+  // Old
   inputCtrl = new FormControl<string | null>(null);
   inputCtrl2 = new FormControl<string>('');
   inputSearchCtrl = new FormControl<string>('');

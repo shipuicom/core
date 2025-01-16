@@ -1,19 +1,15 @@
-import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   SparkleButtonGroupComponent,
   SparkleColorPickerComponent,
   SparkleIconComponent,
-  SparkleRangeSliderComponent,
   SparkleToggleComponent,
 } from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-color-picker',
   imports: [
-    JsonPipe,
-    SparkleRangeSliderComponent,
     FormsModule,
     SparkleColorPickerComponent,
     SparkleButtonGroupComponent,

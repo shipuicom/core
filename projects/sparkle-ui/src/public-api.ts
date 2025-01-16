@@ -28,6 +28,7 @@ export * from './lib/sparkle-popover/sparkle-popover.component';
 export * from './lib/sparkle-progress-bar/sparkle-progress-bar.component';
 export * from './lib/sparkle-radio/sparkle-radio.component';
 export * from './lib/sparkle-range-slider/sparkle-range-slider.component';
+export * from './lib/sparkle-select-new/sparkle-select-new.component';
 export * from './lib/sparkle-select/sparkle-select.component';
 export * from './lib/sparkle-sidenav/sparkle-sidenav.component';
 export * from './lib/sparkle-sortable/grid-sortable.directive';
@@ -40,6 +41,7 @@ export * from './lib/sparkle-tabs/sparkle-tabs.component';
 export * from './lib/sparkle-toggle-card/sparkle-toggle-card.component';
 export * from './lib/sparkle-toggle/sparkle-toggle.component';
 export * from './lib/sparkle-tooltip/sparkle-tooltip.component';
+export * from './lib/sparkle-virtual-scroll/sparkle-virtual-scroll.component';
 
 // Global directives
 export * from './lib/directives/sparkle-file-drag-drop.directive';
