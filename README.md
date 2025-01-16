@@ -22,19 +22,19 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Add hotkeys to navigate spk-menu options
 - [x] Create a color picker component
 - [x] Create a spinner component
-- [ ] Create a timepicker component
-- [ ] Create a accordion component
+- [x] Refactor select component once again
+  - [x] Support displayWith in spk-select (through templates)
+  - [x] use templates to template options and have the list inside the select
+  - [x] Add lazy search
 - [ ] Create a CSV input that create chips on comma (or enter) press
+- [ ] Create a accordion component
+- [ ] Create a timepicker component
 - [ ] Finalize file upload component
 
 - [ ] Streamline general color variables 10-70 instead of 100-900 (align with figma)
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
 - [ ] Make colors optional/configurable (primary, accent, tertiary, warn, success) on a component level and generally
 - [ ] Create documentation with examples for all components
-
-- [ ] Refactor select component once again
-  - [ ] Support displayWith in spk-select
-  - [ ] use templates to template options and have the list inside the select
 
 ### Nice to haves for v1 beta
 
