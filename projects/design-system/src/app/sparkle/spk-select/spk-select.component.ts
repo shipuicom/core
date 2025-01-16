@@ -60,6 +60,7 @@ export default class SpkSelectComponent {
   ]);
   selectedOption = signal<Food | null>(null);
   lazySearchableOption = signal<string | null>(null);
+  lazySearchableSelectedOption = signal<Food | null>(null);
   lazyOptions = signal<{ id: number; name: string; hello: { world: { value: string } } }[]>([]);
   lazyLoading = signal(false);
   lazyOptionsEffect = effect(() => {

@@ -30,6 +30,7 @@
   </spk-select-new>
 
   <spk-select-new
+    [(selectedOption)]="lazySearchableSelectedOption"
     [options]="lazyOptions()"
     [isLoading]="lazyLoading()"
     [isClearable]="true"
@@ -53,8 +54,7 @@
     form control value - inputCtrlNew1: {{ inputCtrlNew1.value | json }} - {{ inputCtrlNew1.valid }}
     form control value - inputCtrlNew2: {{ inputCtrlNew2.value | json }} - {{ inputCtrlNew2.valid }}
     spk-select-new selected option: {{ selectedOption() | json }}
-    lazy selected option: {{ lazySearchableOption() | json }}
-
+    lazy selected option: {{ lazySearchableSelectedOption() | json }} - {{ lazySearchableOption() }}
   </pre>
 </section>
 
