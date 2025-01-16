@@ -23,6 +23,11 @@ $spkSelectNew: false !default;
 
     .selected-value {
       min-width: 150px;
+      color: var(--base-level-60);
+
+      &.is-selected {
+        color: var(--base-level-70);
+      }
     }
 
     .input {

@@ -50,7 +50,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
         <div class="input" [class.show-search-text]="_showSearchText" ngProjectAs="input" #inputWrap>
           <ng-content select="input" />
 
-          <div class="selected-value">
+          <div class="selected-value" [class.is-selected]="_inputState === 'selected'">
             @if (_selectOption) {
               @if (optionTemplate()) {
                 <ng-container *ngTemplateOutlet="_optionTemplate; context: { $implicit: _selectOption }" />
@@ -123,6 +123,10 @@ export class SparkleSelectNewComponent {
   selectedOptionIndex = signal<number>(-1);
   focusedOptionIndex = signal<number>(-1);
   inputState = computed(() => {
+    if (this.selectedValue() && !this.isOpen()) {
+      return 'selected';
+    }
+
     if (this.isLoading()) {
       return 'loading';
     }
@@ -137,10 +141,6 @@ export class SparkleSelectNewComponent {
 
     if (this.inlineSearch() || this.lazySearch()) {
       return 'searching';
-    }
-
-    if (this.selectedOptionIndex() > -1) {
-      return 'selected';
     }
 
     return 'closed';
@@ -259,7 +259,6 @@ export class SparkleSelectNewComponent {
 
         input.autocomplete = 'off';
         input.addEventListener('input', () => {
-          this.#log('input changed', input.value);
           this.inputValue.set(input.value);
         });
 
@@ -370,9 +369,9 @@ export class SparkleSelectNewComponent {
     return path.split('.').reduce((o: unknown, i: string) => (o as any)?.[i], obj);
   }
 
-  #log(...message: any) {
-    if (this.debugRef()) {
-      console.log(`${this.debugRef()} - ${message}:`, message);
-    }
-  }
+  // #log(...message: any) {
+  //   if (this.debugRef()) {
+  //     console.log(`${this.debugRef()} - ${message}:`, message);
+  //   }
+  // }
 }
