@@ -53,72 +53,72 @@ $spkSelectNew: false !default;
         opacity: 0;
       }
     }
+  }
 
-    .sparkle-options {
-      padding: p2r(8 0);
+  .sparkle-options {
+    padding: p2r(8 0);
+    display: flex;
+    flex-direction: column;
+    max-height: p2r(180);
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    [spk-title] {
+      font: var(--paragraph-30);
+      color: var(--base-level-60);
+      padding: p2r(8 12);
+      // margin: p2r(0 8);
+      width: calc(100% - #{p2r(16)});
+      user-select: none;
+    }
+
+    .option {
       display: flex;
-      flex-direction: column;
-      max-height: p2r(180);
-      overflow-y: auto;
-      overflow-x: hidden;
+      justify-content: flex-start;
+      align-items: center;
+      min-height: p2r(32);
+      margin: p2r(0 8);
+      padding: p2r(0 8);
+      gap: p2r(8);
+      width: calc(100% - #{p2r(16)});
+      border-radius: var(--shape-2);
+      appearance: none;
+      background-color: transparent;
+      border: 0;
+      cursor: pointer;
+      color: var(--base-level-70);
+      user-select: none;
 
-      [spk-title] {
-        font: var(--paragraph-30);
-        color: var(--base-level-60);
-        padding: p2r(8 12);
-        // margin: p2r(0 8);
-        width: calc(100% - #{p2r(16)});
-        user-select: none;
+      spk-checkbox {
+        margin-left: auto;
       }
 
-      .option {
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        min-height: p2r(32);
-        margin: p2r(0 8);
-        padding: p2r(0 8);
-        gap: p2r(8);
-        width: calc(100% - #{p2r(16)});
-        border-radius: var(--shape-2);
-        appearance: none;
-        background-color: transparent;
-        border: 0;
-        cursor: pointer;
-        color: var(--base-level-70);
-        user-select: none;
+      &[disabled] {
+        opacity: 0.3;
+        cursor: initial;
 
-        spk-checkbox {
-          margin-left: auto;
-        }
-
-        &[disabled] {
-          opacity: 0.3;
-          cursor: initial;
-
-          &:hover {
-            background-color: transparent;
-          }
-        }
-
-        spk-icon {
-          font-size: p2r(16);
-        }
-
-        &.active,
-        &:checked,
         &:hover {
-          background-color: var(--base-level-30);
-          color: var(--base-level-70);
+          background-color: transparent;
         }
+      }
 
-        &.focused {
-          background-color: var(--primary-level-20);
-          color: var(--base-level-70);
+      spk-icon {
+        font-size: p2r(16);
+      }
 
-          &:hover {
-            background-color: var(--primary-level-30);
-          }
+      &.active,
+      &:checked,
+      &:hover {
+        background-color: var(--base-level-30);
+        color: var(--base-level-70);
+      }
+
+      &.focused {
+        background-color: var(--primary-level-20);
+        color: var(--base-level-70);
+
+        &:hover {
+          background-color: var(--primary-level-30);
         }
       }
     }

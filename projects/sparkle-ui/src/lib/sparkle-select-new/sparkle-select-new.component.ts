@@ -272,6 +272,10 @@ export class SparkleSelectNewComponent {
           this.inputValue.set(input.value);
         });
 
+        input.addEventListener('focus', () => {
+          this.isOpen.set(true);
+        });
+
         input.addEventListener('keydown', (e) => {
           if (e.key === 'Escape' || e.key === 'Tab') {
             this.close();

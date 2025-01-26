@@ -5,17 +5,12 @@
     [isClearable]="true"
     [options]="options()"
     [optionTemplate]="optionTemplate"
-    [debugRef]="1"
     placeholder="Select some option NOW!!">
     <label>Reactive Form and optionTemplate Select</label>
     <input type="text" [formControl]="inputCtrlNew1" />
   </spk-select-new>
 
-  <spk-select-new
-    [isClearable]="true"
-    [options]="flatOptions()"
-    [debugRef]="2"
-    [placeholderTemplate]="placeholderTemplate">
+  <spk-select-new [isClearable]="true" [options]="flatOptions()" [placeholderTemplate]="placeholderTemplate">
     <label>Inline Template flat options</label>
     <input type="text" [formControl]="inputCtrlNew2" />
 
@@ -24,9 +19,14 @@
     </ng-template>
   </spk-select-new>
 
-  <spk-select-new [options]="options()" label="hello.world.value" value="id" [inlineSearch]="true" [debugRef]="4">
+  <spk-select-new
+    [options]="options()"
+    label="hello.world.value"
+    value="id"
+    [inlineSearch]="true"
+    [(selectedOption)]="selectedOption">
     <label>Searchable Select</label>
-    <input type="text" [(ngModel)]="selectedOption" />
+    <input type="text" />
   </spk-select-new>
 
   <spk-select-new
@@ -35,8 +35,8 @@
     [isLoading]="lazyLoading()"
     [isClearable]="true"
     label="hello.world.value"
-    [lazySearch]="true"
-    [debugRef]="5">
+    value="id"
+    [lazySearch]="true">
     <label>Searchable Select</label>
     <input type="text" [(ngModel)]="lazySearchableOption" />
   </spk-select-new>
