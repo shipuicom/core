@@ -53,7 +53,6 @@ export class SparkleFormFieldComponent {
     const text = this.#selfRef.nativeElement.querySelector('textarea');
 
     if (!supportFieldSizing && text !== null) {
-      const text = this.#selfRef.nativeElement.querySelector('textarea');
       function resize() {
         text.style.height = 'auto';
         text.style.height = text.scrollHeight + 'px';
