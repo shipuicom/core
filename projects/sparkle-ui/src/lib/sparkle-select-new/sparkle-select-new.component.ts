@@ -282,7 +282,7 @@ export class SparkleSelectNewComponent {
 
         input.addEventListener('focus', () => {
           if (this.readonly()) return;
-          this.isOpen.set(true);
+          this.open();
         });
 
         input.addEventListener('keydown', (e) => {
