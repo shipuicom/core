@@ -174,6 +174,14 @@ export class SparkleSelectNewComponent {
     this.isValid.set(isValid);
   });
 
+  #readonlyEffect = effect(() => {
+    const input = this.#inputRef();
+
+    if (input) {
+      input.disabled = this.readonly();
+    }
+  });
+
   #filteredOptions = computed<unknown[]>(() => {
     const opts = this.options();
     const label = this.label();
@@ -273,6 +281,7 @@ export class SparkleSelectNewComponent {
         });
 
         input.addEventListener('focus', () => {
+          if (this.readonly()) return;
           this.isOpen.set(true);
         });
 

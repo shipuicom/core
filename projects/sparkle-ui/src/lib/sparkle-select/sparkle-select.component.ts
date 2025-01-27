@@ -207,6 +207,7 @@ export class SparkleSelectComponent {
 
     if (!input) return;
 
+    input.disabled = this.readonly();
     this.#createCustomInputEventListener(input);
 
     input.addEventListener('inputValueChanged', (event) => {
@@ -235,6 +236,10 @@ export class SparkleSelectComponent {
     const input = this.#inputRef();
 
     if (input) {
+      input.addEventListener('focus', () => {
+        this.isOpen.set(true);
+      });
+
       input.addEventListener(
         'keydown',
         (e) => {
