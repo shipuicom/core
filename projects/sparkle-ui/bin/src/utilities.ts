@@ -19,7 +19,7 @@ function getGlyphsFromUnicodeRange(range: any) {
 
 export const mapUnicodesToGlyphs = (cssText: string) => {
   let glyphMap: Record<string, string> = {};
-  const pattern = /\.ph\.ph-([a-z-]+):before\s*{[^}]*content:\s*"\\([0-9a-z]+)";/g; // Global flag for multiple matches
+  const pattern = /\.ph\.ph-([a-z-]+):before\s*{[^}]*content:\s*'\\([0-9a-z]+)';/g; // Global flag for multiple matches
   const matches = Array.from(cssText.matchAll(pattern));
 
   for (let index = 0; index < matches.length; index++) {
