@@ -64,7 +64,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
               @if (_placeholderTemplate) {
                 <ng-container *ngTemplateOutlet="_placeholderTemplate" />
               } @else {
-                {{ placeholder() ?? 'Select an option' }}
+                {{ placeholder() ?? '' }}
               }
             }
           </div>
