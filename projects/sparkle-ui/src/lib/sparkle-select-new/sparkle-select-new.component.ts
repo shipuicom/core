@@ -87,7 +87,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
         }
       </spk-form-field>
 
-      <div class="sparkle-options">
+      <div class="sparkle-options" #optionsWrap>
         @for (option of optionsSignal(); track $index) {
           <li
             (click)="selectOption($index)"
@@ -128,6 +128,7 @@ export class SparkleSelectNewComponent {
 
   inlineTemplate = contentChild<TemplateRef<unknown>>(TemplateRef);
   inputWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('inputWrap');
+  optionsWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('optionsWrap');
 
   #inputRef = signal<HTMLInputElement | null>(null);
   isOpen = signal(false);
@@ -299,6 +300,7 @@ export class SparkleSelectNewComponent {
             const newIndex = (this.focusedOptionIndex() as number) + 1;
 
             this.focusedOptionIndex.set(newIndex > this.optionsSignal().length - 1 ? 0 : newIndex);
+            this.#scrollToFocusedOption();
           }
 
           if (e.key === 'ArrowUp') {
@@ -306,6 +308,7 @@ export class SparkleSelectNewComponent {
             const newIndex = (this.focusedOptionIndex() as number) - 1;
 
             this.focusedOptionIndex.set(newIndex < 0 ? this.optionsSignal().length - 1 : newIndex);
+            this.#scrollToFocusedOption();
           }
         });
 
@@ -328,6 +331,13 @@ export class SparkleSelectNewComponent {
         subtree: true,
       });
     }
+  }
+
+  #scrollToFocusedOption() {
+    setTimeout(() => {
+      const findElementWithClassFocused = this.optionsWrapRef().nativeElement.querySelector('.focused');
+      findElementWithClassFocused?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
   }
 
   open() {

@@ -41,7 +41,19 @@ export default class SpkSelectComponent {
   inputCtrlNew1 = new FormControl<any | null>(null);
   inputCtrlNew2 = new FormControl<any | null>(null);
 
-  flatOptions = signal(['Pizza', 'Burger', 'Sushi', 'Pasta', 'Salad', 'Sandwich']);
+  flatOptions = signal([
+    'Pizza',
+    'Burger',
+    'Sushi',
+    'Pasta',
+    'Salad',
+    'Sandwich',
+    'Pizza',
+    'Burger',
+    'Sushi',
+    'Pasta',
+    'Salad',
+  ]);
   options = signal<{ id: number; name: string; hello: { world: { value: string } } }[]>([
     {
       id: 1,
@@ -57,6 +69,11 @@ export default class SpkSelectComponent {
     { id: 4, name: 'Pasta', hello: { world: { value: 'hello world pasta' } } },
     { id: 5, name: 'Salad', hello: { world: { value: 'hello world salad' } } },
     { id: 6, name: 'Sandwich', hello: { world: { value: 'hello world sandwich' } } },
+    { id: 7, name: 'Pizza', hello: { world: { value: 'hello world pizza' } } },
+    { id: 8, name: 'Burger', hello: { world: { value: 'hello world burger' } } },
+    { id: 9, name: 'Sushi', hello: { world: { value: 'hello world sushi' } } },
+    { id: 10, name: 'Pasta', hello: { world: { value: 'hello world pasta' } } },
+    { id: 11, name: 'Salad', hello: { world: { value: 'hello world salad' } } },
   ]);
   selectedOption = signal<Food | null>(null);
   lazySearchableOption = signal<string | null>(null);
