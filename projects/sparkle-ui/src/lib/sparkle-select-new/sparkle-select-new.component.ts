@@ -313,7 +313,7 @@ export class SparkleSelectNewComponent {
         });
 
         if (typeof input.value === 'string') {
-          this.inputValue.set(input.value);
+          this.selectOptionByValue(input.value);
         }
 
         this.#inputRef.set(input);
@@ -345,13 +345,12 @@ export class SparkleSelectNewComponent {
 
     if (this.lazySearch() || this.inlineSearch()) {
       this.prevInputValue.set(this.inputValue());
-    }
+      this.inputValue.set('');
 
-    this.inputValue.set('');
-
-    if (this.#inputRef()) {
-      this.#inputRef()!.value = '';
-      this.#inputRef()!.dispatchEvent(new Event('input'));
+      if (this.#inputRef()) {
+        this.#inputRef()!.value = '';
+        this.#inputRef()!.dispatchEvent(new Event('input'));
+      }
     }
   }
 
@@ -367,10 +366,22 @@ export class SparkleSelectNewComponent {
     this.isOpen.set(false);
   }
 
-  close(action: 'fromPopover' | 'closed' | 'active' = 'closed') {
+  selectOptionByValue(value: string) {
+    const valueKey = this.value();
+    const optionIndex = this.options().findIndex((x) =>
+      valueKey ? this.#getProperty(x, valueKey)?.toString() === value : x?.toString() === value
+    );
+
+    if (optionIndex > -1) {
+      this.selectOption(optionIndex);
+    }
+  }
+
+  close(action: 'fromPopover' | 'closed' | 'active' | 'escape' = 'closed') {
     this.isOpen.set(false);
+
     if ((this.lazySearch() || this.inlineSearch()) && this.prevInputValue()) {
-      this.inputValue.set(this.prevInputValue()!);
+      this.selectOptionByValue(this.prevInputValue()!);
     }
   }
 

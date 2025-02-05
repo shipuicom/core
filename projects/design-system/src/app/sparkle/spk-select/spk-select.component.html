@@ -4,6 +4,7 @@
   <spk-select-new
     [isClearable]="true"
     [options]="options()"
+    value="id"
     [optionTemplate]="optionTemplate"
     placeholder="Select some option NOW!!">
     <label>Reactive Form and optionTemplate Select</label>
@@ -55,7 +56,8 @@
     form control value - inputCtrlNew1: {{ inputCtrlNew1.value | json }} - {{ inputCtrlNew1.valid }}
     form control value - inputCtrlNew2: {{ inputCtrlNew2.value | json }} - {{ inputCtrlNew2.valid }}
     spk-select-new selected option: {{ selectedOption() | json }}
-    lazy selected option: {{ lazySearchableSelectedOption() | json }} - {{ lazySearchableOption() }}
+    lazy selected option: {{ lazySearchableSelectedOption() | json }} - {{ lazySearchableOption() }} - {{ typeof lazySearchableOption() }}
+    <!-- lazy selected option: {{ lazySearchableSelectedOption() | json }}  -->
   </pre>
 </section>
 
