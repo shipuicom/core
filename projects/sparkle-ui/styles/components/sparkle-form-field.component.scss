@@ -77,6 +77,11 @@ $spkFormField: true !default;
       --ff-prefix-bg: var(--warn-level-20);
     }
 
+    &.autosize .input-wrap {
+      height: auto;
+      min-height: var(--ff-h);
+    }
+
     .input-wrap {
       display: flex;
       align-items: center;

@@ -39,6 +39,7 @@ type FoodGroup = {
 export default class SpkSelectComponent {
   // New
   inputCtrlNew1 = new FormControl<any | null>(1);
+  inputCtrlNew1Multiple = new FormControl<any | null>(1);
   inputCtrlNew2 = new FormControl<any | null>('Pizza');
 
   flatOptions = signal([
@@ -57,10 +58,10 @@ export default class SpkSelectComponent {
   options = signal<{ id: number; name: string; hello: { world: { value: string } } }[]>([
     {
       id: 1,
-      name: 'Pizza',
+      name: 'Pizza123',
       hello: {
         world: {
-          value: 'hello world pizza',
+          value: 'hello world pizza123',
         },
       },
     },
@@ -70,14 +71,14 @@ export default class SpkSelectComponent {
     { id: 5, name: 'Salad', hello: { world: { value: 'hello world salad' } } },
     { id: 6, name: 'Sandwich', hello: { world: { value: 'hello world sandwich' } } },
     { id: 7, name: 'Pizza', hello: { world: { value: 'hello world pizza' } } },
-    { id: 8, name: 'Burger', hello: { world: { value: 'hello world burger' } } },
-    { id: 9, name: 'Sushi', hello: { world: { value: 'hello world sushi' } } },
-    { id: 10, name: 'Pasta', hello: { world: { value: 'hello world pasta' } } },
-    { id: 11, name: 'Salad', hello: { world: { value: 'hello world salad' } } },
+    { id: 8, name: 'Burgeraaa', hello: { world: { value: 'hello world burgeraa' } } },
+    { id: 9, name: 'Sushiaaa', hello: { world: { value: 'hello world sushiaaa' } } },
+    { id: 10, name: 'Pastaaa', hello: { world: { value: 'hello world pastaaaa' } } },
+    { id: 11, name: 'Saladaa', hello: { world: { value: 'hello world saladaaa' } } },
   ]);
-  selectedOption = signal<Food | null>(null);
+  selectedOption = signal<Food[]>([]);
   lazySearchableOption = signal<string | null>(null);
-  lazySearchableSelectedOption = signal<Food | null>(null);
+  lazySearchableSelectedOption = signal<Food[]>([]);
   lazyOptions = signal<{ id: number; name: string; hello: { world: { value: string } } }[]>([]);
   lazyLoading = signal(false);
   lazyOptionsEffect = effect(() => {

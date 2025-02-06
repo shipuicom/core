@@ -13,6 +13,7 @@ import {
   TemplateRef,
   viewChild,
 } from '@angular/core';
+import { SparkleCheckboxComponent } from '../sparkle-checkbox/sparkle-checkbox.component';
 import { SparkleFormFieldComponent } from '../sparkle-form-field/sparkle-form-field.component';
 import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 import { SparklePopoverComponent } from '../sparkle-popover/sparkle-popover.component';
@@ -25,13 +26,14 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
     SparklePopoverComponent,
     SparkleFormFieldComponent,
     SparkleIconComponent,
+    SparkleCheckboxComponent,
     SparkleSpinnerComponent,
   ],
   template: `
     @let _placeholderTemplate = placeholderTemplate();
     @let _optionTemplate = optionTemplate();
     @let _inlineTemplate = inlineTemplate();
-    @let _selectOption = selectedOption();
+    @let _selectedOptions = selectedOptions();
     @let _showSearchText = (inlineSearch() || lazySearch()) && isOpen() && !isValid();
     @let _inputState = inputState();
 
@@ -40,25 +42,35 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
       [(isOpen)]="isOpen"
       [disableOpenByClick]="true"
       (closed)="close()"
-      [markForCheck]="optionsSignal()"
       [options]="{
         closeOnButton: false,
         closeOnEsc: false,
       }">
-      <spk-form-field trigger (click)="open()" [class]="readonly() ? 'readonly' : ''">
+      <spk-form-field
+        trigger
+        (click)="open()"
+        [class.autosize]="selectMultiple()"
+        [class]="readonly() ? 'readonly' : ''">
         <ng-content select="label" ngProjectAs="label" />
 
         <div class="input" [class.show-search-text]="_showSearchText" ngProjectAs="input" #inputWrap>
-          <ng-content select="input" />
-
           <div class="selected-value" [class.is-selected]="_inputState === 'selected'">
-            @if (_selectOption) {
-              @if (optionTemplate()) {
-                <ng-container *ngTemplateOutlet="_optionTemplate; context: { $implicit: _selectOption }" />
-              } @else if (_inlineTemplate) {
-                <ng-container *ngTemplateOutlet="_inlineTemplate; context: { $implicit: _selectOption }" />
+            @if (_selectedOptions.length > 0) {
+              @if (_optionTemplate || _inlineTemplate) {
+                @for (selectedOption of _selectedOptions; track $index; let last = $last) {
+                  @if (_optionTemplate) {
+                    <ng-container *ngTemplateOutlet="_optionTemplate; context: { $implicit: selectedOption }" />
+                  } @else if (_inlineTemplate) {
+                    <ng-container *ngTemplateOutlet="_inlineTemplate; context: { $implicit: selectedOption }" />
+                  } @else {
+                    {{ selectedOption }}
+                    @if (!last) {
+                      ,
+                    }
+                  }
+                }
               } @else {
-                {{ selectedLabel() }}
+                {{ selectedLabels() }}
               }
             } @else {
               @if (_placeholderTemplate) {
@@ -68,6 +80,8 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
               }
             }
           </div>
+
+          <ng-content select="input" />
         </div>
 
         @if (_inputState === 'closed') {
@@ -92,9 +106,13 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
           <li
             (click)="selectOption($index)"
             class="option"
-            [class.selected]="$index === selectedOptionIndex()"
+            [class.selected]="isSelected($index)"
             [class.focused]="$index === focusedOptionIndex()">
-            @if (optionTemplate()) {
+            @if (selectMultiple()) {
+              <spk-checkbox class="primary raised" [class.active]="isSelected($index)" />
+            }
+
+            @if (_optionTemplate) {
               <ng-container *ngTemplateOutlet="_optionTemplate; context: { $implicit: option }" />
             } @else if (_inlineTemplate) {
               <ng-container *ngTemplateOutlet="_inlineTemplate; context: { $implicit: option }" />
@@ -106,6 +124,9 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
       </div>
     </spk-popover>
   `,
+  host: {
+    '[class.multiple]': 'selectMultiple()',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleSelectNewComponent {
@@ -121,10 +142,11 @@ export class SparkleSelectNewComponent {
   readonly = input<boolean>(false);
   isLoading = input<boolean>(false);
   isClearable = input<boolean>(false);
+  selectMultiple = input<boolean>(false);
   optionTemplate = input<TemplateRef<unknown> | null>(null);
   placeholderTemplate = input<TemplateRef<unknown> | null>(null);
   isValid = model<boolean>(false);
-  selectedOption = model<unknown | null>(null);
+  selectedOptions = model<unknown[]>([]);
 
   inlineTemplate = contentChild<TemplateRef<unknown>>(TemplateRef);
   inputWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('inputWrap');
@@ -132,10 +154,10 @@ export class SparkleSelectNewComponent {
 
   #inputRef = signal<HTMLInputElement | null>(null);
   isOpen = signal(false);
-  selectedOptionIndex = signal<number>(-1);
+  selectedOptionIndices = signal<number[]>([]);
   focusedOptionIndex = signal<number>(-1);
   inputState = computed(() => {
-    if (this.selectedValue() && !this.isOpen()) {
+    if (this.selectedValues().length > 0 && !this.isOpen()) {
       return 'selected';
     }
 
@@ -165,14 +187,30 @@ export class SparkleSelectNewComponent {
     const inputValue = this.inputValue();
     const options = this.options();
     const valueKey = this.value();
+    const selectMultiple = this.selectMultiple();
 
-    // Check if the input value matches any option's value
-    const isValid = options.some((option) => {
-      const optionValue = valueKey ? this.#getProperty(option, valueKey) : option;
-      return inputValue === optionValue?.toString();
-    });
+    if (selectMultiple) {
+      const inputValues = inputValue
+        .split(',')
+        .map((val) => val.trim())
+        .filter((x) => x !== '');
 
-    this.isValid.set(isValid);
+      const isValid = inputValues.every((inputValue) => {
+        return options.some((option) => {
+          const optionValue = valueKey ? this.#getProperty(option, valueKey) : option;
+          return inputValue === optionValue?.toString();
+        });
+      });
+
+      this.isValid.set(isValid);
+    } else {
+      const isValid = options.some((option) => {
+        const optionValue = valueKey ? this.#getProperty(option, valueKey) : option;
+        return inputValue === optionValue?.toString();
+      });
+
+      this.isValid.set(isValid);
+    }
   });
 
   #readonlyEffect = effect(() => {
@@ -221,49 +259,62 @@ export class SparkleSelectNewComponent {
     return result;
   });
 
-  selectedLabel = computed(() => {
-    const selected = this.selectedOption();
+  selectedLabels = computed(() => {
+    const selected = this.selectedOptions();
     const label = this.label();
 
     if (!label) {
-      return selected;
+      return selected.join(', ');
     }
 
-    return this.#getProperty(selected, label);
+    return selected.map((selected) => this.#getProperty(selected, label)).join(', ');
   });
 
-  selectedLabelEffect = effect(() => {
-    const selectedLabel = this.selectedLabel();
-    const inputValue = this.inputValue();
-
-    if (selectedLabel !== inputValue) {
-      this.focusedOptionIndex.set(0);
-    }
-  });
-
-  selectedValue = computed(() => {
-    const selected = this.selectedOption();
+  selectedValues = computed(() => {
+    const selected = this.selectedOptions();
     const valueKey = this.value();
 
-    if (!valueKey || !selected) {
+    if (!valueKey || selected.length === 0) {
       return selected;
     }
 
-    return this.#getProperty(selected, valueKey);
+    return selected.map((selected) => this.#getProperty(selected, valueKey));
   });
 
-  selectedOptionIndexEffect = effect(() => {
-    const selectedValue = this.selectedValue();
+  selectedOptionIndicesEffect = effect(() => {
+    const selectedValues = this.selectedValues();
     const options = this.#filteredOptions();
+    const valueKey = this.value();
 
-    this.selectedOptionIndex.set(options.indexOf(selectedValue));
+    if (this.selectMultiple()) {
+      this.selectedOptionIndices.set(
+        selectedValues.map((selectedValue) =>
+          options.findIndex((option) => {
+            const optionValue = valueKey ? this.#getProperty(option, valueKey) : option;
+            return optionValue === selectedValue;
+          })
+        )
+      );
+    } else {
+      const selectedValue = selectedValues[0];
+      const index = options.findIndex((option) => {
+        const optionValue = valueKey ? this.#getProperty(option, valueKey) : option;
+        return optionValue === selectedValue;
+      });
+      this.selectedOptionIndices.set(index > -1 ? [index] : []);
+    }
   });
 
   selectedValueEffect = effect(() => {
-    const selectedValue = this.selectedValue()?.toString();
+    const selectedValues = this.selectedValues();
 
     if (this.#inputRef()) {
-      this.#inputRef()!.value = (selectedValue as string) ?? '';
+      if (this.selectMultiple()) {
+        this.#inputRef()!.value = selectedValues.join(',');
+      } else {
+        this.#inputRef()!.value = selectedValues[0]?.toString() ?? '';
+      }
+
       this.#inputRef()!.dispatchEvent(new Event('input'));
     }
   });
@@ -310,10 +361,19 @@ export class SparkleSelectNewComponent {
             this.focusedOptionIndex.set(newIndex < 0 ? this.optionsSignal().length - 1 : newIndex);
             this.#scrollToFocusedOption();
           }
+
+          if (!(this.lazySearch() || this.inlineSearch())) {
+            e.preventDefault();
+            return;
+          }
         });
 
         if (typeof input.value === 'string') {
-          this.selectOptionByValue(input.value);
+          if (this.selectMultiple()) {
+            this.selectOptionsByValue(input.value);
+          } else {
+            this.selectOptionByValue(input.value);
+          }
         }
 
         this.#inputRef.set(input);
@@ -343,8 +403,15 @@ export class SparkleSelectNewComponent {
   open() {
     this.isOpen.set(true);
 
+    if (!this.selectMultiple()) {
+      const selectedIndex = this.selectedOptionIndices()[0];
+      this.focusedOptionIndex.set(selectedIndex !== undefined ? selectedIndex : 0);
+      this.#scrollToFocusedOption();
+    }
+
     if (this.lazySearch() || this.inlineSearch()) {
       this.prevInputValue.set(this.inputValue());
+      this.focusedOptionIndex.set(0);
       this.inputValue.set('');
 
       if (this.#inputRef()) {
@@ -361,9 +428,27 @@ export class SparkleSelectNewComponent {
       return;
     }
 
-    this.selectedOption.set(option);
     this.prevInputValue.set(null);
-    this.isOpen.set(false);
+
+    if (this.selectMultiple()) {
+      const currentIndices = this.selectedOptionIndices();
+      const index = currentIndices.indexOf(optionIndex);
+      if (index > -1) {
+        currentIndices.splice(index, 1);
+        this.selectedOptionIndices.set([...currentIndices]);
+        this.selectedOptions.set(currentIndices.map((i) => this.#filteredOptions()[i]));
+      } else {
+        this.selectedOptionIndices.set([...currentIndices, optionIndex]);
+        this.selectedOptions.set([...this.selectedOptions(), option]);
+      }
+    } else {
+      this.selectedOptions.set([option]);
+      this.isOpen.set(false);
+    }
+  }
+
+  isSelected(optionIndex: number): boolean {
+    return this.selectedOptionIndices().includes(optionIndex);
   }
 
   selectOptionByValue(value: string) {
@@ -377,11 +462,35 @@ export class SparkleSelectNewComponent {
     }
   }
 
-  close(action: 'fromPopover' | 'closed' | 'active' | 'escape' = 'closed') {
+  selectOptionsByValue(values: string) {
+    const valueKey = this.value();
+    const valueArray = values
+      .split(',')
+      .map((v) => v.trim())
+      .filter((x) => x !== '');
+
+    valueArray.forEach((value) => {
+      const optionIndex = this.options().findIndex((x) =>
+        valueKey ? this.#getProperty(x, valueKey)?.toString() === value : x?.toString() === value
+      );
+
+      if (optionIndex > -1) {
+        this.selectOption(optionIndex);
+      }
+    });
+  }
+
+  close() {
     this.isOpen.set(false);
 
-    if ((this.lazySearch() || this.inlineSearch()) && this.prevInputValue()) {
-      this.selectOptionByValue(this.prevInputValue()!);
+    const prevInputValue = this.prevInputValue();
+
+    if ((this.lazySearch() || this.inlineSearch()) && prevInputValue !== null && prevInputValue !== undefined) {
+      if (this.selectMultiple()) {
+        this.selectOptionsByValue(prevInputValue!);
+      } else {
+        this.selectOptionByValue(prevInputValue!);
+      }
     }
   }
 
@@ -395,7 +504,7 @@ export class SparkleSelectNewComponent {
     $event?.stopPropagation();
 
     this.inputValue.set('');
-    this.selectedOption.set(null);
+    this.selectedOptions.set([]);
     this.isOpen.set(false);
     this.prevInputValue.set(null);
   }

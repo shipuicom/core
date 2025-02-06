@@ -11,6 +11,17 @@
     <input type="text" [formControl]="inputCtrlNew1" />
   </spk-select-new>
 
+  <spk-select-new
+    [isClearable]="true"
+    [selectMultiple]="true"
+    [options]="options()"
+    value="id"
+    [optionTemplate]="optionTemplate"
+    placeholder="Select some option NOW!!">
+    <label>Reactive Form and optionTemplate Select</label>
+    <input type="text" [formControl]="inputCtrlNew1Multiple" />
+  </spk-select-new>
+
   <spk-select-new [isClearable]="true" [options]="flatOptions()" [placeholderTemplate]="placeholderTemplate">
     <label>Inline Template flat options</label>
     <input type="text" [formControl]="inputCtrlNew2" />
@@ -26,18 +37,19 @@
     [readonly]="true"
     value="id"
     [inlineSearch]="true"
-    [(selectedOption)]="selectedOption">
+    [(selectedOptions)]="selectedOption">
     <label>Searchable Select</label>
     <input type="text" />
   </spk-select-new>
 
   <spk-select-new
-    [(selectedOption)]="lazySearchableSelectedOption"
+    [(selectedOptions)]="lazySearchableSelectedOption"
     [options]="lazyOptions()"
     [isLoading]="lazyLoading()"
     [isClearable]="true"
     label="hello.world.value"
     value="id"
+    [debugRef]="4"
     [lazySearch]="true">
     <label>Searchable Select</label>
     <input type="text" [(ngModel)]="lazySearchableOption" />
@@ -54,6 +66,7 @@
 
   <pre>
     form control value - inputCtrlNew1: {{ inputCtrlNew1.value | json }} - {{ inputCtrlNew1.valid }}
+    form control value - inputCtrlNew1Multiple: {{ inputCtrlNew1Multiple.value | json }} - {{ inputCtrlNew1Multiple.valid }}
     form control value - inputCtrlNew2: {{ inputCtrlNew2.value | json }} - {{ inputCtrlNew2.valid }}
     spk-select-new selected option: {{ selectedOption() | json }}
     lazy selected option: {{ lazySearchableSelectedOption() | json }} - {{ lazySearchableOption() }} - {{ typeof lazySearchableOption() }}
