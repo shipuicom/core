@@ -14,6 +14,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { SparkleCheckboxComponent } from '../sparkle-checkbox/sparkle-checkbox.component';
+import { SparkleChipComponent } from '../sparkle-chip/sparkle-chip.component';
 import { SparkleFormFieldComponent } from '../sparkle-form-field/sparkle-form-field.component';
 import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 import { SparklePopoverComponent } from '../sparkle-popover/sparkle-popover.component';
@@ -28,14 +29,19 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
     SparkleIconComponent,
     SparkleCheckboxComponent,
     SparkleSpinnerComponent,
+    SparkleChipComponent,
   ],
   template: `
     @let _placeholderTemplate = placeholderTemplate();
     @let _optionTemplate = optionTemplate();
+    @let _selectedOptionTemplate = selectedOptionTemplate();
     @let _inlineTemplate = inlineTemplate();
     @let _selectedOptions = selectedOptions();
     @let _showSearchText = (inlineSearch() || lazySearch()) && isOpen() && !isValid();
     @let _inputState = inputState();
+
+    @let _selOptionTemplate = _selectedOptionTemplate || _optionTemplate || _inlineTemplate;
+    @let _listOptionTemplate = _optionTemplate || _inlineTemplate;
 
     <spk-popover
       #formFieldWrapper
@@ -58,14 +64,19 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
             @if (_selectedOptions.length > 0) {
               @if (_optionTemplate || _inlineTemplate) {
                 @for (selectedOption of _selectedOptions; track $index; let last = $last) {
-                  @if (_optionTemplate) {
-                    <ng-container *ngTemplateOutlet="_optionTemplate; context: { $implicit: selectedOption }" />
-                  } @else if (_inlineTemplate) {
-                    <ng-container *ngTemplateOutlet="_inlineTemplate; context: { $implicit: selectedOption }" />
+                  @if (!asText() && selectMultiple()) {
+                    <spk-chip [class]="selectClasses()">
+                      @if (_selOptionTemplate) {
+                        <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
+                      } @else {
+                        {{ selectedOption }}
+                      }
+                    </spk-chip>
                   } @else {
-                    {{ selectedOption }}
-                    @if (!last) {
-                      ,
+                    @if (_selOptionTemplate) {
+                      <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
+                    } @else {
+                      {{ selectedOption }}
                     }
                   }
                 }
@@ -109,13 +120,11 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
             [class.selected]="isSelected($index)"
             [class.focused]="$index === focusedOptionIndex()">
             @if (selectMultiple()) {
-              <spk-checkbox class="primary raised" [class.active]="isSelected($index)" />
+              <spk-checkbox [class]="selectClasses()" [class.active]="isSelected($index)" />
             }
 
-            @if (_optionTemplate) {
-              <ng-container *ngTemplateOutlet="_optionTemplate; context: { $implicit: option }" />
-            } @else if (_inlineTemplate) {
-              <ng-container *ngTemplateOutlet="_inlineTemplate; context: { $implicit: option }" />
+            @if (_listOptionTemplate) {
+              <ng-container *ngTemplateOutlet="_listOptionTemplate; context: { $implicit: option }" />
             } @else {
               {{ option }}
             }
@@ -142,8 +151,10 @@ export class SparkleSelectNewComponent {
   readonly = input<boolean>(false);
   isLoading = input<boolean>(false);
   isClearable = input<boolean>(false);
+  asText = input<boolean>(false);
   selectMultiple = input<boolean>(false);
   optionTemplate = input<TemplateRef<unknown> | null>(null);
+  selectedOptionTemplate = input<TemplateRef<unknown> | null>(null);
   placeholderTemplate = input<TemplateRef<unknown> | null>(null);
   isValid = model<boolean>(false);
   selectedOptions = model<unknown[]>([]);
@@ -212,6 +223,8 @@ export class SparkleSelectNewComponent {
       this.isValid.set(isValid);
     }
   });
+
+  selectClasses = computed(() => this.#selfRef.nativeElement.classList.toString());
 
   #readonlyEffect = effect(() => {
     const input = this.#inputRef();
@@ -429,6 +442,7 @@ export class SparkleSelectNewComponent {
     }
 
     this.prevInputValue.set(null);
+    this.focusedOptionIndex.set(optionIndex);
 
     if (this.selectMultiple()) {
       const currentIndices = this.selectedOptionIndices();
