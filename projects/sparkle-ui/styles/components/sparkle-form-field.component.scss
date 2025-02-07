@@ -115,6 +115,10 @@ $spkFormField: true !default;
         transition: color 125ms linear;
       }
 
+      spk-chip spk-icon {
+        color: var(--chip-ic);
+      }
+
       spk-spinner {
         --spinner-size: var(--ff-spinner-size);
         --spinner-thickness: var(--ff-spinner-thickness);

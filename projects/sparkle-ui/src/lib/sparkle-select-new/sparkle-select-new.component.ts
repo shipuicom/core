@@ -65,12 +65,14 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
               @if (_optionTemplate || _inlineTemplate) {
                 @for (selectedOption of _selectedOptions; track $index; let last = $last) {
                   @if (!asText() && selectMultiple()) {
-                    <spk-chip [class]="selectClasses()">
+                    <spk-chip [class]="selectClasses()" class="small">
                       @if (_selOptionTemplate) {
                         <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
                       } @else {
                         {{ selectedOption }}
                       }
+
+                      <spk-icon (click)="removeSelectedOptionByIndex($event, $index)">x-circle</spk-icon>
                     </spk-chip>
                   } @else {
                     @if (_selOptionTemplate) {
@@ -459,6 +461,13 @@ export class SparkleSelectNewComponent {
       this.selectedOptions.set([option]);
       this.isOpen.set(false);
     }
+  }
+
+  removeSelectedOptionByIndex($event: MouseEvent, optionIndex: number) {
+    $event.stopPropagation();
+
+    this.selectedOptions.set(this.selectedOptions().filter((_, i) => i !== optionIndex));
+    this.selectedOptionIndices.set(this.selectedOptionIndices().filter((_, i) => i !== optionIndex));
   }
 
   isSelected(optionIndex: number): boolean {
