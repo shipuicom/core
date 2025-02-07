@@ -102,7 +102,7 @@ export class SparkleRangeSliderComponent {
         this.#observer.observe(this.inputField, { attributes: true, childList: false, subtree: false });
       }
     } else {
-      console.warn('No input field found');
+      console.error('No input field found');
     }
   }
 

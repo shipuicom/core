@@ -77,18 +77,18 @@ $spkRadio: true !default;
       --radio-bc: var(--accent-level-40);
     }
 
-    &.tertiary {
-      --radio-c: var(--tertiary-500);
-      --radiod-c: var(--tertiary-500);
-      --radio-bg: var(--tertiary-level-30);
-      --radio-bc: var(--tertiary-level-40);
-    }
-
     &.warn {
       --radio-c: var(--warn-500);
       --radiod-c: var(--warn-500);
       --radio-bg: var(--warn-level-30);
       --radio-bc: var(--warn-level-40);
+    }
+
+    &.error {
+      --radio-c: var(--error-500);
+      --radiod-c: var(--error-500);
+      --radio-bg: var(--error-level-30);
+      --radio-bc: var(--error-level-40);
     }
 
     &.success {
@@ -103,8 +103,8 @@ $spkRadio: true !default;
 
       &.primary,
       &.accent,
-      &.tertiary,
       &.warn,
+      &.error,
       &.success {
         --radio-bc: var(--base-level-40);
       }
@@ -132,12 +132,12 @@ $spkRadio: true !default;
         --radio-bg: var(--accent-500);
       }
 
-      &.tertiary {
-        --radio-bg: var(--tertiary-500);
-      }
-
       &.warn {
         --radio-bg: var(--warn-500);
+      }
+
+      &.error {
+        --radio-bg: var(--error-500);
       }
 
       &.success {
@@ -158,12 +158,12 @@ $spkRadio: true !default;
         --radio-bg: var(--accent-gradient-20);
       }
 
-      &.tertiary {
-        --radio-bg: var(--tertiary-gradient-20);
-      }
-
       &.warn {
         --radio-bg: var(--warn-gradient-20);
+      }
+
+      &.error {
+        --radio-bg: var(--error-gradient-20);
       }
 
       &.success {

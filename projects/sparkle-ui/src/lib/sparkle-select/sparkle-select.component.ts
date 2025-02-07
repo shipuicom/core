@@ -84,7 +84,7 @@ export class SparkleOptionComponent {
   }
 }
 
-const COLOR_CLASSES = ['primary', 'accent', 'tertiary', 'warn', 'success'];
+const COLOR_CLASSES = ['primary', 'accent', 'warn', 'error', 'success'];
 
 @Component({
   selector: 'spk-select',

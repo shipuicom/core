@@ -11,6 +11,7 @@ $useApexcharts: true !default;
 
 @use './core/core';
 
+$spkBaseTypes: ('base', 'simple', 'raised', 'outlined', 'flat');
 $spkAlert: true !default;
 $spkToggle: true !default;
 $spkButton: true !default;

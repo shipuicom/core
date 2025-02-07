@@ -11,11 +11,11 @@
       <spk-radio [class.active]="false" class="accent" />
       <spk-radio [class.active]="true" class="accent" />
 
-      <spk-radio [class.active]="false" class="tertiary" />
-      <spk-radio [class.active]="true" class="tertiary" />
-
       <spk-radio [class.active]="false" class="warn" />
       <spk-radio [class.active]="true" class="warn" />
+
+      <spk-radio [class.active]="false" class="error" />
+      <spk-radio [class.active]="true" class="error" />
 
       <spk-radio [class.active]="false" class="success" />
       <spk-radio [class.active]="true" class="success" />
@@ -34,11 +34,11 @@
       <spk-radio [class.active]="false" class="outlined accent" />
       <spk-radio [class.active]="true" class="outlined accent" />
 
-      <spk-radio [class.active]="false" class="outlined tertiary" />
-      <spk-radio [class.active]="true" class="outlined tertiary" />
-
       <spk-radio [class.active]="false" class="outlined warn" />
       <spk-radio [class.active]="true" class="outlined warn" />
+
+      <spk-radio [class.active]="false" class="outlined error" />
+      <spk-radio [class.active]="true" class="outlined error" />
 
       <spk-radio [class.active]="false" class="outlined success" />
       <spk-radio [class.active]="true" class="outlined success" />
@@ -57,11 +57,11 @@
       <spk-radio [class.active]="false" class="flat accent" />
       <spk-radio [class.active]="true" class="flat accent" />
 
-      <spk-radio [class.active]="false" class="flat tertiary" />
-      <spk-radio [class.active]="true" class="flat tertiary" />
-
       <spk-radio [class.active]="false" class="flat warn" />
       <spk-radio [class.active]="true" class="flat warn" />
+
+      <spk-radio [class.active]="false" class="flat error" />
+      <spk-radio [class.active]="true" class="flat error" />
 
       <spk-radio [class.active]="false" class="flat success" />
       <spk-radio [class.active]="true" class="flat success" />
@@ -80,11 +80,11 @@
       <spk-radio [class.active]="false" class="raised accent" />
       <spk-radio [class.active]="true" class="raised accent" />
 
-      <spk-radio [class.active]="false" class="raised tertiary" />
-      <spk-radio [class.active]="true" class="raised tertiary" />
-
       <spk-radio [class.active]="false" class="raised warn" />
       <spk-radio [class.active]="true" class="raised warn" />
+
+      <spk-radio [class.active]="false" class="raised error" />
+      <spk-radio [class.active]="true" class="raised error" />
 
       <spk-radio [class.active]="false" class="raised success" />
       <spk-radio [class.active]="true" class="raised success" />
@@ -98,8 +98,8 @@
     <h5>Basic</h5>
     <spk-radio [class.active]="active()" class="primary" (click)="active.set(!active())">Lorem ipsum dolor</spk-radio>
     <spk-radio [class.active]="active()" class="accent" (click)="active.set(!active())">Lorem ipsum dolor</spk-radio>
-    <spk-radio [class.active]="active()" class="tertiary" (click)="active.set(!active())">Lorem ipsum dolor</spk-radio>
     <spk-radio [class.active]="active()" class="warn" (click)="active.set(!active())">Lorem ipsum dolor</spk-radio>
+    <spk-radio [class.active]="active()" class="error" (click)="active.set(!active())">Lorem ipsum dolor</spk-radio>
     <spk-radio [class.active]="active()" class="success" (click)="active.set(!active())">Lorem ipsum dolor</spk-radio>
 
     <h5>Outlined</h5>
@@ -121,10 +121,10 @@
     <spk-radio [class.active]="active()" class="outlined accent" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-radio>
-    <spk-radio [class.active]="active()" class="outlined tertiary" (click)="active.set(!active())">
+    <spk-radio [class.active]="active()" class="outlined warn" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-radio>
-    <spk-radio [class.active]="active()" class="outlined warn" (click)="active.set(!active())">
+    <spk-radio [class.active]="active()" class="outlined error" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-radio>
     <spk-radio [class.active]="active()" class="outlined success" (click)="active.set(!active())">
@@ -138,10 +138,10 @@
     <spk-radio [class.active]="active()" class="flat accent" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-radio>
-    <spk-radio [class.active]="active()" class="flat tertiary" (click)="active.set(!active())">
+    <spk-radio [class.active]="active()" class="flat warn" (click)="active.set(!active())">Lorem ipsum dolor</spk-radio>
+    <spk-radio [class.active]="active()" class="flat error" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-radio>
-    <spk-radio [class.active]="active()" class="flat warn" (click)="active.set(!active())">Lorem ipsum dolor</spk-radio>
     <spk-radio [class.active]="active()" class="flat success" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-radio>
@@ -153,10 +153,10 @@
     <spk-radio [class.active]="active()" class="raised accent" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-radio>
-    <spk-radio [class.active]="active()" class="raised tertiary" (click)="active.set(!active())">
+    <spk-radio [class.active]="active()" class="raised warn" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-radio>
-    <spk-radio [class.active]="active()" class="raised warn" (click)="active.set(!active())">
+    <spk-radio [class.active]="active()" class="raised error" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-radio>
     <spk-radio [class.active]="active()" class="raised success" (click)="active.set(!active())">

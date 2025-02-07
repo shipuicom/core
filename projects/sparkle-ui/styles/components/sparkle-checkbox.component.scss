@@ -82,16 +82,16 @@ $spkCheckbox: true !default;
       --box-c: var(--accent-500);
     }
 
-    &.tertiary {
-      --box-bg: var(--tertiary-level-30);
-      --box-bc: var(--tertiary-level-40);
-      --box-c: var(--tertiary-500);
-    }
-
     &.warn {
       --box-bg: var(--warn-level-30);
       --box-bc: var(--warn-level-40);
       --box-c: var(--warn-500);
+    }
+
+    &.error {
+      --box-bg: var(--error-level-30);
+      --box-bc: var(--error-level-40);
+      --box-c: var(--error-500);
     }
 
     &.success {
@@ -105,8 +105,8 @@ $spkCheckbox: true !default;
 
       &.primary,
       &.accent,
-      &.tertiary,
       &.warn,
+      &.error,
       &.success {
         --box-bg: var(--base-level-10);
         --box-bc: var(--base-level-40);
@@ -117,8 +117,8 @@ $spkCheckbox: true !default;
     &.raised {
       &.primary,
       &.accent,
-      &.tertiary,
       &.warn,
+      &.error,
       &.success {
         --box-bc: var(--base-level-40);
         --box-c: var(--base-level-60);
@@ -166,12 +166,12 @@ $spkCheckbox: true !default;
       --box-bg: var(--accent-500);
     }
 
-    &.tertiary {
-      --box-bg: var(--tertiary-500);
-    }
-
     &.warn {
       --box-bg: var(--warn-500);
+    }
+
+    &.error {
+      --box-bg: var(--error-500);
     }
 
     &.success {
@@ -192,12 +192,12 @@ $spkCheckbox: true !default;
       --box-bg: var(--accent-gradient-20);
     }
 
-    &.tertiary {
-      --box-bg: var(--tertiary-gradient-20);
-    }
-
     &.warn {
       --box-bg: var(--warn-gradient-20);
+    }
+
+    &.error {
+      --box-bg: var(--error-gradient-20);
     }
 
     &.success {

@@ -68,14 +68,14 @@ $spkTabs: true !default;
       --tabs-c-active: var(--accent-500);
     }
 
-    &.tertiary {
-      --tabs-sel-bg: var(--tertiary-500);
-      --tabs-c-active: var(--tertiary-500);
-    }
-
     &.warn {
       --tabs-sel-bg: var(--warn-500);
       --tabs-c-active: var(--warn-500);
+    }
+
+    &.error {
+      --tabs-sel-bg: var(--error-500);
+      --tabs-c-active: var(--error-500);
     }
 
     &.success {

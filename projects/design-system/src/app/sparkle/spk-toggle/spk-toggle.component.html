@@ -11,11 +11,11 @@
       <spk-toggle [class.active]="false" class="accent" />
       <spk-toggle [class.active]="true" class="accent" />
 
-      <spk-toggle [class.active]="false" class="tertiary" />
-      <spk-toggle [class.active]="true" class="tertiary" />
-
       <spk-toggle [class.active]="false" class="warn" />
       <spk-toggle [class.active]="true" class="warn" />
+
+      <spk-toggle [class.active]="false" class="error" />
+      <spk-toggle [class.active]="true" class="error" />
 
       <spk-toggle [class.active]="false" class="success" />
       <spk-toggle [class.active]="true" class="success" />
@@ -34,11 +34,11 @@
       <spk-toggle [class.active]="false" class="outlined accent" />
       <spk-toggle [class.active]="true" class="outlined accent" />
 
-      <spk-toggle [class.active]="false" class="outlined tertiary" />
-      <spk-toggle [class.active]="true" class="outlined tertiary" />
-
       <spk-toggle [class.active]="false" class="outlined warn" />
       <spk-toggle [class.active]="true" class="outlined warn" />
+
+      <spk-toggle [class.active]="false" class="outlined error" />
+      <spk-toggle [class.active]="true" class="outlined error" />
 
       <spk-toggle [class.active]="false" class="outlined success" />
       <spk-toggle [class.active]="true" class="outlined success" />
@@ -57,11 +57,11 @@
       <spk-toggle [class.active]="false" class="flat accent" />
       <spk-toggle [class.active]="true" class="flat accent" />
 
-      <spk-toggle [class.active]="false" class="flat tertiary" />
-      <spk-toggle [class.active]="true" class="flat tertiary" />
-
       <spk-toggle [class.active]="false" class="flat warn" />
       <spk-toggle [class.active]="true" class="flat warn" />
+
+      <spk-toggle [class.active]="false" class="flat error" />
+      <spk-toggle [class.active]="true" class="flat error" />
 
       <spk-toggle [class.active]="false" class="flat success" />
       <spk-toggle [class.active]="true" class="flat success" />
@@ -80,11 +80,11 @@
       <spk-toggle [class.active]="false" class="raised accent" />
       <spk-toggle [class.active]="true" class="raised accent" />
 
-      <spk-toggle [class.active]="false" class="raised tertiary" />
-      <spk-toggle [class.active]="true" class="raised tertiary" />
-
       <spk-toggle [class.active]="false" class="raised warn" />
       <spk-toggle [class.active]="true" class="raised warn" />
+
+      <spk-toggle [class.active]="false" class="raised error" />
+      <spk-toggle [class.active]="true" class="raised error" />
 
       <spk-toggle [class.active]="false" class="raised success" />
       <spk-toggle [class.active]="true" class="raised success" />
@@ -98,10 +98,8 @@
     <h5>Basic</h5>
     <spk-toggle [class.active]="active()" class="primary" (click)="active.set(!active())">Lorem ipsum dolor</spk-toggle>
     <spk-toggle [class.active]="active()" class="accent" (click)="active.set(!active())">Lorem ipsum dolor</spk-toggle>
-    <spk-toggle [class.active]="active()" class="tertiary" (click)="active.set(!active())">
-      Lorem ipsum dolor
-    </spk-toggle>
     <spk-toggle [class.active]="active()" class="warn" (click)="active.set(!active())">Lorem ipsum dolor</spk-toggle>
+    <spk-toggle [class.active]="active()" class="error" (click)="active.set(!active())">Lorem ipsum dolor</spk-toggle>
     <spk-toggle [class.active]="active()" class="success" (click)="active.set(!active())">Lorem ipsum dolor</spk-toggle>
 
     <h5>Outlined</h5>
@@ -115,10 +113,10 @@
     <spk-toggle [class.active]="active()" class="outlined accent" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-toggle>
-    <spk-toggle [class.active]="active()" class="outlined tertiary" (click)="active.set(!active())">
+    <spk-toggle [class.active]="active()" class="outlined warn" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-toggle>
-    <spk-toggle [class.active]="active()" class="outlined warn" (click)="active.set(!active())">
+    <spk-toggle [class.active]="active()" class="outlined error" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-toggle>
     <spk-toggle [class.active]="active()" class="outlined success" (click)="active.set(!active())">
@@ -132,10 +130,10 @@
     <spk-toggle [class.active]="active()" class="flat accent" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-toggle>
-    <spk-toggle [class.active]="active()" class="flat tertiary" (click)="active.set(!active())">
+    <spk-toggle [class.active]="active()" class="flat warn" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-toggle>
-    <spk-toggle [class.active]="active()" class="flat warn" (click)="active.set(!active())">
+    <spk-toggle [class.active]="active()" class="flat error" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-toggle>
     <spk-toggle [class.active]="active()" class="flat success" (click)="active.set(!active())">
@@ -149,10 +147,10 @@
     <spk-toggle [class.active]="active()" class="raised accent" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-toggle>
-    <spk-toggle [class.active]="active()" class="raised tertiary" (click)="active.set(!active())">
+    <spk-toggle [class.active]="active()" class="raised warn" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-toggle>
-    <spk-toggle [class.active]="active()" class="raised warn" (click)="active.set(!active())">
+    <spk-toggle [class.active]="active()" class="raised error" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-toggle>
     <spk-toggle [class.active]="active()" class="raised success" (click)="active.set(!active())">

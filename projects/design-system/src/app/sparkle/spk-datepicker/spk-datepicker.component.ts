@@ -28,7 +28,7 @@ export default class SpkDatepickerComponent {
   someOtherDate = signal(new Date('2023-01-01'));
 
   type = signal<'none' | 'raised' | 'outlined'>('none');
-  colors = signal<'none' | 'primary' | 'accent' | 'tertiary' | 'warn' | 'success'>('primary');
+  colors = signal<'none' | 'primary' | 'accent' | 'error' | 'warn' | 'success'>('primary');
 
   data = input<any>();
   closed = output<boolean>();

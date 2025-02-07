@@ -104,12 +104,12 @@ $spkAlert: true !default;
     }
 
     &.error {
-      --alert-state-ic: var(--warn-500);
-      --alert-close-ic: var(--warn-500);
-      --alert-title-c: var(--warn-level-80);
-      --alert-content-c: var(--warn-level-80);
-      --alert-bg: var(--warn-level-20);
-      --alert-bc: var(--warn-level-40);
+      --alert-state-ic: var(--error-500);
+      --alert-close-ic: var(--error-500);
+      --alert-title-c: var(--error-level-80);
+      --alert-content-c: var(--error-level-80);
+      --alert-bg: var(--error-level-20);
+      --alert-bc: var(--error-level-40);
     }
 
     &.success {
@@ -121,13 +121,13 @@ $spkAlert: true !default;
       --alert-bc: var(--success-level-40);
     }
 
-    &.warning {
-      --alert-state-ic: var(--tertiary-500);
-      --alert-close-ic: var(--tertiary-500);
-      --alert-title-c: var(--tertiary-level-80);
-      --alert-content-c: var(--tertiary-level-80);
-      --alert-bg: var(--tertiary-level-20);
-      --alert-bc: var(--tertiary-level-40);
+    &.erroring {
+      --alert-state-ic: var(--warn-500);
+      --alert-close-ic: var(--warn-500);
+      --alert-title-c: var(--warn-level-80);
+      --alert-content-c: var(--warn-level-80);
+      --alert-bg: var(--warn-level-20);
+      --alert-bc: var(--warn-level-40);
     }
 
     &:not(:has([content])) .alert {

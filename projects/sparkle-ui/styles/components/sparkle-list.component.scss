@@ -96,19 +96,6 @@ $spkList: true !default;
       }
     }
 
-    &.tertiary {
-      [item]:has(input[type='checkbox']:checked),
-      [action]:has(input[type='checkbox']:checked),
-      [item]:has(input[type='radio']:checked),
-      [action]:has(input[type='radio']:checked),
-      [action].active,
-      [action].selected {
-        spk-icon:first-child {
-          color: var(--tertiary-500);
-        }
-      }
-    }
-
     &.warn {
       [item]:has(input[type='checkbox']:checked),
       [action]:has(input[type='checkbox']:checked),
@@ -118,6 +105,19 @@ $spkList: true !default;
       [action].selected {
         spk-icon:first-child {
           color: var(--warn-500);
+        }
+      }
+    }
+
+    &.error {
+      [item]:has(input[type='checkbox']:checked),
+      [action]:has(input[type='checkbox']:checked),
+      [item]:has(input[type='radio']:checked),
+      [action]:has(input[type='radio']:checked),
+      [action].active,
+      [action].selected {
+        spk-icon:first-child {
+          color: var(--error-500);
         }
       }
     }

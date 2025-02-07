@@ -63,8 +63,8 @@ $spkButton: true !default;
       &:hover,
       &.primary,
       &.accent,
-      &.tertiary,
       &.warn,
+      &.error,
       &.success {
         color: transparent;
       }
@@ -112,12 +112,12 @@ $spkButton: true !default;
       --btn-ic: var(--accent-500);
     }
 
-    &.tertiary {
-      --btn-ic: var(--tertiary-500);
-    }
-
     &.warn {
       --btn-ic: var(--warn-500);
+    }
+
+    &.error {
+      --btn-ic: var(--error-500);
     }
 
     &.success {
@@ -156,20 +156,20 @@ $spkButton: true !default;
         --btn-bc: var(--accent-level-40);
       }
 
-      &.tertiary {
-        --loader-c: var(--tertiary-500);
-
-        --btn-bg: var(--tertiary-level-20);
-        --btn-bg-h: var(--tertiary-level-30);
-        --btn-bc: var(--tertiary-level-40);
-      }
-
       &.warn {
         --loader-c: var(--warn-500);
 
         --btn-bg: var(--warn-level-20);
         --btn-bg-h: var(--warn-level-30);
         --btn-bc: var(--warn-level-40);
+      }
+
+      &.error {
+        --loader-c: var(--error-500);
+
+        --btn-bg: var(--error-level-20);
+        --btn-bg-h: var(--error-level-30);
+        --btn-bc: var(--error-level-40);
       }
 
       &.success {
@@ -210,16 +210,16 @@ $spkButton: true !default;
         --btn-bg-h: var(--accent-500);
       }
 
-      &.tertiary {
-        --btn-c: var(--tertiary-contrast-500);
-        --btn-bg: var(--tertiary-500);
-        --btn-bg-h: var(--tertiary-500);
-      }
-
       &.warn {
         --btn-c: var(--warn-contrast-500);
         --btn-bg: var(--warn-500);
         --btn-bg-h: var(--warn-500);
+      }
+
+      &.error {
+        --btn-c: var(--error-contrast-500);
+        --btn-bg: var(--error-500);
+        --btn-bg-h: var(--error-500);
       }
 
       &.success {
@@ -259,16 +259,16 @@ $spkButton: true !default;
         --btn-bg-h: var(--accent-gradient-30);
       }
 
-      &.tertiary {
-        --btn-c: var(--tertiary-contrast-500);
-        --btn-bg: var(--tertiary-gradient-20);
-        --btn-bg-h: var(--tertiary-gradient-30);
-      }
-
       &.warn {
         --btn-c: var(--warn-contrast-500);
         --btn-bg: var(--warn-gradient-20);
         --btn-bg-h: var(--warn-gradient-30);
+      }
+
+      &.error {
+        --btn-c: var(--error-contrast-500);
+        --btn-bg: var(--error-gradient-20);
+        --btn-bg-h: var(--error-gradient-30);
       }
 
       &.success {

@@ -187,15 +187,6 @@ $spkRangeSlider: true !default;
       --rs-thumb-value-c: var(--accent-level-50R);
     }
 
-    &.tertiary {
-      --rst-bg: var(--tertiary-500);
-      --rst: var(--tertiary-level-40);
-      --rs-thumb-c: var(--tertiary-level-50);
-      --rs-thumb-bc: var(--base-level-10);
-      --rs-thumb-value-bg: var(--tertiary-level-50);
-      --rs-thumb-value-c: var(--tertiary-level-50R);
-    }
-
     &.warn {
       --rst-bg: var(--warn-500);
       --rst: var(--warn-level-40);
@@ -203,6 +194,15 @@ $spkRangeSlider: true !default;
       --rs-thumb-bc: var(--base-level-10);
       --rs-thumb-value-bg: var(--warn-level-50);
       --rs-thumb-value-c: var(--warn-level-50R);
+    }
+
+    &.error {
+      --rst-bg: var(--error-500);
+      --rst: var(--error-level-40);
+      --rs-thumb-c: var(--error-level-50);
+      --rs-thumb-bc: var(--base-level-10);
+      --rs-thumb-value-bg: var(--error-level-50);
+      --rs-thumb-value-c: var(--error-level-50R);
     }
 
     &.success {
@@ -222,8 +222,8 @@ $spkRangeSlider: true !default;
 
       &.primary,
       &.accent,
-      &.tertiary,
       &.warn,
+      &.error,
       &.success {
         --rst: var(--base-level-10);
       }
@@ -238,13 +238,13 @@ $spkRangeSlider: true !default;
         --rs-thumb-bc: var(--base-level-10);
       }
 
-      &.tertiary {
-        --rs-thumb-c: var(--tertiary-level-40);
+      &.warn {
+        --rs-thumb-c: var(--warn-level-40);
         --rs-thumb-bc: var(--base-level-10);
       }
 
-      &.warn {
-        --rs-thumb-c: var(--warn-level-40);
+      &.error {
+        --rs-thumb-c: var(--error-level-40);
         --rs-thumb-bc: var(--base-level-10);
       }
 
@@ -260,8 +260,8 @@ $spkRangeSlider: true !default;
 
       &.primary,
       &.accent,
-      &.tertiary,
       &.warn,
+      &.error,
       &.success {
         --rst: var(--base-level-30);
         --rs-thumb-c: #fff;
@@ -276,8 +276,8 @@ $spkRangeSlider: true !default;
 
       &.primary,
       &.accent,
-      &.tertiary,
       &.warn,
+      &.error,
       &.success {
         --rst: var(--base-level-30);
         --rs-thumb-c: #fff;
@@ -292,12 +292,12 @@ $spkRangeSlider: true !default;
         --rst-bg: var(--accent-gradient-20);
       }
 
-      &.tertiary {
-        --rst-bg: var(--tertiary-gradient-20);
-      }
-
       &.warn {
         --rst-bg: var(--warn-gradient-20);
+      }
+
+      &.error {
+        --rst-bg: var(--error-gradient-20);
       }
 
       &.success {

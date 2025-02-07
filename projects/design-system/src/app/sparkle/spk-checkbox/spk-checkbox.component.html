@@ -26,13 +26,13 @@
       <spk-checkbox [class.active]="true" class="accent" />
       <spk-checkbox [class.active]="true" class="accent indeterminate" />
 
-      <spk-checkbox [class.active]="false" class="tertiary" />
-      <spk-checkbox [class.active]="true" class="tertiary" />
-      <spk-checkbox [class.active]="true" class="tertiary indeterminate" />
-
       <spk-checkbox [class.active]="false" class="warn" />
       <spk-checkbox [class.active]="true" class="warn" />
       <spk-checkbox [class.active]="true" class="warn indeterminate" />
+
+      <spk-checkbox [class.active]="false" class="error" />
+      <spk-checkbox [class.active]="true" class="error" />
+      <spk-checkbox [class.active]="true" class="error indeterminate" />
 
       <spk-checkbox [class.active]="false" class="success" />
       <spk-checkbox [class.active]="true" class="success" />
@@ -55,13 +55,13 @@
       <spk-checkbox [class.active]="true" class="outlined accent" />
       <spk-checkbox [class.active]="true" class="outlined accent indeterminate" />
 
-      <spk-checkbox [class.active]="false" class="outlined tertiary" />
-      <spk-checkbox [class.active]="true" class="outlined tertiary" />
-      <spk-checkbox [class.active]="true" class="outlined tertiary indeterminate" />
-
       <spk-checkbox [class.active]="false" class="outlined warn" />
       <spk-checkbox [class.active]="true" class="outlined warn" />
       <spk-checkbox [class.active]="true" class="outlined warn indeterminate" />
+
+      <spk-checkbox [class.active]="false" class="outlined error" />
+      <spk-checkbox [class.active]="true" class="outlined error" />
+      <spk-checkbox [class.active]="true" class="outlined error indeterminate" />
 
       <spk-checkbox [class.active]="false" class="outlined success" />
       <spk-checkbox [class.active]="true" class="outlined success" />
@@ -84,13 +84,13 @@
       <spk-checkbox [class.active]="true" class="flat accent" />
       <spk-checkbox [class.active]="true" class="flat accent indeterminate" />
 
-      <spk-checkbox [class.active]="false" class="flat tertiary" />
-      <spk-checkbox [class.active]="true" class="flat tertiary" />
-      <spk-checkbox [class.active]="true" class="flat tertiary indeterminate" />
-
       <spk-checkbox [class.active]="false" class="flat warn" />
       <spk-checkbox [class.active]="true" class="flat warn" />
       <spk-checkbox [class.active]="true" class="flat warn indeterminate" />
+
+      <spk-checkbox [class.active]="false" class="flat error" />
+      <spk-checkbox [class.active]="true" class="flat error" />
+      <spk-checkbox [class.active]="true" class="flat error indeterminate" />
 
       <spk-checkbox [class.active]="false" class="flat success" />
       <spk-checkbox [class.active]="true" class="flat success" />
@@ -113,13 +113,13 @@
       <spk-checkbox [class.active]="true" class="raised accent" />
       <spk-checkbox [class.active]="true" class="raised accent indeterminate" />
 
-      <spk-checkbox [class.active]="false" class="raised tertiary" />
-      <spk-checkbox [class.active]="true" class="raised tertiary" />
-      <spk-checkbox [class.active]="true" class="raised tertiary indeterminate" />
-
       <spk-checkbox [class.active]="false" class="raised warn" />
       <spk-checkbox [class.active]="true" class="raised warn" />
       <spk-checkbox [class.active]="true" class="raised warn indeterminate" />
+
+      <spk-checkbox [class.active]="false" class="raised error" />
+      <spk-checkbox [class.active]="true" class="raised error" />
+      <spk-checkbox [class.active]="true" class="raised error indeterminate" />
 
       <spk-checkbox [class.active]="false" class="raised success" />
       <spk-checkbox [class.active]="true" class="raised success" />
@@ -138,10 +138,10 @@
     <spk-checkbox [class.active]="active()" class="accent" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-checkbox>
-    <spk-checkbox [class.active]="active()" class="tertiary" (click)="active.set(!active())">
+    <spk-checkbox [class.active]="active()" class="warn" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-checkbox>
-    <spk-checkbox [class.active]="active()" class="warn" (click)="active.set(!active())">
+    <spk-checkbox [class.active]="active()" class="error" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-checkbox>
     <spk-checkbox [class.active]="active()" class="success" (click)="active.set(!active())">
@@ -159,10 +159,10 @@
     <spk-checkbox [class.active]="active()" class="outlined accent" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-checkbox>
-    <spk-checkbox [class.active]="active()" class="outlined tertiary" (click)="active.set(!active())">
+    <spk-checkbox [class.active]="active()" class="outlined warn" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-checkbox>
-    <spk-checkbox [class.active]="active()" class="outlined warn" (click)="active.set(!active())">
+    <spk-checkbox [class.active]="active()" class="outlined error" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-checkbox>
     <spk-checkbox [class.active]="active()" class="outlined success" (click)="active.set(!active())">
@@ -176,10 +176,10 @@
     <spk-checkbox [class.active]="active()" class="flat accent" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-checkbox>
-    <spk-checkbox [class.active]="active()" class="flat tertiary" (click)="active.set(!active())">
+    <spk-checkbox [class.active]="active()" class="flat warn" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-checkbox>
-    <spk-checkbox [class.active]="active()" class="flat warn" (click)="active.set(!active())">
+    <spk-checkbox [class.active]="active()" class="flat error" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-checkbox>
     <spk-checkbox [class.active]="active()" class="flat success" (click)="active.set(!active())">
@@ -193,10 +193,10 @@
     <spk-checkbox [class.active]="active()" class="raised accent" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-checkbox>
-    <spk-checkbox [class.active]="active()" class="raised tertiary" (click)="active.set(!active())">
+    <spk-checkbox [class.active]="active()" class="raised warn" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-checkbox>
-    <spk-checkbox [class.active]="active()" class="raised warn" (click)="active.set(!active())">
+    <spk-checkbox [class.active]="active()" class="raised error" (click)="active.set(!active())">
       Lorem ipsum dolor
     </spk-checkbox>
     <spk-checkbox [class.active]="active()" class="raised success" (click)="active.set(!active())">

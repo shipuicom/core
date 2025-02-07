@@ -75,14 +75,14 @@ $spkToggle: true !default;
         --togglek-bg: var(--accent-500);
       }
 
-      &.tertiary {
-        --toggle-bg: var(--tertiary-level-30);
-        --togglek-bg: var(--tertiary-500);
-      }
-
       &.warn {
         --toggle-bg: var(--warn-level-30);
         --togglek-bg: var(--warn-500);
+      }
+
+      &.error {
+        --toggle-bg: var(--error-level-30);
+        --togglek-bg: var(--error-500);
       }
 
       &.success {
@@ -119,12 +119,12 @@ $spkToggle: true !default;
           --toggle-bg: var(--accent-500);
         }
 
-        &.tertiary {
-          --toggle-bg: var(--tertiary-500);
-        }
-
         &.warn {
           --toggle-bg: var(--warn-500);
+        }
+
+        &.error {
+          --toggle-bg: var(--error-500);
         }
 
         &.success {
@@ -149,12 +149,12 @@ $spkToggle: true !default;
           --toggle-bg: var(--accent-gradient-20);
         }
 
-        &.tertiary {
-          --toggle-bg: var(--tertiary-gradient-20);
-        }
-
         &.warn {
           --toggle-bg: var(--warn-gradient-20);
+        }
+
+        &.error {
+          --toggle-bg: var(--error-gradient-20);
         }
 
         &.success {

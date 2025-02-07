@@ -72,9 +72,9 @@ $spkFormField: true !default;
     }
 
     &:not(:has(.helpers .error:empty)) {
-      --ff-ic: var(--warn-500);
-      --ff-bc: var(--warn-500);
-      --ff-prefix-bg: var(--warn-level-20);
+      --ff-ic: var(--error-500);
+      --ff-bc: var(--error-500);
+      --ff-prefix-bg: var(--error-level-20);
     }
 
     &.autosize .input-wrap {
@@ -220,7 +220,7 @@ $spkFormField: true !default;
     }
 
     .error {
-      color: var(--warn-500);
+      color: var(--error-500);
       opacity: 1;
       transition: opacity 125ms linear;
       position: absolute;
@@ -236,11 +236,11 @@ $spkFormField: true !default;
     }
 
     &.error {
-      --ff-ic: var(--warn-500);
+      --ff-ic: var(--error-500);
     }
 
-    &.warn {
-      --ff-ic: var(--tertiary-500);
+    &.error {
+      --ff-ic: var(--warn-500);
     }
 
     &.success {

@@ -38,12 +38,12 @@ $spkSpinner: true !default;
       --spinner-c: var(--accent-500);
     }
 
-    &.tertiary {
-      --spinner-c: var(--tertiary-500);
-    }
-
     &.warn {
       --spinner-c: var(--warn-500);
+    }
+
+    &.error {
+      --spinner-c: var(--error-500);
     }
 
     &.success {

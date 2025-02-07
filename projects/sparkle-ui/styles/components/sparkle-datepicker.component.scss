@@ -149,12 +149,12 @@ $spkDatepicker: true !default;
       --dp-sel-bg: var(--accent-500);
     }
 
-    &.tertiary {
-      --dp-sel-bg: var(--tertiary-500);
-    }
-
     &.warn {
       --dp-sel-bg: var(--warn-500);
+    }
+
+    &.error {
+      --dp-sel-bg: var(--error-500);
     }
 
     &.success {
@@ -175,12 +175,12 @@ $spkDatepicker: true !default;
         --dp-sel-bc: var(--accent-500);
       }
 
-      &.tertiary {
-        --dp-sel-bc: var(--tertiary-500);
-      }
-
       &.warn {
         --dp-sel-bc: var(--warn-500);
+      }
+
+      &.error {
+        --dp-sel-bc: var(--error-500);
       }
 
       &.success {
@@ -199,12 +199,12 @@ $spkDatepicker: true !default;
         --dp-sel-bg: var(--accent-gradient-20);
       }
 
-      &.tertiary {
-        --dp-sel-bg: var(--tertiary-gradient-20);
-      }
-
       &.warn {
         --dp-sel-bg: var(--warn-gradient-20);
+      }
+
+      &.error {
+        --dp-sel-bg: var(--error-gradient-20);
       }
 
       &.success {

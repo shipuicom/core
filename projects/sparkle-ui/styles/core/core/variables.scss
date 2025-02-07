@@ -5,7 +5,7 @@
 @mixin palette($palette, $name) {
   @each $key, $value in $palette {
     --#{"" + $name}-#{$key}: #{list.nth($value, 1)};
-    --#{"" + $name}-rgb-#{$key}: #{list.nth($value, 2)};
+    // --#{"" + $name}-rgb-#{$key}: #{list.nth($value, 2)};
     --#{"" + $name}-contrast-#{$key}: var(--#{list.nth($value, 3)}-primary-text);
   }
 }
@@ -22,10 +22,10 @@ html body {
 
   @include palette(palettes.$topaz-palette, primary);
   @include palette(palettes.$violet-palette, accent);
-  @include palette(palettes.$amber-palette, tertiary);
-  @include palette(palettes.$mono-palette, grey);
-  @include palette(palettes.$ruby-palette, warn);
+  @include palette(palettes.$amber-palette, warn);
+  @include palette(palettes.$ruby-palette, error);
   @include palette(palettes.$emerald-palette, success);
+  @include palette(palettes.$mono-palette, grey);
 
   --display-10: 600 #{p2r(80)} / normal Inter Tight, sans-serif;
   --display-20: 600 #{p2r(72)} / normal Inter Tight, sans-serif;
@@ -116,15 +116,6 @@ html body {
   --accent-gradient-20: linear-gradient(180deg, var(--accent-400) 0%, var(--accent-500) 50%);
   --accent-gradient-30: linear-gradient(180deg, var(--accent-300) 0%, var(--accent-500) 50%);
 
-  --tertiary-level-20: #{light-dark(var(--tertiary-50), var(--tertiary-950))};
-  --tertiary-level-30: #{light-dark(var(--tertiary-100), var(--tertiary-900))};
-  --tertiary-level-40: #{light-dark(var(--tertiary-200), var(--tertiary-800))};
-  --tertiary-level-50: #{light-dark(var(--tertiary-300), var(--tertiary-800))};
-  --tertiary-level-50R: #{light-dark(var(--tertiary-800), var(--tertiary-300))};
-  --tertiary-level-80: #{light-dark(var(--tertiary-900), var(--tertiary-300))};
-  --tertiary-gradient-20: linear-gradient(180deg, var(--tertiary-400) 0%, var(--tertiary-500) 50%);
-  --tertiary-gradient-30: linear-gradient(180deg, var(--tertiary-300) 0%, var(--tertiary-500) 50%);
-
   --warn-level-20: #{light-dark(var(--warn-50), var(--warn-950))};
   --warn-level-30: #{light-dark(var(--warn-100), var(--warn-900))};
   --warn-level-40: #{light-dark(var(--warn-200), var(--warn-800))};
@@ -133,6 +124,15 @@ html body {
   --warn-level-80: #{light-dark(var(--warn-900), var(--warn-300))};
   --warn-gradient-20: linear-gradient(180deg, var(--warn-400) 0%, var(--warn-500) 50%);
   --warn-gradient-30: linear-gradient(180deg, var(--warn-300) 0%, var(--warn-500) 50%);
+
+  --error-level-20: #{light-dark(var(--error-50), var(--error-950))};
+  --error-level-30: #{light-dark(var(--error-100), var(--error-900))};
+  --error-level-40: #{light-dark(var(--error-200), var(--error-800))};
+  --error-level-50: #{light-dark(var(--error-300), var(--error-800))};
+  --error-level-50R: #{light-dark(var(--error-800), var(--error-300))};
+  --error-level-80: #{light-dark(var(--error-900), var(--error-300))};
+  --error-gradient-20: linear-gradient(180deg, var(--error-400) 0%, var(--error-500) 50%);
+  --error-gradient-30: linear-gradient(180deg, var(--error-300) 0%, var(--error-500) 50%);
 
   --success-level-20: #{light-dark(var(--success-50), var(--success-950))};
   --success-level-30: #{light-dark(var(--success-100), var(--success-900))};

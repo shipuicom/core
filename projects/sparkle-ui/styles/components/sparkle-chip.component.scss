@@ -22,6 +22,7 @@ $spkChip: true !default;
     border-radius: var(--chip-s);
     border: 1px solid var(--chip-bc);
     background: var(--chip-bg);
+    white-space: nowrap;
 
     spk-icon {
       color: var(--chip-ic);
@@ -69,12 +70,12 @@ $spkChip: true !default;
       --chip-ic: var(--accent-500);
     }
 
-    &.tertiary {
-      --chip-ic: var(--tertiary-500);
-    }
-
     &.warn {
       --chip-ic: var(--warn-500);
+    }
+
+    &.error {
+      --chip-ic: var(--error-500);
     }
 
     &.success {
@@ -94,12 +95,12 @@ $spkChip: true !default;
         --chip-c: var(--accent-500);
       }
 
-      &.tertiary {
-        --chip-c: var(--tertiary-500);
-      }
-
       &.warn {
         --chip-c: var(--warn-500);
+      }
+
+      &.error {
+        --chip-c: var(--error-500);
       }
 
       &.success {
@@ -128,18 +129,18 @@ $spkChip: true !default;
         --chip-bc: var(--accent-level-40);
       }
 
-      &.tertiary {
-        --loader-c: var(--tertiary-500);
-
-        --chip-bg: var(--tertiary-level-20);
-        --chip-bc: var(--tertiary-level-40);
-      }
-
       &.warn {
         --loader-c: var(--warn-500);
 
         --chip-bg: var(--warn-level-20);
         --chip-bc: var(--warn-level-40);
+      }
+
+      &.error {
+        --loader-c: var(--error-500);
+
+        --chip-bg: var(--error-level-20);
+        --chip-bc: var(--error-level-40);
       }
 
       &.success {
@@ -168,14 +169,14 @@ $spkChip: true !default;
         --chip-bg: var(--accent-500);
       }
 
-      &.tertiary {
-        --chip-c: var(--tertiary-contrast-500);
-        --chip-bg: var(--tertiary-500);
-      }
-
       &.warn {
         --chip-c: var(--warn-contrast-500);
         --chip-bg: var(--warn-500);
+      }
+
+      &.error {
+        --chip-c: var(--error-contrast-500);
+        --chip-bg: var(--error-500);
       }
 
       &.success {
@@ -203,14 +204,14 @@ $spkChip: true !default;
         --chip-bg: var(--accent-gradient-20);
       }
 
-      &.tertiary {
-        --chip-c: var(--tertiary-contrast-500);
-        --chip-bg: var(--tertiary-gradient-20);
-      }
-
       &.warn {
         --chip-c: var(--warn-contrast-500);
         --chip-bg: var(--warn-gradient-20);
+      }
+
+      &.error {
+        --chip-c: var(--error-contrast-500);
+        --chip-bg: var(--error-gradient-20);
       }
 
       &.success {

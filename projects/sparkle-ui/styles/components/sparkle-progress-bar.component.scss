@@ -59,12 +59,12 @@ $spkProgressBar: true !default;
       --pbt-bg: var(--accent-500);
     }
 
-    &.tertiary {
-      --pbt-bg: var(--tertiary-500);
-    }
-
     &.warn {
       --pbt-bg: var(--warn-500);
+    }
+
+    &.error {
+      --pbt-bg: var(--error-500);
     }
 
     &.success {
@@ -95,12 +95,12 @@ $spkProgressBar: true !default;
         --pbt-bg: var(--accent-level-30);
       }
 
-      &.tertiary {
-        --pbt-bg: var(--tertiary-level-30);
-      }
-
       &.warn {
         --pbt-bg: var(--warn-level-30);
+      }
+
+      &.error {
+        --pbt-bg: var(--error-level-30);
       }
 
       &.success {
@@ -119,12 +119,12 @@ $spkProgressBar: true !default;
         --pbt-bg: var(--accent-gradient-30);
       }
 
-      &.tertiary {
-        --pbt-bg: var(--tertiary-gradient-30);
-      }
-
       &.warn {
         --pbt-bg: var(--warn-gradient-30);
+      }
+
+      &.error {
+        --pbt-bg: var(--error-gradient-30);
       }
 
       &.success {

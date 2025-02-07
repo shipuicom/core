@@ -27,6 +27,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
   - [x] use templates to template options and have the list inside the select
   - [x] Add lazy search
   - [x] Add template placeholder
+- [x] Multi select menu's that dosn't close when checking an option
 - [ ] Create a CSV input that create chips on comma (or enter) press
 - [ ] Create a accordion component
 - [ ] Create a timepicker component
@@ -34,12 +35,11 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 
 - [ ] Streamline general color variables 10-70 instead of 100-900 (align with figma)
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
-- [ ] Make colors optional/configurable (primary, accent, tertiary, warn, success) on a component level and generally
+- [x] Make colors optional/configurable (primary, accent, tertiary, warn, success) on a component level and generally
 - [ ] Create documentation with examples for all components
 
 ### Nice to haves for v1 beta
 
-- [ ] Multi select menu's that dosn't close when checking an option
 - [ ] Create a datepicker range input component
 - [ ] Add flat and raised versions of alerts
 - [ ] Create a gantt chart component

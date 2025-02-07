@@ -24,14 +24,14 @@ $spkTooltip: true !default;
       --tt-c: var(--accent-level-50R);
     }
 
-    &.tertiary {
-      --tt-bg: var(--tertiary-level-50);
-      --tt-c: var(--tertiary-level-50R);
+    &.warn {
+      --tt-bg: var(--error-level-50);
+      --tt-c: var(--error-level-50R);
     }
 
-    &.warn {
-      --tt-bg: var(--warn-level-50);
-      --tt-c: var(--warn-level-50R);
+    &.error {
+      --tt-bg: var(--error-level-50);
+      --tt-c: var(--error-level-50R);
     }
 
     &.success {
@@ -107,8 +107,8 @@ $spkTooltip: true !default;
   [spk-tooltip],
   [tt-primary],
   [tt-accent],
-  [tt-tertiary],
   [tt-warn],
+  [tt-error],
   [tt-success] {
     --tt-bg: var(--base-level-30);
     --tt-c: var(--base-level-30R);
@@ -186,21 +186,21 @@ $spkTooltip: true !default;
     }
   }
 
-  [tt-tertiary] {
-    --tt-bg: var(--tertiary-level-50);
-    --tt-c: var(--tertiary-level-50R);
-
-    &:after {
-      content: attr(tt-tertiary);
-    }
-  }
-
   [tt-warn] {
-    --tt-bg: var(--warn-level-50);
-    --tt-c: var(--warn-level-50R);
+    --tt-bg: var(--error-level-50);
+    --tt-c: var(--error-level-50R);
 
     &:after {
       content: attr(tt-warn);
+    }
+  }
+
+  [tt-error] {
+    --tt-bg: var(--error-level-50);
+    --tt-c: var(--error-level-50R);
+
+    &:after {
+      content: attr(tt-error);
     }
   }
 
@@ -217,8 +217,8 @@ $spkTooltip: true !default;
 [spk-tooltip][tt-left],
 [tt-primary][tt-left],
 [tt-accent][tt-left],
-[tt-tertiary][tt-left],
 [tt-warn][tt-left],
+[tt-error][tt-left],
 [tt-success][tt-left] {
   &:after {
     top: 50%;
@@ -240,8 +240,8 @@ $spkTooltip: true !default;
 [spk-tooltip][tt-right],
 [tt-primary][tt-right],
 [tt-accent][tt-right],
-[tt-tertiary][tt-right],
 [tt-warn][tt-right],
+[tt-error][tt-right],
 [tt-success][tt-right] {
   &:after {
     top: 50%;
@@ -261,8 +261,8 @@ $spkTooltip: true !default;
 [spk-tooltip][tt-bottom],
 [tt-primary][tt-bottom],
 [tt-accent][tt-bottom],
-[tt-tertiary][tt-bottom],
 [tt-warn][tt-bottom],
+[tt-error][tt-bottom],
 [tt-success][tt-bottom] {
   &:after {
     top: calc(100% + #{p2r(12)});

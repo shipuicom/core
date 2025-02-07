@@ -10,8 +10,8 @@
     <button [class.active]="colors() === 'none'" (click)="colors.set('none')">None</button>
     <button [class.active]="colors() === 'primary'" (click)="colors.set('primary')">Primary</button>
     <button [class.active]="colors() === 'accent'" (click)="colors.set('accent')">Accent</button>
-    <button [class.active]="colors() === 'tertiary'" (click)="colors.set('tertiary')">Tertiary</button>
     <button [class.active]="colors() === 'warn'" (click)="colors.set('warn')">Warn</button>
+    <button [class.active]="colors() === 'error'" (click)="colors.set('error')">Error</button>
     <button [class.active]="colors() === 'success'" (click)="colors.set('success')">Success</button>
   </spk-button-group>
 </div>
