@@ -28,6 +28,8 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
   - [x] Add lazy search
   - [x] Add template placeholder
 - [x] Multi select menu's that dosn't close when checking an option
+- [x] Make colors optional/configurable (primary, accent, tertiary, warn, success) on a component level and generally
+- [x] Add support of multiple phosphor icons types (bold, fill, light, regular, thin) in the same font by just suffixing with (-bold, -fill, etc)
 - [ ] Create a CSV input that create chips on comma (or enter) press
 - [ ] Create a accordion component
 - [ ] Create a timepicker component
@@ -35,14 +37,12 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 
 - [ ] Streamline general color variables 10-70 instead of 100-900 (align with figma)
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
-- [x] Make colors optional/configurable (primary, accent, tertiary, warn, success) on a component level and generally
 - [ ] Create documentation with examples for all components
 
 ### Nice to haves for v1 beta
 
 - [ ] Create a datepicker range input component
 - [ ] Add flat and raised versions of alerts
-- [ ] Create a gantt chart component
 - [ ] Create simple chart components
   - [ ] Line chart
   - [ ] Bar chart
@@ -50,9 +50,9 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
   - [ ] Doughnut chart
 - [ ] CLI util to figure out which components and styles are used in a project as a production build trimmer
 - [ ] On spk-menu, add focus with a hidden input similar to native select
-- [ ] Add support of multiple phosphor icons types (bold, duotone, fill, light, regular, thin) in the same font by just prefixing with (duo-, bold-, etc)
 - [ ] Add a A11y service to streamline accessibility, maybe be able to swap config based on page or on a method
 - [ ] Add a A11y VIM mode
+- [ ] Create a gantt chart component
 
 ### Testing to add
 
@@ -66,7 +66,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 
 ### Notes
 
-- For safari `<18` the selects does not support using options so you must use `<spk-option>` instead of `<option>`
+- For safari `<18` the selects does not support using options so you must use `<spk-option>` instead of `<option>` (this is fixed in the next select version currently suffixed with `-new`)
 
 ## Contributors
 
