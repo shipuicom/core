@@ -1,34 +1,56 @@
-import { UnicodeRange } from '@japont/unicode-range';
+// export function createNameCodeObject(jsonData: Item[]): Record<string, string> {
+//   const nameCodeObject: Record<string, string> = {};
 
-// Util to handle passing unicode-range as a string
-function formatRange(range: any) {
-  if (typeof range === 'string') {
-    return range.replace(/\s*/g, '').split(',');
-  }
-  return range;
-}
+//   for (let i = 0; i < jsonData.length; i++) {
+//     const item = jsonData[i];
+//     nameCodeObject[item.properties.name] = getGlyphsFromUnicodeRange('U+' + item.properties.code)[0];
+//   }
 
-function getGlyphsFromUnicodeRange(range: any) {
-  // UnicodeRange currently requires an array of ranges …
-  const rangeArray = formatRange(range);
+//   return nameCodeObject;
+// }
 
-  const glyphs = UnicodeRange.parse(rangeArray).map((cp) => String.fromCodePoint(cp));
+export function createNameCodeObject(jsonData: Item[]): Record<string, string> {
+  const nameCodeObject: Record<string, string> = {};
 
-  return glyphs;
-}
-
-export const mapUnicodesToGlyphs = (cssText: string) => {
-  let glyphMap: Record<string, string> = {};
-  const pattern = /\.ph\.ph-([a-z-]+):before\s*{[^}]*content:\s*'\\([0-9a-z]+)';/g; // Global flag for multiple matches
-  const matches = Array.from(cssText.matchAll(pattern));
-
-  for (let index = 0; index < matches.length; index++) {
-    const match = matches[index];
-
-    glyphMap[match[1]] = getGlyphsFromUnicodeRange('U+' + match[2])[0];
+  for (let i = 0; i < jsonData.length; i++) {
+    const item = jsonData[i];
+    const hexCode = item.properties.code.toString(16); // Convert decimal to hex
+    const codePoint = parseInt(hexCode, 16); // Parse hex to integer code point
+    const glyph = String.fromCodePoint(codePoint); // Create the glyph
+    nameCodeObject[item.properties.ligatures] = glyph;
   }
 
-  return glyphMap;
+  return nameCodeObject;
+}
+
+export const getUnicodeObject = (jsonData: Item[]): Record<string, [string, string]> => {
+  const nameCodeObject: Record<string, [string, string]> = {};
+
+  for (let i = 0; i < jsonData.length; i++) {
+    const item = jsonData[i];
+    const hexCode = item.properties.code.toString(16); // Convert decimal to hex
+    const codePoint = parseInt(hexCode, 16); // Parse hex to integer code point
+    const glyph = String.fromCodePoint(codePoint); // Create the glyph
+    if (glyph === '') {
+      console.warn(`Invalid codepoint 0x${hexCode} for ligature ${item.properties.ligatures}`);
+      continue;
+    }
+    nameCodeObject[item.properties.ligatures] = [glyph, 'U+' + hexCode];
+  }
+
+  return nameCodeObject;
+};
+
+export const createCodepointObject = (jsonData: Item[]): Record<string, number> => {
+  const nameCodeObject: Record<string, number> = {};
+
+  for (let i = 0; i < jsonData.length; i++) {
+    const item = jsonData[i];
+
+    nameCodeObject[item.properties.ligatures] = item.properties.code;
+  }
+
+  return nameCodeObject;
 };
 
 export function formatFileSize(bytes: number, dm = 2) {
@@ -40,3 +62,48 @@ export function formatFileSize(bytes: number, dm = 2) {
 
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
+
+interface Icon {
+  paths: string[];
+  attrs: { fill: string; opacity?: number }[];
+  isMulticolor: boolean;
+  isMulticolor2: boolean;
+  colorPermutations: { [key: string]: { f: number }[] };
+  tags: string[];
+  grid: number;
+}
+
+interface Attributes {
+  fill: string;
+  opacity?: number;
+}
+
+interface Properties {
+  id: number;
+  order: number;
+  name: string;
+  ligatures: string;
+  code: number;
+  prevSize: number;
+  codes: boolean;
+}
+
+interface Item {
+  icon: Icon;
+  attrs: Attributes[];
+  properties: Properties;
+  setIdx: number;
+  setId: number;
+  iconIdx: number;
+}
+
+export type SupportedFontTypes = 'woff' | 'woff2' | 'ttf';
+
+export type InputArguments = {
+  src: string;
+  out: string;
+  rootPath: string;
+  watch: boolean;
+  watchLib: boolean;
+  verbose: boolean;
+};

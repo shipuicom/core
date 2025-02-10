@@ -109,7 +109,7 @@ const COLOR_CLASSES = ['primary', 'accent', 'warn', 'error', 'success'];
                 @for (option of inputValue().split(','); track $index) {
                   <spk-chip class="small simple" [class]="chipClass()" (click)="toggleOption(option, $event)">
                     {{ displayFn()?.(option) ?? option }}
-                    <spk-icon>x-circle</spk-icon>
+                    <spk-icon>x-bold</spk-icon>
                   </spk-chip>
                 }
               }
@@ -123,7 +123,7 @@ const COLOR_CLASSES = ['primary', 'accent', 'warn', 'error', 'success'];
         @if (((inputValue() && !isOpen() && inputValue()!.length > 0) || !!selectedOption()) && !hideClearButton()) {
           <div class="deselect-indicator" (click)="deselect($event)" suffix>
             <ng-content select="[deselect-indicator]"></ng-content>
-            <spk-icon class="default-indicator">x-circle</spk-icon>
+            <spk-icon class="default-indicator">x-bold</spk-icon>
           </div>
         } @else if (isSearchInput() && !selectedOption()) {
           <div class="search-indicator" suffix>

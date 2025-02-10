@@ -103,6 +103,15 @@ $spkAlert: true !default;
       --alert-bc: var(--accent-level-40);
     }
 
+    &.warn {
+      --alert-state-ic: var(--warn-500);
+      --alert-close-ic: var(--warn-500);
+      --alert-title-c: var(--warn-level-80);
+      --alert-content-c: var(--warn-level-80);
+      --alert-bg: var(--warn-level-20);
+      --alert-bc: var(--warn-level-40);
+    }
+
     &.error {
       --alert-state-ic: var(--error-500);
       --alert-close-ic: var(--error-500);
@@ -119,15 +128,6 @@ $spkAlert: true !default;
       --alert-content-c: var(--success-level-80);
       --alert-bg: var(--success-level-20);
       --alert-bc: var(--success-level-40);
-    }
-
-    &.erroring {
-      --alert-state-ic: var(--warn-500);
-      --alert-close-ic: var(--warn-500);
-      --alert-title-c: var(--warn-level-80);
-      --alert-content-c: var(--warn-level-80);
-      --alert-bg: var(--warn-level-20);
-      --alert-bc: var(--warn-level-40);
     }
 
     &:not(:has([content])) .alert {

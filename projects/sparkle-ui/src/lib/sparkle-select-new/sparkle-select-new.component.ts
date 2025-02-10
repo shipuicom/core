@@ -72,7 +72,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
                         {{ selectedOption }}
                       }
 
-                      <spk-icon (click)="removeSelectedOptionByIndex($event, $index)">x-circle</spk-icon>
+                      <spk-icon (click)="removeSelectedOptionByIndex($event, $index)">x-bold</spk-icon>
                     </spk-chip>
                   } @else {
                     @if (_selOptionTemplate) {
@@ -106,7 +106,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
         } @else if (_inputState === 'searching') {
           <spk-icon suffix>magnifying-glass</spk-icon>
         } @else if (_inputState === 'selected' && isClearable()) {
-          <spk-icon suffix (click)="clear($event)">backspace</spk-icon>
+          <spk-icon suffix (click)="clear($event)">x-bold</spk-icon>
         } @else if (_inputState === 'selected' && !isClearable()) {
           <spk-icon suffix>check</spk-icon>
         } @else {

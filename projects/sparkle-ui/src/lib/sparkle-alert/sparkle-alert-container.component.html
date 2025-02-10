@@ -3,7 +3,7 @@
     @for (alert of alertHistory(); track $index) {
       <spk-alert
         #alerts
-        [type]="alert.type"
+        [class]="alert.type"
         [id]="alert.id"
         [alertService]="alertService()"
         [style.transition-delay]="transitionDelay($index, true)"

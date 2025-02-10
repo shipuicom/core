@@ -44,6 +44,10 @@ export const routes: Routes = [
         loadComponent: () => import('./sparkle/spk-menu/spk-menu.component'),
       },
       {
+        path: 'spk-icons',
+        loadComponent: () => import('./sparkle/spk-icons/spk-icons.component'),
+      },
+      {
         path: 'spk-chips',
         loadComponent: () => import('./sparkle/spk-chips/spk-chips.component'),
       },

@@ -1,13 +1,12 @@
 {
   "name": "@sparkle-ui/core",
   "license": "MIT",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "peerDependencies": {
     "@angular/common": ">=19",
     "@angular/core": ">=19"
   },
   "dependencies": {
-    "@japont/unicode-range": "^1.0.0",
     "subset-font": "^2.3.0",
     "tslib": "^2.3.0"
   },
@@ -18,12 +17,11 @@
     "minus",
     "upload-simple",
     "magnifying-glass",
-    "x-circle",
+    "x-bold",
     "caret-left",
     "caret-right",
     "caret-down",
     "caret-up",
-    "backspace",
     "calendar",
     "info",
     "check",

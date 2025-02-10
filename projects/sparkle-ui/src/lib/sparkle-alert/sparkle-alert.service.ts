@@ -46,7 +46,7 @@ export class SparkleAlertService {
 
   warning(message: string) {
     this.addAlert({
-      type: 'warning',
+      type: 'warn',
       title: message,
     });
   }

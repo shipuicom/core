@@ -1,4 +1,37 @@
 
+  
+@font-face {
+  font-family: 'spk-bold';
+  src: url('/spk-bold.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'spk-thin';
+  src: url('/spk-thin.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'spk-light';
+  src: url('/spk-light.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'spk-fill';
+  src: url('/spk-fill.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
 @font-face {
   font-family: 'spk';
   src: url('/spk.woff2') format('woff2');
@@ -6,6 +39,24 @@
   font-style: normal;
   font-display: block;
 }
+
+  
+spk-icon.bold {
+  font-family: 'spk-bold' !important;
+}
+
+spk-icon.thin {
+  font-family: 'spk-thin' !important;
+}
+
+spk-icon.light {
+  font-family: 'spk-light' !important;
+}
+
+spk-icon.fill {
+  font-family: 'spk-fill' !important;
+}
+
 
 spk-icon {
   /* use !important to prevent issues with browser extensions that change fonts */

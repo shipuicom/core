@@ -3,18 +3,9 @@
 import { Glob } from 'bun';
 import { FSWatcher, watch } from 'fs';
 import { join, resolve } from 'path';
-import subsetFont from 'subset-font';
-import { formatFileSize, mapUnicodesToGlyphs } from './utilities';
 
-type SupportedFontTypes = 'woff' | 'woff2' | 'ttf';
-export type InputArguments = {
-  src: string;
-  out: string;
-  rootPath: string;
-  watch: boolean;
-  watchLib: boolean;
-  verbose: boolean;
-};
+import subsetFont from 'subset-font';
+import { formatFileSize, getUnicodeObject, InputArguments, SupportedFontTypes } from './utilities';
 
 let writtenCssSize = 0;
 let compressedCssSize = 0;
@@ -23,7 +14,7 @@ const run = async (
   PROJECT_SRC: string,
   LIB_ICONS: string[],
   PROJECT_PUBLIC: string,
-  GLYPH_MAP: Record<string, string>,
+  GLYPH_MAP: Record<string, [string, string]>,
   TARGET_FONT_TYPE: SupportedFontTypes,
   values: InputArguments
 ) => {
@@ -62,18 +53,54 @@ const run = async (
     }
   }
 
-  const iconsAsGlyphs = Array.from(iconsFound)
-    .map((icon) => {
+  const groupedIcons = Array.from(iconsFound).reduce(
+    (acc, icon) => {
+      const bold = icon.endsWith('-bold');
+      const thin = icon.endsWith('-thin');
+      const light = icon.endsWith('-light');
+      const fill = icon.endsWith('-fill');
+      const regular = !bold && !thin && !light && !fill;
       const glyph = GLYPH_MAP[icon];
 
       if (!glyph) {
         missingIcons.add(icon);
-        return undefined;
+        return acc;
       }
 
-      return glyph;
-    })
-    .filter((v) => v);
+      if (bold) {
+        acc['bold'].push([icon, '']);
+        acc['bold'].push(glyph);
+      }
+      if (thin) {
+        acc['thin'].push([icon, '']);
+        acc['thin'].push(glyph);
+      }
+      if (light) {
+        acc['light'].push([icon, '']);
+        acc['light'].push(glyph);
+      }
+      if (fill) {
+        acc['fill'].push([icon, '']);
+        acc['fill'].push(glyph);
+      }
+      if (regular) {
+        acc['regular'].push([icon, '']);
+        acc['regular'].push(glyph);
+      }
+
+      return acc;
+    },
+    {
+      bold: [],
+      thin: [],
+      light: [],
+      fill: [],
+      regular: [],
+      text: [],
+    } as {
+      [key: string]: [string, string][];
+    }
+  );
 
   const missingIconsArray = Array.from(missingIcons);
 
@@ -81,51 +108,113 @@ const run = async (
     console.log('Following icons does not exist in font: \n ', Array.from(missingIcons));
   }
 
-  // Create a new font with only the characters required to render "Hello, world!" in WOFF format:
-  const fontArrayBuffer = await Bun.file(`${import.meta.dir}/config/Phosphor.ttf`).arrayBuffer();
-  const targetFormat = (TARGET_FONT_TYPE as SupportedFontTypes) === 'ttf' ? 'truetype' : TARGET_FONT_TYPE;
-  const iconsToBuild = new Set([...iconsAsGlyphs, ...iconsFound]);
-  const subsetBuffer = await subsetFont(Buffer.from(fontArrayBuffer), Array.from(iconsToBuild).join(''), {
-    targetFormat,
-    noLayoutClosure: true,
-  } as any);
+  writeCssFile(PROJECT_PUBLIC, values, groupedIcons, TARGET_FONT_TYPE);
 
-  const fontWrites = await Bun.write(`${PROJECT_PUBLIC}/spk.${TARGET_FONT_TYPE}`, subsetBuffer);
+  // We dont load fonts we dont use
+  const fontTypes = ['bold', 'thin', 'light', 'fill', 'regular'].filter((x) => groupedIcons[x].length > 0);
+  const targetFormat = (TARGET_FONT_TYPE as SupportedFontTypes) === 'ttf' ? 'truetype' : TARGET_FONT_TYPE;
+  const fonts = fontTypes.map(async (fontType) => {
+    const glyphs = uniqueString(groupedIcons[fontType].map((icon) => icon[0]).join(''));
+    const arrayBuffer = await Bun.file(
+      `${import.meta.dir}/config/${fontType}/Phosphor${fontType === 'regular' ? '' : '-' + fontType}.${TARGET_FONT_TYPE}`
+    ).arrayBuffer();
+
+    const subsetBuffer = await subsetFont(Buffer.from(arrayBuffer), glyphs, {
+      targetFormat,
+      noLayoutClosure: true,
+    } as any);
+
+    return subsetBuffer;
+  });
+
+  const _fonts = await Promise.all(fonts);
+  let totalFontSize = 0;
+  let totalCompressedFontSize = 0;
+
+  for (let i = 0; i < _fonts.length; i++) {
+    const subsetBuffer = _fonts[i];
+    const fontType = fontTypes[i];
+    const fontWrites = await Bun.write(
+      `${PROJECT_PUBLIC}/spk${fontType === 'regular' ? '' : '-' + fontType}.${TARGET_FONT_TYPE}`,
+      subsetBuffer
+    );
+
+    const compressedFont = Bun.gzipSync(subsetBuffer);
+    const iconsOnGroup = groupedIcons[fontType].filter((icon) => icon[1] === '').map((icon) => icon[0]);
+
+    totalFontSize += fontWrites;
+    totalCompressedFontSize += compressedFont.length;
+
+    if (values.verbose) {
+      console.log('Group: ', fontType, '\n', iconsOnGroup);
+      console.log(
+        `Font & CSS (Generated/Compressed size): ${formatFileSize(fontWrites)}/${formatFileSize(compressedFont.length)}`
+      );
+
+      console.log(' ');
+    }
+  }
 
   const endTime = performance.now();
   const runtime = endTime - startTime;
-
-  const compressedFont = Bun.gzipSync(subsetBuffer);
-
-  if (values.verbose) {
-    console.log(iconsFound);
-    console.log('Generated font file size: ', formatFileSize(fontWrites));
-    console.log('Generated css file size: ', formatFileSize(writtenCssSize));
-    console.log('Generated total file size: ', formatFileSize(fontWrites + writtenCssSize));
-    console.log('Generated compressed font file size: ', formatFileSize(compressedFont.length));
-    console.log('Generated compressed css file size: ', formatFileSize(compressedCssSize));
-    console.log('Generated total compressed file size: ', formatFileSize(compressedFont.length + compressedCssSize));
-    console.log('Time taken: ', runtime.toFixed(2) + 'ms');
-  } else {
-    console.log(
-      `Font & CSS (Generated/Compressed size): ${formatFileSize(fontWrites + writtenCssSize)}/${formatFileSize(compressedFont.length + compressedCssSize)}`
-    );
-    console.log('Time taken: ', runtime.toFixed(2) + 'ms');
-  }
+  console.log(
+    `Font & CSS (Generated/Compressed size): ${formatFileSize(totalFontSize + writtenCssSize)}/${formatFileSize(totalCompressedFontSize + compressedCssSize)}`
+  );
+  console.log('Time taken: ', runtime.toFixed(2) + 'ms');
   console.log(' ');
 };
 
-const writeCssFile = async (PROJECT_PUBLIC: string, values: InputArguments, TARGET_FONT_TYPE = 'woff2') => {
-  // Create a new css file
-  const cssFileContent = `
+function uniqueString(s: string): string {
+  const seen = new Set<string>(); // Use a Set to track seen characters
+  let result = '';
+
+  for (const char of s) {
+    if (!seen.has(char)) {
+      // Check if the character has been seen
+      seen.add(char); // Add the character to the seen set
+      result += char; // Append the character to the result
+    }
+  }
+
+  return result;
+}
+
+const writeCssFile = async (
+  PROJECT_PUBLIC: string,
+  values: InputArguments,
+  groupedIcons: { [key: string]: [string, string][] },
+  TARGET_FONT_TYPE = 'woff2'
+) => {
+  const groupedIconsEntries = Object.entries(groupedIcons).map(([key, value], i) => {
+    if (key === 'text') return '';
+
+    const suffix = key === 'regular' ? '' : '-' + key;
+    const fontUrl = `url('${values.rootPath}spk${suffix}.${TARGET_FONT_TYPE}') format('${TARGET_FONT_TYPE === 'ttf' ? 'truetype' : TARGET_FONT_TYPE}')`;
+
+    return `
 @font-face {
-  font-family: 'spk';
-  src: url('${values.rootPath}spk.${TARGET_FONT_TYPE}') format('${TARGET_FONT_TYPE}');
+  font-family: 'spk${suffix}';
+  src: ${fontUrl};
   font-weight: normal;
   font-style: normal;
   font-display: block;
-}
+}`;
+  });
 
+  const keys = Object.keys(groupedIcons).map((key) => {
+    if (['regular', 'text'].includes(key)) return '';
+
+    const suffix = key === 'regular' ? '' : '-' + key;
+
+    return `
+spk-icon.${key} {
+  font-family: 'spk${suffix}' !important;
+}`;
+  });
+  // Create a new css file
+  const cssFileContent = `
+  ${groupedIconsEntries.join('\n')}
+  ${keys.join('\n')}
 spk-icon {
   /* use !important to prevent issues with browser extensions that change fonts */
   font-family: "spk" !important;
@@ -149,8 +238,7 @@ spk-icon {
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-`;
+}`;
   const cssWrites = await Bun.write(`${PROJECT_PUBLIC}/spk.css`, cssFileContent);
   const compressedCss = Bun.gzipSync(cssFileContent);
 
@@ -158,7 +246,7 @@ spk-icon {
   compressedCssSize = compressedCss.length;
 };
 
-const textMateSnippet = async (GLYPH_MAP: Record<string, string>) => {
+const textMateSnippet = async (GLYPH_MAP: Record<string, [string, string]>) => {
   const iconsSnippetContent = `
   {
     "Phosphor icons": {
@@ -185,14 +273,31 @@ export const main = async (values: InputArguments) => {
   const packageJson = await Bun.file(packageJsonPath).json();
   const PROJECT_SRC = values.src;
   const PROJECT_PUBLIC = values.out;
-  const cssText = await Bun.file(`${import.meta.dir}/config/style.css`).text();
-  const GLYPH_MAP = mapUnicodesToGlyphs(cssText);
+  const fontVariants = ['bold', 'thin', 'light', 'fill', 'regular'];
+  const GLYPH_MAPS = await Promise.all(
+    fontVariants.map(async (fontVariant) => {
+      const selectionJson = await Bun.file(`${import.meta.dir}/config/${fontVariant}/selection.json`).json();
+
+      // return createCodepointObject(selectionJson.icons);
+      // return createNameCodeObject(selectionJson.icons);
+      return getUnicodeObject(selectionJson.icons);
+    })
+  );
+
+  const GLYPH_MAP = GLYPH_MAPS.reduce(
+    (acc, curr) => {
+      return {
+        ...acc,
+        ...curr,
+      };
+    },
+    {} as Record<string, [string, string]>
+  );
 
   const LIB_ICONS = packageJson.libraryIcons as string[];
   let watchers: FSWatcher[] = [];
 
   textMateSnippet(GLYPH_MAP);
-  writeCssFile(PROJECT_PUBLIC, values, TARGET_FONT_TYPE);
 
   if (values.watch) {
     const excludeFolders = ['node_modules', '.git', '.vscode', 'bin', 'assets'].concat([PROJECT_PUBLIC]);
