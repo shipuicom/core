@@ -110,13 +110,17 @@ const run = async (
 
   writeCssFile(PROJECT_PUBLIC, values, groupedIcons, TARGET_FONT_TYPE);
 
+  function capitalize(str: string) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
   // We dont load fonts we dont use
   const fontTypes = ['bold', 'thin', 'light', 'fill', 'regular'].filter((x) => groupedIcons[x].length > 0);
   const targetFormat = (TARGET_FONT_TYPE as SupportedFontTypes) === 'ttf' ? 'truetype' : TARGET_FONT_TYPE;
   const fonts = fontTypes.map(async (fontType) => {
     const glyphs = uniqueString(groupedIcons[fontType].map((icon) => icon[0]).join(''));
     const arrayBuffer = await Bun.file(
-      `${import.meta.dir}/config/${fontType}/Phosphor${fontType === 'regular' ? '' : '-' + fontType}.${TARGET_FONT_TYPE}`
+      `${import.meta.dir}/config/${fontType}/Phosphor${fontType === 'regular' ? '' : '-' + capitalize(fontType)}.${TARGET_FONT_TYPE}`
     ).arrayBuffer();
 
     const subsetBuffer = await subsetFont(Buffer.from(arrayBuffer), glyphs, {
