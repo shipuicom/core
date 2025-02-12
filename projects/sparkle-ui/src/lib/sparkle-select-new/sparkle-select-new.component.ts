@@ -155,7 +155,7 @@ export class SparkleSelectNewComponent {
   lazySearch = input<boolean>(false);
   readonly = input<boolean>(false);
   isLoading = input<boolean>(false);
-  isClearable = input<boolean>(false);
+  isClearable = input<boolean>(true);
   asText = input<boolean>(false);
   selectMultiple = input<boolean>(false);
   optionTemplate = input<TemplateRef<unknown> | null>(null);
