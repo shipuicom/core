@@ -44,15 +44,14 @@
   </spk-select-new>
 
   <spk-select-new
+    value="id"
+    label="hello.world.value"
     class="primary raised"
     [options]="options()"
-    id="id"
-    [asText]="false"
-    label="hello.world.value"
     [isClearable]="true"
     [selectMultiple]="true">
     <label>Subscribed events</label>
-    <input type="text" />
+    <input type="text" [formControl]="inputCtrlNew2Multiple" />
   </spk-select-new>
 
   <spk-select-new
@@ -80,6 +79,7 @@
   <pre>
     form control value - inputCtrlNew1: {{ inputCtrlNew1.value | json }} - {{ inputCtrlNew1.valid }}
     form control value - inputCtrlNew1Multiple: {{ inputCtrlNew1Multiple.value | json }} - {{ inputCtrlNew1Multiple.valid }}
+    form control value - inputCtrlNew2Multiple: {{ inputCtrlNew2Multiple.value | json }} - {{ inputCtrlNew2Multiple.valid }}
     form control value - inputCtrlNew2: {{ inputCtrlNew2.value | json }} - {{ inputCtrlNew2.valid }}
     spk-select-new selected option: {{ selectedOption() | json }}
     lazy selected option: {{ lazySearchableSelectedOption() | json }} - {{ lazySearchableOption() }} - {{ typeof lazySearchableOption() }}

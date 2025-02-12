@@ -5,7 +5,7 @@ $spkSelect: true !default;
 @if $spkSelect == true {
   spk-multi-select,
   spk-select {
-    --miw: p2r(210);
+    --miw: #{p2r(210)};
 
     display: flex;
 
