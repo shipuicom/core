@@ -2,9 +2,10 @@
 
 import { Glob } from 'bun';
 import { FSWatcher, watch } from 'fs';
-import { join, resolve } from 'path';
+import path, { join, resolve } from 'path';
 
 import subsetFont from 'subset-font';
+
 import { formatFileSize, getUnicodeObject, InputArguments, SupportedFontTypes } from './utilities';
 
 let writtenCssSize = 0;
@@ -110,19 +111,23 @@ const run = async (
 
   writeCssFile(PROJECT_PUBLIC, values, groupedIcons, TARGET_FONT_TYPE);
 
-  function capitalize(str: string) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
   // We dont load fonts we dont use
   const fontTypes = ['bold', 'thin', 'light', 'fill', 'regular'].filter((x) => groupedIcons[x].length > 0);
   const targetFormat = (TARGET_FONT_TYPE as SupportedFontTypes) === 'ttf' ? 'truetype' : TARGET_FONT_TYPE;
   const fonts = fontTypes.map(async (fontType) => {
     const glyphs = uniqueString(groupedIcons[fontType].map((icon) => icon[0]).join(''));
-    const arrayBuffer = await Bun.file(
-      `${import.meta.dir}/config/${fontType}/Phosphor${fontType === 'regular' ? '' : '-' + capitalize(fontType)}.${TARGET_FONT_TYPE}`
-    ).arrayBuffer();
+    const fontFileName = `Phosphor${fontType === 'regular' ? '' : '-' + capitalize(fontType)}.${TARGET_FONT_TYPE}`;
+    const fullPath = path.resolve(
+      process.cwd(),
+      'node_modules',
+      '@phosphor-icons',
+      'web',
+      'src',
+      fontType,
+      fontFileName
+    );
 
+    const arrayBuffer = await Bun.file(fullPath).arrayBuffer();
     const subsetBuffer = await subsetFont(Buffer.from(arrayBuffer), glyphs, {
       targetFormat,
       noLayoutClosure: true,
@@ -271,6 +276,10 @@ const textMateSnippet = async (GLYPH_MAP: Record<string, [string, string]>) => {
   await Bun.write('./.vscode/html.code-snippets', iconsSnippetContent);
 };
 
+function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export const main = async (values: InputArguments) => {
   const TARGET_FONT_TYPE: SupportedFontTypes = 'woff2' as SupportedFontTypes;
   const packageJsonPath = resolve(import.meta.dir, '../../package.json');
@@ -280,7 +289,16 @@ export const main = async (values: InputArguments) => {
   const fontVariants = ['bold', 'thin', 'light', 'fill', 'regular'];
   const GLYPH_MAPS = await Promise.all(
     fontVariants.map(async (fontVariant) => {
-      const selectionJson = await Bun.file(`${import.meta.dir}/config/${fontVariant}/selection.json`).json();
+      const selectionJsonFullPath = path.resolve(
+        process.cwd(),
+        'node_modules',
+        '@phosphor-icons',
+        'web',
+        'src',
+        fontVariant,
+        'selection.json'
+      );
+      const selectionJson = await Bun.file(selectionJsonFullPath).json();
 
       // return createCodepointObject(selectionJson.icons);
       // return createNameCodeObject(selectionJson.icons);

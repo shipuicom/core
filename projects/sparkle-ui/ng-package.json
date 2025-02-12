@@ -7,5 +7,5 @@
   },
   "assets": ["styles/**/*", "assets/**/*", "bin/**/*"],
   "inlineStyleLanguage": "scss",
-  "allowedNonPeerDependencies": ["subset-font"]
+  "allowedNonPeerDependencies": ["subset-font", "@phosphor-icons/web"]
 }

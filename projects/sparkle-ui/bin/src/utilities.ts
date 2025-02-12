@@ -1,14 +1,3 @@
-// export function createNameCodeObject(jsonData: Item[]): Record<string, string> {
-//   const nameCodeObject: Record<string, string> = {};
-
-//   for (let i = 0; i < jsonData.length; i++) {
-//     const item = jsonData[i];
-//     nameCodeObject[item.properties.name] = getGlyphsFromUnicodeRange('U+' + item.properties.code)[0];
-//   }
-
-//   return nameCodeObject;
-// }
-
 export function createNameCodeObject(jsonData: Item[]): Record<string, string> {
   const nameCodeObject: Record<string, string> = {};
 
