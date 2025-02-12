@@ -441,8 +441,6 @@ export class SparkleSelectComponent {
   open(e: MouseEvent | FocusEvent) {
     e.preventDefault();
 
-    if (this.isOpen()) return;
-
     if (this.isSearchInput() && !this.#hasBeenOpened() && !this.isFreeText()) {
       this.#previousInputValue.set(this.inputValue());
       this.inputValue.set('');
