@@ -33,6 +33,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Support datepicker ranges
 - [x] Support multiple month views in datepicker
 - [x] Create a daterange input component
+- [ ] Improve the new select implementation to better show inlinesearch/lazysearch with multiple select
 - [ ] Finalize file upload component
 - [ ] Create a CSV input that create chips on comma (or enter) press
 - [ ] Create a accordion component

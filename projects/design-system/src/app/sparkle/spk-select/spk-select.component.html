@@ -53,6 +53,17 @@
   </spk-select-new>
 
   <spk-select-new
+    value="id"
+    label="hello.world.value"
+    class="primary raised"
+    [inlineSearch]="true"
+    [options]="options()"
+    [selectMultiple]="true">
+    <label>Subscribed events</label>
+    <input type="text" placeholder="custom-placeholder" [formControl]="inputCtrlNew2Multiple" />
+  </spk-select-new>
+
+  <spk-select-new
     [(selectedOptions)]="lazySearchableSelectedOption"
     [options]="lazyOptions()"
     [isLoading]="lazyLoading()"

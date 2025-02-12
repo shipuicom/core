@@ -9,6 +9,7 @@ import {
   inject,
   input,
   model,
+  output,
   signal,
   TemplateRef,
   viewChild,
@@ -163,6 +164,7 @@ export class SparkleSelectNewComponent {
   placeholderTemplate = input<TemplateRef<unknown> | null>(null);
   isValid = model<boolean>(false);
   selectedOptions = model<unknown[]>([]);
+  cleared = output<void>();
 
   inlineTemplate = contentChild<TemplateRef<unknown>>(TemplateRef);
   inputWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('inputWrap');
@@ -542,6 +544,7 @@ export class SparkleSelectNewComponent {
     this.selectedOptions.set([]);
     this.isOpen.set(false);
     this.prevInputValue.set(null);
+    this.cleared.emit();
   }
 
   #getProperty(obj: unknown, path: string): unknown {
