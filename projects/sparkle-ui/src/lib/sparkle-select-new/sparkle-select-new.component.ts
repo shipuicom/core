@@ -92,7 +92,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
               @if (_placeholderTemplate) {
                 <ng-container *ngTemplateOutlet="_placeholderTemplate" />
               } @else {
-                {{ placeholder() ?? '' }}
+                {{ placeholderText() ?? '' }}
               }
             }
           </div>
@@ -169,6 +169,7 @@ export class SparkleSelectNewComponent {
   optionsWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('optionsWrap');
 
   #inputRef = signal<HTMLInputElement | null>(null);
+  placeholderText = computed(() => this.placeholder() || this.#inputRef()?.placeholder || null);
   isOpen = signal(false);
   selectedOptionIndices = signal<number[]>([]);
   focusedOptionIndex = signal<number>(-1);
