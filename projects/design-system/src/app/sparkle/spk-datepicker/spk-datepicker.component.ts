@@ -4,6 +4,7 @@ import {
   SparkleButtonGroupComponent,
   SparkleDatepickerComponent,
   SparkleDatepickerInputComponent,
+  SparkleDateRangeInputComponent,
   SparkleIconComponent,
 } from '../../../../../sparkle-ui/src/public-api';
 
@@ -12,6 +13,7 @@ const now = new Date();
 @Component({
   selector: 'app-spk-datepicker',
   imports: [
+    SparkleDateRangeInputComponent,
     SparkleDatepickerComponent,
     SparkleDatepickerInputComponent,
     SparkleButtonGroupComponent,
@@ -25,7 +27,12 @@ const now = new Date();
 })
 export default class SpkDatepickerComponent {
   someDate = signal(now);
-  someOtherDate = signal(new Date('2023-01-01'));
+  someOtherDate = signal(new Date('2023-01-01T12:00:00Z')); // Noon UTC
+  someRangeDate = signal(new Date('2023-01-01T22:00:00Z')); // 11PM UTC
+  someEndRangeDate = signal(null);
+
+  startDateControl = new FormControl(new Date('2023-01-01T12:00:00Z')); // Noon UTC
+  endDateControl = new FormControl(new Date('2023-01-01T22:00:00Z')); // 11PM UTC
 
   type = signal<'none' | 'raised' | 'outlined'>('none');
   colors = signal<'none' | 'primary' | 'accent' | 'error' | 'warn' | 'success'>('primary');

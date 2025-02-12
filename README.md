@@ -30,10 +30,13 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Multi select menu's that dosn't close when checking an option
 - [x] Make colors optional/configurable (primary, accent, tertiary, warn, success) on a component level and generally
 - [x] Add support of multiple phosphor icons types (bold, fill, light, regular, thin) in the same font by just suffixing with (-bold, -fill, etc)
+- [x] Support datepicker ranges
+- [x] Support multiple month views in datepicker
+- [x] Create a daterange input component
+- [ ] Finalize file upload component
 - [ ] Create a CSV input that create chips on comma (or enter) press
 - [ ] Create a accordion component
 - [ ] Create a timepicker component
-- [ ] Finalize file upload component
 
 - [ ] Streamline general color variables 10-70 instead of 100-900 (align with figma)
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
@@ -41,7 +44,6 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 
 ### Nice to haves for v1 beta
 
-- [ ] Create a datepicker range input component
 - [ ] Add flat and raised versions of alerts
 - [ ] Create simple chart components
   - [ ] Line chart

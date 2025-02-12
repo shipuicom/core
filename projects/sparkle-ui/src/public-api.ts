@@ -18,6 +18,7 @@ export * from './lib/sparkle-chip/sparkle-chip.component';
 export * from './lib/sparkle-color-picker/sparkle-color-picker.component';
 export * from './lib/sparkle-datepicker/sparkle-datepicker-input.component';
 export * from './lib/sparkle-datepicker/sparkle-datepicker.component';
+export * from './lib/sparkle-datepicker/sparkle-daterange-input.component';
 export * from './lib/sparkle-divider/sparkle-divider.component';
 export * from './lib/sparkle-file-upload/sparkle-file-upload.component';
 export * from './lib/sparkle-form-field/sparkle-form-field.component';

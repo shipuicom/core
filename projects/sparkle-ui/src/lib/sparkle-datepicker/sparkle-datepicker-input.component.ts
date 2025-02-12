@@ -52,6 +52,8 @@ import { SparkleDatepickerComponent } from './sparkle-datepicker.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleDatepickerInputComponent {
+  #INIT_DATE = this.#getUTCDate(new Date());
+
   #datePipe = inject(DatePipe);
   #elementRef = inject(ElementRef<SparkleDatepickerInputComponent>);
   #inputRef = signal<HTMLInputElement | null>(null);
@@ -59,11 +61,13 @@ export class SparkleDatepickerInputComponent {
   inputWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('inputWrap');
 
   masking = input('mediumDate');
-  closed = output<Date>();
+  closed = output<Date | null>();
 
   _maskedDate = computed(() => {
     const date = this.internalDate();
     const mask = this.masking();
+
+    console.log(date, mask);
 
     if (!mask) return date;
     if (!date) return null;
@@ -71,7 +75,7 @@ export class SparkleDatepickerInputComponent {
     return this.#datePipe.transform(date, mask);
   });
 
-  internalDate = signal<Date>(new Date());
+  internalDate = signal<Date | null>(this.#INIT_DATE);
   isOpen = model<boolean>(false);
   styleClasses = signal(null);
 
@@ -102,12 +106,12 @@ export class SparkleDatepickerInputComponent {
       }
     });
 
-  onDateChange(date: Date) {
+  onDateChange(date: Date | null) {
     this.internalDate.set(date);
     const input = this.#inputRef();
 
     if (input) {
-      input.value = date.toUTCString();
+      input.value = date ? date.toUTCString() : '';
     }
   }
 
@@ -142,7 +146,7 @@ export class SparkleDatepickerInputComponent {
     this.#createCustomInputEventListener(input);
 
     input.addEventListener('inputValueChanged', (event) => {
-      this.internalDate.set(new Date(event.detail.value));
+      this.internalDate.set(event.detail.value ? this.#getUTCDate(new Date(event.detail.value)) : null);
     });
 
     input.addEventListener('focus', () => {
@@ -154,7 +158,7 @@ export class SparkleDatepickerInputComponent {
     input.autocomplete = 'off';
 
     if (typeof input.value === 'string') {
-      this.internalDate.set(new Date(input.value));
+      this.internalDate.set(input.value ? this.#getUTCDate(new Date(input.value)) : null);
     }
   });
 
@@ -189,5 +193,22 @@ export class SparkleDatepickerInputComponent {
   ngOnDestroy() {
     this.#styleObserver && this.#styleObserver.disconnect();
     this.#inputObserver && this.#inputObserver.disconnect();
+  }
+
+  #getUTCDate(date: Date): Date {
+    const offsetMinutes = date.getTimezoneOffset();
+    const timeDiffMillis = offsetMinutes * 60 * 1000;
+
+    return new Date(
+      Date.UTC(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        date.getHours(),
+        date.getMinutes(),
+        date.getSeconds(),
+        date.getMilliseconds()
+      ) + timeDiffMillis
+    );
   }
 }

@@ -17,50 +17,68 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
   template: `
     <header>
       <button (click)="previousMonth()"><spk-icon>caret-left</spk-icon></button>
-      <div class="title">{{ getMonthName(currentDate()) }} {{ getFullYear(currentDate()) }}</div>
+      <div class="title">
+        {{ getMonthName(currentDate()!) }}
+        @if (monthsToShow() > 1) {
+          - {{ getMonthName(getLastVisibleMonth()) }}
+        }
+        {{ getFullYear(currentDate()!) }}
+      </div>
       <button (click)="nextMonth()"><spk-icon>caret-right</spk-icon></button>
     </header>
 
-    <section>
-      <nav class="weekdays">
-        @for (day of weekdays(); track $index) {
-          <div>{{ day }}</div>
-        }
-      </nav>
+    <section class="months-container">
+      @for (monthOffset of monthOffsets(); track monthOffset) {
+        <div class="month">
+          <nav class="weekdays">
+            @for (day of weekdays(); track $index) {
+              <div>{{ day }}</div>
+            }
+          </nav>
 
-      <div class="days" #daysRef>
-        @for (calDate of currentMonthDates(); track $index) {
-          <div
-            #elementRef
-            [class.out-of-scope]="!isCurrentMonth(calDate)"
-            [class.sel]="calDate.toDateString() === date().toDateString()"
-            (click)="setDate(calDate, elementRef)">
-            {{ calDate.getDate() }}
+          <div class="days" #daysRef>
+            @for (calDate of getMonthDates(monthOffset); track $index) {
+              <div
+                #elementRef
+                [class.out-of-scope]="!isCurrentMonth(calDate, monthOffset)"
+                [class]="isDateSelected(calDate)"
+                (click)="setDate(calDate, elementRef)">
+                {{ calDate.getDate() }}
+              </div>
+            }
+
+            @if (!asRange()) {
+              <article class="days">
+                <div class="sel-el" [style]="selectedDateStylePosition()"></div>
+              </article>
+            }
           </div>
-        }
-
-        <article class="days">
-          <div class="sel-el" [style]="selectedDateStylePosition()"></div>
-        </article>
-      </div>
+        </div>
+      }
     </section>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.as-range]': 'asRange()',
+    '[class]': '"columns-" + monthsToShow()',
+  },
 })
 export class SparkleDatepickerComponent {
   #INIT_DATE = this.#getUTCDate(new Date());
 
-  date = model<Date>(this.#INIT_DATE);
+  date = model<Date | null>(null);
+  endDate = model<Date | null>(null);
+  asRange = input<boolean>(false);
+  monthsToShow = input<number>(1);
+
   startOfWeek = input<number>(1);
   weekdayLabels = input<string[]>(['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']);
 
   daysRef = viewChild<ElementRef<HTMLDivElement>>('daysRef');
-  currentDate = signal<Date>(this.#INIT_DATE);
-  currentMonthDates = computed(() => {
-    const startOfWeek = this.startOfWeek();
-    const currentDate = this.currentDate();
+  currentDate = signal<Date>(this.date() ?? this.#INIT_DATE);
 
-    return this.#generateMonthDates(currentDate, startOfWeek);
+  monthOffsets = computed(() => {
+    return Array.from({ length: this.monthsToShow() }, (_, i) => i);
   });
 
   selectedDateStylePosition = signal<{ transform: string; opacity: string } | null>(null);
@@ -72,10 +90,39 @@ export class SparkleDatepickerComponent {
     return weekdayLabels.slice(startOfWeek).concat(weekdayLabels.slice(0, startOfWeek));
   });
 
+  getLastVisibleMonth(): Date {
+    const lastMonthOffset = this.monthsToShow() - 1;
+    return this.getOffsetDate(lastMonthOffset);
+  }
+
+  getOffsetDate(monthOffset: number): Date {
+    const date = new Date(this.currentDate());
+    date.setMonth(date.getMonth() + monthOffset);
+    return date;
+  }
+
+  getMonthDates(monthOffset: number): Date[] {
+    const offsetDate = this.getOffsetDate(monthOffset);
+    return this.#generateMonthDates(offsetDate, this.startOfWeek());
+  }
+
   #newDateEffect = effect(() => {
-    this.currentDate.set(this.date());
-    this.#findSelectedAndCalc();
+    if (this.monthsToShow() > 1) return;
+
+    this.#setDateAsCurrent();
   });
+
+  ngOnInit() {
+    if (this.monthsToShow() === 1) return;
+
+    this.#setDateAsCurrent();
+  }
+
+  #setDateAsCurrent() {
+    const newDate = this.date();
+    if (newDate) this.currentDate.set(newDate);
+    this.#findSelectedAndCalc();
+  }
 
   #findSelectedAndCalc() {
     setTimeout(() => {
@@ -140,17 +187,129 @@ export class SparkleDatepickerComponent {
     this.#findSelectedAndCalc();
   }
 
-  setDate(date: Date, selectedElement: HTMLDivElement) {
-    const hours = this.date().getUTCHours();
-    const minutes = this.date().getUTCMinutes();
-    const seconds = this.date().getUTCSeconds();
-    const milliseconds = this.date().getUTCMilliseconds();
-    const newDate = new Date(
-      Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hours, minutes, seconds, milliseconds)
-    );
+  setDate(newDate: Date, selectedElement: HTMLDivElement) {
+    const createDateWithExistingTime = (newDate: Date, existingDate: Date | null) => {
+      const hours = existingDate?.getUTCHours() ?? 0;
+      const minutes = existingDate?.getUTCMinutes() ?? 0;
+      const seconds = existingDate?.getUTCSeconds() ?? 0;
+      const milliseconds = existingDate?.getUTCMilliseconds() ?? 0;
 
-    this.date.set(this.#getUTCDate(newDate));
+      return this.#getUTCDate(
+        new Date(
+          Date.UTC(
+            newDate.getUTCFullYear(),
+            newDate.getUTCMonth(),
+            newDate.getUTCDate(),
+            hours,
+            minutes,
+            seconds,
+            milliseconds
+          )
+        )
+      );
+    };
+
+    if (!this.asRange()) {
+      this.date.set(createDateWithExistingTime(newDate, this.date()));
+      this.endDate.set(null);
+    } else {
+      const startDate = this.date();
+      const endDate = this.endDate();
+      const utcDate = createDateWithExistingTime(newDate, null);
+
+      if (!startDate) {
+        this.date.set(utcDate);
+      } else if (!endDate) {
+        if (utcDate < startDate) {
+          this.date.set(utcDate);
+          this.endDate.set(null);
+        } else {
+          this.endDate.set(utcDate);
+        }
+      } else {
+        this.date.set(utcDate);
+        this.endDate.set(null);
+      }
+    }
+
+    if (this.asRange()) return;
+
     this.setSelectedDateStylePosition(selectedElement);
+  }
+
+  isDateSelected(date: Date): string | null {
+    const startDate = this.date();
+    const endDate = this.endDate();
+
+    if (startDate === null) return null;
+
+    const startOfDay = (date: Date) => {
+      return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0));
+    };
+
+    const endOfDay = (date: Date) => {
+      return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 23, 59, 59, 999));
+    };
+
+    const currentDate = startOfDay(date);
+    const rangeStart = startOfDay(startDate);
+    const rangeEnd = endDate ? endOfDay(endDate) : null;
+
+    let classes = [];
+
+    if (this.asRange()) {
+      if (rangeEnd === null) {
+        if (currentDate.getTime() === rangeStart.getTime()) {
+          classes.push('sel first last');
+        }
+      } else {
+        if (currentDate.getTime() === rangeStart.getTime()) {
+          classes.push('first');
+        }
+
+        if (currentDate.getTime() === startOfDay(rangeEnd).getTime()) {
+          classes.push('last');
+        }
+
+        if (currentDate >= rangeStart && currentDate <= rangeEnd) {
+          classes.push('sel');
+
+          const dayOfWeek = currentDate.getUTCDay();
+          const startOfWeek = this.startOfWeek();
+
+          if (dayOfWeek === startOfWeek) {
+            classes.push('week-start');
+          }
+
+          const endOfWeek = (startOfWeek + 6) % 7;
+          if (dayOfWeek === endOfWeek) {
+            classes.push('week-end');
+          }
+        }
+
+        const nextDate = new Date(currentDate);
+        nextDate.setUTCDate(currentDate.getUTCDate() + 1);
+        const prevDate = new Date(currentDate);
+        prevDate.setUTCDate(currentDate.getUTCDate() - 1);
+
+        const isFirstOfMonth = currentDate.getUTCDate() === 1;
+        const isLastOfMonth = nextDate.getUTCMonth() !== currentDate.getUTCMonth();
+
+        if (isFirstOfMonth) {
+          classes.push('month-start');
+        }
+
+        if (isLastOfMonth) {
+          classes.push('month-end');
+        }
+      }
+    } else {
+      if (currentDate.getTime() === rangeStart.getTime()) {
+        classes.push('sel');
+      }
+    }
+
+    return classes.join(' ') || null;
   }
 
   setSelectedDateStylePosition(selectedElement: HTMLDivElement) {
@@ -168,8 +327,10 @@ export class SparkleDatepickerComponent {
     return date.getFullYear();
   }
 
-  isCurrentMonth(date: Date): boolean {
-    return date.getMonth() === this.currentDate().getMonth();
+  // Rest of the component methods remain the same, but update isCurrentMonth:
+  isCurrentMonth(date: Date, monthOffset: number): boolean {
+    const offsetDate = this.getOffsetDate(monthOffset);
+    return date.getMonth() === offsetDate.getMonth();
   }
 
   #getUTCDate(date: Date): Date {

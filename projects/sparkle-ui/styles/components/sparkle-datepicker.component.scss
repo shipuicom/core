@@ -3,6 +3,7 @@
 $spkDatepicker: true !default;
 
 @if $spkDatepicker == true {
+  spk-daterange-input,
   spk-datepicker-input {
     spk-form-field-popover {
       .input-wrap .input {
@@ -15,8 +16,11 @@ $spkDatepicker: true !default;
         font: var(--paragraph-30B);
         color: var(--base-level-60);
 
+        + input + input,
         + input {
           opacity: 0;
+          height: 0;
+          width: 0;
         }
       }
 
@@ -28,7 +32,24 @@ $spkDatepicker: true !default;
     spk-datepicker {
       z-index: 10000;
       position: relative;
-      width: p2r(240);
+      --dp-width: #{p2r(240)};
+    }
+  }
+
+  spk-daterange-input {
+    spk-popover .popover {
+      --dp-width: #{p2r(300)};
+      min-width: var(--dp-width);
+    }
+
+    @for $i from 1 through 3 {
+      spk-form-field-popover.columns-#{$i} {
+        $gap: 1rem;
+
+        spk-popover .popover {
+          --dp-width: calc(#{p2r($i * 300)} + #{(($i - 1) * $gap)});
+        }
+      }
     }
   }
 
@@ -38,20 +59,63 @@ $spkDatepicker: true !default;
     --dp-sel-bc: transparent;
     --dp-sel-c: #fff;
     --dp-day-c: var(--base-level-60);
-    --dp-day-g: #{p2r(4)};
+    --dp-day-g: #{p2r(4 0)};
     --dp-day-f: var(--paragraph-20);
+    --dp-width: #{p2r(300)};
 
     width: 100%;
-    max-width: p2r(300);
+    max-width: var(--dp-width);
     display: flex;
     flex-direction: column;
+
+    @for $i from 1 through 3 {
+      &.columns-#{$i} {
+        $gap: 1rem;
+
+        --dp-width: calc(#{p2r($i * 300)} + #{(($i - 1) * $gap)});
+      }
+    }
+
+    &.as-range {
+      section {
+        .days > div {
+          &.sel {
+            background: var(--dp-sel-bg);
+            opacity: 0.5;
+          }
+
+          &.month-start,
+          &.week-start,
+          &.first {
+            border-top-left-radius: 50%;
+            border-bottom-left-radius: 50%;
+          }
+          &.month-end,
+          &.week-end,
+          &.last {
+            border-top-right-radius: 50%;
+            border-bottom-right-radius: 50%;
+          }
+
+          &.first,
+          &.last {
+            opacity: 1;
+          }
+        }
+      }
+
+      .month .days > div.out-of-scope {
+        opacity: 0;
+        pointer-events: none;
+      }
+    }
 
     header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: p2r(4 0);
-      gap: p2r(8);
+      gap: p2r(0);
 
       .title {
         font: var(--paragraph-20);
@@ -71,10 +135,18 @@ $spkDatepicker: true !default;
       }
     }
 
-    section {
+    .months-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .month {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: 1fr 7fr;
       gap: var(--dp-day-g);
+      align-items: flex-start;
 
       .days,
       .weekdays {
