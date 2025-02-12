@@ -44,6 +44,18 @@
   </spk-select-new>
 
   <spk-select-new
+    class="primary raised"
+    [options]="options()"
+    id="id"
+    [asText]="false"
+    label="hello.world.value"
+    [isClearable]="true"
+    [selectMultiple]="true">
+    <label>Subscribed events</label>
+    <input type="text" />
+  </spk-select-new>
+
+  <spk-select-new
     [(selectedOptions)]="lazySearchableSelectedOption"
     [options]="lazyOptions()"
     [isLoading]="lazyLoading()"

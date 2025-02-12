@@ -42,6 +42,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
 
     @let _selOptionTemplate = _selectedOptionTemplate || _optionTemplate || _inlineTemplate;
     @let _listOptionTemplate = _optionTemplate || _inlineTemplate;
+    @let _asChips = !asText() && selectMultiple();
 
     <spk-popover
       #formFieldWrapper
@@ -62,28 +63,30 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
         <div class="input" [class.show-search-text]="_showSearchText" ngProjectAs="input" #inputWrap>
           <div class="selected-value" [class.is-selected]="_inputState === 'selected'">
             @if (_selectedOptions.length > 0) {
-              @if (_optionTemplate || _inlineTemplate) {
+              @if (_selOptionTemplate) {
                 @for (selectedOption of _selectedOptions; track $index; let last = $last) {
-                  @if (!asText() && selectMultiple()) {
+                  @if (_asChips) {
                     <spk-chip [class]="selectClasses()" class="small">
-                      @if (_selOptionTemplate) {
-                        <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
-                      } @else {
-                        {{ selectedOption }}
-                      }
+                      <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
 
                       <spk-icon (click)="removeSelectedOptionByIndex($event, $index)">x-bold</spk-icon>
                     </spk-chip>
                   } @else {
-                    @if (_selOptionTemplate) {
-                      <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
-                    } @else {
-                      {{ selectedOption }}
-                    }
+                    <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
                   }
                 }
               } @else {
-                {{ selectedLabels() }}
+                @if (_asChips) {
+                  @for (selectedOption of _selectedOptions; track $index; let last = $last) {
+                    <spk-chip [class]="selectClasses()" class="small">
+                      {{ getLabel(selectedOption) }}
+
+                      <spk-icon (click)="removeSelectedOptionByIndex($event, $index)">x-bold</spk-icon>
+                    </spk-chip>
+                  }
+                } @else {
+                  {{ selectedLabels() }}
+                }
               }
             } @else {
               @if (_placeholderTemplate) {
@@ -282,8 +285,16 @@ export class SparkleSelectNewComponent {
       return selected.join(', ');
     }
 
-    return selected.map((selected) => this.#getProperty(selected, label)).join(', ');
+    return selected.map((selected) => this.getLabel(selected)).join(', ');
   });
+
+  getLabel(option: unknown) {
+    const label = this.label();
+
+    if (!label) return option;
+
+    return this.#getProperty(option, label);
+  }
 
   selectedValues = computed(() => {
     const selected = this.selectedOptions();
