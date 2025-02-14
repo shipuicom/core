@@ -92,6 +92,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
                 {{ placeholderText() ?? '' }}
               }
             }
+
             <ng-content select="input" />
           </div>
         </div>
@@ -149,7 +150,7 @@ export class SparkleSelectNewComponent {
   lazySearch = input(false);
   inlineSearch = input(false);
   asText = input(false);
-  isClearable = input(false);
+  isClearable = input(true);
   selectMultiple = input(false);
   optionTemplate = input<TemplateRef<unknown> | null>(null);
   selectedOptionTemplate = input<TemplateRef<unknown> | null>(null);
@@ -171,7 +172,12 @@ export class SparkleSelectNewComponent {
 
   _isClearable = computed(() => this.selectMultiple() || this.isClearable());
   selectClasses = computed(() => this.#selfRef.nativeElement.classList.toString());
-  placeholderText = computed(() => this.placeholder() || this.inputRefEl()?.placeholder || null);
+  placeholderText = computed(() => {
+    const placeholder = this.placeholder();
+    const inputRefEl = this.inputRefEl();
+
+    return placeholder || inputRefEl?.placeholder || null;
+  });
   selectedOptionValues = computed(() => {
     const selectedOptions = this.selectedOptions();
     const valueKey = this.value();
@@ -234,6 +240,10 @@ export class SparkleSelectNewComponent {
       const inputValue = this.inputValue();
 
       if (newInputValue === inputValue) return;
+      if (newInputValue === '') {
+        this.clear();
+        return;
+      }
 
       this.setSelectedOptionsFromValue(newInputValue);
       this.setInputValueFromSelectedOptions();
@@ -375,6 +385,11 @@ export class SparkleSelectNewComponent {
     const selectMultiple = this.selectMultiple();
 
     const inputValueAsString = value.toString().split(',');
+
+    if (inputValueAsString.length === 0) {
+      this.selectedOptions.set([]);
+      return;
+    }
     const inputAsArray = selectMultiple ? inputValueAsString : [inputValueAsString[0]];
 
     const selectedOptions = options.filter((option) => {
@@ -389,6 +404,12 @@ export class SparkleSelectNewComponent {
   setInputValueFromSelectedOptions() {
     const selectedOptions = this.selectedOptions();
     const valueKey = this.value();
+
+    if (selectedOptions.length === 0) {
+      this.inputValue.set('');
+      this.updateInputElValue();
+      return;
+    }
 
     const inputValue = selectedOptions
       .map((option) => {

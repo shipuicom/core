@@ -41,14 +41,9 @@
 
   <pre>inputCtrlNew1 = {{ inputCtrlNew1.value }}</pre>
 
-  <spk-select-new
-    [isClearable]="false"
-    [options]="options()"
-    value="id"
-    [optionTemplate]="optionTemplate"
-    placeholder="Select some option NOW!!">
+  <spk-select-new [isClearable]="false" [options]="options()" value="id" [optionTemplate]="optionTemplate">
     <label>Form and optionTemplate Select</label>
-    <input type="text" #input [(ngModel)]="inputHello" />
+    <input type="text" #input [(ngModel)]="inputHello" placeholder="Select some option NOW!!" />
   </spk-select-new>
 
   <pre>inputHello = {{ inputHello() }}</pre>
