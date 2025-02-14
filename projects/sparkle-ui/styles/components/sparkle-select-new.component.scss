@@ -51,12 +51,9 @@ $spkSelectNew: false !default;
         input {
           opacity: 1;
           height: initial;
-          width: 100%;
-        }
-
-        .selected-value {
-          opacity: 0;
-          display: none;
+          margin-top: p2r(4);
+          min-width: min-content;
+          field-sizing: content;
         }
       }
     }

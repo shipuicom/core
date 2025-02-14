@@ -70,6 +70,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 ### Notes
 
 - For safari `<18` the selects does not support using options so you must use `<spk-option>` instead of `<option>` (this is fixed in the next select version currently suffixed with `-new`)
+- Known issues for selects when having two selects editing the same value and it is a multi select and searchable they clear out when opened also when selecting a new item they clear the rest of the list - not a very likely scenario but it is something to keep in mind (Your UI probably should not allow this scenario write an issue if you think it should be possible with a good explanation and example)
 
 ## Contributors
 

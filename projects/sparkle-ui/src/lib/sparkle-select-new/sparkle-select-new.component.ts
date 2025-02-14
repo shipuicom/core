@@ -38,12 +38,12 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
     @let _selectedOptionTemplate = selectedOptionTemplate();
     @let _inlineTemplate = inlineTemplate();
     @let _selectedOptions = selectedOptions();
-    @let _showSearchText = (inlineSearch() || lazySearch()) && isOpen() && !isValid();
     @let _inputState = inputState();
 
     @let _selOptionTemplate = _selectedOptionTemplate || _optionTemplate || _inlineTemplate;
     @let _listOptionTemplate = _optionTemplate || _inlineTemplate;
     @let _asChips = !asText() && selectMultiple();
+    @let _showSearchText = hasSearch() && isOpen() && _asChips;
 
     <spk-popover
       #formFieldWrapper
@@ -64,41 +64,36 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
         <div class="input" [class.show-search-text]="_showSearchText" ngProjectAs="input" #inputWrap>
           <div class="selected-value" [class.is-selected]="_inputState === 'selected'">
             @if (_selectedOptions.length > 0) {
-              @if (_selOptionTemplate) {
-                @for (selectedOption of _selectedOptions; track $index; let last = $last) {
+              @for (selectedOption of _selectedOptions; track $index) {
+                @if (selectedOption) {
                   @if (_asChips) {
                     <spk-chip [class]="selectClasses()" class="small">
-                      <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
+                      @if (_selOptionTemplate) {
+                        <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
+                      } @else {
+                        {{ getLabel(selectedOption) }}
+                      }
 
                       <spk-icon (click)="removeSelectedOptionByIndex($event, $index)">x-bold</spk-icon>
                     </spk-chip>
                   } @else {
-                    <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
-                  }
-                }
-              } @else {
-                @if (_asChips) {
-                  @for (selectedOption of _selectedOptions; track $index; let last = $last) {
-                    <spk-chip [class]="selectClasses()" class="small">
+                    @if (_selOptionTemplate) {
+                      <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
+                    } @else {
                       {{ getLabel(selectedOption) }}
-
-                      <spk-icon (click)="removeSelectedOptionByIndex($event, $index)">x-bold</spk-icon>
-                    </spk-chip>
+                    }
                   }
-                } @else {
-                  {{ selectedLabels() }}
                 }
               }
-            } @else {
+            } @else if (!_showSearchText) {
               @if (_placeholderTemplate) {
                 <ng-container *ngTemplateOutlet="_placeholderTemplate" />
               } @else {
                 {{ placeholderText() ?? '' }}
               }
             }
+            <ng-content select="input" />
           </div>
-
-          <ng-content select="input" />
         </div>
 
         @if (_inputState === 'closed') {
@@ -109,9 +104,9 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
           <spk-icon suffix>list-magnifying-glass</spk-icon>
         } @else if (_inputState === 'searching') {
           <spk-icon suffix>magnifying-glass</spk-icon>
-        } @else if (_inputState === 'selected' && isClearable()) {
+        } @else if (_inputState === 'selected' && _isClearable()) {
           <spk-icon suffix (click)="clear($event)">x-bold</spk-icon>
-        } @else if (_inputState === 'selected' && !isClearable()) {
+        } @else if (_inputState === 'selected' && !_isClearable()) {
           <spk-icon suffix>check</spk-icon>
         } @else {
           <spk-icon suffix>caret-up</spk-icon>
@@ -119,9 +114,9 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
       </spk-form-field>
 
       <div class="sparkle-options" #optionsWrap>
-        @for (option of optionsSignal(); track $index) {
+        @for (option of filteredOptions(); track $index) {
           <li
-            (click)="selectOption($index)"
+            (click)="toggleOptionByIndex($index)"
             class="option"
             [class.selected]="isSelected($index)"
             [class.focused]="$index === focusedOptionIndex()">
@@ -132,7 +127,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
             @if (_listOptionTemplate) {
               <ng-container *ngTemplateOutlet="_listOptionTemplate; context: { $implicit: option }" />
             } @else {
-              {{ option }}
+              {{ getLabel(option) }}
             }
           </li>
         }
@@ -147,36 +142,191 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
 export class SparkleSelectNewComponent {
   #selfRef = inject<ElementRef<HTMLElement>>(ElementRef<HTMLElement>);
 
-  debugRef = input<number | null>(null);
-  options = input<unknown[]>([]);
-  label = input<string>();
   value = input<string>();
+  label = input<string>();
   placeholder = input<string>();
-  inlineSearch = input<boolean>(false);
-  lazySearch = input<boolean>(false);
-  readonly = input<boolean>(false);
-  isLoading = input<boolean>(false);
-  isClearable = input<boolean>(true);
-  asText = input<boolean>(false);
-  selectMultiple = input<boolean>(false);
+  readonly = input(false);
+  lazySearch = input(false);
+  inlineSearch = input(false);
+  asText = input(false);
+  isClearable = input(false);
+  selectMultiple = input(false);
   optionTemplate = input<TemplateRef<unknown> | null>(null);
   selectedOptionTemplate = input<TemplateRef<unknown> | null>(null);
   placeholderTemplate = input<TemplateRef<unknown> | null>(null);
-  isValid = model<boolean>(false);
+  isOpen = model(false);
+  isLoading = model(false);
+  isValid = model(false);
+  options = model<unknown[]>([]);
   selectedOptions = model<unknown[]>([]);
   cleared = output<void>();
 
   inlineTemplate = contentChild<TemplateRef<unknown>>(TemplateRef);
-  inputWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('inputWrap');
   optionsWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('optionsWrap');
+  inputRef = contentChild<ElementRef<HTMLInputElement>>('input');
+  inputValue = signal<string>('');
 
-  #inputRef = signal<HTMLInputElement | null>(null);
-  placeholderText = computed(() => this.placeholder() || this.#inputRef()?.placeholder || null);
-  isOpen = signal(false);
-  selectedOptionIndices = signal<number[]>([]);
+  prevInputValue = signal<string | null>(null);
   focusedOptionIndex = signal<number>(-1);
+
+  _isClearable = computed(() => this.selectMultiple() || this.isClearable());
+  selectClasses = computed(() => this.#selfRef.nativeElement.classList.toString());
+  placeholderText = computed(() => this.placeholder() || this.inputRefEl()?.placeholder || null);
+  selectedOptionValues = computed(() => {
+    const selectedOptions = this.selectedOptions();
+    const valueKey = this.value();
+
+    return valueKey
+      ? selectedOptions.map((selectedOption) => this.#getProperty(selectedOption, valueKey))
+      : selectedOptions;
+  });
+
+  filteredOptions = computed<unknown[]>(() => {
+    const opts = this.options();
+    const label = this.label();
+    const inlineSearch = this.inlineSearch();
+    const inputValue = this.inputValue().toLowerCase();
+
+    if (opts.length <= 0) return [];
+    if (!inlineSearch || inputValue === '') {
+      return opts;
+    }
+
+    return opts.filter((item) => {
+      const optionLabel = label
+        ? (this.#getProperty(item, label) ?? '').toString().toLowerCase()
+        : (item ?? '').toString().toLowerCase();
+
+      return optionLabel.includes(inputValue);
+    });
+  });
+
+  inputRefEl = computed(() => {
+    const input = this.inputRef()?.nativeElement;
+
+    if (!input) return null;
+
+    input.disabled = input.disabled || this.readonly();
+    input.autocomplete = 'off';
+
+    this.#createCustomInputEventListener(input);
+
+    input.addEventListener('focus', () => {
+      if (this.readonly()) return;
+      this.open();
+    });
+
+    if (this.hasSearch()) {
+      input.addEventListener('input', (e: any) => {
+        const newInputValue = e.target.value;
+        const inputValue = this.inputValue();
+
+        if (newInputValue === inputValue) return;
+
+        this.focusedOptionIndex.set(0);
+        this.inputValue.set(newInputValue);
+        this.updateInputElValue();
+      });
+    }
+
+    input.addEventListener('inputValueChanged', (event: any) => {
+      const newInputValue = event.detail.value;
+      const inputValue = this.inputValue();
+
+      if (newInputValue === inputValue) return;
+
+      this.setSelectedOptionsFromValue(newInputValue);
+      this.setInputValueFromSelectedOptions();
+      this.#setFirstSelectedOptionAsFocused();
+    });
+
+    return input;
+  });
+
+  openAbortController: AbortController | null = null;
+
+  isOpenEffect = effect(() => {
+    const isOpen = this.isOpen();
+
+    if (isOpen) {
+      if (!this.openAbortController) {
+        this.openAbortController = new AbortController();
+      }
+
+      const input = this.inputRef()?.nativeElement;
+
+      if (!input) return;
+
+      input.addEventListener(
+        'keydown',
+        (e: KeyboardEvent) => {
+          if (e.key === 'Escape' || e.key === 'Tab') {
+            this.close();
+          }
+
+          if (e.key === 'Enter' || e.key === ' ') {
+            this.toggleOptionByIndex(this.focusedOptionIndex());
+          }
+
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            const newIndex = (this.focusedOptionIndex() as number) + 1;
+
+            this.focusedOptionIndex.set(newIndex > this.filteredOptions().length - 1 ? 0 : newIndex);
+          }
+
+          if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            const newIndex = (this.focusedOptionIndex() as number) - 1;
+
+            this.focusedOptionIndex.set(newIndex < 0 ? this.filteredOptions().length - 1 : newIndex);
+          }
+        },
+        {
+          signal: this.openAbortController?.signal,
+        }
+      );
+    } else {
+      const input = this.inputRef()?.nativeElement;
+
+      if (!input) return;
+
+      if (this.openAbortController) {
+        this.openAbortController.abort();
+        this.openAbortController = null;
+      }
+    }
+  });
+
+  _inputValue = '';
+  inputValueEffect = effect(() => {
+    const inputValue = this.inputValue();
+    this._inputValue = inputValue;
+  });
+
+  inputRefElEffect = effect(() => {
+    const input = this.inputRefEl();
+
+    if (!input) return;
+    if (input.value === this._inputValue) return;
+
+    this.setSelectedOptionsFromValue(input.value);
+    this.setInputValueFromSelectedOptions();
+  });
+
+  selectedLabels = computed(() => {
+    const selected = this.selectedOptions();
+    const label = this.label();
+
+    if (!label) {
+      return selected.join(', ');
+    }
+
+    return selected.map((selected) => this.getLabel(selected)).join(', ');
+  });
+
   inputState = computed(() => {
-    if (this.selectedValues().length > 0 && !this.isOpen()) {
+    if (this.selectedOptions().length > 0 && !this.isOpen()) {
       return 'selected';
     }
 
@@ -199,97 +349,57 @@ export class SparkleSelectNewComponent {
     return 'closed';
   });
 
-  prevInputValue = signal<string | null>(null);
-  inputValue = signal<string>('');
+  hasSearch = computed(() => this.inlineSearch() || this.lazySearch());
 
-  inputValidityEffect = effect(() => {
-    const inputValue = this.inputValue();
+  #selectedOptionsEffect = effect(() => {
+    if (this.selectMultiple() && this.hasSearch()) {
+      return;
+    }
+
+    const selectedOptions = this.selectedOptions();
+    const valueKey = this.value();
+
+    const inputValue = selectedOptions
+      .map((option) => {
+        const optionValue = valueKey ? this.#getProperty(option, valueKey) : option;
+        return optionValue;
+      })
+      .join(',');
+
+    this.inputValue.set(inputValue);
+  });
+
+  setSelectedOptionsFromValue(value: string) {
     const options = this.options();
     const valueKey = this.value();
     const selectMultiple = this.selectMultiple();
 
-    if (selectMultiple) {
-      const inputValues = inputValue
-        .split(',')
-        .map((val) => val.trim())
-        .filter((x) => x !== '');
+    const inputValueAsString = value.toString().split(',');
+    const inputAsArray = selectMultiple ? inputValueAsString : [inputValueAsString[0]];
 
-      const isValid = inputValues.every((inputValue) => {
-        return options.some((option) => {
-          const optionValue = valueKey ? this.#getProperty(option, valueKey) : option;
-          return inputValue === optionValue?.toString();
-        });
-      });
+    const selectedOptions = options.filter((option) => {
+      const optionValue = valueKey ? this.#getProperty(option, valueKey)?.toString() : option?.toString();
 
-      this.isValid.set(isValid);
-    } else {
-      const isValid = options.some((option) => {
+      return optionValue && inputAsArray.includes(optionValue);
+    });
+
+    this.selectedOptions.set(selectMultiple ? selectedOptions : [selectedOptions[0]]);
+  }
+
+  setInputValueFromSelectedOptions() {
+    const selectedOptions = this.selectedOptions();
+    const valueKey = this.value();
+
+    const inputValue = selectedOptions
+      .map((option) => {
         const optionValue = valueKey ? this.#getProperty(option, valueKey) : option;
-        return inputValue === optionValue?.toString();
-      });
+        return optionValue;
+      })
+      .join(',');
 
-      this.isValid.set(isValid);
-    }
-  });
-
-  selectClasses = computed(() => this.#selfRef.nativeElement.classList.toString());
-
-  #readonlyEffect = effect(() => {
-    const input = this.#inputRef();
-
-    if (input) {
-      input.disabled = this.readonly();
-    }
-  });
-
-  #filteredOptions = computed<unknown[]>(() => {
-    const opts = this.options();
-    const label = this.label();
-    const inlineSearch = this.inlineSearch();
-    const inputValue = this.inputValue().toLowerCase();
-
-    if (opts.length <= 0) return [];
-
-    if (!inlineSearch) {
-      return opts;
-    }
-
-    if (label) {
-      return opts.filter((item) => {
-        const optionValue = (this.#getProperty(item, label) ?? '').toString().toLowerCase();
-        return optionValue.includes(inputValue);
-      });
-    } else {
-      return opts.filter((item) => {
-        const optionValue = (item ?? '').toString().toLowerCase();
-        return optionValue.includes(inputValue);
-      });
-    }
-  });
-
-  optionsSignal = computed(() => {
-    const opts = this.#filteredOptions();
-    const label = this.label();
-
-    let result = opts;
-
-    if (label) {
-      result = opts.map((item) => this.#getProperty(item, label));
-    }
-
-    return result;
-  });
-
-  selectedLabels = computed(() => {
-    const selected = this.selectedOptions();
-    const label = this.label();
-
-    if (!label) {
-      return selected.join(', ');
-    }
-
-    return selected.map((selected) => this.getLabel(selected)).join(', ');
-  });
+    this.inputValue.set(inputValue);
+    this.updateInputElValue();
+  }
 
   getLabel(option: unknown) {
     const label = this.label();
@@ -299,222 +409,100 @@ export class SparkleSelectNewComponent {
     return this.#getProperty(option, label);
   }
 
-  selectedValues = computed(() => {
-    const selected = this.selectedOptions();
+  toggleOptionByIndex(optionIndex: number, event?: MouseEvent) {
+    const option = this.filteredOptions()[optionIndex];
+
+    if (!option) {
+      throw new Error('Option not found: this should never happen if it does report it as an issue on github');
+    }
+
+    if (event) {
+      event.stopPropagation();
+    }
+
+    const selectMultiple = this.selectMultiple();
+    const isClearable = this._isClearable();
     const valueKey = this.value();
-
-    if (!valueKey || selected.length === 0) {
-      return selected;
-    }
-
-    return selected.map((selected) => this.#getProperty(selected, valueKey));
-  });
-
-  selectedOptionIndicesEffect = effect(() => {
-    const selectedValues = this.selectedValues();
-    const options = this.#filteredOptions();
-    const valueKey = this.value();
-
-    if (this.selectMultiple()) {
-      this.selectedOptionIndices.set(
-        selectedValues.map((selectedValue) =>
-          options.findIndex((option) => {
-            const optionValue = valueKey ? this.#getProperty(option, valueKey) : option;
-            return optionValue === selectedValue;
-          })
-        )
-      );
-    } else {
-      const selectedValue = selectedValues[0];
-      const index = options.findIndex((option) => {
-        const optionValue = valueKey ? this.#getProperty(option, valueKey) : option;
-        return optionValue === selectedValue;
-      });
-      this.selectedOptionIndices.set(index > -1 ? [index] : []);
-    }
-  });
-
-  selectedValueEffect = effect(() => {
-    const selectedValues = this.selectedValues();
-
-    if (this.#inputRef()) {
-      if (this.selectMultiple()) {
-        this.#inputRef()!.value = selectedValues.join(',');
-      } else {
-        this.#inputRef()!.value = selectedValues[0]?.toString() ?? '';
-      }
-
-      this.#inputRef()!.dispatchEvent(new Event('input'));
-    }
-  });
-
-  #inputObserver =
-    typeof MutationObserver !== 'undefined' &&
-    new MutationObserver((mutations) => {
-      for (var _ of mutations) {
-        const input = this.#selfRef.nativeElement.querySelector('input');
-
-        if (!input) return;
-
-        input.autocomplete = 'off';
-        input.addEventListener('input', () => {
-          this.inputValue.set(input.value);
-        });
-
-        input.addEventListener('focus', () => {
-          if (this.readonly()) return;
-          this.open();
-        });
-
-        input.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape' || e.key === 'Tab') {
-            this.close();
-          }
-
-          if (e.key === 'Enter') {
-            this.selectOption(this.focusedOptionIndex());
-          }
-
-          if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            const newIndex = (this.focusedOptionIndex() as number) + 1;
-
-            this.focusedOptionIndex.set(newIndex > this.optionsSignal().length - 1 ? 0 : newIndex);
-            this.#scrollToFocusedOption();
-          }
-
-          if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            const newIndex = (this.focusedOptionIndex() as number) - 1;
-
-            this.focusedOptionIndex.set(newIndex < 0 ? this.optionsSignal().length - 1 : newIndex);
-            this.#scrollToFocusedOption();
-          }
-
-          if (!(this.lazySearch() || this.inlineSearch())) {
-            e.preventDefault();
-            return;
-          }
-        });
-
-        if (typeof input.value === 'string') {
-          if (this.selectMultiple()) {
-            this.selectOptionsByValue(input.value);
-          } else {
-            this.selectOptionByValue(input.value);
-          }
-        }
-
-        this.#inputRef.set(input);
-
-        (this.#inputObserver as MutationObserver).disconnect();
-        return;
-      }
-    });
-
-  ngOnInit() {
-    if (typeof MutationObserver !== 'undefined') {
-      (this.#inputObserver as MutationObserver).observe(this.inputWrapRef().nativeElement, {
-        attributes: true,
-        childList: true,
-        subtree: true,
-      });
-    }
-  }
-
-  #scrollToFocusedOption() {
-    setTimeout(() => {
-      const findElementWithClassFocused = this.optionsWrapRef().nativeElement.querySelector('.focused');
-      findElementWithClassFocused?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    });
-  }
-
-  open() {
-    this.isOpen.set(true);
-
-    if (!this.selectMultiple()) {
-      const selectedIndex = this.selectedOptionIndices()[0];
-      this.focusedOptionIndex.set(selectedIndex !== undefined ? selectedIndex : 0);
-      this.#scrollToFocusedOption();
-    }
-
-    if (this.lazySearch() || this.inlineSearch()) {
-      this.prevInputValue.set(this.inputValue());
-      this.focusedOptionIndex.set(0);
-      this.inputValue.set('');
-
-      if (this.#inputRef()) {
-        this.#inputRef()!.value = '';
-        this.#inputRef()!.dispatchEvent(new Event('input'));
-      }
-    }
-  }
-
-  selectOption(optionIndex: number) {
-    const option = this.#filteredOptions()[optionIndex];
-
-    if (this.isLoading() && this.lazySearch()) {
-      return;
-    }
+    const selectedOptionValues = this.selectedOptionValues();
+    const optionValue = valueKey ? this.#getProperty(option, valueKey) : option;
 
     this.prevInputValue.set(null);
-    this.focusedOptionIndex.set(optionIndex);
+    this.selectedOptions.update((selectedOptions) => {
+      const index = selectedOptionValues.indexOf(optionValue);
 
-    if (this.selectMultiple()) {
-      const currentIndices = this.selectedOptionIndices();
-      const index = currentIndices.indexOf(optionIndex);
       if (index > -1) {
-        currentIndices.splice(index, 1);
-        this.selectedOptionIndices.set([...currentIndices]);
-        this.selectedOptions.set(currentIndices.map((i) => this.#filteredOptions()[i]));
+        const nextSelectedOptions = [...selectedOptions.slice(0, index), ...selectedOptions.slice(index + 1)];
+
+        return isClearable
+          ? nextSelectedOptions
+          : nextSelectedOptions.length > 0
+            ? nextSelectedOptions
+            : selectedOptions;
       } else {
-        this.selectedOptionIndices.set([...currentIndices, optionIndex]);
-        this.selectedOptions.set([...this.selectedOptions(), option]);
+        return selectMultiple ? [...selectedOptions, option] : [option];
       }
-    } else {
-      this.selectedOptions.set([option]);
+    });
+
+    if (!selectMultiple) {
       this.isOpen.set(false);
+    }
+
+    this.setInputValueFromSelectedOptions();
+
+    if (selectMultiple && this.hasSearch()) {
+      this.inputValue.set('');
+      this.updateInputElValue();
+      this.inputRefEl()?.focus();
     }
   }
 
-  removeSelectedOptionByIndex($event: MouseEvent, optionIndex: number) {
+  removeSelectedOptionByIndex($event: MouseEvent, optionRemoveIndex: number) {
     $event.stopPropagation();
 
-    this.selectedOptions.set(this.selectedOptions().filter((_, i) => i !== optionIndex));
-    this.selectedOptionIndices.set(this.selectedOptionIndices().filter((_, i) => i !== optionIndex));
+    this.selectedOptions.update((selectedOptions) => {
+      return [...selectedOptions.slice(0, optionRemoveIndex), ...selectedOptions.slice(optionRemoveIndex + 1)];
+    });
+
+    this.setInputValueFromSelectedOptions();
   }
 
   isSelected(optionIndex: number): boolean {
-    return this.selectedOptionIndices().includes(optionIndex);
+    const valueKey = this.value();
+    const option = this.filteredOptions()[optionIndex];
+    const optionValue = valueKey ? this.#getProperty(option, valueKey) : option;
+
+    return this.selectedOptionValues().indexOf(optionValue) > -1;
   }
 
-  selectOptionByValue(value: string) {
-    const valueKey = this.value();
-    const optionIndex = this.options().findIndex((x) =>
-      valueKey ? this.#getProperty(x, valueKey)?.toString() === value : x?.toString() === value
-    );
+  open() {
+    if (this.isOpen()) return;
 
-    if (optionIndex > -1) {
-      this.selectOption(optionIndex);
+    this.isOpen.set(true);
+
+    if (this.hasSearch()) {
+      this.prevInputValue.set(this.inputValue() ?? '');
+      this.inputValue.set('');
+      this.updateInputElValue();
+    }
+
+    if (!this.selectMultiple()) {
+      this.#setFirstSelectedOptionAsFocused();
     }
   }
 
-  selectOptionsByValue(values: string) {
+  #setFirstSelectedOptionAsFocused() {
+    const firstSelectedValue = this.selectedOptionValues()[0];
     const valueKey = this.value();
-    const valueArray = values
-      .split(',')
-      .map((v) => v.trim())
-      .filter((x) => x !== '');
 
-    valueArray.forEach((value) => {
-      const optionIndex = this.options().findIndex((x) =>
-        valueKey ? this.#getProperty(x, valueKey)?.toString() === value : x?.toString() === value
+    if (firstSelectedValue) {
+      const findOptionIndex = this.filteredOptions().findIndex((x) =>
+        valueKey ? this.#getProperty(x, valueKey) === firstSelectedValue : x === firstSelectedValue
       );
 
-      if (optionIndex > -1) {
-        this.selectOption(optionIndex);
-      }
-    });
+      this.focusedOptionIndex.set(findOptionIndex);
+    } else {
+      this.focusedOptionIndex.set(-1);
+    }
   }
 
   close() {
@@ -522,18 +510,13 @@ export class SparkleSelectNewComponent {
 
     const prevInputValue = this.prevInputValue();
 
-    if ((this.lazySearch() || this.inlineSearch()) && prevInputValue !== null && prevInputValue !== undefined) {
-      if (this.selectMultiple()) {
-        this.selectOptionsByValue(prevInputValue!);
-      } else {
-        this.selectOptionByValue(prevInputValue!);
-      }
+    if (this.hasSearch() && prevInputValue) {
+      this.inputValue.set(prevInputValue);
+      this.setInputValueFromSelectedOptions();
     }
-  }
 
-  ngOnDestroy() {
-    if (typeof MutationObserver !== 'undefined') {
-      (this.#inputObserver as MutationObserver).disconnect();
+    if (this.hasSearch() && this.selectMultiple()) {
+      this.setInputValueFromSelectedOptions();
     }
   }
 
@@ -545,9 +528,47 @@ export class SparkleSelectNewComponent {
     this.isOpen.set(false);
     this.prevInputValue.set(null);
     this.cleared.emit();
+
+    this.updateInputElValue();
+  }
+
+  updateInputElValue() {
+    const inputEl = this.inputRefEl();
+    const inputValue = this.inputValue();
+
+    if (!inputEl) return;
+
+    inputEl.value = inputValue;
+    inputEl.dispatchEvent(new Event('input'));
   }
 
   #getProperty(obj: unknown, path: string): unknown {
     return path.split('.').reduce((o: unknown, i: string) => (o as any)?.[i], obj);
+  }
+
+  #createCustomInputEventListener(input: HTMLInputElement | HTMLTextAreaElement) {
+    Object.defineProperty(input, 'value', {
+      configurable: true,
+      get() {
+        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value'); // Use Object.getPrototypeOf
+        return descriptor!.get!.call(this);
+      },
+      set(newVal) {
+        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value'); // Use Object.getPrototypeOf
+        descriptor!.set!.call(this, newVal);
+
+        const inputEvent = new CustomEvent('inputValueChanged', {
+          bubbles: true,
+          cancelable: true,
+          detail: {
+            value: newVal,
+          },
+        });
+
+        this.dispatchEvent(inputEvent);
+
+        return newVal;
+      },
+    });
   }
 }

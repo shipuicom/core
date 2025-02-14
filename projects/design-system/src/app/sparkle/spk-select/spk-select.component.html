@@ -1,6 +1,34 @@
 <section>
   <h3>New select</h3>
 
+  <!-- <spk-select-new
+    [(selectedOptions)]="inputHello2"
+    [isClearable]="false"
+    [options]="options()"
+    value="id"
+    [inlineSearch]="true"
+    [optionTemplate]="optionTemplate"
+    placeholder="Select some option NOW!!">
+    <label>Form and optionTemplate Select</label>
+    <input type="text" #input />
+  </spk-select-new>
+
+  <pre>inputHello2 = {{ inputHello2() }}</pre>
+
+  <spk-select-new
+    [(selectedOptions)]="inputHello2"
+    [isClearable]="false"
+    [options]="options()"
+    value="id"
+    [inlineSearch]="true"
+    [optionTemplate]="optionTemplate"
+    placeholder="Select some option NOW!!">
+    <label>Form and optionTemplate Select</label>
+    <input type="text" #input />
+  </spk-select-new>
+
+  <pre>inputHello2 = {{ inputHello2() }}</pre> -->
+
   <spk-select-new
     [isClearable]="false"
     [options]="options()"
@@ -8,8 +36,22 @@
     [optionTemplate]="optionTemplate"
     placeholder="Select some option NOW!!">
     <label>Reactive Form and optionTemplate Select</label>
-    <input type="text" [formControl]="inputCtrlNew1" />
+    <input type="text" #input [formControl]="inputCtrlNew1" />
   </spk-select-new>
+
+  <pre>inputCtrlNew1 = {{ inputCtrlNew1.value }}</pre>
+
+  <spk-select-new
+    [isClearable]="false"
+    [options]="options()"
+    value="id"
+    [optionTemplate]="optionTemplate"
+    placeholder="Select some option NOW!!">
+    <label>Form and optionTemplate Select</label>
+    <input type="text" #input [(ngModel)]="inputHello" />
+  </spk-select-new>
+
+  <pre>inputHello = {{ inputHello() }}</pre>
 
   <spk-select-new
     [selectMultiple]="true"
@@ -19,28 +61,78 @@
     [optionTemplate]="optionTemplate"
     placeholder="Select some option NOW!!">
     <label>Reactive Form and optionTemplate Select</label>
-    <input type="text" [formControl]="inputCtrlNew1Multiple" />
+    <input type="text" #input [formControl]="inputCtrlNew1Multiple" />
   </spk-select-new>
+
+  <pre>inputCtrlNew1Multiple = {{ inputCtrlNew1Multiple.value }}</pre>
 
   <spk-select-new [isClearable]="true" [options]="flatOptions()" [placeholderTemplate]="placeholderTemplate">
     <label>Inline Template flat options</label>
-    <input type="text" [formControl]="inputCtrlNew2" />
+    <input type="text" #input [formControl]="inputCtrlNew2" />
 
     <ng-template let-option>
       <div class="custom-option">{{ option }} 🙂‍↔️🙂‍↔️</div>
     </ng-template>
   </spk-select-new>
 
+  <pre>inputCtrlNew2 = {{ inputCtrlNew2.value }}</pre>
+
   <spk-select-new
     [options]="options()"
     label="hello.world.value"
+    value="id"
+    [inlineSearch]="true"
+    [(selectedOptions)]="selectedOption">
+    <label>Disabled on input</label>
+    <input type="text" #input [disabled]="true" />
+  </spk-select-new>
+  <pre>selectedOption(): {{ selectedOption() | json }}</pre>
+
+  <spk-select-new
+    [options]="options()"
+    label="hello.world.value"
+    value="id"
+    [inlineSearch]="true"
+    [(selectedOptions)]="selectedOption">
+    <label>Disabled on formControl</label>
+    <input type="text" #input [formControl]="disabledCtrl" />
+  </spk-select-new>
+  <pre>selectedOption(): {{ selectedOption() | json }}</pre>
+
+  <spk-select-new
+    [options]="options()"
+    label="hello.world.value"
+    value="id"
     [readonly]="true"
+    [inlineSearch]="true"
+    [(selectedOptions)]="selectedOption">
+    <label>Readonly on select</label>
+    <input type="text" #input />
+  </spk-select-new>
+  <pre>selectedOption(): {{ selectedOption() | json }}</pre>
+
+  <spk-select-new
+    [options]="options()"
+    label="hello.world.value"
     value="id"
     [inlineSearch]="true"
     [(selectedOptions)]="selectedOption">
     <label>Searchable Select</label>
-    <input type="text" />
+    <input type="text" #input />
   </spk-select-new>
+  <pre>selectedOption(): {{ selectedOption() | json }}</pre>
+
+  <spk-select-new
+    [options]="options()"
+    label="hello.world.value"
+    value="id"
+    [inlineSearch]="true"
+    [(selectedOptions)]="selectedOption">
+    <label>Searchable Select</label>
+    <input type="text" #input [formControl]="inlineSearchInput" />
+  </spk-select-new>
+  <pre>inlineSearchInput(): {{ inlineSearchInput.value }}</pre>
+  <pre>selectedOption(): {{ selectedOption() | json }}</pre>
 
   <spk-select-new
     value="id"
@@ -49,8 +141,9 @@
     [options]="options()"
     [selectMultiple]="true">
     <label>Subscribed events</label>
-    <input type="text" placeholder="custom-placeholder" [formControl]="inputCtrlNew2Multiple" />
+    <input type="text" #input placeholder="custom-placeholder" [formControl]="inputCtrlNew2Multiple" />
   </spk-select-new>
+  <pre>inputCtrlNew2Multiple = {{ inputCtrlNew2Multiple.value }}</pre>
 
   <spk-select-new
     value="id"
@@ -60,22 +153,29 @@
     [options]="options()"
     [selectMultiple]="true">
     <label>Subscribed events</label>
-    <input type="text" placeholder="custom-placeholder" [formControl]="inputCtrlNew2Multiple" />
+    <input type="text" #input placeholder="custom-placeholder" [formControl]="inputCtrlNew2Multiple" />
   </spk-select-new>
+
+  <pre>inputCtrlNew2Multiple = {{ inputCtrlNew2Multiple.value }}</pre>
 
   <spk-select-new
-    [(selectedOptions)]="lazySearchableSelectedOption"
     [options]="lazyOptions()"
     [isLoading]="lazyLoading()"
+    [selectMultiple]="true"
     label="hello.world.value"
     value="id"
-    [debugRef]="4"
+    class="primary raised"
     [lazySearch]="true">
     <label>Searchable Select</label>
-    <input type="text" [(ngModel)]="lazySearchableOption" />
+    <input type="text" #input [(ngModel)]="lazySearchableOption" />
   </spk-select-new>
 
-  <!-- Option Template -->
+  <pre>
+    lazy selected option: {{ lazySearchableSelectedOption() | json }} - {{ lazySearchableOption() }} - {{
+      typeof lazySearchableOption()
+    }}
+  </pre>
+
   <ng-template #optionTemplate let-option>
     <div>🙂‍↔️🙂‍↔️ ID: {{ option.id }}, Name: {{ option.name }}</div>
   </ng-template>
@@ -83,19 +183,9 @@
   <ng-template let-option #placeholderTemplate>
     <div class="custom-option">Hell im a custom placeholder template 🙂‍↔️🙂‍↔️</div>
   </ng-template>
-
-  <pre>
-    form control value - inputCtrlNew1: {{ inputCtrlNew1.value | json }} - {{ inputCtrlNew1.valid }}
-    form control value - inputCtrlNew1Multiple: {{ inputCtrlNew1Multiple.value | json }} - {{ inputCtrlNew1Multiple.valid }}
-    form control value - inputCtrlNew2Multiple: {{ inputCtrlNew2Multiple.value | json }} - {{ inputCtrlNew2Multiple.valid }}
-    form control value - inputCtrlNew2: {{ inputCtrlNew2.value | json }} - {{ inputCtrlNew2.valid }}
-    spk-select-new selected option: {{ selectedOption() | json }}
-    lazy selected option: {{ lazySearchableSelectedOption() | json }} - {{ lazySearchableOption() }} - {{ typeof lazySearchableOption() }}
-    <!-- lazy selected option: {{ lazySearchableSelectedOption() | json }}  -->
-  </pre>
 </section>
 
-<section>
+<!-- <section>
   <h3>Basic</h3>
 
   <pre>
@@ -107,28 +197,6 @@
   </pre>
   <spk-icon>x-bold</spk-icon>
   <spk-icon>magnifying-glass</spk-icon>
-
-  <!-- <spk-new-select>
-    <label for="search">New search</label>
-    <input type="search" id="search" [formControl]="inputSearchCtrl" />
-
-    
-      @for (food of foods(); track $index) {
-        <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
-      }
-    
-  </spk-new-select> -->
-
-  <!-- <spk-dialog [isOpen]="true">
-    <spk-select [displayFn]="displayFn(foods())" class="primary">
-      <label for="text">Simple select one from list</label>
-      <input type="text" id="text" [formControl]="inputCtrl" />
-
-      @for (food of foods(); track $index) {
-        <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
-      }
-    </spk-select>
-  </spk-dialog> -->
 
   <spk-select [displayFn]="displayFn(foods())" class="primary" [readonly]="true">
     <label for="text">Simple select one from list</label>
@@ -148,22 +216,9 @@
     }
   </spk-select>
 
-  <!-- <spk-select [displayFn]="displayFn(foods())" class="primary">
-    <label for="search">Select one from filtered list</label>
-    <input type="search" id="search" [formControl]="inputSearchCtrl" />
-
-    <option deselect>Hello remove me</option>
-
-    @for (food of localFilteredFoods(); track $index) {
-      <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
-    }
-  </spk-select> -->
-
   <spk-select [isFreeText]="true" class="primary">
     <label for="search">Select one from filtered list</label>
     <input type="search" id="search" [formControl]="inputSearchCtrl" />
-
-    <!-- <option deselect>Hello remove me</option> -->
 
     @for (food of localFilteredFoods(); track $index) {
       <spk-option [value]="food.value">{{ food.label }} - ({{ $index }})</spk-option>
@@ -186,94 +241,4 @@
 
     <spk-icon open-indicator>acorn</spk-icon>
   </spk-select>
-
-  <!-- <spk-select [displayFn]="displayFn(foods())" class="primary">
-    <label for="search">Multiple select with search</label>
-    <input type="search" id="search" tabindex="1" placeholder="Search..." [formControl]="inputSearchCtrl" />
-
-    
-
-      @for (food of localFilteredFoods(); track $index) {
-        <spk-option [value]="food.value">
-          {{ food.label }} - ({{ $index }})
-
-        </spk-option>
-      }
-    
-  </spk-select> -->
-
-  <!-- <spk-select>
-    <label for="search">Search</label>
-    <input type="search" id="search" tabindex="1" placeholder="Search..." [formControl]="inputSearchCtrl" />
-
-    
-      @for (food of localFilteredFoods(); track $index) {
-        <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
-      }
-    
-  </spk-select> -->
-
-  <!-- <spk-multi-select [selectMultiple]="false" [displayFn]="displayFn(foods())" class="primary">
-    <input type="text" tabindex="2" placeholder="Search hi..." [formControl]="inputSearchCtrl2" />
-
-    
-      @for (food of foods(); track $index) {
-        <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
-      }
-    
-  </spk-multi-select>
-
-  <spk-select>
-    <input type="text" tabindex="2" placeholder="Search hi..." [formControl]="inputSearchCtrl2" />
-
-    
-      @for (food of foods(); track $index) {
-        <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
-      }
-    
-  </spk-select>
-
-  <spk-select>
-    <input type="search" tabindex="2" placeholder="Search hi..." [formControl]="inputSearchCtrl2" />
-
-    
-      @for (food of otherFilteredFoods(); track $index) {
-        <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
-      }
-    
-  </spk-select> -->
-
-  <!-- <spk-select [displayFn]="displayFn(foods())" (inputValueChange)="valueChange($event)">
-    <input type="text" placeholder="Select an option..." [formControl]="inputCtrl" />
-
-    
-      @for (food of foods(); track $index) {
-        <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
-      }
-    
-  </spk-select> -->
-
-  <!-- <spk-select [displayValue]="displayFn(inputCtrl.value ?? '')">
-    <input type="text" placeholder="Select an option..." [formControl]="inputCtrl" />
-
-    
-      @for (food of foods(); track $index) {
-        <option [value]="food.value">{{ food.label }} - ({{ $index }})</option>
-      }
-    
-  </spk-select>
-
-  <spk-select [displayValue]="displayFn(inputSearchCtrl3.value ?? '')">
-    <input type="search" tabindex="3" placeholder="Search..." [formControl]="inputSearchCtrl3" />
-
-    
-      @for (foodGroup of filteredFoodGroups(); track $index) {
-        <div spk-title>{{ foodGroup.label }}</div>
-
-        @for (food of foodGroup.foods; track $index) {
-          <option [value]="food.value">{{ food.label }}</option>
-        }
-      }
-    
-  </spk-select> -->
-</section>
+</section> -->

@@ -20,6 +20,8 @@ type FoodGroup = {
   foods: Food[];
 };
 
+const disabledCtrl = new FormControl<string | null>(null);
+disabledCtrl.disable();
 @Component({
   selector: 'app-spk-select',
   imports: [
@@ -39,6 +41,9 @@ type FoodGroup = {
 export default class SpkSelectComponent {
   // New
   inputCtrlNew1 = new FormControl<any | null>(1);
+  inputHello = signal<any | undefined>(1);
+  inputHello1 = signal<any | undefined>(1);
+  inputHello2 = signal<unknown[]>([]);
   inputCtrlNew1Multiple = new FormControl<any | null>(1);
   inputCtrlNew2Multiple = new FormControl<any | null>(null);
   inputCtrlNew2 = new FormControl<any | null>('Pizza');
@@ -79,6 +84,7 @@ export default class SpkSelectComponent {
   ]);
   selectedOption = signal<Food[]>([]);
   lazySearchableOption = signal<string | null>(null);
+  lazySearchableOption2 = signal<string | null>(null);
   lazySearchableSelectedOption = signal<Food[]>([]);
   lazyOptions = signal<{ id: number; name: string; hello: { world: { value: string } } }[]>([]);
   lazyLoading = signal(false);
@@ -107,6 +113,8 @@ export default class SpkSelectComponent {
   // Old
   inputCtrl = new FormControl<string | null>(null);
   inputCtrl2 = new FormControl<string>('');
+  disabledCtrl = new FormControl({ value: '', disabled: true });
+  inlineSearchInput = new FormControl<string | undefined>(undefined);
   inputSearchCtrl = new FormControl<string>('');
   inputSearchCtrl2 = new FormControl<string>('pizza-1');
   inputSearchCtrl3 = new FormControl<string>('');
@@ -242,11 +250,17 @@ export default class SpkSelectComponent {
     const randomFood = this.foods()[Math.floor(Math.random() * this.foods().length)];
 
     setTimeout(() => {
-      console.log('randomFood: ', randomFood);
+      // console.log('randomFood: ', randomFood);
       this.inputSearchCtrl.setValue(randomFood.value);
       this.inputSearchCtrl3.setValue(randomFood.value);
       this.inputCtrl2.setValue(randomFood.value);
-    }, 500);
+      this.inputCtrlNew1.setValue(undefined);
+      this.inputHello.set(undefined);
+    }, 1500);
+
+    setTimeout(() => {
+      this.inputCtrlNew1.setValue(3);
+    }, 2000);
   }
 
   fakeApi(search: string) {
