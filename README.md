@@ -23,17 +23,19 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Create a color picker component
 - [x] Create a spinner component
 - [x] Refactor select component once again
-  - [x] Support displayWith in spk-select (through templates)
-  - [x] use templates to template options and have the list inside the select
-  - [x] Add lazy search
   - [x] Add template placeholder
+  - [x] Add option template
+  - [x] Add placeholder template
+  - [x] Chip support
+  - [x] Select multiple support (with search)
+  - [x] Inline search support
+  - [x] Lazy search support
 - [x] Multi select menu's that dosn't close when checking an option
 - [x] Make colors optional/configurable (primary, accent, tertiary, warn, success) on a component level and generally
 - [x] Add support of multiple phosphor icons types (bold, fill, light, regular, thin) in the same font by just suffixing with (-bold, -fill, etc)
 - [x] Support datepicker ranges
 - [x] Support multiple month views in datepicker
 - [x] Create a daterange input component
-- [ ] Improve the new select implementation to better show inlinesearch/lazysearch with multiple select
 - [ ] Finalize file upload component
 - [ ] Create a CSV input that create chips on comma (or enter) press
 - [ ] Create a accordion component
