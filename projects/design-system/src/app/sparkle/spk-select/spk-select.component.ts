@@ -47,6 +47,7 @@ export default class SpkSelectComponent {
   inputCtrlNew1Multiple = new FormControl<any | null>(1);
   inputCtrlNew2Multiple = new FormControl<any | null>(null);
   inputCtrlNew2 = new FormControl<any | null>('Pizza');
+  isReadonly = signal(true);
 
   flatOptions = signal([
     'Pizza',

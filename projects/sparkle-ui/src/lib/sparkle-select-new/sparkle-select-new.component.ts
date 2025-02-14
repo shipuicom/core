@@ -146,7 +146,7 @@ export class SparkleSelectNewComponent {
   value = input<string>();
   label = input<string>();
   placeholder = input<string>();
-  readonly = input(false);
+  readonly = model(false);
   lazySearch = input(false);
   inlineSearch = input(false);
   asText = input(false);
@@ -157,7 +157,6 @@ export class SparkleSelectNewComponent {
   placeholderTemplate = input<TemplateRef<unknown> | null>(null);
   isOpen = model(false);
   isLoading = model(false);
-  isValid = model(false);
   options = model<unknown[]>([]);
   selectedOptions = model<unknown[]>([]);
   cleared = output<void>();
@@ -207,18 +206,29 @@ export class SparkleSelectNewComponent {
     });
   });
 
+  #readonlyEffect = effect(() => {
+    const input = this.inputRef()?.nativeElement;
+
+    if (!input) return;
+
+    input.disabled = this.readonly();
+  });
+
   inputRefEl = computed(() => {
     const input = this.inputRef()?.nativeElement;
 
     if (!input) return null;
+    if (input.disabled) {
+      this.readonly.set(true);
+    }
 
-    input.disabled = input.disabled || this.readonly();
     input.autocomplete = 'off';
 
     this.#createCustomInputEventListener(input);
 
     input.addEventListener('focus', () => {
       if (this.readonly()) return;
+
       this.open();
     });
 

@@ -1,6 +1,13 @@
 <section>
   <h3>New select</h3>
 
+  <spk-select-new value="id" label="name" class="primary raised" [options]="options()" [readonly]="isReadonly()">
+    <input type="text" #input placeholder="Backup ID" [(ngModel)]="inputHello2" />
+    <spk-icon suffix>hash-straight</spk-icon>
+  </spk-select-new>
+
+  <button (click)="isReadonly.set(!isReadonly())">Toggle readonly</button>
+  <pre>filterForm = {{ inputHello2() | json }}</pre>
   <!-- <spk-select-new
     [(selectedOptions)]="inputHello2"
     [isClearable]="false"
