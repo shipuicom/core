@@ -25,6 +25,7 @@ $spkSelectNew: false !default;
       display: flex;
       flex-wrap: wrap;
 
+      textarea,
       input {
         opacity: 0;
         width: 0;
@@ -54,6 +55,12 @@ $spkSelectNew: false !default;
           margin-top: p2r(4);
           min-width: min-content;
           field-sizing: content;
+        }
+
+        textarea {
+          opacity: 1;
+          height: initial;
+          margin: p2r(4 0 0);
         }
       }
     }

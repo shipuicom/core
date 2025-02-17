@@ -61,7 +61,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
         [class]="readonly() ? 'readonly' : ''">
         <ng-content select="label" ngProjectAs="label" />
 
-        <div class="input" [class.show-search-text]="_showSearchText" ngProjectAs="input" #inputWrap>
+        <div class="input" [class.show-search-text]="_showSearchText" ngProjectAs="input">
           <div class="selected-value" [class.is-selected]="_inputState === 'selected'">
             @if (_selectedOptions.length > 0) {
               @for (selectedOption of _selectedOptions; track $index) {
@@ -94,6 +94,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
             }
 
             <ng-content select="input" />
+            <ng-content select="textarea" />
           </div>
         </div>
 
@@ -163,7 +164,8 @@ export class SparkleSelectNewComponent {
 
   inlineTemplate = contentChild<TemplateRef<unknown>>(TemplateRef);
   optionsWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('optionsWrap');
-  inputRef = contentChild<ElementRef<HTMLInputElement>>('input');
+  inputRefInput = contentChild<ElementRef<HTMLInputElement>>('input');
+  textareaRefInput = contentChild<ElementRef<HTMLTextAreaElement>>('textarea');
   inputValue = signal<string>('');
 
   prevInputValue = signal<string | null>(null);
@@ -207,7 +209,7 @@ export class SparkleSelectNewComponent {
   });
 
   #readonlyEffect = effect(() => {
-    const input = this.inputRef()?.nativeElement;
+    const input = this.inputRefEl();
 
     if (!input) return;
 
@@ -215,11 +217,20 @@ export class SparkleSelectNewComponent {
   });
 
   inputRefEl = computed(() => {
-    const input = this.inputRef()?.nativeElement;
+    const inputRefInput = this.inputRefInput();
+    const textareaRefInput = this.textareaRefInput();
 
-    if (!input) return null;
-    if (input.disabled) {
-      this.readonly.set(true);
+    const input = inputRefInput
+      ? inputRefInput.nativeElement
+      : textareaRefInput
+        ? textareaRefInput.nativeElement
+        : null;
+
+    if (!input) {
+      console.warn(
+        '<spk-select> input element not found are you missing #input or #textarea on the projected element?'
+      );
+      return null;
     }
 
     input.autocomplete = 'off';
@@ -273,23 +284,28 @@ export class SparkleSelectNewComponent {
         this.openAbortController = new AbortController();
       }
 
-      const input = this.inputRef()?.nativeElement;
+      const input = this.inputRefEl();
 
       if (!input) return;
 
-      input.addEventListener(
+      (input as HTMLInputElement).addEventListener(
         'keydown',
         (e: KeyboardEvent) => {
           if (e.key === 'Escape' || e.key === 'Tab') {
+            e.preventDefault();
+
             this.close();
           }
 
           if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+
             this.toggleOptionByIndex(this.focusedOptionIndex());
           }
 
           if (e.key === 'ArrowDown') {
             e.preventDefault();
+
             const newIndex = (this.focusedOptionIndex() as number) + 1;
 
             this.focusedOptionIndex.set(newIndex > this.filteredOptions().length - 1 ? 0 : newIndex);
@@ -297,6 +313,7 @@ export class SparkleSelectNewComponent {
 
           if (e.key === 'ArrowUp') {
             e.preventDefault();
+
             const newIndex = (this.focusedOptionIndex() as number) - 1;
 
             this.focusedOptionIndex.set(newIndex < 0 ? this.filteredOptions().length - 1 : newIndex);
@@ -307,7 +324,7 @@ export class SparkleSelectNewComponent {
         }
       );
     } else {
-      const input = this.inputRef()?.nativeElement;
+      const input = this.inputRefEl();
 
       if (!input) return;
 
@@ -462,6 +479,7 @@ export class SparkleSelectNewComponent {
       const index = selectedOptionValues.indexOf(optionValue);
 
       if (index > -1) {
+        // Remove it
         const nextSelectedOptions = [...selectedOptions.slice(0, index), ...selectedOptions.slice(index + 1)];
 
         return isClearable
@@ -470,11 +488,15 @@ export class SparkleSelectNewComponent {
             ? nextSelectedOptions
             : selectedOptions;
       } else {
+        // Add it
+        this.focusedOptionIndex.set(optionIndex);
         return selectMultiple ? [...selectedOptions, option] : [option];
       }
     });
 
-    if (!selectMultiple) {
+    if (selectMultiple) {
+      this.inputRefEl()?.focus();
+    } else {
       this.isOpen.set(false);
     }
 
@@ -483,7 +505,6 @@ export class SparkleSelectNewComponent {
     if (selectMultiple && this.hasSearch()) {
       this.inputValue.set('');
       this.updateInputElValue();
-      this.inputRefEl()?.focus();
     }
   }
 

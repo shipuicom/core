@@ -8,33 +8,6 @@
 
   <button (click)="isReadonly.set(!isReadonly())">Toggle readonly</button>
   <pre>filterForm = {{ inputHello2() | json }}</pre>
-  <!-- <spk-select-new
-    [(selectedOptions)]="inputHello2"
-    [isClearable]="false"
-    [options]="options()"
-    value="id"
-    [inlineSearch]="true"
-    [optionTemplate]="optionTemplate"
-    placeholder="Select some option NOW!!">
-    <label>Form and optionTemplate Select</label>
-    <input type="text" #input />
-  </spk-select-new>
-
-  <pre>inputHello2 = {{ inputHello2() }}</pre>
-
-  <spk-select-new
-    [(selectedOptions)]="inputHello2"
-    [isClearable]="false"
-    [options]="options()"
-    value="id"
-    [inlineSearch]="true"
-    [optionTemplate]="optionTemplate"
-    placeholder="Select some option NOW!!">
-    <label>Form and optionTemplate Select</label>
-    <input type="text" #input />
-  </spk-select-new>
-
-  <pre>inputHello2 = {{ inputHello2() }}</pre> -->
 
   <spk-select-new
     [isClearable]="false"
@@ -47,6 +20,18 @@
   </spk-select-new>
 
   <pre>inputCtrlNew1 = {{ inputCtrlNew1.value }}</pre>
+
+  <!-- <spk-select-new
+    [isClearable]="false"
+    [options]="options()"
+    value="id"
+    [optionTemplate]="optionTemplate"
+    placeholder="Select some option NOW!!">
+    <label>Reactive Form and optionTemplate Select</label>
+    <textarea #textarea [formControl]="inputCtrlNew1"></textarea>
+  </spk-select-new>
+
+  <pre>inputCtrlNew1 = {{ inputCtrlNew1.value }}</pre> -->
 
   <spk-select-new [isClearable]="false" [options]="options()" value="id" [optionTemplate]="optionTemplate">
     <label>Form and optionTemplate Select</label>
@@ -156,6 +141,19 @@
     [selectMultiple]="true">
     <label>Subscribed events</label>
     <input type="text" #input placeholder="custom-placeholder" [formControl]="inputCtrlNew2Multiple" />
+  </spk-select-new>
+
+  <pre>inputCtrlNew2Multiple = {{ inputCtrlNew2Multiple.value }}</pre>
+
+  <spk-select-new
+    value="id"
+    label="hello.world.value"
+    class="primary raised"
+    [inlineSearch]="true"
+    [options]="options()"
+    [selectMultiple]="true">
+    <label>Subscribed events</label>
+    <textarea #textarea placeholder="Textarea placeholder" [formControl]="inputCtrlNew2Multiple"></textarea>
   </spk-select-new>
 
   <pre>inputCtrlNew2Multiple = {{ inputCtrlNew2Multiple.value }}</pre>
