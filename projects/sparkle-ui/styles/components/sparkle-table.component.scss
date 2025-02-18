@@ -54,8 +54,8 @@ $spkTable: true !default;
       border: 0;
       background: var(--table-th-bg);
 
-      &:last-child {
-        padding: p2r(0 20);
+      &:first-child {
+        padding: p2r(0);
       }
     }
 
@@ -63,7 +63,7 @@ $spkTable: true !default;
       display: flex;
       align-items: center;
 
-      padding: p2r(16 20);
+      padding: p2r(16 0 16 20);
       height: p2r(78);
       gap: p2r(8);
       white-space: nowrap;
@@ -71,6 +71,10 @@ $spkTable: true !default;
       font: var(--table-td-f);
       border-top: 1px solid var(--table-bc);
       border-bottom: 0;
+
+      &:first-child {
+        padding: p2r(16 0);
+      }
     }
 
     .no-rows {
