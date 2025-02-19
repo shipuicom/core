@@ -25,8 +25,8 @@ $spkTooltip: true !default;
     }
 
     &.warn {
-      --tt-bg: var(--error-level-50);
-      --tt-c: var(--error-level-50R);
+      --tt-bg: var(--warn-level-50);
+      --tt-c: var(--warn-level-50R);
     }
 
     &.error {
@@ -64,6 +64,8 @@ $spkTooltip: true !default;
       border: 0;
       opacity: 0;
       overflow: visible;
+      hyphens: auto;
+      text-wrap: pretty;
       transition:
         opacity 125ms linear,
         transform 125ms linear,
@@ -187,8 +189,8 @@ $spkTooltip: true !default;
   }
 
   [tt-warn] {
-    --tt-bg: var(--error-level-50);
-    --tt-c: var(--error-level-50R);
+    --tt-bg: var(--warn-level-50);
+    --tt-c: var(--warn-level-50R);
 
     &:after {
       content: attr(tt-warn);

@@ -29,6 +29,12 @@ $useApexcharts: true !default;
       }
     }
 
+    .apexcharts-menu {
+      background-color: var(--base-level-10);
+      color: var(--base-level-70);
+      border: 1px solid var(--base-level-40);
+    }
+
     .apexcharts-tooltip.apexcharts-theme-light {
       background-color: var(--base-level-10);
       border: 1px solid var(--base-level-40);
