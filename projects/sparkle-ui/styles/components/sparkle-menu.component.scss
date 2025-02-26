@@ -17,7 +17,7 @@ $spkMenu: true !default;
         z-index: 10;
 
         margin: p2r(0 4);
-        top: 2px;
+        top: p2r(4);
         background-color: var(--base-level-10);
 
         &.hidden {
