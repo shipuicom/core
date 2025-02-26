@@ -5,17 +5,19 @@ import {
   contentChildren,
   effect,
   ElementRef,
-  HostListener,
   input,
   model,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
+import { SparkleFormFieldComponent } from '../sparkle-form-field/sparkle-form-field.component';
 import { SparklePopoverComponent } from '../sparkle-popover/sparkle-popover.component';
+import { createInputSignal } from '../utilities/create-input-signal';
 
 @Component({
   selector: 'spk-menu',
-  imports: [SparklePopoverComponent],
+  imports: [SparklePopoverComponent, SparkleFormFieldComponent],
   template: `
     <spk-popover
       #formFieldWrapper
@@ -32,7 +34,11 @@ import { SparklePopoverComponent } from '../sparkle-popover/sparkle-popover.comp
         <ng-content />
       </div>
 
-      <div class="options" (click)="close('active')">
+      <spk-form-field class="small" [class.hidden]="searchable() === false">
+        <input type="text" #input placeholder="Search" />
+      </spk-form-field>
+
+      <div class="options" (click)="close('active')" [class.searching]="searchable() && inputValue() !== ''">
         <ng-content select="[menu]" />
       </div>
     </spk-popover>
@@ -46,71 +52,171 @@ export class SparkleMenuComponent {
   isOpen = model<boolean>(false);
   closed = output<boolean>();
 
+  searchable = input<boolean>(false);
   activeOptionIndex = signal<number>(-1);
-  options = contentChildren<ElementRef<HTMLButtonElement>>('option');
-  optionsEl = computed(() =>
-    Array.from(this.options())
+  inputRef = viewChild<ElementRef<HTMLInputElement>>('input');
+  options = contentChildren<ElementRef<HTMLButtonElement>>('option', {
+    descendants: true,
+  });
+  optionsEl = computed(() => {
+    return Array.from(this.options())
       .map((x) => x.nativeElement)
-      .filter((x) => x.disabled !== true)
-  );
+      .filter((x) => !x.disabled);
+  });
 
+  inputValue = createInputSignal<string>(this.inputRef);
+
+  abortController: AbortController | null = null;
   optionsEffect = effect(() => {
     if (!this.isOpen()) return;
 
-    const activeOptionIndex = this.activeOptionIndex();
+    if (this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+    }
+
+    this.abortController = new AbortController();
+
+    const inputEl = this.inputRef()?.nativeElement;
+
+    if (!inputEl) return;
+
+    queueMicrotask(() => inputEl.focus());
+
+    inputEl.addEventListener(
+      'keydown',
+      (e: KeyboardEvent) => {
+        const optionElements = this.optionsEl();
+        const activeOptionIndex = this.activeOptionIndex();
+
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          this.activeOptionIndex.set(this.nextActiveIndex(activeOptionIndex));
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          this.activeOptionIndex.set(this.prevActiveIndex(activeOptionIndex));
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (activeOptionIndex > -1) {
+            optionElements[activeOptionIndex as number].click();
+
+            queueMicrotask(() => this.close('active'));
+          }
+        } else if (e.key === 'Tab') {
+          e.preventDefault();
+          this.close('closed');
+        }
+      },
+      {
+        signal: this.abortController.signal,
+      }
+    );
+  });
+
+  inputValueEffect = effect(() => {
+    const searchable = this.searchable();
+
+    if (!searchable) return;
+
+    const inputValue = this.inputValue();
+    const inputRegex = this.createWildcardRegex(inputValue);
     const optionElements = this.optionsEl();
 
-    // Add class to active option
-    if (activeOptionIndex > -1) {
-      for (let index = 0; index < optionElements.length; index++) {
-        if (index === activeOptionIndex) {
-          optionElements[index].scrollIntoView({ block: 'center' });
-          optionElements[index].classList.add('active');
-          continue;
+    let firstFound = false;
+
+    for (let index = 0; index < optionElements.length; index++) {
+      const el = optionElements[index];
+
+      if (!el.textContent) continue;
+      if (!inputValue || inputValue === '') {
+        el.classList.remove('hide-option');
+        continue;
+      }
+
+      const testEl = inputRegex.test(el.textContent.toLowerCase());
+
+      if (!testEl || el.disabled) {
+        el.classList.add('hide-option');
+      } else {
+        el.classList.remove('hide-option');
+
+        if (!firstFound) {
+          queueMicrotask(() => this.activeOptionIndex.set(index));
         }
 
-        optionElements[index].classList.remove('active');
+        firstFound = true;
       }
     }
   });
 
-  @HostListener('keydown', ['$event'])
-  onKeyDown(event: KeyboardEvent) {
-    if (!this.isOpen()) return;
-
-    event.preventDefault();
-
+  activeOptionIndexEffect = effect(() => {
     const optionElements = this.optionsEl();
     const activeOptionIndex = this.activeOptionIndex();
 
-    if (event.key === 'ArrowDown') {
-      if (activeOptionIndex === -1 || (activeOptionIndex as number) === optionElements.length - 1) {
-        this.activeOptionIndex.set(0);
-      } else {
-        this.activeOptionIndex.set((activeOptionIndex as number) + 1);
-      }
-    } else if (event.key === 'ArrowUp') {
-      if (activeOptionIndex === -1 || (activeOptionIndex as number) === 0) {
-        this.activeOptionIndex.set(optionElements.length - 1);
-      } else {
-        this.activeOptionIndex.set((activeOptionIndex as number) - 1);
-      }
-    } else if (event.key === 'Enter') {
-      if (activeOptionIndex > -1) {
-        optionElements[activeOptionIndex as number].click();
-
-        setTimeout(() => this.close('active'));
-      }
-    } else if (event.key === 'Tab') {
-      this.close('closed');
-    } else {
-      this.activeOptionIndex.set(-1);
+    for (let index = 0; index < optionElements.length; index++) {
+      optionElements[index].classList.remove('active');
     }
+
+    if (activeOptionIndex > -1) {
+      optionElements[activeOptionIndex].scrollIntoView({ block: 'center' });
+      optionElements[activeOptionIndex].classList.add('active');
+    }
+  });
+
+  nextActiveIndex(activeIndex: number): number {
+    const optionElements = this.optionsEl();
+
+    if (activeIndex === -1) {
+      return 0;
+    }
+
+    if (activeIndex === optionElements.length - 1) {
+      return 0;
+    }
+
+    const nextIndex = activeIndex + 1;
+
+    if (this.searchable()) {
+      if (optionElements[nextIndex].disabled) {
+        return this.nextActiveIndex(nextIndex);
+      }
+
+      if (optionElements[nextIndex].classList.contains('hide-option')) {
+        return this.nextActiveIndex(nextIndex);
+      }
+    }
+
+    return nextIndex;
+  }
+
+  prevActiveIndex(activeIndex: number): number {
+    const optionElements = this.optionsEl();
+
+    if (activeIndex === 0) {
+      return optionElements.length - 1;
+    }
+
+    if (activeIndex === -1) {
+      return optionElements.length - 1;
+    }
+
+    const prevIndex = activeIndex - 1;
+
+    if (this.searchable()) {
+      if (optionElements[prevIndex].disabled) {
+        return this.prevActiveIndex(prevIndex);
+      }
+
+      if (optionElements[prevIndex].classList.contains('hide-option')) {
+        return this.prevActiveIndex(prevIndex);
+      }
+    }
+
+    return prevIndex;
   }
 
   close(action: 'fromPopover' | 'closed' | 'active' = 'closed', event?: MouseEvent) {
-    // event?.stopPropagation();
-    // event?.preventDefault();
+    this.inputValue.set('');
 
     (!this.keepClickedOptionActive() || action === 'closed') && this.#resetActiveOption();
 
@@ -126,5 +232,29 @@ export class SparkleMenuComponent {
     for (let index = 0; index < optionElements.length; index++) {
       optionElements[index].classList.remove('active');
     }
+  }
+
+  ngOnDestroy() {
+    if (this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+    }
+  }
+
+  createWildcardRegex(inputValue: string | null | undefined): RegExp {
+    const lowerCaseInput = (inputValue ?? '').toLowerCase();
+    let regexPattern = '^';
+
+    for (const char of lowerCaseInput) {
+      regexPattern += '.*' + this.escapeRegexChar(char);
+    }
+
+    regexPattern += '.*$';
+
+    return new RegExp(regexPattern, 'i');
+  }
+
+  escapeRegexChar(char: string): string {
+    return char.replace(/[-\/\\^$+?.()|[\]{}]/g, '\\$&');
   }
 }

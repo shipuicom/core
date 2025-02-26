@@ -1,39 +1,10 @@
 <section>
   <h3>Menu example</h3>
 
-  <!-- <spk-dialog [isOpen]="false">
-    <spk-menu>
-      <button spk-button class="outlined">Open menu</button>
-
-      <ng-container menu>
-        <div title>Section 1</div>
-
-        <button item (click)="fireHello()">
-          <spk-icon>circle</spk-icon>
-          Item 1
-          <span suffix>⌘O</span>
-        </button>
-
-        <button item (click)="fireHello()">
-          <spk-icon>circle</spk-icon>
-          Item 2
-          <span suffix>⌘K</span>
-        </button>
-        <spk-divider />
-
-        <button item (click)="fireHello()" disabled>
-          <spk-icon>circle</spk-icon>
-          Item 3
-          <span suffix>⌘L</span>
-        </button>
-      </ng-container>
-    </spk-menu>
-  </spk-dialog> -->
-
   <button spk-button class="outlined" (click)="addOption()">Add option</button>
 
   <div class="wrap">
-    <spk-menu [above]="true" [right]="true" [isOpen]="true">
+    <spk-menu>
       <button spk-button class="outlined">Open menu</button>
 
       <ng-container menu>
@@ -55,6 +26,49 @@
         <button #option (click)="fireHello(3)" disabled>
           <spk-icon>circle</spk-icon>
           Item 3
+          <span suffix>⌘L</span>
+        </button>
+
+        @for (item of menuItems(); track $index) {
+          <button #option (click)="fireHello($index)" [attr.disabled]="$index % 2 === 0 ? '' : null">
+            <spk-icon>circle</spk-icon>
+            Item {{ $index }}
+            <span suffix>⌘L</span>
+          </button>
+        }
+      </ng-container>
+    </spk-menu>
+  </div>
+
+  <div class="wrap">
+    <spk-menu [searchable]="true">
+      <button spk-button class="outlined">Open menu</button>
+
+      <ng-container menu>
+        <div title>Section 1</div>
+
+        <button #option (click)="fireHello(1)">
+          <spk-icon>circle</spk-icon>
+          Item 1
+          <span suffix>⌘O</span>
+        </button>
+
+        <button #option (click)="fireHello(2)">
+          <spk-icon>circle</spk-icon>
+          Item 2
+          <span suffix>⌘K</span>
+        </button>
+        <spk-divider />
+
+        <button #option (click)="fireHello(3)" disabled>
+          <spk-icon>circle</spk-icon>
+          Item 3
+          <span suffix>⌘L</span>
+        </button>
+
+        <button #option (click)="fireHello(3)" [attr.disabled]="true">
+          <spk-icon>circle</spk-icon>
+          Item 4
           <span suffix>⌘L</span>
         </button>
 

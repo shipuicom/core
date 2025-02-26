@@ -24,7 +24,14 @@ type A = number;
 @Component({
   selector: 'spk-color-picker',
   imports: [],
-  templateUrl: './sparkle-color-picker.component.html',
+  template: `
+    <canvas #colorCanvas></canvas>
+    <div
+      class="marker"
+      [style.left]="markerPosition().x"
+      [style.top]="markerPosition().y"
+      [style.background]="selectedColorRgb()"></div>
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': 'renderingType()',

@@ -11,9 +11,26 @@ $spkMenu: true !default;
 
     spk-popover {
       flex: 1 0;
+
+      .overlay ~ spk-form-field {
+        position: sticky;
+        z-index: 10;
+
+        margin: p2r(0 4);
+        top: 2px;
+        background-color: var(--base-level-10);
+
+        &.hidden {
+          opacity: 0;
+          height: 0;
+          width: 0;
+          min-width: 0;
+          min-height: 0;
+        }
+      }
     }
 
-    .options {
+    spk-popover .options {
       z-index: 2;
       position: relative;
       display: flex;
@@ -21,6 +38,12 @@ $spkMenu: true !default;
       gap: p2r(4);
       padding: p2r(4) 0;
       max-height: var(--menu-mh);
+
+      &.searching {
+        button[disabled] {
+          display: none;
+        }
+      }
 
       &:after {
         content: '';
@@ -53,6 +76,10 @@ $spkMenu: true !default;
         border: 0;
         cursor: pointer;
         color: var(--base-level-70);
+
+        &.hide-option {
+          display: none;
+        }
 
         &[disabled] {
           opacity: 0.3;
