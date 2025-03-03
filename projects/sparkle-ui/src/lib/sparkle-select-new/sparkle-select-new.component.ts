@@ -229,8 +229,6 @@ export class SparkleSelectNewComponent {
   inputRefEl = computed(() => {
     const inputRefInput = this.inputRefInput();
 
-    console.log('inputRefInput: ', inputRefInput);
-
     if (inputRefInput === null) return;
 
     const input = inputRefInput ? inputRefInput.nativeElement : null;
@@ -453,7 +451,7 @@ export class SparkleSelectNewComponent {
 
     const inputValueAsString = value.toString().split(',');
 
-    if (inputValueAsString.length === 0) {
+    if (inputValueAsString.length === 0 || !options || options.length === 0) {
       this.selectedOptions.set([]);
       return;
     }

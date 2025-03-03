@@ -15,13 +15,13 @@
   </spk-select-new>
 
   <spk-select-new [options]="flatOptions()" [inlineSearch]="true">
-    <label>
+    <label for="hi">
       Pass label
       <spk-tooltip message="hi world">
         <spk-icon>circle</spk-icon>
       </spk-tooltip>
     </label>
-    <input type="text" [formControl]="inputCtrlNew1" />
+    <input type="text" id="hi" [formControl]="inputCtrlNew1" />
   </spk-select-new>
 
   <spk-select-new
