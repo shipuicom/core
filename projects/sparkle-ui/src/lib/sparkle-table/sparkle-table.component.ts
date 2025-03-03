@@ -148,14 +148,17 @@ export class SparkleTableComponent {
   loading = input<boolean>(false);
   data = input<any>([]);
   dataChange = output<any>();
+  sortByColumn = model<string | null>(null);
 
-  // resizables = viewChildren(SparkleTableResizeDirective);
   columns = contentChildren<ElementRef<HTMLTableCellElement>>('spkHeader', {
     descendants: true,
   });
 
   resizing = signal(false);
   sizeTrigger = signal(true);
+  #initialData: any | null = null;
+  #initialDataSet = signal(false);
+
   columnSizes = computed(() => {
     this.sizeTrigger();
 
@@ -178,11 +181,6 @@ export class SparkleTableComponent {
   updateColumnSizes() {
     this.sizeTrigger.set(!this.sizeTrigger());
   }
-
-  #initialData: any | null = null;
-  #initialDataSet = signal(false);
-
-  sortByColumn = model<string | null>(null);
 
   e = effect(() => {
     const sortByColumn = this.sortByColumn();

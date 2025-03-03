@@ -8,6 +8,7 @@ import {
   SparkleOptionComponent,
   SparkleSelectComponent,
   SparkleSelectNewComponent,
+  SparkleTooltipComponent,
 } from '../../../../../sparkle-ui/src/public-api';
 
 type Food = {
@@ -32,6 +33,7 @@ disabledCtrl.disable();
     SparkleIconComponent,
     SparkleCheckboxComponent,
     SparkleOptionComponent,
+    SparkleTooltipComponent,
     JsonPipe,
   ],
   templateUrl: './spk-select.component.html',

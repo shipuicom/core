@@ -43,7 +43,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
     @let _selOptionTemplate = _selectedOptionTemplate || _optionTemplate || _inlineTemplate;
     @let _listOptionTemplate = _optionTemplate || _inlineTemplate;
     @let _asChips = !asText() && selectMultiple();
-    @let _showSearchText = hasSearch() && isOpen() && _asChips;
+    @let _showSearchText = isOpen() && hasSearch() && (_asChips || inputValue().length > 0);
 
     <spk-popover
       #formFieldWrapper
@@ -63,7 +63,9 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
 
         <div class="input" [class.show-search-text]="_showSearchText" ngProjectAs="input">
           <div class="selected-value" [class.is-selected]="_inputState === 'selected'">
-            @if (_selectedOptions.length > 0) {
+            @if (asFreeText() && inputValue().length > 0 && !isOpen()) {
+              {{ inputValue() }}
+            } @else if (_selectedOptions.length > 0) {
               @for (selectedOption of _selectedOptions; track $index) {
                 @if (selectedOption) {
                   @if (_asChips) {
@@ -77,10 +79,12 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
                       <spk-icon (click)="removeSelectedOptionByIndex($event, $index)">x-bold</spk-icon>
                     </spk-chip>
                   } @else {
-                    @if (_selOptionTemplate) {
-                      <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
-                    } @else {
-                      {{ getLabel(selectedOption) }}
+                    @if (!_showSearchText) {
+                      @if (_selOptionTemplate) {
+                        <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
+                      } @else {
+                        {{ getLabel(selectedOption) }}
+                      }
                     }
                   }
                 }
@@ -146,6 +150,7 @@ export class SparkleSelectNewComponent {
 
   value = input<string>();
   label = input<string>();
+  asFreeText = input(false);
   placeholder = input<string>();
   readonly = model(false);
   disabled = model(false);
@@ -165,8 +170,19 @@ export class SparkleSelectNewComponent {
 
   inlineTemplate = contentChild<TemplateRef<unknown>>(TemplateRef);
   optionsWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('optionsWrap');
-  inputRefInput = contentChild<ElementRef<HTMLInputElement>>('input');
-  textareaRefInput = contentChild<ElementRef<HTMLTextAreaElement>>('textarea');
+  inputRefInput = signal<ElementRef<HTMLInputElement> | null>(null);
+  #inputObserver =
+    typeof MutationObserver !== 'undefined' &&
+    new MutationObserver((mutations) => {
+      for (var mutation of mutations) {
+        if (mutation && (mutation.target.nodeName === 'INPUT' || mutation.target.nodeName === 'TEXTAREA')) {
+          this.inputRefInput.set(new ElementRef(mutation.target as HTMLInputElement));
+
+          (this.#inputObserver as MutationObserver).disconnect();
+        }
+      }
+    });
+
   inputValue = signal<string>('');
 
   prevInputValue = signal<string | null>(null);
@@ -212,17 +228,16 @@ export class SparkleSelectNewComponent {
 
   inputRefEl = computed(() => {
     const inputRefInput = this.inputRefInput();
-    const textareaRefInput = this.textareaRefInput();
 
-    const input = inputRefInput
-      ? inputRefInput.nativeElement
-      : textareaRefInput
-        ? textareaRefInput.nativeElement
-        : null;
+    console.log('inputRefInput: ', inputRefInput);
+
+    if (inputRefInput === null) return;
+
+    const input = inputRefInput ? inputRefInput.nativeElement : null;
 
     if (!input) {
       console.warn(
-        '<spk-select> input element not found are you missing #input or #textarea on the projected element?'
+        '<spk-select> input element not found are you missing to pass an <input> or <textarea> element to select component?'
       );
       return null;
     }
@@ -244,7 +259,7 @@ export class SparkleSelectNewComponent {
 
         if (newInputValue === inputValue) return;
 
-        this.focusedOptionIndex.set(0);
+        this.focusedOptionIndex.set(this.asFreeText() ? -1 : 0);
         this.inputValue.set(newInputValue);
         this.updateInputElValue();
       });
@@ -359,7 +374,7 @@ export class SparkleSelectNewComponent {
   });
 
   inputState = computed(() => {
-    if (this.selectedOptions().length > 0 && !this.isOpen()) {
+    if ((this.selectedOptions().length > 0 || (this.asFreeText() && this.inputValue().length > 0)) && !this.isOpen()) {
       return 'selected';
     }
 
@@ -401,6 +416,35 @@ export class SparkleSelectNewComponent {
 
     this.inputValue.set(inputValue);
   });
+
+  ngOnInit() {
+    this.setInitInput();
+  }
+
+  setInitInput() {
+    const input = this.#selfRef.nativeElement.querySelector('input');
+
+    if (input) {
+      this.inputRefInput.set(new ElementRef(input));
+      return;
+    }
+
+    const textarea = this.#selfRef.nativeElement.querySelector('textarea');
+
+    if (textarea) {
+      this.inputRefInput.set(new ElementRef(textarea as any as HTMLInputElement));
+      return;
+    }
+
+    if (typeof MutationObserver !== 'undefined') {
+      (this.#inputObserver as MutationObserver).observe(this.#selfRef.nativeElement, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
+    }
+  }
 
   setSelectedOptionsFromValue(value: string) {
     const options = this.options();
@@ -456,8 +500,9 @@ export class SparkleSelectNewComponent {
   toggleOptionByIndex(optionIndex: number, event?: MouseEvent) {
     const option = this.filteredOptions()[optionIndex];
 
-    if (!option) {
-      throw new Error('Option not found: this should never happen if it does report it as an issue on github');
+    if ((this.asFreeText() && optionIndex === -1) || !option) {
+      this.close();
+      return;
     }
 
     if (event) {
@@ -558,12 +603,17 @@ export class SparkleSelectNewComponent {
 
     const prevInputValue = this.prevInputValue();
 
+    if (this.asFreeText()) {
+      this.updateInputElValue();
+      return;
+    }
+
     if (this.hasSearch() && prevInputValue) {
       this.inputValue.set(prevInputValue);
       this.setInputValueFromSelectedOptions();
     }
 
-    if (this.hasSearch() && this.selectMultiple()) {
+    if (this.selectMultiple()) {
       this.setInputValueFromSelectedOptions();
     }
   }
@@ -598,11 +648,11 @@ export class SparkleSelectNewComponent {
     Object.defineProperty(input, 'value', {
       configurable: true,
       get() {
-        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value'); // Use Object.getPrototypeOf
+        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
         return descriptor!.get!.call(this);
       },
       set(newVal) {
-        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value'); // Use Object.getPrototypeOf
+        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
         descriptor!.set!.call(this, newVal);
 
         const inputEvent = new CustomEvent('inputValueChanged', {

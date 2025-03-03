@@ -36,6 +36,9 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Support datepicker ranges
 - [x] Support multiple month views in datepicker
 - [x] Create a daterange input component
+- [x] Support resizable columns in spk-table
+- [x] Support free text input in spk-select
+- [x] Remove the need to set #input on the input element
 - [ ] Finalize file upload component
 - [ ] Create a CSV input that create chips on comma (or enter) press
 - [ ] Create a accordion component
@@ -47,6 +50,11 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 
 ### Nice to haves for v1 beta
 
+- [ ] spk-table features
+  - [ ] Add support for sticky rows
+  - [ ] Add support for multi sticky columns, rows
+  - [ ] Add support for row resizing
+  - [ ] Improve support for sorting with a built in sort using attribute on the column
 - [ ] Add flat and raised versions of alerts
 - [ ] Create simple chart components
   - [ ] Line chart

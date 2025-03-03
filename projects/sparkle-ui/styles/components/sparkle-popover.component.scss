@@ -48,8 +48,8 @@ $spkPopover: true !default;
         inset: unset;
         left: anchor(left);
         top: calc(anchor(bottom) + #{p2r(4)});
-        position-try-order: flip-block flip-inline;
-        position-try-fallbacks: flip-block flip-inline;
+        position-try-order: flip-block;
+        position-try-fallbacks: flip-inline;
       }
     }
   }
