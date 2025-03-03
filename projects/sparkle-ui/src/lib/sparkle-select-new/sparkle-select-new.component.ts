@@ -58,7 +58,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
         trigger
         (click)="open()"
         [class.autosize]="selectMultiple()"
-        [class]="readonly() ? 'readonly' : ''">
+        [class.readonly]="readonly() || disabled()">
         <ng-content select="label" ngProjectAs="label" />
 
         <div class="input" [class.show-search-text]="_showSearchText" ngProjectAs="input">
@@ -148,6 +148,7 @@ export class SparkleSelectNewComponent {
   label = input<string>();
   placeholder = input<string>();
   readonly = model(false);
+  disabled = model(false);
   lazySearch = input(false);
   inlineSearch = input(false);
   asText = input(false);
@@ -179,6 +180,7 @@ export class SparkleSelectNewComponent {
 
     return placeholder || inputRefEl?.placeholder || null;
   });
+
   selectedOptionValues = computed(() => {
     const selectedOptions = this.selectedOptions();
     const valueKey = this.value();
@@ -206,14 +208,6 @@ export class SparkleSelectNewComponent {
 
       return optionLabel.includes(inputValue);
     });
-  });
-
-  #readonlyEffect = effect(() => {
-    const input = this.inputRefEl();
-
-    if (!input) return;
-
-    input.disabled = this.readonly();
   });
 
   inputRefEl = computed(() => {
@@ -346,6 +340,8 @@ export class SparkleSelectNewComponent {
 
     if (!input) return;
     if (input.value === this._inputValue) return;
+
+    this.disabled.set(input.disabled);
 
     this.setSelectedOptionsFromValue(input.value);
     this.setInputValueFromSelectedOptions();

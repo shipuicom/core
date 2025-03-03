@@ -1,5 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { SparkleTableComponent } from '../../../../../sparkle-ui/src/public-api';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import {
+  SparkleButtonGroupComponent,
+  SparkleTableComponent,
+  SparkleTableResizeDirective,
+  SparkleToggleComponent,
+} from '../../../../../sparkle-ui/src/public-api';
 
 export interface PeriodicElement {
   name: string;
@@ -9,7 +14,12 @@ export interface PeriodicElement {
 }
 
 const ELEMENT_DATA: PeriodicElement[] = [
-  { position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },
+  {
+    position: 1,
+    name: 'HydrogenHydrogenHydrogenHydrogenHydrogenHydrogenHydrogenHydrogenHydrogenHydrogenHydrogen',
+    weight: 1.0079,
+    symbol: 'H',
+  },
   { position: 2, name: 'Helium', weight: 4.0026, symbol: 'He' },
   { position: 3, name: 'Lithium', weight: 6.941, symbol: 'Li' },
   { position: 4, name: 'Beryllium', weight: 9.0122, symbol: 'Be' },
@@ -28,22 +38,25 @@ type Column = Columns[number];
 
 @Component({
   selector: 'app-spk-table',
-  imports: [SparkleTableComponent],
+  imports: [SparkleTableComponent, SparkleButtonGroupComponent, SparkleTableResizeDirective, SparkleToggleComponent],
   templateUrl: './spk-table.component.html',
   styleUrl: './spk-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class SpkTableComponent {
   displayedColumns = signal<Columns>(COLUMNS);
+  withStickyColumns = computed(() => (this.displayedColumns() as any).concat(['hi', 'end']));
   dataSource = signal(ELEMENT_DATA);
   isLoading = signal(true);
   openRowIndex = signal<number | null>(null);
   sortByColumn = signal<Column | `-${Column}` | null>(null);
+  typeActive = signal('type-a');
+  resizable = signal(true);
 
   ngOnInit() {
     setTimeout(() => {
       this.isLoading.set(false);
-    }, 2000);
+    }, 450);
   }
 
   toggleRow(index: number) {

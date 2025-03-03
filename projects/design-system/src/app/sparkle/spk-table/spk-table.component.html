@@ -1,22 +1,36 @@
-<section>
+<section [class.no-padding-sides]="typeActive() === 'type-b'">
   <h3>Basic table - sorted by : {{ sortByColumn() }}</h3>
 
+  <spk-button-group>
+    <button [class.active]="typeActive() === 'type-a'" (click)="typeActive.set('type-a')">Type A</button>
+    <button [class.active]="typeActive() === 'type-b'" (click)="typeActive.set('type-b')">Type B</button>
+  </spk-button-group>
+
+  <spk-toggle class="primary raised" [class.active]="resizable()" (click)="resizable.set(!resizable())"></spk-toggle>
+
   <spk-table
-    [tableColumns]="$any(displayedColumns())"
     [(data)]="dataSource"
+    [class.no-resize]="!resizable()"
+    [class]="typeActive()"
     [loading]="isLoading()"
     [sortByColumn]="sortByColumn()">
     <tr table-header>
+      <th class="sticky" spkTableResize #spkHeader>im sticky</th>
+
       @for (col of displayedColumns(); track col) {
-        <th (click)="toggleSort(col)">{{ col }}</th>
+        <th spkTableResize (mousedown)="toggleSort(col)" #spkHeader>{{ col }}</th>
       }
+
+      <th class="sticky-end" spkTableResize #spkHeader>im sticky end</th>
     </tr>
 
     @for (row of dataSource(); track $index) {
       <tr (click)="toggleRow($index)">
+        <td class="sticky">im sticky</td>
         @for (col of displayedColumns(); track col) {
           <td>{{ row[col] }}</td>
         }
+        <td class="sticky-end">im sticky end</td>
       </tr>
 
       @if ($index === openRowIndex()) {

@@ -1,31 +1,126 @@
-import { ChangeDetectionStrategy, Component, computed, effect, input, model, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  contentChildren,
+  Directive,
+  effect,
+  ElementRef,
+  HostListener,
+  inject,
+  input,
+  model,
+  output,
+  Renderer2,
+  signal,
+} from '@angular/core';
 import { SparkleProgressBarComponent } from '../sparkle-progress-bar/sparkle-progress-bar.component';
 
-@Component({
-  selector: 'spk-row',
-  imports: [],
-  template: `
-    <ng-content></ng-content>
-  `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class SparkleRowComponent {}
+// export type SpkTableCell = HTMLTableCellElement & { colSize: WritableSignal<number> };
 
-@Component({
-  selector: 'spk-column',
-  imports: [],
-  template: `
-    <ng-content></ng-content>
-  `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+@Directive({
+  selector: '[spkTableResize]',
+  standalone: true,
 })
-export class SparkleColumnComponent {}
+export class SparkleTableResizeDirective {
+  #el = inject(ElementRef) as ElementRef<HTMLTableCellElement>;
+  #renderer = inject(Renderer2);
+  #table = inject(SparkleTableComponent);
+
+  resizable = input<boolean>(true);
+  minWidth = input<number>(50);
+  maxWidth = input<number | null>(null);
+
+  #startX!: number;
+  #startWidth!: number;
+  #resizing = false;
+  #animationFrameRequest: number | null = null; // Store request ID
+
+  ngOnInit() {
+    if (!this.#table) {
+      console.error('spkTableResize directive must be used within a spk-table component.');
+      return;
+    }
+
+    if (this.resizable()) {
+      const resizer = this.#renderer.createElement('div');
+      this.#renderer.addClass(resizer, 'spk-resizer');
+      this.#renderer.appendChild(this.#el.nativeElement, resizer);
+      this.#renderer.listen(resizer, 'mousedown', this.#onMouseDown.bind(this));
+    }
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    if (!this.#resizing) return;
+
+    this.#scheduleResize(event);
+  }
+
+  @HostListener('document:mouseup', ['$event'])
+  onMouseUp(event: MouseEvent) {
+    if (this.#resizing) {
+      this.#resizing = false;
+      this.#table.resizing.set(false);
+
+      if (this.#animationFrameRequest !== null) {
+        cancelAnimationFrame(this.#animationFrameRequest);
+        this.#animationFrameRequest = null;
+      }
+    }
+  }
+
+  @HostListener('document:click', ['$event']) onClick(event: MouseEvent) {
+    if (this.#resizing) {
+      event.stopPropagation();
+    }
+  }
+
+  #onMouseDown(event: MouseEvent) {
+    event.stopPropagation();
+
+    if (!this.resizable()) return;
+
+    this.#table.resizing.set(true);
+    this.#resizing = true;
+    this.#startX = event.pageX;
+    this.#startWidth = this.#el.nativeElement.offsetWidth;
+  }
+
+  #scheduleResize(event: MouseEvent) {
+    if (this.#animationFrameRequest !== null) {
+      cancelAnimationFrame(this.#animationFrameRequest);
+    }
+
+    this.#animationFrameRequest = requestAnimationFrame(() => {
+      this.#resizeColumn(event);
+      this.#animationFrameRequest = null;
+    });
+  }
+
+  #resizeColumn(event: MouseEvent) {
+    const width = this.#startWidth + (event.pageX - this.#startX);
+    const constrainedWidth = Math.max(
+      this.minWidth(),
+      this.maxWidth() ? Math.min(width, this.maxWidth() ?? width) : width
+    );
+
+    this.#renderer.setAttribute(this.#el.nativeElement, 'data-size', `${constrainedWidth}px`);
+    this.#table.updateColumnSizes();
+  }
+
+  ngOnDestroy() {
+    if (this.#animationFrameRequest !== null) {
+      cancelAnimationFrame(this.#animationFrameRequest);
+    }
+  }
+}
 
 @Component({
   selector: 'spk-table',
   imports: [SparkleProgressBarComponent],
   template: `
-    <thead>
+    <thead #thead>
       <ng-content select="[table-header]" />
 
       @if (loading()) {
@@ -46,14 +141,31 @@ export class SparkleColumnComponent {}
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[style.grid-template-columns]': 'columnSizes()',
+    '[class.resizing]': 'resizing()',
   },
 })
 export class SparkleTableComponent {
-  tableColumns = input<string[]>([]);
   loading = input<boolean>(false);
+  data = input<any>([]);
+  dataChange = output<any>();
+
+  // resizables = viewChildren(SparkleTableResizeDirective);
+  columns = contentChildren<ElementRef<HTMLTableCellElement>>('spkHeader', {
+    descendants: true,
+  });
+
+  resizing = signal(false);
+  sizeTrigger = signal(true);
   columnSizes = computed(() => {
-    return this.tableColumns().reduce((acc, col, index) => {
-      const last = index === this.tableColumns().length - 1;
+    this.sizeTrigger();
+
+    return this.columns().reduce((acc, col, index) => {
+      const colEl = col.nativeElement as HTMLElement;
+      const last = index === this.columns().length - 1;
+
+      if (colEl.dataset['size']) {
+        return `${acc} ${colEl.dataset['size']}`;
+      }
 
       if (last) {
         return `${acc} max-content`;
@@ -63,8 +175,9 @@ export class SparkleTableComponent {
     }, '');
   });
 
-  data = input<any>([]);
-  dataChange = output<any>();
+  updateColumnSizes() {
+    this.sizeTrigger.set(!this.sizeTrigger());
+  }
 
   #initialData: any | null = null;
   #initialDataSet = signal(false);

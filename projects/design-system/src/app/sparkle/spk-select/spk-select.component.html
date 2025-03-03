@@ -84,6 +84,9 @@
     <label>Disabled on formControl</label>
     <input type="text" #input [formControl]="disabledCtrl" />
   </spk-select-new>
+  <button (click)="disabledCtrl.disabled ? disabledCtrl.enable() : disabledCtrl.disable()">
+    {{ disabledCtrl.disabled ? 'Enable' : 'Disable' }}
+  </button>
   <pre>selectedOption(): {{ selectedOption() | json }}</pre>
 
   <spk-select-new
