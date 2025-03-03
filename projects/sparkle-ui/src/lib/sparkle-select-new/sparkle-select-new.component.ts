@@ -113,7 +113,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
         } @else if (_inputState === 'selected' && _isClearable()) {
           <spk-icon suffix (click)="clear($event)">x-bold</spk-icon>
         } @else if (_inputState === 'selected' && !_isClearable()) {
-          <spk-icon suffix>check</spk-icon>
+          <spk-icon suffix>caret-down</spk-icon>
         } @else {
           <spk-icon suffix>caret-up</spk-icon>
         }
