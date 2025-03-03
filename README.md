@@ -39,7 +39,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Support resizable columns in spk-table
 - [x] Support free text input in spk-select
 - [x] Remove the need to set #input on the input element
-- [x] spk-select gets a wildcard search on the label and value similar to the spk-menu ex search value "hlo" will match "hello" and "halo" it converts into what we call a wildcard regex which are similar to globbing "*h*l*o*" just with regex
+- [x] spk-select gets a wildcard search on the label and value similar to the spk-menu ex search value "hlo" will match "hello" and "halo" it converts into what we call a wildcard regex which are similar to globbing "*h*l*o*" just with regex.
 - [ ] Finalize file upload component
 - [ ] Create a CSV input that create chips on comma (or enter) press
 - [ ] Create a accordion component
@@ -57,6 +57,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
   - [ ] Add support for row resizing
   - [ ] Improve support for sorting with a built in sort using attribute on the column
 - [ ] spk-select feature: add support for custom filter predicates on inlineSearch
+- [ ] When using wildcard searching in spk-select and spk-menu sort the closet match to the top of the list
 - [ ] Add flat and raised versions of alerts
 - [ ] Create simple chart components
   - [ ] Line chart
