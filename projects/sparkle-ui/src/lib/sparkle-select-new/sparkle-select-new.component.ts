@@ -207,10 +207,12 @@ export class SparkleSelectNewComponent {
   });
 
   filteredOptions = computed<unknown[]>(() => {
-    const opts = this.options();
+    const opts = this.options() || [];
     const label = this.label();
+    const valueKey = this.value();
     const inlineSearch = this.inlineSearch();
-    const inputValue = this.inputValue().toLowerCase();
+    const inputValue = this.inputValue();
+    const inputValueRegex = this.#createWildcardRegex(this.inputValue());
 
     if (opts.length <= 0) return [];
     if (!inlineSearch || inputValue === '') {
@@ -222,7 +224,12 @@ export class SparkleSelectNewComponent {
         ? (this.#getProperty(item, label) ?? '').toString().toLowerCase()
         : (item ?? '').toString().toLowerCase();
 
-      return optionLabel.includes(inputValue);
+      const optionValue = ((valueKey ? this.#getProperty(item, valueKey) : item) ?? '').toString().toLowerCase();
+
+      const testLabel = inputValueRegex.test(optionLabel);
+      const testValue = inputValueRegex.test(optionValue);
+
+      return testLabel || testValue;
     });
   });
 
@@ -445,13 +452,13 @@ export class SparkleSelectNewComponent {
   }
 
   setSelectedOptionsFromValue(value: string) {
-    const options = this.options();
+    const options = this.options() || [];
     const valueKey = this.value();
     const selectMultiple = this.selectMultiple();
 
     const inputValueAsString = value.toString().split(',');
 
-    if (inputValueAsString.length === 0 || !options || options.length === 0) {
+    if (inputValueAsString.length === 0) {
       this.selectedOptions.set([]);
       return;
     }
@@ -666,5 +673,22 @@ export class SparkleSelectNewComponent {
         return newVal;
       },
     });
+  }
+
+  #createWildcardRegex(inputValue: string | null | undefined): RegExp {
+    const lowerCaseInput = (inputValue ?? '').toLowerCase();
+    let regexPattern = '^';
+
+    for (const char of lowerCaseInput) {
+      regexPattern += '.*' + this.#escapeRegexChar(char);
+    }
+
+    regexPattern += '.*$';
+
+    return new RegExp(regexPattern, 'i');
+  }
+
+  #escapeRegexChar(char: string): string {
+    return char.replace(/[-\/\\^$+?.()|[\]{}]/g, '\\$&');
   }
 }
