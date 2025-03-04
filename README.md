@@ -40,14 +40,15 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Support free text input in spk-select
 - [x] Remove the need to set #input on the input element
 - [x] spk-select gets a wildcard search on the label and value similar to the spk-menu ex search value "hlo" will match "hello" and "halo" it converts into what we call a wildcard regex which are similar to globbing "*h*l*o*" just with regex.
-
 - [ ] spk-table features
   - [x] Add support for sticky rows
   - [x] Improve support for sorting with a built in sort using attribute on the column
   - [ ] Add support for multi sticky columns, rows
   - [ ] Add support for row resizing
 - [ ] Finalize file upload component
-- [ ] Create a CSV input that create chips on comma (or enter) press
+- [ ] Create a CSV input that create chips on comma (or enter) press (Maybe this could be implemented when using a select but with the asFreeText flag on it)
+- [ ] Add multi select to spk-menu
+- [ ] Improve tooltips to be a directive instead still spawning a popover on the element
 - [ ] Create a accordion component
 - [ ] Create a timepicker component
 

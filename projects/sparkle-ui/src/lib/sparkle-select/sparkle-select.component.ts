@@ -211,15 +211,15 @@ export class SparkleSelectComponent {
     const label = this.label();
     const valueKey = this.value();
     const inlineSearch = this.inlineSearch();
-    const inputValue = this.inputValue();
-    const inputValueRegex = this.#createWildcardRegex(this.inputValue());
+    const inputValue = this.inputValue().toLowerCase();
+    const inputValueRegex = this.#createWildcardRegex(inputValue);
 
     if (opts.length <= 0) return [];
     if (!inlineSearch || inputValue === '') {
       return opts;
     }
 
-    return opts.filter((item) => {
+    const filtered = opts.filter((item) => {
       const optionLabel = label
         ? (this.#getProperty(item, label) ?? '').toString().toLowerCase()
         : (item ?? '').toString().toLowerCase();
@@ -231,7 +231,56 @@ export class SparkleSelectComponent {
 
       return testLabel || testValue;
     });
+
+    const scoredOptions = filtered.map((item) => {
+      const optionLabel = label
+        ? (this.#getProperty(item, label) ?? '').toString().toLowerCase()
+        : (item ?? '').toString().toLowerCase();
+
+      const optionValue = ((valueKey ? this.#getProperty(item, valueKey) : item) ?? '').toString().toLowerCase();
+
+      const labelScore = this.#calculateMatchScore(optionLabel, inputValue);
+      const valueScore = this.#calculateMatchScore(optionValue, inputValue);
+
+      return {
+        item,
+        score: Math.max(labelScore, valueScore),
+      };
+    });
+
+    scoredOptions.sort((a, b) => b.score - a.score);
+
+    return scoredOptions.map((scoredOption) => scoredOption.item);
   });
+
+  #calculateMatchScore(option: string, input: string): number {
+    if (!input) return 0;
+
+    let score = 0;
+    let lastIndex = -1;
+
+    if (option.includes(input)) {
+      score += 1000;
+    }
+
+    for (let i = 0; i < input.length; i++) {
+      const char = input[i];
+      const charIndex = option.indexOf(char, lastIndex + 1);
+
+      if (charIndex === -1) {
+        return 0;
+      }
+
+      score += option.length - charIndex;
+      if (lastIndex + 1 === charIndex && lastIndex !== -1) {
+        score += 50;
+      }
+
+      lastIndex = charIndex;
+    }
+
+    return score;
+  }
 
   inputRefEl = computed(() => {
     const inputRefInput = this.inputRefInput();
