@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import {
   SparkleButtonGroupComponent,
+  SparkleResizeDirective,
+  SparkleSortDirective,
   SparkleTableComponent,
-  SparkleTableResizeDirective,
   SparkleToggleComponent,
 } from '../../../../../sparkle-ui/src/public-api';
 
@@ -38,7 +39,13 @@ type Column = Columns[number];
 
 @Component({
   selector: 'app-spk-table',
-  imports: [SparkleTableComponent, SparkleButtonGroupComponent, SparkleTableResizeDirective, SparkleToggleComponent],
+  imports: [
+    SparkleTableComponent,
+    SparkleButtonGroupComponent,
+    SparkleResizeDirective,
+    SparkleSortDirective,
+    SparkleToggleComponent,
+  ],
   templateUrl: './spk-table.component.html',
   styleUrl: './spk-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -61,13 +68,5 @@ export default class SpkTableComponent {
 
   toggleRow(index: number) {
     this.openRowIndex.set(index === this.openRowIndex() ? null : index);
-  }
-
-  toggleSort(column: Column) {
-    const currentSort = this.sortByColumn();
-    const sortDir =
-      currentSort === column ? (`-${column}` as `-${Column}`) : currentSort === `-${column}` ? null : column;
-
-    this.sortByColumn.set(sortDir);
   }
 }

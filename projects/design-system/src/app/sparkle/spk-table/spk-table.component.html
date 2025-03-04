@@ -14,18 +14,18 @@
     [class]="typeActive()"
     [loading]="isLoading()"
     [sortByColumn]="sortByColumn()">
-    <tr table-header>
-      <th class="sticky" spkTableResize #spkHeader>im sticky</th>
+    <tr class="sticky" table-header>
+      <th class="sticky" spkResize>im sticky</th>
 
       @for (col of displayedColumns(); track col) {
-        <th spkTableResize (mousedown)="toggleSort(col)" #spkHeader>{{ col }}</th>
+        <th spkResize [spkSort]="col">{{ col }}</th>
       }
 
-      <th class="sticky-end" spkTableResize #spkHeader>im sticky end</th>
+      <th class="sticky-end" spkResize>im sticky end</th>
     </tr>
 
     @for (row of dataSource(); track $index) {
-      <tr (click)="toggleRow($index)">
+      <tr [class.sticky-end]="$last" (click)="toggleRow($index)">
         <td class="sticky">im sticky</td>
         @for (col of displayedColumns(); track col) {
           <td>{{ row[col] }}</td>

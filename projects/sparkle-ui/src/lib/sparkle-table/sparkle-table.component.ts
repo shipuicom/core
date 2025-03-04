@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  contentChildren,
   Directive,
   effect,
   ElementRef,
@@ -13,16 +12,16 @@ import {
   output,
   Renderer2,
   signal,
+  viewChild,
 } from '@angular/core';
 import { SparkleProgressBarComponent } from '../sparkle-progress-bar/sparkle-progress-bar.component';
-
-// export type SpkTableCell = HTMLTableCellElement & { colSize: WritableSignal<number> };
+import { observeChildren } from '../utilities/observe-elements';
 
 @Directive({
-  selector: '[spkTableResize]',
+  selector: '[spkResize]',
   standalone: true,
 })
-export class SparkleTableResizeDirective {
+export class SparkleResizeDirective {
   #el = inject(ElementRef) as ElementRef<HTMLTableCellElement>;
   #renderer = inject(Renderer2);
   #table = inject(SparkleTableComponent);
@@ -116,6 +115,26 @@ export class SparkleTableResizeDirective {
   }
 }
 
+@Directive({
+  selector: '[spkSort]',
+  standalone: true,
+  host: {
+    '(mousedown)': 'toggleSort()',
+  },
+})
+export class SparkleSortDirective {
+  #table = inject(SparkleTableComponent);
+  spkSort = input<string>();
+
+  toggleSort() {
+    const sortCol = this.spkSort();
+
+    if (!sortCol) return;
+
+    this.#table.toggleSort(sortCol);
+  }
+}
+
 @Component({
   selector: 'spk-table',
   imports: [SparkleProgressBarComponent],
@@ -150,9 +169,8 @@ export class SparkleTableComponent {
   dataChange = output<any>();
   sortByColumn = model<string | null>(null);
 
-  columns = contentChildren<ElementRef<HTMLTableCellElement>>('spkHeader', {
-    descendants: true,
-  });
+  thead = viewChild<ElementRef<HTMLTableSectionElement>>('thead');
+  columns = observeChildren(this.thead, ['TH']);
 
   resizing = signal(false);
   sizeTrigger = signal(true);

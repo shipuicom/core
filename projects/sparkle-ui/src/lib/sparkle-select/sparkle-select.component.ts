@@ -691,4 +691,15 @@ export class SparkleSelectComponent {
   #escapeRegexChar(char: string): string {
     return char.replace(/[-\/\\^$+?.()|[\]{}]/g, '\\$&');
   }
+
+  ngOnDestroy() {
+    if (this.openAbortController) {
+      this.openAbortController.abort();
+      this.openAbortController = null;
+    }
+
+    if (typeof MutationObserver !== 'undefined') {
+      (this.#inputObserver as MutationObserver).disconnect();
+    }
+  }
 }

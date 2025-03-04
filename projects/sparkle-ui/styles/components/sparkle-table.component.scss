@@ -93,6 +93,12 @@ $spkTable: true !default;
 
     thead {
       position: relative;
+
+      &:has(tr.sticky) {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
     }
 
     spk-progress-bar {
@@ -113,6 +119,18 @@ $spkTable: true !default;
 
     tr {
       background: var(--table-tr-bg);
+
+      &.sticky {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+
+      &.sticky-end {
+        position: sticky;
+        bottom: 0;
+        z-index: 3;
+      }
 
       &:has(th.sticky-end) {
         th:nth-last-child(2) {
