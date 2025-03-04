@@ -52,9 +52,9 @@ $spkSelect: false !default;
         input {
           opacity: 1;
           height: initial;
-          margin-top: p2r(4);
           min-width: min-content;
           field-sizing: content;
+          font: var(--paragraph-30);
         }
 
         textarea {

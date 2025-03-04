@@ -258,6 +258,7 @@ export class SparkleSelectComponent {
 
     let score = 0;
     let lastIndex = -1;
+    let matchCount = 0;
 
     if (option.includes(input)) {
       score += 1000;
@@ -271,13 +272,16 @@ export class SparkleSelectComponent {
         return 0;
       }
 
-      score += option.length - charIndex;
+      score += 100;
       if (lastIndex + 1 === charIndex && lastIndex !== -1) {
         score += 50;
       }
 
       lastIndex = charIndex;
+      matchCount++;
     }
+
+    score += matchCount * 20;
 
     return score;
   }

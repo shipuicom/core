@@ -118,36 +118,74 @@ export class SparkleMenuComponent {
 
     if (!searchable) return;
 
-    const inputValue = this.inputValue();
-    const inputRegex = this.createWildcardRegex(inputValue);
+    const inputValue = (this.inputValue() ?? '').toLowerCase();
     const optionElements = this.optionsEl();
+
+    if (!inputValue || inputValue === '') {
+      optionElements.forEach((el) => {
+        el.classList.remove('hide-option');
+        el.style.order = '';
+      });
+      return;
+    }
+
+    const scoredOptions = optionElements.map((el) => {
+      const textContent = el.textContent?.toLowerCase() || '';
+      const score = this.#calculateMatchScore(textContent, inputValue);
+      return { el, score, textContent };
+    });
+
+    scoredOptions.sort((a, b) => b.score - a.score);
 
     let firstFound = false;
 
-    for (let index = 0; index < optionElements.length; index++) {
-      const el = optionElements[index];
-
-      if (!el.textContent) continue;
-      if (!inputValue || inputValue === '') {
-        el.classList.remove('hide-option');
-        continue;
-      }
-
-      const testEl = inputRegex.test(el.textContent.toLowerCase());
-
-      if (!testEl || el.disabled) {
+    scoredOptions.forEach(({ el, score }, index) => {
+      if (score === 0 || el.disabled) {
         el.classList.add('hide-option');
+        el.style.order = '';
       } else {
         el.classList.remove('hide-option');
-
+        el.style.order = index.toString();
         if (!firstFound) {
-          queueMicrotask(() => this.activeOptionIndex.set(index));
+          queueMicrotask(() => this.activeOptionIndex.set(optionElements.indexOf(el)));
+          firstFound = true;
         }
-
-        firstFound = true;
       }
-    }
+    });
   });
+
+  #calculateMatchScore(option: string, input: string): number {
+    if (!input) return 0;
+
+    let score = 0;
+    let lastIndex = -1;
+    let matchCount = 0;
+
+    if (option.includes(input)) {
+      score += 1000;
+    }
+
+    for (let i = 0; i < input.length; i++) {
+      const char = input[i];
+      const charIndex = option.indexOf(char, lastIndex + 1);
+
+      if (charIndex === -1) {
+        return 0;
+      }
+
+      score += 100;
+      if (lastIndex + 1 === charIndex && lastIndex !== -1) {
+        score += 50;
+      }
+
+      lastIndex = charIndex;
+      matchCount++;
+    }
+
+    score += matchCount * 20;
+
+    return score;
+  }
 
   activeOptionIndexEffect = effect(() => {
     const optionElements = this.optionsEl();
