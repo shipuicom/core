@@ -3,11 +3,8 @@ import { ChangeDetectionStrategy, Component, computed, effect, model, signal } f
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
-  SparkleCheckboxComponent,
   SparkleIconComponent,
-  SparkleOptionComponent,
   SparkleSelectComponent,
-  SparkleSelectNewComponent,
   SparkleTooltipComponent,
 } from '../../../../../sparkle-ui/src/public-api';
 
@@ -29,10 +26,7 @@ disabledCtrl.disable();
     FormsModule,
     ReactiveFormsModule,
     SparkleSelectComponent,
-    SparkleSelectNewComponent,
     SparkleIconComponent,
-    SparkleCheckboxComponent,
-    SparkleOptionComponent,
     SparkleTooltipComponent,
     JsonPipe,
   ],

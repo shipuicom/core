@@ -145,7 +145,7 @@ export class SparkleDatepickerInputComponent {
 
     this.#createCustomInputEventListener(input);
 
-    input.addEventListener('inputValueChanged', (event) => {
+    input.addEventListener('inputValueChanged', (event: any) => {
       this.internalDate.set(event.detail.value ? this.#getUTCDate(new Date(event.detail.value)) : null);
     });
 

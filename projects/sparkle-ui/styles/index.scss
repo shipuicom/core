@@ -34,7 +34,6 @@ $spkRangeSlider: true !default;
 $spkTooltip: true !default;
 $spkVirtualScroll: false !default;
 $spkSelect: true !default;
-$spkSelectNew: true !default;
 $spkCard: true !default;
 $spkStepper: true !default;
 $spkSortable: true !default;
@@ -112,9 +111,6 @@ $spkFileUpload: true !default;
 );
 @use './components/sparkle-select.component.scss' with (
   $spkSelect: $spkSelect
-);
-@use './components/sparkle-select-new.component.scss' with (
-  $spkSelectNew: $spkSelectNew
 );
 @use './components/sparkle-card.component.scss' with (
   $spkCard: $spkCard
