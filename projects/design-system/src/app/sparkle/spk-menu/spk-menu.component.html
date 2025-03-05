@@ -82,4 +82,22 @@
       </ng-container>
     </spk-menu>
   </div>
+
+  <div class="wrap">
+    <spk-menu [closeOnClick]="false">
+      <button spk-button class="outlined">Open menu ({{ activeItems().length }} selected)</button>
+
+      <ng-container menu>
+        <div title>Section 1</div>
+
+        @for (item of menuItems(); track $index) {
+          <button #option (click)="toggleActive($index)" [attr.disabled]="$index % 2 === 0 ? '' : null">
+            <spk-checkbox class="primary raised" [class.active]="activeItems().includes($index)" />
+            Item {{ $index }}
+            <span suffix>⌘L</span>
+          </button>
+        }
+      </ng-container>
+    </spk-menu>
+  </div>
 </section>

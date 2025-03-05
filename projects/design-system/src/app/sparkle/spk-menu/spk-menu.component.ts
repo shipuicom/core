@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { SparkleDividerComponent } from '../../../../../sparkle-ui/src/lib/sparkle-divider/sparkle-divider.component';
 import {
   SparkleButtonComponent,
+  SparkleCheckboxComponent,
   SparkleIconComponent,
   SparkleMenuComponent,
 } from '../../../../../sparkle-ui/src/public-api';
@@ -9,8 +10,8 @@ import {
 @Component({
   selector: 'app-spk-menu',
   imports: [
-    // SparkleDialogComponent,
     SparkleMenuComponent,
+    SparkleCheckboxComponent,
     SparkleIconComponent,
     SparkleButtonComponent,
     SparkleDividerComponent,
@@ -21,9 +22,20 @@ import {
 })
 export default class SpkMenuComponent {
   menuItems = signal<any[]>(new Array(500).fill(0));
+  activeItems = signal<number[]>([]);
 
   fireHello(index: number) {
     console.log('Hello', index);
+  }
+
+  toggleActive(index: number) {
+    const activeItems = this.activeItems();
+
+    if (activeItems.includes(index)) {
+      this.activeItems.set(activeItems.filter((x) => x !== index));
+    } else {
+      this.activeItems.update((items) => [...items, index]);
+    }
   }
 
   addOption() {

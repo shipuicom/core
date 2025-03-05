@@ -49,6 +49,7 @@ export class SparkleMenuComponent {
   above = input<boolean>(false);
   right = input<boolean>(false);
   keepClickedOptionActive = input<boolean>(false);
+  closeOnClick = input<boolean>(true);
   isOpen = model<boolean>(false);
   closed = output<boolean>();
 
@@ -258,8 +259,10 @@ export class SparkleMenuComponent {
 
     (!this.keepClickedOptionActive() || action === 'closed') && this.#resetActiveOption();
 
-    this.isOpen.set(false);
-    this.closed.emit(action === 'active');
+    if (this.closeOnClick()) {
+      this.isOpen.set(false);
+      this.closed.emit(action === 'active');
+    }
   }
 
   #resetActiveOption() {
