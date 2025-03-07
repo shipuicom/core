@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { SparkleDividerComponent } from '../../../../../sparkle-ui/src/lib/sparkle-divider/sparkle-divider.component';
 import {
   SparkleButtonComponent,
   SparkleCheckboxComponent,
+  SparkleDividerComponent,
   SparkleIconComponent,
   SparkleMenuComponent,
 } from '../../../../../sparkle-ui/src/public-api';

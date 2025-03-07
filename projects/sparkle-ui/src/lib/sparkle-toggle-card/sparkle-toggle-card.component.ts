@@ -22,7 +22,7 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
     '[class.active]': 'isActive()',
   },
 })
-export default class SparkleToggleCardComponent {
+export class SparkleToggleCardComponent {
   isActive = model(false);
   disallowToggle = input(false);
 

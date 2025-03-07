@@ -257,9 +257,9 @@ export class SparkleMenuComponent {
   close(action: 'fromPopover' | 'closed' | 'active' = 'closed', event?: MouseEvent) {
     this.inputValue.set('');
 
-    (!this.keepClickedOptionActive() || action === 'closed') && this.#resetActiveOption();
-
     if (this.closeOnClick()) {
+      (!this.keepClickedOptionActive() || action === 'closed') && this.#resetActiveOption();
+
       this.isOpen.set(false);
       this.closed.emit(action === 'active');
     }
