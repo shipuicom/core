@@ -47,6 +47,10 @@ $spkMenu: true !default;
         button[disabled] {
           display: none;
         }
+
+        *:not(button) {
+          display: none;
+        }
       }
 
       &:after {
