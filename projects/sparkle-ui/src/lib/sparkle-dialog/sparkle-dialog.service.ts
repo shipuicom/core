@@ -21,6 +21,10 @@ export interface SparkleDialogServiceOptions<T = any> extends SparkleDialogOptio
 //   close?: EventEmitter<any>;
 // }
 
+export type SparkleDialogReturn<T> = ReturnType<SparkleDialogService['open']> & {
+  component: T;
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -95,7 +99,7 @@ export class SparkleDialogService {
     }
 
     return {
-      component: this.insertedCompRef.instance as T,
+      component: this.insertedCompRef.instance as Type<T>,
       close: closeAction,
     };
   }

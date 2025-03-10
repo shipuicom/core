@@ -64,6 +64,10 @@ $spkDialog: true !default;
 
     [content] {
       padding: 0 var(--dialog-p);
+
+      &:not(:has(~ [footer])) {
+        padding-bottom: var(--dialog-p);
+      }
     }
 
     [footer] {
