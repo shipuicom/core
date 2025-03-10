@@ -94,7 +94,10 @@ export class SparkleDialogService {
       _self.#cleanupRefs();
     }
 
-    return this.insertedCompRef.instance as T;
+    return {
+      component: this.insertedCompRef.instance as T,
+      close: closeAction,
+    };
   }
 
   #createEl(): Element {

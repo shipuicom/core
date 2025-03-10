@@ -79,6 +79,9 @@ export class SparkleMenuComponent {
     this.abortController = new AbortController();
 
     const inputEl = this.inputRef()?.nativeElement;
+    const optionElements = this.optionsEl();
+
+    this.activeElements.set(optionElements);
 
     if (!inputEl) return;
 
@@ -114,45 +117,64 @@ export class SparkleMenuComponent {
     );
   });
 
+  activeElements = signal<HTMLButtonElement[]>([]);
   inputValueEffect = effect(() => {
     const searchable = this.searchable();
 
     if (!searchable) return;
 
-    const inputValue = (this.inputValue() ?? '').toLowerCase();
     const optionElements = this.optionsEl();
+    const inputValue = (this.inputValue() ?? '').toLowerCase();
+
+    this.#resetActiveOption();
 
     if (!inputValue || inputValue === '') {
-      optionElements.forEach((el) => {
+      for (let index = 0; index < optionElements.length; index++) {
+        const el = optionElements[index];
         el.classList.remove('hide-option');
+        el.dataset['score'] = undefined;
         el.style.order = '';
-      });
+      }
       return;
     }
 
-    const scoredOptions = optionElements.map((el) => {
+    let _scoredOptions = [];
+    let scores = [];
+
+    for (let index = 0; index < optionElements.length; index++) {
+      const el = optionElements[index];
       const textContent = el.textContent?.toLowerCase() || '';
       const score = this.#calculateMatchScore(textContent, inputValue);
-      return { el, score, textContent };
-    });
 
-    scoredOptions.sort((a, b) => b.score - a.score);
-
-    let firstFound = false;
-
-    scoredOptions.forEach(({ el, score }, index) => {
       if (score === 0 || el.disabled) {
         el.classList.add('hide-option');
         el.style.order = '';
-      } else {
-        el.classList.remove('hide-option');
-        el.style.order = index.toString();
-        if (!firstFound) {
-          queueMicrotask(() => this.activeOptionIndex.set(optionElements.indexOf(el)));
-          firstFound = true;
+        continue;
+      }
+
+      el.classList.remove('hide-option');
+
+      let inserted = false;
+      for (let i = 0; i < scores.length; i++) {
+        if (score > scores[i]) {
+          _scoredOptions.splice(i, 0, el);
+          scores.splice(i, 0, score);
+          inserted = true;
+          break;
         }
       }
-    });
+
+      if (!inserted) {
+        _scoredOptions.push(el);
+        scores.push(score);
+      }
+    }
+
+    for (let index = 0; index < _scoredOptions.length; index++) {
+      _scoredOptions[index].style.order = index.toString();
+    }
+
+    this.activeElements.set(_scoredOptions);
   });
 
   #calculateMatchScore(option: string, input: string): number {
@@ -175,6 +197,7 @@ export class SparkleMenuComponent {
       }
 
       score += 100;
+
       if (lastIndex + 1 === charIndex && lastIndex !== -1) {
         score += 50;
       }
@@ -189,7 +212,7 @@ export class SparkleMenuComponent {
   }
 
   activeOptionIndexEffect = effect(() => {
-    const optionElements = this.optionsEl();
+    const optionElements = this.activeElements();
     const activeOptionIndex = this.activeOptionIndex();
 
     for (let index = 0; index < optionElements.length; index++) {
@@ -203,7 +226,7 @@ export class SparkleMenuComponent {
   });
 
   nextActiveIndex(activeIndex: number): number {
-    const optionElements = this.optionsEl();
+    const optionElements = this.activeElements();
 
     if (activeIndex === -1) {
       return 0;
@@ -215,21 +238,15 @@ export class SparkleMenuComponent {
 
     const nextIndex = activeIndex + 1;
 
-    if (this.searchable()) {
-      if (optionElements[nextIndex].disabled) {
-        return this.nextActiveIndex(nextIndex);
-      }
-
-      if (optionElements[nextIndex].classList.contains('hide-option')) {
-        return this.nextActiveIndex(nextIndex);
-      }
+    if (optionElements[nextIndex].disabled) {
+      return this.nextActiveIndex(nextIndex);
     }
 
     return nextIndex;
   }
 
   prevActiveIndex(activeIndex: number): number {
-    const optionElements = this.optionsEl();
+    const optionElements = this.activeElements();
 
     if (activeIndex === 0) {
       return optionElements.length - 1;
@@ -241,14 +258,8 @@ export class SparkleMenuComponent {
 
     const prevIndex = activeIndex - 1;
 
-    if (this.searchable()) {
-      if (optionElements[prevIndex].disabled) {
-        return this.prevActiveIndex(prevIndex);
-      }
-
-      if (optionElements[prevIndex].classList.contains('hide-option')) {
-        return this.prevActiveIndex(prevIndex);
-      }
+    if (optionElements[prevIndex].disabled) {
+      return this.prevActiveIndex(prevIndex);
     }
 
     return prevIndex;

@@ -67,7 +67,7 @@ export class SparkleDatepickerInputComponent {
     const date = this.internalDate();
     const mask = this.masking();
 
-    console.log(date, mask);
+    // console.log(date, mask);
 
     if (!mask) return date;
     if (!date) return null;
