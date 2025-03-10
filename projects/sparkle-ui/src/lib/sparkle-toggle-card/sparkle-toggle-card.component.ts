@@ -9,7 +9,7 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
       <ng-content select="[title]">Title</ng-content>
 
       @if (!disallowToggle()) {
-        <spk-icon>caret-down</spk-icon>
+        <spk-icon class="toggle-icon">caret-down</spk-icon>
       }
     </h3>
 

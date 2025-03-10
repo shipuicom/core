@@ -16,7 +16,7 @@ $spkToggleCard: true !default;
         padding: p2r(0 16 16);
       }
 
-      spk-icon {
+      spk-icon.toggle-icon {
         transform: rotate(180deg);
       }
     }
@@ -31,7 +31,7 @@ $spkToggleCard: true !default;
       user-select: none;
     }
 
-    spk-icon {
+    spk-icon.toggle-icon {
       transform: rotate(0);
       transform-origin: center;
       transition: transform 200ms ease;
