@@ -99,7 +99,7 @@ export class SparkleDialogService {
     }
 
     return {
-      component: this.insertedCompRef.instance as Type<T>,
+      component: this.insertedCompRef.instance as T,
       close: closeAction,
     };
   }
