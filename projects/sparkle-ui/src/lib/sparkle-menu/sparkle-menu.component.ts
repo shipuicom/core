@@ -90,7 +90,6 @@ export class SparkleMenuComponent {
     inputEl.addEventListener(
       'keydown',
       (e: KeyboardEvent) => {
-        const optionElements = this.optionsEl();
         const activeOptionIndex = this.activeOptionIndex();
 
         if (e.key === 'ArrowDown') {
@@ -102,7 +101,7 @@ export class SparkleMenuComponent {
         } else if (e.key === 'Enter') {
           e.preventDefault();
           if (activeOptionIndex > -1) {
-            optionElements[activeOptionIndex as number].click();
+            this.activeElements()[activeOptionIndex as number].click();
 
             queueMicrotask(() => this.close('active'));
           }
