@@ -298,21 +298,4 @@ export class SparkleMenuComponent {
       this.abortController = null;
     }
   }
-
-  createWildcardRegex(inputValue: string | null | undefined): RegExp {
-    const lowerCaseInput = (inputValue ?? '').toLowerCase();
-    let regexPattern = '^';
-
-    for (const char of lowerCaseInput) {
-      regexPattern += '.*' + this.escapeRegexChar(char);
-    }
-
-    regexPattern += '.*$';
-
-    return new RegExp(regexPattern, 'i');
-  }
-
-  escapeRegexChar(char: string): string {
-    return char.replace(/[-\/\\^$+?.()|[\]{}]/g, '\\$&');
-  }
 }

@@ -15,6 +15,11 @@ export const routes: Routes = [
         path: 'example',
         loadComponent: () => import('../../../sparkle-ui/src/lib/utilities/create-input-example.component'),
       },
+
+      {
+        path: 'spk-theme-editor',
+        loadComponent: () => import('./spk-theme-editor/spk-theme-editor.component'),
+      },
       {
         path: 'spk-buttons',
         loadComponent: () => import('./sparkle/spk-buttons/spk-buttons.component'),

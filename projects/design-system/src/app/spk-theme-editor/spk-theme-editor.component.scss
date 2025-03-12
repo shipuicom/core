@@ -1,0 +1,43 @@
+@use 'helpers' as *;
+@use 'sass:math' as math;
+
+:host {
+  display: block;
+
+  // --theme-base: hsl(217, 91%, 60%);
+  // $baseLight: 60;
+  // $countLight: 8;
+  // @for $i from 1 through $countLight {
+  //   --primary-#{$i}0: hsl(217, 91%, #{(100 - ((100 - $baseLight) / 8 * $i)) + '%'});
+  // }
+
+  // $countDark: 4;
+  // @for $i from 1 through $countDark {
+  //   --primary-#{$i + $countLight}0: hsl(217, 91%, #{((100 / ($baseLight / 10) * ($countDark + 1 - $i))) + '%'});
+  // }
+}
+
+.theme-column {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(16);
+  padding: p2r(40);
+}
+
+.theme-row {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: p2r(4);
+  padding: p2r(20);
+  background-color: var(--base-level-20);
+  border-radius: var(--shape-3);
+  border: 1px solid var(--base-level-40);
+  &.flip {
+    background-color: var(--base-level-70);
+  }
+
+  .color-box {
+    height: p2r(40);
+    border-radius: var(--shape-2);
+  }
+}

@@ -1,0 +1,23 @@
+<h3>Sparkle Theme Editor</h3>
+
+<spk-color-picker
+  [renderingType]="'hsl'"
+  [showDarkColors]="false"
+  [(selectedColor)]="rgbStartColor"
+  (currentColor)="hslSignal.set($event.hsl)"></spk-color-picker>
+
+<div class="theme-column">
+  <div class="primary theme-row">
+    @for (color of ['10', '20', '30', '40', '50', '60', '70', '80', '90', '100', '110', '120']; track $index) {
+      <div class="color-box" [style]="'background-color: var(--primary-' + color + ');'"></div>
+    }
+  </div>
+
+  <div class="primary theme-row flip">
+    @for (color of ['10', '20', '30', '40', '50', '60', '70', '80', '90', '100', '110', '120']; track $index) {
+      <div class="color-box" [style]="'background-color: var(--primary-' + color + '-dark);'"></div>
+    }
+  </div>
+</div>
+
+<!-- <app-spk-buttons></app-spk-buttons> -->
