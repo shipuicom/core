@@ -71,6 +71,8 @@ export class SparkleColorPickerComponent {
     const hsl = this.rgbToHsl(...selectedColor);
     const hex = this.rgbToHex(...selectedColor);
 
+    this.updateMarkerFromColor(selectedColor);
+
     this.currentColor.emit({
       rgb: `rgb(${selectedColor.join(',')})`,
       hex: hex,
@@ -93,16 +95,66 @@ export class SparkleColorPickerComponent {
 
       if (currentRenderingType === 'hsl') {
         this.adjustMarkerPosition();
-        setTimeout(() => this.setColorBasedOnMarkerPosition());
+
+        queueMicrotask(() => this.updateMarkerFromColor(this.selectedColor()));
       } else {
-        this.setColorBasedOnMarkerPosition();
+        this.updateMarkerFromColor(this.selectedColor());
       }
     }
   });
 
+  initColor: [R, G, B] | null = null;
   ngAfterViewInit() {
+    this.initColor = this.selectedColor();
+
     this.setCanvasSize();
     this.initCanvasEvents();
+  }
+
+  private updateMarkerFromColor(rgb: [R, G, B]) {
+    const [r, g, b] = rgb;
+    const coords = this.findPositionByColor(r, g, b);
+
+    if (coords === null) return;
+
+    const { x, y } = coords;
+
+    const mockEvent = {
+      offsetX: x,
+      offsetY: y,
+      clientX: x,
+      clientY: y,
+      touches: [{ clientX: x, clientY: y }],
+    };
+
+    this.updateColorAndMarker(mockEvent as any, false, true);
+  }
+
+  private findPositionByColor(r: number, g: number, b: number): { x: number; y: number } | null {
+    const canvasData = this.canvasData();
+    if (!canvasData || !canvasData.canvas) return null;
+
+    const { canvas, ctx } = canvasData;
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+    let bestMatch = { x: 0, y: 0, distance: Infinity };
+
+    for (let y = 0; y < canvas.height; y++) {
+      for (let x = 0; x < canvas.width; x++) {
+        const index = (y * canvas.width + x) * 4;
+        const pixelR = imageData[index];
+        const pixelG = imageData[index + 1];
+        const pixelB = imageData[index + 2];
+
+        const distance = Math.sqrt(Math.pow(r - pixelR, 2) + Math.pow(g - pixelG, 2) + Math.pow(b - pixelB, 2));
+
+        if (distance < bestMatch.distance) {
+          bestMatch = { x, y, distance };
+        }
+      }
+    }
+
+    return { x: bestMatch.x, y: bestMatch.y };
   }
 
   private adjustMarkerPosition() {
@@ -123,17 +175,6 @@ export class SparkleColorPickerComponent {
       y = ((markerY / canvas.height) * 100).toFixed(2) + '%';
       this.markerPosition.set({ x, y });
     }
-  }
-
-  private setColorBasedOnMarkerPosition() {
-    const { canvas, ctx } = this.canvasData()!;
-    const { x, y } = this._pos;
-
-    const mouseX = (parseFloat(x.replace('%', '')) / 100) * canvas.width;
-    const mouseY = (parseFloat(y.replace('%', '')) / 100) * canvas.height;
-
-    const pixelData = ctx.getImageData(Math.round(mouseX), Math.round(mouseY), 1, 1).data;
-    this.selectedColor.set([pixelData[0], pixelData[1], pixelData[2]]);
   }
 
   private initCanvasEvents() {
@@ -190,7 +231,7 @@ export class SparkleColorPickerComponent {
     }
   }
 
-  private updateColorAndMarker(event: MouseEvent | Touch, outsideCanvas = false) {
+  private updateColorAndMarker(event: MouseEvent | Touch, outsideCanvas = false, onlyMarker = false) {
     const { canvas, ctx } = this.canvasData()!;
 
     let mouseX = event instanceof MouseEvent ? event.offsetX : event.clientX;
@@ -222,7 +263,9 @@ export class SparkleColorPickerComponent {
     const pixelData = ctx.getImageData(mouseX, mouseY, 1, 1).data;
     const [r, g, b] = pixelData;
 
-    this.selectedColor.set([r, g, b]);
+    if (!onlyMarker) {
+      this.selectedColor.set([r, g, b]);
+    }
 
     const xPercent = ((mouseX / canvas.width) * 100).toFixed(2) + '%';
     const yPercent = ((mouseY / canvas.height) * 100).toFixed(2) + '%';

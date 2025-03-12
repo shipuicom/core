@@ -182,27 +182,34 @@ export class SparkleMenuComponent {
     let score = 0;
     let lastIndex = -1;
     let matchCount = 0;
-
-    if (option.includes(input)) {
-      score += 1000;
-    }
+    let inSequence = true;
 
     for (let i = 0; i < input.length; i++) {
       const char = input[i];
-      const charIndex = option.indexOf(char, lastIndex + 1);
+      if (option.length > lastIndex + 1 && option[lastIndex + 1] === char) {
+        score += i === 0 ? 100 : 150;
+        lastIndex++;
+        matchCount++;
+      } else {
+        const charIndex = option.indexOf(char, lastIndex + 1);
 
-      if (charIndex === -1) {
-        return 0;
+        if (i > 0) {
+          inSequence = false;
+        }
+
+        if (charIndex === -1) {
+          return 0;
+        }
+
+        score += 100;
+
+        lastIndex = charIndex;
+        matchCount++;
       }
+    }
 
-      score += 100;
-
-      if (lastIndex + 1 === charIndex && lastIndex !== -1) {
-        score += 50;
-      }
-
-      lastIndex = charIndex;
-      matchCount++;
+    if (inSequence && input.length === matchCount) {
+      score += 1000;
     }
 
     score += matchCount * 20;
