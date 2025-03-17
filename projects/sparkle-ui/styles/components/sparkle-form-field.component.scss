@@ -127,6 +127,7 @@ $spkFormFieldShadow: false !default;
       spk-popover,
       .input {
         flex: 1 0;
+        margin: var(--ff-space);
       }
 
       textarea {

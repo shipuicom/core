@@ -10,7 +10,7 @@ $spkSelect: false !default;
 
     spk-form-field {
       display: flex;
-      min-width: var(--miw);
+      --ff-mw: var(--miw);
     }
 
     spk-popover {
@@ -37,8 +37,13 @@ $spkSelect: false !default;
       width: 100%;
       display: flex;
       flex-wrap: wrap;
+      align-items: center;
       gap: p2r(4);
       color: var(--base-level-60);
+
+      input {
+        margin: 0;
+      }
 
       &.is-selected {
         color: var(--base-level-70);
