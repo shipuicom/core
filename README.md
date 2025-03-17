@@ -23,13 +23,13 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Create a color picker component
 - [x] Create a spinner component
 - [x] Refactor select component once again
-  - [x] Add template placeholder
-  - [x] Add option template
-  - [x] Add placeholder template
-  - [x] Chip support
-  - [x] Select multiple support (with search)
-  - [x] Inline search support
-  - [x] Lazy search support
+- [x] Add template placeholder
+- [x] Add option template
+- [x] Add placeholder template
+- [x] Chip support
+- [x] Select multiple support (with search)
+- [x] Inline search support
+- [x] Lazy search support
 - [x] Multi select menu's that dosn't close when checking an option
 - [x] Make colors optional/configurable (primary, accent, tertiary, warn, success) on a component level and generally
 - [x] Add support of multiple phosphor icons types (bold, fill, light, regular, thin) in the same font by just suffixing with (-bold, -fill, etc)
@@ -45,9 +45,14 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
   - [x] Improve support for sorting with a built in sort using attribute on the column
   - [ ] Add support for multi sticky columns, rows
   - [ ] Add support for row resizing
+- [ ] spk-menu features (3/5)
+  - [x] support multi select
+  - [x] Support multiple element types
+  - [x] Support custom option element selectors
+  - [ ] add hotkeys to navigate options without having a search input
+  - [ ] add focus with a hidden input similar to native select
 - [ ] Finalize file upload component
 - [ ] Create a CSV input that create chips on comma (or enter) press (Maybe this could be implemented when using a select but with the asFreeText flag on it)
-- [ ] Add multi select to spk-menu
 - [ ] Improve tooltips to be a directive instead still spawning a popover on the element
 - [ ] Create a accordion component
 - [ ] Create a timepicker component
@@ -67,7 +72,6 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
   - [ ] Pie chart
   - [ ] Doughnut chart
 - [ ] CLI util to figure out which components and styles are used in a project as a production build trimmer
-- [ ] On spk-menu, add focus with a hidden input similar to native select
 - [ ] Add a A11y service to streamline accessibility, maybe be able to swap config based on page or on a method
 - [ ] Add a A11y VIM mode
 - [ ] Create a gantt chart component

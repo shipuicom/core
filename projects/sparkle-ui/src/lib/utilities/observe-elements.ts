@@ -1,4 +1,4 @@
-import { DestroyRef, effect, ElementRef, inject, Injector, Signal, signal } from '@angular/core';
+import { DestroyRef, effect, EffectRef, ElementRef, inject, Injector, Signal, signal } from '@angular/core';
 import { SIGNAL } from '@angular/core/primitives/signals';
 
 export function observeFirstChild(
@@ -43,49 +43,32 @@ export function observeFirstChild(
   return elementSignal.asReadonly();
 }
 
-export function observeChildren(
+export function observeChildren<T extends HTMLElement>(
   parentEl: ElementRef<HTMLElement> | Signal<ElementRef<HTMLElement> | null | undefined>,
-  elementTags: string[]
-): Signal<ElementRef<HTMLElement>[]> {
+  elementTags: string[] | Signal<string[]>
+) {
   const injector = inject(Injector);
   const destroyRef = injector.get(DestroyRef);
-  const elementsSignal = signal<ElementRef<HTMLElement>[]>([]);
-  const _upperCaseElementTags = elementTags.map((tag) => tag.toUpperCase());
+  const elementsSignal = signal<T[]>([]);
 
+  let effectOnSignal: EffectRef | null = null;
   let observer: MutationObserver | null = null;
 
-  const setupObserver = (el: ElementRef<HTMLElement>) => {
+  const setupObserver = (el: ElementRef<HTMLElement>, elementTags: string[]) => {
     if (observer) {
       observer.disconnect();
     }
 
-    const foundElements = Array.from(el.nativeElement.querySelectorAll('*'))
-      .filter((elem) => elem.nodeType === Node.ELEMENT_NODE && _upperCaseElementTags.includes(elem.nodeName))
-      .map((elem) => new ElementRef(elem as HTMLElement));
+    const foundElements = Array.from(el.nativeElement.querySelectorAll(elementTags.join(',')));
 
-    elementsSignal.set(foundElements);
+    elementsSignal.set(foundElements as T[]);
 
-    observer = new MutationObserver((mutations) => {
-      let currentElements = elementsSignal();
+    observer = new MutationObserver((_) => {
+      requestAnimationFrame(() => {
+        const foundElements = Array.from(el.nativeElement.querySelectorAll(elementTags.join(',')));
 
-      for (const mutation of mutations) {
-        if (mutation.addedNodes) {
-          mutation.addedNodes.forEach((node) => {
-            if (node.nodeType === Node.ELEMENT_NODE && _upperCaseElementTags.includes(node.nodeName)) {
-              currentElements = [...currentElements, new ElementRef(node as HTMLElement)];
-            }
-          });
-        }
-        if (mutation.removedNodes) {
-          mutation.removedNodes.forEach((node) => {
-            if (node.nodeType === Node.ELEMENT_NODE && _upperCaseElementTags.includes(node.nodeName)) {
-              currentElements = currentElements.filter((elem) => elem.nativeElement !== node);
-            }
-          });
-        }
-      }
-
-      elementsSignal.set(currentElements);
+        elementsSignal.set(foundElements as T[]);
+      });
     });
 
     observer.observe(el.nativeElement, {
@@ -93,34 +76,40 @@ export function observeChildren(
       subtree: true,
     });
 
-    destroyRef.onDestroy(() => {
-      if (observer) {
-        observer.disconnect();
-      }
-    });
+    destroyRef.onDestroy(() => destroySelf());
   };
 
-  if (typeof parentEl === 'function' && !!parentEl[SIGNAL]) {
-    effect(
-      () => {
-        const el = parentEl();
-        if (el) {
-          setupObserver(el);
-        } else {
-          elementsSignal.set([]);
-          if (observer) {
-            observer.disconnect();
-            observer = null;
-          }
+  effectOnSignal = effect(
+    () => {
+      const el =
+        typeof parentEl === 'function' && !!parentEl[SIGNAL] ? parentEl() : (parentEl as ElementRef<HTMLElement>);
+      const tags = typeof elementTags === 'function' ? elementTags() : elementTags;
+
+      if (el && tags?.length > 0) {
+        setupObserver(el, tags);
+      } else {
+        elementsSignal.set([]);
+        if (observer) {
+          observer.disconnect();
+          observer = null;
         }
-      },
-      { injector }
-    );
-  } else {
-    if (parentEl instanceof ElementRef) {
-      setupObserver(parentEl);
+      }
+    },
+    { injector }
+  );
+
+  function destroySelf() {
+    if (effectOnSignal) {
+      effectOnSignal.destroy();
+    }
+
+    if (observer) {
+      observer.disconnect();
     }
   }
 
-  return elementsSignal.asReadonly();
+  return {
+    signal: elementsSignal.asReadonly(),
+    destroy: destroySelf,
+  };
 }

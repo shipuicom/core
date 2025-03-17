@@ -170,7 +170,7 @@ export class SparkleTableComponent {
   sortByColumn = model<string | null>(null);
 
   thead = viewChild<ElementRef<HTMLTableSectionElement>>('thead');
-  columns = observeChildren(this.thead, ['TH']);
+  columns = observeChildren<HTMLTableColElement>(this.thead, ['TH']);
 
   resizing = signal(false);
   sizeTrigger = signal(true);
@@ -179,10 +179,11 @@ export class SparkleTableComponent {
 
   columnSizes = computed(() => {
     this.sizeTrigger();
+    const colSignal = this.columns.signal();
 
-    return this.columns().reduce((acc, col, index) => {
-      const colEl = col.nativeElement as HTMLElement;
-      const last = index === this.columns().length - 1;
+    return colSignal.reduce((acc, col, index) => {
+      const colEl = col;
+      const last = index === colSignal.length - 1;
 
       if (colEl.dataset['size']) {
         return `${acc} ${colEl.dataset['size']}`;

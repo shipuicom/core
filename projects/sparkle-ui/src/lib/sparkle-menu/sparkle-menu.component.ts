@@ -2,22 +2,25 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  contentChildren,
   effect,
   ElementRef,
+  inject,
   input,
   model,
   output,
+  Renderer2,
   signal,
   viewChild,
 } from '@angular/core';
 import { SparkleFormFieldComponent } from '../sparkle-form-field/sparkle-form-field.component';
+import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 import { SparklePopoverComponent } from '../sparkle-popover/sparkle-popover.component';
 import { createInputSignal } from '../utilities/create-input-signal';
+import { observeChildren } from '../utilities/observe-elements';
 
 @Component({
   selector: 'spk-menu',
-  imports: [SparklePopoverComponent, SparkleFormFieldComponent],
+  imports: [SparklePopoverComponent, SparkleFormFieldComponent, SparkleIconComponent],
   template: `
     <spk-popover
       #formFieldWrapper
@@ -30,15 +33,23 @@ import { createInputSignal } from '../utilities/create-input-signal';
         closeOnButton: false,
         closeOnEsc: true,
       }">
-      <div trigger (click)="isOpen.set(true)">
+      <div trigger [class.is-open]="isOpen()" (click)="isOpen.set(true)">
         <ng-content />
+
+        @if (openIndicator()) {
+          <spk-icon>caret-down</spk-icon>
+        }
       </div>
 
       <spk-form-field class="small" [class.hidden]="searchable() === false">
         <input type="text" #input placeholder="Search" />
       </spk-form-field>
 
-      <div class="options" (click)="close('active')" [class.searching]="searchable() && inputValue() !== ''">
+      <div
+        class="options"
+        #optionsRef
+        (click)="close('active')"
+        [class.searching]="searchable() && inputValue() !== ''">
         <ng-content select="[menu]" />
       </div>
     </spk-popover>
@@ -46,8 +57,11 @@ import { createInputSignal } from '../utilities/create-input-signal';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleMenuComponent {
+  #renderer = inject(Renderer2);
   above = input<boolean>(false);
   right = input<boolean>(false);
+  openIndicator = input(true);
+  customOptionElementSelectors = input<string[]>(['button']);
   keepClickedOptionActive = input<boolean>(false);
   closeOnClick = input<boolean>(true);
   isOpen = model<boolean>(false);
@@ -56,14 +70,10 @@ export class SparkleMenuComponent {
   searchable = input<boolean>(false);
   activeOptionIndex = signal<number>(-1);
   inputRef = viewChild<ElementRef<HTMLInputElement>>('input');
-  options = contentChildren<ElementRef<HTMLButtonElement>>('option', {
-    descendants: true,
-  });
-  optionsEl = computed(() => {
-    return Array.from(this.options())
-      .map((x) => x.nativeElement)
-      .filter((x) => !x.disabled);
-  });
+  optionsRef = viewChild<ElementRef<HTMLDivElement>>('optionsRef');
+
+  options = observeChildren<HTMLButtonElement>(this.optionsRef, this.customOptionElementSelectors);
+  optionsEl = computed(() => this.options.signal().filter((x) => !x.disabled));
 
   inputValue = createInputSignal<string>(this.inputRef);
 
@@ -79,13 +89,33 @@ export class SparkleMenuComponent {
     this.abortController = new AbortController();
 
     const inputEl = this.inputRef()?.nativeElement;
-    const optionElements = this.optionsEl();
-
-    this.activeElements.set(optionElements);
 
     if (!inputEl) return;
 
     queueMicrotask(() => inputEl.focus());
+
+    if (!this.closeOnClick()) {
+      const optionRef = this.optionsRef()?.nativeElement;
+
+      optionRef?.addEventListener('click', (e: MouseEvent) => {
+        const optionEl = e.target as HTMLButtonElement;
+
+        let optionElements = this.activeElements();
+
+        if (!optionElements.length) {
+          const newOptionElements = this.optionsEl();
+          this.activeElements.set(newOptionElements);
+          optionElements = newOptionElements;
+        }
+
+        const clickedOptionIndex = optionElements.findIndex((x) => x === optionEl);
+
+        if (clickedOptionIndex > -1) {
+          this.activeOptionIndex.set(clickedOptionIndex);
+          inputEl.focus();
+        }
+      });
+    }
 
     inputEl.addEventListener(
       'keydown',
@@ -116,64 +146,45 @@ export class SparkleMenuComponent {
     );
   });
 
+  _lastElementList: HTMLButtonElement[] = [];
   activeElements = signal<HTMLButtonElement[]>([]);
+  lastInputValue = '';
   inputValueEffect = effect(() => {
     const searchable = this.searchable();
 
     if (!searchable) return;
 
-    const optionElements = this.optionsEl();
     const inputValue = (this.inputValue() ?? '').toLowerCase();
 
     this.#resetActiveOption();
 
-    if (!inputValue || inputValue === '') {
-      for (let index = 0; index < optionElements.length; index++) {
-        const el = optionElements[index];
-        el.classList.remove('hide-option');
-        el.dataset['score'] = undefined;
-        el.style.order = '';
-      }
-      return;
-    }
+    if (!inputValue || inputValue === '') return;
 
-    let _scoredOptions = [];
-    let scores = [];
+    let optionElements =
+      this._lastElementList.length && inputValue.length > this.lastInputValue.length
+        ? this._lastElementList
+        : this.optionsEl();
 
-    for (let index = 0; index < optionElements.length; index++) {
-      const el = optionElements[index];
+    this.lastInputValue = inputValue;
+
+    for (let i = 0; i < optionElements.length; i++) {
+      const el = optionElements[i];
       const textContent = el.textContent?.toLowerCase() || '';
       const score = this.#calculateMatchScore(textContent, inputValue);
 
-      if (score === 0 || el.disabled) {
-        el.classList.add('hide-option');
-        el.style.order = '';
-        continue;
-      }
-
-      el.classList.remove('hide-option');
-
-      let inserted = false;
-      for (let i = 0; i < scores.length; i++) {
-        if (score > scores[i]) {
-          _scoredOptions.splice(i, 0, el);
-          scores.splice(i, 0, score);
-          inserted = true;
-          break;
-        }
-      }
-
-      if (!inserted) {
-        _scoredOptions.push(el);
-        scores.push(score);
-      }
+      (el.value as any) = score;
     }
 
-    for (let index = 0; index < _scoredOptions.length; index++) {
-      _scoredOptions[index].style.order = index.toString();
+    optionElements = optionElements
+      .filter((x) => (x.value as any) > 0)
+      .sort((a, b) => (b.value as any) - (a.value as any));
+
+    for (let i = 0; i < optionElements.length; i++) {
+      this.#renderer.setStyle(optionElements[i], 'order', i);
     }
 
-    this.activeElements.set(_scoredOptions);
+    this.activeElements.set(optionElements);
+    this._lastElementList = optionElements;
   });
 
   #calculateMatchScore(option: string, input: string): number {
@@ -232,7 +243,13 @@ export class SparkleMenuComponent {
   });
 
   nextActiveIndex(activeIndex: number): number {
-    const optionElements = this.activeElements();
+    let optionElements = this.activeElements();
+
+    if (!optionElements.length) {
+      const newOptionElements = this.optionsEl();
+      this.activeElements.set(newOptionElements);
+      optionElements = newOptionElements;
+    }
 
     if (activeIndex === -1) {
       return 0;
@@ -252,7 +269,13 @@ export class SparkleMenuComponent {
   }
 
   prevActiveIndex(activeIndex: number): number {
-    const optionElements = this.activeElements();
+    let optionElements = this.activeElements();
+
+    if (!optionElements.length) {
+      const newOptionElements = this.optionsEl();
+      this.activeElements.set(newOptionElements);
+      optionElements = newOptionElements;
+    }
 
     if (activeIndex === 0) {
       return optionElements.length - 1;

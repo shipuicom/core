@@ -1,5 +1,6 @@
 @use '../helpers.scss' as *;
 $spkButton: true !default;
+$spkButtonShadow: false !default;
 
 @if $spkButton == true {
   [spk-button] {
@@ -13,6 +14,12 @@ $spkButton: true !default;
     --btn-bg: var(--base-level-10);
     --btn-bg-h: var(--base-level-20);
     --btn-bc: var(--base-level-40);
+
+    @if $spkButtonShadow != false {
+      --btn-bs: var(--box-shadow-10);
+    } @else {
+      --btn-bs: none;
+    }
 
     display: inline-flex;
     align-items: center;
@@ -33,10 +40,12 @@ $spkButton: true !default;
     border-radius: var(--btn-s);
     height: var(--btn-h);
     border: 1px solid var(--btn-bc);
+    box-shadow: var(--btn-bs);
     font: var(--btn-f);
 
     background: var(--btn-bg);
     color: var(--btn-c);
+    transition: background 75ms linear;
 
     spk-icon {
       color: var(--btn-ic);
@@ -203,31 +212,31 @@ $spkButton: true !default;
       &.primary {
         --btn-c: var(--primary-contrast-500);
         --btn-bg: var(--primary-500);
-        --btn-bg-h: var(--primary-500);
+        --btn-bg-h: var(--primary-400);
       }
 
       &.accent {
         --btn-c: var(--accent-contrast-500);
         --btn-bg: var(--accent-500);
-        --btn-bg-h: var(--accent-500);
+        --btn-bg-h: var(--accent-400);
       }
 
       &.warn {
         --btn-c: var(--warn-contrast-500);
         --btn-bg: var(--warn-500);
-        --btn-bg-h: var(--warn-500);
+        --btn-bg-h: var(--warn-400);
       }
 
       &.error {
         --btn-c: var(--error-contrast-500);
         --btn-bg: var(--error-500);
-        --btn-bg-h: var(--error-500);
+        --btn-bg-h: var(--error-400);
       }
 
       &.success {
         --btn-c: var(--success-contrast-500);
         --btn-bg: var(--success-500);
-        --btn-bg-h: var(--success-500);
+        --btn-bg-h: var(--success-400);
       }
     }
 
@@ -239,7 +248,6 @@ $spkButton: true !default;
       --btn-bg-h: var(--base-gradient-70);
 
       border: 0;
-      box-shadow: none;
 
       &:has(spk-icon:only-child) {
         padding: p2r(0 10);

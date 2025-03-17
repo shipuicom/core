@@ -12,6 +12,10 @@ $useApexcharts: true !default;
 @use './core/core';
 
 $spkBaseTypes: ('base', 'simple', 'raised', 'outlined', 'flat');
+$spkFormFieldShadow: false !default;
+$spkButtonShadow: false !default;
+$spkChipShadow: false !default;
+
 $spkAlert: true !default;
 $spkToggle: true !default;
 $spkButton: true !default;
@@ -53,7 +57,8 @@ $spkFileUpload: true !default;
   $spkToggle: $spkToggle
 );
 @use './components/sparkle-button.component.scss' with (
-  $spkButton: $spkButton
+  $spkButton: $spkButton,
+  $spkButtonShadow: $spkButtonShadow
 );
 @use './components/sparkle-progress-bar.component.scss' with (
   $spkProgressBar: $spkProgressBar
@@ -80,10 +85,12 @@ $spkFileUpload: true !default;
   $spkPopover: $spkPopover
 );
 @use './components/sparkle-chip.component.scss' with (
-  $spkChip: $spkChip
+  $spkChip: $spkChip,
+  $spkChipShadow: $spkChipShadow
 );
 @use './components/sparkle-form-field.component.scss' with (
-  $spkFormField: $spkFormField
+  $spkFormField: $spkFormField,
+  $spkFormFieldShadow: $spkFormFieldShadow
 );
 @use './components/sparkle-color-picker.component.scss' with (
   $spkColorPicker: $spkColorPicker

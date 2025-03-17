@@ -9,6 +9,30 @@ $spkMenu: true !default;
     display: inline-flex;
     position: relative;
 
+    [trigger]:has(spk-icon) {
+      position: relative;
+
+      > :first-child {
+        padding-right: p2r(32);
+      }
+
+      spk-icon {
+        position: absolute;
+        right: p2r(8);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--base-level-60);
+        font-size: p2r(16);
+        font-weight: inherit;
+        pointer-events: none;
+        transition: transform 75ms ease-in-out;
+      }
+
+      &.is-open spk-icon {
+        transform: translateY(-50%) rotate(-180deg);
+      }
+    }
+
     spk-popover {
       flex: 1 0;
 
@@ -32,6 +56,10 @@ $spkMenu: true !default;
       }
     }
 
+    spk-popover:has(:not(.options.searching)) button {
+      order: initial !important;
+    }
+
     spk-popover .options {
       z-index: 2;
       position: relative;
@@ -45,6 +73,10 @@ $spkMenu: true !default;
 
       &.searching {
         button[disabled] {
+          display: none;
+        }
+
+        button[value='0'] {
           display: none;
         }
 
@@ -72,7 +104,6 @@ $spkMenu: true !default;
         background-color: var(--base-level-10);
         border-bottom: 1px solid var(--base-level-40);
       }
-
       button {
         display: flex;
         justify-content: flex-start;
@@ -89,10 +120,6 @@ $spkMenu: true !default;
         border: 0;
         cursor: pointer;
         color: var(--base-level-70);
-
-        &.hide-option {
-          display: none;
-        }
 
         &[disabled] {
           opacity: 0.3;

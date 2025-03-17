@@ -1,4 +1,6 @@
 @use '../../sparkle-ui/styles/index.scss' with (
   $useApexcharts: true,
-  $useInterTight: true
+  $useInterTight: true,
+  $spkFormFieldShadow: true,
+  $spkButtonShadow: true
 );

@@ -4,9 +4,6 @@
 </h3>
 
 <div class="example">
-  <form [formGroup]="form">
-    <spk-file-upload>
-      <input type="file" multiple formControlName="file" />
-    </spk-file-upload>
-  </form>
+  <spk-file-upload [(files)]="files" [multiple]="true" accept=".json,.png" />
+  <!-- <pre>{{ files() | json }}</pre> -->
 </div>

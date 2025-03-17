@@ -1,6 +1,7 @@
 @use '../helpers.scss' as *;
 
 $spkChip: true !default;
+$spkChipShadow: false !default;
 
 @if $spkChip == true {
   spk-chip {
@@ -10,6 +11,12 @@ $spkChip: true !default;
     --chip-ic: var(--base-level-70);
     --chip-bg: var(--base-level-10);
     --chip-bc: var(--base-level-40);
+
+    @if $spkChipShadow != false {
+      --chip-bs: var(--box-shadow-10);
+    } @else {
+      --chip-bs: none;
+    }
 
     display: inline-flex;
     align-items: center;
@@ -21,6 +28,7 @@ $spkChip: true !default;
     height: var(--chip-h);
     border-radius: var(--chip-s);
     border: 1px solid var(--chip-bc);
+    box-shadow: var(--chip-bs);
     background: var(--chip-bg);
     white-space: nowrap;
 

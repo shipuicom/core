@@ -1,13 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  ElementRef,
-  inject,
-  model,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, input, model, signal, viewChild } from '@angular/core';
 import { SparkleFormFieldComponent } from '../sparkle-form-field/sparkle-form-field.component';
 import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 
@@ -15,11 +6,19 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
   selector: 'spk-file-upload',
   imports: [SparkleFormFieldComponent, SparkleIconComponent],
   template: `
-    <spk-form-field (fileDropped)="onFileDropped($any($event))">
+    <spk-form-field>
       <ng-content select="label" ngProjectAs="label"></ng-content>
 
       <div class="input" ngProjectAs="input" #inputWrap>
-        <ng-content select="input"></ng-content>
+        @if (files().length === 1) {
+          <div class="files-text">{{ files()[0].name }}</div>
+        } @else if (files().length > 1) {
+          <div class="files-text">{{ files().length }} files selected</div>
+        } @else {
+          <div class="placeholder">{{ filesOver() ? overlayText() : placeholder() }}</div>
+        }
+        <input type="file" [attr.multiple]="multiple()" [attr.accept]="accept()" #input />
+        <div class="bg-overlay" [class.files-over]="filesOver()"></div>
       </div>
 
       <spk-icon suffix>upload-simple</spk-icon>
@@ -28,75 +27,57 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleFileUploadComponent {
-  #selfRef = inject(ElementRef<SparkleFileUploadComponent>);
-  inputWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('inputWrap');
-  #inputRef = signal<HTMLInputElement | null>(null);
-  #triggerInput = signal(false);
+  inputRef = viewChild.required<ElementRef<HTMLInputElement>>('input');
+  filesOver = signal(false);
+  multiple = input<boolean | null>();
+  accept = input<string | null>(null);
+  placeholder = model<string>('Click or drag files here');
+  overlayText = input<string>('Drop files here');
   files = model<File[]>([]);
 
-  inputRefEffect = effect(() => {
-    this.#triggerInput();
-    const input = this.#selfRef.nativeElement.querySelector('input');
-
-    if (input) {
-      input.autocomplete = 'off';
-      this.#inputRef.set(input);
-      this.#newInput();
-    }
-  });
-
-  ngOnInit() {
-    if (typeof MutationObserver !== 'undefined') {
-      (this.#inputObserver as MutationObserver).observe(this.inputWrapRef().nativeElement, {
-        childList: true,
-        subtree: true,
-      });
-    }
-  }
-
-  onFileDropped(files: FileList) {
-    this.handleFileUpload(Array.from(files));
-  }
-
   handleFileUpload(newFiles: File[]) {
-    this.files.update((currentFiles) => [...currentFiles, ...newFiles]);
+    if (this.multiple()) {
+      this.files.update((currentFiles) => [...currentFiles, ...newFiles]);
+    } else {
+      this.files.set(newFiles);
+    }
   }
 
-  inputController: AbortController | null = null;
-
-  #newInput() {
-    if (this.inputController) {
-      this.inputController.abort();
-    }
-
-    this.inputController = new AbortController();
-
-    const input = this.#inputRef();
+  inputEffect = effect(() => {
+    const input = this.inputRef().nativeElement;
 
     if (!input) return;
 
-    input.addEventListener('change', (e) => {
-      const files = (e.target as HTMLInputElement).files;
+    if (input.placeholder) {
+      this.placeholder.set(input.placeholder);
+    }
+
+    input.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      this.filesOver.set(true);
+    });
+
+    input.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      this.filesOver.set(false);
+    });
+
+    input.addEventListener('drop', (e) => {
+      e.preventDefault();
+      this.filesOver.set(false);
+
+      const files = e.dataTransfer?.files;
 
       if (files && files.length > 0) {
         this.handleFileUpload(Array.from(files));
-      }
-    });
-  }
 
-  #inputObserver =
-    typeof MutationObserver !== 'undefined' &&
-    new MutationObserver((mutations) => {
-      for (var mutation of mutations) {
-        if (mutation.type == 'childList') {
-          this.#triggerInput.set(!this.#triggerInput());
-        }
+        (input as HTMLInputElement).files = files;
       }
     });
 
-  ngOnDestroy() {
-    if (this.#inputObserver) {
-      this.#inputObserver.disconnect();
-    }
-  }
+    input.addEventListener('change', (e: any) => {
+      e.preventDefault();
+      this.handleFileUpload(Array.from(e.target.files));
+    });
+  });
 }

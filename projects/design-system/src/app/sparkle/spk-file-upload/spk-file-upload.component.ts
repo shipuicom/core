@@ -1,18 +1,21 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { JsonPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
+import { FormBuilder, FormsModule } from '@angular/forms';
 import { SparkleFileUploadComponent, SparkleIconComponent } from '../../../../../sparkle-ui/src/public-api';
 
 const fb = new FormBuilder();
 
 @Component({
   selector: 'app-spk-file-upload',
-  imports: [ReactiveFormsModule, SparkleFileUploadComponent, SparkleIconComponent],
+  imports: [FormsModule, SparkleFileUploadComponent, SparkleIconComponent, JsonPipe],
   templateUrl: './spk-file-upload.component.html',
   styleUrl: './spk-file-upload.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class SpkFileUploadComponent {
-  form = fb.group({
-    file: null,
+  files = signal<File[]>([]);
+
+  fileEffect = effect(() => {
+    console.log('files: ', this.files()[0]);
   });
 }

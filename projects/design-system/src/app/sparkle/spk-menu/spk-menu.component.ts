@@ -21,7 +21,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class SpkMenuComponent {
-  menuItems = signal<any[]>(new Array(500).fill(0));
+  menuItems = signal<any[]>(new Array(2000).fill(0));
   activeItems = signal<number[]>([]);
 
   fireHello(index: number) {
