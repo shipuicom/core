@@ -15,6 +15,7 @@ $spkFormFieldShadow: false !default;
     --ff-spinner-size: #{p2r(20)};
     --ff-spinner-thickness: #{p2r(2)};
     --ff-space: #{p2r(9 12)};
+    --ff-input-space: #{p2r(10 12)};
     --ff-mw: auto;
 
     @if $spkFormFieldShadow != false {
@@ -46,8 +47,11 @@ $spkFormFieldShadow: false !default;
     }
 
     &.small {
-      --ff-space: #{p2r(8 10)};
+      --ff-space: #{p2r(7 10)};
+      --ff-input-space: #{p2r(6 10)};
       --ff-f: var(--paragraph-40B);
+
+      line-height: p2r(16);
 
       .prefix,
       .suffix {
@@ -161,7 +165,7 @@ $spkFormFieldShadow: false !default;
         font: var(--paragraph-30B);
         flex: 1 0;
         color: var(--base-level-60);
-        margin: var(--ff-space);
+        margin: var(--ff-input-space);
 
         &::placeholder {
           color: var(--base-level-60R);
