@@ -60,7 +60,7 @@ export class SparkleMenuComponent {
   #renderer = inject(Renderer2);
   above = input<boolean>(false);
   right = input<boolean>(false);
-  openIndicator = input(true);
+  openIndicator = input(false);
   customOptionElementSelectors = input<string[]>(['button']);
   keepClickedOptionActive = input<boolean>(false);
   closeOnClick = input<boolean>(true);
