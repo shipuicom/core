@@ -6,14 +6,16 @@ $spkFormFieldShadow: false !default;
 @if $spkFormField == true {
   spk-form-field-popover,
   spk-form-field {
-    --ff-h: #{p2r(40)};
     --ff-s: var(--shape-2);
     --ff-bc: var(--base-level-40);
     --ff-prefix-bg: var(--base-level-20);
     --ff-ic: var(--base-level-60);
     --ff-bg: var(--base-level-10);
+    --ff-f: var(--paragraph-30B);
     --ff-spinner-size: #{p2r(20)};
     --ff-spinner-thickness: #{p2r(2)};
+    --ff-space: #{p2r(9 12)};
+    --ff-mw: auto;
 
     @if $spkFormFieldShadow != false {
       --ff-bs: var(--box-shadow-10);
@@ -23,6 +25,7 @@ $spkFormFieldShadow: false !default;
 
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     position: relative;
 
     &[read-only],
@@ -43,7 +46,22 @@ $spkFormFieldShadow: false !default;
     }
 
     &.small {
-      --ff-h: #{p2r(32)};
+      --ff-space: #{p2r(8 10)};
+      --ff-f: var(--paragraph-40B);
+
+      .prefix,
+      .suffix {
+        > spk-icon {
+          font-size: p2r(16);
+        }
+      }
+    }
+
+    &.center {
+      .input-wrap input[type='number'],
+      .input-wrap input {
+        text-align: center;
+      }
     }
 
     label {
@@ -57,25 +75,23 @@ $spkFormFieldShadow: false !default;
       }
     }
 
+    .suffix,
     .prefix {
       display: none;
       align-items: center;
       gap: p2r(4);
-      background-color: var(--ff-prefix-bg);
-      padding: p2r(0 12);
-      height: 100%;
-      min-height: calc(var(--ff-h) - #{p2r(2)});
+      padding: var(--ff-space);
       transition: background-color 125ms linear;
+      background-color: var(--ff-prefix-bg);
 
-      [prefix] + [textPrefix] {
-        margin-left: p2r(4);
+      &:not(:empty) {
+        display: flex;
       }
     }
 
-    .prefix-space,
-    .suffix-space {
-      width: 0;
-      height: 100%;
+    .suffix {
+      background-color: transparent;
+      padding-left: 0;
     }
 
     &:not(:has(.helpers .error:empty)) {
@@ -86,7 +102,11 @@ $spkFormFieldShadow: false !default;
 
     &.autosize .input-wrap {
       height: auto;
-      min-height: var(--ff-h);
+
+      textarea,
+      input {
+        field-sizing: content;
+      }
     }
 
     .input-wrap {
@@ -95,11 +115,10 @@ $spkFormFieldShadow: false !default;
       border: 1px solid var(--ff-bc);
       border-radius: var(--ff-s);
       background: var(--ff-bg);
-      padding: p2r(7 12);
-      min-height: var(--ff-h);
       box-shadow: var(--ff-bs);
       overflow: hidden;
       transition: border-color 125ms linear;
+      min-width: var(--ff-mw);
 
       spk-popover,
       .input {
@@ -115,7 +134,8 @@ $spkFormFieldShadow: false !default;
 
       &:has(textarea) {
         height: auto;
-        min-height: var(--ff-h);
+        min-width: 100%;
+        max-width: 100%;
       }
 
       spk-icon {
@@ -141,6 +161,7 @@ $spkFormFieldShadow: false !default;
         font: var(--paragraph-30B);
         flex: 1 0;
         color: var(--base-level-60);
+        margin: var(--ff-space);
 
         &::placeholder {
           color: var(--base-level-60R);
@@ -158,25 +179,10 @@ $spkFormFieldShadow: false !default;
           &::-webkit-inner-spin-button {
             display: none;
           }
-        }
-      }
 
-      &:has([suffix]) {
-        .suffix-space {
-          width: p2r(8);
-        }
-      }
-
-      &:has([prefix]),
-      &:has([textPrefix]) {
-        padding: p2r(0 12 0 0);
-
-        .prefix {
-          display: flex;
-        }
-
-        .prefix-space {
-          width: p2r(8);
+          &:has(+ .suffix:not(:empty)) {
+            margin-right: 0;
+          }
         }
       }
     }
@@ -223,7 +229,6 @@ $spkFormFieldShadow: false !default;
 
       &:empty {
         opacity: 0;
-        // visibility: hidden;
       }
     }
 
@@ -239,7 +244,6 @@ $spkFormFieldShadow: false !default;
 
       &:empty {
         opacity: 0;
-        // visibility: hidden;
       }
     }
 

@@ -12,14 +12,13 @@ import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } 
         <ng-content select="[textPrefix]"></ng-content>
       </div>
 
-      <div class="prefix-space"></div>
-
       <ng-content select="input"></ng-content>
       <ng-content select="textarea"></ng-content>
 
-      <ng-content select="[textSuffix]"></ng-content>
-      <div class="suffix-space"></div>
-      <ng-content select="[suffix]"></ng-content>
+      <div class="suffix">
+        <ng-content select="[textSuffix]"></ng-content>
+        <ng-content select="[suffix]"></ng-content>
+      </div>
     </div>
 
     <div class="helpers">
