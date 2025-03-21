@@ -356,9 +356,13 @@ export const main = async (values: InputArguments) => {
   function killWatchers() {
     console.log(`✅ The icon font generation watch process has been stopped.`);
 
-    setTimeout(() => {
-      watchers.forEach((watcher) => watcher.close());
-      process.exit(0);
-    }, 100);
+    for (let index = 0; index < watchers.length; index++) {
+      const watcher = watchers[index];
+
+      watcher.close();
+      watcher.removeAllListeners();
+    }
+
+    process.exit(0);
   }
 };
