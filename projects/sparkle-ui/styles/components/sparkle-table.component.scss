@@ -7,6 +7,7 @@ $spkTable: true !default;
     --table-bc: var(--base-level-40);
     --table-th-bg: var(--base-level-10);
     --table-tr-bg: var(--base-level-10);
+    --table-td-bg: var(--base-level-10);
     --table-th-c: var(--base-level-60R);
     --table-th-f: var(--paragraph-30);
     --table-td-c: var(--base-level-60);
@@ -50,7 +51,7 @@ $spkTable: true !default;
         }
       }
 
-      td {
+      tbody > td {
         &:first-child {
           border-left-width: 0;
           padding: var(--table-td-p);
@@ -210,6 +211,7 @@ $spkTable: true !default;
       border-color: var(--table-bc);
       border-style: solid;
       border-width: var(--table-td-bw);
+      background: var(--table-td-bg);
 
       + td.sticky-end:last-child {
         padding: var(--table-td-p);
@@ -225,6 +227,7 @@ $spkTable: true !default;
       &.sticky,
       &.sticky-end {
         position: sticky;
+        overflow: hidden;
         right: auto;
         left: 0;
         z-index: 1;
@@ -254,6 +257,13 @@ $spkTable: true !default;
           padding: var(--table-th-p);
         }
       }
+    }
+
+    .span-all {
+      grid-column: 1 / -1;
+      white-space: initial;
+      align-items: flex-start;
+      padding: 0;
     }
 
     .no-rows {
