@@ -60,6 +60,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [ ] Streamline general color variables 10-70 instead of 100-900 (align with figma)
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
 - [ ] Create documentation with examples for all components
+- [ ] Make icon watcher/generator/subsetter run on node (Could make it a standalone executable)
 
 ### Nice to haves for v1 beta
 

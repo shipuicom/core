@@ -61,6 +61,15 @@ $spkFormFieldShadow: false !default;
       }
     }
 
+    &.stretch {
+      width: 100%;
+
+      .input-wrap,
+      input {
+        width: 100%;
+      }
+    }
+
     &.center {
       .input-wrap input[type='number'],
       .input-wrap input {

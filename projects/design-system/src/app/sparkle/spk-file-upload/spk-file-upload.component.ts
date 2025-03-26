@@ -16,6 +16,6 @@ export default class SpkFileUploadComponent {
   files = signal<File[]>([]);
 
   fileEffect = effect(() => {
-    console.log('files: ', this.files()[0]);
+    console.log('files: ', this.files());
   });
 }

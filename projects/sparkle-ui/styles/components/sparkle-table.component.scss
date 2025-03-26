@@ -60,6 +60,9 @@ $spkTable: true !default;
 
       td,
       th {
+        &.sticky {
+          border-left-width: 0;
+        }
         &.sticky + * {
           border-left-width: 0;
         }
@@ -264,6 +267,7 @@ $spkTable: true !default;
       white-space: initial;
       align-items: flex-start;
       padding: 0;
+      border-left-width: 0;
     }
 
     .no-rows {

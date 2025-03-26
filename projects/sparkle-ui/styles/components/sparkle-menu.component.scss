@@ -9,6 +9,14 @@ $spkMenu: true !default;
     display: inline-flex;
     position: relative;
 
+    &.stretch {
+      width: 100%;
+
+      [trigger] > * {
+        width: 100%;
+      }
+    }
+
     [trigger]:has(spk-icon) {
       position: relative;
 

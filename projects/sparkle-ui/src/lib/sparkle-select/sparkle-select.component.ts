@@ -57,6 +57,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
       <spk-form-field
         trigger
         (click)="open()"
+        [class.stretch]="stretch()"
         [class.autosize]="selectMultiple()"
         [class.readonly]="readonly() || disabled()">
         <ng-content select="label" ngProjectAs="label" />
@@ -190,6 +191,7 @@ export class SparkleSelectComponent {
 
   _isClearable = computed(() => this.selectMultiple() || this.isClearable());
   selectClasses = computed(() => this.#selfRef.nativeElement.classList.toString());
+  stretch = computed(() => this.selectClasses().includes('stretch'));
   placeholderText = computed(() => {
     const placeholder = this.placeholder();
     const inputRefEl = this.inputRefEl();
