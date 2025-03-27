@@ -202,6 +202,8 @@ type ScrollState = -1 | 0 | 1;
     '[style.grid-template-columns]': 'columnSizes()',
     '[class.resizing]': 'resizing()',
     '(scroll)': 'onScroll()',
+    '[class.can-scroll-x]': 'canScrollX()',
+    '[class.can-scroll-y]': 'canScrollY()',
     '[class.scrolled-x]': 'scrollXState() >= 0',
     '[class.scrolled-x-end]': 'scrollXState() === 1',
     '[class.scrolled-y]': 'scrollYState() >= 0',
@@ -225,6 +227,8 @@ export class SparkleTableComponent {
   #initialDataSet = signal(false);
   scrollXState = signal<ScrollState>(-1);
   scrollYState = signal<ScrollState>(-1);
+  canScrollX = signal(false);
+  canScrollY = signal(false);
 
   columnSizes = computed(() => {
     this.sizeTrigger();
@@ -255,6 +259,11 @@ export class SparkleTableComponent {
   }
 
   onScroll(): void {
+    this.#checkScroll();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: Event) {
     this.#checkScroll();
   }
 
@@ -327,6 +336,7 @@ export class SparkleTableComponent {
     }
 
     this.scrollXState.set(nextXState);
+    this.canScrollX.set(canScrollX);
 
     const canScrollY = element.scrollHeight > element.clientHeight + SCROLL_TOLERANCE;
 
@@ -342,5 +352,6 @@ export class SparkleTableComponent {
     }
 
     this.scrollYState.set(nextYState);
+    this.canScrollY.set(canScrollY);
   }
 }

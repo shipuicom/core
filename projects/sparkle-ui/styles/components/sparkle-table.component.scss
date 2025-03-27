@@ -36,7 +36,7 @@ $spkTable: true !default;
         }
       }
 
-      &.scrolled-x {
+      &.scrolled-x.can-scroll-x {
         [spkStickyColumns=''],
         th.sticky,
         td.sticky {
@@ -44,7 +44,7 @@ $spkTable: true !default;
         }
       }
 
-      &:not(.scrolled-x-end) {
+      &:not(.scrolled-x-end).can-scroll-x {
         [spkStickyColumns='end'],
         th.sticky-end,
         td.sticky-end {
