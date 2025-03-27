@@ -15,22 +15,34 @@
     [loading]="isLoading()"
     [sortByColumn]="sortByColumn()">
     <tr class="sticky" table-header>
-      <th class="sticky" spkResize>im sticky</th>
+      <div spkStickyColumns>
+        <th spkResize>im sticky</th>
+        <th spkResize>im sticky</th>
+      </div>
 
       @for (col of displayedColumns(); track col) {
         <th spkResize [spkSort]="col">{{ col }}</th>
       }
 
-      <th class="sticky-end" spkResize>im sticky end</th>
+      <div spkStickyColumns="end">
+        <th spkResize>im sticky end</th>
+        <th spkResize>im sticky end</th>
+      </div>
     </tr>
 
     @for (row of dataSource(); track $index) {
       <tr [class.sticky-end]="$last" (click)="toggleRow($index)">
-        <td class="sticky">im sticky</td>
+        <div spkStickyColumns>
+          <td>im sticky</td>
+          <td>im sticky</td>
+        </div>
         @for (col of displayedColumns(); track col) {
           <td>{{ row[col] }}</td>
         }
-        <td class="sticky-end">im sticky end</td>
+        <div spkStickyColumns="end">
+          <td>im sticky end</td>
+          <td>im sticky end</td>
+        </div>
       </tr>
 
       @if ($index === openRowIndex()) {

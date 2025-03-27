@@ -43,7 +43,8 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [ ] spk-table features
   - [x] Add support for sticky rows
   - [x] Improve support for sorting with a built in sort using attribute on the column
-  - [ ] Add support for multi sticky columns, rows
+  - [x] Add support for multi sticky columns
+  - [ ] Add support for multi sticky rows
   - [ ] Add support for row resizing
 - [ ] spk-menu features (3/5)
   - [x] support multi select

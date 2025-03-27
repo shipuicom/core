@@ -24,12 +24,31 @@ $spkTable: true !default;
     --table-sticky-bw: #{p2r(1)};
 
     &.type-a {
-      th,
-      td {
-        padding-right: 0;
+      tbody,
+      thead {
+        > th,
+        > td {
+          padding-right: 0;
 
-        &:first-child {
-          padding: 0;
+          &:first-child {
+            padding: 0;
+          }
+        }
+      }
+
+      &.scrolled-x {
+        [spkStickyColumns=''],
+        th.sticky,
+        td.sticky {
+          border-right-width: p2r(1);
+        }
+      }
+
+      &:not(.scrolled-x-end) {
+        [spkStickyColumns='end'],
+        th.sticky-end,
+        td.sticky-end {
+          border-left-width: p2r(1);
         }
       }
     }
@@ -51,10 +70,26 @@ $spkTable: true !default;
         }
       }
 
-      tbody > td {
+      td {
         &:first-child {
           border-left-width: 0;
           padding: var(--table-td-p);
+        }
+      }
+
+      [spkStickyColumns='end'] {
+        border-left-width: p2r(2);
+      }
+
+      &.scrolled-x {
+        [spkStickyColumns=''] {
+          border-right-width: p2r(2);
+        }
+      }
+
+      &.scrolled-x-end {
+        [spkStickyColumns='end'] {
+          border-left-width: p2r(1);
         }
       }
 
@@ -62,6 +97,7 @@ $spkTable: true !default;
       th {
         &.sticky {
           border-left-width: 0;
+          border-right-width: p2r(1);
         }
         &.sticky + * {
           border-left-width: 0;
@@ -223,10 +259,6 @@ $spkTable: true !default;
 
     th,
     td {
-      &.sticky {
-        border-right-width: var(--table-sticky-bw);
-      }
-
       &.sticky,
       &.sticky-end {
         position: sticky;
@@ -245,7 +277,6 @@ $spkTable: true !default;
       &.sticky-end {
         right: 0;
         left: auto;
-        border-left-width: var(--table-sticky-bw);
       }
     }
 
@@ -259,6 +290,34 @@ $spkTable: true !default;
         &:first-child {
           padding: var(--table-th-p);
         }
+      }
+    }
+
+    [spkStickyColumns] {
+      display: grid;
+      grid-template-columns: subgrid;
+      position: sticky;
+      left: 0;
+      z-index: 1000;
+      border: 0;
+      border-color: var(--table-bc);
+      border-style: solid;
+    }
+
+    [spkStickyColumns='end'] {
+      left: auto;
+      right: 0;
+    }
+
+    thead {
+      > [spkStickyColumns] {
+        border-width: var(--table-th-bw);
+      }
+    }
+
+    tbody {
+      > [spkStickyColumns] {
+        border-width: var(--table-td-bw);
       }
     }
 

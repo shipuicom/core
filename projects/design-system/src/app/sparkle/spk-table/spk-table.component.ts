@@ -3,6 +3,7 @@ import {
   SparkleButtonGroupComponent,
   SparkleResizeDirective,
   SparkleSortDirective,
+  SparkleStickyColumnsDirective,
   SparkleTableComponent,
   SparkleToggleComponent,
 } from '../../../../../sparkle-ui/src/public-api';
@@ -45,6 +46,7 @@ type Column = Columns[number];
     SparkleResizeDirective,
     SparkleSortDirective,
     SparkleToggleComponent,
+    SparkleStickyColumnsDirective,
   ],
   templateUrl: './spk-table.component.html',
   styleUrl: './spk-table.component.scss',

@@ -135,6 +135,46 @@ export class SparkleSortDirective {
   }
 }
 
+@Directive({
+  selector: '[spkStickyColumns]',
+
+  host: {
+    '[class.sticky]': 'spkStickyColumns() === "start"',
+    '[class.sticky-end]': 'spkStickyColumns() === "end"',
+  },
+})
+export class SparkleStickyColumnsDirective {
+  #elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  #renderer = inject(Renderer2);
+
+  spkStickyColumns = input<string>('start');
+
+  ngAfterContentInit() {
+    this.#applyGridColumnStyle();
+  }
+
+  #applyGridColumnStyle() {
+    const nativeElement = this.#elementRef.nativeElement;
+    const cellChildren = nativeElement.querySelectorAll<HTMLTableCellElement | HTMLTableHeaderCellElement>(
+      ':scope > th, :scope > td'
+    );
+    const columnSpanCount = cellChildren.length;
+
+    if (columnSpanCount > 0) {
+      const position = this.spkStickyColumns();
+
+      this.#renderer.setStyle(
+        nativeElement,
+        'grid-column',
+        position === 'end' ? `-${columnSpanCount + 1} / -1` : `1 / ${columnSpanCount + 1}`
+      );
+    }
+  }
+}
+
+const SCROLL_TOLERANCE = 1.5;
+type ScrollState = -1 | 0 | 1;
+
 @Component({
   selector: 'spk-table',
   imports: [SparkleProgressBarComponent],
@@ -161,9 +201,16 @@ export class SparkleSortDirective {
   host: {
     '[style.grid-template-columns]': 'columnSizes()',
     '[class.resizing]': 'resizing()',
+    '(scroll)': 'onScroll()',
+    '[class.scrolled-x]': 'scrollXState() >= 0',
+    '[class.scrolled-x-end]': 'scrollXState() === 1',
+    '[class.scrolled-y]': 'scrollYState() >= 0',
+    '[class.scrolled-y-end]': 'scrollYState() === 1',
   },
 })
 export class SparkleTableComponent {
+  #el = inject(ElementRef);
+
   loading = input<boolean>(false);
   data = input<any>([]);
   dataChange = output<any>();
@@ -176,6 +223,8 @@ export class SparkleTableComponent {
   sizeTrigger = signal(true);
   #initialData: any | null = null;
   #initialDataSet = signal(false);
+  scrollXState = signal<ScrollState>(-1);
+  scrollYState = signal<ScrollState>(-1);
 
   columnSizes = computed(() => {
     this.sizeTrigger();
@@ -199,6 +248,14 @@ export class SparkleTableComponent {
 
   updateColumnSizes() {
     this.sizeTrigger.set(!this.sizeTrigger());
+  }
+
+  onScroll(): void {
+    this.#checkScroll();
+  }
+
+  ngAfterViewInit() {
+    queueMicrotask(() => this.#checkScroll());
   }
 
   e = effect(() => {
@@ -245,5 +302,41 @@ export class SparkleTableComponent {
     const sortDir = currentSort === column ? `-${column}` : currentSort === `-${column}` ? null : column;
 
     this.sortByColumn.set(sortDir);
+  }
+
+  #checkScroll(): void {
+    const element = this.#el.nativeElement as HTMLElement;
+    let nextXState: ScrollState = -1;
+    let nextYState: ScrollState = -1;
+
+    const canScrollX = element.scrollWidth > element.clientWidth + SCROLL_TOLERANCE;
+
+    if (canScrollX) {
+      const isAtStartX = element.scrollLeft <= SCROLL_TOLERANCE;
+      const isAtEndX = element.scrollWidth - (element.scrollLeft + element.clientWidth) < SCROLL_TOLERANCE;
+
+      if (isAtEndX) {
+        nextXState = 1;
+      } else if (!isAtStartX) {
+        nextXState = 0;
+      }
+    }
+
+    this.scrollXState.set(nextXState);
+
+    const canScrollY = element.scrollHeight > element.clientHeight + SCROLL_TOLERANCE;
+
+    if (canScrollY) {
+      const isAtStartY = element.scrollTop <= SCROLL_TOLERANCE;
+      const isAtEndY = element.scrollHeight - (element.scrollTop + element.clientHeight) < SCROLL_TOLERANCE;
+
+      if (isAtEndY) {
+        nextYState = 1;
+      } else if (!isAtStartY) {
+        nextYState = 0;
+      }
+    }
+
+    this.scrollYState.set(nextYState);
   }
 }
