@@ -22,8 +22,11 @@ import {
 export default class SpkRangeSliderComponent {
   active = signal(false);
 
+  someFloatRangeValue = signal(0.12);
   someRangeValue = signal(50);
   fg = new FormGroup({
     rangeCtrl: new FormControl(50),
   });
+
+  formCtrl = new FormControl(0.16);
 }

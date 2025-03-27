@@ -1,25 +1,34 @@
 <section>
   <h3>As form elements</h3>
 
-  <spk-range-slider unit="%" [value]="fg.value.rangeCtrl ?? 0">
+  <!-- <spk-range-slider unit="%" [value]="fg.value.rangeCtrl ?? 0">
     <label>
       Label
       <spk-icon>circle</spk-icon>
     </label>
     <input type="range" min="0" [max]="active() ? 100 : 200" value="50" readonly />
-  </spk-range-slider>
+  </spk-range-slider> -->
 
   <spk-range-slider unit="%" class="primary raised">
     <label>ngModel</label>
-    <input type="range" min="0" [max]="active() ? 100 : 200" [(ngModel)]="someRangeValue" />
+    <input type="range" min="0" max="1" step="0.01" [(ngModel)]="someFloatRangeValue" />
   </spk-range-slider>
+
+  <pre>{{ someFloatRangeValue() }}</pre>
+
+  <spk-range-slider unit="%" class="primary raised">
+    <label>ngModel</label>
+    <input type="range" min="0" max="1" step="0.01" [formControl]="formCtrl" />
+  </spk-range-slider>
+
+  <pre>{{ formCtrl.value }}</pre>
 
   <form [formGroup]="fg">
     <spk-range-slider unit="hello">
       <input type="range" min="0" max="100" formControlName="rangeCtrl" />
     </spk-range-slider>
 
-    <pre>
+    <!-- <pre>
       rangeCtrl: {{ fg.value.rangeCtrl }}
       someRangeValue: {{ someRangeValue() }}
     </pre>
@@ -30,8 +39,19 @@
         <spk-icon>circle</spk-icon>
       </label>
       <input type="range" min="0" [max]="active() ? 100 : 200" />
-    </spk-range-slider>
+    </spk-range-slider> -->
   </form>
+
+  <!-- <spk-range-slider unit="%" class="primary raised">
+    <label>ngModel</label>
+    <input type="range" min="-1" max="1" step="0.001" [(ngModel)]="someFloatRangeValue" />
+  </spk-range-slider>
+
+  <spk-range-slider unit="%" class="primary raised">
+    <label>ngModel</label>
+    <input type="range" min="0" [max]="active() ? 100 : 200" [(ngModel)]="someRangeValue" />
+  </spk-range-slider>
+
 
   <h3>Basic</h3>
 
@@ -149,5 +169,5 @@
 
   <spk-range-slider unit="%" class="raised success">
     <input type="range" min="0" max="100" value="50" />
-  </spk-range-slider>
+  </spk-range-slider> -->
 </section>

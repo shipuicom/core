@@ -81,6 +81,7 @@ $spkRangeSlider: true !default;
       background-color: var(--rs-thumb-c);
       border: 1px solid var(--rs-thumb-bc);
       box-shadow: var(--box-shadow-10);
+      transform: translateX(-50%);
     }
 
     .track-wrap {

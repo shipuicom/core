@@ -39,6 +39,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Support resizable columns in spk-table
 - [x] Support free text input in spk-select
 - [x] Remove the need to set #input on the input element
+- [x] spk-range-slider now support negative values and floats
 - [x] spk-select gets a wildcard search on the label and value similar to the spk-menu ex search value "hlo" will match "hello" and "halo" it converts into what we call a wildcard regex which are similar to globbing "*h*l*o*" just with regex.
 - [ ] spk-table features
   - [x] Add support for sticky rows
