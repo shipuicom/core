@@ -15,6 +15,45 @@
     [loading]="isLoading()"
     [sortByColumn]="sortByColumn()">
     <tr class="sticky" table-header>
+      <th spkResize class="sticky">im sticky</th>
+
+      @for (col of displayedColumns(); track col) {
+        <th spkResize [spkSort]="col">{{ col }}</th>
+      }
+
+      <th spkResize class="sticky-end">im sticky end</th>
+    </tr>
+
+    @for (row of dataSource(); track $index) {
+      <tr [class.sticky-end]="$last" (click)="toggleRow($index)">
+        <td class="sticky">im sticky</td>
+
+        @for (col of displayedColumns(); track col) {
+          <td>{{ row[col] }}</td>
+        }
+
+        <td class="sticky-end">im sticky end</td>
+      </tr>
+
+      @if ($index === openRowIndex()) {
+        <tr>
+          <td class="span-all">hi im a secondary row</td>
+        </tr>
+      }
+    }
+
+    <div table-no-rows>No data available</div>
+  </spk-table>
+
+  <h3>Multi sticky columns</h3>
+
+  <spk-table
+    [(data)]="dataSource"
+    [class.no-resize]="!resizable()"
+    [class]="typeActive()"
+    [loading]="isLoading()"
+    [sortByColumn]="sortByColumn()">
+    <tr class="sticky" table-header>
       <div spkStickyColumns>
         <th spkResize>im sticky</th>
         <th spkResize>im sticky</th>

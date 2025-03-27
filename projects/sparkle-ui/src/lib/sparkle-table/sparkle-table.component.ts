@@ -242,7 +242,7 @@ export class SparkleTableComponent {
         return `${acc} max-content`;
       }
 
-      return `${acc} 1fr`;
+      return `${acc} min-content`;
     }, '');
   });
 
