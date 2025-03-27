@@ -238,11 +238,15 @@ export class SparkleTableComponent {
         return `${acc} ${colEl.dataset['size']}`;
       }
 
-      if (last) {
-        return `${acc} max-content`;
+      if (colEl.classList.contains('sticky') || colEl.classList.contains('sticky-end')) {
+        return `${acc} min-content`;
       }
 
-      return `${acc} min-content`;
+      if (last) {
+        return `${acc} 1fr`;
+      }
+
+      return `${acc} 1fr`;
     }, '');
   });
 
