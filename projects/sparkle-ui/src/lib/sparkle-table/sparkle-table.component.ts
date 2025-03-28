@@ -280,7 +280,7 @@ export class SparkleTableComponent {
         this.#initialDataSet.set(true);
       }
 
-      return this.dataChange.emit(JSON.parse(JSON.stringify(this.#initialData)));
+      return this.dataChange.emit(structuredClone(this.#initialData));
     }
 
     const column = sortByColumn.startsWith('-') ? sortByColumn.slice(1) : sortByColumn;
