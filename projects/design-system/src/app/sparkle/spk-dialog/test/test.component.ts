@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 
 @Component({
   selector: 'app-test',
@@ -7,4 +7,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   styleUrl: './test.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class TestComponent {}
+export default class TestComponent {
+  stickyHeader = signal(false);
+  stickyFooter = signal(false);
+}

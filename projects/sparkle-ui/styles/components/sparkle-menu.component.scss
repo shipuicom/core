@@ -9,6 +9,11 @@ $spkMenu: true !default;
     display: inline-flex;
     position: relative;
 
+    &.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
     &.stretch {
       width: 100%;
 

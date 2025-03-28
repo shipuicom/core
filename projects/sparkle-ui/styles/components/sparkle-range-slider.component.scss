@@ -82,6 +82,10 @@ $spkRangeSlider: true !default;
       border: 1px solid var(--rs-thumb-bc);
       box-shadow: var(--box-shadow-10);
       transform: translateX(-50%);
+
+      &.always-show .value-indicator {
+        opacity: 1;
+      }
     }
 
     .track-wrap {
@@ -116,14 +120,9 @@ $spkRangeSlider: true !default;
       color: var(--rs-unit-c);
     }
 
-    // &:hover .value-indicator {
-    //   opacity: 1;
-    // }
-
     input[type='range']:hover ~ .thumb-wrap .value-indicator,
     input[type='range']:focus ~ .thumb-wrap .value-indicator {
       opacity: 1;
-      // transition-delay: 0;
     }
 
     .value-indicator {

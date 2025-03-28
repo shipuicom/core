@@ -30,7 +30,7 @@ import {
         </div>
 
         <div class="thumb-wrap" [style.left.%]="thumbPositionPercentage()">
-          <div class="thumb">
+          <div class="thumb" [class.always-show]="alwaysShowThumb()">
             <div class="value-indicator">{{ value() }}{{ unit() }}</div>
           </div>
         </div>
@@ -47,6 +47,7 @@ export class SparkleRangeSliderComponent {
   #inputElement: HTMLInputElement | null = null;
   #initialDefaultValue = 0;
 
+  alwaysShowThumb = input<boolean>(false);
   unit = input<string>('');
   value = model<number>(this.#initialDefaultValue);
 
@@ -56,10 +57,20 @@ export class SparkleRangeSliderComponent {
     step: 1,
   });
 
-  @HostBinding('class.has-input')
-  get hasInputElement(): boolean {
-    return !!this.#inputElement;
-  }
+  valuePercentage = computed(() => {
+    const { min, max } = this.inputState();
+    const currentValue = this.value() ?? min;
+    if (isNaN(currentValue)) return 0;
+
+    const range = max - min;
+    if (range === 0) return 0;
+
+    const percentage = ((currentValue - min) / range) * 100;
+    return Math.max(0, Math.min(100, percentage));
+  });
+
+  trackFilledPercentage = computed(() => this.valuePercentage());
+  thumbPositionPercentage = computed(() => this.valuePercentage());
 
   syncModelToInputEffect = effect(() => {
     const modelValue = this.value();
@@ -71,34 +82,39 @@ export class SparkleRangeSliderComponent {
     }
   });
 
+  @HostBinding('class.has-input')
+  get hasInputElement(): boolean {
+    return !!this.#inputElement;
+  }
+
   ngAfterViewInit() {
     this.#inputElement = this.#selfRef.nativeElement.querySelector('input[type="range"]');
 
     if (this.#inputElement) {
-      this.#inputElement.oninput = () => {
-        const inputValue = parseFloat(this.#inputElement!.value ?? '0');
+      this.#createCustomInputEventListener(this.#inputElement);
 
-        console.log(inputValue);
-        if (!isNaN(inputValue)) {
-          const { min, max } = this.inputState();
-          this.value.set(Math.max(min, Math.min(max, inputValue)));
-        }
+      this.#inputElement.oninput = () => {
+        this.setNewInputValue(this.#inputElement!.value);
       };
 
-      queueMicrotask(() => this.updateStateFromInput(true));
+      this.#inputElement.addEventListener('inputValueChanged', (event: any) => {
+        this.setNewInputValue(event.detail.value);
+      });
 
-      this.setupMutationObserver();
+      queueMicrotask(() => this.#updateStateFromInput(true));
+
+      this.#setupMutationObserver();
     } else {
       console.error('SparkleRangeSliderComponent: No <input type="range"> element found projected inside.');
     }
   }
 
-  ngOnDestroy() {
-    if (this.#observer) {
-      this.#observer.disconnect();
-    }
-    if (this.#inputElement) {
-      this.#inputElement.oninput = null;
+  setNewInputValue(value: string) {
+    const inputValue = parseFloat(value ?? '0');
+
+    if (!isNaN(inputValue)) {
+      const { min, max } = this.inputState();
+      this.value.set(Math.max(min, Math.min(max, inputValue)));
     }
   }
 
@@ -128,7 +144,7 @@ export class SparkleRangeSliderComponent {
       const numSteps = (proportionalValue - min) / step;
       let nearestStepValue = min + Math.round(numSteps) * step;
 
-      const decimals = this.countDecimals(step);
+      const decimals = this.#countDecimals(step);
       nearestStepValue = parseFloat(nearestStepValue.toFixed(decimals));
 
       const clampedValue = Math.max(min, Math.min(max, nearestStepValue));
@@ -137,7 +153,7 @@ export class SparkleRangeSliderComponent {
     }
   }
 
-  private updateStateFromInput(isInitialCall = false) {
+  #updateStateFromInput(isInitialCall = false) {
     if (!this.#inputElement) return;
 
     const min = parseFloat(this.#inputElement.min ?? '0') ?? 0;
@@ -173,7 +189,7 @@ export class SparkleRangeSliderComponent {
     }
   }
 
-  private setupMutationObserver() {
+  #setupMutationObserver() {
     if (!this.#inputElement || typeof MutationObserver === 'undefined') {
       return;
     }
@@ -189,37 +205,52 @@ export class SparkleRangeSliderComponent {
         }
       }
       if (needsStateUpdate) {
-        this.updateStateFromInput(false);
+        this.#updateStateFromInput(false);
       }
     });
 
     this.#observer.observe(this.#inputElement, { attributes: true });
   }
 
-  private countDecimals(value: number): number {
+  #countDecimals(value: number): number {
     if (isNaN(value) || Math.floor(value) === value) return 0;
     const str = value.toString();
     const decimalPart = str.split('.')[1];
     return decimalPart ? decimalPart.length : 0;
   }
 
-  getPrecision(): number {
-    const step = this.inputState().step;
-    return this.countDecimals(step);
+  #createCustomInputEventListener(input: HTMLInputElement | HTMLTextAreaElement) {
+    Object.defineProperty(input, 'value', {
+      configurable: true,
+      get() {
+        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
+        return descriptor!.get!.call(this);
+      },
+      set(newVal) {
+        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
+        descriptor!.set!.call(this, newVal);
+
+        const inputEvent = new CustomEvent('inputValueChanged', {
+          bubbles: true,
+          cancelable: true,
+          detail: {
+            value: newVal,
+          },
+        });
+
+        this.dispatchEvent(inputEvent);
+
+        return newVal;
+      },
+    });
   }
 
-  valuePercentage = computed(() => {
-    const { min, max } = this.inputState();
-    const currentValue = this.value() ?? min;
-    if (isNaN(currentValue)) return 0;
-
-    const range = max - min;
-    if (range === 0) return 0;
-
-    const percentage = ((currentValue - min) / range) * 100;
-    return Math.max(0, Math.min(100, percentage));
-  });
-
-  trackFilledPercentage = computed(() => this.valuePercentage());
-  thumbPositionPercentage = computed(() => this.valuePercentage());
+  ngOnDestroy() {
+    if (this.#observer) {
+      this.#observer.disconnect();
+    }
+    if (this.#inputElement) {
+      this.#inputElement.oninput = null;
+    }
+  }
 }

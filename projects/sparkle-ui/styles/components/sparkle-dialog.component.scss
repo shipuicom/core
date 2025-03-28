@@ -6,17 +6,18 @@ $spkDialog: true !default;
   dialog[spkDialog] {
     --dialog-p: #{p2r(16)};
     --dialog-g: #{p2r(8)};
+    --dialog-bg: var(--base-level-10);
 
     border: 1px solid var(--base-level-40);
     border-radius: var(--shape-2);
-    background-color: var(--base-level-10);
+    background-color: var(--dialog-bg);
     box-shadow: var(--box-shadow-40);
     color: var(--base-level-60);
     font: var(--paragraph-30);
     padding: 0;
     margin: auto;
     max-width: initial;
-    max-height: initial;
+    max-height: 96vh;
     position: relative;
     z-index: 0;
 
@@ -60,6 +61,14 @@ $spkDialog: true !default;
       justify-content: space-between;
       padding: var(--dialog-p);
       gap: var(--dialog-g);
+
+      &.sticky {
+        background-color: var(--dialog-bg);
+        border-bottom: 1px solid var(--base-level-40);
+        box-shadow: var(--box-shadow-35);
+        position: sticky;
+        top: 0;
+      }
     }
 
     [content] {
@@ -76,6 +85,14 @@ $spkDialog: true !default;
       justify-content: flex-end;
       padding: var(--dialog-p);
       gap: var(--dialog-g);
+
+      &.sticky {
+        background-color: var(--dialog-bg);
+        border-top: 1px solid var(--base-level-40);
+        box-shadow: var(--box-shadow-35);
+        position: sticky;
+        bottom: 0;
+      }
     }
   }
 }

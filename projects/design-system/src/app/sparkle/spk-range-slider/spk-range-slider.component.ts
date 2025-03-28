@@ -29,4 +29,10 @@ export default class SpkRangeSliderComponent {
   });
 
   formCtrl = new FormControl(0.16);
+
+  ngOnInit() {
+    setTimeout(() => {
+      this.someFloatRangeValue.set(0.26);
+    }, 1000);
+  }
 }

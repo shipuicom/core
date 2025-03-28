@@ -33,7 +33,7 @@ import { observeChildren } from '../utilities/observe-elements';
         closeOnButton: false,
         closeOnEsc: true,
       }">
-      <div trigger [class.is-open]="isOpen()" (click)="isOpen.set(true)">
+      <div trigger [class.is-open]="isOpen()" (click)="!disabled() && isOpen.set(true)">
         <ng-content />
 
         @if (openIndicator()) {
@@ -55,12 +55,16 @@ import { observeChildren } from '../utilities/observe-elements';
     </spk-popover>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.disabled]': 'disabled()',
+  },
 })
 export class SparkleMenuComponent {
   #renderer = inject(Renderer2);
   above = input<boolean>(false);
   right = input<boolean>(false);
   openIndicator = input(false);
+  disabled = input<boolean>(false);
   customOptionElementSelectors = input<string[]>(['button']);
   keepClickedOptionActive = input<boolean>(false);
   closeOnClick = input<boolean>(true);
