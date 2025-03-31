@@ -22,14 +22,14 @@ $spkMenu: true !default;
       }
     }
 
-    [trigger]:has(spk-icon) {
+    [trigger]:has(spk-icon.open-indicator) {
       position: relative;
 
       > :first-child {
         padding-right: p2r(32);
       }
 
-      spk-icon {
+      .open-indicator {
         position: absolute;
         right: p2r(8);
         top: 50%;
@@ -41,7 +41,7 @@ $spkMenu: true !default;
         transition: transform 75ms ease-in-out;
       }
 
-      &.is-open spk-icon {
+      &.is-open .open-indicator {
         transform: translateY(-50%) rotate(-180deg);
       }
     }

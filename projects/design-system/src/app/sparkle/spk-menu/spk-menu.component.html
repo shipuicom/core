@@ -4,7 +4,7 @@
   <button spk-button class="outlined" (click)="addOption()">Add option</button>
 
   <div class="wrap">
-    <spk-menu class="stretch" [disabled]="true">
+    <spk-menu class="stretch" [disabled]="false" [openIndicator]="true">
       <button spk-button class="outlined">Open menu</button>
 
       <ng-container menu>
@@ -42,7 +42,10 @@
 
   <div class="wrap">
     <spk-menu [searchable]="true">
-      <button spk-button class="outlined">Open menu</button>
+      <button spk-button class="outlined">
+        Open menu
+        <spk-icon>dots-three-vertical</spk-icon>
+      </button>
 
       <ng-container menu>
         <div title>Section 1</div>

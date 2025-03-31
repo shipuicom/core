@@ -37,7 +37,7 @@ import { observeChildren } from '../utilities/observe-elements';
         <ng-content />
 
         @if (openIndicator()) {
-          <spk-icon>caret-down</spk-icon>
+          <spk-icon class="open-indicator">caret-down</spk-icon>
         }
       </div>
 
