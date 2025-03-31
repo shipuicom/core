@@ -1,4 +1,15 @@
-import { ChangeDetectionStrategy, Component, effect, ElementRef, input, model, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  model,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { SparkleFormFieldComponent } from '../sparkle-form-field/sparkle-form-field.component';
 import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 
@@ -6,7 +17,7 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
   selector: 'spk-file-upload',
   imports: [SparkleFormFieldComponent, SparkleIconComponent],
   template: `
-    <spk-form-field>
+    <spk-form-field [class]="fileUploadClasses()">
       <ng-content select="label" ngProjectAs="label"></ng-content>
 
       <div class="input" ngProjectAs="input" #inputWrap>
@@ -27,6 +38,7 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleFileUploadComponent {
+  _el = inject(ElementRef);
   inputRef = viewChild.required<ElementRef<HTMLInputElement>>('input');
   filesOver = signal(false);
   multiple = input<boolean | null>();
@@ -34,6 +46,8 @@ export class SparkleFileUploadComponent {
   placeholder = model<string>('Click or drag files here');
   overlayText = input<string>('Drop files here');
   files = model<File[]>([]);
+
+  fileUploadClasses = computed(() => this._el.nativeElement.classList.toString());
 
   handleFileUpload(newFiles: File[]) {
     if (this.multiple()) {
