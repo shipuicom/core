@@ -53,18 +53,21 @@ $spkMenu: true !default;
         padding: 0;
       }
 
-      .overlay ~ spk-form-field {
-        z-index: 10;
+      .overlay ~ .form-field-wrap {
         margin: p2r(8 8 0);
-        background-color: var(--base-level-10);
 
-        &.hidden {
-          opacity: 0;
-          height: 0;
-          width: 0;
-          min-width: 0;
-          min-height: 0;
-          margin: 0;
+        spk-form-field {
+          z-index: 10;
+          background-color: var(--base-level-10);
+
+          &.hidden {
+            opacity: 0;
+            height: 0;
+            width: 0;
+            min-width: 0;
+            min-height: 0;
+            margin: 0;
+          }
         }
       }
     }

@@ -41,9 +41,11 @@ import { observeChildren } from '../utilities/observe-elements';
         }
       </div>
 
-      <spk-form-field class="small" [class.hidden]="searchable() === false">
-        <input type="text" #input placeholder="Search" />
-      </spk-form-field>
+      <div class="form-field-wrap">
+        <spk-form-field class="small stretch" [class.hidden]="searchable() === false">
+          <input type="text" #input placeholder="Search" />
+        </spk-form-field>
+      </div>
 
       <div
         class="options"
