@@ -28,6 +28,7 @@ $spkFormFieldShadow: false !default;
     flex-direction: column;
     align-items: flex-start;
     position: relative;
+    width: 100%;
 
     &[read-only],
     &[read-only='true'],
@@ -61,12 +62,12 @@ $spkFormFieldShadow: false !default;
       }
     }
 
-    &.stretch {
-      width: 100%;
+    &.auto-width {
+      width: initial;
 
       .input-wrap,
       input {
-        width: 100%;
+        width: initial;
       }
     }
 
@@ -132,6 +133,7 @@ $spkFormFieldShadow: false !default;
       overflow: hidden;
       transition: border-color 125ms linear;
       min-width: var(--ff-mw);
+      width: 100%;
 
       spk-popover,
       .input {
@@ -176,6 +178,7 @@ $spkFormFieldShadow: false !default;
         flex: 1 0;
         color: var(--base-level-60);
         margin: var(--ff-input-space);
+        width: 100%;
 
         &::placeholder {
           color: var(--base-level-60R);
