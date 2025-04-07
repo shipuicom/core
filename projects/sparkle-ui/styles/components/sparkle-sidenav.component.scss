@@ -61,6 +61,8 @@ $spkSidenav: true !default;
     }
 
     &.simple {
+      border-radius: 0;
+
       .main-wrap {
         padding: 0;
 

@@ -30,6 +30,7 @@ $spkSelect: false !default;
         opacity: 0;
         width: 0;
         height: 0;
+        position: absolute;
       }
     }
 
@@ -60,6 +61,7 @@ $spkSelect: false !default;
           min-width: min-content;
           field-sizing: content;
           font: var(--paragraph-30);
+          position: relative;
         }
 
         textarea {
