@@ -59,6 +59,7 @@ import { observeChildren } from '../utilities/observe-elements';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class.disabled]': 'disabled()',
+    '[class.has-search]': 'searchable()',
   },
 })
 export class SparkleMenuComponent {

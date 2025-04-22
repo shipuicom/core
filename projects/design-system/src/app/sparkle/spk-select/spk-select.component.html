@@ -45,7 +45,7 @@
 
   <pre>inputCtrlNew1 = {{ inputCtrlNew1.value }}</pre>
 
-  <!-- <spk-select
+  <spk-select
     [isClearable]="false"
     [options]="options()"
     value="id"
@@ -55,7 +55,7 @@
     <textarea #textarea [formControl]="inputCtrlNew1"></textarea>
   </spk-select>
 
-  <pre>inputCtrlNew1 = {{ inputCtrlNew1.value }}</pre> -->
+  <pre>inputCtrlNew1 = {{ inputCtrlNew1.value }}</pre>
 
   <spk-select [isClearable]="false" [options]="options()" value="id" [optionTemplate]="optionTemplate">
     <label>Form and optionTemplate Select</label>
@@ -190,6 +190,10 @@
     [lazySearch]="true">
     <label>Searchable Select</label>
     <input type="text" [(ngModel)]="lazySearchableOption" />
+  </spk-select>
+  <spk-select [isClearable]="false" [options]="emptyValueList()" value="value" label="name">
+    <label>Its not possible to select values of empty string</label>
+    <input type="text" [(ngModel)]="emptyValue" />
   </spk-select>
 
   <pre>

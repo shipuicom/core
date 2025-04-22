@@ -45,6 +45,29 @@ export default class SpkSelectComponent {
   inputCtrlNew2 = new FormControl<any | null>('Pizza');
   isReadonly = signal(true);
 
+  emptyValue = signal('');
+  emptyValueList = signal([
+    {
+      value: '',
+      name: 'Keep all backups',
+    },
+    {
+      value: 'time',
+      name: 'Delete backups that are older than',
+    },
+    {
+      value: 'versions',
+      name: 'Keep a specific number of backups',
+    },
+    {
+      value: 'smart',
+      name: 'Smart backup retention',
+    },
+    {
+      value: 'custom',
+      name: 'Custom backup retention',
+    },
+  ]);
   flatOptions = signal([
     'Pizza',
     'Burger',
