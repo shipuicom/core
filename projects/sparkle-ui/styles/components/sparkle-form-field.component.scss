@@ -57,6 +57,8 @@ $spkFormFieldShadow: false !default;
 
       .prefix,
       .suffix {
+        line-height: p2r(16);
+
         > spk-icon {
           font-size: p2r(16);
         }
@@ -98,6 +100,7 @@ $spkFormFieldShadow: false !default;
       padding: var(--ff-space);
       transition: background-color 125ms linear;
       background-color: var(--ff-prefix-bg);
+      line-height: p2r(20);
 
       &:not(:empty) {
         display: flex;
