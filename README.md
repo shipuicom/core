@@ -78,6 +78,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [ ] Add a A11y service to streamline accessibility, maybe be able to swap config based on page or on a method
 - [ ] Add a A11y VIM mode
 - [ ] Create a gantt chart component
+- [ ] Custom scrollbar component that have the native apple feel with overscrolling where scroll thumb becomes smaller and you can over scroll a div
 
 ### Testing to add
 

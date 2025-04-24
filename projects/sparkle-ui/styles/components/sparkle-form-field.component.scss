@@ -9,6 +9,7 @@ $spkFormFieldShadow: false !default;
     --ff-s: var(--shape-2);
     --ff-bc: var(--base-level-40);
     --ff-prefix-bg: var(--base-level-20);
+    --ff-suffix-bg: transparent;
     --ff-ic: var(--base-level-60);
     --ff-bg: var(--base-level-10);
     --ff-f: var(--paragraph-30B);
@@ -104,8 +105,11 @@ $spkFormFieldShadow: false !default;
     }
 
     .suffix {
-      background-color: transparent;
-      padding-left: 0;
+      background-color: var(--ff-suffix-bg);
+
+      &:has([textsuffix]) {
+        padding-left: 0;
+      }
     }
 
     &:not(:has(.helpers .error:empty)) {
