@@ -115,7 +115,7 @@ $spkFormFieldShadow: false !default;
       }
     }
 
-    &:not(:has(.helpers .error:empty)) {
+    &:has(input.ng-touched.ng-invalid) {
       --ff-ic: var(--error-500);
       --ff-bc: var(--error-500);
       --ff-prefix-bg: var(--error-level-20);
@@ -256,6 +256,10 @@ $spkFormFieldShadow: false !default;
       }
     }
 
+    &:not(:has(input.ng-touched.ng-invalid)) .error {
+      display: none;
+    }
+
     .error {
       color: var(--error-500);
       opacity: 1;
@@ -265,17 +269,13 @@ $spkFormFieldShadow: false !default;
       left: 0;
       right: 0;
       width: 100%;
-
-      &:empty {
-        opacity: 0;
-      }
     }
 
     &.error {
       --ff-ic: var(--error-500);
     }
 
-    &.error {
+    &.warning {
       --ff-ic: var(--warn-500);
     }
 
