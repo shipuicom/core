@@ -59,6 +59,18 @@
 
     <spk-form-field>
       <label>
+        Error without hint
+        <spk-icon>question</spk-icon>
+      </label>
+      <input placeholder="Placeholder..." [formControl]="errorCtrl" />
+
+      @if ((baseCtrl.value?.length ?? 0) < 10) {
+        <span error>Write a message in this alert area</span>
+      }
+    </spk-form-field>
+
+    <spk-form-field>
+      <label>
         Label
         <spk-icon>question</spk-icon>
       </label>

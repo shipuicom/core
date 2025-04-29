@@ -211,16 +211,6 @@ $spkFormFieldShadow: false !default;
       }
     }
 
-    &:not(:has(input.ng-touched.ng-invalid)):has(.hint:empty) .helpers {
-      height: 0;
-      padding-top: 0;
-    }
-
-    &:has(input.ng-touched.ng-invalid) .helpers .hint {
-      opacity: 0;
-      visibility: hidden;
-    }
-
     .helpers {
       height: p2r(20);
       display: flex;
@@ -235,6 +225,33 @@ $spkFormFieldShadow: false !default;
           justify-self: flex-end;
         }
       }
+    }
+
+    &:not(:has(input.ng-touched.ng-invalid)) {
+      &:has(.hint:empty) .helpers {
+        height: 0;
+        padding-top: 0;
+      }
+
+      .error {
+        display: none;
+      }
+    }
+
+    &:has(input.ng-touched.ng-invalid) .helpers .hint {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .error {
+      color: var(--error-500);
+      opacity: 1;
+      transition: opacity 125ms linear;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
     }
 
     .hint {
@@ -252,21 +269,6 @@ $spkFormFieldShadow: false !default;
       &:empty {
         opacity: 0;
       }
-    }
-
-    &:not(:has(input.ng-touched.ng-invalid)) .error {
-      display: none;
-    }
-
-    .error {
-      color: var(--error-500);
-      opacity: 1;
-      transition: opacity 125ms linear;
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      width: 100%;
     }
 
     &.error {
