@@ -267,7 +267,6 @@ $spkTable: true !default;
         left: 0;
         z-index: 1;
         padding: var(--table-td-p);
-        background-color: var(--base-level-10);
 
         &:first-child {
           padding: var(--table-th-p);

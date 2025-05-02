@@ -25,3 +25,19 @@
 
   <router-outlet />
 </section>
+
+<section>
+  <h3>Basic</h3>
+  <spk-stepper>
+    <div step routerLinkActive="active" routerLink="/spk-stepper/step-1">
+      <spk-radio />
+      Step 1
+    </div>
+    <div step routerLinkActive="active" routerLink="/spk-stepper/step-2">
+      <spk-radio />
+      Step 2
+    </div>
+  </spk-stepper>
+
+  <router-outlet />
+</section>
