@@ -121,12 +121,16 @@ $spkFormFieldShadow: false !default;
       --ff-prefix-bg: var(--error-level-20);
     }
 
-    &.autosize .input-wrap {
-      height: auto;
+    &.autosize {
+      width: min-content;
 
-      textarea,
-      input {
-        field-sizing: content;
+      .input-wrap {
+        height: auto;
+
+        textarea,
+        input {
+          field-sizing: content;
+        }
       }
     }
 
