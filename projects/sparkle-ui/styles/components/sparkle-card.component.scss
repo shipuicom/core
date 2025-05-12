@@ -37,5 +37,12 @@ $spkCard: true !default;
       inset: var(--card-shp);
       z-index: -1;
     }
+
+    &.type-b {
+      --card-bg: var(--base-level-20);
+      --card-ibg: var(--base-level-10);
+      --card-sh: none;
+      --card-shp: #{p2r(4)};
+    }
   }
 }
