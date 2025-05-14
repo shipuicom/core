@@ -23,8 +23,11 @@ $spkMenu: true !default;
     }
 
     &.has-search {
-      [title] {
-        position: sticky;
+      spk-popover .options {
+        [title] {
+          position: sticky;
+          border-bottom: 1px solid var(--base-level-40);
+        }
       }
 
       .form-field-wrap {
@@ -134,7 +137,6 @@ $spkMenu: true !default;
         top: 0;
         z-index: 10;
         background-color: var(--base-level-10);
-        border-bottom: 1px solid var(--base-level-40);
       }
 
       button {

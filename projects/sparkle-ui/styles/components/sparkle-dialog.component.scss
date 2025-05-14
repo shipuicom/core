@@ -9,28 +9,49 @@ $spkDialog: true !default;
     --dialog-bg: var(--base-level-10);
 
     border: 1px solid var(--base-level-40);
+    background: transparent;
     border-radius: var(--shape-2);
-    background-color: var(--dialog-bg);
     box-shadow: var(--box-shadow-40);
     color: var(--base-level-60);
     font: var(--paragraph-30);
     padding: 0;
     margin: auto;
-    max-width: initial;
-    max-height: 96vh;
-    position: relative;
     z-index: 0;
+
+    &.type-b {
+      background: var(--base-level-30);
+      padding: p2r(8);
+      outline: 1px solid var(--base-level-40);
+      outline-offset: -1px;
+      overflow: hidden;
+
+      &::backdrop {
+        background: rgb(from var(--base-level-10) r g b / 30%);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+
+      .content {
+        border: 1px solid rgb(from var(--base-level-40) r g b / 70%);
+      }
+    }
+
+    .content {
+      position: relative;
+      border-radius: var(--shape-2);
+      background-color: var(--dialog-bg);
+      z-index: 2;
+      max-width: initial;
+      max-height: calc(96vh - #{p2r(16)});
+      position: relative;
+      overflow: auto;
+    }
 
     .closeable-overlay {
       position: fixed;
       inset: 0;
       opacity: 0;
       z-index: 1;
-    }
-
-    .content {
-      position: relative;
-      z-index: 2;
     }
 
     &:focus {
