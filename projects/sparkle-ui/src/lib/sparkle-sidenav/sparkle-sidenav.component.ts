@@ -4,11 +4,13 @@ import {
   computed,
   effect,
   ElementRef,
+  inject,
   input,
   model,
   signal,
   viewChild,
 } from '@angular/core';
+import { SPARKLE_CONFIG } from '../utilities/sparkle-config';
 
 export type SparkleSidenavType = 'overlay' | 'simple' | '';
 
@@ -57,20 +59,24 @@ export type SparkleSidenavType = 'overlay' | 'simple' | '';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
+    '[class]': 'class()',
     '[class.open]': 'isOpen()',
     '[class.closed]': '!isOpen()',
-    '[class.overlay]': 'type() === "overlay"',
-    '[class.simple]': 'type() === "simple"',
     '[class.is-dragging]': 'isDragging()',
   },
 })
 export class SparkleSidenavComponent {
+  #spkConfig = inject(SPARKLE_CONFIG, { optional: true });
+  #sidenavType = signal<SparkleSidenavType | undefined>(this.#spkConfig?.sidenavType);
+
   openWidth = 280;
   openWidthTreshold = this.openWidth * 0.9;
 
   disableDrag = input<boolean>(false);
   isOpen = model<boolean>(false);
-  type = input<SparkleSidenavType>('');
+  type = input<SparkleSidenavType | undefined>(undefined);
+
+  class = computed(() => (this.#sidenavType() ? this.#sidenavType() : this.#spkConfig?.sidenavType));
 
   dragImageElement = viewChild.required<ElementRef<HTMLDivElement>>('dragImageElement');
   dragIsEnding = signal<boolean>(false);

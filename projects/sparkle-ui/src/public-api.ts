@@ -46,3 +46,6 @@ export * from './lib/sparkle-virtual-scroll/sparkle-virtual-scroll.component';
 // Global directives
 export * from './lib/directives/sparkle-file-drag-drop.directive';
 export * from './lib/directives/sparkle-prevent-wheel.directive';
+
+// Global config
+export * from './lib/utilities/sparkle-config';

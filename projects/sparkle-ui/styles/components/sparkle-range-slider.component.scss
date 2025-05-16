@@ -46,6 +46,15 @@ $spkRangeSlider: true !default;
       }
     }
 
+    &:has(input[type='range'][disabled]) {
+      --rst-bg: var(--base-ld-6R);
+      opacity: 0.6;
+
+      * {
+        pointer-events: none;
+      }
+    }
+
     input[type='range'] {
       appearance: none;
       width: 100%;
@@ -98,7 +107,6 @@ $spkRangeSlider: true !default;
       position: relative;
       width: 100%;
       height: var(--rst-h);
-      background-color: var(--rst);
       border-radius: var(--rst-s);
       background-color: var(--rst);
       border: 1px solid var(--rst-bc);

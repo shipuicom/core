@@ -16,6 +16,7 @@ import {
 } from '@angular/core';
 import { SparkleProgressBarComponent } from '../sparkle-progress-bar/sparkle-progress-bar.component';
 import { observeChildren } from '../utilities/observe-elements';
+import { SPARKLE_CONFIG } from '../utilities/sparkle-config';
 
 @Directive({
   selector: '[spkResize]',
@@ -199,6 +200,7 @@ type ScrollState = -1 | 0 | 1;
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
+    '[class]': 'class()',
     '[style.grid-template-columns]': 'columnSizes()',
     '[class.resizing]': 'resizing()',
     '(scroll)': 'onScroll()',
@@ -212,6 +214,7 @@ type ScrollState = -1 | 0 | 1;
 })
 export class SparkleTableComponent {
   #el = inject(ElementRef);
+  #spkConfig = inject(SPARKLE_CONFIG, { optional: true });
 
   loading = input<boolean>(false);
   data = input<any>([]);
@@ -221,6 +224,7 @@ export class SparkleTableComponent {
   thead = viewChild<ElementRef<HTMLTableSectionElement>>('thead');
   columns = observeChildren<HTMLTableColElement>(this.thead, ['TH']);
 
+  class = signal<string>(this.#spkConfig?.tableType ?? 'default');
   resizing = signal(false);
   sizeTrigger = signal(true);
   #initialData: any | null = null;

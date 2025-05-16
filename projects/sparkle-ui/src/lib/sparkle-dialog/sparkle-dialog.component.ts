@@ -4,13 +4,16 @@ import {
   computed,
   effect,
   ElementRef,
+  inject,
   input,
   model,
   output,
   viewChild,
 } from '@angular/core';
+import { SPARKLE_CONFIG } from '../utilities/sparkle-config';
 
 export type SparkleDialogOptions = {
+  class?: 'default' | 'type-b';
   width?: string;
   maxWidth?: string;
   height?: string;
@@ -21,6 +24,7 @@ export type SparkleDialogOptions = {
 };
 
 const DEFAULT_OPTIONS: SparkleDialogOptions = {
+  class: 'default',
   width: undefined,
   maxWidth: undefined,
   height: undefined,
@@ -34,13 +38,15 @@ const DEFAULT_OPTIONS: SparkleDialogOptions = {
   selector: 'spk-dialog',
   imports: [],
   template: `
+    @let options = this.defaultOptionMerge();
     <dialog
       spkDialog
       #dialogRef
-      [style.width]="defaultOptionMerge().width ?? ''"
-      [style.max-width]="defaultOptionMerge().maxWidth ?? ''"
-      [style.max-height]="defaultOptionMerge().maxHeight ?? ''"
-      [style.height]="defaultOptionMerge().height ?? ''">
+      [class]="options.class"
+      [style.width]="options.width ?? ''"
+      [style.max-width]="options.maxWidth ?? ''"
+      [style.max-height]="options.maxHeight ?? ''"
+      [style.height]="options.height ?? ''">
       <div class="content">
         <ng-content />
       </div>
@@ -53,6 +59,7 @@ const DEFAULT_OPTIONS: SparkleDialogOptions = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleDialogComponent {
+  #spkConfig = inject(SPARKLE_CONFIG, { optional: true });
   dialogRef = viewChild<ElementRef<HTMLDialogElement>>('dialogRef');
   isOpen = model<boolean>(false);
   options = input<Partial<SparkleDialogOptions>>();
@@ -60,6 +67,7 @@ export class SparkleDialogComponent {
 
   defaultOptionMerge = computed(() => ({
     ...DEFAULT_OPTIONS,
+    ...{ class: this.#spkConfig?.dialogType ?? 'default' },
     ...this.options(),
   }));
 
