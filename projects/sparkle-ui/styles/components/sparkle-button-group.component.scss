@@ -8,6 +8,7 @@ $spkButtonGroup: true !default;
     --btng-ic: var(--base-level-70);
     --btng-bc: var(--base-level-40);
     --btng-h: #{p2r(40)};
+    --btng-p: #{p2r(0 12)};
     --btng-s: var(--shape-2);
     --btng-f: var(--paragraph-30);
 
@@ -16,6 +17,11 @@ $spkButtonGroup: true !default;
     border-radius: var(--btng-s);
     height: var(--btng-h);
     overflow: hidden;
+
+    &.small {
+      --btng-h: #{p2r(32)};
+      --btng-p: #{p2r(0 8)};
+    }
 
     button {
       border: 0;
@@ -26,7 +32,7 @@ $spkButtonGroup: true !default;
       justify-content: center;
       gap: p2r(8);
       position: relative;
-      padding: p2r(0 12);
+      padding: var(--btng-p);
       transition: color 80ms linear;
       min-width: auto;
       cursor: pointer;
