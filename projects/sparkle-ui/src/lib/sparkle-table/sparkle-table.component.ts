@@ -120,12 +120,33 @@ export class SparkleResizeDirective {
   selector: '[spkSort]',
   standalone: true,
   host: {
+    class: 'sortable',
     '(mousedown)': 'toggleSort()',
+    '[class.sort-asc]': 'sortAsc()',
+    '[class.sort-desc]': 'sortDesc()',
   },
 })
 export class SparkleSortDirective {
   #table = inject(SparkleTableComponent);
   spkSort = input<string>();
+
+  sortAsc = computed(() => {
+    const currentSort = this.#table.sortByColumn();
+    const thisColumn = this.spkSort();
+
+    if (!currentSort || !thisColumn) return false;
+
+    return currentSort === thisColumn;
+  });
+
+  sortDesc = computed(() => {
+    const currentSort = this.#table.sortByColumn();
+    const thisColumn = this.spkSort();
+
+    if (!currentSort || !thisColumn) return false;
+
+    return currentSort === `-${thisColumn}`;
+  });
 
   toggleSort() {
     const sortCol = this.spkSort();
