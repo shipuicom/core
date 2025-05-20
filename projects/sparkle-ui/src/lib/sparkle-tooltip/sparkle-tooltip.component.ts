@@ -36,7 +36,7 @@ import { generateUniqueId } from '../utilities/random-id';
     '[class.disabled]': 'disabled()',
   },
 })
-export class SparkleTooltipComponent {
+export class SparkleTooltipComponent_DEPRECATED {
   #BASE_SPACE = 4;
   SUPPORTS_ANCHOR = CSS.supports('position-anchor', '--abc') && CSS.supports('anchor-name', '--abc');
 

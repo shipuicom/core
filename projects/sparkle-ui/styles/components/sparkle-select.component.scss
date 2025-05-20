@@ -119,11 +119,11 @@ $spkSelect: false !default;
       }
 
       &.focused {
-        background-color: var(--primary-2);
+        background-color: var(--primary-1);
         color: var(--base-12);
 
         &:hover {
-          background-color: var(--primary-3);
+          background-color: var(--primary-2);
         }
       }
     }

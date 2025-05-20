@@ -5,7 +5,7 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   SparkleIconComponent,
   SparkleSelectComponent,
-  SparkleTooltipComponent,
+  SparkleTooltipComponent_DEPRECATED,
 } from '../../../../../sparkle-ui/src/public-api';
 
 type Food = {
@@ -27,7 +27,7 @@ disabledCtrl.disable();
     ReactiveFormsModule,
     SparkleSelectComponent,
     SparkleIconComponent,
-    SparkleTooltipComponent,
+    SparkleTooltipComponent_DEPRECATED,
     JsonPipe,
   ],
   templateUrl: './spk-select.component.html',

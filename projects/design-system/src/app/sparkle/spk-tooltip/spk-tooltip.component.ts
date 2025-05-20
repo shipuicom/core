@@ -1,15 +1,21 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SparkleTooltip2 } from '../../../../../sparkle-ui/src/lib/directives/tooltip.directive';
 import {
   SparkleButtonComponent,
   SparkleIconComponent,
-  SparkleTooltipComponent,
+  SparkleTooltipComponent_DEPRECATED,
+  SparkleTooltipDirective,
 } from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-tooltip',
-  imports: [FormsModule, SparkleButtonComponent, SparkleIconComponent, SparkleTooltip2, SparkleTooltipComponent],
+  imports: [
+    FormsModule,
+    SparkleButtonComponent,
+    SparkleIconComponent,
+    SparkleTooltipDirective,
+    SparkleTooltipComponent_DEPRECATED,
+  ],
   templateUrl: './spk-tooltip.component.html',
   styleUrl: './spk-tooltip.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
