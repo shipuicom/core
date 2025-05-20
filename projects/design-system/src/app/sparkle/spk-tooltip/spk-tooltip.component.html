@@ -1,6 +1,55 @@
 <section>
   <h3>Basic</h3>
 
+  <input type="text" [(ngModel)]="tooltipValue" />
+
+  <button spk-button [spkTooltip]="tooltipValue()">
+    <spk-icon>circle</spk-icon>
+    Tooltip 2 as string
+    <spk-icon>circle</spk-icon>
+  </button>
+
+  <button spk-button class="primary" [spkTooltip]="tooltipValue()">
+    <spk-icon>circle</spk-icon>
+    Tooltip 2 as string
+    <spk-icon>circle</spk-icon>
+  </button>
+
+  <button spk-button class="accent" [spkTooltip]="tooltipValue()">
+    <spk-icon>circle</spk-icon>
+    Tooltip 2 as string
+    <spk-icon>circle</spk-icon>
+  </button>
+
+  <button spk-button class="warn" [spkTooltip]="tooltipValue()">
+    <spk-icon>circle</spk-icon>
+    Tooltip 2 as string
+    <spk-icon>circle</spk-icon>
+  </button>
+
+  <button spk-button class="error" [spkTooltip]="tooltipValue()">
+    <spk-icon>circle</spk-icon>
+    Tooltip 2 as string
+    <spk-icon>circle</spk-icon>
+  </button>
+
+  <button spk-button class="success" [spkTooltip]="tooltipValue()">
+    <spk-icon>circle</spk-icon>
+    Tooltip 2 as string
+    <spk-icon>circle</spk-icon>
+  </button>
+
+  <ng-template #tooltip>
+    {{ tooltipValue() }}
+    <strong>world</strong>
+  </ng-template>
+
+  <button spk-button [spkTooltip]="tooltip">
+    <spk-icon>circle</spk-icon>
+    Tooltip 2 as template
+    <spk-icon>circle</spk-icon>
+  </button>
+
   <spk-tooltip message="very very very very very very very very very very very very very very very long tooltip">
     <button spk-button>
       <spk-icon>circle</spk-icon>

@@ -40,14 +40,14 @@ $spkSelect: false !default;
       flex-wrap: wrap;
       align-items: center;
       gap: p2r(4);
-      color: var(--base-level-60);
+      color: var(--base-8);
 
       input {
         margin: 0;
       }
 
       &.is-selected {
-        color: var(--base-level-70);
+        color: var(--base-12);
       }
     }
 
@@ -95,7 +95,7 @@ $spkSelect: false !default;
       background-color: transparent;
       border: 0;
       cursor: pointer;
-      color: var(--base-level-70);
+      color: var(--base-12);
       user-select: none;
 
       &[disabled] {
@@ -114,16 +114,16 @@ $spkSelect: false !default;
       &.active,
       &:checked,
       &:hover {
-        background-color: var(--base-level-30);
-        color: var(--base-level-70);
+        background-color: var(--base-1);
+        color: var(--base-12);
       }
 
       &.focused {
-        background-color: var(--primary-level-20);
-        color: var(--base-level-70);
+        background-color: var(--primary-2);
+        color: var(--base-12);
 
         &:hover {
-          background-color: var(--primary-level-30);
+          background-color: var(--primary-3);
         }
       }
     }

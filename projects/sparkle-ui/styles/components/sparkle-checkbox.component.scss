@@ -5,9 +5,9 @@ $spkCheckbox: true !default;
 @if $spkCheckbox == true {
   spk-checkbox {
     --box-bw: #{p2r(1)};
-    --box-bc: var(--base-level-40);
-    --box-c: var(--base-level-60);
-    --box-bg: var(--base-level-30);
+    --box-bc: var(--base-3L);
+    --box-c: var(--base-8);
+    --box-bg: var(--base-1);
 
     display: flex;
     align-items: center;
@@ -71,45 +71,45 @@ $spkCheckbox: true !default;
     }
 
     &.primary {
-      --box-bg: var(--primary-level-30);
-      --box-bc: var(--primary-level-40);
-      --box-c: var(--primary-500);
+      --box-bg: var(--primary-3);
+      --box-bc: var(--primary-4);
+      --box-c: var(--primary-8);
     }
 
     &.accent {
-      --box-bg: var(--accent-level-30);
-      --box-bc: var(--accent-level-40);
-      --box-c: var(--accent-500);
+      --box-bg: var(--accent-3);
+      --box-bc: var(--accent-4);
+      --box-c: var(--accent-8);
     }
 
     &.warn {
-      --box-bg: var(--warn-level-30);
-      --box-bc: var(--warn-level-40);
-      --box-c: var(--warn-500);
+      --box-bg: var(--warn-3);
+      --box-bc: var(--warn-4);
+      --box-c: var(--warn-8);
     }
 
     &.error {
-      --box-bg: var(--error-level-30);
-      --box-bc: var(--error-level-40);
-      --box-c: var(--error-500);
+      --box-bg: var(--error-3);
+      --box-bc: var(--error-4);
+      --box-c: var(--error-8);
     }
 
     &.success {
-      --box-bg: var(--success-level-30);
-      --box-bc: var(--success-level-40);
-      --box-c: var(--success-500);
+      --box-bg: var(--success-3);
+      --box-bc: var(--success-4);
+      --box-c: var(--success-8);
     }
 
     &.outlined {
-      --box-bg: var(--base-level-10);
+      --box-bg: var(--base-1L);
 
       &.primary,
       &.accent,
       &.warn,
       &.error,
       &.success {
-        --box-bg: var(--base-level-10);
-        --box-bc: var(--base-level-40);
+        --box-bg: var(--base-1L);
+        --box-bc: var(--base-3L);
       }
     }
 
@@ -120,9 +120,9 @@ $spkCheckbox: true !default;
       &.warn,
       &.error,
       &.success {
-        --box-bc: var(--base-level-40);
-        --box-c: var(--base-level-60);
-        --box-bg: var(--base-level-30);
+        --box-bc: var(--base-3L);
+        --box-c: var(--base-8);
+        --box-bg: var(--base-1);
       }
     }
 
@@ -155,53 +155,53 @@ $spkCheckbox: true !default;
 
   %flat {
     --box-bw: 0;
-    --box-bg: var(--grey-500);
+    --box-bg: var(--base-8S);
     --box-c: #fff;
 
     &.primary {
-      --box-bg: var(--primary-500);
+      --box-bg: var(--primary-8);
     }
 
     &.accent {
-      --box-bg: var(--accent-500);
+      --box-bg: var(--accent-8);
     }
 
     &.warn {
-      --box-bg: var(--warn-500);
+      --box-bg: var(--warn-8);
     }
 
     &.error {
-      --box-bg: var(--error-500);
+      --box-bg: var(--error-8);
     }
 
     &.success {
-      --box-bg: var(--success-500);
+      --box-bg: var(--success-8);
     }
   }
 
   %raised {
     --box-bw: 0;
-    --box-bg: var(--base-gradient-20);
+    --box-bg: var(--base-g-2);
     --box-c: #fff;
 
     &.primary {
-      --box-bg: var(--primary-gradient-20);
+      --box-bg: var(--primary-g-2);
     }
 
     &.accent {
-      --box-bg: var(--accent-gradient-20);
+      --box-bg: var(--accent-g-2);
     }
 
     &.warn {
-      --box-bg: var(--warn-gradient-20);
+      --box-bg: var(--warn-g-2);
     }
 
     &.error {
-      --box-bg: var(--error-gradient-20);
+      --box-bg: var(--error-g-2);
     }
 
     &.success {
-      --box-bg: var(--success-gradient-20);
+      --box-bg: var(--success-g-2);
     }
   }
 }

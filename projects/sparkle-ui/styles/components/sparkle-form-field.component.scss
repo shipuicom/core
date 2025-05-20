@@ -7,11 +7,11 @@ $spkFormFieldShadow: false !default;
   spk-form-field-popover,
   spk-form-field {
     --ff-s: var(--shape-2);
-    --ff-bc: var(--base-level-40);
-    --ff-prefix-bg: var(--base-level-20);
+    --ff-bc: var(--base-3);
+    --ff-prefix-bg: var(--base-1);
     --ff-suffix-bg: transparent;
-    --ff-ic: var(--base-level-60);
-    --ff-bg: var(--base-level-10);
+    --ff-ic: var(--base-8);
+    --ff-bg: var(--base-1L);
     --ff-f: var(--paragraph-30B);
     --ff-spinner-size: #{p2r(20)};
     --ff-spinner-thickness: #{p2r(2)};
@@ -116,9 +116,9 @@ $spkFormFieldShadow: false !default;
     }
 
     &:has(input.ng-touched.ng-invalid) {
-      --ff-ic: var(--error-500);
-      --ff-bc: var(--error-500);
-      --ff-prefix-bg: var(--error-level-20);
+      --ff-ic: var(--error-8);
+      --ff-bc: var(--error-8);
+      --ff-prefix-bg: var(--error-2);
     }
 
     &.autosize {
@@ -155,7 +155,7 @@ $spkFormFieldShadow: false !default;
       textarea {
         resize: none;
         margin: p2r(8 0);
-        color: var(--base-level-60);
+        color: var(--base-8);
         field-sizing: content;
       }
 
@@ -187,12 +187,12 @@ $spkFormFieldShadow: false !default;
         background: transparent;
         font: var(--paragraph-30B);
         flex: 1 0;
-        color: var(--base-level-60);
+        color: var(--base-8);
         margin: var(--ff-input-space);
         width: 100%;
 
         &::placeholder {
-          color: var(--base-level-60R);
+          color: var(--base-4);
         }
 
         &:focus {
@@ -223,7 +223,7 @@ $spkFormFieldShadow: false !default;
       padding-top: p2r(4);
 
       [hint] {
-        color: var(--base-level-60R);
+        color: var(--base-6R);
 
         &[suffix] {
           justify-self: flex-end;
@@ -248,7 +248,7 @@ $spkFormFieldShadow: false !default;
     }
 
     .error {
-      color: var(--error-500);
+      color: var(--error-8);
       opacity: 1;
       transition: opacity 125ms linear;
       position: absolute;
@@ -263,7 +263,7 @@ $spkFormFieldShadow: false !default;
       align-items: center;
       justify-content: space-between;
       width: 100%;
-      color: var(--base-level-60R);
+      color: var(--base-8R);
       opacity: 1;
       transition:
         visibility 125ms linear,
@@ -276,15 +276,15 @@ $spkFormFieldShadow: false !default;
     }
 
     &.error {
-      --ff-ic: var(--error-500);
+      --ff-ic: var(--error-8);
     }
 
     &.warning {
-      --ff-ic: var(--warn-500);
+      --ff-ic: var(--warn-8);
     }
 
     &.success {
-      --ff-ic: var(--success-500);
+      --ff-ic: var(--success-8);
     }
   }
 }

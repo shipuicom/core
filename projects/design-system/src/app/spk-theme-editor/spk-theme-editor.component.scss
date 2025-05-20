@@ -29,11 +29,13 @@
   grid-template-columns: repeat(12, 1fr);
   gap: p2r(4);
   padding: p2r(20);
-  background-color: var(--base-level-20);
+  background-color: var(--base-1);
   border-radius: var(--shape-3);
-  border: 1px solid var(--base-level-40);
+  border: 1px solid var(--base-3L);
+  color-scheme: light;
   &.flip {
-    background-color: var(--base-level-70);
+    color-scheme: dark;
+    background-color: var(--base-12);
   }
 
   .color-box {

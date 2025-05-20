@@ -26,7 +26,7 @@ $spkMenu: true !default;
       spk-popover .options {
         [title] {
           position: sticky;
-          border-bottom: 1px solid var(--base-level-40);
+          border-bottom: 1px solid var(--base-3L);
         }
       }
 
@@ -51,7 +51,7 @@ $spkMenu: true !default;
         right: p2r(8);
         top: 50%;
         transform: translateY(-50%);
-        color: var(--base-level-60);
+        color: var(--base-8);
         font-size: p2r(16);
         font-weight: inherit;
         pointer-events: none;
@@ -73,7 +73,7 @@ $spkMenu: true !default;
       .overlay ~ .form-field-wrap {
         spk-form-field {
           z-index: 10;
-          background-color: var(--base-level-10);
+          background-color: var(--base-1L);
 
           &.hidden {
             opacity: 0;
@@ -129,14 +129,14 @@ $spkMenu: true !default;
 
       [title] {
         font: var(--paragraph-30);
-        color: var(--base-level-60);
+        color: var(--base-8);
         padding: p2r(8 12);
         margin: 0;
         user-select: none;
         position: relative;
         top: 0;
         z-index: 10;
-        background-color: var(--base-level-10);
+        background-color: var(--base-1L);
       }
 
       button {
@@ -154,7 +154,7 @@ $spkMenu: true !default;
         background-color: transparent;
         border: 0;
         cursor: pointer;
-        color: var(--base-level-70);
+        color: var(--base-12);
 
         &[disabled] {
           opacity: 0.3;
@@ -167,7 +167,7 @@ $spkMenu: true !default;
 
         [suffix] {
           order: 999;
-          color: var(--base-level-60);
+          color: var(--base-8);
           font: var(--paragraph-30);
           justify-self: flex-end;
           display: inline-flex;
@@ -181,16 +181,16 @@ $spkMenu: true !default;
 
         &.active,
         &:hover {
-          background-color: var(--base-level-30);
-          color: var(--base-level-70);
+          background-color: var(--base-1);
+          color: var(--base-12);
         }
 
         &.focused {
-          background-color: var(--primary-level-20);
-          color: var(--base-level-70);
+          background-color: var(--primary-2);
+          color: var(--base-12);
 
           &:hover {
-            background-color: var(--primary-level-30);
+            background-color: var(--primary-3);
           }
         }
       }

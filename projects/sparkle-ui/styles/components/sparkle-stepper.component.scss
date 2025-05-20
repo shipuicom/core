@@ -19,7 +19,7 @@ $spkStepper: true !default;
       justify-content: center;
       gap: p2r(8);
       position: relative;
-      color: var(--base-level-60R);
+      color: var(--base-6R);
       cursor: pointer;
       user-select: none;
 
@@ -43,14 +43,14 @@ $spkStepper: true !default;
 
           .radio {
             border-width: 0;
-            background: var(--primary-gradient-20);
+            background: var(--primary-g-2);
           }
         }
       }
 
       spk-radio {
         .radio {
-          --radiod-c: var(--base-level-10);
+          --radiod-c: var(--base-1L);
 
           width: p2r(16);
           height: p2r(16);
@@ -58,7 +58,7 @@ $spkStepper: true !default;
       }
 
       &.active {
-        color: var(--primary-500);
+        color: var(--primary-8);
         outline: none;
 
         spk-radio {
@@ -67,7 +67,7 @@ $spkStepper: true !default;
 
           .radio {
             border-width: 0;
-            background: var(--primary-gradient-20);
+            background: var(--primary-g-2);
           }
 
           &:before {
@@ -78,7 +78,7 @@ $spkStepper: true !default;
             z-index: -1;
             right: 0;
             height: p2r(4);
-            background-color: var(--primary-500);
+            background-color: var(--primary-8);
           }
         }
       }
@@ -92,7 +92,7 @@ $spkStepper: true !default;
       z-index: 0;
       right: 0;
       height: p2r(4);
-      background-color: var(--base-level-30);
+      background-color: var(--base-1);
     }
   }
 }

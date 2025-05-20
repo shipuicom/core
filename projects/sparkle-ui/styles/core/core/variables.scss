@@ -5,8 +5,10 @@
 @mixin palette($palette, $name) {
   @each $key, $value in $palette {
     --#{"" + $name}-#{$key}: #{list.nth($value, 1)};
-    // --#{"" + $name}-rgb-#{$key}: #{list.nth($value, 2)};
-    --#{"" + $name}-contrast-#{$key}: var(--#{list.nth($value, 3)}-primary-text);
+
+    @if ($key == 500) {
+      --#{"" + $name}-contrast-#{$key}: var(--#{list.nth($value, 3)}-primary-text);
+    }
   }
 }
 
@@ -20,12 +22,111 @@ html body {
   --sparkle-dark: ;
   color-scheme: light dark;
 
-  @include palette(palettes.$topaz-palette, primary);
-  @include palette(palettes.$violet-palette, accent);
-  @include palette(palettes.$amber-palette, warn);
-  @include palette(palettes.$ruby-palette, error);
-  @include palette(palettes.$emerald-palette, success);
-  @include palette(palettes.$mono-palette, grey);
+  --primary-1: #{light-dark(hsl(217, 91%, 95%), hsl(217, 91%, 7.5%))};
+  --primary-2: #{light-dark(hsl(217, 91%, 90%), hsl(217, 91%, 15%))};
+  --primary-3: #{light-dark(hsl(217, 91%, 85%), hsl(217, 91%, 22.5%))};
+  --primary-4: #{light-dark(hsl(217, 91%, 80%), hsl(217, 91%, 30%))};
+  --primary-5: #{light-dark(hsl(217, 91%, 75%), hsl(217, 91%, 37.5%))};
+  --primary-6: #{light-dark(hsl(217, 91%, 70%), hsl(217, 91%, 45%))};
+  --primary-7: #{light-dark(hsl(217, 91%, 65%), hsl(217, 91%, 52.5%))};
+  --primary-8: #{light-dark(hsl(217, 91%, 60%), hsl(217, 91%, 60%))};
+  --primary-9: #{light-dark(hsl(217, 91%, 46.5%), hsl(217, 91%, 70%))};
+  --primary-10: #{light-dark(hsl(217, 91%, 33%), hsl(217, 91%, 80%))};
+  --primary-11: #{light-dark(hsl(217, 91%, 19.5%), hsl(217, 91%, 90%))};
+  --primary-12: #{light-dark(hsl(217, 91%, 6%), hsl(217, 91%, 100%))};
+  --primary-g-2: linear-gradient(180deg, hsl(217, 91%, 65%) 0%, hsl(217, 91%, 60%) 50%);
+  --primary-g-3: linear-gradient(180deg, hsl(217, 91%, 80%) 0%, hsl(217, 91%, 60%) 50%);
+
+  --accent-1: #{light-dark(hsl(258, 90%, 95.75%), hsl(258, 90%, 8.25%))};
+  --accent-2: #{light-dark(hsl(258, 90%, 91.5%), hsl(258, 90%, 16.5%))};
+  --accent-3: #{light-dark(hsl(258, 90%, 87.25%), hsl(258, 90%, 24.75%))};
+  --accent-4: #{light-dark(hsl(258, 90%, 83%), hsl(258, 90%, 33%))};
+  --accent-5: #{light-dark(hsl(258, 90%, 78.75%), hsl(258, 90%, 41.25%))};
+  --accent-6: #{light-dark(hsl(258, 90%, 74.5%), hsl(258, 90%, 49.5%))};
+  --accent-7: #{light-dark(hsl(258, 90%, 70.25%), hsl(258, 90%, 57.75%))};
+  --accent-8: #{light-dark(hsl(258, 90%, 66%), hsl(258, 90%, 66%))};
+  --accent-9: #{light-dark(hsl(258, 90%, 51.15%), hsl(258, 90%, 74.5%))};
+  --accent-10: #{light-dark(hsl(258, 90%, 36.3%), hsl(258, 90%, 83%))};
+  --accent-11: #{light-dark(hsl(258, 90%, 21.45%), hsl(258, 90%, 91.5%))};
+  --accent-12: #{light-dark(hsl(258, 90%, 6.6%), hsl(258, 90%, 100%))};
+  --accent-g-2: linear-gradient(180deg, hsl(258, 90%, 70.25%) 0%, hsl(258, 90%, 66%) 50%);
+  --accent-g-3: linear-gradient(180deg, hsl(258, 90%, 83%) 0%, hsl(258, 90%, 66%) 50%);
+
+  --warn-1: #{light-dark(hsl(37, 92%, 93.75%), hsl(37, 92%, 6.25%))};
+  --warn-2: #{light-dark(hsl(37, 92%, 87.5%), hsl(37, 92%, 12.5%))};
+  --warn-3: #{light-dark(hsl(37, 92%, 81.25%), hsl(37, 92%, 18.75%))};
+  --warn-4: #{light-dark(hsl(37, 92%, 75%), hsl(37, 92%, 25%))};
+  --warn-5: #{light-dark(hsl(37, 92%, 68.75%), hsl(37, 92%, 31.25%))};
+  --warn-6: #{light-dark(hsl(37, 92%, 62.5%), hsl(37, 92%, 37.5%))};
+  --warn-7: #{light-dark(hsl(37, 92%, 56.25%), hsl(37, 92%, 43.75%))};
+  --warn-8: #{light-dark(hsl(37, 92%, 50%), hsl(37, 92%, 50%))};
+  --warn-9: #{light-dark(hsl(37, 92%, 38.75%), hsl(37, 92%, 62.5%))};
+  --warn-10: #{light-dark(hsl(37, 92%, 27.5%), hsl(37, 92%, 75%))};
+  --warn-11: #{light-dark(hsl(37, 92%, 16.25%), hsl(37, 92%, 87.5%))};
+  --warn-12: #{light-dark(hsl(37, 92%, 5%), hsl(37, 92%, 100%))};
+  --warn-g-2: linear-gradient(180deg, hsl(37, 92%, 56.25%) 0%, hsl(37, 92%, 50%) 50%);
+  --warn-g-3: linear-gradient(180deg, hsl(37, 92%, 75%) 0%, hsl(37, 92%, 50%) 50%);
+
+  --error-1: #{light-dark(hsl(0, 84%, 95%), hsl(0, 84%, 7.5%))};
+  --error-2: #{light-dark(hsl(0, 84%, 90%), hsl(0, 84%, 15%))};
+  --error-3: #{light-dark(hsl(0, 84%, 85%), hsl(0, 84%, 22.5%))};
+  --error-4: #{light-dark(hsl(0, 84%, 80%), hsl(0, 84%, 30%))};
+  --error-5: #{light-dark(hsl(0, 84%, 75%), hsl(0, 84%, 37.5%))};
+  --error-6: #{light-dark(hsl(0, 84%, 70%), hsl(0, 84%, 45%))};
+  --error-7: #{light-dark(hsl(0, 84%, 65%), hsl(0, 84%, 52.5%))};
+  --error-8: #{light-dark(hsl(0, 84%, 60%), hsl(0, 84%, 60%))};
+  --error-9: #{light-dark(hsl(0, 84%, 46.5%), hsl(0, 84%, 70%))};
+  --error-10: #{light-dark(hsl(0, 84%, 33%), hsl(0, 84%, 80%))};
+  --error-11: #{light-dark(hsl(0, 84%, 19.5%), hsl(0, 84%, 90%))};
+  --error-12: #{light-dark(hsl(0, 84%, 6%), hsl(0, 84%, 100%))};
+  --error-g-2: linear-gradient(180deg, hsl(0, 84%, 65%) 0%, hsl(0, 84%, 60%) 50%);
+  --error-g-3: linear-gradient(180deg, hsl(0, 84%, 80%) 0%, hsl(0, 84%, 60%) 50%);
+
+  --success-1: #{light-dark(hsl(160, 84%, 92.38%), hsl(160, 84%, 4.88%))};
+  --success-2: #{light-dark(hsl(160, 84%, 84.75%), hsl(160, 84%, 9.75%))};
+  --success-3: #{light-dark(hsl(160, 84%, 77.13%), hsl(160, 84%, 14.63%))};
+  --success-4: #{light-dark(hsl(160, 84%, 69.5%), hsl(160, 84%, 19.5%))};
+  --success-5: #{light-dark(hsl(160, 84%, 61.88%), hsl(160, 84%, 24.38%))};
+  --success-6: #{light-dark(hsl(160, 84%, 54.25%), hsl(160, 84%, 29.25%))};
+  --success-7: #{light-dark(hsl(160, 84%, 46.63%), hsl(160, 84%, 34.13%))};
+  --success-8: #{light-dark(hsl(160, 84%, 39%), hsl(160, 84%, 39%))};
+  --success-9: #{light-dark(hsl(160, 84%, 30.23%), hsl(160, 84%, 54.25%))};
+  --success-10: #{light-dark(hsl(160, 84%, 21.45%), hsl(160, 84%, 69.5%))};
+  --success-11: #{light-dark(hsl(160, 84%, 12.67%), hsl(160, 84%, 84.75%))};
+  --success-12: #{light-dark(hsl(160, 84%, 3.9%), hsl(160, 84%, 100%))};
+  --success-g-2: linear-gradient(180deg, hsl(160, 84%, 46.63%) 0%, hsl(160, 84%, 39%) 50%);
+  --success-g-3: linear-gradient(180deg, hsl(160, 84%, 69.5%) 0%, hsl(160, 84%, 39%) 50%);
+
+  --base-1L: #{light-dark(#fff, hsl(240, 4%, 5.75%))};
+  --base-1: #{light-dark(hsl(240, 4%, 97.25%), hsl(240, 4%, 8.75%))};
+  --base-1D: #{light-dark(hsl(240, 4%, 93.25%), hsl(240, 4%, 5.75%))};
+  --base-2L: #{light-dark(hsl(240, 4%, 93.25%), hsl(240, 4%, 11.5%))};
+  --base-2: #{light-dark(hsl(240, 4%, 86.5%), hsl(240, 4%, 11.5%))};
+  --base-3L: #{light-dark(hsl(240, 4%, 84.75%), hsl(240, 4%, 17.25%))};
+  --base-3: #{light-dark(hsl(240, 4%, 79.75%), hsl(240, 4%, 17.25%))};
+  --base-4: #{light-dark(hsl(240, 21%, 19%), hsl(240, 4%, 23%))};
+  --base-4: #{light-dark(hsl(240, 4%, 66.25%), hsl(240, 4%, 28.75%))};
+  --base-6: #{light-dark(hsl(240, 4%, 59.5%), hsl(240, 4%, 34.5%))};
+  --base-6R: #{light-dark(hsl(240, 4%, 34.5%), hsl(240, 4%, 59.5%))};
+  --base-7: #{light-dark(hsl(240, 4%, 52.75%), hsl(240, 4%, 40.25%))};
+  --base-8: #{light-dark(hsl(240, 4%, 46%), hsl(240, 4%, 46%))};
+  --base-8S: hsl(240, 4%, 46%);
+  --base-9: #{light-dark(hsl(240, 4%, 35.65%), hsl(240, 4%, 59.5%))};
+  --base-9S: hsl(240, 4%, 35.65%);
+  --base-10: #{light-dark(hsl(240, 4%, 25.3%), hsl(240, 4%, 73%))};
+  --base-11: #{light-dark(hsl(240, 4%, 14.95%), hsl(240, 4%, 86.5%))};
+  --base-12: #{light-dark(hsl(240, 4%, 4.6%), hsl(240, 4%, 100%))};
+
+  --base-g-2: linear-gradient(180deg, hsl(240, 4%, 52.75%) 0%, hsl(240, 4%, 46%) 50%);
+  --base-g-3: linear-gradient(180deg, hsl(240, 4%, 73%) 0%, hsl(240, 4%, 46%) 50%);
+  --base-g-6: linear-gradient(180deg, hsl(240, 4%, 25.3%) 0%, hsl(240, 4%, 14.95%) 50%);
+  --base-g-7: linear-gradient(180deg, hsl(240, 4%, 35.65%) 0%, hsl(240, 4%, 14.95%) 50%);
+
+  --primary-c-8: var(--light-text);
+  --accent-c-8: var(--light-text);
+  --warn-c-8: var(--light-text);
+  --error-c-8: var(--light-text);
+  --success-c-8: var(--light-text);
 
   --display-10: 600 #{p2r(80)} / normal Inter Tight, sans-serif;
   --display-20: 600 #{p2r(72)} / normal Inter Tight, sans-serif;
@@ -65,86 +166,8 @@ html body {
   --box-shadow-50: 0 20px 25px -5px rgba(18, 18, 23, 0.1);
   --box-shadow-60: 0 25px 50px -12px rgba(18, 18, 23, 0.25);
 
-  // --10: #fff;
-  // --20: #fafafa;
-  // --30: #efeff1;
-  // --40: #e4e4e7;
-  // --50: #a1a1aa;
-  // --60: #71717a;
-  // --70: #18181b;
-
-  // --10R: #09090c;
-  // --20R: #18181b;
-  // --30R: #2e2e33;
-  // --40R: #51515a;
-  // --50R: #71717a;
-  // --60R: #a1a1aa;
-  // --70R: #f3f3f3;
-
-  --base-level-10: #{light-dark(#fff, var(--grey-950))};
-  --base-level-20: #{light-dark(var(--grey-50), var(--grey-900))};
-  --base-level-30: #{light-dark(var(--grey-100), var(--grey-900))};
-  --base-level-30R: #{light-dark(var(--grey-900), var(--grey-100))};
-  --base-level-40: #{light-dark(var(--grey-200), var(--grey-700))};
-  --base-level-50: #{light-dark(var(--grey-300), var(--grey-800))};
-  --base-level-60: #{light-dark(var(--grey-500), var(--grey-400))};
-  --base-level-60R: #{light-dark(var(--grey-400), var(--grey-500))};
-  --base-level-70: #{light-dark(var(--grey-900), #fff)};
-  --base-level-70R: #{light-dark(#fff, var(--grey-900))};
-
-  --base-gradient-20: linear-gradient(180deg, var(--grey-400) 0%, var(--grey-500) 50%);
-  --base-gradient-30: linear-gradient(180deg, var(--grey-300) 0%, var(--grey-500) 50%);
-  --base-gradient-60: linear-gradient(180deg, var(--grey-700) 0%, var(--grey-900) 50%);
-  --base-gradient-70: linear-gradient(180deg, var(--grey-600) 0%, var(--grey-900) 50%);
-
-  // Palette light/dark variants
-  --primary-level-20: #{light-dark(var(--primary-50), var(--primary-950))};
-  --primary-level-30: #{light-dark(var(--primary-100), var(--primary-900))};
-  --primary-level-40: #{light-dark(var(--primary-200), var(--primary-800))};
-  --primary-level-50: #{light-dark(var(--primary-300), var(--primary-800))};
-  --primary-level-50R: #{light-dark(var(--primary-800), var(--primary-300))};
-  --primary-level-80: #{light-dark(var(--primary-900), var(--primary-300))};
-  --primary-gradient-20: linear-gradient(180deg, var(--primary-400) 0%, var(--primary-500) 50%);
-  --primary-gradient-30: linear-gradient(180deg, var(--primary-300) 0%, var(--primary-500) 50%);
-
-  --accent-level-20: #{light-dark(var(--accent-50), var(--accent-950))};
-  --accent-level-30: #{light-dark(var(--accent-100), var(--accent-900))};
-  --accent-level-40: #{light-dark(var(--accent-200), var(--accent-800))};
-  --accent-level-50: #{light-dark(var(--accent-300), var(--accent-800))};
-  --accent-level-50R: #{light-dark(var(--accent-800), var(--accent-300))};
-  --accent-level-80: #{light-dark(var(--accent-900), var(--accent-300))};
-  --accent-gradient-20: linear-gradient(180deg, var(--accent-400) 0%, var(--accent-500) 50%);
-  --accent-gradient-30: linear-gradient(180deg, var(--accent-300) 0%, var(--accent-500) 50%);
-
-  --warn-level-20: #{light-dark(var(--warn-50), var(--warn-950))};
-  --warn-level-30: #{light-dark(var(--warn-100), var(--warn-900))};
-  --warn-level-40: #{light-dark(var(--warn-200), var(--warn-800))};
-  --warn-level-50: #{light-dark(var(--warn-300), var(--warn-800))};
-  --warn-level-50R: #{light-dark(var(--warn-800), var(--warn-300))};
-  --warn-level-80: #{light-dark(var(--warn-900), var(--warn-300))};
-  --warn-gradient-20: linear-gradient(180deg, var(--warn-400) 0%, var(--warn-500) 50%);
-  --warn-gradient-30: linear-gradient(180deg, var(--warn-300) 0%, var(--warn-500) 50%);
-
-  --error-level-20: #{light-dark(var(--error-50), var(--error-950))};
-  --error-level-30: #{light-dark(var(--error-100), var(--error-900))};
-  --error-level-40: #{light-dark(var(--error-200), var(--error-800))};
-  --error-level-50: #{light-dark(var(--error-300), var(--error-800))};
-  --error-level-50R: #{light-dark(var(--error-800), var(--error-300))};
-  --error-level-80: #{light-dark(var(--error-900), var(--error-300))};
-  --error-gradient-20: linear-gradient(180deg, var(--error-400) 0%, var(--error-500) 50%);
-  --error-gradient-30: linear-gradient(180deg, var(--error-300) 0%, var(--error-500) 50%);
-
-  --success-level-20: #{light-dark(var(--success-50), var(--success-950))};
-  --success-level-30: #{light-dark(var(--success-100), var(--success-900))};
-  --success-level-40: #{light-dark(var(--success-200), var(--success-800))};
-  --success-level-50: #{light-dark(var(--success-300), var(--success-800))};
-  --success-level-50R: #{light-dark(var(--success-800), var(--success-300))};
-  --success-level-80: #{light-dark(var(--success-900), var(--success-300))};
-  --success-gradient-20: linear-gradient(180deg, var(--success-400) 0%, var(--success-500) 50%);
-  --success-gradient-30: linear-gradient(180deg, var(--success-300) 0%, var(--success-500) 50%);
-
-  --dark-primary-text: var(--grey-900);
-  --light-primary-text: #fff;
+  --dark-text: var(--grey-900);
+  --light-text: #fff;
 
   &.dark {
     --sparkle-light: ;

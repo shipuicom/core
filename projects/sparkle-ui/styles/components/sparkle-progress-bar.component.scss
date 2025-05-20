@@ -5,10 +5,10 @@ $spkProgressBar: true !default;
 @if $spkProgressBar == true {
   spk-progress-bar {
     --pb-h: #{p2r(8)};
-    --pb-b: var(--base-level-40);
-    --pb-bg: var(--base-level-30);
+    --pb-b: var(--base-3L);
+    --pb-bg: var(--base-1);
     --pb-br: var(--shape-2);
-    --pbt-bg: var(--base-level-20);
+    --pbt-bg: var(--base-1);
     --pbt-br: inherit;
 
     display: block;
@@ -45,35 +45,35 @@ $spkProgressBar: true !default;
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: var(--base-level-30);
+        background-color: var(--base-1);
         animation: indeterminate-progress-bar-stripes-background 2s linear infinite;
         transform-origin: top left;
       }
     }
 
     &.primary {
-      --pbt-bg: var(--primary-500);
+      --pbt-bg: var(--primary-8);
     }
 
     &.accent {
-      --pbt-bg: var(--accent-500);
+      --pbt-bg: var(--accent-8);
     }
 
     &.warn {
-      --pbt-bg: var(--warn-500);
+      --pbt-bg: var(--warn-8);
     }
 
     &.error {
-      --pbt-bg: var(--error-500);
+      --pbt-bg: var(--error-8);
     }
 
     &.success {
-      --pbt-bg: var(--success-500);
+      --pbt-bg: var(--success-8);
     }
 
     &.outlined {
-      --pb-b: 1px solid var(--base-level-40);
-      --pb-bg: var(--base-level-10);
+      --pb-b: 1px solid var(--base-3L);
+      --pb-bg: var(--base-1L);
 
       &:after {
         background-color: inherit;
@@ -81,54 +81,54 @@ $spkProgressBar: true !default;
     }
 
     &.flat {
-      --pbt-bg: var(--base-level-30);
+      --pbt-bg: var(--base-1);
 
       &:after {
         background-color: inherit;
       }
 
       &.primary {
-        --pbt-bg: var(--primary-level-30);
+        --pbt-bg: var(--primary-3);
       }
 
       &.accent {
-        --pbt-bg: var(--accent-level-30);
+        --pbt-bg: var(--accent-3);
       }
 
       &.warn {
-        --pbt-bg: var(--warn-level-30);
+        --pbt-bg: var(--warn-3);
       }
 
       &.error {
-        --pbt-bg: var(--error-level-30);
+        --pbt-bg: var(--error-3);
       }
 
       &.success {
-        --pbt-bg: var(--success-level-30);
+        --pbt-bg: var(--success-3);
       }
     }
 
     &.raised {
-      --pbt-bg: var(--base-gradient-30);
+      --pbt-bg: var(--base-g-3);
 
       &.primary {
-        --pbt-bg: var(--primary-gradient-30);
+        --pbt-bg: var(--primary-g-3);
       }
 
       &.accent {
-        --pbt-bg: var(--accent-gradient-30);
+        --pbt-bg: var(--accent-g-3);
       }
 
       &.warn {
-        --pbt-bg: var(--warn-gradient-30);
+        --pbt-bg: var(--warn-g-3);
       }
 
       &.error {
-        --pbt-bg: var(--error-gradient-30);
+        --pbt-bg: var(--error-g-3);
       }
 
       &.success {
-        --pbt-bg: var(--success-gradient-30);
+        --pbt-bg: var(--success-g-3);
       }
     }
   }

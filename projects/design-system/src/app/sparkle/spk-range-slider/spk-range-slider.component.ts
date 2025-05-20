@@ -24,6 +24,7 @@ export default class SpkRangeSliderComponent {
 
   someFloatRangeValue = signal(0.12);
   someRangeValue = signal(50);
+  someUndefinedValue = signal(undefined);
   fg = new FormGroup({
     rangeCtrl: new FormControl(50),
   });

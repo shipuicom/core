@@ -4,13 +4,13 @@ $spkAlert: true !default;
 @if $spkAlert == true {
   spk-alert {
     --alert-ad: 400ms;
-    --alert-bg: var(--base-level-10);
+    --alert-bg: var(--base-1L);
 
-    --alert-bc: var(--base-level-40);
-    --alert-state-ic: var(--base-level-70);
-    --alert-close-ic: var(--base-level-60);
-    --alert-title-c: var(--base-level-70);
-    --alert-content-c: var(--base-level-60);
+    --alert-bc: var(--base-3L);
+    --alert-state-ic: var(--base-12);
+    --alert-close-ic: var(--base-8);
+    --alert-title-c: var(--base-12);
+    --alert-content-c: var(--base-8);
     --alert-bs: var(--box-shadow-10);
 
     max-height: #{p2r(300)};
@@ -86,48 +86,48 @@ $spkAlert: true !default;
     }
 
     &.primary {
-      --alert-state-ic: var(--primary-500);
-      --alert-close-ic: var(--primary-500);
-      --alert-title-c: var(--primary-level-80);
-      --alert-content-c: var(--primary-level-80);
-      --alert-bg: var(--primary-level-20);
-      --alert-bc: var(--primary-level-40);
+      --alert-state-ic: var(--primary-8);
+      --alert-close-ic: var(--primary-8);
+      --alert-title-c: var(--primary-8);
+      --alert-content-c: var(--primary-8);
+      --alert-bg: var(--primary-2);
+      --alert-bc: var(--primary-4);
     }
 
     &.accent {
-      --alert-state-ic: var(--accent-500);
-      --alert-close-ic: var(--accent-500);
-      --alert-title-c: var(--accent-level-80);
-      --alert-content-c: var(--accent-level-80);
-      --alert-bg: var(--accent-level-20);
-      --alert-bc: var(--accent-level-40);
+      --alert-state-ic: var(--accent-8);
+      --alert-close-ic: var(--accent-8);
+      --alert-title-c: var(--accent-8);
+      --alert-content-c: var(--accent-8);
+      --alert-bg: var(--accent-2);
+      --alert-bc: var(--accent-4);
     }
 
     &.warn {
-      --alert-state-ic: var(--warn-500);
-      --alert-close-ic: var(--warn-500);
-      --alert-title-c: var(--warn-level-80);
-      --alert-content-c: var(--warn-level-80);
-      --alert-bg: var(--warn-level-20);
-      --alert-bc: var(--warn-level-40);
+      --alert-state-ic: var(--warn-8);
+      --alert-close-ic: var(--warn-8);
+      --alert-title-c: var(--warn-8);
+      --alert-content-c: var(--warn-8);
+      --alert-bg: var(--warn-2);
+      --alert-bc: var(--warn-4);
     }
 
     &.error {
-      --alert-state-ic: var(--error-500);
-      --alert-close-ic: var(--error-500);
-      --alert-title-c: var(--error-level-80);
-      --alert-content-c: var(--error-level-80);
-      --alert-bg: var(--error-level-20);
-      --alert-bc: var(--error-level-40);
+      --alert-state-ic: var(--error-8);
+      --alert-close-ic: var(--error-8);
+      --alert-title-c: var(--error-8);
+      --alert-content-c: var(--error-8);
+      --alert-bg: var(--error-2);
+      --alert-bc: var(--error-4);
     }
 
     &.success {
-      --alert-state-ic: var(--success-500);
-      --alert-close-ic: var(--success-500);
-      --alert-title-c: var(--success-level-80);
-      --alert-content-c: var(--success-level-80);
-      --alert-bg: var(--success-level-20);
-      --alert-bc: var(--success-level-40);
+      --alert-state-ic: var(--success-8);
+      --alert-close-ic: var(--success-8);
+      --alert-title-c: var(--success-8);
+      --alert-content-c: var(--success-8);
+      --alert-bg: var(--success-2);
+      --alert-bc: var(--success-4);
     }
 
     &:not(:has([content])) .alert {
@@ -136,12 +136,12 @@ $spkAlert: true !default;
     }
 
     &:has([content]) .alert {
-      background-color: var(--base-level-10);
-      border: 1px solid var(--base-level-40);
+      background-color: var(--base-1L);
+      border: 1px solid var(--base-3L);
       box-shadow: var(--box-shadow-50);
 
       .title {
-        color: var(--base-level-70);
+        color: var(--base-12);
       }
 
       .close-icon {
@@ -149,7 +149,7 @@ $spkAlert: true !default;
       }
 
       .content {
-        color: var(--base-level-60);
+        color: var(--base-8);
       }
 
       body.dark & {

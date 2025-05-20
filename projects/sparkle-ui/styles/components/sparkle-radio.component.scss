@@ -5,11 +5,11 @@ $spkRadio: true !default;
 @if $spkRadio == true {
   spk-radio {
     --radio-bw: #{p2r(1)};
-    --radio-bg: var(--base-level-30);
-    --radio-bc: var(--base-level-40);
-    --radio-c: var(--base-level-60);
+    --radio-bg: var(--base-1);
+    --radio-bc: var(--base-3L);
+    --radio-c: var(--base-8);
     --radiod-o: 0;
-    --radiod-c: var(--base-level-60);
+    --radiod-c: var(--base-8);
 
     display: flex;
     align-items: center;
@@ -64,110 +64,110 @@ $spkRadio: true !default;
     }
 
     &.primary {
-      --radio-c: var(--primary-500);
-      --radiod-c: var(--primary-500);
-      --radio-bg: var(--primary-level-30);
-      --radio-bc: var(--primary-level-40);
+      --radio-c: var(--primary-8);
+      --radiod-c: var(--primary-8);
+      --radio-bg: var(--primary-3);
+      --radio-bc: var(--primary-4);
     }
 
     &.accent {
-      --radio-c: var(--accent-500);
-      --radiod-c: var(--accent-500);
-      --radio-bg: var(--accent-level-30);
-      --radio-bc: var(--accent-level-40);
+      --radio-c: var(--accent-8);
+      --radiod-c: var(--accent-8);
+      --radio-bg: var(--accent-3);
+      --radio-bc: var(--accent-4);
     }
 
     &.warn {
-      --radio-c: var(--warn-500);
-      --radiod-c: var(--warn-500);
-      --radio-bg: var(--warn-level-30);
-      --radio-bc: var(--warn-level-40);
+      --radio-c: var(--warn-8);
+      --radiod-c: var(--warn-8);
+      --radio-bg: var(--warn-3);
+      --radio-bc: var(--warn-4);
     }
 
     &.error {
-      --radio-c: var(--error-500);
-      --radiod-c: var(--error-500);
-      --radio-bg: var(--error-level-30);
-      --radio-bc: var(--error-level-40);
+      --radio-c: var(--error-8);
+      --radiod-c: var(--error-8);
+      --radio-bg: var(--error-3);
+      --radio-bc: var(--error-4);
     }
 
     &.success {
-      --radio-c: var(--success-500);
-      --radiod-c: var(--success-500);
-      --radio-bg: var(--success-level-30);
-      --radio-bc: var(--success-level-40);
+      --radio-c: var(--success-8);
+      --radiod-c: var(--success-8);
+      --radio-bg: var(--success-3);
+      --radio-bc: var(--success-4);
     }
 
     &.outlined {
-      --radio-bg: var(--base-level-10);
+      --radio-bg: var(--base-1L);
 
       &.primary,
       &.accent,
       &.warn,
       &.error,
       &.success {
-        --radio-bc: var(--base-level-40);
+        --radio-bc: var(--base-3L);
       }
     }
 
     &.flat,
     &.raised {
       --radio-c: #fff;
-      --radio-bc: var(--base-level-40);
-      --radio-bg: var(--base-level-30);
+      --radio-bc: var(--base-3L);
+      --radio-bg: var(--base-1);
       --radiod-c: #fff;
     }
 
     &.flat:has(input[type='radio']:checked),
     &.flat.active {
       --radio-bw: 0;
-      --radio-bg: var(--grey-500);
+      --radio-bg: var(--base-8);
       --radiod-c: #fff;
 
       &.primary {
-        --radio-bg: var(--primary-500);
+        --radio-bg: var(--primary-8);
       }
 
       &.accent {
-        --radio-bg: var(--accent-500);
+        --radio-bg: var(--accent-8);
       }
 
       &.warn {
-        --radio-bg: var(--warn-500);
+        --radio-bg: var(--warn-8);
       }
 
       &.error {
-        --radio-bg: var(--error-500);
+        --radio-bg: var(--error-8);
       }
 
       &.success {
-        --radio-bg: var(--success-500);
+        --radio-bg: var(--success-8);
       }
     }
 
     &.raised:has(input[type='radio']:checked),
     &.raised.active {
       --radio-bw: 0;
-      --radio-bg: var(--base-gradient-20);
+      --radio-bg: var(--base-g-2);
 
       &.primary {
-        --radio-bg: var(--primary-gradient-20);
+        --radio-bg: var(--primary-g-2);
       }
 
       &.accent {
-        --radio-bg: var(--accent-gradient-20);
+        --radio-bg: var(--accent-g-2);
       }
 
       &.warn {
-        --radio-bg: var(--warn-gradient-20);
+        --radio-bg: var(--warn-g-2);
       }
 
       &.error {
-        --radio-bg: var(--error-gradient-20);
+        --radio-bg: var(--error-g-2);
       }
 
       &.success {
-        --radio-bg: var(--success-gradient-20);
+        --radio-bg: var(--success-g-2);
       }
     }
   }

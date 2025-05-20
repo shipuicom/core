@@ -7,13 +7,13 @@ $spkButtonShadow: false !default;
     --btn-h: #{p2r(40)};
     --btn-s: var(--shape-2);
     --btn-f: var(--paragraph-20);
-    --loader-c: var(--base-level-60);
-    --btn-c: var(--base-level-70);
-    --btn-ic: var(--base-level-70);
+    --loader-c: var(--base-8);
+    --btn-c: var(--base-12);
+    --btn-ic: var(--base-12);
     --btn-ir: var(0deg);
-    --btn-bg: var(--base-level-10);
-    --btn-bg-h: var(--base-level-20);
-    --btn-bc: var(--base-level-40);
+    --btn-bg: var(--base-1L);
+    --btn-bg-h: var(--base-1);
+    --btn-bc: var(--base-3L);
 
     @if $spkButtonShadow != false {
       --btn-bs: var(--box-shadow-10);
@@ -58,7 +58,7 @@ $spkButtonShadow: false !default;
     }
 
     &:hover {
-      --btn-c: var(--base-level-70);
+      --btn-c: var(--base-12);
       background: var(--btn-bg-h);
     }
 
@@ -116,23 +116,23 @@ $spkButtonShadow: false !default;
 
     // Base
     &.primary {
-      --btn-ic: var(--primary-500);
+      --btn-ic: var(--primary-8);
     }
 
     &.accent {
-      --btn-ic: var(--accent-500);
+      --btn-ic: var(--accent-8);
     }
 
     &.warn {
-      --btn-ic: var(--warn-500);
+      --btn-ic: var(--warn-8);
     }
 
     &.error {
-      --btn-ic: var(--error-500);
+      --btn-ic: var(--error-8);
     }
 
     &.success {
-      --btn-ic: var(--success-500);
+      --btn-ic: var(--success-8);
     }
 
     &.icon {
@@ -145,59 +145,61 @@ $spkButtonShadow: false !default;
 
     &.icon,
     &.outlined {
-      --btn-c: var(--base-level-70);
-      --btn-bg: var(--base-level-20);
-      --btn-bg-h: var(--base-level-30);
+      --btn-c: var(--base-12);
+      --btn-bg: var(--base-1);
+      --btn-bg-h: var(--base-1);
 
-      transition: color 80ms linear;
+      transition:
+        color 80ms linear,
+        background 80ms linear;
 
       &.primary {
-        --loader-c: var(--primary-500);
+        --loader-c: var(--primary-8);
 
-        --btn-bg: var(--primary-level-20);
-        --btn-bg-h: var(--primary-level-30);
-        --btn-bc: var(--primary-level-40);
+        --btn-bg: var(--primary-1);
+        --btn-bg-h: var(--primary-2);
+        --btn-bc: var(--primary-4);
       }
 
       &.accent {
-        --loader-c: var(--accent-500);
+        --loader-c: var(--accent-8);
 
-        --btn-bg: var(--accent-level-20);
-        --btn-bg-h: var(--accent-level-30);
-        --btn-bc: var(--accent-level-40);
+        --btn-bg: var(--accent-1);
+        --btn-bg-h: var(--accent-2);
+        --btn-bc: var(--accent-4);
       }
 
       &.warn {
-        --loader-c: var(--warn-500);
+        --loader-c: var(--warn-8);
 
-        --btn-bg: var(--warn-level-20);
-        --btn-bg-h: var(--warn-level-30);
-        --btn-bc: var(--warn-level-40);
+        --btn-bg: var(--warn-1);
+        --btn-bg-h: var(--warn-2);
+        --btn-bc: var(--warn-4);
       }
 
       &.error {
-        --loader-c: var(--error-500);
+        --loader-c: var(--error-8);
 
-        --btn-bg: var(--error-level-20);
-        --btn-bg-h: var(--error-level-30);
-        --btn-bc: var(--error-level-40);
+        --btn-bg: var(--error-1);
+        --btn-bg-h: var(--error-2);
+        --btn-bc: var(--error-4);
       }
 
       &.success {
-        --loader-c: var(--success-500);
+        --loader-c: var(--success-8);
 
-        --btn-bg: var(--success-level-20);
-        --btn-bg-h: var(--success-level-30);
-        --btn-bc: var(--success-level-40);
+        --btn-bg: var(--success-1);
+        --btn-bg-h: var(--success-2);
+        --btn-bc: var(--success-4);
       }
     }
 
     &.flat {
-      --loader-c: var(--base-level-10);
+      --loader-c: var(--base-1L);
       --btn-c: #fff;
       --btn-ic: #fff;
-      --btn-bg: #{light-dark(var(--grey-600), var(--grey-600))};
-      --btn-bg-h: #{light-dark(var(--grey-700), var(--grey-700))};
+      --btn-bg: var(--base-8S);
+      --btn-bg-h: var(--base-9S);
 
       border: 0;
 
@@ -210,42 +212,42 @@ $spkButtonShadow: false !default;
       }
 
       &.primary {
-        --btn-c: var(--primary-contrast-500);
-        --btn-bg: var(--primary-500);
-        --btn-bg-h: var(--primary-400);
+        --btn-c: var(--primary-c-8);
+        --btn-bg: var(--primary-8);
+        --btn-bg-h: var(--primary-6);
       }
 
       &.accent {
-        --btn-c: var(--accent-contrast-500);
-        --btn-bg: var(--accent-500);
-        --btn-bg-h: var(--accent-400);
+        --btn-c: var(--accent-c-8);
+        --btn-bg: var(--accent-8);
+        --btn-bg-h: var(--accent-6);
       }
 
       &.warn {
-        --btn-c: var(--warn-contrast-500);
-        --btn-bg: var(--warn-500);
-        --btn-bg-h: var(--warn-400);
+        --btn-c: var(--warn-c-8);
+        --btn-bg: var(--warn-8);
+        --btn-bg-h: var(--warn-6);
       }
 
       &.error {
-        --btn-c: var(--error-contrast-500);
-        --btn-bg: var(--error-500);
-        --btn-bg-h: var(--error-400);
+        --btn-c: var(--error-c-8);
+        --btn-bg: var(--error-8);
+        --btn-bg-h: var(--error-6);
       }
 
       &.success {
-        --btn-c: var(--success-contrast-500);
-        --btn-bg: var(--success-500);
-        --btn-bg-h: var(--success-400);
+        --btn-c: var(--success-c-8);
+        --btn-bg: var(--success-8);
+        --btn-bg-h: var(--success-6);
       }
     }
 
     &.raised {
-      --loader-c: var(--base-level-10);
+      --loader-c: var(--base-1L);
       --btn-c: #fff;
       --btn-ic: #fff;
-      --btn-bg: var(--base-gradient-60);
-      --btn-bg-h: var(--base-gradient-70);
+      --btn-bg: var(--base-g-6);
+      --btn-bg-h: var(--base-g-7);
 
       border: 0;
 
@@ -258,33 +260,33 @@ $spkButtonShadow: false !default;
       }
 
       &.primary {
-        --btn-c: var(--primary-contrast-500);
-        --btn-bg: var(--primary-gradient-20);
-        --btn-bg-h: var(--primary-gradient-30);
+        --btn-c: var(--primary-c-8);
+        --btn-bg: var(--primary-g-2);
+        --btn-bg-h: var(--primary-g-3);
       }
 
       &.accent {
-        --btn-c: var(--accent-contrast-500);
-        --btn-bg: var(--accent-gradient-20);
-        --btn-bg-h: var(--accent-gradient-30);
+        --btn-c: var(--accent-c-8);
+        --btn-bg: var(--accent-g-2);
+        --btn-bg-h: var(--accent-g-3);
       }
 
       &.warn {
-        --btn-c: var(--warn-contrast-500);
-        --btn-bg: var(--warn-gradient-20);
-        --btn-bg-h: var(--warn-gradient-30);
+        --btn-c: var(--warn-c-8);
+        --btn-bg: var(--warn-g-2);
+        --btn-bg-h: var(--warn-g-3);
       }
 
       &.error {
-        --btn-c: var(--error-contrast-500);
-        --btn-bg: var(--error-gradient-20);
-        --btn-bg-h: var(--error-gradient-30);
+        --btn-c: var(--error-c-8);
+        --btn-bg: var(--error-g-2);
+        --btn-bg-h: var(--error-g-3);
       }
 
       &.success {
-        --btn-c: var(--success-contrast-500);
-        --btn-bg: var(--success-gradient-20);
-        --btn-bg-h: var(--success-gradient-30);
+        --btn-c: var(--success-c-8);
+        --btn-bg: var(--success-g-2);
+        --btn-bg-h: var(--success-g-3);
       }
     }
   }

@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { SparkleTooltip2 } from '../../../../../sparkle-ui/src/lib/directives/tooltip.directive';
 import {
   SparkleButtonComponent,
   SparkleIconComponent,
@@ -7,9 +9,11 @@ import {
 
 @Component({
   selector: 'app-spk-tooltip',
-  imports: [SparkleButtonComponent, SparkleIconComponent, SparkleTooltipComponent],
+  imports: [FormsModule, SparkleButtonComponent, SparkleIconComponent, SparkleTooltip2, SparkleTooltipComponent],
   templateUrl: './spk-tooltip.component.html',
   styleUrl: './spk-tooltip.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class SpkTooltipComponent {}
+export default class SpkTooltipComponent {
+  tooltipValue = signal<string>('Hello world');
+}

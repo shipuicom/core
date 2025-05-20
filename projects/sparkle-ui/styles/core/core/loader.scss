@@ -5,7 +5,7 @@
   height: p2r(48);
   display: grid;
   place-content: center;
-  color: var(--base-level-60);
+  color: var(--base-8);
 }
 
 .loader,
@@ -31,19 +31,19 @@
 // .loading {
 //   &.outlined:before {
 //     &.primary {
-//       border-color: var(--primary-500);
+//       border-color: var(--primary-8);
 //     }
 //     &.accent {
-//       border-color: var(--accent-500);
+//       border-color: var(--accent-8);
 //     }
 //     &.warn {
-//       border-color: var(--warn-500);
+//       border-color: var(--warn-8);
 //     }
 //     &.error {
-//       border-color: var(--error-500);
+//       border-color: var(--error-8);
 //     }
 //     &.success {
-//       border-color: var(--success-500);
+//       border-color: var(--success-8);
 //     }
 //   }
 

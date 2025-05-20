@@ -14,7 +14,7 @@ $spkDatepicker: true !default;
 
       .masked-value {
         font: var(--paragraph-30B);
-        color: var(--base-level-60);
+        color: var(--base-8);
 
         + input + input,
         + input {
@@ -54,11 +54,11 @@ $spkDatepicker: true !default;
   }
 
   spk-datepicker {
-    --dp-sel-bg: var(--base-level-60);
+    --dp-sel-bg: var(--base-8);
     --dp-sel-bw: 0;
     --dp-sel-bc: transparent;
     --dp-sel-c: #fff;
-    --dp-day-c: var(--base-level-60);
+    --dp-day-c: var(--base-8);
     --dp-day-g: #{p2r(4 0)};
     --dp-day-f: var(--paragraph-20);
     --dp-width: #{p2r(300)};
@@ -127,7 +127,7 @@ $spkDatepicker: true !default;
         border: 0;
         cursor: pointer;
         height: p2r(32);
-        color: var(--base-level-60);
+        color: var(--base-8);
 
         &:focus {
           outline: none;
@@ -208,79 +208,79 @@ $spkDatepicker: true !default;
 
       .weekdays {
         > div {
-          color: var(--base-level-70);
+          color: var(--base-12);
         }
       }
     }
 
     &.primary {
-      --dp-sel-bg: var(--primary-500);
+      --dp-sel-bg: var(--primary-8);
     }
 
     &.accent {
-      --dp-sel-bg: var(--accent-500);
+      --dp-sel-bg: var(--accent-8);
     }
 
     &.warn {
-      --dp-sel-bg: var(--warn-500);
+      --dp-sel-bg: var(--warn-8);
     }
 
     &.error {
-      --dp-sel-bg: var(--error-500);
+      --dp-sel-bg: var(--error-8);
     }
 
     &.success {
-      --dp-sel-bg: var(--success-500);
+      --dp-sel-bg: var(--success-8);
     }
 
     &.outlined {
-      --dp-sel-bg: var(--base-level-10);
-      --dp-sel-c: var(--base-level-70);
+      --dp-sel-bg: var(--base-1L);
+      --dp-sel-c: var(--base-12);
       --dp-sel-bw: 2px;
-      --dp-sel-bc: var(--base-level-40);
+      --dp-sel-bc: var(--base-3L);
 
       &.primary {
-        --dp-sel-bc: var(--primary-500);
+        --dp-sel-bc: var(--primary-8);
       }
 
       &.accent {
-        --dp-sel-bc: var(--accent-500);
+        --dp-sel-bc: var(--accent-8);
       }
 
       &.warn {
-        --dp-sel-bc: var(--warn-500);
+        --dp-sel-bc: var(--warn-8);
       }
 
       &.error {
-        --dp-sel-bc: var(--error-500);
+        --dp-sel-bc: var(--error-8);
       }
 
       &.success {
-        --dp-sel-bc: var(--success-500);
+        --dp-sel-bc: var(--success-8);
       }
     }
 
     &.raised {
-      --dp-sel-bg: var(--base-gradient-20);
+      --dp-sel-bg: var(--base-g-2);
 
       &.primary {
-        --dp-sel-bg: var(--primary-gradient-20);
+        --dp-sel-bg: var(--primary-g-2);
       }
 
       &.accent {
-        --dp-sel-bg: var(--accent-gradient-20);
+        --dp-sel-bg: var(--accent-g-2);
       }
 
       &.warn {
-        --dp-sel-bg: var(--warn-gradient-20);
+        --dp-sel-bg: var(--warn-g-2);
       }
 
       &.error {
-        --dp-sel-bg: var(--error-gradient-20);
+        --dp-sel-bg: var(--error-g-2);
       }
 
       &.success {
-        --dp-sel-bg: var(--success-gradient-20);
+        --dp-sel-bg: var(--success-g-2);
       }
     }
   }

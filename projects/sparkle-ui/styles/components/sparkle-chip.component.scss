@@ -7,10 +7,10 @@ $spkChipShadow: false !default;
   spk-chip {
     --chip-h: #{p2r(32)};
     --chip-s: #{p2r(16)};
-    --chip-c: var(--base-level-70);
-    --chip-ic: var(--base-level-70);
-    --chip-bg: var(--base-level-10);
-    --chip-bc: var(--base-level-40);
+    --chip-c: var(--base-12);
+    --chip-ic: var(--base-12);
+    --chip-bg: var(--base-1L);
+    --chip-bc: var(--base-3L);
 
     @if $spkChipShadow != false {
       --chip-bs: var(--box-shadow-10);
@@ -71,160 +71,160 @@ $spkChipShadow: false !default;
     }
 
     &.primary {
-      --chip-ic: var(--primary-500);
+      --chip-ic: var(--primary-8);
     }
 
     &.accent {
-      --chip-ic: var(--accent-500);
+      --chip-ic: var(--accent-8);
     }
 
     &.warn {
-      --chip-ic: var(--warn-500);
+      --chip-ic: var(--warn-8);
     }
 
     &.error {
-      --chip-ic: var(--error-500);
+      --chip-ic: var(--error-8);
     }
 
     &.success {
-      --chip-ic: var(--success-500);
+      --chip-ic: var(--success-8);
     }
 
     &.simple {
       border: 0;
 
-      --chip-c: var(--base-level-70);
+      --chip-c: var(--base-12);
 
       &.primary {
-        --chip-c: var(--primary-500);
+        --chip-c: var(--primary-8);
       }
 
       &.accent {
-        --chip-c: var(--accent-500);
+        --chip-c: var(--accent-8);
       }
 
       &.warn {
-        --chip-c: var(--warn-500);
+        --chip-c: var(--warn-8);
       }
 
       &.error {
-        --chip-c: var(--error-500);
+        --chip-c: var(--error-8);
       }
 
       &.success {
-        --chip-c: var(--success-500);
+        --chip-c: var(--success-8);
       }
     }
 
     &.simple,
     &.outlined {
-      --chip-c: var(--base-level-70);
-      --chip-bg: var(--base-level-20);
+      --chip-c: var(--base-12);
+      --chip-bg: var(--base-1);
 
       transition: color 80ms linear;
 
       &.primary {
-        --loader-c: var(--primary-500);
+        --loader-c: var(--primary-8);
 
-        --chip-bg: var(--primary-level-20);
-        --chip-bc: var(--primary-level-40);
+        --chip-bg: var(--primary-2);
+        --chip-bc: var(--primary-4);
       }
 
       &.accent {
-        --loader-c: var(--accent-500);
+        --loader-c: var(--accent-8);
 
-        --chip-bg: var(--accent-level-20);
-        --chip-bc: var(--accent-level-40);
+        --chip-bg: var(--accent-2);
+        --chip-bc: var(--accent-4);
       }
 
       &.warn {
-        --loader-c: var(--warn-500);
+        --loader-c: var(--warn-8);
 
-        --chip-bg: var(--warn-level-20);
-        --chip-bc: var(--warn-level-40);
+        --chip-bg: var(--warn-2);
+        --chip-bc: var(--warn-4);
       }
 
       &.error {
-        --loader-c: var(--error-500);
+        --loader-c: var(--error-8);
 
-        --chip-bg: var(--error-level-20);
-        --chip-bc: var(--error-level-40);
+        --chip-bg: var(--error-2);
+        --chip-bc: var(--error-4);
       }
 
       &.success {
-        --loader-c: var(--success-500);
+        --loader-c: var(--success-8);
 
-        --chip-bg: var(--success-level-20);
-        --chip-bc: var(--success-level-40);
+        --chip-bg: var(--success-2);
+        --chip-bc: var(--success-4);
       }
     }
 
     &.flat {
-      --loader-c: var(--base-level-10);
+      --loader-c: var(--base-1L);
       --chip-c: #fff;
       --chip-ic: #fff;
-      --chip-bg: #{light-dark(var(--grey-600), var(--grey-600))};
+      --chip-bg: var(--base-8);
 
       border: 0;
 
       &.primary {
-        --chip-c: var(--primary-contrast-500);
-        --chip-bg: var(--primary-500);
+        --chip-c: var(--primary-c-8);
+        --chip-bg: var(--primary-8);
       }
 
       &.accent {
-        --chip-c: var(--accent-contrast-500);
-        --chip-bg: var(--accent-500);
+        --chip-c: var(--accent-c-8);
+        --chip-bg: var(--accent-8);
       }
 
       &.warn {
-        --chip-c: var(--warn-contrast-500);
-        --chip-bg: var(--warn-500);
+        --chip-c: var(--warn-c-8);
+        --chip-bg: var(--warn-8);
       }
 
       &.error {
-        --chip-c: var(--error-contrast-500);
-        --chip-bg: var(--error-500);
+        --chip-c: var(--error-c-8);
+        --chip-bg: var(--error-8);
       }
 
       &.success {
-        --chip-c: var(--success-contrast-500);
-        --chip-bg: var(--success-500);
+        --chip-c: var(--success-c-8);
+        --chip-bg: var(--success-8);
       }
     }
 
     &.raised {
-      --loader-c: var(--base-level-10);
+      --loader-c: var(--base-1L);
       --chip-c: #fff;
       --chip-ic: #fff;
-      --chip-bg: var(--base-gradient-60);
+      --chip-bg: var(--base-g-6);
 
       border: 0;
       box-shadow: none;
 
       &.primary {
-        --chip-c: var(--primary-contrast-500);
-        --chip-bg: var(--primary-gradient-20);
+        --chip-c: var(--primary-c-8);
+        --chip-bg: var(--primary-g-2);
       }
 
       &.accent {
-        --chip-c: var(--accent-contrast-500);
-        --chip-bg: var(--accent-gradient-20);
+        --chip-c: var(--accent-c-8);
+        --chip-bg: var(--accent-g-2);
       }
 
       &.warn {
-        --chip-c: var(--warn-contrast-500);
-        --chip-bg: var(--warn-gradient-20);
+        --chip-c: var(--warn-c-8);
+        --chip-bg: var(--warn-g-2);
       }
 
       &.error {
-        --chip-c: var(--error-contrast-500);
-        --chip-bg: var(--error-gradient-20);
+        --chip-c: var(--error-c-8);
+        --chip-bg: var(--error-g-2);
       }
 
       &.success {
-        --chip-c: var(--success-contrast-500);
-        --chip-bg: var(--success-gradient-20);
+        --chip-c: var(--success-c-8);
+        --chip-bg: var(--success-g-2);
       }
     }
   }

@@ -4,13 +4,13 @@ $spkTable: true !default;
 
 @if $spkTable == true {
   spk-table {
-    --table-bc: var(--base-level-40);
-    --table-th-bg: var(--base-level-10);
-    --table-tr-bg: var(--base-level-10);
-    --table-td-bg: var(--base-level-10);
-    --table-th-c: var(--base-level-60R);
+    --table-bc: var(--base-3L);
+    --table-th-bg: var(--base-1L);
+    --table-tr-bg: var(--base-1L);
+    --table-td-bg: var(--base-1L);
+    --table-th-c: var(--base-8R);
     --table-th-f: var(--paragraph-30);
-    --table-td-c: var(--base-level-60);
+    --table-td-c: var(--base-8);
     --table-td-f: var(--paragraph-30);
     --table-th-p: #{p2r(0 20)};
     --table-td-p: #{p2r(0 20)};
@@ -60,7 +60,7 @@ $spkTable: true !default;
       --table-td-mh: #{p2r(56)};
       --table-th-bw: #{p2r(1 0 1 1)};
       --table-td-bw: #{p2r(0 0 1 1)};
-      --table-th-bg: var(--base-level-20);
+      --table-th-bg: var(--base-1);
       --table-sticky-bw: #{p2r(2)};
 
       th {
@@ -222,13 +222,13 @@ $spkTable: true !default;
           height: p2r(12);
           right: p2r(3);
           width: p2r(1);
-          background-color: var(--base-level-40);
+          background-color: var(--base-3L);
         }
 
         &:hover {
           &:before,
           &:after {
-            background-color: var(--primary-500);
+            background-color: var(--primary-8);
           }
         }
 

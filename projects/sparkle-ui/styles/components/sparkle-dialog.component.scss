@@ -6,33 +6,33 @@ $spkDialog: true !default;
   dialog[spkDialog] {
     --dialog-p: #{p2r(16)};
     --dialog-g: #{p2r(8)};
-    --dialog-bg: var(--base-level-10);
+    --dialog-bg: var(--base-1L);
 
-    border: 1px solid var(--base-level-40);
+    border: 1px solid var(--base-3L);
     background: transparent;
     border-radius: var(--shape-2);
     box-shadow: var(--box-shadow-40);
-    color: var(--base-level-60);
+    color: var(--base-8);
     font: var(--paragraph-30);
     padding: 0;
     margin: auto;
     z-index: 0;
 
     &.type-b {
-      background: var(--base-level-30);
+      background: var(--base-1);
       padding: p2r(8);
-      outline: 1px solid var(--base-level-40);
+      outline: 1px solid var(--base-3L);
       outline-offset: -1px;
       overflow: hidden;
 
       &::backdrop {
-        background: rgb(from var(--base-level-10) r g b / 30%);
+        background: rgb(from var(--base-1L) r g b / 30%);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
       }
 
       .content {
-        border: 1px solid rgb(from var(--base-level-40) r g b / 70%);
+        border: 1px solid rgb(from var(--base-3L) r g b / 70%);
       }
     }
 
@@ -85,7 +85,7 @@ $spkDialog: true !default;
 
       &.sticky {
         background-color: var(--dialog-bg);
-        border-bottom: 1px solid var(--base-level-40);
+        border-bottom: 1px solid var(--base-3L);
         box-shadow: var(--box-shadow-35);
         position: sticky;
         top: 0;
@@ -109,7 +109,7 @@ $spkDialog: true !default;
 
       &.sticky {
         background-color: var(--dialog-bg);
-        border-top: 1px solid var(--base-level-40);
+        border-top: 1px solid var(--base-3L);
         box-shadow: var(--box-shadow-35);
         position: sticky;
         bottom: 0;

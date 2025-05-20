@@ -11,13 +11,13 @@ app-root {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--base-level-20);
+  background-color: var(--base-1);
 }
 
 body {
   margin: 0;
   font: var(--paragraph-30);
-  color: var(--base-level-70);
+  color: var(--base-12);
 
   &.dragging {
     overflow: hidden;
@@ -53,15 +53,15 @@ body {
 }
 
 .spk-primary {
-  color: var(--primary-500);
+  color: var(--primary-8);
 }
 
 .spk-accent {
-  color: var(--accent-500);
+  color: var(--accent-8);
 }
 
 .spk-warn {
-  color: var(--warn-500);
+  color: var(--warn-8);
 }
 
 .spk-error {

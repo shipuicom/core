@@ -3,56 +3,56 @@ $useApexcharts: true !default;
 @if $useApexcharts == true {
   body {
     .apexcharts-text {
-      fill: var(--base-level-70);
+      fill: var(--base-12);
 
       &.apexcharts-yaxis-label,
       &.apexcharts-xaxis-label {
-        fill: var(--base-level-60);
+        fill: var(--base-8);
       }
     }
 
     .apexcharts-gridline,
     .apexcharts-yaxis-tick,
     .apexcharts-xaxis-tick {
-      stroke: var(--base-level-60R);
+      stroke: var(--base-8R);
     }
 
     .apexcharts-grid-borders {
       line {
-        stroke: var(--base-level-60R);
+        stroke: var(--base-8R);
       }
     }
 
     .apexcharts-tracks {
       .apexcharts-radialbar-area {
-        stroke: var(--base-level-40);
+        stroke: var(--base-3L);
       }
     }
 
     .apexcharts-menu {
-      background-color: var(--base-level-10);
-      color: var(--base-level-70);
-      border: 1px solid var(--base-level-40);
+      background-color: var(--base-1L);
+      color: var(--base-12);
+      border: 1px solid var(--base-3L);
     }
 
     .apexcharts-tooltip.apexcharts-theme-light {
-      background-color: var(--base-level-10);
-      border: 1px solid var(--base-level-40);
-      box-shadow: var(--base-level-30);
-      color: var(--base-level-60);
+      background-color: var(--base-1L);
+      border: 1px solid var(--base-3L);
+      box-shadow: var(--base-1);
+      color: var(--base-8);
 
       .apexcharts-tooltip-title {
-        background-color: var(--base-level-20);
-        border-bottom: 1px solid var(--base-level-40);
+        background-color: var(--base-1);
+        border-bottom: 1px solid var(--base-3L);
       }
     }
 
     .apexcharts-xaxistooltip,
     .apexcharts-yaxistooltip {
-      background-color: var(--base-level-10);
-      border: 1px solid var(--base-level-40);
-      box-shadow: var(--base-level-30);
-      color: var(--base-level-60);
+      background-color: var(--base-1L);
+      border: 1px solid var(--base-3L);
+      box-shadow: var(--base-1);
+      color: var(--base-8);
     }
   }
 }

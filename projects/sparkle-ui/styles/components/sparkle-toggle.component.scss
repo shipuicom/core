@@ -4,9 +4,9 @@ $spkToggle: true !default;
 
 @if $spkToggle == true {
   spk-toggle {
-    --toggle-bg: var(--base-level-40);
+    --toggle-bg: var(--base-3L);
     --toggle-b: 0;
-    --togglek-bg: var(--base-level-30);
+    --togglek-bg: var(--base-1);
     --togglek-bs: var(--box-shadow-20);
 
     display: flex;
@@ -59,43 +59,43 @@ $spkToggle: true !default;
 
     &:has(input[type='checkbox']:checked),
     &.active {
-      --togglek-bg: var(--base-level-60);
+      --togglek-bg: var(--base-8);
 
       .knob {
         left: p2r(16);
       }
 
       &.primary {
-        --toggle-bg: var(--primary-level-30);
-        --togglek-bg: var(--primary-500);
+        --toggle-bg: var(--primary-3);
+        --togglek-bg: var(--primary-8);
       }
 
       &.accent {
-        --toggle-bg: var(--accent-level-30);
-        --togglek-bg: var(--accent-500);
+        --toggle-bg: var(--accent-3);
+        --togglek-bg: var(--accent-8);
       }
 
       &.warn {
-        --toggle-bg: var(--warn-level-30);
-        --togglek-bg: var(--warn-500);
+        --toggle-bg: var(--warn-3);
+        --togglek-bg: var(--warn-8);
       }
 
       &.error {
-        --toggle-bg: var(--error-level-30);
-        --togglek-bg: var(--error-500);
+        --toggle-bg: var(--error-3);
+        --togglek-bg: var(--error-8);
       }
 
       &.success {
-        --toggle-bg: var(--success-level-30);
-        --togglek-bg: var(--success-500);
+        --toggle-bg: var(--success-3);
+        --togglek-bg: var(--success-8);
       }
     }
 
     &.outlined {
-      --toggle-bg: var(--base-level-10);
-      --togglek-bg: var(--base-level-40);
+      --toggle-bg: var(--base-1L);
+      --togglek-bg: var(--base-3L);
       --togglek-bs: none;
-      --toggle-b: 1px solid var(--base-level-40);
+      --toggle-b: 1px solid var(--base-3L);
 
       .knob {
         width: p2r(14);
@@ -109,26 +109,26 @@ $spkToggle: true !default;
       &:has(input[type='checkbox']:checked),
       &.active {
         --togglek-bg: #fff;
-        --toggle-bg: var(--base-level-60);
+        --toggle-bg: var(--base-8);
 
         &.primary {
-          --toggle-bg: var(--primary-500);
+          --toggle-bg: var(--primary-8);
         }
 
         &.accent {
-          --toggle-bg: var(--accent-500);
+          --toggle-bg: var(--accent-8);
         }
 
         &.warn {
-          --toggle-bg: var(--warn-500);
+          --toggle-bg: var(--warn-8);
         }
 
         &.error {
-          --toggle-bg: var(--error-500);
+          --toggle-bg: var(--error-8);
         }
 
         &.success {
-          --toggle-bg: var(--success-500);
+          --toggle-bg: var(--success-8);
         }
       }
     }
@@ -138,27 +138,27 @@ $spkToggle: true !default;
 
       &:has(input[type='checkbox']:checked),
       &.active {
-        --toggle-bg: var(--base-gradient-20);
+        --toggle-bg: var(--base-g-2);
         --togglek-bg: #fff;
 
         &.primary {
-          --toggle-bg: var(--primary-gradient-20);
+          --toggle-bg: var(--primary-g-2);
         }
 
         &.accent {
-          --toggle-bg: var(--accent-gradient-20);
+          --toggle-bg: var(--accent-g-2);
         }
 
         &.warn {
-          --toggle-bg: var(--warn-gradient-20);
+          --toggle-bg: var(--warn-g-2);
         }
 
         &.error {
-          --toggle-bg: var(--error-gradient-20);
+          --toggle-bg: var(--error-g-2);
         }
 
         &.success {
-          --toggle-bg: var(--success-gradient-20);
+          --toggle-bg: var(--success-g-2);
         }
       }
     }

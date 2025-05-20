@@ -3,79 +3,75 @@
 $spkTooltip: true !default;
 
 @if $spkTooltip == true {
-  spk-tooltip {
-    --tt-bg: var(--base-level-30);
-    --tt-c: var(--base-level-30R);
-    --tt-d: inline-flex;
+  .tooltip {
+    --tt-bg: var(--base-2);
+    --tt-c: var(--base-12);
+    --tt-mh: #{p2r(136)};
+    --tt-mw: #{p2r(280)};
 
-    display: var(--tt-d);
+    anchor-name: --dropdown-trigger-anchor;
+    position: relative;
 
-    .trigger {
-      display: inherit;
+    &:after {
+      content: '';
+      position: absolute;
+      top: p2r(-8);
+      bottom: p2r(-8);
+      left: p2r(-8);
+      right: p2r(-8);
+      z-index: 1;
     }
 
     &.primary {
-      --tt-bg: var(--primary-level-50);
-      --tt-c: var(--primary-level-50R);
+      --tt-bg: var(--primary-2);
+      --tt-c: var(--primary-8);
     }
 
     &.accent {
-      --tt-bg: var(--accent-level-50);
-      --tt-c: var(--accent-level-50R);
+      --tt-bg: var(--accent-2);
+      --tt-c: var(--accent-8);
     }
 
     &.warn {
-      --tt-bg: var(--warn-level-50);
-      --tt-c: var(--warn-level-50R);
+      --tt-bg: var(--warn-2);
+      --tt-c: var(--warn-8);
     }
 
     &.error {
-      --tt-bg: var(--error-level-50);
-      --tt-c: var(--error-level-50R);
+      --tt-bg: var(--error-2);
+      --tt-c: var(--error-8);
     }
 
     &.success {
-      --tt-bg: var(--success-level-50);
-      --tt-c: var(--success-level-50R);
+      --tt-bg: var(--success-2);
+      --tt-c: var(--success-8);
     }
 
-    &.disabled .tooltip,
-    &.disabled .tooltip::before {
+    &:hover {
+      sparkle-tooltip-wrapper {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(-#{p2r(8)}) scale(1);
+      }
+    }
+
+    sparkle-tooltip-wrapper {
+      position: absolute;
+      position-try-fallbacks: --dropdown-flip-and-slide;
       opacity: 0;
       visibility: hidden;
-      pointer-events: none;
-      user-select: none;
-    }
-
-    .tooltip {
-      position: relative;
-      margin: 0;
-      z-index: 0;
-      transform: translateX(-50%) scale(0.2);
-      color: transparent;
-      padding: p2r(8 12);
-      background-color: var(--tt-bg);
-      max-width: #{p2r(240)};
-      text-wrap: balance;
-      width: max-content;
-      height: max-content;
-      font: var(--paragraph-30);
-      border-radius: var(--shape-2);
-      border: 0;
-      opacity: 0;
-      overflow: visible;
-      hyphens: auto;
-      text-wrap: pretty;
+      bottom: 100%;
+      padding: p2r(4);
+      transform: translateY(100%) scale(0.95);
       transition:
-        opacity 125ms linear,
-        transform 125ms linear,
-        color 75ms linear 50ms;
+        opacity 0.2s ease,
+        visibility 0.2s ease,
+        transform 0.2s ease;
 
-      &:popover-open {
-        opacity: 1;
-        transform: translateX(-50%) scale(1);
-        color: var(--tt-c);
-      }
+      background: var(--tt-bg);
+      border-radius: var(--shape-2);
+      box-shadow: var(--box-shadow-20);
+      width: max-content;
 
       &:before {
         content: '';
@@ -92,188 +88,54 @@ $spkTooltip: true !default;
         opacity: 1;
       }
 
-      @supports (left: anchor(center)) and (top: anchor(bottom)) {
-        left: anchor(center);
-        bottom: anchor(top);
-        margin-bottom: p2r(10);
-        top: auto;
+      .tooltip-content {
+        padding: p2r(8 12);
+        position: relative;
+        hyphens: auto;
+        text-wrap: pretty;
+        color: var(--tt-c);
+        max-height: var(--tt-mh);
+        max-width: var(--tt-mw);
+        overflow-y: auto;
+        overflow-x: hidden;
       }
-
-      // \@starting-style .tooltip {
-      //   display: block;
-      //   transition-behavior: allow-discrete;
-      // }
-    }
-  }
-
-  [spk-tooltip],
-  [tt-primary],
-  [tt-accent],
-  [tt-warn],
-  [tt-error],
-  [tt-success] {
-    --tt-bg: var(--base-level-30);
-    --tt-c: var(--base-level-30R);
-
-    position: relative;
-
-    &:after {
-      content: attr(spk-tooltip);
-      position: absolute;
-      bottom: calc(100% + #{p2r(12)});
-      left: 50%;
-      transform: translateX(-50%);
-      padding: p2r(8 12);
-      background-color: var(--tt-bg);
-      color: var(--tt-c);
-      max-width: #{p2r(200)};
-      text-wrap: balance;
-      width: max-content;
-      height: max-content;
-      font: var(--paragraph-30);
-      border-radius: var(--shape-2);
-      opacity: 0;
-      visibility: hidden;
-      transition:
-        opacity 125ms linear,
-        visibility 125ms linear;
-      pointer-events: none;
-      user-select: none;
-      z-index: 1000;
     }
 
-    &:before {
-      content: '';
-      position: absolute;
-      bottom: calc(100% - #{p2r(4)});
-      left: 50%;
-      transform: translateX(-50%);
-      border-width: p2r(8);
-      border-style: solid;
-      border-color: transparent;
-      border-top-color: var(--tt-bg);
-      width: 0;
-      height: 0;
-      pointer-events: none;
-      opacity: 0;
-      visibility: hidden;
-      transition:
-        opacity 125ms linear,
-        visibility 125ms linear;
-      z-index: 1000;
+    /* Define the fallback strategies for the dropdown menu */
+    @position-fallback --dropdown-flip-and-slide {
+      /* Attempt 1: Position below and align to the start (left) of the trigger */
+      @try {
+        top: calc(anchor(--dropdown-trigger-anchor bottom) + 8px); /* 8px gap */
+        left: anchor(--dropdown-trigger-anchor left);
+      }
+      /* Attempt 2: Position above and align to the start (left) of the trigger */
+      @try {
+        bottom: calc(anchor(--dropdown-trigger-anchor top) + 8px); /* 8px gap */
+        left: anchor(--dropdown-trigger-anchor left);
+      }
+      /* Attempt 3: Position below and align to the end (right) of the trigger */
+      @try {
+        top: calc(anchor(--dropdown-trigger-anchor bottom) + 8px);
+        right: anchor(--dropdown-trigger-anchor right);
+      }
+      /* Attempt 4: Position above and align to the end (right) of the trigger */
+      @try {
+        bottom: calc(anchor(--dropdown-trigger-anchor top) + 8px);
+        right: anchor(--dropdown-trigger-anchor right);
+      }
+      /* Attempt 5: (More advanced) If it's too wide, try to align center, below */
+      @try {
+        top: calc(anchor(--dropdown-trigger-anchor bottom) + 8px);
+        left: anchor(--dropdown-trigger-anchor center);
+        /* This might need more constraints or a width calculation if it's wider than anchor */
+        transform: translateX(-50%); /* Center it based on its own width */
+      }
+      /* Attempt 6: (More advanced) If it's too wide, try to align center, above */
+      @try {
+        bottom: calc(anchor(--dropdown-trigger-anchor top) + 8px);
+        left: anchor(--dropdown-trigger-anchor center);
+        transform: translateX(-50%);
+      }
     }
-
-    &:hover:after,
-    &:hover:before {
-      opacity: 1;
-      visibility: visible;
-    }
-  }
-
-  [tt-primary] {
-    --tt-bg: var(--primary-level-50);
-    --tt-c: var(--primary-level-50R);
-
-    &:after {
-      content: attr(tt-primary);
-    }
-  }
-
-  [tt-accent] {
-    --tt-bg: var(--accent-level-50);
-    --tt-c: var(--accent-level-50R);
-
-    &:after {
-      content: attr(tt-accent);
-    }
-  }
-
-  [tt-warn] {
-    --tt-bg: var(--warn-level-50);
-    --tt-c: var(--warn-level-50R);
-
-    &:after {
-      content: attr(tt-warn);
-    }
-  }
-
-  [tt-error] {
-    --tt-bg: var(--error-level-50);
-    --tt-c: var(--error-level-50R);
-
-    &:after {
-      content: attr(tt-error);
-    }
-  }
-
-  [tt-success] {
-    --tt-bg: var(--success-level-50);
-    --tt-c: var(--success-level-50R);
-
-    &:after {
-      content: attr(tt-success);
-    }
-  }
-}
-
-[spk-tooltip][tt-left],
-[tt-primary][tt-left],
-[tt-accent][tt-left],
-[tt-warn][tt-left],
-[tt-error][tt-left],
-[tt-success][tt-left] {
-  &:after {
-    top: 50%;
-    left: auto;
-    right: calc(100% + #{p2r(12)});
-    transform: translateY(-50%);
-  }
-
-  &:before {
-    top: 50%;
-    left: auto;
-    right: calc(100% - #{p2r(4)});
-    transform: translateY(-50%);
-    border-top-color: transparent;
-    border-left-color: var(--tt-bg);
-  }
-}
-
-[spk-tooltip][tt-right],
-[tt-primary][tt-right],
-[tt-accent][tt-right],
-[tt-warn][tt-right],
-[tt-error][tt-right],
-[tt-success][tt-right] {
-  &:after {
-    top: 50%;
-    left: calc(100% + #{p2r(12)});
-    transform: translateY(-50%);
-  }
-
-  &:before {
-    top: 50%;
-    left: calc(100% - #{p2r(4)});
-    transform: translateY(-50%);
-    border-top-color: transparent;
-    border-right-color: var(--tt-bg);
-  }
-}
-
-[spk-tooltip][tt-bottom],
-[tt-primary][tt-bottom],
-[tt-accent][tt-bottom],
-[tt-warn][tt-bottom],
-[tt-error][tt-bottom],
-[tt-success][tt-bottom] {
-  &:after {
-    top: calc(100% + #{p2r(12)});
-  }
-
-  &:before {
-    top: calc(100% - #{p2r(4)});
-    transform: translateX(-50%);
-    border-top-color: transparent;
-    border-bottom-color: var(--tt-bg);
   }
 }

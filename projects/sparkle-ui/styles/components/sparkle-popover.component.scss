@@ -38,11 +38,11 @@ $spkPopover: true !default;
       margin: 0;
       min-width: p2r(180);
       z-index: 0;
-      background-color: var(--base-level-10);
-      border: 1px solid var(--base-level-40);
+      background-color: var(--base-1L);
+      border: 1px solid var(--base-3L);
       border-radius: var(--shape-2);
       font: var(--paragraph-30);
-      color: var(--base-level-60);
+      color: var(--base-8);
 
       @supports (anchor-name: --anchor) {
         inset: unset;

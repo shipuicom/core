@@ -4,7 +4,7 @@ $spkSpinner: true !default;
 
 @if $spkSpinner == true {
   spk-spinner {
-    --spinner-c: var(--base-level-60);
+    --spinner-c: var(--base-8);
     --spinner-size: #{p2r(40)};
     --spinner-thickness: #{p2r(5)};
 
@@ -31,23 +31,23 @@ $spkSpinner: true !default;
     }
 
     &.primary {
-      --spinner-c: var(--primary-500);
+      --spinner-c: var(--primary-8);
     }
 
     &.accent {
-      --spinner-c: var(--accent-500);
+      --spinner-c: var(--accent-8);
     }
 
     &.warn {
-      --spinner-c: var(--warn-500);
+      --spinner-c: var(--warn-8);
     }
 
     &.error {
-      --spinner-c: var(--error-500);
+      --spinner-c: var(--error-8);
     }
 
     &.success {
-      --spinner-c: var(--success-500);
+      --spinner-c: var(--success-8);
     }
   }
 }

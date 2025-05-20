@@ -33,7 +33,7 @@ body {
   .title-30B,
   .title-30B,
   .title-30B {
-    color: var(--base-level-70);
+    color: var(--base-12);
   }
 }
 
@@ -46,7 +46,7 @@ p,
 .paragraph-20B,
 .paragraph-30B,
 .paragraph-40B {
-  color: var(--base-level-60);
+  color: var(--base-8);
 }
 
 p {
@@ -58,11 +58,11 @@ strong {
 }
 
 a {
-  color: var(--primary-500);
+  color: var(--primary-8);
 }
 
 sup {
-  color: var(--error-500);
+  color: var(--error-8);
   margin-left: -0.33em;
   vertical-align: p2r(3);
 }

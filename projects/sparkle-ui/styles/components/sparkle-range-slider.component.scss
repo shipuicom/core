@@ -7,16 +7,16 @@ $spkRangeSlider: true !default;
     --rs-h: #{p2r(40)};
     --rs-f: var(--paragraph-30);
     --rs-unit-g: #{p2r(12)};
-    --rs-unit-c: var(--base-level-60);
-    --rst: var(--base-level-30);
-    --rst-bc: var(--base-level-10);
-    --rst-bg: var(--base-level-60R);
+    --rs-unit-c: var(--base-8);
+    --rst: var(--base-1);
+    --rst-bc: var(--base-1L);
+    --rst-bg: var(--base-8R);
     --rst-h: #{p2r(8)};
     --rst-s: var(--shape-1);
-    --rs-thumb-c: var(--base-level-40);
-    --rs-thumb-bc: var(--base-level-10);
-    --rs-thumb-value-bg: var(--base-level-30);
-    --rs-thumb-value-c: var(--base-level-30R);
+    --rs-thumb-c: var(--base-3L);
+    --rs-thumb-bc: var(--base-1L);
+    --rs-thumb-value-bg: var(--base-1);
+    --rs-thumb-value-c: var(--base-2R);
     --rs-thumb-si: #{p2r(16)};
 
     display: flex;
@@ -47,7 +47,7 @@ $spkRangeSlider: true !default;
     }
 
     &:has(input[type='range'][disabled]) {
-      --rst-bg: var(--base-ld-6R);
+      --rst-bg: var(--base-8R);
       opacity: 0.6;
 
       * {
@@ -178,138 +178,138 @@ $spkRangeSlider: true !default;
     }
 
     &.primary {
-      --rst-bg: var(--primary-500);
-      --rst: var(--primary-level-40);
-      --rs-thumb-c: var(--primary-level-50);
-      --rs-thumb-bc: var(--base-level-10);
-      --rs-thumb-value-bg: var(--primary-level-50);
-      --rs-thumb-value-c: var(--primary-level-50R);
+      --rst-bg: var(--primary-8);
+      --rst: var(--primary-4);
+      --rs-thumb-c: var(--primary-4);
+      --rs-thumb-bc: var(--base-1L);
+      --rs-thumb-value-bg: var(--primary-4);
+      --rs-thumb-value-c: var(--primary-8);
     }
 
     &.accent {
-      --rst-bg: var(--accent-500);
-      --rst: var(--accent-level-40);
-      --rs-thumb-c: var(--accent-level-50);
-      --rs-thumb-bc: var(--base-level-10);
-      --rs-thumb-value-bg: var(--accent-level-50);
-      --rs-thumb-value-c: var(--accent-level-50R);
+      --rst-bg: var(--accent-8);
+      --rst: var(--accent-4);
+      --rs-thumb-c: var(--accent-4);
+      --rs-thumb-bc: var(--base-1L);
+      --rs-thumb-value-bg: var(--accent-4);
+      --rs-thumb-value-c: var(--accent-8);
     }
 
     &.warn {
-      --rst-bg: var(--warn-500);
-      --rst: var(--warn-level-40);
-      --rs-thumb-c: var(--warn-level-50);
-      --rs-thumb-bc: var(--base-level-10);
-      --rs-thumb-value-bg: var(--warn-level-50);
-      --rs-thumb-value-c: var(--warn-level-50R);
+      --rst-bg: var(--warn-8);
+      --rst: var(--warn-4);
+      --rs-thumb-c: var(--warn-4);
+      --rs-thumb-bc: var(--base-1L);
+      --rs-thumb-value-bg: var(--warn-4);
+      --rs-thumb-value-c: var(--warn-8);
     }
 
     &.error {
-      --rst-bg: var(--error-500);
-      --rst: var(--error-level-40);
-      --rs-thumb-c: var(--error-level-50);
-      --rs-thumb-bc: var(--base-level-10);
-      --rs-thumb-value-bg: var(--error-level-50);
-      --rs-thumb-value-c: var(--error-level-50R);
+      --rst-bg: var(--error-8);
+      --rst: var(--error-4);
+      --rs-thumb-c: var(--error-4);
+      --rs-thumb-bc: var(--base-1L);
+      --rs-thumb-value-bg: var(--error-4);
+      --rs-thumb-value-c: var(--error-8);
     }
 
     &.success {
-      --rst-bg: var(--success-500);
-      --rst: var(--success-level-40);
-      --rs-thumb-c: var(--success-level-50);
-      --rs-thumb-bc: var(--base-level-10);
-      --rs-thumb-value-bg: var(--success-level-50);
-      --rs-thumb-value-c: var(--success-level-50R);
+      --rst-bg: var(--success-8);
+      --rst: var(--success-4);
+      --rs-thumb-c: var(--success-4);
+      --rs-thumb-bc: var(--base-1L);
+      --rs-thumb-value-bg: var(--success-4);
+      --rs-thumb-value-c: var(--success-8);
     }
 
     &.outlined {
-      --rst: var(--base-level-10);
-      --rst-bc: var(--base-level-40);
-      --rs-thumb-c: var(--base-level-50);
-      --rs-thumb-bc: var(--base-level-10);
+      --rst: var(--base-1L);
+      --rst-bc: var(--base-3L);
+      --rs-thumb-c: var(--base-5);
+      --rs-thumb-bc: var(--base-1L);
 
       &.primary,
       &.accent,
       &.warn,
       &.error,
       &.success {
-        --rst: var(--base-level-10);
+        --rst: var(--base-1L);
       }
 
       &.primary {
-        --rs-thumb-c: var(--primary-level-40);
-        --rs-thumb-bc: var(--base-level-10);
+        --rs-thumb-c: var(--primary-4);
+        --rs-thumb-bc: var(--base-1L);
       }
 
       &.accent {
-        --rs-thumb-c: var(--accent-level-40);
-        --rs-thumb-bc: var(--base-level-10);
+        --rs-thumb-c: var(--accent-4);
+        --rs-thumb-bc: var(--base-1L);
       }
 
       &.warn {
-        --rs-thumb-c: var(--warn-level-40);
-        --rs-thumb-bc: var(--base-level-10);
+        --rs-thumb-c: var(--warn-4);
+        --rs-thumb-bc: var(--base-1L);
       }
 
       &.error {
-        --rs-thumb-c: var(--error-level-40);
-        --rs-thumb-bc: var(--base-level-10);
+        --rs-thumb-c: var(--error-4);
+        --rs-thumb-bc: var(--base-1L);
       }
 
       &.success {
-        --rs-thumb-c: var(--success-level-40);
-        --rs-thumb-bc: var(--base-level-10);
+        --rs-thumb-c: var(--success-4);
+        --rs-thumb-bc: var(--base-1L);
       }
     }
 
     &.flat {
       --rs-thumb-c: #fff;
-      --rs-thumb-bc: var(--base-level-40);
+      --rs-thumb-bc: var(--base-3L);
 
       &.primary,
       &.accent,
       &.warn,
       &.error,
       &.success {
-        --rst: var(--base-level-30);
+        --rst: var(--base-1);
         --rs-thumb-c: #fff;
-        --rs-thumb-bc: var(--base-level-40);
+        --rs-thumb-bc: var(--base-3L);
       }
     }
 
     &.raised {
-      --rst-bg: var(--base-gradient-20);
+      --rst-bg: var(--base-g-2);
       --rs-thumb-c: #fff;
-      --rs-thumb-bc: var(--base-level-40);
+      --rs-thumb-bc: var(--base-3L);
 
       &.primary,
       &.accent,
       &.warn,
       &.error,
       &.success {
-        --rst: var(--base-level-30);
+        --rst: var(--base-1);
         --rs-thumb-c: #fff;
-        --rs-thumb-bc: var(--base-level-40);
+        --rs-thumb-bc: var(--base-3L);
       }
 
       &.primary {
-        --rst-bg: var(--primary-gradient-20);
+        --rst-bg: var(--primary-g-2);
       }
 
       &.accent {
-        --rst-bg: var(--accent-gradient-20);
+        --rst-bg: var(--accent-g-2);
       }
 
       &.warn {
-        --rst-bg: var(--warn-gradient-20);
+        --rst-bg: var(--warn-g-2);
       }
 
       &.error {
-        --rst-bg: var(--error-gradient-20);
+        --rst-bg: var(--error-g-2);
       }
 
       &.success {
-        --rst-bg: var(--success-gradient-20);
+        --rst-bg: var(--success-g-2);
       }
     }
   }

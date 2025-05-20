@@ -7,7 +7,7 @@ $spkToggleCard: true !default;
     display: flex;
     flex-direction: column;
     border-radius: var(--shape-3);
-    background-color: var(--base-level-20);
+    background-color: var(--base-1);
 
     &.active {
       .content {
