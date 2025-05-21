@@ -234,10 +234,10 @@ $spkDatepicker: true !default;
     }
 
     &.outlined {
-      --dp-sel-bg: var(--base-1L);
+      --dp-sel-bg: var(--base-1);
       --dp-sel-c: var(--base-12);
       --dp-sel-bw: 2px;
-      --dp-sel-bc: var(--base-3L);
+      --dp-sel-bc: var(--base-4);
 
       &.primary {
         --dp-sel-bc: var(--primary-8);
@@ -261,26 +261,26 @@ $spkDatepicker: true !default;
     }
 
     &.raised {
-      --dp-sel-bg: var(--base-g-2);
+      --dp-sel-bg: var(--base-g2);
 
       &.primary {
-        --dp-sel-bg: var(--primary-g-2);
+        --dp-sel-bg: var(--primary-g2);
       }
 
       &.accent {
-        --dp-sel-bg: var(--accent-g-2);
+        --dp-sel-bg: var(--accent-g2);
       }
 
       &.warn {
-        --dp-sel-bg: var(--warn-g-2);
+        --dp-sel-bg: var(--warn-g2);
       }
 
       &.error {
-        --dp-sel-bg: var(--error-g-2);
+        --dp-sel-bg: var(--error-g2);
       }
 
       &.success {
-        --dp-sel-bg: var(--success-g-2);
+        --dp-sel-bg: var(--success-g2);
       }
     }
   }

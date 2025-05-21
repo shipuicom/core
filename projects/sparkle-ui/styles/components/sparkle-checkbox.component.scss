@@ -5,9 +5,9 @@ $spkCheckbox: true !default;
 @if $spkCheckbox == true {
   spk-checkbox {
     --box-bw: #{p2r(1)};
-    --box-bc: var(--base-3L);
+    --box-bc: var(--base-4);
     --box-c: var(--base-8);
-    --box-bg: var(--base-1);
+    --box-bg: var(--base-2);
 
     display: flex;
     align-items: center;
@@ -101,15 +101,15 @@ $spkCheckbox: true !default;
     }
 
     &.outlined {
-      --box-bg: var(--base-1L);
+      --box-bg: var(--base-1);
 
       &.primary,
       &.accent,
       &.warn,
       &.error,
       &.success {
-        --box-bg: var(--base-1L);
-        --box-bc: var(--base-3L);
+        --box-bg: var(--base-1);
+        --box-bc: var(--base-4);
       }
     }
 
@@ -120,9 +120,9 @@ $spkCheckbox: true !default;
       &.warn,
       &.error,
       &.success {
-        --box-bc: var(--base-3L);
+        --box-bc: var(--base-4);
         --box-c: var(--base-8);
-        --box-bg: var(--base-1);
+        --box-bg: var(--base-2);
       }
     }
 
@@ -155,7 +155,7 @@ $spkCheckbox: true !default;
 
   %flat {
     --box-bw: 0;
-    --box-bg: var(--base-8S);
+    --box-bg: var(--base-8);
     --box-c: #fff;
 
     &.primary {
@@ -181,27 +181,27 @@ $spkCheckbox: true !default;
 
   %raised {
     --box-bw: 0;
-    --box-bg: var(--base-g-2);
+    --box-bg: var(--base-g2);
     --box-c: #fff;
 
     &.primary {
-      --box-bg: var(--primary-g-2);
+      --box-bg: var(--primary-g2);
     }
 
     &.accent {
-      --box-bg: var(--accent-g-2);
+      --box-bg: var(--accent-g2);
     }
 
     &.warn {
-      --box-bg: var(--warn-g-2);
+      --box-bg: var(--warn-g2);
     }
 
     &.error {
-      --box-bg: var(--error-g-2);
+      --box-bg: var(--error-g2);
     }
 
     &.success {
-      --box-bg: var(--success-g-2);
+      --box-bg: var(--success-g2);
     }
   }
 }

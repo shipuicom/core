@@ -4,9 +4,9 @@ $spkToggle: true !default;
 
 @if $spkToggle == true {
   spk-toggle {
-    --toggle-bg: var(--base-3L);
+    --toggle-bg: var(--base-4);
     --toggle-b: 0;
-    --togglek-bg: var(--base-1);
+    --togglek-bg: var(--base-2);
     --togglek-bs: var(--box-shadow-20);
 
     display: flex;
@@ -92,10 +92,10 @@ $spkToggle: true !default;
     }
 
     &.outlined {
-      --toggle-bg: var(--base-1L);
-      --togglek-bg: var(--base-3);
+      --toggle-bg: var(--base-1);
+      --togglek-bg: var(--base-5);
       --togglek-bs: none;
-      --toggle-b: 1px solid var(--base-3);
+      --toggle-b: 1px solid var(--base-5);
 
       .knob {
         width: p2r(14);
@@ -103,7 +103,7 @@ $spkToggle: true !default;
       }
 
       &.active {
-        --togglek-bg: var(--base-6R);
+        --togglek-bg: var(--base-9);
 
         &.primary {
           --togglek-bg: var(--primary-8);
@@ -162,27 +162,27 @@ $spkToggle: true !default;
 
       &:has(input[type='checkbox']:checked),
       &.active {
-        --toggle-bg: var(--base-g-2);
+        --toggle-bg: var(--base-g2);
         --togglek-bg: #fff;
 
         &.primary {
-          --toggle-bg: var(--primary-g-2);
+          --toggle-bg: var(--primary-g2);
         }
 
         &.accent {
-          --toggle-bg: var(--accent-g-2);
+          --toggle-bg: var(--accent-g2);
         }
 
         &.warn {
-          --toggle-bg: var(--warn-g-2);
+          --toggle-bg: var(--warn-g2);
         }
 
         &.error {
-          --toggle-bg: var(--error-g-2);
+          --toggle-bg: var(--error-g2);
         }
 
         &.success {
-          --toggle-bg: var(--success-g-2);
+          --toggle-bg: var(--success-g2);
         }
       }
     }

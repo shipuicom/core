@@ -14,44 +14,44 @@ $useApexcharts: true !default;
     .apexcharts-gridline,
     .apexcharts-yaxis-tick,
     .apexcharts-xaxis-tick {
-      stroke: var(--base-8R);
+      stroke: var(--base-8);
     }
 
     .apexcharts-grid-borders {
       line {
-        stroke: var(--base-8R);
+        stroke: var(--base-8);
       }
     }
 
     .apexcharts-tracks {
       .apexcharts-radialbar-area {
-        stroke: var(--base-3L);
+        stroke: var(--base-4);
       }
     }
 
     .apexcharts-menu {
-      background-color: var(--base-1L);
+      background-color: var(--base-1);
       color: var(--base-12);
-      border: 1px solid var(--base-3L);
+      border: 1px solid var(--base-4);
     }
 
     .apexcharts-tooltip.apexcharts-theme-light {
-      background-color: var(--base-1L);
-      border: 1px solid var(--base-3L);
-      box-shadow: var(--base-1);
+      background-color: var(--base-1);
+      border: 1px solid var(--base-4);
+      box-shadow: var(--base-2);
       color: var(--base-8);
 
       .apexcharts-tooltip-title {
-        background-color: var(--base-1);
-        border-bottom: 1px solid var(--base-3L);
+        background-color: var(--base-2);
+        border-bottom: 1px solid var(--base-4);
       }
     }
 
     .apexcharts-xaxistooltip,
     .apexcharts-yaxistooltip {
-      background-color: var(--base-1L);
-      border: 1px solid var(--base-3L);
-      box-shadow: var(--base-1);
+      background-color: var(--base-1);
+      border: 1px solid var(--base-4);
+      box-shadow: var(--base-2);
       color: var(--base-8);
     }
   }

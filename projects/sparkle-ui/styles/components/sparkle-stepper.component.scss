@@ -19,7 +19,7 @@ $spkStepper: true !default;
       justify-content: center;
       gap: p2r(8);
       position: relative;
-      color: var(--base-6R);
+      color: var(--base-9);
       cursor: pointer;
       user-select: none;
 
@@ -43,14 +43,14 @@ $spkStepper: true !default;
 
           .radio {
             border-width: 0;
-            background: var(--primary-g-2);
+            background: var(--primary-g2);
           }
         }
       }
 
       spk-radio {
         .radio {
-          --radiod-c: var(--base-1L);
+          --radiod-c: var(--base-1);
 
           width: p2r(16);
           height: p2r(16);
@@ -67,7 +67,7 @@ $spkStepper: true !default;
 
           .radio {
             border-width: 0;
-            background: var(--primary-g-2);
+            background: var(--primary-g2);
           }
 
           &:before {
@@ -92,7 +92,7 @@ $spkStepper: true !default;
       z-index: 0;
       right: 0;
       height: p2r(4);
-      background-color: var(--base-1);
+      background-color: var(--base-2);
     }
   }
 }

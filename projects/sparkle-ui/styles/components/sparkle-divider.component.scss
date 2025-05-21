@@ -4,7 +4,7 @@ $spkDivider: true !default;
 
 @if $spkDivider == true {
   spk-divider {
-    --divider-c: var(--base-3L);
+    --divider-c: var(--base-4);
     --divider-h: #{p2r(1)};
 
     display: flex;

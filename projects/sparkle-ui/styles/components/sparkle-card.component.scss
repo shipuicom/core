@@ -4,9 +4,9 @@ $spkCard: true !default;
 
 @if $spkCard == true {
   spk-card {
-    --card-bg: var(--base-1L);
-    --card-ibg: var(--base-1);
-    --card-bc: var(--base-3L);
+    --card-bg: var(--base-1);
+    --card-ibg: var(--base-2);
+    --card-bc: var(--base-4);
     --card-sh: var(--box-shadow-10);
     --card-p: #{p2r(24)};
     --card-shp: #{p2r(8)};
@@ -39,8 +39,8 @@ $spkCard: true !default;
     }
 
     &.type-b {
-      --card-bg: var(--base-1);
-      --card-ibg: var(--base-1L);
+      --card-bg: var(--base-2);
+      --card-ibg: var(--base-1);
       --card-sh: none;
       --card-shp: #{p2r(4)};
     }

@@ -7,11 +7,11 @@ $spkFormFieldShadow: false !default;
   spk-form-field-popover,
   spk-form-field {
     --ff-s: var(--shape-2);
-    --ff-bc: var(--base-3);
-    --ff-prefix-bg: var(--base-1);
+    --ff-bc: var(--base-4);
+    --ff-prefix-bg: var(--base-2);
     --ff-suffix-bg: transparent;
     --ff-ic: var(--base-8);
-    --ff-bg: var(--base-1L);
+    --ff-bg: var(--base-1);
     --ff-f: var(--paragraph-30B);
     --ff-spinner-size: #{p2r(20)};
     --ff-spinner-thickness: #{p2r(2)};
@@ -192,7 +192,7 @@ $spkFormFieldShadow: false !default;
         width: 100%;
 
         &::placeholder {
-          color: var(--base-4);
+          color: var(--base-6);
         }
 
         &:focus {
@@ -223,7 +223,7 @@ $spkFormFieldShadow: false !default;
       padding-top: p2r(4);
 
       [hint] {
-        color: var(--base-6R);
+        color: var(--base-9);
 
         &[suffix] {
           justify-self: flex-end;
@@ -263,7 +263,7 @@ $spkFormFieldShadow: false !default;
       align-items: center;
       justify-content: space-between;
       width: 100%;
-      color: var(--base-8R);
+      color: var(--base-8);
       opacity: 1;
       transition:
         visibility 125ms linear,

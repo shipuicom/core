@@ -3,10 +3,10 @@ $spkButtonGroup: true !default;
 
 @if $spkButtonGroup == true {
   spk-button-group {
-    --btng-bg: var(--base-1L);
+    --btng-bg: var(--base-1);
     --btng-c: var(--base-12);
     --btng-ic: var(--base-12);
-    --btng-bc: var(--base-3L);
+    --btng-bc: var(--base-4);
     --btng-h: #{p2r(40)};
     --btng-p: #{p2r(0 12)};
     --btng-s: var(--shape-2);
@@ -56,7 +56,7 @@ $spkButtonGroup: true !default;
       &.active {
         --btng-c: var(--base-12);
         --btng-ic: var(--base-12);
-        --btng-bg: var(--base-2L);
+        --btng-bg: var(--base-3);
       }
     }
   }

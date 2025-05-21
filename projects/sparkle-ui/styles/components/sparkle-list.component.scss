@@ -15,13 +15,13 @@ $spkList: true !default;
     display: flex;
     flex-direction: column;
 
-    &.base-1l {
-      --list-active-bg: var(--base-1L);
+    &.base-1 {
+      --list-active-bg: var(--base-1);
       --list-active-bs: var(--box-shadow-20);
     }
 
     [title] {
-      color: var(--base-8R);
+      color: var(--base-8);
       margin: 0 0.75rem;
       font: var(--paragraph-30);
       line-height: 1.25rem;
@@ -51,7 +51,7 @@ $spkList: true !default;
 
       [suffix] {
         margin-left: auto;
-        color: var(--base-8R);
+        color: var(--base-8);
       }
     }
 

@@ -34,8 +34,8 @@ html body {
   --primary-10: #{light-dark(hsl(217, 91%, 33%), hsl(217, 91%, 80%))};
   --primary-11: #{light-dark(hsl(217, 91%, 19.5%), hsl(217, 91%, 90%))};
   --primary-12: #{light-dark(hsl(217, 91%, 6%), hsl(217, 91%, 100%))};
-  --primary-g-2: linear-gradient(180deg, hsl(217, 91%, 65%) 0%, hsl(217, 91%, 60%) 50%);
-  --primary-g-3: linear-gradient(180deg, hsl(217, 91%, 80%) 0%, hsl(217, 91%, 60%) 50%);
+  --primary-g2: linear-gradient(180deg, hsl(217, 91%, 65%) 0%, hsl(217, 91%, 60%) 50%);
+  --primary-g3: linear-gradient(180deg, hsl(217, 91%, 80%) 0%, hsl(217, 91%, 60%) 50%);
 
   --accent-1: #{light-dark(hsl(258, 90%, 95.75%), hsl(258, 90%, 8.25%))};
   --accent-2: #{light-dark(hsl(258, 90%, 91.5%), hsl(258, 90%, 16.5%))};
@@ -49,8 +49,8 @@ html body {
   --accent-10: #{light-dark(hsl(258, 90%, 36.3%), hsl(258, 90%, 83%))};
   --accent-11: #{light-dark(hsl(258, 90%, 21.45%), hsl(258, 90%, 91.5%))};
   --accent-12: #{light-dark(hsl(258, 90%, 6.6%), hsl(258, 90%, 100%))};
-  --accent-g-2: linear-gradient(180deg, hsl(258, 90%, 70.25%) 0%, hsl(258, 90%, 66%) 50%);
-  --accent-g-3: linear-gradient(180deg, hsl(258, 90%, 83%) 0%, hsl(258, 90%, 66%) 50%);
+  --accent-g2: linear-gradient(180deg, hsl(258, 90%, 70.25%) 0%, hsl(258, 90%, 66%) 50%);
+  --accent-g3: linear-gradient(180deg, hsl(258, 90%, 83%) 0%, hsl(258, 90%, 66%) 50%);
 
   --warn-1: #{light-dark(hsl(37, 92%, 93.75%), hsl(37, 92%, 6.25%))};
   --warn-2: #{light-dark(hsl(37, 92%, 87.5%), hsl(37, 92%, 12.5%))};
@@ -64,8 +64,8 @@ html body {
   --warn-10: #{light-dark(hsl(37, 92%, 27.5%), hsl(37, 92%, 75%))};
   --warn-11: #{light-dark(hsl(37, 92%, 16.25%), hsl(37, 92%, 87.5%))};
   --warn-12: #{light-dark(hsl(37, 92%, 5%), hsl(37, 92%, 100%))};
-  --warn-g-2: linear-gradient(180deg, hsl(37, 92%, 56.25%) 0%, hsl(37, 92%, 50%) 50%);
-  --warn-g-3: linear-gradient(180deg, hsl(37, 92%, 75%) 0%, hsl(37, 92%, 50%) 50%);
+  --warn-g2: linear-gradient(180deg, hsl(37, 92%, 56.25%) 0%, hsl(37, 92%, 50%) 50%);
+  --warn-g3: linear-gradient(180deg, hsl(37, 92%, 75%) 0%, hsl(37, 92%, 50%) 50%);
 
   --error-1: #{light-dark(hsl(0, 84%, 95%), hsl(0, 84%, 7.5%))};
   --error-2: #{light-dark(hsl(0, 84%, 90%), hsl(0, 84%, 15%))};
@@ -79,8 +79,8 @@ html body {
   --error-10: #{light-dark(hsl(0, 84%, 33%), hsl(0, 84%, 80%))};
   --error-11: #{light-dark(hsl(0, 84%, 19.5%), hsl(0, 84%, 90%))};
   --error-12: #{light-dark(hsl(0, 84%, 6%), hsl(0, 84%, 100%))};
-  --error-g-2: linear-gradient(180deg, hsl(0, 84%, 65%) 0%, hsl(0, 84%, 60%) 50%);
-  --error-g-3: linear-gradient(180deg, hsl(0, 84%, 80%) 0%, hsl(0, 84%, 60%) 50%);
+  --error-g2: linear-gradient(180deg, hsl(0, 84%, 65%) 0%, hsl(0, 84%, 60%) 50%);
+  --error-g3: linear-gradient(180deg, hsl(0, 84%, 80%) 0%, hsl(0, 84%, 60%) 50%);
 
   --success-1: #{light-dark(hsl(160, 84%, 92.38%), hsl(160, 84%, 4.88%))};
   --success-2: #{light-dark(hsl(160, 84%, 84.75%), hsl(160, 84%, 9.75%))};
@@ -94,38 +94,32 @@ html body {
   --success-10: #{light-dark(hsl(160, 84%, 21.45%), hsl(160, 84%, 69.5%))};
   --success-11: #{light-dark(hsl(160, 84%, 12.67%), hsl(160, 84%, 84.75%))};
   --success-12: #{light-dark(hsl(160, 84%, 3.9%), hsl(160, 84%, 100%))};
-  --success-g-2: linear-gradient(180deg, hsl(160, 84%, 46.63%) 0%, hsl(160, 84%, 39%) 50%);
-  --success-g-3: linear-gradient(180deg, hsl(160, 84%, 69.5%) 0%, hsl(160, 84%, 39%) 50%);
+  --success-g2: linear-gradient(180deg, hsl(160, 84%, 46.63%) 0%, hsl(160, 84%, 39%) 50%);
+  --success-g3: linear-gradient(180deg, hsl(160, 84%, 69.5%) 0%, hsl(160, 84%, 39%) 50%);
 
-  --base-1L: #{light-dark(#fff, hsl(0, 0%, 5.75%))};
-  --base-1: #{light-dark(hsl(0, 0%, 97.25%), hsl(0, 0%, 8.75%))};
-  --base-1D: #{light-dark(hsl(0, 0%, 96.25%), hsl(0, 0%, 5.75%))};
-  --base-2L: #{light-dark(hsl(0, 0%, 96.25%), hsl(0, 0%, 11.5%))};
-  --base-2: #{light-dark(hsl(0, 0%, 90.5%), hsl(0, 0%, 11.5%))};
-  --base-3L: #{light-dark(hsl(0, 0%, 84.75%), hsl(0, 0%, 17.25%))};
-  --base-3: #{light-dark(hsl(0, 0%, 79.75%), hsl(0, 0%, 17.25%))};
-  --base-4: #{light-dark(hsl(0, 0%, 66.25%), hsl(0, 0%, 28.75%))};
-  --base-6: #{light-dark(hsl(0, 0%, 59.5%), hsl(0, 0%, 34.5%))};
-  --base-6R: #{light-dark(hsl(0, 0%, 34.5%), hsl(0, 0%, 59.5%))};
-  --base-7: #{light-dark(hsl(0, 0%, 52.75%), hsl(0, 0%, 40.25%))};
+  --base-1: #{light-dark(#fff, hsl(0, 0%, 5.75%))};
+  --base-2: #{light-dark(hsl(0, 0%, 97.25%), hsl(0, 0%, 8.75%))};
+  --base-3: #{light-dark(hsl(0, 0%, 94.5%), hsl(0, 0%, 11.5%))};
+  --base-4: #{light-dark(hsl(0, 0%, 84.75%), hsl(0, 0%, 17.25%))};
+  --base-5: #{light-dark(hsl(0, 0%, 79.75%), hsl(0, 0%, 17.25%))};
+  --base-6: #{light-dark(hsl(0, 0%, 66.25%), hsl(0, 0%, 28.75%))};
+  --base-7: #{light-dark(hsl(0, 0%, 59.5%), hsl(0, 0%, 34.5%))};
   --base-8: #{light-dark(hsl(0, 0%, 46%), hsl(0, 0%, 46%))};
-  --base-8S: hsl(0, 0%, 46%);
   --base-9: #{light-dark(hsl(0, 0%, 35.65%), hsl(0, 0%, 59.5%))};
-  --base-9S: hsl(0, 0%, 35.65%);
   --base-10: #{light-dark(hsl(0, 0%, 25.3%), hsl(0, 0%, 73%))};
   --base-11: #{light-dark(hsl(0, 0%, 14.95%), hsl(0, 0%, 86.5%))};
   --base-12: #{light-dark(hsl(0, 0%, 4.6%), hsl(0, 0%, 100%))};
 
-  --base-g-2: linear-gradient(180deg, hsl(0, 0%, 52.75%) 0%, hsl(0, 0%, 46%) 50%);
-  --base-g-3: linear-gradient(180deg, hsl(0, 0%, 73%) 0%, hsl(0, 0%, 46%) 50%);
+  --base-g2: linear-gradient(180deg, hsl(0, 0%, 52.75%) 0%, hsl(0, 0%, 46%) 50%);
+  --base-g3: linear-gradient(180deg, hsl(0, 0%, 73%) 0%, hsl(0, 0%, 46%) 50%);
   --base-g-6: linear-gradient(180deg, hsl(0, 0%, 25.3%) 0%, hsl(0, 0%, 14.95%) 50%);
   --base-g-7: linear-gradient(180deg, hsl(0, 0%, 35.65%) 0%, hsl(0, 0%, 14.95%) 50%);
 
-  --primary-c-8: var(--light-text);
-  --accent-c-8: var(--light-text);
-  --warn-c-8: var(--light-text);
-  --error-c-8: var(--light-text);
-  --success-c-8: var(--light-text);
+  --primary-c8: var(--light-text);
+  --accent-c8: var(--light-text);
+  --warn-c8: var(--light-text);
+  --error-c8: var(--light-text);
+  --success-c8: var(--light-text);
 
   --display-10: 600 #{p2r(80)} / normal Inter Tight, sans-serif;
   --display-20: 600 #{p2r(72)} / normal Inter Tight, sans-serif;
@@ -165,7 +159,7 @@ html body {
   --box-shadow-50: 0 20px 25px -5px rgba(18, 18, 23, 0.1);
   --box-shadow-60: 0 25px 50px -12px rgba(18, 18, 23, 0.25);
 
-  --dark-text: var(--grey-900);
+  --dark-text: #000;
   --light-text: #fff;
 
   &.dark {

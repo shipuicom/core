@@ -29,9 +29,9 @@
   grid-template-columns: repeat(12, 1fr);
   gap: p2r(4);
   padding: p2r(20);
-  background-color: var(--base-1);
+  background-color: var(--base-2);
   border-radius: var(--shape-3);
-  border: 1px solid var(--base-3L);
+  border: 1px solid var(--base-4);
   color-scheme: light;
   &.flip {
     color-scheme: dark;

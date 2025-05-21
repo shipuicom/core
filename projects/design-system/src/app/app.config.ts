@@ -25,7 +25,7 @@ export const appConfig: ApplicationConfig = {
       useValue: {
         dialogType: 'type-b',
         tableType: 'type-b',
-        // sidenavType: 'simple',
+        sidenavType: 'overlay',
       },
     },
   ],

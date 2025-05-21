@@ -8,15 +8,15 @@ $spkRangeSlider: true !default;
     --rs-f: var(--paragraph-30);
     --rs-unit-g: #{p2r(12)};
     --rs-unit-c: var(--base-8);
-    --rst: var(--base-1);
-    --rst-bc: var(--base-1L);
-    --rst-bg: var(--base-8R);
+    --rst: var(--base-2);
+    --rst-bc: var(--base-1);
+    --rst-bg: var(--base-8);
     --rst-h: #{p2r(8)};
     --rst-s: var(--shape-1);
-    --rs-thumb-c: var(--base-3L);
-    --rs-thumb-bc: var(--base-1L);
-    --rs-thumb-value-bg: var(--base-1);
-    --rs-thumb-value-c: var(--base-2R);
+    --rs-thumb-c: var(--base-4);
+    --rs-thumb-bc: var(--base-1);
+    --rs-thumb-value-bg: var(--base-2);
+    --rs-thumb-value-c: var(--base-3);
     --rs-thumb-si: #{p2r(16)};
 
     display: flex;
@@ -47,7 +47,7 @@ $spkRangeSlider: true !default;
     }
 
     &:has(input[type='range'][disabled]) {
-      --rst-bg: var(--base-8R);
+      --rst-bg: var(--base-8);
       opacity: 0.6;
 
       * {
@@ -181,7 +181,7 @@ $spkRangeSlider: true !default;
       --rst-bg: var(--primary-8);
       --rst: var(--primary-4);
       --rs-thumb-c: var(--primary-4);
-      --rs-thumb-bc: var(--base-1L);
+      --rs-thumb-bc: var(--base-1);
       --rs-thumb-value-bg: var(--primary-4);
       --rs-thumb-value-c: var(--primary-8);
     }
@@ -190,7 +190,7 @@ $spkRangeSlider: true !default;
       --rst-bg: var(--accent-8);
       --rst: var(--accent-4);
       --rs-thumb-c: var(--accent-4);
-      --rs-thumb-bc: var(--base-1L);
+      --rs-thumb-bc: var(--base-1);
       --rs-thumb-value-bg: var(--accent-4);
       --rs-thumb-value-c: var(--accent-8);
     }
@@ -199,7 +199,7 @@ $spkRangeSlider: true !default;
       --rst-bg: var(--warn-8);
       --rst: var(--warn-4);
       --rs-thumb-c: var(--warn-4);
-      --rs-thumb-bc: var(--base-1L);
+      --rs-thumb-bc: var(--base-1);
       --rs-thumb-value-bg: var(--warn-4);
       --rs-thumb-value-c: var(--warn-8);
     }
@@ -208,7 +208,7 @@ $spkRangeSlider: true !default;
       --rst-bg: var(--error-8);
       --rst: var(--error-4);
       --rs-thumb-c: var(--error-4);
-      --rs-thumb-bc: var(--base-1L);
+      --rs-thumb-bc: var(--base-1);
       --rs-thumb-value-bg: var(--error-4);
       --rs-thumb-value-c: var(--error-8);
     }
@@ -217,99 +217,99 @@ $spkRangeSlider: true !default;
       --rst-bg: var(--success-8);
       --rst: var(--success-4);
       --rs-thumb-c: var(--success-4);
-      --rs-thumb-bc: var(--base-1L);
+      --rs-thumb-bc: var(--base-1);
       --rs-thumb-value-bg: var(--success-4);
       --rs-thumb-value-c: var(--success-8);
     }
 
     &.outlined {
-      --rst: var(--base-1L);
-      --rst-bc: var(--base-3L);
-      --rs-thumb-c: var(--base-5);
-      --rs-thumb-bc: var(--base-1L);
+      --rst: var(--base-1);
+      --rst-bc: var(--base-4);
+      --rs-thumb-c: var(--base-6);
+      --rs-thumb-bc: var(--base-1);
 
       &.primary,
       &.accent,
       &.warn,
       &.error,
       &.success {
-        --rst: var(--base-1L);
+        --rst: var(--base-1);
       }
 
       &.primary {
         --rs-thumb-c: var(--primary-4);
-        --rs-thumb-bc: var(--base-1L);
+        --rs-thumb-bc: var(--base-1);
       }
 
       &.accent {
         --rs-thumb-c: var(--accent-4);
-        --rs-thumb-bc: var(--base-1L);
+        --rs-thumb-bc: var(--base-1);
       }
 
       &.warn {
         --rs-thumb-c: var(--warn-4);
-        --rs-thumb-bc: var(--base-1L);
+        --rs-thumb-bc: var(--base-1);
       }
 
       &.error {
         --rs-thumb-c: var(--error-4);
-        --rs-thumb-bc: var(--base-1L);
+        --rs-thumb-bc: var(--base-1);
       }
 
       &.success {
         --rs-thumb-c: var(--success-4);
-        --rs-thumb-bc: var(--base-1L);
+        --rs-thumb-bc: var(--base-1);
       }
     }
 
     &.flat {
       --rs-thumb-c: #fff;
-      --rs-thumb-bc: var(--base-3L);
+      --rs-thumb-bc: var(--base-4);
 
       &.primary,
       &.accent,
       &.warn,
       &.error,
       &.success {
-        --rst: var(--base-1);
+        --rst: var(--base-2);
         --rs-thumb-c: #fff;
-        --rs-thumb-bc: var(--base-3L);
+        --rs-thumb-bc: var(--base-4);
       }
     }
 
     &.raised {
-      --rst-bg: var(--base-g-2);
+      --rst-bg: var(--base-g2);
       --rs-thumb-c: #fff;
-      --rs-thumb-bc: var(--base-3L);
+      --rs-thumb-bc: var(--base-4);
 
       &.primary,
       &.accent,
       &.warn,
       &.error,
       &.success {
-        --rst: var(--base-1);
+        --rst: var(--base-2);
         --rs-thumb-c: #fff;
-        --rs-thumb-bc: var(--base-3L);
+        --rs-thumb-bc: var(--base-4);
       }
 
       &.primary {
-        --rst-bg: var(--primary-g-2);
+        --rst-bg: var(--primary-g2);
       }
 
       &.accent {
-        --rst-bg: var(--accent-g-2);
+        --rst-bg: var(--accent-g2);
       }
 
       &.warn {
-        --rst-bg: var(--warn-g-2);
+        --rst-bg: var(--warn-g2);
       }
 
       &.error {
-        --rst-bg: var(--error-g-2);
+        --rst-bg: var(--error-g2);
       }
 
       &.success {
-        --rst-bg: var(--success-g-2);
+        --rst-bg: var(--success-g2);
       }
     }
   }

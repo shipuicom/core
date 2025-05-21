@@ -5,10 +5,10 @@ $spkProgressBar: true !default;
 @if $spkProgressBar == true {
   spk-progress-bar {
     --pb-h: #{p2r(8)};
-    --pb-b: var(--base-3L);
-    --pb-bg: var(--base-1);
+    --pb-b: var(--base-4);
+    --pb-bg: var(--base-2);
     --pb-br: var(--shape-2);
-    --pbt-bg: var(--base-1);
+    --pbt-bg: var(--base-2);
     --pbt-br: inherit;
 
     display: block;
@@ -45,7 +45,7 @@ $spkProgressBar: true !default;
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: var(--base-1);
+        background-color: var(--base-2);
         animation: indeterminate-progress-bar-stripes-background 2s linear infinite;
         transform-origin: top left;
       }
@@ -72,8 +72,8 @@ $spkProgressBar: true !default;
     }
 
     &.outlined {
-      --pb-b: 1px solid var(--base-3L);
-      --pb-bg: var(--base-1L);
+      --pb-b: 1px solid var(--base-4);
+      --pb-bg: var(--base-1);
 
       &:after {
         background-color: inherit;
@@ -81,7 +81,7 @@ $spkProgressBar: true !default;
     }
 
     &.flat {
-      --pbt-bg: var(--base-1);
+      --pbt-bg: var(--base-2);
 
       &:after {
         background-color: inherit;
@@ -109,26 +109,26 @@ $spkProgressBar: true !default;
     }
 
     &.raised {
-      --pbt-bg: var(--base-g-3);
+      --pbt-bg: var(--base-g3);
 
       &.primary {
-        --pbt-bg: var(--primary-g-3);
+        --pbt-bg: var(--primary-g3);
       }
 
       &.accent {
-        --pbt-bg: var(--accent-g-3);
+        --pbt-bg: var(--accent-g3);
       }
 
       &.warn {
-        --pbt-bg: var(--warn-g-3);
+        --pbt-bg: var(--warn-g3);
       }
 
       &.error {
-        --pbt-bg: var(--error-g-3);
+        --pbt-bg: var(--error-g3);
       }
 
       &.success {
-        --pbt-bg: var(--success-g-3);
+        --pbt-bg: var(--success-g3);
       }
     }
   }

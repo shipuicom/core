@@ -11,9 +11,9 @@ $spkButtonShadow: false !default;
     --btn-c: var(--base-12);
     --btn-ic: var(--base-12);
     --btn-ir: var(0deg);
-    --btn-bg: var(--base-1L);
-    --btn-bg-h: var(--base-1);
-    --btn-bc: var(--base-3L);
+    --btn-bg: var(--base-1);
+    --btn-bg-h: var(--base-2);
+    --btn-bc: var(--base-4);
 
     @if $spkButtonShadow != false {
       --btn-bs: var(--box-shadow-10);
@@ -146,8 +146,8 @@ $spkButtonShadow: false !default;
     &.icon,
     &.outlined {
       --btn-c: var(--base-12);
-      --btn-bg: var(--base-1);
-      --btn-bg-h: var(--base-1);
+      --btn-bg: var(--base-2);
+      --btn-bg-h: var(--base-3);
 
       transition:
         color 80ms linear,
@@ -195,11 +195,11 @@ $spkButtonShadow: false !default;
     }
 
     &.flat {
-      --loader-c: var(--base-1L);
+      --loader-c: var(--base-1);
       --btn-c: #fff;
       --btn-ic: #fff;
-      --btn-bg: var(--base-8S);
-      --btn-bg-h: var(--base-9S);
+      --btn-bg: var(--base-8);
+      --btn-bg-h: #{lighten(var(--base-8), 10%)};
 
       border: 0;
 
@@ -212,38 +212,38 @@ $spkButtonShadow: false !default;
       }
 
       &.primary {
-        --btn-c: var(--primary-c-8);
+        --btn-c: var(--primary-c8);
         --btn-bg: var(--primary-8);
         --btn-bg-h: var(--primary-6);
       }
 
       &.accent {
-        --btn-c: var(--accent-c-8);
+        --btn-c: var(--accent-c8);
         --btn-bg: var(--accent-8);
         --btn-bg-h: var(--accent-6);
       }
 
       &.warn {
-        --btn-c: var(--warn-c-8);
+        --btn-c: var(--warn-c8);
         --btn-bg: var(--warn-8);
         --btn-bg-h: var(--warn-6);
       }
 
       &.error {
-        --btn-c: var(--error-c-8);
+        --btn-c: var(--error-c8);
         --btn-bg: var(--error-8);
         --btn-bg-h: var(--error-6);
       }
 
       &.success {
-        --btn-c: var(--success-c-8);
+        --btn-c: var(--success-c8);
         --btn-bg: var(--success-8);
         --btn-bg-h: var(--success-6);
       }
     }
 
     &.raised {
-      --loader-c: var(--base-1L);
+      --loader-c: var(--base-1);
       --btn-c: #fff;
       --btn-ic: #fff;
       --btn-bg: var(--base-g-6);
@@ -260,33 +260,33 @@ $spkButtonShadow: false !default;
       }
 
       &.primary {
-        --btn-c: var(--primary-c-8);
-        --btn-bg: var(--primary-g-2);
-        --btn-bg-h: var(--primary-g-3);
+        --btn-c: var(--primary-c8);
+        --btn-bg: var(--primary-g2);
+        --btn-bg-h: var(--primary-g3);
       }
 
       &.accent {
-        --btn-c: var(--accent-c-8);
-        --btn-bg: var(--accent-g-2);
-        --btn-bg-h: var(--accent-g-3);
+        --btn-c: var(--accent-c8);
+        --btn-bg: var(--accent-g2);
+        --btn-bg-h: var(--accent-g3);
       }
 
       &.warn {
-        --btn-c: var(--warn-c-8);
-        --btn-bg: var(--warn-g-2);
-        --btn-bg-h: var(--warn-g-3);
+        --btn-c: var(--warn-c8);
+        --btn-bg: var(--warn-g2);
+        --btn-bg-h: var(--warn-g3);
       }
 
       &.error {
-        --btn-c: var(--error-c-8);
-        --btn-bg: var(--error-g-2);
-        --btn-bg-h: var(--error-g-3);
+        --btn-c: var(--error-c8);
+        --btn-bg: var(--error-g2);
+        --btn-bg-h: var(--error-g3);
       }
 
       &.success {
-        --btn-c: var(--success-c-8);
-        --btn-bg: var(--success-g-2);
-        --btn-bg-h: var(--success-g-3);
+        --btn-c: var(--success-c8);
+        --btn-bg: var(--success-g2);
+        --btn-bg-h: var(--success-g3);
       }
     }
   }

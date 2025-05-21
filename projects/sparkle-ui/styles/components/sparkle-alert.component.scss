@@ -4,9 +4,9 @@ $spkAlert: true !default;
 @if $spkAlert == true {
   spk-alert {
     --alert-ad: 400ms;
-    --alert-bg: var(--base-1L);
+    --alert-bg: var(--base-1);
 
-    --alert-bc: var(--base-3L);
+    --alert-bc: var(--base-4);
     --alert-state-ic: var(--base-12);
     --alert-close-ic: var(--base-8);
     --alert-title-c: var(--base-12);
@@ -136,8 +136,8 @@ $spkAlert: true !default;
     }
 
     &:has([content]) .alert {
-      background-color: var(--base-1L);
-      border: 1px solid var(--base-3L);
+      background-color: var(--base-1);
+      border: 1px solid var(--base-4);
       box-shadow: var(--box-shadow-50);
 
       .title {

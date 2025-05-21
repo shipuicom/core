@@ -59,7 +59,7 @@ export type SparkleSidenavType = 'overlay' | 'simple' | '';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '[class]': 'class()',
+    '[class]': '_type()',
     '[class.open]': 'isOpen()',
     '[class.closed]': '!isOpen()',
     '[class.is-dragging]': 'isDragging()',
@@ -76,7 +76,7 @@ export class SparkleSidenavComponent {
   isOpen = model<boolean>(false);
   type = input<SparkleSidenavType | undefined>(undefined);
 
-  class = computed(() => (this.#sidenavType() ? this.#sidenavType() : this.#spkConfig?.sidenavType));
+  _type = computed(() => (this.type() ? this.type() : this.#spkConfig?.sidenavType));
 
   dragImageElement = viewChild.required<ElementRef<HTMLDivElement>>('dragImageElement');
   dragIsEnding = signal<boolean>(false);
@@ -95,7 +95,7 @@ export class SparkleSidenavComponent {
   });
 
   draggingStyle = computed(() => {
-    if (this.type() !== 'overlay') {
+    if (this._type() !== 'overlay') {
       return null;
     }
 

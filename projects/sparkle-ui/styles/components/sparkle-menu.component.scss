@@ -26,7 +26,7 @@ $spkMenu: true !default;
       spk-popover .options {
         [title] {
           position: sticky;
-          border-bottom: 1px solid var(--base-3L);
+          border-bottom: 1px solid var(--base-4);
         }
       }
 
@@ -73,7 +73,7 @@ $spkMenu: true !default;
       .overlay ~ .form-field-wrap {
         spk-form-field {
           z-index: 10;
-          background-color: var(--base-1L);
+          background-color: var(--base-1);
 
           &.hidden {
             opacity: 0;
@@ -136,7 +136,7 @@ $spkMenu: true !default;
         position: relative;
         top: 0;
         z-index: 10;
-        background-color: var(--base-1L);
+        background-color: var(--base-1);
       }
 
       button {
@@ -181,7 +181,7 @@ $spkMenu: true !default;
 
         &.active,
         &:hover {
-          background-color: var(--base-1);
+          background-color: var(--base-2);
           color: var(--base-12);
         }
 

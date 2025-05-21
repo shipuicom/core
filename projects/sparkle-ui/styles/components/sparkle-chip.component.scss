@@ -9,8 +9,8 @@ $spkChipShadow: false !default;
     --chip-s: #{p2r(16)};
     --chip-c: var(--base-12);
     --chip-ic: var(--base-12);
-    --chip-bg: var(--base-1L);
-    --chip-bc: var(--base-3L);
+    --chip-bg: var(--base-1);
+    --chip-bc: var(--base-4);
 
     @if $spkChipShadow != false {
       --chip-bs: var(--box-shadow-10);
@@ -119,7 +119,7 @@ $spkChipShadow: false !default;
     &.simple,
     &.outlined {
       --chip-c: var(--base-12);
-      --chip-bg: var(--base-1);
+      --chip-bg: var(--base-2);
 
       transition: color 80ms linear;
 
@@ -160,7 +160,7 @@ $spkChipShadow: false !default;
     }
 
     &.flat {
-      --loader-c: var(--base-1L);
+      --loader-c: var(--base-1);
       --chip-c: #fff;
       --chip-ic: #fff;
       --chip-bg: var(--base-8);
@@ -168,33 +168,33 @@ $spkChipShadow: false !default;
       border: 0;
 
       &.primary {
-        --chip-c: var(--primary-c-8);
+        --chip-c: var(--primary-c8);
         --chip-bg: var(--primary-8);
       }
 
       &.accent {
-        --chip-c: var(--accent-c-8);
+        --chip-c: var(--accent-c8);
         --chip-bg: var(--accent-8);
       }
 
       &.warn {
-        --chip-c: var(--warn-c-8);
+        --chip-c: var(--warn-c8);
         --chip-bg: var(--warn-8);
       }
 
       &.error {
-        --chip-c: var(--error-c-8);
+        --chip-c: var(--error-c8);
         --chip-bg: var(--error-8);
       }
 
       &.success {
-        --chip-c: var(--success-c-8);
+        --chip-c: var(--success-c8);
         --chip-bg: var(--success-8);
       }
     }
 
     &.raised {
-      --loader-c: var(--base-1L);
+      --loader-c: var(--base-1);
       --chip-c: #fff;
       --chip-ic: #fff;
       --chip-bg: var(--base-g-6);
@@ -203,28 +203,28 @@ $spkChipShadow: false !default;
       box-shadow: none;
 
       &.primary {
-        --chip-c: var(--primary-c-8);
-        --chip-bg: var(--primary-g-2);
+        --chip-c: var(--primary-c8);
+        --chip-bg: var(--primary-g2);
       }
 
       &.accent {
-        --chip-c: var(--accent-c-8);
-        --chip-bg: var(--accent-g-2);
+        --chip-c: var(--accent-c8);
+        --chip-bg: var(--accent-g2);
       }
 
       &.warn {
-        --chip-c: var(--warn-c-8);
-        --chip-bg: var(--warn-g-2);
+        --chip-c: var(--warn-c8);
+        --chip-bg: var(--warn-g2);
       }
 
       &.error {
-        --chip-c: var(--error-c-8);
-        --chip-bg: var(--error-g-2);
+        --chip-c: var(--error-c8);
+        --chip-bg: var(--error-g2);
       }
 
       &.success {
-        --chip-c: var(--success-c-8);
-        --chip-bg: var(--success-g-2);
+        --chip-c: var(--success-c8);
+        --chip-bg: var(--success-g2);
       }
     }
   }

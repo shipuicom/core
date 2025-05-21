@@ -33,8 +33,8 @@ $spkSidenav: true !default;
       overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: auto;
-      background-color: var(--base-1L);
-      border: 1px solid var(--base-3L);
+      background-color: var(--base-1);
+      border: 1px solid var(--base-4);
       border-radius: var(--shape-3);
       height: calc(100vh - 2rem);
       box-shadow: var(--box-shadow-35);
@@ -43,11 +43,11 @@ $spkSidenav: true !default;
     .closed-topbar {
       display: none;
       min-height: p2r(60);
-      background-color: var(--base-1L);
+      background-color: var(--base-1);
       align-items: center;
       justify-content: space-between;
       padding: p2r(0 16);
-      border-bottom: 1px solid var(--base-3L);
+      border-bottom: 1px solid var(--base-4);
       z-index: 10000;
       position: relative;
     }
@@ -85,7 +85,7 @@ $spkSidenav: true !default;
         display: block;
         width: p2r(4);
         height: 40%;
-        background-color: var(--base-1);
+        background-color: var(--base-2);
         border-radius: p2r(2);
         box-shadow: none;
       }
@@ -117,13 +117,13 @@ $spkSidenav: true !default;
           display: block;
           width: p2r(4);
           height: 40%;
-          background-color: var(--base-1);
+          background-color: var(--base-2);
           border-radius: p2r(2);
         }
 
         &:hover {
           &:after {
-            background-color: var(--base-3L);
+            background-color: var(--base-4);
           }
         }
       }

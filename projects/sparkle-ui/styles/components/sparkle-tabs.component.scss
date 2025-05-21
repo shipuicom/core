@@ -4,8 +4,8 @@ $spkTabs: true !default;
 
 @if $spkTabs == true {
   spk-tabs {
-    --tabs-bc: var(--base-3L);
-    --tabs-bg: var(--base-1L);
+    --tabs-bc: var(--base-4);
+    --tabs-bg: var(--base-1);
     --tabs-c: var(--base-12);
     --tabs-c-hover: var(--base-8);
     --tabs-c-active: var(--base-12);
@@ -14,7 +14,7 @@ $spkTabs: true !default;
 
     display: flex;
     gap: p2r(16);
-    border-bottom: 1px solid var(--base-3L);
+    border-bottom: 1px solid var(--base-4);
 
     [tab] {
       display: flex;

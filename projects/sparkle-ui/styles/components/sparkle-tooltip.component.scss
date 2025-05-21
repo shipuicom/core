@@ -4,7 +4,7 @@ $spkTooltip: true !default;
 
 @if $spkTooltip == true {
   .tooltip {
-    --tt-bg: var(--base-2);
+    --tt-bg: var(--base-3);
     --tt-c: var(--base-12);
     --tt-mh: #{p2r(136)};
     --tt-mw: #{p2r(280)};
