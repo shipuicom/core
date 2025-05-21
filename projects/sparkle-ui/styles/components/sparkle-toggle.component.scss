@@ -93,13 +93,37 @@ $spkToggle: true !default;
 
     &.outlined {
       --toggle-bg: var(--base-1L);
-      --togglek-bg: var(--base-3L);
+      --togglek-bg: var(--base-3);
       --togglek-bs: none;
-      --toggle-b: 1px solid var(--base-3L);
+      --toggle-b: 1px solid var(--base-3);
 
       .knob {
         width: p2r(14);
         height: p2r(14);
+      }
+
+      &.active {
+        --togglek-bg: var(--base-6R);
+
+        &.primary {
+          --togglek-bg: var(--primary-8);
+        }
+
+        &.accent {
+          --togglek-bg: var(--accent-8);
+        }
+
+        &.warn {
+          --togglek-bg: var(--warn-8);
+        }
+
+        &.error {
+          --togglek-bg: var(--error-8);
+        }
+
+        &.success {
+          --togglek-bg: var(--success-8);
+        }
       }
     }
 

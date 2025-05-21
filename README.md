@@ -41,6 +41,9 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Remove the need to set #input on the input element
 - [x] spk-range-slider now support negative values and floats
 - [x] spk-select gets a wildcard search on the label and value similar to the spk-menu ex search value "hlo" will match "hello" and "halo" it converts into what we call a wildcard regex which are similar to globbing "*h*l*o*" just with regex.
+- [x] Finalize file upload component
+- [x] Improve tooltips to be a directive instead still spawning a popover on the element
+- [x] Revamp color scheme to a radix like 1-12 instead of 100-900 (align with figma)
 - [ ] spk-table features
   - [x] Add support for sticky rows
   - [x] Improve support for sorting with a built in sort using attribute on the column
@@ -53,13 +56,10 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
   - [x] Support custom option element selectors
   - [ ] add hotkeys to navigate options without having a search input
   - [ ] add focus with a hidden input similar to native select
-- [ ] Finalize file upload component
 - [ ] Create a CSV input that create chips on comma (or enter) press (Maybe this could be implemented when using a select but with the asFreeText flag on it)
-- [ ] Improve tooltips to be a directive instead still spawning a popover on the element
 - [ ] Create a accordion component
 - [ ] Create a timepicker component
 
-- [ ] Streamline general color variables 10-70 instead of 100-900 (align with figma)
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
 - [ ] Create documentation with examples for all components
 - [ ] Make icon watcher/generator/subsetter run on node (Could make it a standalone executable)
