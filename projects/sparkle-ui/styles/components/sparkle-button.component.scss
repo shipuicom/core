@@ -30,6 +30,9 @@ $spkButtonShadow: false !default;
     background: transparent;
     position: relative;
     font: var(--btn-f);
+    cursor: pointer;
+    outline: none;
+    text-decoration: none;
 
     > div {
       display: flex;
@@ -44,8 +47,6 @@ $spkButtonShadow: false !default;
       padding: p2r(0 12);
       transition: color 80ms linear;
       min-width: auto;
-      cursor: pointer;
-      outline: none;
       line-height: inherit;
       user-select: none;
       appearance: none;
@@ -250,31 +251,31 @@ $spkButtonShadow: false !default;
       &.primary {
         --btn-c: var(--primary-c8);
         --btn-bg: var(--primary-8);
-        --btn-bg-h: var(--primary-6);
+        --btn-bg-h: var(--primary-7);
       }
 
       &.accent {
         --btn-c: var(--accent-c8);
         --btn-bg: var(--accent-8);
-        --btn-bg-h: var(--accent-6);
+        --btn-bg-h: var(--accent-7);
       }
 
       &.warn {
         --btn-c: var(--warn-c8);
         --btn-bg: var(--warn-8);
-        --btn-bg-h: var(--warn-6);
+        --btn-bg-h: var(--warn-7);
       }
 
       &.error {
         --btn-c: var(--error-c8);
         --btn-bg: var(--error-8);
-        --btn-bg-h: var(--error-6);
+        --btn-bg-h: var(--error-7);
       }
 
       &.success {
         --btn-c: var(--success-c8);
         --btn-bg: var(--success-8);
-        --btn-bg-h: var(--success-6);
+        --btn-bg-h: var(--success-7);
       }
     }
 
