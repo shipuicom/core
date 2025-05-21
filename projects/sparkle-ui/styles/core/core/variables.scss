@@ -22,7 +22,7 @@ html body {
   --sparkle-dark: ;
   color-scheme: light dark;
 
-  --primary-1: #{light-dark(hsl(217, 91%, 95%), hsl(217, 91%, 7.5%))};
+  --primary-1: #{light-dark(hsl(217, 91%, 95%), hsl(217, 91%, 9.5%))};
   --primary-2: #{light-dark(hsl(217, 91%, 90%), hsl(217, 91%, 15%))};
   --primary-3: #{light-dark(hsl(217, 91%, 85%), hsl(217, 91%, 22.5%))};
   --primary-4: #{light-dark(hsl(217, 91%, 80%), hsl(217, 91%, 30%))};
@@ -37,7 +37,7 @@ html body {
   --primary-g2: linear-gradient(180deg, hsl(217, 91%, 65%) 0%, hsl(217, 91%, 60%) 50%);
   --primary-g3: linear-gradient(180deg, hsl(217, 91%, 80%) 0%, hsl(217, 91%, 60%) 50%);
 
-  --accent-1: #{light-dark(hsl(258, 90%, 95.75%), hsl(258, 90%, 8.25%))};
+  --accent-1: #{light-dark(hsl(258, 90%, 95.75%), hsl(258, 90%, 9.25%))};
   --accent-2: #{light-dark(hsl(258, 90%, 91.5%), hsl(258, 90%, 16.5%))};
   --accent-3: #{light-dark(hsl(258, 90%, 87.25%), hsl(258, 90%, 24.75%))};
   --accent-4: #{light-dark(hsl(258, 90%, 83%), hsl(258, 90%, 33%))};
@@ -52,7 +52,7 @@ html body {
   --accent-g2: linear-gradient(180deg, hsl(258, 90%, 70.25%) 0%, hsl(258, 90%, 66%) 50%);
   --accent-g3: linear-gradient(180deg, hsl(258, 90%, 83%) 0%, hsl(258, 90%, 66%) 50%);
 
-  --warn-1: #{light-dark(hsl(37, 92%, 93.75%), hsl(37, 92%, 6.25%))};
+  --warn-1: #{light-dark(hsl(37, 92%, 93.75%), hsl(37, 92%, 9.25%))};
   --warn-2: #{light-dark(hsl(37, 92%, 87.5%), hsl(37, 92%, 12.5%))};
   --warn-3: #{light-dark(hsl(37, 92%, 81.25%), hsl(37, 92%, 18.75%))};
   --warn-4: #{light-dark(hsl(37, 92%, 75%), hsl(37, 92%, 25%))};
@@ -71,7 +71,7 @@ html body {
   --error-2: #{light-dark(hsl(0, 84%, 90%), hsl(0, 84%, 15%))};
   --error-3: #{light-dark(hsl(0, 84%, 85%), hsl(0, 84%, 22.5%))};
   --error-4: #{light-dark(hsl(0, 84%, 80%), hsl(0, 84%, 30%))};
-  --error-5: #{light-dark(hsl(0, 84%, 75%), hsl(0, 84%, 37.5%))};
+  --error-5: #{light-dark(hsl(0, 84%, 75%), hsl(0, 27%, 10%))};
   --error-6: #{light-dark(hsl(0, 84%, 70%), hsl(0, 84%, 45%))};
   --error-7: #{light-dark(hsl(0, 84%, 65%), hsl(0, 84%, 52.5%))};
   --error-8: #{light-dark(hsl(0, 84%, 60%), hsl(0, 84%, 60%))};
@@ -82,7 +82,7 @@ html body {
   --error-g2: linear-gradient(180deg, hsl(0, 84%, 65%) 0%, hsl(0, 84%, 60%) 50%);
   --error-g3: linear-gradient(180deg, hsl(0, 84%, 80%) 0%, hsl(0, 84%, 60%) 50%);
 
-  --success-1: #{light-dark(hsl(160, 84%, 92.38%), hsl(160, 84%, 4.88%))};
+  --success-1: #{light-dark(hsl(160, 84%, 92.38%), hsl(160, 84%, 7.88%))};
   --success-2: #{light-dark(hsl(160, 84%, 84.75%), hsl(160, 84%, 9.75%))};
   --success-3: #{light-dark(hsl(160, 84%, 77.13%), hsl(160, 84%, 14.63%))};
   --success-4: #{light-dark(hsl(160, 84%, 69.5%), hsl(160, 84%, 19.5%))};
@@ -98,12 +98,12 @@ html body {
   --success-g3: linear-gradient(180deg, hsl(160, 84%, 69.5%) 0%, hsl(160, 84%, 39%) 50%);
 
   --base-1: #{light-dark(#fff, hsl(0, 0%, 5.75%))};
-  --base-2: #{light-dark(hsl(0, 0%, 97.25%), hsl(0, 0%, 8.75%))};
+  --base-2: #{light-dark(hsl(0, 0%, 98.05%), hsl(0, 0%, 8.75%))};
   --base-3: #{light-dark(hsl(0, 0%, 94.5%), hsl(0, 0%, 11.5%))};
   --base-4: #{light-dark(hsl(0, 0%, 84.75%), hsl(0, 0%, 17.25%))};
   --base-5: #{light-dark(hsl(0, 0%, 79.75%), hsl(0, 0%, 17.25%))};
   --base-6: #{light-dark(hsl(0, 0%, 66.25%), hsl(0, 0%, 28.75%))};
-  --base-7: #{light-dark(hsl(0, 0%, 59.5%), hsl(0, 0%, 34.5%))};
+  --base-7: #{light-dark(hsl(0, 0%, 54.5%), hsl(0, 0%, 34.5%))};
   --base-8: #{light-dark(hsl(0, 0%, 46%), hsl(0, 0%, 46%))};
   --base-9: #{light-dark(hsl(0, 0%, 35.65%), hsl(0, 0%, 59.5%))};
   --base-10: #{light-dark(hsl(0, 0%, 25.3%), hsl(0, 0%, 73%))};

@@ -126,35 +126,35 @@ $spkChipShadow: false !default;
       &.primary {
         --loader-c: var(--primary-8);
 
-        --chip-bg: var(--primary-2);
+        --chip-bg: var(--primary-1);
         --chip-bc: var(--primary-4);
       }
 
       &.accent {
         --loader-c: var(--accent-8);
 
-        --chip-bg: var(--accent-2);
+        --chip-bg: var(--accent-1);
         --chip-bc: var(--accent-4);
       }
 
       &.warn {
         --loader-c: var(--warn-8);
 
-        --chip-bg: var(--warn-2);
+        --chip-bg: var(--warn-1);
         --chip-bc: var(--warn-4);
       }
 
       &.error {
         --loader-c: var(--error-8);
 
-        --chip-bg: var(--error-2);
+        --chip-bg: var(--error-1);
         --chip-bc: var(--error-4);
       }
 
       &.success {
         --loader-c: var(--success-8);
 
-        --chip-bg: var(--success-2);
+        --chip-bg: var(--success-1);
         --chip-bc: var(--success-4);
       }
     }
