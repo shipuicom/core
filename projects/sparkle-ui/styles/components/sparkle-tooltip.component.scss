@@ -11,6 +11,7 @@ $spkTooltip: true !default;
 
     anchor-name: --dropdown-trigger-anchor;
     position: relative;
+    pointer-events: initial !important;
 
     &:after {
       content: '';

@@ -47,6 +47,13 @@ $spkButtonShadow: false !default;
     color: var(--btn-c);
     transition: background 75ms linear;
 
+    > div {
+      display: flex;
+      gap: inherit;
+      align-items: center;
+      justify-content: center;
+    }
+
     spk-icon {
       color: var(--btn-ic);
       rotate: var(--btn-ir);
@@ -100,9 +107,15 @@ $spkButtonShadow: false !default;
     }
 
     &[disabled] {
-      opacity: 0.5;
+      --btn-bg-h: var(--btn-bg);
+
       pointer-events: none;
       user-select: none;
+      cursor: initial;
+
+      > div {
+        opacity: 0.5;
+      }
     }
 
     &[read-only],
@@ -246,8 +259,8 @@ $spkButtonShadow: false !default;
       --loader-c: var(--base-1);
       --btn-c: #fff;
       --btn-ic: #fff;
-      --btn-bg: var(--base-g-6);
-      --btn-bg-h: var(--base-g-7);
+      --btn-bg: var(--base-g6);
+      --btn-bg-h: var(--base-g7);
 
       border: 0;
 
