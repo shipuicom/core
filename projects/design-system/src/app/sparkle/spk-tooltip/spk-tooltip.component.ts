@@ -22,4 +22,8 @@ import {
 })
 export default class SpkTooltipComponent {
   tooltipValue = signal<string>('Hello world');
+
+  clicked() {
+    alert('clicked');
+  }
 }

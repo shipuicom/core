@@ -5,6 +5,7 @@ import {
   ElementRef,
   EmbeddedViewRef,
   EnvironmentInjector,
+  HostListener,
   inject,
   input,
   Renderer2,
@@ -42,7 +43,7 @@ class SparkleTooltipWrapper {
 export class SparkleTooltipDirective {
   spkTooltip = input.required<string | TemplateRef<any>>();
 
-  #elementRef = inject(ElementRef);
+  #elementRef = inject(ElementRef<any>);
   #viewContainerRef = inject(ViewContainerRef);
   #environmentInjector = inject(EnvironmentInjector);
   #renderer = inject(Renderer2);
@@ -51,6 +52,16 @@ export class SparkleTooltipDirective {
   #projectedViewRef: EmbeddedViewRef<any> | null = null;
 
   anchorName = signal(`--${generateUniqueId()}`);
+
+  @HostListener('click', ['$event'])
+  onClick(event: MouseEvent) {
+    const hostElement = this.#elementRef.nativeElement as any;
+    // Check if the host element is disabled or readonly
+    if (hostElement.hasAttribute('disabled') || hostElement.hasAttribute('readonly')) {
+      event.preventDefault(); // Prevent the default click action
+      event.stopPropagation(); // Optional: also stop the event from bubbling up
+    }
+  }
 
   manageWrapperEffect = effect(() => {
     const content = this.spkTooltip();

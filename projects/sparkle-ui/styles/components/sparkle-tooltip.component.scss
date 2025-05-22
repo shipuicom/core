@@ -10,7 +10,6 @@ $spkTooltip: true !default;
 }
 @if $spkTooltip == true {
   .tooltip {
-    // anchor-name: --dropdown-trigger-anchor;
     position: relative;
     pointer-events: initial !important;
 
@@ -55,8 +54,6 @@ $spkTooltip: true !default;
         @extend %hoverState;
       }
     }
-
-    /* Define the fallback strategies for the dropdown menu */
   }
 
   sparkle-tooltip-wrapper {
