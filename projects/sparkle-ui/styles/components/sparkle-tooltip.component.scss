@@ -79,6 +79,7 @@ $spkTooltip: true !default;
 
     @supports (anchor-name: --anchor) {
       inset: unset;
+      position-area: top center;
       bottom: calc(anchor(top));
       position: fixed;
       position-try-order:
