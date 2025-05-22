@@ -4,6 +4,8 @@ $spkIcon: true !default;
 
 @if $spkIcon == true {
   spk-icon {
+    --tt-c: inherit;
+
     font-size: p2r(20);
     line-height: 1em;
     width: 1em;
@@ -15,6 +17,7 @@ $spkIcon: true !default;
     text-align: left;
     overflow: hidden;
     display: inline-block;
+    color: var(--tt-c);
 
     &.primary {
       --tt-c: var(--primary-8);
