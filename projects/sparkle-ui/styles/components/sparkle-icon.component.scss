@@ -16,6 +16,26 @@ $spkIcon: true !default;
     overflow: hidden;
     display: inline-block;
 
+    &.primary {
+      --tt-c: var(--primary-8);
+    }
+
+    &.accent {
+      --tt-c: var(--accent-8);
+    }
+
+    &.warn {
+      --tt-c: var(--warn-8);
+    }
+
+    &.error {
+      --tt-c: var(--error-8);
+    }
+
+    &.success {
+      --tt-c: var(--success-8);
+    }
+
     &.large {
       font-size: p2r(32);
     }

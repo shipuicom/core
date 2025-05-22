@@ -124,40 +124,40 @@ $spkTooltip: true !default;
       background: none;
     }
 
-    @position-fallback --dropdown-flip-and-slide {
-      /* Attempt 1: Position below and align to the start (left) of the trigger */
-      @try {
-        top: calc(anchor(bottom) + 8px); /* 8px gap */
-        left: anchor(left);
-      }
-      /* Attempt 2: Position above and align to the start (left) of the trigger */
-      @try {
-        bottom: calc(anchor(top) + 8px); /* 8px gap */
-        left: anchor(left);
-      }
-      /* Attempt 3: Position below and align to the end (right) of the trigger */
-      @try {
-        top: calc(anchor(bottom) + 8px);
-        right: anchor(right);
-      }
-      /* Attempt 4: Position above and align to the end (right) of the trigger */
-      @try {
-        bottom: calc(anchor(top) + 8px);
-        right: anchor(right);
-      }
-      /* Attempt 5: (More advanced) If it's too wide, try to align center, below */
-      @try {
-        top: calc(anchor(bottom) + 8px);
-        left: anchor(center);
-        /* This might need more constraints or a width calculation if it's wider than anchor */
-        transform: translateX(-50%); /* Center it based on its own width */
-      }
-      /* Attempt 6: (More advanced) If it's too wide, try to align center, above */
-      @try {
-        bottom: calc(anchor(top) + 8px);
-        left: anchor(center);
-        transform: translateX(-50%);
-      }
-    }
+    // @position-fallback --dropdown-flip-and-slide {
+    //   /* Attempt 1: Position below and align to the start (left) of the trigger */
+    //   @try {
+    //     top: calc(anchor(bottom) + 8px); /* 8px gap */
+    //     left: anchor(left);
+    //   }
+    //   /* Attempt 2: Position above and align to the start (left) of the trigger */
+    //   @try {
+    //     bottom: calc(anchor(top) + 8px); /* 8px gap */
+    //     left: anchor(left);
+    //   }
+    //   /* Attempt 3: Position below and align to the end (right) of the trigger */
+    //   @try {
+    //     top: calc(anchor(bottom) + 8px);
+    //     right: anchor(right);
+    //   }
+    //   /* Attempt 4: Position above and align to the end (right) of the trigger */
+    //   @try {
+    //     bottom: calc(anchor(top) + 8px);
+    //     right: anchor(right);
+    //   }
+    //   /* Attempt 5: (More advanced) If it's too wide, try to align center, below */
+    //   @try {
+    //     top: calc(anchor(bottom) + 8px);
+    //     left: anchor(center);
+    //     /* This might need more constraints or a width calculation if it's wider than anchor */
+    //     transform: translateX(-50%); /* Center it based on its own width */
+    //   }
+    //   /* Attempt 6: (More advanced) If it's too wide, try to align center, above */
+    //   @try {
+    //     bottom: calc(anchor(top) + 8px);
+    //     left: anchor(center);
+    //     transform: translateX(-50%);
+    //   }
+    // }
   }
 }
