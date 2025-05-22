@@ -2,14 +2,15 @@
 
 $spkTooltip: true !default;
 
+%hoverState {
+  opacity: 1;
+  z-index: 0;
+  visibility: visible;
+  transform: translateY(-#{p2r(8)}) scale(1);
+}
 @if $spkTooltip == true {
   .tooltip {
-    --tt-bg: var(--base-3);
-    --tt-c: var(--base-12);
-    --tt-mh: #{p2r(136)};
-    --tt-mw: #{p2r(280)};
-
-    anchor-name: --dropdown-trigger-anchor;
+    // anchor-name: --dropdown-trigger-anchor;
     position: relative;
     pointer-events: initial !important;
 
@@ -23,119 +24,140 @@ $spkTooltip: true !default;
       z-index: 1;
     }
 
-    &.primary {
+    &.primary + sparkle-tooltip-wrapper {
       --tt-bg: var(--primary-2);
       --tt-c: var(--primary-8);
     }
 
-    &.accent {
+    &.accent + sparkle-tooltip-wrapper {
       --tt-bg: var(--accent-2);
       --tt-c: var(--accent-8);
     }
 
-    &.warn {
+    &.warn + sparkle-tooltip-wrapper {
       --tt-bg: var(--warn-2);
       --tt-c: var(--warn-8);
     }
 
-    &.error {
+    &.error + sparkle-tooltip-wrapper {
       --tt-bg: var(--error-2);
       --tt-c: var(--error-8);
     }
 
-    &.success {
+    &.success + sparkle-tooltip-wrapper {
       --tt-bg: var(--success-2);
       --tt-c: var(--success-8);
     }
 
     &:hover {
-      sparkle-tooltip-wrapper {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(-#{p2r(8)}) scale(1);
-      }
-    }
-
-    sparkle-tooltip-wrapper {
-      position: absolute;
-      position-try-fallbacks: --dropdown-flip-and-slide;
-      opacity: 0;
-      visibility: hidden;
-      bottom: 100%;
-      padding: p2r(4);
-      transform: translateY(100%) scale(0.95);
-      transition:
-        opacity 0.2s ease,
-        visibility 0.2s ease,
-        transform 0.2s ease;
-
-      background: var(--tt-bg);
-      border-radius: var(--shape-2);
-      box-shadow: var(--box-shadow-20);
-      width: max-content;
-
-      &:before {
-        content: '';
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        border-width: p2r(6);
-        border-style: solid;
-        border-color: transparent;
-        border-top-color: var(--tt-bg);
-        width: 0;
-        height: 0;
-        opacity: 1;
-      }
-
-      .tooltip-content {
-        padding: p2r(8 12);
-        position: relative;
-        hyphens: auto;
-        text-wrap: pretty;
-        color: var(--tt-c);
-        max-height: var(--tt-mh);
-        max-width: var(--tt-mw);
-        overflow-y: auto;
-        overflow-x: hidden;
-        background: none;
+      z-index: 1;
+      + sparkle-tooltip-wrapper {
+        @extend %hoverState;
       }
     }
 
     /* Define the fallback strategies for the dropdown menu */
+  }
+
+  sparkle-tooltip-wrapper {
+    --tt-bg: var(--base-3);
+    --tt-c: var(--base-12);
+    --tt-mh: #{p2r(136)};
+    --tt-mw: #{p2r(280)};
+
+    position: fixed;
+    opacity: 0;
+    visibility: hidden;
+    padding: 0;
+    transform: translateY(100%) scale(0.95);
+    transition:
+      opacity 0.2s ease,
+      visibility 0.2s ease,
+      transform 0.2s ease;
+
+    background: var(--tt-bg);
+    border-radius: var(--shape-2);
+    box-shadow: var(--box-shadow-20);
+    width: max-content;
+
+    @supports (anchor-name: --anchor) {
+      inset: unset;
+      bottom: calc(anchor(top));
+      position: fixed;
+      position-try-order:
+        flip-block,
+        flip-inline,
+        flip-block flip-inline;
+      position-try-fallbacks:
+        flip-block,
+        flip-inline,
+        flip-block flip-inline;
+    }
+
+    &:hover {
+      @extend %hoverState;
+    }
+
+    &:before {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: p2r(6);
+      border-style: solid;
+      border-color: transparent;
+      border-top-color: var(--tt-bg);
+      width: 0;
+      height: 0;
+      opacity: 1;
+    }
+
+    .tooltip-content {
+      padding: p2r(8 12);
+      position: relative;
+      hyphens: auto;
+      text-wrap: pretty;
+      color: var(--tt-c);
+      max-height: var(--tt-mh);
+      max-width: var(--tt-mw);
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: none;
+    }
+
     @position-fallback --dropdown-flip-and-slide {
       /* Attempt 1: Position below and align to the start (left) of the trigger */
       @try {
-        top: calc(anchor(--dropdown-trigger-anchor bottom) + 8px); /* 8px gap */
-        left: anchor(--dropdown-trigger-anchor left);
+        top: calc(anchor(bottom) + 8px); /* 8px gap */
+        left: anchor(left);
       }
       /* Attempt 2: Position above and align to the start (left) of the trigger */
       @try {
-        bottom: calc(anchor(--dropdown-trigger-anchor top) + 8px); /* 8px gap */
-        left: anchor(--dropdown-trigger-anchor left);
+        bottom: calc(anchor(top) + 8px); /* 8px gap */
+        left: anchor(left);
       }
       /* Attempt 3: Position below and align to the end (right) of the trigger */
       @try {
-        top: calc(anchor(--dropdown-trigger-anchor bottom) + 8px);
-        right: anchor(--dropdown-trigger-anchor right);
+        top: calc(anchor(bottom) + 8px);
+        right: anchor(right);
       }
       /* Attempt 4: Position above and align to the end (right) of the trigger */
       @try {
-        bottom: calc(anchor(--dropdown-trigger-anchor top) + 8px);
-        right: anchor(--dropdown-trigger-anchor right);
+        bottom: calc(anchor(top) + 8px);
+        right: anchor(right);
       }
       /* Attempt 5: (More advanced) If it's too wide, try to align center, below */
       @try {
-        top: calc(anchor(--dropdown-trigger-anchor bottom) + 8px);
-        left: anchor(--dropdown-trigger-anchor center);
+        top: calc(anchor(bottom) + 8px);
+        left: anchor(center);
         /* This might need more constraints or a width calculation if it's wider than anchor */
         transform: translateX(-50%); /* Center it based on its own width */
       }
       /* Attempt 6: (More advanced) If it's too wide, try to align center, above */
       @try {
-        bottom: calc(anchor(--dropdown-trigger-anchor top) + 8px);
-        left: anchor(--dropdown-trigger-anchor center);
+        bottom: calc(anchor(top) + 8px);
+        left: anchor(center);
         transform: translateX(-50%);
       }
     }

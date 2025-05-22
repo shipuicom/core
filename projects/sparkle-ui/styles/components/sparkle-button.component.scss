@@ -24,44 +24,29 @@ $spkButtonShadow: false !default;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
-    appearance: none;
-    border: 0;
-    background: transparent;
+    gap: p2r(8);
     position: relative;
-    font: var(--btn-f);
+    padding: p2r(0 12);
+    transition: color 80ms linear;
+    min-width: auto;
     cursor: pointer;
     outline: none;
+    line-height: inherit;
+    user-select: none;
+    appearance: none;
+    overflow: visible;
+    vertical-align: middle;
     text-decoration: none;
 
-    > div {
-      display: flex;
-      gap: inherit;
-      align-items: center;
-      justify-content: center;
+    border-radius: var(--btn-s);
+    height: var(--btn-h);
+    border: 1px solid var(--btn-bc);
+    box-shadow: var(--btn-bs);
+    font: var(--btn-f);
 
-      align-items: center;
-      justify-content: center;
-      gap: p2r(8);
-      position: relative;
-      padding: p2r(0 12);
-      transition: color 80ms linear;
-      min-width: auto;
-      line-height: inherit;
-      user-select: none;
-      appearance: none;
-      overflow: visible;
-      vertical-align: middle;
-
-      border-radius: var(--btn-s);
-      height: var(--btn-h);
-      border: 1px solid var(--btn-bc);
-      box-shadow: var(--btn-bs);
-
-      background: var(--btn-bg);
-      color: var(--btn-c);
-      transition: background 75ms linear;
-    }
+    background: var(--btn-bg);
+    color: var(--btn-c);
+    transition: background 75ms linear;
 
     spk-icon {
       color: var(--btn-ic);
@@ -69,16 +54,13 @@ $spkButtonShadow: false !default;
       transition: rotate 125ms ease-in-out;
     }
 
-    &:has(spk-icon:only-child) div {
+    &:has(spk-icon:only-child) {
       padding: p2r(0 9);
     }
 
     &:hover {
       --btn-c: var(--base-12);
-
-      div {
-        background: var(--btn-bg-h);
-      }
+      background: var(--btn-bg-h);
     }
 
     &.loader.outlined,
@@ -110,30 +92,18 @@ $spkButtonShadow: false !default;
       --btn-h: #{p2r(32)};
       --btn-f: var(--paragraph-30);
 
-      div {
-        padding: p2r(0 8);
-        gap: p2r(4);
-      }
+      padding: p2r(0 8);
+      gap: p2r(4);
 
-      &:has(spk-icon:only-child) div {
+      &:has(spk-icon:only-child) {
         padding: p2r(0 6);
       }
     }
 
-    &[disabled].flat,
-    &[disabled].raised,
-    &[disabled].outlined,
-    &[disabled].icon,
     &[disabled] {
-      // --btn-bg-h: var(--btn-bg);
-
+      opacity: 0.5;
       pointer-events: none;
       user-select: none;
-      cursor: initial;
-
-      > div {
-        opacity: 0.4;
-      }
     }
 
     &[read-only],
@@ -167,11 +137,9 @@ $spkButtonShadow: false !default;
     }
 
     &.icon {
-      div {
-        padding: p2r(0 9);
-      }
+      padding: p2r(0 9);
 
-      &.small div {
+      &.small {
         padding: p2r(0 5);
       }
     }
@@ -182,11 +150,9 @@ $spkButtonShadow: false !default;
       --btn-bg: var(--base-2);
       --btn-bg-h: var(--base-3);
 
-      div {
-        transition:
-          color 80ms linear,
-          background 80ms linear;
-      }
+      transition:
+        color 80ms linear,
+        background 80ms linear;
 
       &.primary {
         --loader-c: var(--primary-8);
@@ -236,46 +202,44 @@ $spkButtonShadow: false !default;
       --btn-bg: var(--base-8);
       --btn-bg-h: #{lighten(var(--base-8), 10%)};
 
-      div {
-        border: 0;
-      }
+      border: 0;
 
-      &:has(spk-icon:only-child) div {
+      &:has(spk-icon:only-child) {
         padding: p2r(0 10);
       }
 
-      &.small:has(spk-icon:only-child) div {
+      &.small:has(spk-icon:only-child) {
         padding: p2r(0 7);
       }
 
       &.primary {
         --btn-c: var(--primary-c8);
         --btn-bg: var(--primary-8);
-        --btn-bg-h: var(--primary-7);
+        --btn-bg-h: var(--primary-6);
       }
 
       &.accent {
         --btn-c: var(--accent-c8);
         --btn-bg: var(--accent-8);
-        --btn-bg-h: var(--accent-7);
+        --btn-bg-h: var(--accent-6);
       }
 
       &.warn {
         --btn-c: var(--warn-c8);
         --btn-bg: var(--warn-8);
-        --btn-bg-h: var(--warn-7);
+        --btn-bg-h: var(--warn-6);
       }
 
       &.error {
         --btn-c: var(--error-c8);
         --btn-bg: var(--error-8);
-        --btn-bg-h: var(--error-7);
+        --btn-bg-h: var(--error-6);
       }
 
       &.success {
         --btn-c: var(--success-c8);
         --btn-bg: var(--success-8);
-        --btn-bg-h: var(--success-7);
+        --btn-bg-h: var(--success-6);
       }
     }
 
@@ -286,15 +250,13 @@ $spkButtonShadow: false !default;
       --btn-bg: var(--base-g6);
       --btn-bg-h: var(--base-g7);
 
-      div {
-        border: 0;
-      }
+      border: 0;
 
-      &:has(spk-icon:only-child) div {
+      &:has(spk-icon:only-child) {
         padding: p2r(0 10);
       }
 
-      &.small:has(spk-icon:only-child) div {
+      &.small:has(spk-icon:only-child) {
         padding: p2r(0 7);
       }
 
