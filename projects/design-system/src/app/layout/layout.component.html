@@ -27,15 +27,6 @@
         <button [class.active]="sidenavType() === 'simple'" (click)="sidenavType.set('simple')">Simple</button>
       </spk-button-group>
 
-      <!-- <button
-        action
-        routerLink="/"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">spinner-bold</spk-icon>
-        Design system
-      </button> -->
-
       <h3 title>Sparkle Theme</h3>
 
       <button action routerLink="/spk-theme-editor" routerLinkActive="active">
@@ -78,7 +69,7 @@
         Sparkle Icons
       </button>
 
-      <button action routerLink="/spk-tabs" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <button action routerLink="/spk-tabs" routerLinkActive="active">
         <spk-icon class="spk-primary">check-bold</spk-icon>
         Sparkle Tabs
       </button>
