@@ -73,8 +73,9 @@ body {
   }
 
   $displaySizes: (10, 20, 30, 40, 50);
-  $titleSizes: (10, 20, 30, 10b, 20b, 30b);
-  $paragraphSizes: (10, 20, 30, 40, 10b, 20b, 30b, 40b);
+  $titleSizes: (10, 20, 30, 10B, 20B, 30B);
+  $paragraphSizes: (10, 20, 30, 40, 10B, 20B, 30B, 40B);
+  $codeSizes: (10, 20, 30);
 
   @each $displaySize in $displaySizes {
     .display-#{$displaySize} {
@@ -83,6 +84,7 @@ body {
   }
 
   @each $titleSize in $titleSizes {
+    @debug $titleSize;
     .title-#{$titleSize} {
       font: var(--title-#{$titleSize});
     }
@@ -91,6 +93,12 @@ body {
   @each $paragraphSize in $paragraphSizes {
     .paragraph-#{$paragraphSize} {
       font: var(--paragraph-#{$paragraphSize});
+    }
+  }
+
+  @each $codeSize in $codeSizes {
+    .code-#{$codeSize} {
+      font: var(--code-#{$codeSize});
     }
   }
 }

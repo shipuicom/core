@@ -1,5 +1,0 @@
-@use '@angular/material' as mat;
-
-@mixin font($type: 'body-1') {
-  @include mat.m2-typography-level($typography-config, $type);
-}

@@ -1,17 +1,11 @@
-// @forward './core/variables';
-
 // Functions
-// @forward './core/helpers/fn/dp';
 @forward './core/helpers/fn/p2r';
 @forward './core/helpers/fn/color-mix';
-// @forward './core/helpers/fn/color';
-// @forward './core/helpers/fn/typography';
 
 // light-dark polyfill
 @forward './core/polyfill/light-dark.scss';
 
 // Mixins
-// @forward './core/helpers/mixins/font';
 @forward './core/helpers/mixins/breakpoint';
 @forward './core/helpers/mixins/wrapper';
 @forward './core/helpers/mixins/ellipsis';
