@@ -168,6 +168,26 @@ $spkFormFieldShadow: false !default;
       spk-icon {
         color: var(--ff-ic);
         transition: color 125ms linear;
+
+        &.primary {
+          --ff-ic: var(--primary-8);
+        }
+
+        &.accent {
+          --ff-ic: var(--accent-8);
+        }
+
+        &.warn {
+          --ff-ic: var(--warn-8);
+        }
+
+        &.error {
+          --ff-ic: var(--error-8);
+        }
+
+        &.success {
+          --ff-ic: var(--success-8);
+        }
       }
 
       spk-chip spk-icon {
