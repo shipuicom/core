@@ -41,7 +41,7 @@ class SparkleTooltipWrapper {
   },
 })
 export class SparkleTooltipDirective {
-  spkTooltip = input.required<string | TemplateRef<any>>();
+  spkTooltip = input.required<string | TemplateRef<any> | null | undefined>();
 
   #elementRef = inject(ElementRef<any>);
   #viewContainerRef = inject(ViewContainerRef);
