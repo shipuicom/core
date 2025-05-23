@@ -4,7 +4,7 @@ $spkIcon: true !default;
 
 @if $spkIcon == true {
   spk-icon {
-    --tt-c: inherit;
+    --icon-c: inherit;
 
     font-size: p2r(20);
     line-height: 1em;
@@ -17,26 +17,26 @@ $spkIcon: true !default;
     text-align: left;
     overflow: hidden;
     display: inline-block;
-    color: var(--tt-c);
+    color: var(--icon-c);
 
     &.primary {
-      --tt-c: var(--primary-8);
+      --icon-c: var(--primary-8);
     }
 
     &.accent {
-      --tt-c: var(--accent-8);
+      --icon-c: var(--accent-8);
     }
 
     &.warn {
-      --tt-c: var(--warn-8);
+      --icon-c: var(--warn-8);
     }
 
     &.error {
-      --tt-c: var(--error-8);
+      --icon-c: var(--error-8);
     }
 
     &.success {
-      --tt-c: var(--success-8);
+      --icon-c: var(--success-8);
     }
 
     &.large {

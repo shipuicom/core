@@ -3,6 +3,12 @@
 
   <input type="text" [(ngModel)]="tooltipValue" />
 
+  <spk-icon class="primary" [spkTooltip]="tooltipValue()">acorn-bold</spk-icon>
+  <spk-icon class="accent" [spkTooltip]="tooltipValue()">acorn-bold</spk-icon>
+  <spk-icon class="warn" [spkTooltip]="tooltipValue()">acorn-bold</spk-icon>
+  <spk-icon class="error" [spkTooltip]="tooltipValue()">acorn-bold</spk-icon>
+  <spk-icon class="success" [spkTooltip]="tooltipValue()">acorn-bold</spk-icon>
+
   <button spk-button [disabled]="true" [spkTooltip]="tooltipValue()" (click)="clicked()">
     <spk-icon>circle</spk-icon>
     Tooltip 2 as string
