@@ -257,7 +257,7 @@ $spkFormFieldShadow: false !default;
         padding-top: 0;
       }
 
-      .error {
+      .errors {
         display: none;
       }
     }
@@ -267,7 +267,7 @@ $spkFormFieldShadow: false !default;
       visibility: hidden;
     }
 
-    .error {
+    .errors {
       color: var(--error-8);
       opacity: 1;
       transition: opacity 125ms linear;
