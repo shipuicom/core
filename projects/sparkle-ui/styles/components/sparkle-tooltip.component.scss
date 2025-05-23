@@ -119,8 +119,7 @@ $spkTooltip: true !default;
       color: var(--tt-c);
       max-height: var(--tt-mh);
       max-width: var(--tt-mw);
-      overflow-y: auto;
-      overflow-x: hidden;
+      overflow: auto;
       background: none;
     }
 
