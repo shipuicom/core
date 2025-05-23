@@ -1,0 +1,18 @@
+@use '../../../../sparkle-ui/styles/helpers.scss' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(32);
+  padding: p2r(40);
+}
+
+code {
+  background: darken(var(--base-8), 70%);
+  color: #fff;
+  padding: p2r(40 40 40 24);
+  border-radius: var(--shape-3);
+  overflow: auto;
+  white-space: pre;
+  display: block;
+}
