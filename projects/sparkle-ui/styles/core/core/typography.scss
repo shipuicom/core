@@ -84,7 +84,6 @@ body {
   }
 
   @each $titleSize in $titleSizes {
-    @debug $titleSize;
     .title-#{$titleSize} {
       font: var(--title-#{$titleSize});
     }
