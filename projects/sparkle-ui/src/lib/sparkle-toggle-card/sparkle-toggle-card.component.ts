@@ -13,8 +13,10 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
       }
     </h3>
 
-    <div class="content">
-      <ng-content></ng-content>
+    <div class="collapsable">
+      <div class="content">
+        <ng-content></ng-content>
+      </div>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
