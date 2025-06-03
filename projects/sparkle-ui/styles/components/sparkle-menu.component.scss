@@ -87,10 +87,6 @@ $spkMenu: true !default;
       }
     }
 
-    spk-popover:has(:not(.options.searching)) button {
-      order: initial !important;
-    }
-
     spk-popover .options {
       z-index: 2;
       position: relative;
@@ -125,6 +121,7 @@ $spkMenu: true !default;
         display: block;
         width: 100%;
         min-height: p2r(4);
+        order: 9999999;
       }
 
       [title] {
