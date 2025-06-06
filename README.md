@@ -59,6 +59,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 
 - [ ] Create documentation with examples for all components
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
+- [ ] Separate out icon utility into a separate package so you can add it if you need it
 
 ### Nice to haves for v1 beta
 
