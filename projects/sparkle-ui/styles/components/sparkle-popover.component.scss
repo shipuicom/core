@@ -8,6 +8,13 @@ $spkPopover: true !default;
 
     display: var(--po-d);
 
+    &.multi-layer {
+      .popover {
+        top: anchor(top);
+        left: calc(anchor(right) - #{p2r(10)});
+      }
+    }
+
     .trigger {
       cursor: pointer;
       display: var(--po-d);

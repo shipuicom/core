@@ -52,8 +52,9 @@ const DEFAULT_OPTIONS: SparklePopoverOptions = {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '[class.above]': '_above()',
-    '[class.right]': '_right()',
+    '[class.above]': 'above()',
+    '[class.right]': 'right()',
+    '[class.multi-layer]': 'asMultiLayer()',
   },
 })
 export class SparklePopoverComponent {
@@ -65,6 +66,7 @@ export class SparklePopoverComponent {
 
   above = input<boolean>(false);
   right = input<boolean>(false);
+  asMultiLayer = input<boolean>(false);
   markForCheck = input<unknown>(null);
 
   _above = signal<boolean>(this.above());

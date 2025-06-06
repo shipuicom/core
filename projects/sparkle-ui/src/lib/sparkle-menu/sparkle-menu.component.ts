@@ -29,6 +29,7 @@ import { observeChildren } from '../utilities/observe-elements';
       (closed)="close('fromPopover')"
       [above]="above()"
       [right]="right()"
+      [asMultiLayer]="asMultiLayer()"
       [options]="{
         closeOnButton: false,
         closeOnEsc: true,
@@ -60,12 +61,14 @@ import { observeChildren } from '../utilities/observe-elements';
   host: {
     '[class.disabled]': 'disabled()',
     '[class.has-search]': 'searchable()',
+    '[class.multi-layer]': 'asMultiLayer()',
   },
 })
 export class SparkleMenuComponent {
   #renderer = inject(Renderer2);
   above = input<boolean>(false);
   right = input<boolean>(false);
+  asMultiLayer = input<boolean>(false);
   openIndicator = input(false);
   disabled = input<boolean>(false);
   customOptionElementSelectors = input<string[]>(['button']);

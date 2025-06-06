@@ -44,25 +44,21 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Finalize file upload component
 - [x] Improve tooltips to be a directive instead still spawning a popover on the element
 - [x] Revamp color scheme to a radix like 1-12 instead of 100-900 (align with figma)
-- [ ] spk-table features
+- [x] spk-table features
   - [x] Add support for sticky rows
   - [x] Improve support for sorting with a built in sort using attribute on the column
   - [x] Add support for multi sticky columns
-  - [ ] Add support for multi sticky rows
-  - [ ] Add support for row resizing
-- [ ] spk-menu features (3/5)
+- [x] spk-menu features
   - [x] support multi select
   - [x] Support multiple element types
   - [x] Support custom option element selectors
-  - [ ] add hotkeys to navigate options without having a search input
-  - [ ] add focus with a hidden input similar to native select
-- [ ] Create a CSV input that create chips on comma (or enter) press (Maybe this could be implemented when using a select but with the asFreeText flag on it)
+  - [x] add support for multi layer menus
+- [x] Make icon watcher/generator/subsetter run on node (Could make it a standalone executable)
 - [ ] Create a accordion component
 - [ ] Create a timepicker component
 
-- [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
 - [ ] Create documentation with examples for all components
-- [ ] Make icon watcher/generator/subsetter run on node (Could make it a standalone executable)
+- [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
 
 ### Nice to haves for v1 beta
 
@@ -79,6 +75,16 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [ ] Add a A11y VIM mode
 - [ ] Create a gantt chart component
 - [ ] Custom scrollbar component that have the native apple feel with overscrolling where scroll thumb becomes smaller and you can over scroll a div
+
+### Features after v1 release
+
+- [ ] spk-table features
+  - [ ] Add support for multi sticky rows
+  - [ ] Add support for row resizing
+- [ ] spk-menu features
+  - [ ] add hotkeys to navigate options without having a search input
+  - [ ] add focus with a hidden input similar to native select
+- [ ] Create a CSV input that create chips on comma (or enter) press, currently select has chip select which is not ideal but works for now
 
 ### Testing to add
 

@@ -39,6 +39,27 @@ $spkMenu: true !default;
       }
     }
 
+    &.multi-layer {
+      [trigger] {
+        &:has(spk-icon.open-indicator) {
+          &.is-open .open-indicator {
+            transform: translateY(-50%) rotate(-90deg);
+          }
+        }
+
+        &:has(spk-icon.open-indicator) {
+          display: flex;
+
+          .open-indicator {
+            right: p2r(16);
+          }
+        }
+        button:first-child {
+          margin-top: 0;
+        }
+      }
+    }
+
     [trigger]:has(spk-icon.open-indicator) {
       position: relative;
 

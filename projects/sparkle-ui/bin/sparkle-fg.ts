@@ -37,4 +37,4 @@ if (values.src === undefined || values.out === undefined) {
   throw new Error('src and out are both required arguments');
 }
 
-main(values);
+main(values as any);
