@@ -1,5 +1,7 @@
+#!/usr/bin/env node
+
 import { parseArgs } from 'util';
-import { main } from './src/sparkle-fg-node.ts'; // Added .js extension for ESM imports
+import { main } from './src/sparkle-fg-node.js'; // Added .js extension for ESM imports
 
 const { values } = parseArgs({
   args: process.argv, // Changed from Bun.argv to process.argv
