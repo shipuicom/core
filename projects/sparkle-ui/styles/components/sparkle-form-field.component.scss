@@ -241,13 +241,19 @@ $spkFormFieldShadow: false !default;
       align-items: center;
       gap: p2r(4);
       padding-top: p2r(4);
+      width: 100%;
 
       [hint] {
         color: var(--base-9);
 
         &[suffix] {
-          justify-self: flex-end;
+          text-align: right;
+          width: 100%;
         }
+      }
+
+      &:has(.error:not(:empty)) .hint {
+        display: none;
       }
     }
 
@@ -267,7 +273,7 @@ $spkFormFieldShadow: false !default;
       visibility: hidden;
     }
 
-    .errors {
+    .error {
       color: var(--error-8);
       opacity: 1;
       transition: opacity 125ms linear;
