@@ -1,7 +1,7 @@
 {
   "name": "@sparkle-ui/core",
   "license": "MIT",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "peerDependencies": {
     "@angular/common": ">=19",
     "@angular/core": ">=19"
@@ -12,7 +12,7 @@
     "tslib": "^2.3.0"
   },
   "bin": {
-    "sparkle-fg": "./bin/sparkle-fg-node.ts"
+    "sparkle-fg": "./bin/sparkle-fg-node"
   },
   "libraryIcons": [
     "upload-simple",
