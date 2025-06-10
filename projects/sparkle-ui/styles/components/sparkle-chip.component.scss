@@ -90,36 +90,10 @@ $spkChipShadow: false !default;
       --chip-ic: var(--success-8);
     }
 
-    &.simple {
-      border: 0;
-
-      --chip-c: var(--base-12);
-
-      &.primary {
-        --chip-c: var(--primary-8);
-      }
-
-      &.accent {
-        --chip-c: var(--accent-8);
-      }
-
-      &.warn {
-        --chip-c: var(--warn-8);
-      }
-
-      &.error {
-        --chip-c: var(--error-8);
-      }
-
-      &.success {
-        --chip-c: var(--success-8);
-      }
-    }
-
     &.simple,
     &.outlined {
       --chip-c: var(--base-12);
-      --chip-bg: var(--base-3);
+      --chip-bg: var(--base-2);
 
       transition: color 80ms linear;
 
@@ -156,6 +130,34 @@ $spkChipShadow: false !default;
 
         --chip-bg: var(--success-1);
         --chip-bc: var(--success-4);
+      }
+    }
+
+    &.simple {
+      --chip-c: var(--base-12);
+      --chip-bg: var(--base-3);
+
+      border: 0;
+      transition: color 80ms linear;
+
+      &.primary {
+        --chip-c: var(--primary-8);
+      }
+
+      &.accent {
+        --chip-c: var(--accent-8);
+      }
+
+      &.warn {
+        --chip-c: var(--warn-8);
+      }
+
+      &.error {
+        --chip-c: var(--error-8);
+      }
+
+      &.success {
+        --chip-c: var(--success-8);
       }
     }
 
