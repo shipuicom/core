@@ -119,7 +119,7 @@ $spkChipShadow: false !default;
     &.simple,
     &.outlined {
       --chip-c: var(--base-12);
-      --chip-bg: var(--base-2);
+      --chip-bg: var(--base-3);
 
       transition: color 80ms linear;
 
