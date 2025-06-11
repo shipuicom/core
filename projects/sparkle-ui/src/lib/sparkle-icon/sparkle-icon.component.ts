@@ -1,28 +1,29 @@
-import { ChangeDetectionStrategy, Component, ElementRef, inject } from '@angular/core';
+import { AfterContentInit, ChangeDetectionStrategy, Component, ElementRef, inject, Renderer2 } from '@angular/core';
 
-const iconTypes = ['bold', 'thin', 'light', 'fill']; // Ignore 'regular' for now
+const iconTypes = ['bold', 'thin', 'light', 'fill'];
 
 @Component({
   selector: 'spk-icon',
+  standalone: true,
   imports: [],
   template: `
     <ng-content />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    '[class]': 'currentClass',
-  },
 })
-export class SparkleIconComponent {
-  #selfRef = inject(ElementRef);
+export class SparkleIconComponent implements AfterContentInit {
+  #selfRef: ElementRef<HTMLElement> = inject(ElementRef);
+  #renderer = inject(Renderer2);
 
-  get currentClass() {
-    const text = this.#selfRef.nativeElement.innerText;
+  ngAfterContentInit(): void {
+    const textContent = this.#selfRef.nativeElement.textContent?.trim();
 
-    for (let index = 0; index < iconTypes.length; index++) {
-      if (text.endsWith(iconTypes[index])) return iconTypes[index];
+    if (!textContent) return;
+
+    const potentialType = textContent.split('-').at(-1);
+
+    if (potentialType && iconTypes.includes(potentialType)) {
+      this.#renderer.addClass(this.#selfRef.nativeElement, potentialType);
     }
-
-    return '';
   }
 }

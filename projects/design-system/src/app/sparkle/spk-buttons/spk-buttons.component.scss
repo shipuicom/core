@@ -21,7 +21,19 @@ h1 {
 .example-button-row {
   display: table-cell;
   max-width: 800px;
-  padding: 20px 0;
+  padding: 50px;
+
+  background-size: cover !important;
+  animation: scroll-background 20s linear infinite;
+}
+
+@keyframes scroll-background {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 100% 100%;
+  }
 }
 
 .example-button-row [spk-button] {
