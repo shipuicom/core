@@ -54,6 +54,10 @@ $spkChipShadow: false !default;
       }
     }
 
+    &.sharp {
+      --chip-s: calc(var(--chip-h) / 6);
+    }
+
     spk-icon {
       color: var(--chip-ic);
       font-size: p2r(16);
