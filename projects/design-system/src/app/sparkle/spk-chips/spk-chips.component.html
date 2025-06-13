@@ -107,6 +107,45 @@
 <spk-divider></spk-divider>
 
 <section>
+  <h3>Simple dynamic chips</h3>
+  <spk-color-picker
+    renderingType="hsl"
+    [showDarkColors]="true"
+    (currentColor)="currentColor.set($event)"></spk-color-picker>
+
+  <div class="colors">
+    <div class="swatch" [style.background]="currentColor()?.hex"></div>
+
+    <div class="color-text">
+      <p>RGB: {{ currentColor()?.rgb }}</p>
+      <p>HEX: {{ currentColor()?.hex }}</p>
+      <p>HSL: {{ currentColor()?.hsl }}</p>
+      <p>Hue: {{ currentColor()?.hue }}</p>
+      <p>Saturation: {{ currentColor()?.saturation }}</p>
+    </div>
+  </div>
+  <div class="example-chip-row">
+    <spk-chip class="simple dynamic" [style.--chip-bg]="currentColor()?.hex">
+      <spk-icon>circle</spk-icon>
+    </spk-chip>
+
+    <spk-chip class="simple dynamic" [style.--chip-bg]="currentColor()?.hex">
+      <spk-icon>circle</spk-icon>
+      Basic
+      <spk-icon suffix>circle</spk-icon>
+    </spk-chip>
+
+    <spk-chip disabled class="simple dynamic" [style.--chip-bg]="currentColor()?.hex">
+      <spk-icon>circle</spk-icon>
+      Disabled
+      <spk-icon suffix>circle</spk-icon>
+    </spk-chip>
+  </div>
+</section>
+
+<spk-divider></spk-divider>
+
+<section>
   <h3>Outlined chips</h3>
   <div class="example-chip-row">
     <spk-chip class="outlined">

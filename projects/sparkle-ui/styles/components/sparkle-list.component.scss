@@ -8,9 +8,9 @@ $spkList: true !default;
     --list-active-bg: var(--base-1);
     --list-color: var(--base-9);
     --list-active-bs: none;
-    --list-p: p2r(20 16);
-    --list-item-p: p2r(8 12);
-    --list-item-gap: p2r(8);
+    --list-p: #{p2r(20 16)};
+    --list-item-p: #{p2r(8 12)};
+    --list-item-gap: #{p2r(8)};
 
     width: 100%;
     padding: var(--list-p);
@@ -27,7 +27,7 @@ $spkList: true !default;
       color: var(--base-8);
       margin: 0 0.75rem;
       font: var(--paragraph-30);
-      line-height: 1.25rem;
+      line-height: p2r(24);
     }
 
     [action],
