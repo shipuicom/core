@@ -1,10 +1,12 @@
 @use '../helpers.scss' as *;
 $spkButton: true !default;
 $spkButtonShadow: false !default;
+$enableGlass: false !default;
 
 @if $spkButton == true {
   [spk-button] {
     --btn-h: #{p2r(40)};
+    --btn-bw: #{p2r(1)};
     --btn-s: var(--shape-2);
     --btn-f: var(--paragraph-20);
     --loader-c: var(--base-8);
@@ -40,7 +42,7 @@ $spkButtonShadow: false !default;
 
     border-radius: var(--btn-s);
     height: var(--btn-h);
-    border: 1px solid var(--btn-bc);
+    border: var(--btn-bw) solid var(--btn-bc);
     box-shadow: var(--btn-bs);
     font: var(--btn-f);
 
@@ -141,6 +143,76 @@ $spkButtonShadow: false !default;
 
       &.small {
         padding: p2r(0 5);
+      }
+    }
+
+    @if $enableGlass == true {
+      &.glass {
+        --btn-bw: 0;
+        --btn-s: #{p2r(12)};
+        --btn-c: var(--base-1);
+        --btn-ic: var(--base-1);
+
+        background: rgba(215, 255, 247, 0.1);
+        box-shadow: var(--btn-bs);
+        // backdrop-filter: blur(11.2px);
+        // -webkit-backdrop-filter: blur(11.2px);
+        position: relative;
+        overflow: hidden;
+        -webkit-backdrop-filter: url(#edge-refraction-filter);
+        backdrop-filter: url(#edge-refraction-filter);
+
+        &::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: var(--btn-s);
+          border: 1px solid transparent;
+          background: linear-gradient(135deg, #eee, #999, #eee) border-box;
+          -webkit-mask:
+            linear-gradient(#fff 0 0) padding-box,
+            linear-gradient(#fff 0 0);
+          -webkit-mask-composite: destination-out;
+          mask-composite: exclude;
+        }
+
+        svg {
+          position: absolute;
+          top: 0;
+          left: 0;
+        }
+
+        &.primary {
+          --btn-ic: var(--primary-6);
+        }
+
+        &.accent {
+          --btn-ic: var(--accent-6);
+        }
+
+        &.warn {
+          --btn-ic: var(--warn-6);
+        }
+
+        &.error {
+          --btn-ic: var(--error-6);
+        }
+
+        &.success {
+          --btn-ic: var(--success-6);
+        }
+
+        &[disabled] {
+          --btn-ic: var(--base-8);
+          --btn-c: var(--base-8);
+
+          opacity: 1;
+          pointer-events: none;
+          user-select: none;
+          &::before {
+            background: linear-gradient(135deg, #666, #333, #666) border-box;
+          }
+        }
       }
     }
 

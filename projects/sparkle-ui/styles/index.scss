@@ -1,5 +1,6 @@
 $useInterTight: true !default;
 $useApexcharts: true !default;
+$enableGlass: false !default;
 
 @use './core/fonts/inter-tight' with (
   $useInterTight: $useInterTight
@@ -58,7 +59,8 @@ $spkFileUpload: true !default;
 );
 @use './components/sparkle-button.component.scss' with (
   $spkButton: $spkButton,
-  $spkButtonShadow: $spkButtonShadow
+  $spkButtonShadow: $spkButtonShadow,
+  $enableGlass: $enableGlass
 );
 @use './components/sparkle-progress-bar.component.scss' with (
   $spkProgressBar: $spkProgressBar
