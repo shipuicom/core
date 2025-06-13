@@ -42,7 +42,7 @@ $spkChipShadow: false !default;
       // - if we can make the text if on a dark colored background same color as the background but much lighter
       div {
         color: var(--chip-bg);
-        filter: invert(1) grayscale(1) brightness(3) contrast(8000);
+        filter: invert(1) grayscale(1) brightness(1.3) contrast(8000);
         mix-blend-mode: luminosity;
         opacity: 1;
 
