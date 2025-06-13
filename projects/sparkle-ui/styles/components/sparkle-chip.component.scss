@@ -6,7 +6,7 @@ $spkChipShadow: false !default;
 @if $spkChip == true {
   spk-chip {
     --chip-h: #{p2r(32)};
-    --chip-s: #{p2r(16)};
+    --chip-s: calc(var(--chip-h) / 2);
     --chip-c: var(--base-12);
     --chip-ic: var(--base-12);
     --chip-bg: var(--base-1);
@@ -19,6 +19,8 @@ $spkChipShadow: false !default;
     }
 
     display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: p2r(0 12);
 
     font: var(--paragraph-30B);
@@ -66,11 +68,13 @@ $spkChipShadow: false !default;
 
     &.small {
       --chip-h: #{p2r(24)};
-      --chip-s: #{p2r(12)};
 
       font: var(--paragraph-40B);
       padding: p2r(0 8);
-      gap: p2r(4);
+
+      div {
+        gap: p2r(4);
+      }
 
       spk-icon {
         font-size: p2r(12);
@@ -156,28 +160,33 @@ $spkChipShadow: false !default;
     &.simple {
       --chip-c: var(--base-12);
       --chip-bg: var(--base-3);
+      --chip-bc: var(--chip-bg);
 
-      border: 0;
       transition: color 80ms linear;
 
       &.primary {
         --chip-c: var(--primary-8);
+        --chip-bc: var(--chip-bg);
       }
 
       &.accent {
         --chip-c: var(--accent-8);
+        --chip-bc: var(--chip-bg);
       }
 
       &.warn {
         --chip-c: var(--warn-8);
+        --chip-bc: var(--chip-bg);
       }
 
       &.error {
         --chip-c: var(--error-8);
+        --chip-bc: var(--chip-bg);
       }
 
       &.success {
         --chip-c: var(--success-8);
+        --chip-bc: var(--chip-bg);
       }
     }
 
