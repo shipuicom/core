@@ -66,7 +66,7 @@ $spkChipShadow: false !default;
       //   z-index: 0;
       // }
       border-color: transparent;
-      --chip-bg: rgb(from var(--chip-c) r g b / 0.1);
+      --chip-bg: rgb(from var(--chip-c) r g b / 0.14);
       color: var(--chip-c);
       spk-icon {
         color: inherit;
@@ -74,7 +74,7 @@ $spkChipShadow: false !default;
     }
 
     &.sharp {
-      --chip-s: calc(var(--chip-h) / 6);
+      --chip-s: calc(var(--chip-h) / 4);
       padding: p2r(0 8);
 
       &.small {
