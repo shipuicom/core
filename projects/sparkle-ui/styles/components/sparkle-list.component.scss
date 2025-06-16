@@ -23,6 +23,10 @@ $spkList: true !default;
       --list-active-bs: var(--box-shadow-20);
     }
 
+    &:empty {
+      padding: 0;
+    }
+
     [title] {
       color: var(--base-8);
       margin: 0 0.75rem;
