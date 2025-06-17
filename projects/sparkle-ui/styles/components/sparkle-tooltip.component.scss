@@ -83,6 +83,7 @@ $spkTooltip: true !default;
         visibility 200ms ease,
         transform 200ms ease;
       inset: unset;
+      justify-self: anchor-center;
       bottom: anchor(top);
       position: fixed;
       position-try-order:
