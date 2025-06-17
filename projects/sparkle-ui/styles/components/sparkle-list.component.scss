@@ -27,15 +27,15 @@ $spkList: true !default;
       padding: 0;
     }
 
-    [title] {
+    > [title] {
       color: var(--base-8);
       margin: 0 0.75rem;
       font: var(--paragraph-30);
       line-height: p2r(24);
     }
 
-    [action],
-    [item] {
+    > [action],
+    > [item] {
       border-radius: var(--list-s);
       padding: var(--list-item-p);
       font: var(--paragraph-30B);
@@ -64,16 +64,16 @@ $spkList: true !default;
 
     :has(input[type='checkbox']),
     :has(input[type='radio']),
-    [action] {
+    > [action] {
       cursor: pointer;
     }
 
-    [item]:has(input[type='checkbox']:checked),
-    [action]:has(input[type='checkbox']:checked),
-    [item]:has(input[type='radio']:checked),
-    [action]:has(input[type='radio']:checked),
-    [action].active,
-    [action].selected {
+    > [item]:has(input[type='checkbox']:checked),
+    > [action]:has(input[type='checkbox']:checked),
+    > [item]:has(input[type='radio']:checked),
+    > [action]:has(input[type='radio']:checked),
+    > [action].active,
+    > [action].selected {
       --list-color: var(--base-12);
 
       background-color: var(--list-active-bg);
@@ -81,12 +81,12 @@ $spkList: true !default;
     }
 
     &.primary {
-      [item]:has(input[type='checkbox']:checked),
-      [action]:has(input[type='checkbox']:checked),
-      [item]:has(input[type='radio']:checked),
-      [action]:has(input[type='radio']:checked),
-      [action].active,
-      [action].selected {
+      > [item]:has(input[type='checkbox']:checked),
+      > [action]:has(input[type='checkbox']:checked),
+      > [item]:has(input[type='radio']:checked),
+      > [action]:has(input[type='radio']:checked),
+      > [action].active,
+      > [action].selected {
         spk-icon:first-child {
           color: var(--primary-8);
         }
@@ -94,12 +94,12 @@ $spkList: true !default;
     }
 
     &.accent {
-      [item]:has(input[type='checkbox']:checked),
-      [action]:has(input[type='checkbox']:checked),
-      [item]:has(input[type='radio']:checked),
-      [action]:has(input[type='radio']:checked),
-      [action].active,
-      [action].selected {
+      > [item]:has(input[type='checkbox']:checked),
+      > [action]:has(input[type='checkbox']:checked),
+      > [item]:has(input[type='radio']:checked),
+      > [action]:has(input[type='radio']:checked),
+      > [action].active,
+      > [action].selected {
         spk-icon:first-child {
           color: var(--accent-8);
         }
@@ -107,12 +107,12 @@ $spkList: true !default;
     }
 
     &.warn {
-      [item]:has(input[type='checkbox']:checked),
-      [action]:has(input[type='checkbox']:checked),
-      [item]:has(input[type='radio']:checked),
-      [action]:has(input[type='radio']:checked),
-      [action].active,
-      [action].selected {
+      > [item]:has(input[type='checkbox']:checked),
+      > [action]:has(input[type='checkbox']:checked),
+      > [item]:has(input[type='radio']:checked),
+      > [action]:has(input[type='radio']:checked),
+      > [action].active,
+      > [action].selected {
         spk-icon:first-child {
           color: var(--warn-8);
         }
@@ -120,12 +120,12 @@ $spkList: true !default;
     }
 
     &.error {
-      [item]:has(input[type='checkbox']:checked),
-      [action]:has(input[type='checkbox']:checked),
-      [item]:has(input[type='radio']:checked),
-      [action]:has(input[type='radio']:checked),
-      [action].active,
-      [action].selected {
+      > [item]:has(input[type='checkbox']:checked),
+      > [action]:has(input[type='checkbox']:checked),
+      > [item]:has(input[type='radio']:checked),
+      > [action]:has(input[type='radio']:checked),
+      > [action].active,
+      > [action].selected {
         spk-icon:first-child {
           color: var(--error-8);
         }
@@ -133,12 +133,12 @@ $spkList: true !default;
     }
 
     &.success {
-      [item]:has(input[type='checkbox']:checked),
-      [action]:has(input[type='checkbox']:checked),
-      [item]:has(input[type='radio']:checked),
-      [action]:has(input[type='radio']:checked),
-      [action].active,
-      [action].selected {
+      > [item]:has(input[type='checkbox']:checked),
+      > [action]:has(input[type='checkbox']:checked),
+      > [item]:has(input[type='radio']:checked),
+      > [action]:has(input[type='radio']:checked),
+      > [action].active,
+      > [action].selected {
         spk-icon:first-child {
           color: var(--success-8);
         }
