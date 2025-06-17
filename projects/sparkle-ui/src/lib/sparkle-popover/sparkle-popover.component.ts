@@ -66,6 +66,7 @@ export class SparklePopoverComponent {
 
   above = input<boolean>(false);
   right = input<boolean>(false);
+  onHover = input<boolean>(false);
   asMultiLayer = input<boolean>(false);
   markForCheck = input<unknown>(null);
 

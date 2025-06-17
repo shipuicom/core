@@ -6,7 +6,6 @@ $spkTooltip: true !default;
   opacity: 1;
   z-index: 0;
   visibility: visible;
-  transform: translateY(-#{p2r(8)}) scale(1);
 }
 @if $spkTooltip == true {
   .tooltip {
@@ -48,10 +47,14 @@ $spkTooltip: true !default;
       --tt-c: var(--success-8);
     }
 
-    &:hover {
+    &.active {
       z-index: 1;
       + sparkle-tooltip-wrapper {
         @extend %hoverState;
+        transform: translateY(-#{p2r(8)}) scale(1);
+        &.below {
+          transform: translateY(#{p2r(8)}) scale(1);
+        }
       }
     }
   }
@@ -67,10 +70,6 @@ $spkTooltip: true !default;
     visibility: hidden;
     padding: 0;
     transform: translateY(50%) scale(0);
-    transition:
-      opacity 0.2s ease,
-      visibility 0.2s ease,
-      transform 0.2s ease;
 
     background: var(--tt-bg);
     border-radius: var(--shape-2);
@@ -78,9 +77,13 @@ $spkTooltip: true !default;
     width: max-content;
 
     @supports (anchor-name: --anchor) {
+      // Transition only work on anchors because our js implementation does not account for animation to when using height
+      transition:
+        opacity 200ms ease,
+        visibility 200ms ease,
+        transform 200ms ease;
       inset: unset;
-      position-area: top center;
-      bottom: calc(anchor(top));
+      bottom: anchor(top);
       position: fixed;
       position-try-order:
         flip-block,
@@ -90,10 +93,6 @@ $spkTooltip: true !default;
         flip-block,
         flip-inline,
         flip-block flip-inline;
-    }
-
-    &:hover {
-      @extend %hoverState;
     }
 
     &:before {
@@ -109,6 +108,13 @@ $spkTooltip: true !default;
       width: 0;
       height: 0;
       opacity: 1;
+    }
+
+    &.below:before {
+      border-top-color: transparent;
+      border-bottom-color: var(--tt-bg);
+      top: auto;
+      bottom: 100%;
     }
 
     .tooltip-content {
