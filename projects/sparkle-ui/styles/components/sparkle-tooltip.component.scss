@@ -75,13 +75,12 @@ $spkTooltip: true !default;
     border-radius: var(--shape-2);
     box-shadow: var(--box-shadow-20);
     width: max-content;
+    overflow: visible;
+    box-shadow: none;
+    margin: initial;
+    border: 0;
 
     @supports (anchor-name: --anchor) {
-      // Transition only work on anchors because our js implementation does not account for animation to when using height
-      transition:
-        opacity 200ms ease,
-        visibility 200ms ease,
-        transform 200ms ease;
       inset: unset;
       justify-self: anchor-center;
       bottom: anchor(top);

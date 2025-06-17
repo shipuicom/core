@@ -27,6 +27,7 @@ import { generateUniqueId } from '../utilities/random-id';
   `,
   host: {
     role: 'tooltip',
+    '[attr.popover]': '"auto"',
     '[style.position-anchor]': 'positionAnchorName()',
     '[class.below]': 'isBelow()',
   },
@@ -45,9 +46,14 @@ export class SparkleTooltipWrapper {
   isBelow = signal<boolean>(false);
 
   openEffect = effect(() => {
-    if (!this.isOpen()) return;
-
-    this.calculateTooltipPosition();
+    if (this.isOpen()) {
+      setTimeout(() => {
+        this.#selfRef.nativeElement.showPopover();
+        this.calculateTooltipPosition();
+      });
+    } else {
+      this.#selfRef.nativeElement.hidePopover();
+    }
   });
 
   ngAfterViewInit(): void {
