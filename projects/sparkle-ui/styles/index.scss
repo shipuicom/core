@@ -90,6 +90,7 @@ $spkFileUpload: true !default;
 );
 @use './components/sparkle-form-field.component.scss' with (
   $spkFormField: $spkFormField,
+  $spkDatepicker: $spkDatepicker,
   $spkFormFieldShadow: $spkFormFieldShadow
 );
 @use './components/sparkle-color-picker.component.scss' with (

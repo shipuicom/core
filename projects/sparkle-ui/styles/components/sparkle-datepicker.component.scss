@@ -6,10 +6,17 @@ $spkDatepicker: true !default;
   spk-daterange-input,
   spk-datepicker-input {
     spk-form-field-popover {
-      .input-wrap .input {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        align-items: center;
+      .input-wrap {
+        .input {
+          display: grid;
+          grid-template-columns: 1fr auto auto;
+          align-items: center;
+          margin: 0;
+        }
+
+        [suffix] {
+          margin-right: p2r(12);
+        }
       }
 
       .masked-value {

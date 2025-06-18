@@ -1,7 +1,25 @@
 @use '../helpers.scss' as *;
 
 $spkFormField: true !default;
+$spkDatepicker: true !default;
 $spkFormFieldShadow: false !default;
+
+%smallFormField {
+  --ff-space: #{p2r(7 10)};
+  --ff-input-space: #{p2r(6 10)};
+  --ff-f: var(--paragraph-40B);
+
+  line-height: p2r(16);
+
+  .prefix,
+  .suffix {
+    line-height: p2r(16);
+
+    > spk-icon {
+      font-size: p2r(16);
+    }
+  }
+}
 
 @if $spkFormField == true {
   spk-form-field-popover,
@@ -49,20 +67,7 @@ $spkFormFieldShadow: false !default;
     }
 
     &.small {
-      --ff-space: #{p2r(7 10)};
-      --ff-input-space: #{p2r(6 10)};
-      --ff-f: var(--paragraph-40B);
-
-      line-height: p2r(16);
-
-      .prefix,
-      .suffix {
-        line-height: p2r(16);
-
-        > spk-icon {
-          font-size: p2r(16);
-        }
-      }
+      @extend %smallFormField;
     }
 
     &.auto-width {
@@ -311,6 +316,18 @@ $spkFormFieldShadow: false !default;
 
     &.success {
       --ff-ic: var(--success-8);
+    }
+  }
+}
+
+@if $spkDatepicker == true {
+  spk-daterange-input,
+  spk-datepicker-input {
+    &.small {
+      spk-form-field-popover,
+      spk-form-field {
+        @extend %smallFormField;
+      }
     }
   }
 }

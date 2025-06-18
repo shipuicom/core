@@ -91,6 +91,8 @@ export class SparkleDatepickerInputComponent {
             return acc;
           }, {});
 
+          console.log('classObj', classObj);
+
           this.styleClasses.set(classObj);
         }
       });
