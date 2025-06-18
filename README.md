@@ -54,6 +54,8 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
   - [x] Support custom option element selectors
   - [x] add support for multi layer menus
 - [x] Make icon watcher/generator/subsetter run on node (Could make it a standalone executable)
+- [x] When using wildcard searching in spk-select and spk-menu sort the closet match to the top of the list
+- [x] Add flat and raised versions of alerts
 - [ ] Create a accordion component
 - [ ] Create a timepicker component
 
@@ -64,28 +66,54 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 ### Nice to haves for v1 beta
 
 - [ ] spk-select feature: add support for custom filter predicates on inlineSearch
-- [ ] When using wildcard searching in spk-select and spk-menu sort the closet match to the top of the list
-- [ ] Add flat and raised versions of alerts
-- [ ] Create simple chart components
-  - [ ] Line chart
-  - [ ] Bar chart
-  - [ ] Pie chart
-  - [ ] Doughnut chart
-- [ ] CLI util to figure out which components and styles are used in a project as a production build trimmer
-- [ ] Add a A11y service to streamline accessibility, maybe be able to swap config based on page or on a method
-- [ ] Add a A11y VIM mode
-- [ ] Create a gantt chart component
-- [ ] Custom scrollbar component that have the native apple feel with overscrolling where scroll thumb becomes smaller and you can over scroll a div
 
 ### Features after v1 release
 
+- [ ] Create volume slider variant for range slider
+- [ ] Drag controls for number inputs (directive)
 - [ ] spk-table features
   - [ ] Add support for multi sticky rows
   - [ ] Add support for row resizing
 - [ ] spk-menu features
   - [ ] add hotkeys to navigate options without having a search input
   - [ ] add focus with a hidden input similar to native select
+- [ ] CLI util to figure out which components and styles are used in a project as a production build trimmer
+- [ ] Add a A11y service to streamline accessibility, maybe be able to swap config based on page or on a method
+- [ ] Add a A11y VIM mode
+- [ ] Custom scrollbar component that have the native apple feel with overscrolling where scroll thumb becomes smaller and you can over scroll a div
+- [ ] Grid drag and drop sortables
+- [ ] Multi list drag and drop sortables
+
+### New components after v1 release
+
+- [ ] Create a card stack component
 - [ ] Create a CSV input that create chips on comma (or enter) press, currently select has chip select which is not ideal but works for now
+- [ ] Create simple chart components (could also be core for simple charts)
+  - [ ] Line chart
+  - [ ] Bar chart
+  - [ ] Pie chart
+  - [ ] Doughnut chart
+
+### Possible extension packages
+
+- [ ] Animation package
+-
+- [ ] Create a gantt chart component
+- [ ] Create a blueprint component (like blueprints in unreal engine)
+- [ ] Create a timeline component
+- [ ] Code editor component
+  - [ ] Syntax highlighting
+  - [ ] Code completion
+  - [ ] Code folding
+  - [ ] Code refactoring
+  - [ ] Code navigation
+  - [ ] Auto formatting
+  - [ ] Auto indentation
+  - [ ] Auto closing
+  - [ ] Auto rename
+- [ ] Create a markdown editor component
+- [ ] Create a spreadsheet component
+- [ ] Create a wysiwyg editor component
 
 ### Testing to add
 
@@ -99,7 +127,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 
 ### Notes
 
-- For safari `<18` the selects does not support using options so you must use `<spk-option>` instead of `<option>` (this is fixed in the next select version currently suffixed with `-new`)
+- <strike>For safari `<18` the selects does not support using options so you must use `<spk-option>` instead of `<option>` (this is fixed in the next select version currently suffixed with `-new`)</strike> (We circumvent this by using a templates instead of options)
 - Known issues for selects when having two selects editing the same value and it is a multi select and searchable they clear out when opened also when selecting a new item they clear the rest of the list - not a very likely scenario but it is something to keep in mind (Your UI probably should not allow this scenario write an issue if you think it should be possible with a good explanation and example)
 
 ## Contributors

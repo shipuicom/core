@@ -10,3 +10,9 @@ h3 {
   align-items: center;
   gap: 12px;
 }
+
+section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
