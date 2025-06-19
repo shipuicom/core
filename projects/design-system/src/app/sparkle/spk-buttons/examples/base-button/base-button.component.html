@@ -1,0 +1,42 @@
+<button spk-button [class.small]="isSmall()" [class.rotated-icon]="rotated()" (click)="rotated.set(!rotated())">
+  <spk-icon>caret-down</spk-icon>
+</button>
+<button spk-button [class.small]="isSmall()" [class.rotated-icon]="rotated()">
+  <spk-icon>caret-down</spk-icon>
+</button>
+<button spk-button [class.small]="isSmall()">
+  <spk-icon>circle</spk-icon>
+  Default
+  <spk-icon>circle</spk-icon>
+</button>
+<button spk-button [class.small]="isSmall()" class="primary">
+  <spk-icon>circle</spk-icon>
+  Primary
+  <spk-icon>circle</spk-icon>
+</button>
+<button spk-button [class.small]="isSmall()" class="accent">
+  <spk-icon>circle</spk-icon>
+  Accent
+  <spk-icon>circle</spk-icon>
+</button>
+<button spk-button [class.small]="isSmall()" class="warn">
+  <spk-icon>circle</spk-icon>
+  Warn
+  <spk-icon>circle</spk-icon>
+</button>
+<button spk-button [class.small]="isSmall()" class="error">
+  <spk-icon>circle</spk-icon>
+  Error
+  <spk-icon>circle</spk-icon>
+</button>
+<button spk-button [class.small]="isSmall()" class="success">
+  <spk-icon>circle</spk-icon>
+  success
+  <spk-icon>circle</spk-icon>
+</button>
+<button spk-button [class.small]="isSmall()" disabled>
+  <spk-icon>circle</spk-icon>
+  Disabled
+  <spk-icon>circle</spk-icon>
+</button>
+<a spk-button [class.small]="isSmall()" href="https://www.google.com/" target="_blank">Link</a>

@@ -64,6 +64,7 @@ $spkButtonShadow: false !default;
     }
 
     &.loader.outlined,
+    &.loader.simple,
     &.loader.flat,
     &.loader.raised,
     &.loader {
@@ -145,6 +146,7 @@ $spkButtonShadow: false !default;
     }
 
     &.icon,
+    &.simple,
     &.outlined {
       --btn-c: var(--base-12);
       --btn-bg: var(--base-2);
@@ -193,6 +195,15 @@ $spkButtonShadow: false !default;
         --btn-bg-h: var(--success-2);
         --btn-bc: var(--success-4);
       }
+    }
+
+    &.simple,
+    &.simple.primary,
+    &.simple.accent,
+    &.simple.warn,
+    &.simple.error,
+    &.simple.success {
+      --btn-bc: var(--btn-bg);
     }
 
     &.flat {

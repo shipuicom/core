@@ -3,51 +3,30 @@
   padding: 40px;
 }
 
-section {
-  display: table;
-}
-
 h1 {
-  margin: 40px 0;
+  font: var(--title-20B);
 }
 
-.example-label {
-  display: table-cell;
-  font-size: 14px;
-  margin-left: 8px;
-  min-width: 120px;
-}
+section {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  max-width: 900px;
+  // border-bottom: 1px solid var(--base-4);
 
-.example-button-row {
-  display: table-cell;
-  max-width: 800px;
-  padding: 50px;
+  // &:first-of-type {
+  //   border-top: 1px solid var(--base-4);
+  // }
 
-  background-size: cover !important;
-  animation: scroll-background 20s linear infinite;
-}
-
-@keyframes scroll-background {
-  from {
-    background-position: 0 0;
+  .example-label {
+    padding: 40px;
   }
-  to {
-    background-position: 100% 100%;
+
+  .example {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 40px 20px;
+    gap: 8px;
   }
-}
-
-.example-button-row [spk-button] {
-  margin: 8px 8px 8px 0;
-}
-
-.example-flex-container {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
-
-.example-button-container {
-  display: flex;
-  justify-content: center;
-  width: 120px;
 }

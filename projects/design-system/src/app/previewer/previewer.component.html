@@ -1,0 +1,41 @@
+<spk-card class="type-c">
+  <spk-tabs class="primary">
+    <button tab [class.active]="view() === 'example'" (click)="view.set('example')">
+      <spk-icon>layout</spk-icon>
+      Example
+    </button>
+
+    <button tab [class.active]="view() === 'typescript'" (click)="view.set('typescript')">
+      <spk-icon>brackets-curly</spk-icon>
+      Typescript
+    </button>
+
+    <button tab [class.active]="view() === 'markup'" (click)="view.set('markup')">
+      <spk-icon>code</spk-icon>
+      Markup
+    </button>
+
+    <button tab [class.active]="view() === 'styles'" (click)="view.set('styles')">
+      <spk-icon>paint-brush-broad</spk-icon>
+      Styles
+    </button>
+  </spk-tabs>
+
+  <div class="content">
+    @if (view() === 'example') {
+      <ng-content></ng-content>
+    }
+
+    @if (view() === 'typescript') {
+      <!-- <app-highlight language="typescript">{{ tsResource.value() }}</app-highlight> -->
+    }
+
+    @if (view() === 'markup') {
+      <app-highlight language="html">{{ htmlResource.value() }}</app-highlight>
+    }
+
+    @if (view() === 'styles') {
+      <app-highlight language="scss">{{ scssResource.value() }}</app-highlight>
+    }
+  </div>
+</spk-card>

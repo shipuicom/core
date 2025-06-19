@@ -79,6 +79,11 @@
                 "glob": "**/*",
                 "input": "projects/sparkle-ui/assets/fonts",
                 "output": "./sparkle-ui-assets/fonts/"
+              },
+              {
+                "glob": "**/examples/**/*",
+                "input": "projects/design-system/src/app/sparkle",
+                "output": "./examples/"
               }
             ],
             "stylePreprocessorOptions": {
