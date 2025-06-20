@@ -1,7 +1,4 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { SparkleButtonGroupComponent, SparkleCardComponent } from '../../../../../sparkle-ui/src/public-api';
-import { HighlightFileComponent } from '../../previewer/highlight-file/highlight-file.component';
-import { HighlightComponent } from '../../previewer/highlight/highlight.component';
 import { PreviewerComponent } from '../../previewer/previewer.component';
 import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
 import { BaseButtonComponent } from './examples/base-button/base-button.component';
@@ -14,11 +11,6 @@ import { SimpleButtonComponent } from './examples/simple-button/simple-button.co
 @Component({
   selector: 'app-spk-buttons',
   imports: [
-    SparkleButtonGroupComponent,
-    SparkleCardComponent,
-    HighlightFileComponent,
-    HighlightComponent,
-
     PreviewerComponent,
     PropertyViewerComponent,
 

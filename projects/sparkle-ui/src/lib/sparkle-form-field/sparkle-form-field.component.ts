@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } from '@angular/core';
 
 @Component({
   selector: 'spk-form-field',
@@ -47,9 +47,11 @@ export class SparkleFormFieldComponent {
     }
   }
 
-  ngOnInit() {
+  #aferRender = afterNextRender(() => {
     const supportFieldSizing = typeof CSS !== 'undefined' && CSS.supports('field-sizing', 'content');
     const text = this.#selfRef.nativeElement.querySelector('textarea');
+
+    console.log('after render', text);
 
     if (!supportFieldSizing && text !== null) {
       function resize() {
@@ -72,5 +74,5 @@ export class SparkleFormFieldComponent {
       text.select();
       resize();
     }
-  }
+  });
 }

@@ -1,4 +1,5 @@
-import { Injectable, PLATFORM_ID, afterRenderEffect, effect, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Injectable, PLATFORM_ID, effect, inject, signal } from '@angular/core';
 import { WINDOW } from '../core/providers/window';
 import { LOCALSTORAGE } from '../core/services/localstorage.token';
 
@@ -24,8 +25,8 @@ export class LayoutState {
   isNavOpen = signal(true);
 
   constructor() {
-    afterRenderEffect(() => {
-      const prefersDarkMode = window?.matchMedia('(prefers-color-scheme:dark)').matches;
+    if (isPlatformBrowser(this.#platformId)) {
+      const prefersDarkMode = this.#window?.matchMedia('(prefers-color-scheme:dark)').matches;
 
       if (prefersDarkMode && this.#storedDarkMode) {
         this.setDarkMode();
@@ -41,10 +42,10 @@ export class LayoutState {
         }
       });
 
-      window?.addEventListener('resize', () => {
-        this.#isMobile.set(window?.innerWidth <= 768);
+      this.#window?.addEventListener('resize', () => {
+        this.#isMobile.set(this.#window?.innerWidth <= 768);
       });
-    });
+    }
   }
 
   toggleNav() {
