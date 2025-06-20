@@ -1,3 +1,14 @@
-<pre>
-  <code><ng-content /></code>
-</pre>
+<pre><code [class]="langClass()" #codeRef>{{ content() }}</code></pre>
+
+<button
+  spk-button
+  class="small simple"
+  [class.error]="!copied()"
+  [class.success]="copied()"
+  (click)="copyToClipboard()">
+  @if (copied()) {
+    <spk-icon>check</spk-icon>
+  } @else {
+    <spk-icon>copy</spk-icon>
+  }
+</button>

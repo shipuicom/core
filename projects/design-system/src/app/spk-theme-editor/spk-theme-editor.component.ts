@@ -1,4 +1,3 @@
-import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
@@ -6,7 +5,6 @@ import {
   SparkleMenuComponent,
   SparkleRadioComponent,
 } from '../../../../sparkle-ui/src/public-api';
-import SpkButtonsComponent from '../sparkle/spk-buttons/spk-buttons.component';
 
 interface Hsl {
   h: number;
@@ -27,14 +25,7 @@ const STARTING_COLOR = 'mono';
 
 @Component({
   selector: 'app-spk-theme-editor',
-  imports: [
-    FormsModule,
-    SparkleColorPickerComponent,
-    SparkleMenuComponent,
-    SparkleRadioComponent,
-    SpkButtonsComponent,
-    JsonPipe,
-  ],
+  imports: [FormsModule, SparkleColorPickerComponent, SparkleMenuComponent, SparkleRadioComponent],
   templateUrl: './spk-theme-editor.component.html',
   styleUrl: './spk-theme-editor.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

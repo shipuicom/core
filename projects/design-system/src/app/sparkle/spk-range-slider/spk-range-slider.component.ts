@@ -1,20 +1,10 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import {
-  SparkleIconComponent,
-  SparkleRangeSliderComponent,
-  SparkleToggleComponent,
-} from '../../../../../sparkle-ui/src/public-api';
+import { SparkleRangeSliderComponent } from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-range-slider',
-  imports: [
-    FormsModule,
-    ReactiveFormsModule,
-    SparkleRangeSliderComponent,
-    SparkleToggleComponent,
-    SparkleIconComponent,
-  ],
+  imports: [FormsModule, ReactiveFormsModule, SparkleRangeSliderComponent],
   templateUrl: './spk-range-slider.component.html',
   styleUrl: './spk-range-slider.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

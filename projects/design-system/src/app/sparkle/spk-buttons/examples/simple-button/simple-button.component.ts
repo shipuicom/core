@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { SparkleButtonComponent, SparkleIconComponent } from '../../../../../../../sparkle-ui/src/public-api';
 
 @Component({
@@ -8,6 +8,4 @@ import { SparkleButtonComponent, SparkleIconComponent } from '../../../../../../
   styleUrl: './simple-button.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SimpleButtonComponent {
-  isSmall = input<boolean>(false);
-}
+export class SimpleButtonComponent {}

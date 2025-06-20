@@ -1,3 +1,31 @@
+@use '../../../../sparkle-ui/styles/helpers.scss' as *;
+
 :host {
   display: block;
+
+  &.no-space .example-wrap {
+    padding: 0;
+  }
+}
+
+spk-tabs {
+  align-items: center;
+  padding: p2r(0 20);
+}
+
+.title {
+  flex: 1 0;
+  font: var(--paragraph-20B);
+}
+
+.content {
+  padding: 0;
+  overflow: auto;
+  width: 100%;
+  display: block;
+  border-bottom: 1px solid var(--base-4);
+}
+
+.example-wrap {
+  padding: p2r(20);
 }

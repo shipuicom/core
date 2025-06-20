@@ -137,15 +137,6 @@ $spkButtonShadow: false !default;
       --btn-ic: var(--success-8);
     }
 
-    &.icon {
-      padding: p2r(0 9);
-
-      &.small {
-        padding: p2r(0 5);
-      }
-    }
-
-    &.icon,
     &.simple,
     &.outlined {
       --btn-c: var(--base-12);
@@ -204,6 +195,28 @@ $spkButtonShadow: false !default;
     &.simple.error,
     &.simple.success {
       --btn-bc: var(--btn-bg);
+    }
+
+    &.simple {
+      &.primary {
+        --btn-c: var(--primary-8);
+      }
+
+      &.accent {
+        --btn-c: var(--accent-8);
+      }
+
+      &.warn {
+        --btn-c: var(--warn-8);
+      }
+
+      &.error {
+        --btn-c: var(--error-8);
+      }
+
+      &.success {
+        --btn-c: var(--success-8);
+      }
     }
 
     &.flat {

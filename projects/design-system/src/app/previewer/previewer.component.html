@@ -1,41 +1,42 @@
 <spk-card class="type-c">
   <spk-tabs class="primary">
-    <button tab [class.active]="view() === 'example'" (click)="view.set('example')">
-      <spk-icon>layout</spk-icon>
-      Example
-    </button>
+    <h3 class="title">
+      {{ title() }}
+    </h3>
 
-    <button tab [class.active]="view() === 'typescript'" (click)="view.set('typescript')">
+    <button tab [class.active]="view() === 'typescript'" (click)="toggleView('typescript')">
       <spk-icon>brackets-curly</spk-icon>
       Typescript
     </button>
 
-    <button tab [class.active]="view() === 'markup'" (click)="view.set('markup')">
-      <spk-icon>code</spk-icon>
-      Markup
-    </button>
-
-    <button tab [class.active]="view() === 'styles'" (click)="view.set('styles')">
+    <button tab [class.active]="view() === 'styles'" (click)="toggleView('styles')">
       <spk-icon>paint-brush-broad</spk-icon>
       Styles
     </button>
+
+    <button tab [class.active]="view() === 'markup'" (click)="toggleView('markup')">
+      <spk-icon>code</spk-icon>
+      Markup
+    </button>
   </spk-tabs>
 
-  <div class="content">
-    @if (view() === 'example') {
-      <ng-content></ng-content>
-    }
+  @if (view() !== '') {
+    <div class="content">
+      @defer (when (view() === 'typescript')) {
+        <app-highlight-file [class.hidden]="view() !== 'typescript'" lang="ts" [path]="path()" />
+      }
 
-    @if (view() === 'typescript') {
-      <!-- <app-highlight language="typescript">{{ tsResource.value() }}</app-highlight> -->
-    }
+      @defer (when (view() === 'markup')) {
+        <app-highlight-file [class.hidden]="view() !== 'markup'" lang="html" [path]="path()" />
+      }
 
-    @if (view() === 'markup') {
-      <app-highlight language="html">{{ htmlResource.value() }}</app-highlight>
-    }
+      @defer (when (view() === 'styles')) {
+        <app-highlight-file [class.hidden]="view() !== 'styles'" lang="scss" [path]="path()" />
+      }
+    </div>
+  }
 
-    @if (view() === 'styles') {
-      <app-highlight language="scss">{{ scssResource.value() }}</app-highlight>
-    }
+  <div class="example-wrap">
+    <ng-content></ng-content>
   </div>
 </spk-card>

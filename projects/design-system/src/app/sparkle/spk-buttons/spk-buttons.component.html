@@ -1,40 +1,107 @@
 <h1>Buttons</h1>
 
-<spk-button-group class="small">
-  <button [class.active]="!isSmall()" (click)="isSmall.set(!isSmall())">Regular size</button>
-  <button [class.active]="isSmall()" (click)="isSmall.set(!isSmall())">Small size</button>
-</spk-button-group>
+<app-property-viewer>
+  <section>
+    <h4>Variants</h4>
+    <p>
+      Button variants can be set through the class ex
+      <code>class="simple"</code>
+      takes
+      <b>simple</b>
+      ,
+      <b>outlined</b>
+      ,
+      <b>flat</b>
+      and
+      <b>raised</b>
+    </p>
+    <!-- <ul>
+      <li>base (default)</li>
+      <li>simple</li>
+      <li>outlined</li>
+      <li>flat</li>
+      <li>raised</li>
+    </ul> -->
+  </section>
+
+  <section>
+    <h4>Sizes</h4>
+    <p>
+      Button sizes can be set through the class ex
+      <code>class="small"</code>
+    </p>
+  </section>
+
+  <section>
+    <h4>Loader</h4>
+    <p>
+      The button can be set to loading trough the class ex
+      <code>class="loader"</code>
+    </p>
+  </section>
+
+  <section>
+    <h4>Rotate icon</h4>
+    <p>
+      The button icons can be rotated trough the class ex
+      <code>class="rotated-icon"</code>
+    </p>
+  </section>
+
+  <section>
+    <h4>Readonly</h4>
+    <p>
+      The button can be set to readonly trough the attribute ex
+      <code>[attr.readonly]</code>
+      or
+      <code>readonly</code>
+    </p>
+  </section>
+
+  <section>
+    <h4>Disabled</h4>
+    <p>
+      The button can be set to disabled trough the attribute ex
+      <code>[disabled]</code>
+    </p>
+  </section>
+</app-property-viewer>
+
+<!-- 
+<spk-card class="type-c">
+  <app-highlight-file lang="html" path="/spk-buttons/examples/spk-button.example" />
+</spk-card>
+
+<spk-card class="type-c">
+  <app-highlight lang="html" [content]="example1" />
+</spk-card> -->
+
+<div class="sandbox-example">
+  <app-previewer path="/spk-buttons/examples/button-sandbox/button-sandbox.component" title="Sandbox" class="no-space">
+    <app-button-sandbox />
+  </app-previewer>
+</div>
+
+<h3>Variantions</h3>
 
 <div class="content">
-  <section>
-    <div class="example-label">Base</div>
-    <app-previewer path="/spk-buttons/examples/base-button/base-button">
-      <app-base-button class="example" [isSmall]="isSmall()" />
-    </app-previewer>
-  </section>
+  <app-previewer path="/spk-buttons/examples/base-button/base-button.component" title="Base">
+    <app-base-button class="example" />
+  </app-previewer>
 
-  <section>
-    <div class="example-label">Simple</div>
-    <app-simple-button class="example" [isSmall]="isSmall()" />
-  </section>
+  <app-previewer path="/spk-buttons/examples/simple-button/simple-button.component" title="Simple">
+    <app-simple-button class="example" />
+  </app-previewer>
 
-  <section>
-    <div class="example-label">Outlined</div>
-    <app-outlined-button class="example" [isSmall]="isSmall()" />
-  </section>
+  <app-previewer path="/spk-buttons/examples/outlined-button/outlined-button.component" title="Outlined">
+    <app-outlined-button class="example" />
+  </app-previewer>
 
-  <section>
-    <div class="example-label">Flat</div>
-    <app-flat-button class="example" [isSmall]="isSmall()" />
-  </section>
+  <app-previewer path="/spk-buttons/examples/flat-button/flat-button.component" title="Flat">
+    <app-flat-button class="example" />
+  </app-previewer>
 
-  <section>
-    <div class="example-label">Raised</div>
-    <app-raised-button class="example" [isSmall]="isSmall()" />
-  </section>
-
-  <section>
-    <div class="example-label">Icon</div>
-    <app-icon-button class="example" [isSmall]="isSmall()" />
-  </section>
+  <app-previewer path="/spk-buttons/examples/raised-button/raised-button.component" title="Raised">
+    <app-raised-button class="example" />
+  </app-previewer>
 </div>

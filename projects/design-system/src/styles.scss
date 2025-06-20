@@ -4,3 +4,28 @@
   $spkFormFieldShadow: true,
   $spkButtonShadow: true
 );
+
+@use '../../sparkle-ui/styles/helpers.scss' as *;
+
+// Only for styling projected content
+app-property-viewer {
+  h4 {
+    font: var(--paragraph-20B);
+  }
+
+  p {
+    color: var(--base-8);
+  }
+
+  code {
+    color: var(--primary-12);
+    background-color: var(--primary-4);
+    padding: p2r(2 4);
+    border-radius: var(--shape-1);
+  }
+
+  b,
+  strong {
+    color: var(--base-12);
+  }
+}
