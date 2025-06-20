@@ -59,7 +59,7 @@ export class SparkleFormFieldComponent {
 
       /* 0-timeout to get the already changed text */
       function delayedResize() {
-        window.setTimeout(resize, 0);
+        setTimeout(resize, 0);
       }
 
       text.addEventListener('change', resize);

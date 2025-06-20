@@ -1,4 +1,5 @@
 import {
+  afterNextRender,
   Component,
   ComponentRef,
   Directive,
@@ -56,14 +57,14 @@ export class SparkleTooltipWrapper {
     }
   });
 
-  ngAfterViewInit(): void {
+  #afterRender = afterNextRender(() => {
     this.#positionAbort = new AbortController();
     const options = { signal: this.#positionAbort.signal, capture: true };
-    window.addEventListener('scroll', this.calculateTooltipPosition, options);
-    window.addEventListener('resize', this.calculateTooltipPosition, { signal: this.#positionAbort.signal });
+    window?.addEventListener('scroll', this.calculateTooltipPosition, options);
+    window?.addEventListener('resize', this.calculateTooltipPosition, { signal: this.#positionAbort.signal });
 
     setTimeout(() => this.calculateTooltipPosition());
-  }
+  });
 
   ngOnDestroy(): void {
     this.#positionAbort?.abort();
@@ -91,7 +92,7 @@ export class SparkleTooltipWrapper {
         this.isBelow.set(false);
       }
 
-      if (newLeft + tooltipRect.width > window.innerWidth) {
+      if (newLeft + tooltipRect.width > window?.innerWidth) {
         newLeft = hostRect.right - tooltipRect.width / 2;
       }
       if (newLeft < 0) {

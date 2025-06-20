@@ -124,7 +124,7 @@ export class SparkleSortableDirective {
         }
       }
 
-      const parentStyle = window.getComputedStyle(draggedElement.parentElement!);
+      const parentStyle = window?.getComputedStyle(draggedElement.parentElement!);
       this.#parentGap.set(parseFloat(parentStyle.gap) || 0);
 
       const draggedElementIndex = this.getIndexOfElement(draggedElement);

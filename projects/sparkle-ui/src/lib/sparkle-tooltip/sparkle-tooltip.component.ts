@@ -100,7 +100,7 @@ export class SparkleTooltipComponent_DEPRECATED {
 
     while (parent) {
       if (
-        this.scrollableStyles.indexOf(window.getComputedStyle(parent).overflowY) > -1 &&
+        this.scrollableStyles.indexOf(window?.getComputedStyle(parent).overflowY) > -1 &&
         parent.scrollHeight > parent.clientHeight
       ) {
         return parent;
@@ -134,8 +134,8 @@ export class SparkleTooltipComponent_DEPRECATED {
     let newLeft = actionLeftInViewport;
     let newTop = actionBottomInViewport + this.#BASE_SPACE;
 
-    const outOfBoundsRight = newLeft + menuRect.width > window.innerWidth;
-    const outOfBoundsBottom = newTop + menuRect.height > window.innerHeight;
+    const outOfBoundsRight = newLeft + menuRect.width > window?.innerWidth;
+    const outOfBoundsBottom = newTop + menuRect.height > window?.innerHeight;
 
     if (this.SUPPORTS_ANCHOR) {
       this._above.set(outOfBoundsBottom);

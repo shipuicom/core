@@ -18,7 +18,7 @@ export const appConfig: ApplicationConfig = {
     LOCALSTORAGE,
     // SparkleAlertService,
 
-    { provide: 'Window', useValue: window as any },
+    // { provide: 'Window', useValue: window as any },
     { provide: ENVIRONMENT_TOKEN, useValue: environment },
     {
       provide: SPARKLE_CONFIG,

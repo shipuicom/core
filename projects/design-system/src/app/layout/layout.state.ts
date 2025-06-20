@@ -1,5 +1,5 @@
-import { isPlatformBrowser } from '@angular/common';
-import { Inject, Injectable, PLATFORM_ID, effect, inject, signal } from '@angular/core';
+import { Injectable, PLATFORM_ID, afterRenderEffect, effect, inject, signal } from '@angular/core';
+import { WINDOW } from '../core/providers/window';
 import { LOCALSTORAGE } from '../core/services/localstorage.token';
 
 declare global {
@@ -12,19 +12,20 @@ declare global {
   providedIn: 'root',
 })
 export class LayoutState {
+  #window = inject(WINDOW);
   #ls = inject(LOCALSTORAGE);
   #platformId = inject(PLATFORM_ID);
   #storedDarkMode = this.#ls.getItemParsed<boolean>('darkTheme', true);
   #isDarkMode = signal(false);
-  #isMobile = signal(this.window?.innerWidth <= 768);
+  #isMobile = signal(this.#window?.innerWidth <= 768);
 
   isDarkMode = this.#isDarkMode.asReadonly();
   isMobile = this.#isMobile.asReadonly();
   isNavOpen = signal(true);
 
-  constructor(@Inject('Window') private window: Window) {
-    if (isPlatformBrowser(this.#platformId)) {
-      const prefersDarkMode = window.matchMedia('(prefers-color-scheme:dark)').matches;
+  constructor() {
+    afterRenderEffect(() => {
+      const prefersDarkMode = window?.matchMedia('(prefers-color-scheme:dark)').matches;
 
       if (prefersDarkMode && this.#storedDarkMode) {
         this.setDarkMode();
@@ -40,10 +41,10 @@ export class LayoutState {
         }
       });
 
-      window.addEventListener('resize', () => {
-        this.#isMobile.set(window.innerWidth <= 768);
+      window?.addEventListener('resize', () => {
+        this.#isMobile.set(window?.innerWidth <= 768);
       });
-    }
+    });
   }
 
   toggleNav() {

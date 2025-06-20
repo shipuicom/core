@@ -90,7 +90,12 @@
               "includePaths": ["projects/sparkle-ui/styles"]
             },
             "styles": ["projects/design-system/src/styles.scss", "node_modules/highlight.js/styles/atom-one-dark.css"],
-            "scripts": []
+            "scripts": [],
+            "server": "projects/design-system/src/main.server.ts",
+            "outputMode": "static",
+            "ssr": {
+              "entry": "projects/design-system/src/server.ts"
+            }
           },
           "configurations": {
             "production": {

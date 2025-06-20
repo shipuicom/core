@@ -7,10 +7,8 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'spk-tabs',
-        pathMatch: 'full',
+        loadComponent: () => import('./hello/hello.component'),
       },
-
       {
         path: 'example',
         loadComponent: () => import('../../../sparkle-ui/src/lib/utilities/create-input-example.component'),

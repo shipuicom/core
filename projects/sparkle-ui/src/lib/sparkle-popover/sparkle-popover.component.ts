@@ -123,7 +123,7 @@ export class SparklePopoverComponent {
 
         scrollableParent.addEventListener('scroll', () => this.#calculateMenuPosition(), abortOptions);
 
-        window.addEventListener('resize', () => this.#calculateMenuPosition(), abortOptions);
+        window?.addEventListener('resize', () => this.#calculateMenuPosition(), abortOptions);
 
         this.#calculateMenuPosition();
       });
@@ -160,7 +160,7 @@ export class SparklePopoverComponent {
 
     while (parent) {
       if (
-        SCROLLABLE_STYLES.indexOf(window.getComputedStyle(parent).overflowY) > -1 &&
+        SCROLLABLE_STYLES.indexOf(window?.getComputedStyle(parent).overflowY) > -1 &&
         parent.scrollHeight > parent.clientHeight
       ) {
         return parent;
@@ -182,8 +182,8 @@ export class SparklePopoverComponent {
     let newLeft = actionLeftInViewport;
     let newTop = actionBottomInViewport + this.#BASE_SPACE;
 
-    const outOfBoundsRight = newLeft + menuRect.width > window.innerWidth;
-    const outOfBoundsBottom = newTop + menuRect.height > window.innerHeight;
+    const outOfBoundsRight = newLeft + menuRect.width > window?.innerWidth;
+    const outOfBoundsBottom = newTop + menuRect.height > window?.innerHeight;
 
     if (this.SUPPORTS_ANCHOR) {
       this._above.set(outOfBoundsBottom);
