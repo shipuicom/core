@@ -47,32 +47,32 @@ export class SparkleFormFieldComponent {
     }
   }
 
-  #aferRender = afterNextRender(() => {
-    const supportFieldSizing = typeof CSS !== 'undefined' && CSS.supports('field-sizing', 'content');
-    const text = this.#selfRef.nativeElement.querySelector('textarea');
+  constructor() {
+    afterNextRender(() => {
+      const supportFieldSizing = typeof CSS !== 'undefined' && CSS.supports('field-sizing', 'content');
+      const text = this.#selfRef.nativeElement.querySelector('textarea');
 
-    console.log('after render', text);
+      if (!supportFieldSizing && text !== null) {
+        function resize() {
+          text.style.height = 'auto';
+          text.style.height = text.scrollHeight + 'px';
+        }
 
-    if (!supportFieldSizing && text !== null) {
-      function resize() {
-        text.style.height = 'auto';
-        text.style.height = text.scrollHeight + 'px';
+        /* 0-timeout to get the already changed text */
+        function delayedResize() {
+          setTimeout(resize, 0);
+        }
+
+        text.addEventListener('change', resize);
+        text.addEventListener('cut', delayedResize);
+        text.addEventListener('paste', delayedResize);
+        text.addEventListener('drop', delayedResize);
+        text.addEventListener('keydown', delayedResize);
+
+        text.focus();
+        text.select();
+        resize();
       }
-
-      /* 0-timeout to get the already changed text */
-      function delayedResize() {
-        setTimeout(resize, 0);
-      }
-
-      text.addEventListener('change', resize);
-      text.addEventListener('cut', delayedResize);
-      text.addEventListener('paste', delayedResize);
-      text.addEventListener('drop', delayedResize);
-      text.addEventListener('keydown', delayedResize);
-
-      text.focus();
-      text.select();
-      resize();
-    }
-  });
+    });
+  }
 }

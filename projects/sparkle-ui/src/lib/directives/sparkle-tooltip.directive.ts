@@ -57,14 +57,17 @@ export class SparkleTooltipWrapper {
     }
   });
 
-  #afterRender = afterNextRender(() => {
-    this.#positionAbort = new AbortController();
-    const options = { signal: this.#positionAbort.signal, capture: true };
-    window?.addEventListener('scroll', this.calculateTooltipPosition, options);
-    window?.addEventListener('resize', this.calculateTooltipPosition, { signal: this.#positionAbort.signal });
+  constructor() {
+    afterNextRender(() => {
+      this.#positionAbort = new AbortController();
 
-    setTimeout(() => this.calculateTooltipPosition());
-  });
+      const options = { signal: this.#positionAbort.signal, capture: true };
+      window?.addEventListener('scroll', this.calculateTooltipPosition, options);
+      window?.addEventListener('resize', this.calculateTooltipPosition, { signal: this.#positionAbort.signal });
+
+      setTimeout(() => this.calculateTooltipPosition());
+    });
+  }
 
   ngOnDestroy(): void {
     this.#positionAbort?.abort();
