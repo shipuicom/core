@@ -1,0 +1,16 @@
+@use '../../../../sparkle-ui/styles/helpers.scss' as *;
+
+:host {
+  display: block;
+}
+
+spk-card {
+  --card-bg: var(--primary-1);
+  --card-bc: var(--primary-4);
+  --card-c: var(--primary-8);
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: p2r(20);
+  padding: p2r(20);
+}

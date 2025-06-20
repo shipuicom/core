@@ -1,0 +1,29 @@
+@use '../../../../../sparkle-ui/styles/helpers.scss' as *;
+
+:host {
+  display: block;
+  width: 100%;
+  position: relative;
+
+  &.hidden {
+    display: none;
+  }
+}
+
+button {
+  position: absolute;
+  top: p2r(6);
+  right: p2r(6);
+}
+
+pre {
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  overflow: auto;
+
+  code {
+    padding-right: p2r(60);
+  }
+}
