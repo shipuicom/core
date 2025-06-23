@@ -32,7 +32,7 @@ COPY . /app
 
 # Use the environment variable to conditionally run the build command
 RUN if [ "$BUILD_ENV" = "prod" ]; then \
-  bun run build:prod; \
+  bun run build:docs; \
   else \
-  bun run build:dev; \
+  bun run build:docs; \
   fi
