@@ -73,6 +73,11 @@ $spkSelect: false !default;
 
     spk-form-field.small .input-wrap .input {
       --ff-space: #{p2r(5 8)};
+
+      spk-chip {
+        --chip-h: #{p2r(20)};
+        font-size: 80%;
+      }
     }
   }
 

@@ -48,6 +48,7 @@
     [isClearable]="false"
     [options]="options()"
     value="id"
+    class="small"
     [optionTemplate]="optionTemplate"
     placeholder="Select some option NOW!!">
     <label>Reactive Form and optionTemplate Select</label>
@@ -68,6 +69,19 @@
     [options]="options()"
     value="id"
     class="primary raised"
+    [optionTemplate]="optionTemplate"
+    placeholder="Select some option NOW!!">
+    <label>Reactive Form and optionTemplate Select</label>
+    <input type="text" [formControl]="inputCtrlNew1Multiple" />
+  </spk-select>
+
+  <pre>inputCtrlNew1Multiple = {{ inputCtrlNew1Multiple.value }}</pre>
+
+  <spk-select
+    [selectMultiple]="true"
+    [options]="options()"
+    value="id"
+    class="primary raised small"
     [optionTemplate]="optionTemplate"
     placeholder="Select some option NOW!!">
     <label>Reactive Form and optionTemplate Select</label>

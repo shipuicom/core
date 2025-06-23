@@ -54,7 +54,12 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
         closeOnButton: false,
         closeOnEsc: false,
       }">
-      <spk-form-field trigger (click)="open()" [class.stretch]="stretch()" [class.readonly]="readonly() || disabled()">
+      <spk-form-field
+        trigger
+        (click)="open()"
+        [class.stretch]="stretch()"
+        [class.small]="small()"
+        [class.readonly]="readonly() || disabled()">
         <ng-content select="label" ngProjectAs="label" />
 
         <div class="input" [class.show-search-text]="_showSearchText" ngProjectAs="input">
@@ -187,6 +192,7 @@ export class SparkleSelectComponent {
   _isClearable = computed(() => this.selectMultiple() || this.isClearable());
   selectClasses = computed(() => this.#selfRef.nativeElement.classList.toString());
   stretch = computed(() => this.selectClasses().includes('stretch'));
+  small = computed(() => this.selectClasses().includes('small'));
   placeholderText = computed(() => {
     const placeholder = this.placeholder();
     const inputRefEl = this.inputRefEl();
