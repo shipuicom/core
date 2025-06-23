@@ -1,17 +1,32 @@
+@use '../../../../../sparkle-ui/styles/helpers.scss' as *;
+
 :host {
-  display: block;
-  padding: 40px;
-}
-
-section {
-  width: 100%;
-  max-width: 500px;
-  padding: 20px;
-}
-
-.example-chip-row {
   display: flex;
-  gap: 10px;
-  max-width: 800px;
-  padding: 20px 0;
+  flex-direction: column;
+  gap: p2r(20);
+  padding: p2r(40);
+  width: calc(100% - var(--spk-sidenav));
+}
+
+h1 {
+  font: var(--title-20B);
+}
+
+h3 {
+  font: var(--paragraph-10);
+}
+
+.example {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: p2r(8);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: p2r(20);
 }

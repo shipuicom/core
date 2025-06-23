@@ -1,0 +1,78 @@
+@use '../../../../../../../sparkle-ui/styles/helpers.scss' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(20);
+  padding: 0;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(8);
+  border-bottom: 1px solid var(--base-4);
+  padding: p2r(20);
+  background-color: var(--base-2);
+}
+
+header {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(12);
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: p2r(8);
+  }
+}
+
+.sandbox {
+  display: flex;
+  gap: p2r(8);
+  flex-wrap: wrap;
+  padding: p2r(20);
+}
+
+.sandbox-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 120px;
+
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+  }
+
+  select,
+  input[type='checkbox'] {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+}
+
+.preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  min-height: 80px;
+}

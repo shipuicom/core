@@ -1,610 +1,94 @@
-<h1>Standard size chips</h1>
-
-<section>
-  <h3>Base chips</h3>
-  <div class="example-chip-row">
-    <spk-chip>
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip>
-      <spk-icon>circle</spk-icon>
-      Basic
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="primary">
-      <spk-icon>circle</spk-icon>
-      Primary
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="accent">
-      <spk-icon>circle</spk-icon>
-      Accent
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="warn">
-      <spk-icon>circle</spk-icon>
-      Warn
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="error">
-      <spk-icon>circle</spk-icon>
-      Error
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="success">
-      <spk-icon>circle</spk-icon>
-      Success
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip disabled>
-      <spk-icon>circle</spk-icon>
-      Disabled
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-  </div>
-</section>
-
-<spk-divider></spk-divider>
-
-<section>
-  <h3>Simple chips</h3>
-  <div class="example-chip-row">
-    <spk-chip class="simple">
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="simple">
-      <spk-icon>circle</spk-icon>
-      Basic
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="simple primary">
-      <spk-icon>circle</spk-icon>
-      Primary
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="simple accent">
-      <spk-icon>circle</spk-icon>
-      Accent
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="simple warn">
-      <spk-icon>circle</spk-icon>
-      Warn
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="simple error">
-      <spk-icon>circle</spk-icon>
-      Error
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="simple success">
-      <spk-icon>circle</spk-icon>
-      Success
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip disabled class="simple">
-      <spk-icon>circle</spk-icon>
-      Disabled
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-  </div>
-</section>
-
-<spk-divider></spk-divider>
-
-<section>
-  <h3>Simple dynamic chips</h3>
-  <spk-color-picker
-    renderingType="hsl"
-    [showDarkColors]="true"
-    (currentColor)="currentColor.set($event)"></spk-color-picker>
-
-  <div class="colors">
-    <div class="swatch" [style.background]="currentColor()?.hex"></div>
-
-    <div class="color-text">
-      <p>RGB: {{ currentColor()?.rgb }}</p>
-      <p>HEX: {{ currentColor()?.hex }}</p>
-      <p>HSL: {{ currentColor()?.hsl }}</p>
-      <p>Hue: {{ currentColor()?.hue }}</p>
-      <p>Saturation: {{ currentColor()?.saturation }}</p>
-    </div>
-  </div>
-  <div class="example-chip-row">
-    <spk-chip class="simple sharp dynamic" [style.--chip-c]="currentColor()?.hex">
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="simple sharp dynamic" [style.--chip-c]="currentColor()?.hex">
-      <spk-icon>circle</spk-icon>
-      Basic
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip disabled class="simple dynamic" [style.--chip-c]="currentColor()?.hex">
-      <spk-icon>circle</spk-icon>
-      Disabled
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-  </div>
-</section>
-
-<spk-divider></spk-divider>
-
-<section>
-  <h3>Outlined chips</h3>
-  <div class="example-chip-row">
-    <spk-chip class="outlined">
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="outlined">
-      <spk-icon>circle</spk-icon>
-      Basic
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="outlined primary">
-      <spk-icon>circle</spk-icon>
-      Primary
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="outlined accent">
-      <spk-icon>circle</spk-icon>
-      Accent
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="outlined warn">
-      <spk-icon>circle</spk-icon>
-      Warn
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="outlined error">
-      <spk-icon>circle</spk-icon>
-      Error
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="outlined success">
-      <spk-icon>circle</spk-icon>
-      Success
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip disabled class="outlined">
-      <spk-icon>circle</spk-icon>
-      Disabled
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-  </div>
-</section>
-
-<spk-divider></spk-divider>
-
-<section>
-  <h3>Flat chips</h3>
-  <div class="example-chip-row">
-    <spk-chip class="flat">
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="flat">
-      <spk-icon>circle</spk-icon>
-      Basic
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="flat primary">
-      <spk-icon>circle</spk-icon>
-      Primary
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="flat accent">
-      <spk-icon>circle</spk-icon>
-      Accent
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="flat warn">
-      <spk-icon>circle</spk-icon>
-      Warn
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="flat error">
-      <spk-icon>circle</spk-icon>
-      Error
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="flat success">
-      <spk-icon>circle</spk-icon>
-      Success
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip disabled class="flat">
-      <spk-icon>circle</spk-icon>
-      Disabled
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-  </div>
-</section>
-
-<spk-divider></spk-divider>
-
-<section>
-  <h3>Raised chips</h3>
-  <div class="example-chip-row">
-    <spk-chip class="raised">
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="raised">
-      <spk-icon>circle</spk-icon>
-      Basic
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="raised primary">
-      <spk-icon>circle</spk-icon>
-      Primary
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="raised accent">
-      <spk-icon>circle</spk-icon>
-      Accent
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="raised warn">
-      <spk-icon>circle</spk-icon>
-      Warn
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="raised error">
-      <spk-icon>circle</spk-icon>
-      Error
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="raised success">
-      <spk-icon>circle</spk-icon>
-      Success
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip disabled class="raised">
-      <spk-icon>circle</spk-icon>
-      Disabled
-      <spk-icon suffix>circle</spk-icon>
-    </spk-chip>
-  </div>
-</section>
-
-<spk-divider></spk-divider>
-
-<section>
-  <h3>Chips with avatar</h3>
-  <div class="example-chip-row">
-    <spk-chip>
-      <img avatar src="https://material.angular.io/assets/img/examples/shiba1.jpg" alt="Photo of a Shiba Inu" />
-      Dog one
-    </spk-chip>
-    <spk-chip class="primary">
-      <img avatar src="https://material.angular.io/assets/img/examples/shiba1.jpg" alt="Photo of a Shiba Inu" />
-      Dog two
-    </spk-chip>
-    <spk-chip class="accent">
-      <img avatar src="https://material.angular.io/assets/img/examples/shiba1.jpg" alt="Photo of a Shiba Inu" />
-      Dog three
-    </spk-chip>
-    <spk-chip class="warn">
-      <img avatar src="https://material.angular.io/assets/img/examples/shiba1.jpg" alt="Photo of a Shiba Inu" />
-      Dog three
-    </spk-chip>
-    <spk-chip class="error">
-      <img avatar src="https://material.angular.io/assets/img/examples/shiba1.jpg" alt="Photo of a Shiba Inu" />
-      Dog three
-    </spk-chip>
-    <spk-chip class="success">
-      <img avatar src="https://material.angular.io/assets/img/examples/shiba1.jpg" alt="Photo of a Shiba Inu" />
-      Dog three
-    </spk-chip>
-  </div>
-</section>
-
-<spk-divider></spk-divider>
-
-<h1>Small size chips</h1>
-
-<section>
-  <h3>Base chips</h3>
-  <div class="example-chip-row">
-    <spk-chip class="small">
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small">
-      <spk-icon>circle</spk-icon>
-      Basic
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small primary">
-      <spk-icon>circle</spk-icon>
-      Primary
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small accent">
-      <spk-icon>circle</spk-icon>
-      Accent
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small warn">
-      <spk-icon>circle</spk-icon>
-      Warn
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small error">
-      <spk-icon>circle</spk-icon>
-      Error
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small success">
-      <spk-icon>circle</spk-icon>
-      Success
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small" disabled>
-      <spk-icon>circle</spk-icon>
-      Disabled
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-  </div>
-</section>
-
-<spk-divider></spk-divider>
-
-<section>
-  <h3>Simple chips</h3>
-  <div class="example-chip-row">
-    <spk-chip class="small simple">
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small simple">
-      <spk-icon>circle</spk-icon>
-      Basic
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small simple primary">
-      <spk-icon>circle</spk-icon>
-      Primary
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small simple accent">
-      <spk-icon>circle</spk-icon>
-      Accent
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small simple warn">
-      <spk-icon>circle</spk-icon>
-      Warn
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small simple error">
-      <spk-icon>circle</spk-icon>
-      Error
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small simple" disabled>
-      <spk-icon>circle</spk-icon>
-      Disabled
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-  </div>
-</section>
-
-<spk-divider></spk-divider>
-
-<section>
-  <h3>Outlined chips</h3>
-  <div class="example-chip-row">
-    <spk-chip class="small outlined">
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small outlined">
-      <spk-icon>circle</spk-icon>
-      Basic
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small outlined primary">
-      <spk-icon>circle</spk-icon>
-      Primary
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small outlined accent">
-      <spk-icon>circle</spk-icon>
-      Accent
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small outlined warn">
-      <spk-icon>circle</spk-icon>
-      Warn
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small outlined error">
-      <spk-icon>circle</spk-icon>
-      Error
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small outlined" disabled>
-      <spk-icon>circle</spk-icon>
-      Disabled
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-  </div>
-</section>
-
-<spk-divider></spk-divider>
-
-<section>
-  <h3>Flat chips</h3>
-  <div class="example-chip-row">
-    <spk-chip class="small flat">
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small flat">
-      <spk-icon>circle</spk-icon>
-      Basic
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small flat primary">
-      <spk-icon>circle</spk-icon>
-      Primary
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small flat accent">
-      <spk-icon>circle</spk-icon>
-      Accent
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small flat warn">
-      <spk-icon>circle</spk-icon>
-      Warn
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small flat error">
-      <spk-icon>circle</spk-icon>
-      Error
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small flat" disabled>
-      <spk-icon>circle</spk-icon>
-      Disabled
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-  </div>
-</section>
-
-<spk-divider></spk-divider>
-
-<section>
-  <h3>Raised chips</h3>
-  <div class="example-chip-row">
-    <spk-chip class="small raised">
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small raised">
-      <spk-icon>circle</spk-icon>
-      Basic
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small raised primary">
-      <spk-icon>circle</spk-icon>
-      Primary
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small raised accent">
-      <spk-icon>circle</spk-icon>
-      Accent
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small raised warn">
-      <spk-icon>circle</spk-icon>
-      Warn
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small raised error">
-      <spk-icon>circle</spk-icon>
-      Error
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-
-    <spk-chip class="small raised" disabled>
-      <spk-icon>circle</spk-icon>
-      Disabled
-      <spk-icon>circle</spk-icon>
-    </spk-chip>
-  </div>
-</section>
-
-<spk-divider></spk-divider>
-
-<section>
-  <h3>Chips with avatar</h3>
-  <div class="example-chip-row">
-    <spk-chip class="small">
-      <img avatar src="https://material.angular.io/assets/img/examples/shiba1.jpg" alt="Photo of a Shiba Inu" />
-      Dog one
-    </spk-chip>
-    <spk-chip class="small primary">
-      <img avatar src="https://material.angular.io/assets/img/examples/shiba1.jpg" alt="Photo of a Shiba Inu" />
-      Dog two
-    </spk-chip>
-    <spk-chip class="small accent">
-      <img avatar src="https://material.angular.io/assets/img/examples/shiba1.jpg" alt="Photo of a Shiba Inu" />
-      Dog three
-    </spk-chip>
-    <spk-chip class="small warn">
-      <img avatar src="https://material.angular.io/assets/img/examples/shiba1.jpg" alt="Photo of a Shiba Inu" />
-      Dog three
-    </spk-chip>
-    <spk-chip class="small error">
-      <img avatar src="https://material.angular.io/assets/img/examples/shiba1.jpg" alt="Photo of a Shiba Inu" />
-      Dog three
-    </spk-chip>
-    <spk-chip class="small success">
-      <img avatar src="https://material.angular.io/assets/img/examples/shiba1.jpg" alt="Photo of a Shiba Inu" />
-      Dog three
-    </spk-chip>
-  </div>
-</section>
+<h1>Chips</h1>
+
+<app-property-viewer>
+  <section>
+    <h4>Variants</h4>
+    <p>
+      Chip variants can be set through the class ex
+      <code>class="simple"</code>
+      takes
+      <b>simple</b>
+      ,
+      <b>outlined</b>
+      ,
+      <b>flat</b>
+      and
+      <b>raised</b>
+    </p>
+  </section>
+
+  <section>
+    <h4>Sizes</h4>
+    <p>
+      Chip sizes can be set through the class ex
+      <code>class="small"</code>
+    </p>
+  </section>
+
+  <section>
+    <h4>Colors</h4>
+    <p>
+      Chip colors can be set through the class ex
+      <code>class="primary"</code>
+      takes
+      <b>primary</b>
+      ,
+      <b>accent</b>
+      ,
+      <b>warn</b>
+      ,
+      <b>error</b>
+      and
+      <b>success</b>
+    </p>
+  </section>
+
+  <section>
+    <h4>Icons</h4>
+    <p>
+      Chips can contain icons using the
+      <code>spk-icon</code>
+      component. Use
+      <code>suffix</code>
+      attribute for trailing icons.
+    </p>
+  </section>
+
+  <section>
+    <h4>Disabled</h4>
+    <p>
+      The chip can be set to disabled through the attribute ex
+      <code>[disabled]</code>
+    </p>
+  </section>
+</app-property-viewer>
+
+<div class="sandbox-example">
+  <app-previewer path="/spk-chips/examples/chip-sandbox/chip-sandbox.component" title="Sandbox" class="no-space">
+    <app-chip-sandbox />
+  </app-previewer>
+</div>
+
+<h3>Variations</h3>
+
+<div class="content">
+  <app-previewer path="/spk-chips/examples/base-chip/base-chip.component" title="Base">
+    <app-base-chip class="example" />
+  </app-previewer>
+
+  <app-previewer path="/spk-chips/examples/simple-chip/simple-chip.component" title="Simple">
+    <app-simple-chip class="example" />
+  </app-previewer>
+
+  <app-previewer path="/spk-chips/examples/outlined-chip/outlined-chip.component" title="Outlined">
+    <app-outlined-chip class="example" />
+  </app-previewer>
+
+  <app-previewer path="/spk-chips/examples/flat-chip/flat-chip.component" title="Flat">
+    <app-flat-chip class="example" />
+  </app-previewer>
+
+  <app-previewer path="/spk-chips/examples/raised-chip/raised-chip.component" title="Raised">
+    <app-raised-chip class="example" />
+  </app-previewer>
+</div>
