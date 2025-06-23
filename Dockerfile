@@ -36,3 +36,15 @@ RUN if [ "$BUILD_ENV" = "prod" ]; then \
   else \
   bun run build:docs; \
   fi
+
+FROM nginx:alpine
+
+# Copy the built static files from the builder stage
+COPY --from=base /app/dist/design-system/browser /usr/share/nginx/html
+
+# Optional: Copy a custom Nginx configuration if needed
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
