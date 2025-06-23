@@ -257,7 +257,7 @@ $spkFormFieldShadow: false !default;
         }
       }
 
-      &:has(.error:not(:empty)) .hint {
+      &:has(.error-wrap:not(:empty)) .hint {
         display: none;
       }
     }
@@ -268,7 +268,7 @@ $spkFormFieldShadow: false !default;
         padding-top: 0;
       }
 
-      .errors {
+      .error-wrap {
         display: none;
       }
     }
@@ -278,7 +278,7 @@ $spkFormFieldShadow: false !default;
       visibility: hidden;
     }
 
-    .error {
+    .error-wrap {
       color: var(--error-8);
       opacity: 1;
       transition: opacity 125ms linear;

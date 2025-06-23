@@ -17,12 +17,30 @@ $spkSortable: true !default;
       transform: translate(0);
       transition: none;
       z-index: 2;
+      background: var(--base-1);
     }
 
     .sortable-placeholder {
       position: absolute;
       top: 0;
       z-index: 1;
+
+      &.active {
+        z-index: 1;
+        background-color: var(--base-6);
+        border: 1px solid var(--base-8);
+        opacity: 0.5;
+      }
+    }
+
+    .sortable-ghost,
+    .sortable-ghost.active {
+      opacity: 1;
+    }
+
+    .sortable-dragged-el.active,
+    .sortable-dragged-el {
+      opacity: 0;
     }
 
     [sort-handle] {

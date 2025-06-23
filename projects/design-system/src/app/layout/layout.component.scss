@@ -14,3 +14,24 @@ header {
   padding: p2r(20);
   gap: p2r(12);
 }
+
+.logo {
+  display: flex;
+  gap: p2r(12);
+  align-items: center;
+  justify-content: center;
+
+  img {
+    height: p2r(36);
+    width: auto;
+  }
+
+  .house-mark {
+    box-shadow: var(--box-shadow-20);
+    border-radius: p2r(8);
+  }
+
+  .text {
+    height: p2r(24);
+  }
+}

@@ -22,7 +22,7 @@ import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, HostLi
     </div>
 
     <div class="helpers">
-      <div class="error">
+      <div class="error-wrap">
         <ng-content select="[error]"></ng-content>
       </div>
 

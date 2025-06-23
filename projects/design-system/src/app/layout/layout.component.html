@@ -7,7 +7,10 @@
 
   <div sidenav>
     <header>
-      <div>✨ Sparkle UI</div>
+      <div class="logo">
+        <img class="house-mark" src="/sparkle-favicon.png" alt="Sparkle Logo house mark" />
+        <img class="text" src="/sparkle-logo-text.svg" alt="Sparkle Logo text" />
+      </div>
 
       <button spk-button class="icon small" (click)="toggleBodyClass()">
         @if (isDarkMode()) {
@@ -19,27 +22,29 @@
     </header>
 
     <spk-list class="base-1">
-      <h3 title>Design system</h3>
-
       <spk-button-group>
         <button [class.active]="sidenavType() === ''" (click)="sidenavType.set('')">Default</button>
         <button [class.active]="sidenavType() === 'overlay'" (click)="sidenavType.set('overlay')">Overlay</button>
         <button [class.active]="sidenavType() === 'simple'" (click)="sidenavType.set('simple')">Simple</button>
       </spk-button-group>
 
-      <h3 title>Sparkle Theme</h3>
+      <h3 title>Theme</h3>
 
-      <button action routerLink="/spk-theme-editor" routerLinkActive="active">
+      <button action>
         <spk-icon class="spk-primary">paint-roller</spk-icon>
-        Sparkle Theme Editor
+        Theme Editor (WIP)
       </button>
+      <!-- <button action routerLink="/spk-theme-editor" routerLinkActive="active">
+        <spk-icon class="spk-primary">paint-roller</spk-icon>
+        Theme Editor
+      </button> -->
 
       <button action routerLink="/spk-typography" routerLinkActive="active">
         <spk-icon class="spk-primary">text-t</spk-icon>
         Typography
       </button>
 
-      <h3 title>Sparkle Components</h3>
+      <h3 title>Components</h3>
 
       <button
         action
@@ -47,31 +52,17 @@
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">spinner-bold</spk-icon>
-        Sparkle Expansion Panel / Accordion
-      </button>
-
-      <button
-        action
-        routerLink="/spk-file-upload"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle File Upload
-      </button>
-
-      <button action routerLink="/spk-datepicker" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Datepicker
+        Expansion Panel / Accordion
       </button>
 
       <button action routerLink="/spk-icons" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Icons
+        Icons
       </button>
 
       <button action routerLink="/spk-tabs" routerLinkActive="active">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Tabs
+        Tabs
       </button>
 
       <button
@@ -80,46 +71,32 @@
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Color Picker
+        Color Picker
       </button>
 
       <button action routerLink="/spk-dialog" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Dialog
+        Dialog
       </button>
 
       <button action routerLink="/spk-popover" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Popover
+        Popover
       </button>
-
-      <!-- <button
-        action
-        routerLink="/spk-virtual-scroll"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Virtual Scroll
-      </button> -->
 
       <button action routerLink="/spk-table" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Table
+        Table
       </button>
 
       <button action routerLink="/spk-sortable" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Sortable
-      </button>
-
-      <button action routerLink="/spk-toggle" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Toggle
+        Sortable
       </button>
 
       <button action routerLink="/spk-buttons" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Buttons
+        Buttons
       </button>
 
       <button
@@ -128,66 +105,47 @@
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Progress Bar
+        Progress Bar
       </button>
 
       <button action routerLink="/spk-spinner" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Spinner
-      </button>
-
-      <button action routerLink="/spk-checkbox" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Checkbox
+        Spinner
       </button>
 
       <button action routerLink="/spk-alerts" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Alerts
+        Alerts
       </button>
 
       <button action routerLink="/spk-menu" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Menu
+        Menu
       </button>
 
       <button action routerLink="/spk-icon" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Icon
+        Icon
       </button>
 
       <button action routerLink="/spk-divider" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Divider
+        Divider
       </button>
 
       <button action routerLink="/spk-chips" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Chips
-      </button>
-
-      <button
-        action
-        routerLink="/spk-form-fields"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Form Fields
+        Chips
       </button>
 
       <button action routerLink="/spk-sidenav" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Sidenav
+        Sidenav
       </button>
 
       <button action routerLink="/spk-list" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle List
-      </button>
-
-      <button action routerLink="/spk-radio" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Radio
+        List
       </button>
 
       <button
@@ -196,7 +154,62 @@
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Button Group
+        Button Group
+      </button>
+
+      <button action routerLink="/spk-tooltip" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check-bold</spk-icon>
+        Tooltip
+      </button>
+
+      <button action routerLink="/spk-stepper" routerLinkActive="active">
+        <spk-icon class="spk-primary">check-bold</spk-icon>
+        Stepper
+      </button>
+
+      <button action routerLink="/spk-card" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check-bold</spk-icon>
+        Cards
+      </button>
+
+      <h3 title>Form fields</h3>
+
+      <button
+        action
+        routerLink="/spk-file-upload"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check-bold</spk-icon>
+        File Upload
+      </button>
+
+      <button action routerLink="/spk-datepicker" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check-bold</spk-icon>
+        Datepicker
+      </button>
+
+      <button action routerLink="/spk-toggle" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check-bold</spk-icon>
+        Toggle
+      </button>
+
+      <button action routerLink="/spk-checkbox" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check-bold</spk-icon>
+        Checkbox
+      </button>
+
+      <button
+        action
+        routerLink="/spk-form-fields"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check-bold</spk-icon>
+        Form Fields
+      </button>
+
+      <button action routerLink="/spk-radio" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">check-bold</spk-icon>
+        Radio
       </button>
 
       <button
@@ -205,28 +218,22 @@
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Range Slider
-      </button>
-
-      <button action routerLink="/spk-tooltip" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Tooltip
+        Range Slider
       </button>
 
       <button action routerLink="/spk-select" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Select/Autocomplete/Multi select/Chip input
+        Select/Autocomplete/Multi select/Chip input
       </button>
 
-      <button action routerLink="/spk-stepper" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <!-- <button
+        action
+        routerLink="/spk-virtual-scroll"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Stepper
-      </button>
-
-      <button action routerLink="/spk-card" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">check-bold</spk-icon>
-        Sparkle Cards
-      </button>
+        Virtual Scroll
+      </button> -->
     </spk-list>
   </div>
 

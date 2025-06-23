@@ -97,7 +97,6 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 ### Possible extension packages
 
 - [ ] Animation package
--
 - [ ] Create a gantt chart component
 - [ ] Create a blueprint component (like blueprints in unreal engine)
 - [ ] Create a timeline component
