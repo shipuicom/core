@@ -64,6 +64,7 @@ $spkCheckbox: true !default;
     }
 
     &:has(input[type='checkbox']:checked),
+    &.indeterminate,
     &.active {
       spk-icon {
         opacity: 1;
@@ -127,11 +128,13 @@ $spkCheckbox: true !default;
     }
 
     &.flat:has(input[type='checkbox']:checked),
+    &.flat.indeterminate,
     &.flat.active {
       @extend %flat;
     }
 
     &.raised:has(input[type='checkbox']:checked),
+    &.raised.indeterminate,
     &.raised.active {
       @extend %raised;
     }
