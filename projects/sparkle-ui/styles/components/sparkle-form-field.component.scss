@@ -267,10 +267,6 @@ $spkFormFieldShadow: false !default;
         height: 0;
         padding-top: 0;
       }
-
-      .error-wrap {
-        display: none;
-      }
     }
 
     &:has(input.ng-touched.ng-invalid) .helpers .hint {
