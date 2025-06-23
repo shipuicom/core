@@ -17,6 +17,7 @@ export default class SpkFormFieldsComponent {
   baseCtrl = new FormControl('');
   disabledCtrl = new FormControl({ value: '', disabled: true });
   errorCtrl = new FormControl('', [Validators.required]);
+  errorCtrl1 = new FormControl('', [Validators.required, Validators.minLength(10)]);
 
   ngOnInit() {
     this.errorCtrl.markAsTouched();

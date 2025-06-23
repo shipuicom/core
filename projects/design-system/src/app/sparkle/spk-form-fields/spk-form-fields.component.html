@@ -63,9 +63,13 @@
         Error without hint
         <spk-icon>question</spk-icon>
       </label>
-      <input placeholder="Placeholder..." [formControl]="errorCtrl" />
 
-      @if ((baseCtrl.value?.length ?? 0) < 10) {
+      <input placeholder="Placeholder with error ..." [formControl]="errorCtrl1" />
+
+      <spk-icon prefix>circle</spk-icon>
+      <spk-icon suffix>circle</spk-icon>
+
+      @if (errorCtrl1.invalid && errorCtrl1.touched) {
         <span error>Write a message in this alert area</span>
       }
     </spk-form-field>

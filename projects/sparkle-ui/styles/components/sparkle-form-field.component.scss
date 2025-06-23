@@ -262,11 +262,16 @@ $spkFormFieldShadow: false !default;
       }
     }
 
-    &:not(:has(input.ng-touched.ng-invalid)) {
-      &:has(.hint:empty) .helpers {
-        height: 0;
-        padding-top: 0;
-      }
+    // &:not(:has(input.ng-touched.ng-invalid)) {
+    //   &:has(.hint:empty) .helpers {
+    //     height: 0;
+    //     padding-top: 0;
+    //   }
+    // }
+
+    &:has(.error-wrap:empty + .hint:empty) .helpers {
+      height: 0;
+      padding-top: 0;
     }
 
     &:has(input.ng-touched.ng-invalid) .helpers .hint {
