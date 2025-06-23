@@ -54,12 +54,7 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
         closeOnButton: false,
         closeOnEsc: false,
       }">
-      <spk-form-field
-        trigger
-        (click)="open()"
-        [class.stretch]="stretch()"
-        [class.autosize]="selectMultiple()"
-        [class.readonly]="readonly() || disabled()">
+      <spk-form-field trigger (click)="open()" [class.stretch]="stretch()" [class.readonly]="readonly() || disabled()">
         <ng-content select="label" ngProjectAs="label" />
 
         <div class="input" [class.show-search-text]="_showSearchText" ngProjectAs="input">

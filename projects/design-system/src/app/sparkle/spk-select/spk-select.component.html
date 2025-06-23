@@ -26,9 +26,8 @@
   <spk-select [options]="flatOptions()" [inlineSearch]="true">
     <label for="hi">
       Pass label
-      <spk-tooltip message="hi world">
-        <spk-icon>circle</spk-icon>
-      </spk-tooltip>
+
+      <spk-icon spkTooltip="hi world">circle</spk-icon>
     </label>
     <input type="text" id="hi" [formControl]="inputCtrlNew1" />
   </spk-select>
