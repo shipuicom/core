@@ -12,7 +12,7 @@
     "start": "bun run watch:font & ng serve --port=4205",
     "build": "ng build sparkle-ui",
     "build:prod": "ng build sparkle-ui --configuration production",
-    "build:docs": "bun run gen:font && ng build design-system --configuration production",
+    "build:docs": "bun run build:prod && bun run gen:font && ng build design-system --configuration production",
     "serve:docs": "bun run serve-docs",
     "watch": "ng build sparkle-ui --watch --configuration development",
     "serve:ssr:design-system": "node dist/design-system/server/server.mjs"
