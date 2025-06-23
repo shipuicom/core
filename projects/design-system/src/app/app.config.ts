@@ -23,8 +23,8 @@ export const appConfig: ApplicationConfig = {
     {
       provide: SPARKLE_CONFIG,
       useValue: {
-        dialogType: 'type-b',
-        tableType: 'type-b',
+        // dialogType: 'type-b',
+        // tableType: 'type-b',
         sidenavType: 'overlay',
       },
     },

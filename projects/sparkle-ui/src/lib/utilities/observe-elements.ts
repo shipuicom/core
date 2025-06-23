@@ -63,18 +63,20 @@ export function observeChildren<T extends HTMLElement>(
 
     elementsSignal.set(foundElements as T[]);
 
-    observer = new MutationObserver((_) => {
-      requestAnimationFrame(() => {
-        const foundElements = Array.from(el.nativeElement.querySelectorAll(elementTags.join(',')));
+    if (typeof MutationObserver !== 'undefined') {
+      observer = new MutationObserver((_) => {
+        requestAnimationFrame(() => {
+          const foundElements = Array.from(el.nativeElement.querySelectorAll(elementTags.join(',')));
 
-        elementsSignal.set(foundElements as T[]);
+          elementsSignal.set(foundElements as T[]);
+        });
       });
-    });
 
-    observer.observe(el.nativeElement, {
-      childList: true,
-      subtree: true,
-    });
+      observer.observe(el.nativeElement, {
+        childList: true,
+        subtree: true,
+      });
+    }
 
     destroyRef.onDestroy(() => destroySelf());
   };

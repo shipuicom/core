@@ -263,7 +263,7 @@ export class SparkleTableComponent {
       const colEl = col;
       const last = index === colSignal.length - 1;
 
-      if (colEl.dataset['size']) {
+      if (colEl.dataset?.['size']) {
         return `${acc} ${colEl.dataset['size']}`;
       }
 
