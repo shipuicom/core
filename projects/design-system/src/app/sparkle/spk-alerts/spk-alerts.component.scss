@@ -1,3 +1,5 @@
+@use 'helpers' as *;
+
 :host {
   display: flex;
   flex-direction: column;
@@ -5,14 +7,19 @@
   padding: 40px;
 }
 
-h3 {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-section {
+.example {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: p2r(10);
+}
+
+.sandbox-example {
+  margin-bottom: 2rem;
+}
+
+.content {
+  display: flex;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: p2r(40);
 }
