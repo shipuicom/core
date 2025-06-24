@@ -4,12 +4,52 @@ $spkStepper: true !default;
 
 @if $spkStepper == true {
   spk-stepper {
-    // TODO add variables
+    --step-track-bg: var(--base-3);
+    --step-c: var(--base-6);
+    --step-radio-cbg: var(--base-1);
+    --step-radio-c: var(--base-g2);
+    --step-active-c: var(--base-8);
+
     display: flex;
     flex-wrap: nowrap;
     width: 100%;
     position: relative;
     overflow: hidden;
+
+    &.primary {
+      --step-c: var(--primary-6);
+      --step-radio-cbg: var(--primary-1);
+      --step-radio-c: var(--primary-g2);
+      --step-active-c: var(--primary-8);
+    }
+
+    &.accent {
+      --step-c: var(--accent-6);
+      --step-radio-cbg: var(--accent-1);
+      --step-radio-c: var(--accent-g2);
+      --step-active-c: var(--accent-8);
+    }
+
+    &.warn {
+      --step-c: var(--warn-6);
+      --step-radio-cbg: var(--warn-1);
+      --step-radio-c: var(--warn-g2);
+      --step-active-c: var(--warn-8);
+    }
+
+    &.error {
+      --step-c: var(--error-6);
+      --step-radio-cbg: var(--error-1);
+      --step-radio-c: var(--error-g2);
+      --step-active-c: var(--error-8);
+    }
+
+    &.success {
+      --step-c: var(--success-6);
+      --step-radio-cbg: var(--success-1);
+      --step-radio-c: var(--success-g2);
+      --step-active-c: var(--success-8);
+    }
 
     [step] {
       flex: 2 0;
@@ -19,7 +59,7 @@ $spkStepper: true !default;
       justify-content: center;
       gap: p2r(8);
       position: relative;
-      color: var(--base-9);
+      color: var(--base-8);
       cursor: pointer;
       user-select: none;
 
@@ -43,14 +83,14 @@ $spkStepper: true !default;
 
           .radio {
             border-width: 0;
-            background: var(--primary-g2);
+            background: var(--step-radio-c);
           }
         }
       }
 
       spk-radio {
         .radio {
-          --radiod-c: var(--base-1);
+          --radiod-c: var(--step-radio-cbg);
 
           width: p2r(16);
           height: p2r(16);
@@ -58,7 +98,7 @@ $spkStepper: true !default;
       }
 
       &.active {
-        color: var(--primary-8);
+        color: var(--step-active-c);
         outline: none;
 
         spk-radio {
@@ -67,7 +107,7 @@ $spkStepper: true !default;
 
           .radio {
             border-width: 0;
-            background: var(--primary-g2);
+            background: var(--step-radio-c);
           }
 
           &:before {
@@ -78,7 +118,7 @@ $spkStepper: true !default;
             z-index: -1;
             right: 0;
             height: p2r(4);
-            background-color: var(--primary-8);
+            background-color: var(--step-active-c);
           }
         }
       }
@@ -92,7 +132,7 @@ $spkStepper: true !default;
       z-index: 0;
       right: 0;
       height: p2r(4);
-      background-color: var(--base-3);
+      background-color: var(--step-track-bg);
     }
   }
 }
