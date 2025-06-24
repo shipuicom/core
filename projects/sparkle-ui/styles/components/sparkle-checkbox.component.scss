@@ -45,6 +45,7 @@ $spkCheckbox: true !default;
     spk-icon {
       opacity: 0;
       font-weight: bold;
+      transition: opacity 75ms linear;
 
       &.indeterminate-indicator {
         display: none;
@@ -71,46 +72,72 @@ $spkCheckbox: true !default;
       }
     }
 
+    &:hover {
+      spk-icon {
+        opacity: 0.5;
+      }
+    }
+
     &.primary {
-      --box-bg: var(--primary-3);
-      --box-bc: var(--primary-4);
       --box-c: var(--primary-8);
     }
 
     &.accent {
-      --box-bg: var(--accent-3);
-      --box-bc: var(--accent-4);
       --box-c: var(--accent-8);
     }
 
     &.warn {
-      --box-bg: var(--warn-3);
-      --box-bc: var(--warn-4);
       --box-c: var(--warn-8);
     }
 
     &.error {
-      --box-bg: var(--error-3);
-      --box-bc: var(--error-4);
       --box-c: var(--error-8);
     }
 
     &.success {
-      --box-bg: var(--success-3);
-      --box-bc: var(--success-4);
       --box-c: var(--success-8);
     }
 
+    &.simple,
     &.outlined {
-      --box-bg: var(--base-1);
+      --box-bg: var(--base-3);
+      --box-bc: var(--base-6);
+
+      &.primary {
+        --box-bg: var(--primary-3);
+        --box-bc: var(--primary-6);
+      }
+
+      &.accent {
+        --box-bg: var(--accent-3);
+        --box-bc: var(--accent-6);
+      }
+
+      &.warn {
+        --box-bg: var(--warn-3);
+        --box-bc: var(--warn-6);
+      }
+
+      &.error {
+        --box-bg: var(--error-3);
+        --box-bc: var(--error-6);
+      }
+
+      &.success {
+        --box-bg: var(--success-3);
+        --box-bc: var(--success-6);
+      }
+    }
+
+    &.simple {
+      --box-bc: var(--box-bg);
 
       &.primary,
       &.accent,
       &.warn,
       &.error,
       &.success {
-        --box-bg: var(--base-1);
-        --box-bc: var(--base-4);
+        --box-bc: var(--box-bg);
       }
     }
 

@@ -2,17 +2,17 @@ import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } 
 import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 
 @Component({
-    selector: 'spk-checkbox',
-    imports: [SparkleIconComponent],
-    template: `
+  selector: 'spk-checkbox',
+  imports: [SparkleIconComponent],
+  template: `
     <div class="box">
-      <spk-icon class="inherit default-indicator">check</spk-icon>
-      <spk-icon class="inherit indeterminate-indicator">minus</spk-icon>
+      <spk-icon class="inherit default-indicator">check-bold</spk-icon>
+      <spk-icon class="inherit indeterminate-indicator">minus-bold</spk-icon>
     </div>
 
     <ng-content />
   `,
-    changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SparkleCheckboxComponent {
   #selfRef = inject(ElementRef);

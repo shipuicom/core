@@ -103,26 +103,66 @@ $spkToggle: true !default;
       }
 
       &.active {
-        --togglek-bg: var(--base-9);
+        --togglek-bg: var(--base-8);
+        --toggle-b: 1px solid var(--base-8);
 
         &.primary {
           --togglek-bg: var(--primary-8);
+          --toggle-b: 1px solid var(--primary-8);
         }
 
         &.accent {
           --togglek-bg: var(--accent-8);
+          --toggle-b: 1px solid var(--accent-8);
         }
 
         &.warn {
           --togglek-bg: var(--warn-8);
+          --toggle-b: 1px solid var(--warn-8);
         }
 
         &.error {
           --togglek-bg: var(--error-8);
+          --toggle-b: 1px solid var(--error-8);
         }
 
         &.success {
           --togglek-bg: var(--success-8);
+          --toggle-b: 1px solid var(--success-8);
+        }
+      }
+    }
+
+    &.simple {
+      --togglek-bg: #fff;
+
+      &:has(input[type='checkbox']:checked),
+      &.active {
+        --togglek-bg: var(--base-8);
+
+        &.primary {
+          --togglek-bg: var(--primary-8);
+          --toggle-bg: var(--primary-3);
+        }
+
+        &.accent {
+          --togglek-bg: var(--accent-8);
+          --toggle-bg: var(--accent-3);
+        }
+
+        &.warn {
+          --togglek-bg: var(--warn-8);
+          --toggle-bg: var(--warn-3);
+        }
+
+        &.error {
+          --togglek-bg: var(--error-8);
+          --toggle-bg: var(--error-3);
+        }
+
+        &.success {
+          --togglek-bg: var(--success-8);
+          --toggle-bg: var(--success-3);
         }
       }
     }

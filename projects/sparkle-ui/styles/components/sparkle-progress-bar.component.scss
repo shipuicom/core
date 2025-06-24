@@ -81,30 +81,30 @@ $spkProgressBar: true !default;
     }
 
     &.flat {
-      --pbt-bg: var(--base-2);
+      --pbt-bg: var(--base-8);
 
       &:after {
         background-color: inherit;
       }
 
       &.primary {
-        --pbt-bg: var(--primary-3);
+        --pbt-bg: var(--primary-8);
       }
 
       &.accent {
-        --pbt-bg: var(--accent-3);
+        --pbt-bg: var(--accent-8);
       }
 
       &.warn {
-        --pbt-bg: var(--warn-3);
+        --pbt-bg: var(--warn-8);
       }
 
       &.error {
-        --pbt-bg: var(--error-3);
+        --pbt-bg: var(--error-8);
       }
 
       &.success {
-        --pbt-bg: var(--success-3);
+        --pbt-bg: var(--success-8);
       }
     }
 
