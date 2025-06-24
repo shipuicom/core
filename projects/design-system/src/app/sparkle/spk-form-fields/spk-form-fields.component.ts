@@ -1,26 +1,24 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import {
-  SparkleFormFieldComponent,
-  SparkleIconComponent,
-  SparkleTooltipDirective,
-} from '../../../../../sparkle-ui/src/public-api';
+import { ReactiveFormsModule } from '@angular/forms';
+import { PreviewerComponent } from '../../previewer/previewer.component';
+import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
+import { BaseFormFieldComponent } from './examples/base-form-field/base-form-field.component';
+import { FormFieldSandboxComponent } from './examples/form-field-sandbox/form-field-sandbox.component';
+import { SmallFormFieldComponent } from './examples/small-form-field/small-form-field.component';
 
 @Component({
   selector: 'app-spk-form-fields',
-  imports: [SparkleIconComponent, SparkleFormFieldComponent, SparkleTooltipDirective, ReactiveFormsModule],
+  imports: [
+    ReactiveFormsModule,
+    FormFieldSandboxComponent,
+    PropertyViewerComponent,
+    PreviewerComponent,
+
+    BaseFormFieldComponent,
+    SmallFormFieldComponent,
+  ],
   templateUrl: './spk-form-fields.component.html',
   styleUrl: './spk-form-fields.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class SpkFormFieldsComponent {
-  baseCtrl = new FormControl('');
-  disabledCtrl = new FormControl({ value: '', disabled: true });
-  errorCtrl = new FormControl('', [Validators.required]);
-  errorCtrl1 = new FormControl('', [Validators.required, Validators.minLength(10)]);
-
-  ngOnInit() {
-    this.errorCtrl.markAsTouched();
-    this.errorCtrl.markAsDirty();
-  }
-}
+export default class SpkFormFieldsComponent {}

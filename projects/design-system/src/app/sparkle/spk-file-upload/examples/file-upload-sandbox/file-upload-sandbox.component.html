@@ -1,22 +1,26 @@
 <div class="controls">
-  <spk-checkbox class="primary raised" [class.active]="multiple()" (click)="multiple.set(!multiple())">
-    Multiple
-  </spk-checkbox>
+  <p>Controls</p>
 
-  <spk-form-field>
-    <label>Accept</label>
-    <input type="text" [(ngModel)]="accept" />
-  </spk-form-field>
+  <div class="row">
+    <spk-form-field>
+      <label>Accept</label>
+      <input type="text" [(ngModel)]="accept" />
+    </spk-form-field>
 
-  <spk-form-field>
-    <label>Placeholder</label>
-    <input type="text" [(ngModel)]="placeholder" />
-  </spk-form-field>
+    <spk-form-field>
+      <label>Placeholder</label>
+      <input type="text" [(ngModel)]="placeholder" />
+    </spk-form-field>
 
-  <spk-form-field>
-    <label>Overlay Text</label>
-    <input type="text" [(ngModel)]="overlayText" />
-  </spk-form-field>
+    <spk-form-field>
+      <label>Overlay Text</label>
+      <input type="text" [(ngModel)]="overlayText" />
+    </spk-form-field>
+
+    <spk-checkbox class="primary raised" [class.active]="multiple()" (click)="multiple.set(!multiple())">
+      Multiple
+    </spk-checkbox>
+  </div>
 </div>
 
 <div class="sandbox">

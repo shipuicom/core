@@ -1,8 +1,10 @@
+@use 'helpers' as *;
+
 :host {
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  padding: 40px;
+  gap: p2r(40);
+  padding: p2r(40);
 }
 
 h3 {
@@ -13,5 +15,5 @@ h3 {
 .example {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: p2r(20);
 }
