@@ -29,7 +29,8 @@
   <pre>{{ formCtrl.value }}</pre>
 
   <form [formGroup]="fg">
-    <spk-toggle [class.active]="isDisabled" (click)="isDisabled.set(!isDisabled())">Toggle disabled</spk-toggle>
+    <spk-toggle [class.active]="isDisabled()" (click)="isDisabled.set(!isDisabled())">Toggle disabled</spk-toggle>
+
     <spk-range-slider unit="hello" class="sharp" [attr.disabled]="true">
       <input type="range" min="0" max="100" formControlName="rangeCtrl" />
     </spk-range-slider>
