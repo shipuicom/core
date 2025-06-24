@@ -27,8 +27,8 @@ export class CheckboxSandboxComponent {
   variationClass = signal<'' | 'simple' | 'outlined' | 'flat' | 'raised'>('raised');
   exampleClass = computed(() => this.colorClass() + ' ' + this.variationClass());
 
-  isChecked = signal<boolean>(false);
-  formCtrl = new FormControl<boolean | null>(null);
+  isChecked = signal<boolean>(true);
+  formCtrl = new FormControl<boolean | null>(true);
 
   disabledEffect = effect(() => {
     const isDisabled = this.isDisabled();
