@@ -29,6 +29,14 @@ $spkRadio: true !default;
       }
     }
 
+    &:has(input[disabled]),
+    &[disabled]:not([disabled='false']) {
+      opacity: 0.5;
+      pointer-events: none;
+      user-select: none;
+      cursor: initial;
+    }
+
     &:has(input[type='radio']:checked),
     &.active {
       --radiod-o: 1;

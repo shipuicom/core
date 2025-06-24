@@ -19,7 +19,7 @@ export class ChipSandboxComponent {
   hasSuffixIcon = signal<boolean>(true);
   hasText = signal<boolean>(true);
 
-  colorClass = signal<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('');
-  variationClass = signal<'' | 'simple' | 'outlined' | 'flat' | 'raised'>('');
+  colorClass = signal<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
+  variationClass = signal<'' | 'simple' | 'outlined' | 'flat' | 'raised'>('raised');
   exampleClass = computed(() => this.colorClass() + ' ' + this.variationClass());
 }

@@ -1,17 +1,27 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { SparkleRadioComponent } from '../../../../../sparkle-ui/src/public-api';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { PreviewerComponent } from '../../previewer/previewer.component';
+import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
+import { BaseRadioComponent } from './examples/base-radio/base-radio.component';
+import { FlatRadioComponent } from './examples/flat-radio/flat-radio.component';
+import { OutlinedRadioComponent } from './examples/outlined-radio/outlined-radio.component';
+import { RadioSandboxComponent } from './examples/radio-sandbox.component';
+import { RaisedRadioComponent } from './examples/raised-radio/raised-radio.component';
+import { SimpleRadioComponent } from './examples/simple-radio/simple-radio.component';
 
-const fb = new FormBuilder();
 @Component({
   selector: 'app-spk-radio',
-  imports: [SparkleRadioComponent, ReactiveFormsModule],
+  imports: [
+    PreviewerComponent,
+    PropertyViewerComponent,
+    BaseRadioComponent,
+    SimpleRadioComponent,
+    OutlinedRadioComponent,
+    FlatRadioComponent,
+    RaisedRadioComponent,
+    RadioSandboxComponent,
+  ],
   templateUrl: './spk-radio.component.html',
   styleUrl: './spk-radio.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class SpkRadioComponent {
-  active = signal(false);
-
-  formCtrl = fb.control<string>('');
-}
+export default class SpkRadioComponent {}

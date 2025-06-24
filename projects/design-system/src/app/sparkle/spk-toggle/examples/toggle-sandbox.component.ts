@@ -11,10 +11,10 @@ import { SparkleButtonGroupComponent, SparkleToggleComponent } from '../../../..
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToggleSandboxComponent {
-  isChecked = signal<boolean>(false);
+  isChecked = signal<boolean>(true);
   isDisabled = signal<boolean>(false);
-  colorClass = signal<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('');
-  variationClass = signal<'' | 'simple' | 'outlined' | 'flat' | 'raised'>('');
+  colorClass = signal<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
+  variationClass = signal<'' | 'simple' | 'outlined' | 'flat' | 'raised'>('raised');
   exampleClass = computed(() => this.colorClass() + ' ' + this.variationClass());
 
   formCtrl = new FormControl<boolean | null>(null);

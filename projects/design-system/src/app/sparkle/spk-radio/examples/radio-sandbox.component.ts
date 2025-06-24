@@ -2,33 +2,34 @@ import { ChangeDetectionStrategy, Component, computed, effect, signal } from '@a
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   SparkleButtonGroupComponent,
-  SparkleCheckboxComponent,
+  SparkleRadioComponent,
   SparkleToggleComponent,
 } from '../../../../../../sparkle-ui/src/public-api';
 
 @Component({
-  selector: 'app-checkbox-sandbox',
+  selector: 'app-radio-sandbox',
   standalone: true,
   imports: [
     ReactiveFormsModule,
     FormsModule,
-    SparkleCheckboxComponent,
+    SparkleRadioComponent,
     SparkleButtonGroupComponent,
     SparkleToggleComponent,
   ],
-  templateUrl: './checkbox-sandbox.component.html',
-  styleUrl: './checkbox-sandbox.component.scss',
+  templateUrl: './radio-sandbox.component.html',
+  styleUrl: './radio-sandbox.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CheckboxSandboxComponent {
-  isIndeterminate = signal<boolean>(false);
+export class RadioSandboxComponent {
+  values = ['one', 'two', 'three'];
   isDisabled = signal<boolean>(false);
   colorClass = signal<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
   variationClass = signal<'' | 'simple' | 'outlined' | 'flat' | 'raised'>('raised');
   exampleClass = computed(() => this.colorClass() + ' ' + this.variationClass());
 
-  isChecked = signal<boolean>(false);
-  formCtrl = new FormControl<boolean | null>(null);
+  selected = signal<string>('one');
+  model = signal<string>('two');
+  formCtrl = new FormControl<string>('three');
 
   disabledEffect = effect(() => {
     const isDisabled = this.isDisabled();
