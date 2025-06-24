@@ -1,183 +1,69 @@
-<div class="wrap">
+<h1>Toggles</h1>
+
+<app-property-viewer>
   <section>
-    <h4>Basic</h4>
-    <div class="elements">
-      <spk-toggle [class.active]="false" />
-      <spk-toggle [class.active]="true" />
-
-      <spk-toggle [class.active]="false" class="primary" />
-      <spk-toggle [class.active]="true" class="primary" />
-
-      <spk-toggle [class.active]="false" class="accent" />
-      <spk-toggle [class.active]="true" class="accent" />
-
-      <spk-toggle [class.active]="false" class="warn" />
-      <spk-toggle [class.active]="true" class="warn" />
-
-      <spk-toggle [class.active]="false" class="error" />
-      <spk-toggle [class.active]="true" class="error" />
-
-      <spk-toggle [class.active]="false" class="success" />
-      <spk-toggle [class.active]="true" class="success" />
-    </div>
+    <h4>Variants</h4>
+    <p>
+      Toggle variants can be set through the class ex
+      <code>class="simple"</code>
+      takes
+      <b>simple</b>
+      ,
+      <b>outlined</b>
+      ,
+      <b>flat</b>
+      , and
+      <b>raised</b>
+    </p>
   </section>
-
   <section>
-    <h4>Simple</h4>
-    <div class="elements">
-      <spk-toggle [class.active]="false" class="simple" />
-      <spk-toggle [class.active]="true" class="simple" />
-
-      <spk-toggle [class.active]="false" class="simple primary" />
-      <spk-toggle [class.active]="true" class="simple primary" />
-
-      <spk-toggle [class.active]="false" class="simple accent" />
-      <spk-toggle [class.active]="true" class="simple accent" />
-
-      <spk-toggle [class.active]="false" class="simple warn" />
-      <spk-toggle [class.active]="true" class="simple warn" />
-
-      <spk-toggle [class.active]="false" class="simple error" />
-      <spk-toggle [class.active]="true" class="simple error" />
-
-      <spk-toggle [class.active]="false" class="simple success" />
-      <spk-toggle [class.active]="true" class="simple success" />
-    </div>
+    <h4>Colors</h4>
+    <p>
+      Toggle colors can be set through the class ex
+      <code>class="primary"</code>
+      takes
+      <b>primary</b>
+      ,
+      <b>accent</b>
+      ,
+      <b>warn</b>
+      ,
+      <b>error</b>
+      , and
+      <b>success</b>
+    </p>
   </section>
-
   <section>
-    <h4>Outlined</h4>
-    <div class="elements">
-      <spk-toggle [class.active]="false" class="outlined" />
-      <spk-toggle [class.active]="true" class="outlined" />
-
-      <spk-toggle [class.active]="false" class="outlined primary" />
-      <spk-toggle [class.active]="true" class="outlined primary" />
-
-      <spk-toggle [class.active]="false" class="outlined accent" />
-      <spk-toggle [class.active]="true" class="outlined accent" />
-
-      <spk-toggle [class.active]="false" class="outlined warn" />
-      <spk-toggle [class.active]="true" class="outlined warn" />
-
-      <spk-toggle [class.active]="false" class="outlined error" />
-      <spk-toggle [class.active]="true" class="outlined error" />
-
-      <spk-toggle [class.active]="false" class="outlined success" />
-      <spk-toggle [class.active]="true" class="outlined success" />
-    </div>
+    <h4>Disabled</h4>
+    <p>
+      The toggle can be set to disabled through the attribute ex
+      <code>[disabled]</code>
+    </p>
   </section>
+</app-property-viewer>
 
-  <section>
-    <h4>Flat</h4>
-    <div class="elements">
-      <spk-toggle [class.active]="false" class="flat" />
-      <spk-toggle [class.active]="true" class="flat" />
-
-      <spk-toggle [class.active]="false" class="flat primary" />
-      <spk-toggle [class.active]="true" class="flat primary" />
-
-      <spk-toggle [class.active]="false" class="flat accent" />
-      <spk-toggle [class.active]="true" class="flat accent" />
-
-      <spk-toggle [class.active]="false" class="flat warn" />
-      <spk-toggle [class.active]="true" class="flat warn" />
-
-      <spk-toggle [class.active]="false" class="flat error" />
-      <spk-toggle [class.active]="true" class="flat error" />
-
-      <spk-toggle [class.active]="false" class="flat success" />
-      <spk-toggle [class.active]="true" class="flat success" />
-    </div>
-  </section>
-
-  <section>
-    <h4>Raised</h4>
-    <div class="elements">
-      <spk-toggle [class.active]="false" class="raised" />
-      <spk-toggle [class.active]="true" class="raised" />
-
-      <spk-toggle [class.active]="false" class="raised primary" />
-      <spk-toggle [class.active]="true" class="raised primary" />
-
-      <spk-toggle [class.active]="false" class="raised accent" />
-      <spk-toggle [class.active]="true" class="raised accent" />
-
-      <spk-toggle [class.active]="false" class="raised warn" />
-      <spk-toggle [class.active]="true" class="raised warn" />
-
-      <spk-toggle [class.active]="false" class="raised error" />
-      <spk-toggle [class.active]="true" class="raised error" />
-
-      <spk-toggle [class.active]="false" class="raised success" />
-      <spk-toggle [class.active]="true" class="raised success" />
-    </div>
-  </section>
+<div class="sandbox-example">
+  <app-previewer path="/spk-toggle/examples/toggle-sandbox/toggle-sandbox.component" title="Sandbox" class="no-space">
+    <app-toggle-sandbox />
+  </app-previewer>
 </div>
 
-<div>
-  <h3>Working example</h3>
-  <div class="example-checkbox-row">
-    <h5>Basic</h5>
-    <spk-toggle [class.active]="active()" class="primary" (click)="active.set(!active())">Lorem ipsum dolor</spk-toggle>
-    <spk-toggle [class.active]="active()" class="accent" (click)="active.set(!active())">Lorem ipsum dolor</spk-toggle>
-    <spk-toggle [class.active]="active()" class="warn" (click)="active.set(!active())">Lorem ipsum dolor</spk-toggle>
-    <spk-toggle [class.active]="active()" class="error" (click)="active.set(!active())">Lorem ipsum dolor</spk-toggle>
-    <spk-toggle [class.active]="active()" class="success" (click)="active.set(!active())">Lorem ipsum dolor</spk-toggle>
+<h3>Variations</h3>
 
-    <h5>Outlined</h5>
-    <spk-toggle class="outlined primary">
-      Lorem ipsum dolor
-      <input type="checkbox" [formControl]="formCtrl" />
-    </spk-toggle>
-
-    <pre>Form value: {{ formCtrl.value }}</pre>
-
-    <spk-toggle [class.active]="active()" class="outlined accent" (click)="active.set(!active())">
-      Lorem ipsum dolor
-    </spk-toggle>
-    <spk-toggle [class.active]="active()" class="outlined warn" (click)="active.set(!active())">
-      Lorem ipsum dolor
-    </spk-toggle>
-    <spk-toggle [class.active]="active()" class="outlined error" (click)="active.set(!active())">
-      Lorem ipsum dolor
-    </spk-toggle>
-    <spk-toggle [class.active]="active()" class="outlined success" (click)="active.set(!active())">
-      Lorem ipsum dolor
-    </spk-toggle>
-
-    <h5>Flat</h5>
-    <spk-toggle [class.active]="active()" class="flat primary" (click)="active.set(!active())">
-      Lorem ipsum dolor
-    </spk-toggle>
-    <spk-toggle [class.active]="active()" class="flat accent" (click)="active.set(!active())">
-      Lorem ipsum dolor
-    </spk-toggle>
-    <spk-toggle [class.active]="active()" class="flat warn" (click)="active.set(!active())">
-      Lorem ipsum dolor
-    </spk-toggle>
-    <spk-toggle [class.active]="active()" class="flat error" (click)="active.set(!active())">
-      Lorem ipsum dolor
-    </spk-toggle>
-    <spk-toggle [class.active]="active()" class="flat success" (click)="active.set(!active())">
-      Lorem ipsum dolor
-    </spk-toggle>
-
-    <h5>Raised</h5>
-    <spk-toggle [class.active]="active()" class="raised primary" (click)="active.set(!active())">
-      Lorem ipsum dolor
-    </spk-toggle>
-    <spk-toggle [class.active]="active()" class="raised accent" (click)="active.set(!active())">
-      Lorem ipsum dolor
-    </spk-toggle>
-    <spk-toggle [class.active]="active()" class="raised warn" (click)="active.set(!active())">
-      Lorem ipsum dolor
-    </spk-toggle>
-    <spk-toggle [class.active]="active()" class="raised error" (click)="active.set(!active())">
-      Lorem ipsum dolor
-    </spk-toggle>
-    <spk-toggle [class.active]="active()" class="raised success" (click)="active.set(!active())">
-      Lorem ipsum dolor
-    </spk-toggle>
-  </div>
+<div class="content">
+  <app-previewer path="/spk-toggle/examples/base-toggle/base-toggle.component" title="Base">
+    <app-base-toggle class="example" />
+  </app-previewer>
+  <app-previewer path="/spk-toggle/examples/simple-toggle/simple-toggle.component" title="Simple">
+    <app-simple-toggle class="example" />
+  </app-previewer>
+  <app-previewer path="/spk-toggle/examples/outlined-toggle/outlined-toggle.component" title="Outlined">
+    <app-outlined-toggle class="example" />
+  </app-previewer>
+  <app-previewer path="/spk-toggle/examples/flat-toggle/flat-toggle.component" title="Flat">
+    <app-flat-toggle class="example" />
+  </app-previewer>
+  <app-previewer path="/spk-toggle/examples/raised-toggle/raised-toggle.component" title="Raised">
+    <app-raised-toggle class="example" />
+  </app-previewer>
 </div>

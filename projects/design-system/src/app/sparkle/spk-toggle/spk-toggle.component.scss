@@ -1,25 +1,24 @@
+@use 'helpers' as *;
+
 :host {
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  padding: 40px;
+  gap: p2r(40);
+  padding: p2r(40);
 }
 
-.wrap {
-  display: grid;
-  grid-template-columns: 70px 70px 70px 70px 70px;
-  gap: 40px;
-}
-
-.elements {
-  display: grid;
-  grid-template-columns: 34px 34px;
-  gap: 20px 10px;
-}
-
-.example-checkbox-row {
-  width: 100%;
+.example {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  gap: p2r(10);
+}
+
+.sandbox-example {
+  margin-bottom: 2rem;
+}
+
+.content {
+  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: p2r(40);
 }

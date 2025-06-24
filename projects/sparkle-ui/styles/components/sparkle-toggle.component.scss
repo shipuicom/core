@@ -44,6 +44,14 @@ $spkToggle: true !default;
       z-index: 0;
     }
 
+    &:has(input[disabled]),
+    &[disabled]:not([disabled='false']) {
+      opacity: 0.5;
+      pointer-events: none;
+      user-select: none;
+      cursor: initial;
+    }
+
     .knob {
       position: absolute;
       top: p2r(2);
