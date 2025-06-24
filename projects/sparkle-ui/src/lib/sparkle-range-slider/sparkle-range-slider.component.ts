@@ -30,7 +30,7 @@ import {
         </div>
 
         <div class="thumb-wrap" [style.left.%]="thumbPositionPercentage()">
-          <div class="thumb" [class.always-show]="alwaysShowThumb()">
+          <div class="thumb">
             <div class="value-indicator">{{ value() }}{{ unit() }}</div>
           </div>
         </div>
@@ -47,7 +47,6 @@ export class SparkleRangeSliderComponent {
   #inputElement: HTMLInputElement | null = null;
   #initialDefaultValue = 0;
 
-  alwaysShowThumb = input<boolean>(false);
   unit = input<string>('');
   value = model<number>(this.#initialDefaultValue);
 

@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { SparkleRangeSliderComponent } from '../../../../../sparkle-ui/src/public-api';
+import { SparkleRangeSliderComponent, SparkleToggleComponent } from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-range-slider',
-  imports: [FormsModule, ReactiveFormsModule, SparkleRangeSliderComponent],
+  imports: [FormsModule, ReactiveFormsModule, SparkleRangeSliderComponent, SparkleToggleComponent],
   templateUrl: './spk-range-slider.component.html',
   styleUrl: './spk-range-slider.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,8 +19,18 @@ export default class SpkRangeSliderComponent {
     rangeCtrl: new FormControl(50),
   });
 
+  isDisabled = signal(false);
   formCtrl = new FormControl(0.16);
 
+  disabledEffect = effect(() => {
+    const isDisabled = this.isDisabled();
+
+    if (isDisabled) {
+      this.formCtrl.disable();
+    } else {
+      this.formCtrl.enable();
+    }
+  });
   ngOnInit() {
     setTimeout(() => {
       this.someFloatRangeValue.set(0.26);

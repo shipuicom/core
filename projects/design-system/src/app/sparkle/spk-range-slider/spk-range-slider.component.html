@@ -29,7 +29,8 @@
   <pre>{{ formCtrl.value }}</pre>
 
   <form [formGroup]="fg">
-    <spk-range-slider unit="hello">
+    <spk-toggle [class.active]="isDisabled" (click)="isDisabled.set(!isDisabled())">Toggle disabled</spk-toggle>
+    <spk-range-slider unit="hello" class="sharp" [attr.disabled]="true">
       <input type="range" min="0" max="100" formControlName="rangeCtrl" />
     </spk-range-slider>
 
@@ -45,6 +46,31 @@
       </label>
       <input type="range" min="0" [max]="active() ? 100 : 200" />
     </spk-range-slider> -->
+
+    <spk-range-slider unit="%" class="primary thick sharp always-show">
+      <label>ngModel</label>
+      <input type="range" min="0" max="1" step="0.01" [formControl]="formCtrl" />
+    </spk-range-slider>
+
+    <spk-range-slider unit="%" class="primary thick sharp simple">
+      <label>ngModel</label>
+      <input type="range" min="0" max="1" step="0.01" [formControl]="formCtrl" />
+    </spk-range-slider>
+
+    <spk-range-slider unit="%" class="primary thick sharp outlined">
+      <label>ngModel</label>
+      <input type="range" min="0" max="1" step="0.01" [formControl]="formCtrl" />
+    </spk-range-slider>
+
+    <spk-range-slider unit="%" class="primary thick sharp flat">
+      <label>ngModel</label>
+      <input type="range" min="0" max="1" step="0.01" [formControl]="formCtrl" />
+    </spk-range-slider>
+
+    <spk-range-slider unit="%" class="primary thick sharp raised">
+      <label>ngModel</label>
+      <input type="range" min="0" max="1" step="0.01" [formControl]="formCtrl" />
+    </spk-range-slider>
   </form>
 
   <!-- <spk-range-slider unit="%" class="primary raised">

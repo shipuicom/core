@@ -90,10 +90,6 @@ export const routes: Routes = [
         loadComponent: () => import('./sparkle/spk-popover/spk-popover.component'),
       },
       {
-        path: 'spk-icon',
-        loadComponent: () => import('./sparkle/spk-icon/spk-icon.component'),
-      },
-      {
         path: 'spk-tooltip',
         loadComponent: () => import('./sparkle/spk-tooltip/spk-tooltip.component'),
       },
