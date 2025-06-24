@@ -1,0 +1,38 @@
+<div class="controls">
+  <spk-checkbox class="primary raised" [class.active]="multiple()" (click)="multiple.set(!multiple())">
+    Multiple
+  </spk-checkbox>
+
+  <spk-form-field>
+    <label>Accept</label>
+    <input type="text" [(ngModel)]="accept" />
+  </spk-form-field>
+
+  <spk-form-field>
+    <label>Placeholder</label>
+    <input type="text" [(ngModel)]="placeholder" />
+  </spk-form-field>
+
+  <spk-form-field>
+    <label>Overlay Text</label>
+    <input type="text" [(ngModel)]="overlayText" />
+  </spk-form-field>
+</div>
+
+<div class="sandbox">
+  <spk-file-upload
+    [(files)]="files"
+    [multiple]="multiple()"
+    [accept]="accept()"
+    [placeholder]="placeholder()"
+    [overlayText]="overlayText()" />
+</div>
+
+<div class="files-list">
+  <h4>Selected Files</h4>
+  <ul>
+    @for (file of files(); track file.name) {
+      <li>{{ file.name }}</li>
+    }
+  </ul>
+</div>

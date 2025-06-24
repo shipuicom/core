@@ -9,6 +9,7 @@ $spkFileUpload: true !default;
     flex-direction: column;
     gap: p2r(12);
     position: relative;
+    width: 100%;
 
     spk-list {
       border-radius: var(--shape-3);

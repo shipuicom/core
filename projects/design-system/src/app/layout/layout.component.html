@@ -54,10 +54,6 @@
         <spk-icon class="spk-primary">paint-roller</spk-icon>
         Theme Editor (WIP)
       </button>
-      <!-- <button action routerLink="/spk-theme-editor" routerLinkActive="active">
-        <spk-icon class="spk-primary">paint-roller</spk-icon>
-        Theme Editor
-      </button> -->
 
       <button action routerLink="/spk-typography" routerLinkActive="active">
         <spk-icon class="spk-primary">text-t</spk-icon>
@@ -76,15 +72,6 @@
 
       <button action routerLink="/spk-chips" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Chips
-      </button>
-
-      <button
-        action
-        routerLink="/spk-expansion-panel"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">spinner-bold</spk-icon>
-        Expansion Panel / Accordion
       </button>
 
       <button action routerLink="/spk-icons" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
@@ -184,6 +171,15 @@
         Cards
       </button>
 
+      <button
+        action
+        routerLink="/spk-expansion-panel"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">spinner-bold</spk-icon>
+        Expansion Panel / Accordion
+      </button>
+
       <h3 title>Form fields</h3>
 
       <button action routerLink="/spk-checkbox" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
@@ -194,17 +190,16 @@
         Radio
       </button>
 
-      <button action routerLink="/spk-toggle" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Toggle
-      </button>
-
       <button
         action
         routerLink="/spk-file-upload"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">check-bold</spk-icon>
         File Upload
+      </button>
+
+      <button action routerLink="/spk-toggle" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Toggle
       </button>
 
       <button action routerLink="/spk-datepicker" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
