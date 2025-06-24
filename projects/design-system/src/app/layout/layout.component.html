@@ -172,6 +172,10 @@
 
       <h3 title>Form fields</h3>
 
+      <button action routerLink="/spk-checkbox" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Checkbox
+      </button>
+
       <button
         action
         routerLink="/spk-file-upload"
@@ -189,11 +193,6 @@
       <button action routerLink="/spk-toggle" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
         Toggle
-      </button>
-
-      <button action routerLink="/spk-checkbox" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">check-bold</spk-icon>
-        Checkbox
       </button>
 
       <button

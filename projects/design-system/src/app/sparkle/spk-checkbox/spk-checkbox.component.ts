@@ -1,63 +1,27 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import {
-  AfterDropResponse,
-  moveIndex,
-  SparkleCheckboxComponent,
-  SparkleIconComponent,
-  SparkleListComponent,
-  SparkleSortableDirective,
-} from '../../../../../sparkle-ui/src/public-api';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { PreviewerComponent } from '../../previewer/previewer.component';
+import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
+import { BaseCheckboxComponent } from './examples/base-checkbox/base-checkbox.component';
+import { CheckboxSandboxComponent } from './examples/checkbox-sandbox.component';
+import { FlatCheckboxComponent } from './examples/flat-checkbox/flat-checkbox.component';
+import { OutlinedCheckboxComponent } from './examples/outlined-checkbox/outlined-checkbox.component';
+import { RaisedCheckboxComponent } from './examples/raised-checkbox/raised-checkbox.component';
+import { SimpleCheckboxComponent } from './examples/simple-checkbox/simple-checkbox.component';
 
-const fb = new FormBuilder();
-
-const CONTENT_EXAMPLE = [
-  {
-    title: 'Simple sorting of list',
-    done: true,
-  },
-  {
-    title: 'Sorting animation',
-    done: true,
-  },
-  {
-    title: 'Support sortable handle',
-    done: true,
-  },
-  {
-    title: 'Support gap in sorting list ',
-    done: true,
-  },
-];
-
-type Todo = (typeof CONTENT_EXAMPLE)[0];
 @Component({
   selector: 'app-spk-checkbox',
   imports: [
-    SparkleCheckboxComponent,
-    SparkleListComponent,
-    SparkleSortableDirective,
-    SparkleIconComponent,
-    ReactiveFormsModule,
+    PreviewerComponent,
+    PropertyViewerComponent,
+    BaseCheckboxComponent,
+    SimpleCheckboxComponent,
+    OutlinedCheckboxComponent,
+    FlatCheckboxComponent,
+    RaisedCheckboxComponent,
+    CheckboxSandboxComponent,
   ],
   templateUrl: './spk-checkbox.component.html',
   styleUrl: './spk-checkbox.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class SpkCheckboxComponent {
-  formCtrl = fb.control(true);
-  active = signal(false);
-  todos = signal(CONTENT_EXAMPLE);
-
-  toggleTodo(index: number) {
-    this.todos.update((todos) => {
-      todos[index].done = !todos[index].done;
-
-      return todos;
-    });
-  }
-
-  reorderTodo(event: AfterDropResponse) {
-    this.todos.update((arr) => moveIndex<Todo>(arr, event));
-  }
-}
+export default class SpkCheckboxComponent {}

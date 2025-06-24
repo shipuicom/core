@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject } from '@angular/core';
 import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 
 @Component({
@@ -17,10 +17,10 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
 export class SparkleCheckboxComponent {
   #selfRef = inject(ElementRef);
 
-  @HostListener('click')
-  onClick() {
-    if (this.#selfRef.nativeElement.querySelector('input')) {
-      this.#selfRef.nativeElement.querySelector('input').focus();
-    }
-  }
+  // @HostListener('click')
+  // onClick() {
+  //   if (this.#selfRef.nativeElement.querySelector('input')) {
+  //     this.#selfRef.nativeElement.querySelector('input').focus();
+  //   }
+  // }
 }
