@@ -1,0 +1,31 @@
+@use 'helpers' as *;
+
+:host {
+  display: block;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(8);
+  border-bottom: 1px solid var(--base-4);
+  padding: p2r(20);
+  background-color: var(--base-2);
+}
+
+div {
+  padding: p2r(20);
+}
+
+.row {
+  display: flex;
+  padding: 0;
+  gap: p2r(8);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  padding: 0;
+  gap: p2r(8);
+}

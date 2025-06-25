@@ -1,0 +1,73 @@
+<div class="controls">
+  <div class="row">
+    <spk-toggle class="primary raised" [class.active]="disabled()" (click)="disabled.set(!disabled())">
+      Disabled
+    </spk-toggle>
+    <spk-toggle class="primary raised" [class.active]="readonly()" (click)="readonly.set(!readonly())">
+      Read-only
+    </spk-toggle>
+
+    @if (variation() !== 'thick') {
+      <spk-toggle class="primary raised" [class.active]="alwaysShow()" (click)="alwaysShow.set(!alwaysShow())">
+        Always show value indicator
+      </spk-toggle>
+    }
+    <spk-toggle class="primary raised" [class.active]="sharp()" (click)="sharp.set(!sharp())">Sharp</spk-toggle>
+  </div>
+
+  <spk-button-group>
+    <button [class.active]="color() === 'primary'" (click)="color.set('primary')">Primary</button>
+    <button [class.active]="color() === 'accent'" (click)="color.set('accent')">Accent</button>
+    <button [class.active]="color() === 'warn'" (click)="color.set('warn')">Warn</button>
+    <button [class.active]="color() === 'error'" (click)="color.set('error')">Error</button>
+    <button [class.active]="color() === 'success'" (click)="color.set('success')">Success</button>
+  </spk-button-group>
+
+  <spk-button-group>
+    <button [class.active]="variation() === 'base'" (click)="variation.set('base')">Base</button>
+    <button [class.active]="variation() === 'thick'" (click)="variation.set('thick')">Thick</button>
+    <button [class.active]="variation() === 'outlined'" (click)="variation.set('outlined')">Outlined</button>
+    <button [class.active]="variation() === 'flat'" (click)="variation.set('flat')">Flat</button>
+    <button [class.active]="variation() === 'raised'" (click)="variation.set('raised')">Raised</button>
+  </spk-button-group>
+
+  <div class="fields">
+    <spk-form-field>
+      <label>Unit</label>
+      <input type="text" [(ngModel)]="unit" />
+    </spk-form-field>
+
+    <spk-form-field>
+      <label>Min</label>
+      <input type="text" [(ngModel)]="min" />
+    </spk-form-field>
+
+    <spk-form-field>
+      <label>Max</label>
+      <input type="text" [(ngModel)]="max" />
+    </spk-form-field>
+
+    <spk-form-field>
+      <label>Step</label>
+      <input type="text" [(ngModel)]="step" />
+    </spk-form-field>
+  </div>
+</div>
+
+<div>
+  <spk-range-slider
+    [unit]="unit()"
+    [class]="color() + ' ' + variation()"
+    [class.sharp]="sharp()"
+    [class.always-show]="alwaysShow()">
+    <input
+      type="range"
+      [min]="min()"
+      [max]="max()"
+      [step]="step()"
+      [(ngModel)]="value"
+      [disabled]="disabled()"
+      [readonly]="readonly()" />
+  </spk-range-slider>
+  <p>Selected: {{ value() }}</p>
+</div>

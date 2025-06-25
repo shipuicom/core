@@ -1,0 +1,5 @@
+<spk-range-slider>
+  <label for="float-range-slider">Decimal value:</label>
+  <input id="float-range-slider" type="range" min="0" max="1" step="0.01" [(ngModel)]="value" />
+</spk-range-slider>
+<p>Selected: {{ value() | number: '1.2-2' }}</p>

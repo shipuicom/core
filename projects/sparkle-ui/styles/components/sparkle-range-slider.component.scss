@@ -64,12 +64,21 @@ $spkRangeSlider: true !default;
       }
     }
 
+    &[readonly]:not([readonly='false']),
+    &:has(input[type='range'][readonly]:not([readonly='false'])),
     &[disabled]:not([disabled='false']),
     &:has(input[type='range'][disabled]:not([disabled='false'])) {
       opacity: 0.4;
       pointer-events: none;
       user-select: none;
       cursor: initial;
+    }
+
+    &:has(input[type='range'][readonly]),
+    &.always-show {
+      .thumb .value-indicator {
+        opacity: 1;
+      }
     }
 
     input[type='range'] {
@@ -108,12 +117,6 @@ $spkRangeSlider: true !default;
       border: 1px solid var(--rs-thumb-bc);
       box-shadow: var(--box-shadow-20);
       transform: translateX(-50%);
-    }
-
-    &.always-show {
-      .thumb .value-indicator {
-        opacity: 1;
-      }
     }
 
     .track-wrap {
@@ -182,18 +185,39 @@ $spkRangeSlider: true !default;
       }
     }
 
-    input[type='range'][readonly] {
-      user-select: none;
-      pointer-events: none;
+    &.primary {
+      --rst-bg: var(--primary-8);
+      --rs-thumb-arrow: var(--primary-8);
+      --rs-thumb-value-bg: var(--primary-8);
+      --rs-thumb-value-c: #fff;
+    }
 
-      ~ .track .track-filled {
-        transition: width 125ms linear;
-        border-radius: var(--rst-s);
-      }
+    &.accent {
+      --rst-bg: var(--accent-8);
+      --rs-thumb-arrow: var(--accent-8);
+      --rs-thumb-value-bg: var(--accent-8);
+      --rs-thumb-value-c: #fff;
+    }
 
-      ~ .thumb-wrap {
-        display: none;
-      }
+    &.warn {
+      --rst-bg: var(--warn-8);
+      --rs-thumb-arrow: var(--warn-8);
+      --rs-thumb-value-bg: var(--warn-8);
+      --rs-thumb-value-c: #fff;
+    }
+
+    &.error {
+      --rst-bg: var(--error-8);
+      --rs-thumb-arrow: var(--error-8);
+      --rs-thumb-value-bg: var(--error-8);
+      --rs-thumb-value-c: #fff;
+    }
+
+    &.success {
+      --rst-bg: var(--success-8);
+      --rs-thumb-arrow: var(--success-8);
+      --rs-thumb-value-bg: var(--success-8);
+      --rs-thumb-value-c: #fff;
     }
 
     &.simple {

@@ -1,0 +1,5 @@
+<spk-range-slider>
+  <label for="readonly-range-slider">Readonly value:</label>
+  <input id="readonly-range-slider" type="range" min="0" max="100" [(ngModel)]="value" readonly />
+</spk-range-slider>
+<p>Selected: {{ value() }}</p>
