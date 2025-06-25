@@ -3,48 +3,95 @@
 <app-property-viewer>
   <section>
     <h4>options</h4>
-    <p>Array of options to display. Can be array of objects or strings.</p>
+    <p>
+      Array of options to display. Can be array of objects or strings.
+      <code>[options]="options()"</code>
+    </p>
   </section>
+
   <section>
     <h4>label</h4>
-    <p>Key or property to use as the display label for each option.</p>
+    <p>
+      Key or property to use as the display label for each option passed as a string using dot notation.
+      <code>label="some.label.on.option.object"</code>
+    </p>
   </section>
+
   <section>
     <h4>value</h4>
-    <p>Key or property to use as the value for each option.</p>
+    <p>
+      Key or property to use as the value for each option passed as a string using dot notation.
+      <code>value="some.value.on.option.object"</code>
+    </p>
   </section>
+
   <section>
     <h4>selectMultiple</h4>
-    <p>Enable multiple selection mode.</p>
+    <p>
+      Enable multiple selection mode.
+      <code>{{ '\<spk-select [selectMultiple]="true"...' }}</code>
+    </p>
   </section>
+
   <section>
     <h4>disabled</h4>
-    <p>Disable the select input.</p>
+    <p>
+      Disable the select input.
+      <code>{{ '\<spk-select>\<input [disabled]="true" />\</spk-select>' }}</code>
+    </p>
   </section>
+
   <section>
     <h4>readonly</h4>
-    <p>Make the select input readonly.</p>
+    <p>
+      Make the select readonly by adding it to the select component.
+      <code>{{ '\<spk-select [readonly]="true"...' }}</code>
+    </p>
   </section>
+
   <section>
     <h4>inlineSearch</h4>
-    <p>Enable inline search/filtering of options.</p>
+    <p>
+      Enable inline search/filtering of options.
+      <code>{{ '\<spk-select [inlineSearch]="true"...' }}</code>
+    </p>
   </section>
+
   <section>
     <h4>isClearable</h4>
-    <p>Show or hide the clear button.</p>
+    <p>
+      set to false to hide the clear button and make the field unclearable.
+      <code>{{ '\<spk-select [isClearable]="false"...' }}</code>
+    </p>
   </section>
+
   <section>
     <h4>optionTemplate</h4>
-    <p>Custom template for rendering options.</p>
+    <p>
+      Custom template for rendering options create a ng-template and pass it to the select component.
+      <code>{{ '\<spk-select [optionTemplate]="optionTemplate"...' }}</code>
+    </p>
   </section>
+
   <section>
     <h4>placeholderTemplate</h4>
-    <p>Custom template for rendering placeholder if you pass a optionTemplate it will be used as a fallback.</p>
+    <p>
+      Custom template for rendering placeholder if you pass a optionTemplate it will be used as a fallback.
+      <code>{{ '\<spk-select [placeholderTemplate]="placeholderTemplate"...' }}</code>
+    </p>
   </section>
 </app-property-viewer>
 
 <app-previewer path="/spk-select/examples/base-select/base-select.component" title="Base">
   <app-base-select class="example" />
+</app-previewer>
+
+<app-previewer path="/spk-select/examples/object-select/object-select.component" title="Base object">
+  <p description>
+    Important to note are that because we are using inputs as the communicator we're limited to strings as values. So if
+    the id are fx a number you need to convert it to a string.
+  </p>
+  <app-object-select class="example" />
 </app-previewer>
 
 <app-previewer path="/spk-select/examples/multiple-select/multiple-select.component" title="Multi select">
@@ -105,14 +152,6 @@
   path="/spk-select/examples/lazy-search-multiple-select/lazy-search-multiple-select.component"
   title="Lazy search multiple">
   <app-lazy-search-multiple-select class="example" />
-</app-previewer>
-
-<app-previewer path="/spk-select/examples/object-select/object-select.component" title="Base object">
-  <p description>
-    Important to note are that because we are using inputs as the communicator we're limited to strings as values. So if
-    the id are fx a number you need to convert it to a string.
-  </p>
-  <app-object-select class="example" />
 </app-previewer>
 
 <!-- <section>
