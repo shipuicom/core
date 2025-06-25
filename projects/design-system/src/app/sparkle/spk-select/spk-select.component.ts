@@ -5,9 +5,12 @@ import { PreviewerComponent } from '../../previewer/previewer.component';
 import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
 import { BaseSelectComponent } from './examples/base-select/base-select.component';
 import { DisabledSelectComponent } from './examples/disabled-select/disabled-select.component';
+import { InlineSearchMultipleSelectComponent } from './examples/inline-search-multiple-select/inline-search-multiple-select.component';
 import { InlineSearchSelectComponent } from './examples/inline-search-select/inline-search-select.component';
+import { LazySearchMultipleSelectComponent } from './examples/lazy-search-multiple-select/lazy-search-multiple-select.component';
 import { LazySearchSelectComponent } from './examples/lazy-search-select/lazy-search-select.component';
-import { MultipleSelectComponent } from './examples/multiple-select/multiple-select-example.component';
+import { MultipleSelectAsTextComponent } from './examples/multiple-select-as-text/multiple-select-as-text.component';
+import { MultipleSelectComponent } from './examples/multiple-select/multiple-select.component';
 import { ObjectSelectComponent } from './examples/object-select/object-select.component';
 import { OptionTemplateSelectComponent } from './examples/option-template-select/option-template-select.component';
 import { PlaceholderTemplateSelectComponent } from './examples/placeholder-template-select/placeholder-template-select.component';
@@ -36,6 +39,7 @@ disabledCtrl.disable();
     PropertyViewerComponent,
     BaseSelectComponent,
     MultipleSelectComponent,
+    MultipleSelectAsTextComponent,
     ReactiveSelectComponent,
     DisabledSelectComponent,
     ReadonlySelectComponent,
@@ -45,6 +49,8 @@ disabledCtrl.disable();
     ObjectSelectComponent,
     LazySearchSelectComponent,
     ReactiveSelectDisabledComponent,
+    InlineSearchMultipleSelectComponent,
+    LazySearchMultipleSelectComponent,
   ],
   templateUrl: './spk-select.component.html',
   styleUrl: './spk-select.component.scss',

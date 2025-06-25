@@ -70,21 +70,24 @@ import { SparkleSpinnerComponent } from '../sparkle-spinner/sparkle-spinner.comp
               @for (selectedOption of _selectedOptions; track $index) {
                 @if (selectedOption) {
                   @if (_asChips) {
-                    <spk-chip [class]="selectClasses()" class="small">
+                    <spk-chip
+                      [class]="selectClasses()"
+                      class="small"
+                      (click)="removeSelectedOptionByIndex($event, $index)">
                       @if (_selOptionTemplate) {
                         <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
                       } @else {
                         {{ getLabel(selectedOption) }}
                       }
 
-                      <spk-icon (click)="removeSelectedOptionByIndex($event, $index)">x-bold</spk-icon>
+                      <spk-icon>x-bold</spk-icon>
                     </spk-chip>
                   } @else {
                     @if (!_showSearchText) {
                       @if (_selOptionTemplate) {
                         <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
                       } @else {
-                        {{ getLabel(selectedOption) }}
+                        {{ $last ? getLabel(selectedOption) : getLabel(selectedOption) + ',' }}
                       }
                     }
                   }

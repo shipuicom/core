@@ -1,3 +1,4 @@
+import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -13,15 +14,15 @@ const DEFAULT_OPTIONS = [
   { value: 'sandwich', label: 'Sandwich' },
 ];
 @Component({
-  selector: 'app-lazy-search-select',
+  selector: 'app-lazy-search-multiple-select',
   standalone: true,
-  imports: [FormsModule, SparkleSelectComponent],
-  templateUrl: './lazy-search-select.component.html',
-  styleUrl: './lazy-search-select.component.scss',
+  imports: [FormsModule, SparkleSelectComponent, JsonPipe],
+  templateUrl: './lazy-search-multiple-select.component.html',
+  styleUrl: './lazy-search-multiple-select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LazySearchSelectComponent {
-  lazySearchOption = signal('pizza');
+export class LazySearchMultipleSelectComponent {
+  lazySearchOption = signal('');
 
   options = computed(() => this.resource.value() ?? DEFAULT_OPTIONS);
   resource = rxResource({

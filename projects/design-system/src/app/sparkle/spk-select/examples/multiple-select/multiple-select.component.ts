@@ -7,8 +7,8 @@ import { SparkleSelectComponent } from '../../../../../../../sparkle-ui/src/publ
   selector: 'app-multiple-select',
   standalone: true,
   imports: [FormsModule, SparkleSelectComponent, JsonPipe],
-  templateUrl: './multiple-select-example.component.html',
-  styleUrl: './multiple-select-example.component.scss',
+  templateUrl: './multiple-select.component.html',
+  styleUrl: './multiple-select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MultipleSelectComponent {
@@ -17,5 +17,5 @@ export class MultipleSelectComponent {
     { value: 'burger', label: 'Burger' },
     { value: 'sushi', label: 'Sushi' },
   ]);
-  selected = signal<string[]>(['pizza']);
+  selected = signal<string[]>(['pizza,burger']);
 }
