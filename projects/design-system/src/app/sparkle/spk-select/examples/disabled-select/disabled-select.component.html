@@ -1,0 +1,6 @@
+<spk-select [options]="options()" label="label" value="value">
+  <label>Favorite food (disabled)</label>
+  <input type="text" [(ngModel)]="selected" [disabled]="true" />
+</spk-select>
+
+<p>Selected: {{ selected() }}</p>

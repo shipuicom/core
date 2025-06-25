@@ -20,6 +20,10 @@
     </button>
   </spk-tabs>
 
+  <div class="description">
+    <ng-content select="[description]" />
+  </div>
+
   @if (view() !== '') {
     <div class="content">
       @defer (when (view() === 'typescript')) {
@@ -37,6 +41,6 @@
   }
 
   <div class="example-wrap">
-    <ng-content></ng-content>
+    <ng-content />
   </div>
 </spk-card>

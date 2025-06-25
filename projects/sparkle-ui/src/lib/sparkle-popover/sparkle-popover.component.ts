@@ -128,7 +128,7 @@ export class SparklePopoverComponent {
         this.#calculateMenuPosition();
       });
     } else {
-      popoverEl.hidePopover();
+      popoverEl.hidePopover && popoverEl.hidePopover();
       this.openAbort?.abort();
       this.closed.emit();
     }

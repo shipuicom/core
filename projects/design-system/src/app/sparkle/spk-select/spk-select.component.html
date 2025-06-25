@@ -1,4 +1,103 @@
-<section>
+<h1>Select</h1>
+
+<app-property-viewer>
+  <section>
+    <h4>options</h4>
+    <p>Array of options to display. Can be array of objects or strings.</p>
+  </section>
+  <section>
+    <h4>label</h4>
+    <p>Key or property to use as the display label for each option.</p>
+  </section>
+  <section>
+    <h4>value</h4>
+    <p>Key or property to use as the value for each option.</p>
+  </section>
+  <section>
+    <h4>selectMultiple</h4>
+    <p>Enable multiple selection mode.</p>
+  </section>
+  <section>
+    <h4>disabled</h4>
+    <p>Disable the select input.</p>
+  </section>
+  <section>
+    <h4>readonly</h4>
+    <p>Make the select input readonly.</p>
+  </section>
+  <section>
+    <h4>inlineSearch</h4>
+    <p>Enable inline search/filtering of options.</p>
+  </section>
+  <section>
+    <h4>isClearable</h4>
+    <p>Show or hide the clear button.</p>
+  </section>
+  <section>
+    <h4>optionTemplate</h4>
+    <p>Custom template for rendering options.</p>
+  </section>
+  <section>
+    <h4>placeholderTemplate</h4>
+    <p>Custom template for rendering placeholder if you pass a optionTemplate it will be used as a fallback.</p>
+  </section>
+</app-property-viewer>
+
+<app-previewer path="/spk-select/examples/base-select/base-select.component" title="Base">
+  <app-base-select class="example" />
+</app-previewer>
+
+<app-previewer path="/spk-select/examples/multiple-select/multiple-select.component" title="Multi select">
+  <app-multiple-select class="example" />
+</app-previewer>
+
+<app-previewer path="/spk-select/examples/reactive-select/reactive-select.component" title="Reactive form">
+  <app-reactive-select class="example" />
+</app-previewer>
+
+<app-previewer
+  path="/spk-select/examples/reactive-select-disabled/reactive-select-disabled.component"
+  title="Reactive disabled">
+  <app-reactive-select-disabled class="example" />
+</app-previewer>
+
+<app-previewer path="/spk-select/examples/disabled-select/disabled-select.component" title="Disabled">
+  <app-disabled-select class="example" />
+</app-previewer>
+
+<app-previewer path="/spk-select/examples/readonly-select/readonly-select.component" title="Readonly">
+  <app-readonly-select class="example" />
+</app-previewer>
+
+<app-previewer
+  path="/spk-select/examples/option-template-select/option-template-select.component"
+  title="Option template">
+  <app-option-template-select class="example" />
+</app-previewer>
+
+<app-previewer
+  path="/spk-select/examples/placeholder-template-select/placeholder-template-select.component"
+  title="Placeholder template">
+  <app-placeholder-template-select class="example" />
+</app-previewer>
+
+<app-previewer path="/spk-select/examples/inline-search-select/inline-search-select.component" title="Inline search">
+  <app-inline-search-select class="example" />
+</app-previewer>
+
+<app-previewer path="/spk-select/examples/lazy-search-select/lazy-search-select.component" title="Lazy search">
+  <app-lazy-search-select class="example" />
+</app-previewer>
+
+<app-previewer path="/spk-select/examples/object-select/object-select.component" title="Base object">
+  <p description>
+    Important to note are that because we are using inputs as the communicator we're limited to strings as values. So if
+    the id are fx a number you need to convert it to a string.
+  </p>
+  <app-object-select class="example" />
+</app-previewer>
+
+<!-- <section>
   <h3>New select</h3>
 
   <spk-select value="id" label="name" class="primary raised" [options]="options()" [readonly]="isReadonly()">
@@ -222,4 +321,4 @@
   <ng-template let-option #placeholderTemplate>
     <div class="custom-option">Hell im a custom placeholder template 🙂‍↔️🙂‍↔️</div>
   </ng-template>
-</section>
+</section> -->

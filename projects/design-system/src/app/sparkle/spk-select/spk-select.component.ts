@@ -1,12 +1,19 @@
-import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, model, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import {
-  SparkleIconComponent,
-  SparkleSelectComponent,
-  SparkleTooltipDirective,
-} from '../../../../../sparkle-ui/src/public-api';
+import { PreviewerComponent } from '../../previewer/previewer.component';
+import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
+import { BaseSelectComponent } from './examples/base-select/base-select.component';
+import { DisabledSelectComponent } from './examples/disabled-select/disabled-select.component';
+import { InlineSearchSelectComponent } from './examples/inline-search-select/inline-search-select.component';
+import { LazySearchSelectComponent } from './examples/lazy-search-select/lazy-search-select.component';
+import { MultipleSelectComponent } from './examples/multiple-select/multiple-select-example.component';
+import { ObjectSelectComponent } from './examples/object-select/object-select.component';
+import { OptionTemplateSelectComponent } from './examples/option-template-select/option-template-select.component';
+import { PlaceholderTemplateSelectComponent } from './examples/placeholder-template-select/placeholder-template-select.component';
+import { ReactiveSelectDisabledComponent } from './examples/reactive-select-disabled/reactive-select-disabled.component';
+import { ReactiveSelectComponent } from './examples/reactive-select/reactive-select-example.component';
+import { ReadonlySelectComponent } from './examples/readonly-select/readonly-select.component';
 
 type Food = {
   value: string;
@@ -25,10 +32,19 @@ disabledCtrl.disable();
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    SparkleSelectComponent,
-    SparkleIconComponent,
-    SparkleTooltipDirective,
-    JsonPipe,
+    PreviewerComponent,
+    PropertyViewerComponent,
+    BaseSelectComponent,
+    MultipleSelectComponent,
+    ReactiveSelectComponent,
+    DisabledSelectComponent,
+    ReadonlySelectComponent,
+    OptionTemplateSelectComponent,
+    PlaceholderTemplateSelectComponent,
+    InlineSearchSelectComponent,
+    ObjectSelectComponent,
+    LazySearchSelectComponent,
+    ReactiveSelectDisabledComponent,
   ],
   templateUrl: './spk-select.component.html',
   styleUrl: './spk-select.component.scss',
