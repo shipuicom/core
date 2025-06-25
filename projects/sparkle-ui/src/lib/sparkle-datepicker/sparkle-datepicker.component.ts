@@ -61,6 +61,7 @@ import { SparkleIconComponent } from '../sparkle-icon/sparkle-icon.component';
   host: {
     '[class.as-range]': 'asRange()',
     '[class]': '"columns-" + monthsToShow()',
+    '[class.disabled]': 'disabled()',
   },
 })
 export class SparkleDatepickerComponent {
@@ -70,6 +71,7 @@ export class SparkleDatepickerComponent {
   endDate = model<Date | null>(null);
   asRange = input<boolean>(false);
   monthsToShow = input<number>(1);
+  disabled = input<boolean>(false);
 
   startOfWeek = input<number>(1);
   weekdayLabels = input<string[]>(['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']);

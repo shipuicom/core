@@ -75,7 +75,14 @@ $spkDatepicker: true !default;
     display: flex;
     flex-direction: column;
 
-    @for $i from 1 through 3 {
+    &.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      user-select: none;
+      cursor: initial;
+    }
+
+    @for $i from 1 through 12 {
       &.columns-#{$i} {
         $gap: 1rem;
 

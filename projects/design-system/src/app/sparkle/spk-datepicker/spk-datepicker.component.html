@@ -1,4 +1,149 @@
-<button (click)="close()">Close</button>
+<h1>Datepicker</h1>
+
+<app-property-viewer>
+  <section>
+    <h4>date</h4>
+    <p>
+      The selected date. Two-way bindable via
+      <code>[(date)]</code>
+      or
+      <code>[date]</code>
+      /
+      <code>(dateChange)</code>
+      for
+      <b>spk-datepicker</b>
+      and
+      <b>spk-datepicker-input</b>
+      .
+    </p>
+  </section>
+  <section>
+    <h4>endDate</h4>
+    <p>
+      The end date for range selection. Two-way bindable via
+      <code>[(endDate)]</code>
+      or
+      <code>[endDate]</code>
+      /
+      <code>(endDateChange)</code>
+      for
+      <b>spk-datepicker</b>
+      and
+      <b>spk-daterange-input</b>
+      .
+    </p>
+  </section>
+  <section>
+    <h4>asRange</h4>
+    <p>
+      Enable range selection mode.
+      <code>[asRange]="true"</code>
+      (default:
+      <code>false</code>
+      )
+    </p>
+  </section>
+  <section>
+    <h4>monthsToShow</h4>
+    <p>
+      Number of months to display at once.
+      <code>[monthsToShow]="2"</code>
+      (default:
+      <code>1</code>
+      )
+    </p>
+  </section>
+  <section>
+    <h4>disabled</h4>
+    <p>
+      Disable the datepicker.
+      <code>[disabled]="true"</code>
+    </p>
+  </section>
+  <section>
+    <h4>masking</h4>
+    <p>
+      Date format mask for input display (e.g.
+      <code>'mediumDate'</code>
+      ). Applies to
+      <b>spk-datepicker-input</b>
+      and
+      <b>spk-daterange-input</b>
+      .
+    </p>
+  </section>
+  <section>
+    <h4>closed</h4>
+    <p>
+      Event emitted when the picker closes.
+      <code>(closed)</code>
+      (returns selected date(s)).
+    </p>
+  </section>
+  <section>
+    <h4>startOfWeek</h4>
+    <p>
+      First day of the week (0 = Sunday, 1 = Monday, ...).
+      <code>[startOfWeek]</code>
+      (default:
+      <code>1</code>
+      ).
+    </p>
+  </section>
+  <section>
+    <h4>weekdayLabels</h4>
+    <p>
+      Custom weekday labels.
+      <code>[weekdayLabels]="['Su','Mo','Tu','We','Th','Fr','Sa']"</code>
+    </p>
+  </section>
+</app-property-viewer>
+
+<div class="sandbox-example">
+  <app-previewer
+    path="/spk-datepicker/examples/datepicker-sandbox/datepicker-sandbox.component"
+    title="Sandbox"
+    class="no-space">
+    <app-datepicker-sandbox class="example" />
+  </app-previewer>
+</div>
+
+<div class="sandbox-example">
+  <app-previewer
+    path="/spk-datepicker/examples/range-datepicker-sandbox/range-datepicker-sandbox.component"
+    title="Range Sandbox"
+    class="no-space">
+    <app-range-datepicker-sandbox class="example" />
+  </app-previewer>
+</div>
+
+<app-previewer path="/spk-datepicker/examples/base-datepicker/base-datepicker.component" title="Base">
+  <app-base-datepicker class="example" />
+</app-previewer>
+
+<app-previewer path="/spk-datepicker/examples/range-datepicker/range-datepicker.component" title="Range">
+  <app-range-datepicker class="example" />
+</app-previewer>
+
+<app-previewer
+  path="/spk-datepicker/examples/input-datepicker-ngmodel/input-datepicker-ngmodel.component"
+  title="Input (ngModel)">
+  <app-input-datepicker-ngmodel class="example" />
+</app-previewer>
+
+<app-previewer
+  path="/spk-datepicker/examples/input-datepicker-reactive/input-datepicker-reactive.component"
+  title="Input (Reactive Form)">
+  <app-input-datepicker-reactive class="example" />
+</app-previewer>
+
+<app-previewer
+  path="/spk-datepicker/examples/range-input-datepicker/range-input-datepicker.component"
+  title="Range Input">
+  <app-range-input-datepicker class="example" />
+</app-previewer>
+
+<!-- <button (click)="close()">Close</button>
 <div class="row">
   <spk-button-group>
     <button [class.active]="type() === 'none'" (click)="type.set('none')">None</button>
@@ -60,7 +205,8 @@
   <input type="text" [(ngModel)]="myDate" />
 </spk-datepicker-input>
 
-<spk-datepicker [(date)]="someOtherDate" />
+<spk-datepicker [(date)]="someOtherDate" /> -->
+
 <!-- 
 <form [formGroup]="formGroup1">
   <spk-form-field>

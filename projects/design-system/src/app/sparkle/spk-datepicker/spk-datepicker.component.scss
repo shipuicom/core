@@ -1,17 +1,30 @@
+@use '../../../../../sparkle-ui/styles/helpers.scss' as *;
+
 :host {
-  display: block;
-}
-
-.row {
   display: flex;
-  gap: 32px;
+  flex-direction: column;
+  gap: p2r(20);
+  padding: p2r(40);
+  width: calc(100% - var(--spk-sidenav));
 }
 
-.multi {
+h1 {
+  font: var(--title-20B);
+}
+
+h3 {
+  font: var(--paragraph-10);
+}
+
+.example {
   display: flex;
+  flex-direction: column;
+  gap: p2r(8);
 }
 
-section {
-  padding: 50vh 40px;
-  max-width: 500px;
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: p2r(20);
 }

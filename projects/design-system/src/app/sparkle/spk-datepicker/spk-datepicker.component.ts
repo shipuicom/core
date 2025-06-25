@@ -1,25 +1,31 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import {
-  SparkleButtonGroupComponent,
-  SparkleDatepickerComponent,
-  SparkleDatepickerInputComponent,
-  SparkleDateRangeInputComponent,
-  SparkleIconComponent,
-} from '../../../../../sparkle-ui/src/public-api';
+import { PreviewerComponent } from '../../previewer/previewer.component';
+import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
+import { BaseDatepickerComponent } from './examples/base-datepicker/base-datepicker.component';
+import { DatepickerSandboxComponent } from './examples/datepicker-sandbox/datepicker-sandbox.component';
+import { InputDatepickerNgModelComponent } from './examples/input-datepicker-ngmodel/input-datepicker-ngmodel.component';
+import { InputDatepickerReactiveComponent } from './examples/input-datepicker-reactive/input-datepicker-reactive.component';
+import { RangeDatepickerSandboxComponent } from './examples/range-datepicker-sandbox/range-datepicker-sandbox.component';
+import { RangeDatepickerComponent } from './examples/range-datepicker/range-datepicker.component';
+import { RangeInputDatepickerComponent } from './examples/range-input-datepicker/range-input-datepicker.component';
 
 const now = new Date();
 
 @Component({
   selector: 'app-spk-datepicker',
   imports: [
-    SparkleDateRangeInputComponent,
-    SparkleDatepickerComponent,
-    SparkleDatepickerInputComponent,
-    SparkleButtonGroupComponent,
-    SparkleIconComponent,
     FormsModule,
     ReactiveFormsModule,
+    BaseDatepickerComponent,
+    RangeDatepickerComponent,
+    PreviewerComponent,
+    InputDatepickerNgModelComponent,
+    InputDatepickerReactiveComponent,
+    RangeInputDatepickerComponent,
+    DatepickerSandboxComponent,
+    RangeDatepickerSandboxComponent,
+    PropertyViewerComponent,
   ],
   templateUrl: './spk-datepicker.component.html',
   styleUrl: './spk-datepicker.component.scss',

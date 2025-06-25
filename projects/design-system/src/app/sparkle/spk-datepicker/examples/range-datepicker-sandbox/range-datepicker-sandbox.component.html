@@ -1,0 +1,28 @@
+<div class="controls">
+  <spk-toggle [class.active]="disabled()" (click)="disabled.set(!disabled())">Disabled</spk-toggle>
+
+  <spk-button-group>
+    <button [class.active]="colors() === ''" (click)="colors.set('')">Base</button>
+    <button [class.active]="colors() === 'primary'" (click)="colors.set('primary')">Primary</button>
+    <button [class.active]="colors() === 'accent'" (click)="colors.set('accent')">Accent</button>
+    <button [class.active]="colors() === 'warn'" (click)="colors.set('warn')">Warn</button>
+    <button [class.active]="colors() === 'error'" (click)="colors.set('error')">Error</button>
+    <button [class.active]="colors() === 'success'" (click)="colors.set('success')">Success</button>
+  </spk-button-group>
+
+  <spk-range-slider min="1" max="3">
+    <label>Months to show</label>
+    <input type="range" [(ngModel)]="monthsToShow" min="1" max="12" />
+  </spk-range-slider>
+</div>
+
+<div class="content">
+  <spk-datepicker
+    [class]="colors()"
+    [(date)]="startDate"
+    [(endDate)]="endDate"
+    [asRange]="true"
+    [monthsToShow]="monthsToShow()"></spk-datepicker>
+  <p>Start: {{ startDate() | date: 'mediumDate' }}</p>
+  <p>End: {{ endDate() | date: 'mediumDate' }}</p>
+</div>
