@@ -18,6 +18,10 @@ $spkSortable: true !default;
       transition: none;
       z-index: 2;
       background: var(--base-1);
+
+      &:has(:not([sort-handle])) {
+        cursor: grab;
+      }
     }
 
     .sortable-placeholder {

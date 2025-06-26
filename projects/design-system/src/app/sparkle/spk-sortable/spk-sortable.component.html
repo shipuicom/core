@@ -1,14 +1,37 @@
-<spk-list spkSortable (afterDrop)="reorderTodo($event)">
-  @for (todo of todos(); track $index) {
-    <div action [attr.draggable]="true" [class.active]="todo.done" (click)="toggleTodo($index)">
-      <spk-icon sort-handle>dots-six</spk-icon>
+<h1>Sortable</h1>
 
-      {{ todo.title }}
+<app-property-viewer>
+  <section>
+    <h4>spkSortable</h4>
+    <p>
+      Directive to make a list sortable via drag-and-drop. Add
+      <code>spkSortable</code>
+      to a
+      <code>spk-list</code>
+      or container element.
+    </p>
+  </section>
+  <section>
+    <h4>afterDrop</h4>
+    <p>
+      Event emitted after an item is dropped. Use
+      <code>(afterDrop)="reorder($event)"</code>
+      to update your data source.
+    </p>
+  </section>
+  <section>
+    <h4>sort-handle</h4>
+    <p>
+      Add the
+      <code>sort-handle</code>
+      attribute to an element inside your item to restrict drag start to that handle.
+    </p>
+  </section>
+</app-property-viewer>
 
-      <spk-checkbox [class.active]="todo.done" class="primary raised" />
-    </div>
-  }
-</spk-list>
+<app-previewer path="/spk-sortable/examples/base-sortable/base-sortable.component" title="Base">
+  <app-base-sortable class="example" />
+</app-previewer>
 
 <!-- <div class="grid-container" appGridSort>
   <div class="grid-item" draggable="true">Item 1</div>
