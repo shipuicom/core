@@ -1,0 +1,70 @@
+<spk-button-group>
+  <button [class.active]="renderingType() === 'hsl'" (click)="renderingType.set('hsl')">
+    <spk-icon>circle</spk-icon>
+    HSL Wheel
+  </button>
+  <button [class.active]="renderingType() === 'rgb'" (click)="renderingType.set('rgb')">
+    <spk-icon>circle</spk-icon>
+    RGB
+  </button>
+  <button [class.active]="renderingType() === 'grid'" (click)="renderingType.set('grid')">
+    <spk-icon>circle</spk-icon>
+    Grid
+  </button>
+  <button [class.active]="renderingType() === 'hue'" (click)="renderingType.set('hue')">
+    <spk-icon>circle</spk-icon>
+    Hue
+  </button>
+  <button [class.active]="renderingType() === 'saturation'" (click)="renderingType.set('saturation')">
+    <spk-icon>circle</spk-icon>
+    Saturation
+  </button>
+</spk-button-group>
+
+@if (renderingType() === 'hsl') {
+  <spk-toggle [class.active]="showDarkColors()" class="primary raised" (click)="showDarkColors.set(!showDarkColors())">
+    Show dark colors
+  </spk-toggle>
+}
+
+@if (renderingType() === 'grid' || renderingType() === 'rgb') {
+  <!-- <spk-range-slider unit="%" class="primary raised">
+  <label>ngModel</label>
+  <input type="range" min="0" [max]="360" [(ngModel)]="gridHue" />
+</spk-range-slider>
+ -->
+
+  <spk-color-picker renderingType="hue" (currentColor)="selectedHue.set($event.hue)"></spk-color-picker>
+}
+
+@if (renderingType() === 'hue') {
+  <spk-toggle [class.active]="direction()" class="primary raised" (click)="direction.set(!direction())">
+    Direction
+  </spk-toggle>
+}
+
+@if (renderingType() === 'saturation') {
+  <spk-toggle [class.active]="direction()" class="primary raised" (click)="direction.set(!direction())">
+    Direction
+  </spk-toggle>
+}
+
+<spk-color-picker
+  [renderingType]="renderingType()"
+  [showDarkColors]="showDarkColors()"
+  [direction]="direction() ? 'vertical' : 'horizontal'"
+  [hue]="selectedHue()"
+  (currentColor)="currentColor.set($event)"></spk-color-picker>
+
+<div class="colors">
+  <div class="swatch" [style.background]="currentColor()?.hex"></div>
+
+  <div class="color-text">
+    <p>RGB: {{ currentColor()?.rgb }}</p>
+    <p>HEX: {{ currentColor()?.hex }}</p>
+    <p>HSL: {{ currentColor()?.hsl }}</p>
+    <p>Hue: {{ currentColor()?.hue }}</p>
+    <p>Saturation: {{ currentColor()?.saturation }}</p>
+  </div>
+</div>
+<!-- <pre>{{ currentColor() | json }}</pre> -->

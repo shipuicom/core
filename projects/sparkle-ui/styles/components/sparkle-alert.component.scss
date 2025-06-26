@@ -45,6 +45,47 @@ $spkAlert: true !default;
       background: var(--alert-bg);
     }
 
+    .icon {
+      grid-area: stateIcon;
+      height: p2r(20);
+      width: p2r(20);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:first-of-type:not(:empty) + .icon {
+        display: none;
+      }
+    }
+
+    [icon],
+    .state-icon {
+      color: var(--alert-state-ic);
+    }
+
+    .close-icon {
+      grid-area: closeIcon;
+      color: var(--alert-close-ic);
+      transform: rotate(45deg);
+      transform-origin: center;
+    }
+
+    .title {
+      grid-area: title;
+      color: var(--alert-title-c);
+      padding-top: p2r(2);
+      font-weight: 500;
+    }
+
+    .content {
+      grid-area: content;
+      color: var(--alert-content-c);
+
+      &:empty {
+        display: none;
+      }
+    }
+
     &.is-hidden {
       max-height: 0;
       padding-top: 0;
@@ -211,7 +252,7 @@ $spkAlert: true !default;
       }
     }
 
-    &:not(:has([content])) .alert {
+    &:has(.content:empty) .alert {
       grid-template-rows: auto;
       grid-template-areas: 'stateIcon title closeIcon';
     }
@@ -227,47 +268,6 @@ $spkAlert: true !default;
       --alert-content-c: var(--base-8);
       --alert-close-ic: var(--base-8);
       --alert-bs: var(--box-shadow-20);
-    }
-
-    .icon {
-      grid-area: stateIcon;
-      height: p2r(20);
-      width: p2r(20);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      &:first-of-type:not(:empty) + .icon {
-        display: none;
-      }
-    }
-
-    [icon],
-    .state-icon {
-      color: var(--alert-state-ic);
-    }
-
-    .close-icon {
-      grid-area: closeIcon;
-      color: var(--alert-close-ic);
-      transform: rotate(45deg);
-      transform-origin: center;
-    }
-
-    .title {
-      grid-area: title;
-      color: var(--alert-title-c);
-      padding-top: p2r(2);
-      font-weight: 500;
-    }
-
-    .content {
-      grid-area: content;
-      color: var(--alert-content-c);
-
-      &:empty {
-        display: none;
-      }
     }
   }
 }

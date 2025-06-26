@@ -1,30 +1,13 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import {
-  SparkleButtonGroupComponent,
-  SparkleColorPickerComponent,
-  SparkleIconComponent,
-  SparkleToggleComponent,
-} from '../../../../../sparkle-ui/src/public-api';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { SparkleAlertComponent } from '../../../../../sparkle-ui/src/public-api';
+import { PreviewerComponent } from '../../previewer/previewer.component';
+import { BaseColorPickerComponent } from './examples/base-color-picker/base-color-picker.component';
 
 @Component({
   selector: 'app-spk-color-picker',
-  imports: [
-    FormsModule,
-    SparkleColorPickerComponent,
-    SparkleButtonGroupComponent,
-    SparkleIconComponent,
-    SparkleToggleComponent,
-  ],
+  imports: [SparkleAlertComponent, PreviewerComponent, BaseColorPickerComponent],
   templateUrl: './spk-color-picker.component.html',
   styleUrl: './spk-color-picker.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class SpkColorPickerComponent {
-  renderingType = signal<'hsl' | 'rgb' | 'grid' | 'hue' | 'saturation'>('hsl');
-  aColor = signal<[number, number, number]>([255, 255, 255]);
-  currentColor = signal<{ rgb: string; hex: string; hsl: string; hue: number; saturation: number } | null>(null);
-  showDarkColors = signal(false);
-  direction = signal(false);
-  selectedHue = signal(0);
-}
+export default class SpkColorPickerComponent {}

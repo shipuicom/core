@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { SparkleCardComponent, SparkleToggleCardComponent } from '../../../../../sparkle-ui/src/public-api';
 import { PreviewerComponent } from '../../previewer/previewer.component';
 import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
 import { BaseCardComponent } from './examples/base-card/base-card.component';
@@ -13,8 +12,6 @@ import { TypeCCardComponent } from './examples/type-c-card/type-c-card.component
 @Component({
   selector: 'app-spk-card',
   imports: [
-    SparkleCardComponent,
-    SparkleToggleCardComponent,
     CardSandboxComponent,
     PropertyViewerComponent,
     PreviewerComponent,

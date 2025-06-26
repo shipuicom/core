@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { SparkleRangeSliderComponent, SparkleToggleComponent } from '../../../../../sparkle-ui/src/public-api';
 import { PreviewerComponent } from '../../previewer/previewer.component';
 import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
 import { AlwaysShowIndicatorRangeSliderComponent } from './examples/always-show-indicator-range-slider/always-show-indicator-range-slider.component';
@@ -17,8 +16,6 @@ import { UnitRangeSliderComponent } from './examples/unit-range-slider/unit-rang
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    SparkleRangeSliderComponent,
-    SparkleToggleComponent,
     BaseRangeSliderComponent,
     ReactiveRangeSliderComponent,
     PreviewerComponent,

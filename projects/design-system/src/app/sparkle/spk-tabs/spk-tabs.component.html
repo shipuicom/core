@@ -1,20 +1,46 @@
-<h3>Tabs example</h3>
+<h1>Tabs</h1>
 
-<spk-tabs class="primary">
-  <button tab routerLink="/spk-tabs/tab/1" routerLinkActive="active">
-    <spk-icon>spinner</spk-icon>
-    Tab 1
-  </button>
+<app-property-viewer>
+  <section>
+    <h4>Colors</h4>
+    <p>
+      Tab colors can be set through the class, e.g.
+      <code>class="primary"</code>
+      .
+      <br />
+      Available colors:
+      <b>primary</b>
+      ,
+      <b>accent</b>
+      ,
+      <b>warn</b>
+      ,
+      <b>error</b>
+      ,
+      <b>success</b>
+      , and
+      <b>default</b>
+      (no class).
+    </p>
+  </section>
+</app-property-viewer>
 
-  <button tab routerLink="/spk-tabs/tab/2" routerLinkActive="active">
-    <spk-icon>hand-palm</spk-icon>
-    Tab 2
-  </button>
+<div class="sandbox-example">
+  <app-previewer path="/spk-tabs/examples/tabs-sandbox/tabs-sandbox.component" title="Sandbox" class="no-space">
+    <app-tabs-sandbox />
+  </app-previewer>
+</div>
 
-  <button tab routerLink="/spk-tabs/tab/3" routerLinkActive="active">
-    <spk-icon>check</spk-icon>
-    Tab 3
-  </button>
-</spk-tabs>
+<div class="content">
+  <h3>Variations</h3>
 
-<router-outlet></router-outlet>
+  <app-previewer path="/spk-tabs/examples/default-tabs/default-tabs.component" title="Default Tabs">
+    <app-default-tabs />
+  </app-previewer>
+
+  <app-previewer path="/spk-tabs/examples/router-tabs/router-tabs.component" title="Router Tabs">
+    <app-router-tabs />
+
+    <router-outlet></router-outlet>
+  </app-previewer>
+</div>
