@@ -1,7 +1,7 @@
 <spk-list spkSortable (afterDrop)="reorderTodo($event)">
   @for (todo of todos(); track $index) {
     <div action [attr.draggable]="true" [class.active]="todo.done" (click)="toggleTodo($index)">
-      <spk-icon sort-handle>arrows-out-line-vertical</spk-icon>
+      <spk-icon sort-handle>dots-six</spk-icon>
 
       {{ todo.title }}
 
@@ -10,23 +10,7 @@
   }
 </spk-list>
 
-<div class="example">
-  <spk-list class="primary" spkSortable (afterDrop)="reorder($event)">
-    @for (item of items(); track $index) {
-      <div [attr.draggable]="true" item>
-        <div sort-handle>
-          <spk-icon>arrows-out-line-vertical</spk-icon>
-        </div>
-
-        <spk-icon>circle</spk-icon>
-        {{ item.header }} - {{ item.id }}
-        <p>{{ item.content }}</p>
-      </div>
-    }
-  </spk-list>
-</div>
-
-<div class="grid-container" appGridSort>
+<!-- <div class="grid-container" appGridSort>
   <div class="grid-item" draggable="true">Item 1</div>
   <div class="grid-item" draggable="true">Item 2</div>
   <div class="grid-item" draggable="true">Item 3</div>
@@ -42,4 +26,4 @@
   <div class="grid-item" draggable="true">Item 13</div>
   <div class="grid-item" draggable="true">Item 14</div>
   <div class="grid-item" draggable="true">Item 15</div>
-</div>
+</div> -->

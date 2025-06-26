@@ -109,6 +109,8 @@ export class SparkleSortableDirective {
         }
       }
 
+      e.dataTransfer.effectAllowed = 'move';
+
       const ghostElement = draggedElement.cloneNode(true) as HTMLElement;
       this.#ghostEl.set(ghostElement);
       this.#renderer.addClass(ghostElement, 'sortable-ghost');
@@ -150,6 +152,8 @@ export class SparkleSortableDirective {
   @HostListener('dragover', ['$event'])
   dragOver(e: DragEvent) {
     e.preventDefault();
+
+    e.dataTransfer!.dropEffect = 'move';
 
     const startIndex = this.dragStartIndex();
     if (startIndex === -1) {
