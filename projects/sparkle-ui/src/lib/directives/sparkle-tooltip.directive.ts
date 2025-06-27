@@ -135,12 +135,9 @@ export class SparkleTooltipDirective implements OnDestroy {
 
   @HostListener('mouseenter')
   onMouseEnter() {
-    this.showTooltip();
-  }
-
-  @HostListener('mouseleave')
-  onMouseLeave() {
     this.cleanupTooltip();
+
+    queueMicrotask(() => this.showTooltip());
   }
 
   ngOnDestroy() {
@@ -176,6 +173,7 @@ export class SparkleTooltipDirective implements OnDestroy {
 
   private cleanupTooltip(): void {
     this.isOpen.set(false);
+
     if (this.#wrapperComponentRef) {
       this.#wrapperComponentRef.destroy();
       this.#wrapperComponentRef = null;

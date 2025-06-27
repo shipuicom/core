@@ -1,4 +1,125 @@
-<section>
+<h1>Tooltip</h1>
+
+<app-property-viewer>
+  <section>
+    <h4>Content Types</h4>
+    <p>
+      Tooltips can display different types of content using the
+      <code>[spkTooltip]</code>
+      directive:
+    </p>
+    <ul>
+      <li>
+        <b>String</b>
+        : Simple text content
+      </li>
+      <li>
+        <b>Template</b>
+        : Rich HTML content using
+        <code>ng-template</code>
+      </li>
+      <li>
+        <b>null/undefined</b>
+        : Disables the tooltip
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h4>Positioning</h4>
+    <p>Tooltips automatically position themselves based on available space. They can appear:</p>
+    <ul>
+      <li>
+        <b>Above</b>
+        : When there's not enough space below
+      </li>
+      <li>
+        <b>Below</b>
+        : Default position
+      </li>
+      <li>
+        <b>Left/Right</b>
+        : Automatically adjusted to stay within viewport
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h4>Theming</h4>
+    <p>
+      Tooltips inherit the theme from their trigger element. Apply theme classes like
+      <code>class="primary"</code>
+      ,
+      <code>class="accent"</code>
+      ,
+      <code>class="warn"</code>
+      ,
+      <code>class="error"</code>
+      and
+      <code>class="success"</code>
+      to the trigger element.
+    </p>
+  </section>
+
+  <section>
+    <h4>Trigger Elements</h4>
+    <p>
+      The
+      <code>[spkTooltip]</code>
+      directive can be applied to any element. Common triggers include:
+    </p>
+    <ul>
+      <li>
+        <b>Buttons</b>
+        : For action explanations
+      </li>
+      <li>
+        <b>Icons</b>
+        : For quick help text
+      </li>
+      <li>
+        <b>Text</b>
+        : For additional context
+      </li>
+      <li>
+        <b>Form elements</b>
+        : For validation messages
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h4>Accessibility</h4>
+    <p>
+      Tooltips automatically handle accessibility features including proper ARIA attributes and keyboard navigation.
+      They appear on hover and disappear on mouse leave.
+    </p>
+  </section>
+</app-property-viewer>
+
+<div class="sandbox-example"></div>
+
+<div class="content">
+  <h3>Variations</h3>
+
+  <app-previewer path="/spk-tooltip/examples/basic-tooltip/basic-tooltip.component" title="Basic">
+    <app-basic-tooltip class="example" />
+  </app-previewer>
+
+  <app-previewer path="/spk-tooltip/examples/template-tooltip/template-tooltip.component" title="Template">
+    <app-template-tooltip class="example" />
+  </app-previewer>
+
+  <app-previewer path="/spk-tooltip/examples/themed-tooltip/themed-tooltip.component" title="Themed">
+    <app-themed-tooltip class="example" />
+  </app-previewer>
+
+  <app-previewer path="/spk-tooltip/examples/long-tooltip/long-tooltip.component" title="Long Content">
+    <app-long-tooltip class="example" />
+  </app-previewer>
+</div>
+
+<!-- <section>
   <spk-icon class="primary" [spkTooltip]="tooltipValue()">acorn-bold</spk-icon>
 
   <h3>Basic</h3>
@@ -112,4 +233,4 @@
       <spk-icon>circle</spk-icon>
     </button>
   </spk-tooltip>
-</section>
+</section> -->
