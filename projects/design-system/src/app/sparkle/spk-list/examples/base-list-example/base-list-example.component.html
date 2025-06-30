@@ -1,0 +1,31 @@
+<spk-list class="primary">
+  <h3 title>Basic</h3>
+  <div item>
+    <spk-icon>circle</spk-icon>
+    Simple item
+    <span suffix>⌘O</span>
+  </div>
+  <div item>
+    <spk-icon>circle</spk-icon>
+    Another simple item
+    <span suffix>⌘O</span>
+  </div>
+  <div action [class.active]="active()" (click)="active.set(!active())">
+    <spk-icon>circle</spk-icon>
+    Actionable item
+    <span suffix>⌘O</span>
+  </div>
+  <div item (click)="checkbox1.setValue(!checkbox1.value)">
+    <spk-icon>circle</spk-icon>
+    Checkbox item with reactive form control
+    <spk-checkbox suffix>
+      <input type="checkbox" [formControl]="checkbox1" />
+    </spk-checkbox>
+  </div>
+  <div item (click)="checkbox2.set(!checkbox2())">
+    <spk-checkbox>
+      <input type="checkbox" [ngModel]="checkbox2()" />
+    </spk-checkbox>
+    Checkbox item with ngModel
+  </div>
+</spk-list>

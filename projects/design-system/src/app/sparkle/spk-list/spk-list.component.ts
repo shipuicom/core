@@ -5,10 +5,21 @@ import {
   SparkleIconComponent,
   SparkleListComponent,
 } from '../../../../../sparkle-ui/src/public-api';
+import { PreviewerComponent } from '../../previewer/previewer.component';
+import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
+import { BaseListExampleComponent } from './examples/base-list-example/base-list-example.component';
 
 @Component({
   selector: 'app-spk-list',
-  imports: [ReactiveFormsModule, SparkleListComponent, SparkleIconComponent, SparkleCheckboxComponent],
+  imports: [
+    ReactiveFormsModule,
+    SparkleListComponent,
+    SparkleIconComponent,
+    SparkleCheckboxComponent,
+    PreviewerComponent,
+    BaseListExampleComponent,
+    PropertyViewerComponent,
+  ],
   templateUrl: './spk-list.component.html',
   styleUrl: './spk-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
