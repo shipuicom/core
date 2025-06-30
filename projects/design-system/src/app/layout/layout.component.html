@@ -92,6 +92,10 @@
 
       <button action routerLink="/spk-tabs" routerLinkActive="active">Tabs</button>
 
+      <button action routerLink="/spk-tooltip" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Tooltip
+      </button>
+
       <button action routerLink="/spk-icons" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
         Icons
@@ -153,11 +157,6 @@
         [routerLinkActiveOptions]="{ exact: true }">
         <spk-icon class="spk-primary">check-bold</spk-icon>
         Button Group
-      </button>
-
-      <button action routerLink="/spk-tooltip" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">check-bold</spk-icon>
-        Tooltip
       </button>
 
       <button action routerLink="/spk-stepper" routerLinkActive="active">
