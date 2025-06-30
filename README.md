@@ -46,6 +46,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Revamp color scheme to a radix like 1-12 instead of 100-900 (align with figma)
 - [x] spk-table features
   - [x] Add support for sticky rows
+  - [x] Add support for multi sticky rows
   - [x] Improve support for sorting with a built in sort using attribute on the column
   - [x] Add support for multi sticky columns
 - [x] spk-menu features
@@ -72,7 +73,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [ ] Create volume slider variant for range slider
 - [ ] Drag controls for number inputs (directive)
 - [ ] spk-table features
-  - [ ] Add support for multi sticky rows
+  - [ ] Need to support sticky headers and internal rows
   - [ ] Add support for row resizing
 - [ ] spk-menu features
   - [ ] add hotkeys to navigate options without having a search input

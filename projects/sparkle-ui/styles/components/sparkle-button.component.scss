@@ -96,8 +96,8 @@ $spkButtonShadow: false !default;
       padding: p2r(0 8);
       gap: p2r(4);
 
-      &:has(spk-icon:only-child) {
-        padding: p2r(0 6);
+      spk-icon {
+        font-size: p2r(16);
       }
     }
 
@@ -233,7 +233,7 @@ $spkButtonShadow: false !default;
       }
 
       &.small:has(spk-icon:only-child) {
-        padding: p2r(0 7);
+        padding: p2r(0 8);
       }
 
       &.primary {
@@ -281,7 +281,7 @@ $spkButtonShadow: false !default;
       }
 
       &.small:has(spk-icon:only-child) {
-        padding: p2r(0 7);
+        padding: p2r(0 8);
       }
 
       &.primary {
