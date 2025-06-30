@@ -1,0 +1,20 @@
+.menu {
+  display: flex;
+  gap: 8px;
+  position: relative;
+}
+
+button.selected {
+  font-weight: bold;
+  color: #1976d2;
+}
+
+.submenu {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  background: #fff;
+  border: 1px solid #eee;
+  margin-top: 4px;
+  z-index: 1;
+}

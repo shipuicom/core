@@ -1,0 +1,23 @@
+.menu-search {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 220px;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+button.selected {
+  font-weight: bold;
+  color: #1976d2;
+}
+
+input[type='text'] {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}

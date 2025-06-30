@@ -1,20 +1,22 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import {
-  SparkleButtonComponent,
-  SparkleCheckboxComponent,
-  SparkleDividerComponent,
-  SparkleIconComponent,
-  SparkleMenuComponent,
-} from '../../../../../sparkle-ui/src/public-api';
+import { PreviewerComponent } from '../../previewer/previewer.component';
+import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
+import { BaseMenuExampleComponent } from './examples/base-menu-example/base-menu-example.component';
+import { IconSuffixMenuComponent } from './examples/icon-suffix-menu/icon-suffix-menu.component';
+import { MultiLayerMenuExampleComponent } from './examples/multi-layer-menu-example/multi-layer-menu-example.component';
+import { SearchMenuExampleComponent } from './examples/search-menu-example/search-menu-example.component';
+import { ToggleSelectMenuExampleComponent } from './examples/toggle-select-menu-example/toggle-select-menu-example.component';
 
 @Component({
   selector: 'app-spk-menu',
   imports: [
-    SparkleMenuComponent,
-    SparkleCheckboxComponent,
-    SparkleIconComponent,
-    SparkleButtonComponent,
-    SparkleDividerComponent,
+    PropertyViewerComponent,
+    PreviewerComponent,
+    BaseMenuExampleComponent,
+    MultiLayerMenuExampleComponent,
+    IconSuffixMenuComponent,
+    SearchMenuExampleComponent,
+    ToggleSelectMenuExampleComponent,
   ],
   templateUrl: './spk-menu.component.html',
   styleUrl: './spk-menu.component.scss',

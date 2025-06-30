@@ -1,0 +1,11 @@
+<spk-menu>
+  <button spk-button class="outlined">Open toggle select menu</button>
+  <ng-container menu>
+    @for (item of menuItems; track item.value) {
+      <button (click)="toggle(item)" [class.selected]="isSelected(item)">
+        <span class="checkbox">{{ isSelected(item) ? '☑' : '☐' }}</span>
+        {{ item.label }}
+      </button>
+    }
+  </ng-container>
+</spk-menu>

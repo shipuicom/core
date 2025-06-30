@@ -1,0 +1,10 @@
+<spk-menu>
+  <button spk-button class="outlined">Open menu</button>
+  <ng-container menu>
+    @for (item of menuItems; track item.value) {
+      <button (click)="someFunction(item)">
+        {{ item.label }}
+      </button>
+    }
+  </ng-container>
+</spk-menu>

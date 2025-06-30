@@ -1,110 +1,59 @@
-<section>
-  <h3>Menu example</h3>
+<h1>Menu</h1>
 
-  <button spk-button class="outlined" (click)="addOption()">Add option</button>
+<app-property-viewer>
+  <section>
+    <h4>asMultiLayer</h4>
+    <p>Enable multi-layer (nested) menu support.</p>
+  </section>
 
-  <div class="wrap">
-    <spk-menu class="stretch" [disabled]="false" [openIndicator]="true">
-      <button spk-button class="outlined">Open menu</button>
+  <section>
+    <h4>searchable</h4>
+    <p>Show a search input to filter menu options it's a wildcard search.</p>
+  </section>
 
-      <ng-container menu>
-        <button (click)="fireHello(1)">
-          <spk-icon>circle</spk-icon>
-          Item 1
-          <span suffix>⌘O</span>
-        </button>
+  <section>
+    <h4>closeOnClick</h4>
+    <p>
+      Close the menu when an option is clicked (default is true), good when you want to keep the menu open for selecting
+      multiple options.
+    </p>
+  </section>
 
-        <button (click)="fireHello(2)">
-          <spk-icon>circle</spk-icon>
-          Item 2
-          <span suffix>⌘K</span>
-        </button>
+  <section>
+    <h4>disabled</h4>
+    <p>Disable the menu trigger and menu.</p>
+  </section>
 
-        <spk-menu class="stretch" [asMultiLayer]="true" [disabled]="false" [openIndicator]="true">
-          <button class="outlined">Open menu</button>
+  <section>
+    <h4>Suffix</h4>
+    <p>You can add a suffix attribute to an element inside the option to show a hotkey, icon, etc.</p>
+  </section>
+</app-property-viewer>
 
-          <ng-container menu>
-            <button (click)="fireHello(123)">
-              <spk-icon>circle</spk-icon>
-              Hello 123
-              <span suffix>⌘O</span>
-            </button>
+<div class="content">
+  <h3>Examples</h3>
 
-            <button (click)="fireHello(456)">
-              <spk-icon>circle</spk-icon>
-              World 456
-              <span suffix>⌘K</span>
-            </button>
-          </ng-container>
-        </spk-menu>
-      </ng-container>
-    </spk-menu>
-  </div>
+  <app-previewer path="/spk-menu/examples/base-menu-example/base-menu-example.component" title="Base Menu">
+    <base-menu-example class="example" />
+  </app-previewer>
 
-  <div class="wrap">
-    <spk-menu [searchable]="true">
-      <button spk-button class="outlined">
-        Open menu
-        <spk-icon>dots-three-vertical</spk-icon>
-      </button>
+  <app-previewer path="/spk-menu/examples/icon-suffix-menu/icon-suffix-menu.component" title="Icon Suffix Menu">
+    <spk-icon-suffix-menu class="example" />
+  </app-previewer>
 
-      <ng-container menu>
-        <div title>Section 1</div>
+  <app-previewer
+    path="/spk-menu/examples/multi-layer-menu-example/multi-layer-menu-example.component"
+    title="Multi Layer Menu">
+    <spk-multi-layer-menu-example class="example" />
+  </app-previewer>
 
-        <button (click)="fireHello(1)">
-          <spk-icon>circle</spk-icon>
-          Item 1
-          <span suffix>⌘O</span>
-        </button>
+  <app-previewer path="/spk-menu/examples/search-menu-example/search-menu-example.component" title="Searchable Menu">
+    <spk-search-menu-example class="example" />
+  </app-previewer>
 
-        <button (click)="fireHello(2)">
-          <spk-icon>circle</spk-icon>
-          Item 2
-          <span suffix>⌘K</span>
-        </button>
-        <spk-divider />
-
-        <button (click)="fireHello(3)" disabled>
-          <spk-icon>circle</spk-icon>
-          Item 3
-          <span suffix>⌘L</span>
-        </button>
-
-        <button (click)="fireHello(3)" [attr.disabled]="true">
-          <spk-icon>circle</spk-icon>
-          Item 4
-          <span suffix>⌘L</span>
-        </button>
-
-        @for (item of menuItems(); track $index) {
-          <button (click)="fireHello($index)" [attr.disabled]="$index % 2 === 0 ? '' : null">
-            <spk-icon>circle</spk-icon>
-            Item {{ $index }}
-            <span suffix>⌘L</span>
-          </button>
-        }
-      </ng-container>
-    </spk-menu>
-  </div>
-
-  <div class="wrap">
-    <spk-menu [closeOnClick]="false">
-      <button spk-button class="outlined">Open menu ({{ activeItems().length }} selected)</button>
-
-      <ng-container menu>
-        <div title>Section 1</div>
-
-        @for (item of menuItems(); track $index) {
-          @if ($index % 10 === 0) {
-            <div title>Section {{ $index / 10 }}</div>
-          }
-          <button (click)="toggleActive($index)" [attr.disabled]="$index % 2 === 0 ? '' : null">
-            <spk-checkbox class="primary raised" [class.active]="activeItems().includes($index)" />
-            Item {{ $index }}
-            <span suffix>⌘L</span>
-          </button>
-        }
-      </ng-container>
-    </spk-menu>
-  </div>
-</section>
+  <app-previewer
+    path="/spk-menu/examples/toggle-select-menu-example/toggle-select-menu-example.component"
+    title="Toggle Select Menu">
+    <spk-toggle-select-menu-example class="example" />
+  </app-previewer>
+</div>

@@ -1,0 +1,14 @@
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+button.selected {
+  font-weight: bold;
+  color: #1976d2;
+}
+
+.checkbox {
+  margin-right: 8px;
+}

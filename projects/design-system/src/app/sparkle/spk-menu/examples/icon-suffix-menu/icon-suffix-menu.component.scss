@@ -1,0 +1,9 @@
+.menu {
+  display: flex;
+  gap: 8px;
+}
+
+button.selected {
+  font-weight: bold;
+  color: #1976d2;
+}
