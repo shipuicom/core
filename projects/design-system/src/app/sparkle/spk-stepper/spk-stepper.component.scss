@@ -1,11 +1,32 @@
-:host {
-  display: block;
-}
+@use 'helpers' as *;
 
-section {
+:host {
   display: flex;
   flex-direction: column;
-  padding: 40px;
+  gap: p2r(20);
+  padding: p2r(40);
+  width: calc(100% - var(--spk-sidenav));
+}
+
+h1 {
+  font: var(--title-20B);
+}
+
+h3 {
+  font: var(--paragraph-10);
+}
+
+.example {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: p2r(8);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  max-width: 700px;
+  gap: p2r(20);
 }
