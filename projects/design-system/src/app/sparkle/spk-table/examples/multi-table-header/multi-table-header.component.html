@@ -1,0 +1,25 @@
+<spk-table [data]="dataSource()" [class]="type()">
+  <div class="sticky" table-header>
+    <tr>
+      @for (col of displayedColumns(); track col) {
+        <th>{{ col }}</th>
+      }
+    </tr>
+
+    <tr>
+      @for (col of displayedColumns(); track col) {
+        <th>{{ col }}</th>
+      }
+    </tr>
+  </div>
+
+  @for (row of dataSource(); track $index) {
+    <tr>
+      @for (col of displayedColumns(); track col) {
+        <td>{{ row[col] }}</td>
+      }
+    </tr>
+  }
+
+  <div table-no-rows>No data available</div>
+</spk-table>

@@ -3,7 +3,6 @@ import {
   AfterDropResponse,
   moveIndex,
   SparkleCheckboxComponent,
-  SparkleIconComponent,
   SparkleListComponent,
   SparkleSortableDirective,
 } from '../../../../../../../sparkle-ui/src/public-api';
@@ -48,7 +47,7 @@ type Todo = (typeof TODOS)[0];
 @Component({
   selector: 'app-base-sortable',
   standalone: true,
-  imports: [SparkleListComponent, SparkleSortableDirective, SparkleIconComponent, SparkleCheckboxComponent],
+  imports: [SparkleListComponent, SparkleSortableDirective, SparkleCheckboxComponent],
   templateUrl: './base-sortable.component.html',
   styleUrl: './base-sortable.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

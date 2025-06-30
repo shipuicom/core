@@ -1,0 +1,28 @@
+<pre>Sort column by: {{ sortByColumn() }}</pre>
+
+<spk-table [data]="dataSource()" [(sortByColumn)]="sortByColumn" [class]="type()">
+  <tr>
+    @for (col of displayedColumns(); track col) {
+      <th [spkSort]="col">
+        {{ col }}
+
+        @if (sortByColumn() === col) {
+          <spk-icon>caret-up</spk-icon>
+        }
+        @if (sortByColumn() === `-${col}`) {
+          <spk-icon>caret-down</spk-icon>
+        }
+      </th>
+    }
+  </tr>
+
+  @for (row of dataSource(); track $index) {
+    <tr>
+      @for (col of displayedColumns(); track col) {
+        <td>{{ row[col] }}</td>
+      }
+    </tr>
+  }
+
+  <div table-no-rows>No data available</div>
+</spk-table>

@@ -243,7 +243,7 @@ export class SparkleTableComponent {
   sortByColumn = model<string | null>(null);
 
   thead = viewChild<ElementRef<HTMLTableSectionElement>>('thead');
-  columns = observeChildren<HTMLTableColElement>(this.thead, ['TH']);
+  columns = observeChildren<HTMLTableColElement>(this.thead, ['TR:first-child TH']);
 
   class = signal<string>(this.#spkConfig?.tableType ?? 'default');
   resizing = signal(false);

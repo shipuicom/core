@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import {
-  SparkleButtonGroupComponent,
-  SparkleResizeDirective,
-  SparkleSortDirective,
-  SparkleStickyColumnsDirective,
-  SparkleTableComponent,
-  SparkleToggleComponent,
-} from '../../../../../sparkle-ui/src/public-api';
+import { SparkleButtonGroupComponent } from '../../../../../sparkle-ui/src/public-api';
+import { PreviewerComponent } from '../../previewer/previewer.component';
+import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
+import { BaseTableComponent } from './examples/base-table/base-table.component';
+import { MultiStickyTableComponent } from './examples/multi-sticky-table/multi-sticky-table.component';
+import { MultiTableHeaderComponent } from './examples/multi-table-header/multi-table-header.component';
+import { ResizingTableComponent } from './examples/resizing-table/resizing-table.component';
+import { SortingTableComponent } from './examples/sorting-table/sorting-table.component';
+import { ToggleRowTableComponent } from './examples/toggle-row-table/toggle-row-table.component';
 
 export interface PeriodicElement {
   name: string;
@@ -40,19 +41,24 @@ type Column = Columns[number];
 
 @Component({
   selector: 'app-spk-table',
+  standalone: true,
   imports: [
-    SparkleTableComponent,
+    PropertyViewerComponent,
+    PreviewerComponent,
+    MultiStickyTableComponent,
+    BaseTableComponent,
+    ResizingTableComponent,
+    MultiTableHeaderComponent,
+    ToggleRowTableComponent,
+    SortingTableComponent,
     SparkleButtonGroupComponent,
-    SparkleResizeDirective,
-    SparkleSortDirective,
-    SparkleToggleComponent,
-    SparkleStickyColumnsDirective,
   ],
   templateUrl: './spk-table.component.html',
   styleUrl: './spk-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class SpkTableComponent {
+  type = signal<'type-a' | 'type-b'>('type-a');
   displayedColumns = signal<Columns>(COLUMNS);
   withStickyColumns = computed(() => (this.displayedColumns() as any).concat(['hi', 'end']));
   dataSource = signal([
@@ -117,8 +123,6 @@ export default class SpkTableComponent {
   isLoading = signal(true);
   openRowIndex = signal<number | null>(null);
   sortByColumn = signal<Column | `-${Column}` | null>(null);
-  typeActive = signal('type-a');
-  resizable = signal(true);
 
   ngOnInit() {
     setTimeout(() => {

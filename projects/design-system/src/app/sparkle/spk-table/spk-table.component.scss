@@ -1,16 +1,32 @@
+@use 'helpers' as *;
+
 :host {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: p2r(20);
+  padding: p2r(40);
+  width: calc(100% - var(--spk-sidenav));
 }
 
-section {
+h1 {
+  font: var(--title-20B);
+}
+
+h3 {
+  font: var(--paragraph-10);
+}
+
+.example {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: p2r(8);
+}
+
+.content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 40px;
-
-  &.no-padding-sides {
-    padding: 40px 0;
-  }
+  width: 100%;
+  gap: p2r(20);
 }

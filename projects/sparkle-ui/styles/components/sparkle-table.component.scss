@@ -2,6 +2,14 @@
 
 $spkTable: true !default;
 
+@mixin caret($color) {
+  border-left: p2r(3) solid $color;
+  border-bottom: p2r(3) solid $color;
+  width: p2r(8);
+  height: p2r(8);
+  transform: rotate(45deg);
+}
+
 @if $spkTable == true {
   spk-table {
     --table-bc: var(--base-4);
@@ -16,6 +24,7 @@ $spkTable: true !default;
     --table-td-p: #{p2r(0 20)};
     --table-th-mh: #{p2r(48)};
     --table-td-mh: #{p2r(78)};
+    --table-th-g: #{p2r(4)};
     --table-td-g: #{p2r(8)};
     --table-ws: nowrap;
     --table-th-bw: 0;
@@ -103,6 +112,10 @@ $spkTable: true !default;
           border-left-width: 0;
         }
       }
+
+      div[table-header] tr:first-child th {
+        border-bottom: 0;
+      }
     }
 
     width: 100%;
@@ -134,6 +147,7 @@ $spkTable: true !default;
     thead {
       position: relative;
 
+      &:has(div[table-header].sticky),
       &:has(tr.sticky) {
         position: sticky;
         top: 0;
@@ -151,6 +165,7 @@ $spkTable: true !default;
 
     tbody,
     thead,
+    div[table-header].sticky,
     tr {
       display: grid;
       grid-column: 1 / -1;
@@ -159,6 +174,8 @@ $spkTable: true !default;
 
     tr {
       background: var(--table-tr-bg);
+      position: relative;
+      z-index: 0;
 
       &.sticky {
         position: sticky;
@@ -199,10 +216,42 @@ $spkTable: true !default;
       border-style: solid;
       border-width: var(--table-th-bw);
       background: var(--table-th-bg);
+      gap: var(--table-th-g);
       z-index: 100;
 
       &:has(.spk-resizer) {
         position: relative;
+      }
+
+      &.sortable {
+        --caret-color: var(--base-10);
+        --caret-size: #{p2r(6)};
+
+        cursor: pointer;
+        user-select: none;
+
+        &:not(:has(spk-icon)) {
+          &:after {
+            content: '';
+            border: var(--caret-size) solid transparent;
+            width: 0;
+            height: 0;
+            opacity: 0;
+            transition: opacity 125ms ease-in-out;
+          }
+
+          &.sort-desc::after {
+            opacity: 1;
+            transform: translateY(-4px);
+            border-bottom-color: var(--caret-color);
+          }
+
+          &.sort-asc::after {
+            opacity: 1;
+            transform: translateY(4px);
+            border-top-color: var(--caret-color);
+          }
+        }
       }
 
       .spk-resizer {

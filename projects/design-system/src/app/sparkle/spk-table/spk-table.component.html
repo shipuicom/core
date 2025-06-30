@@ -1,96 +1,172 @@
-<section [class.no-padding-sides]="typeActive() === 'type-b'">
-  <h3>Basic table - sorted by : {{ sortByColumn() }}</h3>
+<h1>Table</h1>
 
+<app-property-viewer>
+  <section>
+    <h4>data</h4>
+    <p>
+      The data array to display in the table. Is a one-way binding.
+      <code>[data]</code>
+      .
+    </p>
+  </section>
+  <section>
+    <h4>loading</h4>
+    <p>
+      Boolean. Shows a loading indicator when true.
+      <code>[loading]="true"</code>
+    </p>
+  </section>
+  <section>
+    <h4>sortByColumn</h4>
+    <p>
+      The column to sort by. Two-way bindable via can also be used with a model signal.
+      <code>[(sortByColumn)]</code>
+      or
+      <code>[sortByColumn]</code>
+      /
+      <code>(sortByColumnChange)</code>
+      .
+    </p>
+  </section>
+  <section>
+    <h4>spkResize</h4>
+    <p>
+      Makes a column resizable. Inputs:
+      <code>resizable</code>
+      (default: true),
+      <code>minWidth</code>
+      (default: 50),
+      <code>maxWidth</code>
+      (default: null).
+    </p>
+
+    <p>
+      Can be disabled by adding class
+      <code>.no-resize</code>
+      to the table.
+    </p>
+  </section>
+
+  <section>
+    <h4>spkSort</h4>
+    <p>
+      Makes a column sortable. Input:
+      <code>spkSort</code>
+      (column name).
+    </p>
+  </section>
+  <section>
+    <h4>spkStickyColumns</h4>
+    <p>
+      Makes columns sticky. Input:
+      <code>spkStickyColumns</code>
+      ('start' or 'end', default: 'start').
+    </p>
+  </section>
+
+  <section>
+    <h4>CSS Classes</h4>
+    <p>
+      <code>.sticky</code>
+      : Makes a column sticky to the left.
+      <br />
+      <code>.sticky-end</code>
+      : Makes a column sticky to the right.
+    </p>
+  </section>
+</app-property-viewer>
+
+<div class="controls">
   <spk-button-group>
-    <button [class.active]="typeActive() === 'type-a'" (click)="typeActive.set('type-a')">Type A</button>
-    <button [class.active]="typeActive() === 'type-b'" (click)="typeActive.set('type-b')">Type B</button>
+    <button [class.active]="type() === 'type-a'" (click)="type.set('type-a')">Type A</button>
+    <button [class.active]="type() === 'type-b'" (click)="type.set('type-b')">Type B</button>
   </spk-button-group>
+</div>
 
-  <spk-toggle class="primary raised" [class.active]="resizable()" (click)="resizable.set(!resizable())"></spk-toggle>
+<app-previewer path="/spk-table/examples/base-table/base-table.component" title="Basic Table">
+  <base-table class="example" [type]="type()" />
+</app-previewer>
 
-  <spk-table
-    [(data)]="dataSource"
-    [class.no-resize]="!resizable()"
-    [class]="typeActive()"
-    [loading]="isLoading()"
-    [sortByColumn]="sortByColumn()">
-    <tr class="sticky" table-header>
-      <th spkResize class="sticky">im sticky</th>
+<app-previewer path="/spk-table/examples/toggle-row-table/toggle-row-table.component" title="Toggle Row Table">
+  <toggle-row-table class="example" [type]="type()" />
+</app-previewer>
 
-      @for (col of displayedColumns(); track col) {
-        <th spkResize [spkSort]="col">{{ col }}</th>
-      }
+<app-previewer path="/spk-table/examples/multi-sticky-table/multi-sticky-table.component" title="Multi Sticky Columns">
+  <multi-sticky-table class="example" [type]="type()" />
+</app-previewer>
 
-      <th spkResize class="sticky-end">im sticky end</th>
-    </tr>
+<app-previewer path="/spk-table/examples/multi-table-header/multi-table-header.component" title="Resizing Table">
+  <resizing-table class="example" [type]="type()" />
+</app-previewer>
 
-    @for (row of dataSource(); track $index) {
-      <tr [class.sticky-end]="$last" (click)="toggleRow($index)">
-        <td class="sticky">im sticky</td>
+<app-previewer path="/spk-table/examples/multi-table-header/multi-table-header.component" title="Multi Table Header">
+  <multi-table-header class="example" [type]="type()" />
+</app-previewer>
 
-        @for (col of displayedColumns(); track col) {
-          <td>{{ row[col] }}</td>
-        }
+<app-previewer path="/spk-table/examples/sorting-table/sorting-table.component" title="Sorting Table">
+  <sorting-table class="example" [type]="type()" />
+</app-previewer>
 
-        <td class="sticky-end">im sticky end</td>
-      </tr>
-
-      @if ($index === openRowIndex()) {
-        <tr>
-          <td class="span-all">hi im a secondary row</td>
-        </tr>
-      }
-    }
-
-    <div table-no-rows>No data available</div>
-  </spk-table>
-
-  <h3>Multi sticky columns</h3>
-
-  <spk-table
-    [(data)]="dataSource"
-    [class.no-resize]="!resizable()"
-    [class]="typeActive()"
-    [loading]="isLoading()"
-    [sortByColumn]="sortByColumn()">
-    <tr class="sticky" table-header>
-      <div spkStickyColumns>
-        <th spkResize>im sticky</th>
-        <th spkResize>im sticky</th>
-      </div>
-
-      @for (col of displayedColumns(); track col) {
-        <th spkResize [spkSort]="col">{{ col }}</th>
-      }
-
-      <div spkStickyColumns="end">
-        <th spkResize>im sticky end</th>
-        <th spkResize>im sticky end</th>
-      </div>
-    </tr>
-
-    @for (row of dataSource(); track $index) {
-      <tr [class.sticky-end]="$last" (click)="toggleRow($index)">
-        <div spkStickyColumns>
-          <td>im sticky</td>
-          <td>im sticky</td>
-        </div>
-        @for (col of displayedColumns(); track col) {
-          <td>{{ row[col] }}</td>
-        }
-        <div spkStickyColumns="end">
-          <td>im sticky end</td>
-          <td>im sticky end</td>
-        </div>
-      </tr>
-
-      @if ($index === openRowIndex()) {
-        <tr>
-          <td class="span-all">hi im a secondary row</td>
-        </tr>
-      }
-    }
-
-    <div table-no-rows>No data available</div>
-  </spk-table>
+<!-- <section>
+  <h3>Usage</h3>
+  <pre><code>&lt;spk-table [(data)]="dataSource" [loading]="isLoading" [(sortByColumn)]="sortByColumn"&gt;
+  &lt;tr table-header&gt;
+    &lt;th spkResize [spkSort]="'name'"&gt;Name&lt;/th&gt;
+    &lt;th spkResize [spkSort]="'weight'"&gt;Weight&lt;/th&gt;
+    &lt;th spkResize [spkSort]="'symbol'"&gt;Symbol&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;tr *ngFor="let row of dataSource"&gt;
+    &lt;td&gt;{{ row.name }}&lt;/td&gt;
+    &lt;td&gt;{{ row.weight }}&lt;/td&gt;
+    &lt;td&gt;{{ row.symbol }}&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;div table-no-rows&gt;No data available&lt;/div&gt;
+&lt;/spk-table&gt;
+</code></pre>
 </section>
+
+<section>
+  <h3>Advanced Features</h3>
+  <ul>
+    <li>
+      <b>Sticky Columns:</b>
+      Use
+      <code>spkStickyColumns</code>
+      on
+      <code>&lt;div&gt;</code>
+      wrapping
+      <code>&lt;th&gt;</code>
+      or
+      <code>&lt;td&gt;</code>
+      .
+    </li>
+    <li>
+      <b>Resizable Columns:</b>
+      Add
+      <code>spkResize</code>
+      to
+      <code>&lt;th&gt;</code>
+      .
+    </li>
+    <li>
+      <b>Sortable Columns:</b>
+      Add
+      <code>[spkSort]="columnName"</code>
+      to
+      <code>&lt;th&gt;</code>
+      .
+    </li>
+    <li>
+      <b>Loading State:</b>
+      Set
+      <code>[loading]="true"</code>
+      to show a progress bar.
+    </li>
+    <li>
+      <b>No Data State:</b>
+      Use
+      <code>&lt;div table-no-rows&gt;</code>
+      for empty state.
+    </li>
+  </ul>
+</section> -->

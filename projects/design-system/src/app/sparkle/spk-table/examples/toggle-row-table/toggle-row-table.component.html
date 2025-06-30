@@ -1,0 +1,35 @@
+<spk-table [data]="dataSource()" [loading]="isLoading()" [class]="type()">
+  <tr>
+    @for (col of displayedColumns(); track col) {
+      <th>{{ col }}</th>
+    }
+  </tr>
+
+  @for (row of dataSource(); track $index) {
+    <tr (click)="toggleRow($index)">
+      @for (col of displayedColumns(); track col) {
+        <td>
+          @if ($first) {
+            <button spk-button class="small primary raised">
+              @if ($index === openRowIndex()) {
+                <spk-icon>caret-up</spk-icon>
+              } @else {
+                <spk-icon>caret-down</spk-icon>
+              }
+            </button>
+          }
+
+          {{ row[col] }}
+        </td>
+      }
+    </tr>
+
+    @if ($index === openRowIndex()) {
+      <tr>
+        <td class="span-all" [style.background-color]="'red'">hi im a secondary row and i can be styled differently</td>
+      </tr>
+    }
+  }
+
+  <div table-no-rows>No data available</div>
+</spk-table>
