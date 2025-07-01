@@ -7,7 +7,7 @@
         <input type="checkbox" [(ngModel)]="isNavOpen" />
       </spk-toggle>
 
-      <spk-button-group>
+      <spk-button-group class="small">
         <button [class.active]="sidenavType() === ''" (click)="sidenavType.set('')">Default</button>
         <button [class.active]="sidenavType() === 'overlay'" (click)="sidenavType.set('overlay')">Overlay</button>
         <button [class.active]="sidenavType() === 'simple'" (click)="sidenavType.set('simple')">Simple</button>
