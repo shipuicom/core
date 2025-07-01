@@ -12,7 +12,6 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { SparkleButtonComponent } from '../sparkle-button/sparkle-button.component';
 import { generateUniqueId } from '../utilities/random-id';
 
 // TODOS
@@ -35,14 +34,14 @@ const DEFAULT_OPTIONS: SparklePopoverOptions = {
 
 @Component({
   selector: 'spk-popover',
-  imports: [SparkleButtonComponent],
+  imports: [],
   template: `
     <div class="trigger" #triggerRef [style.anchor-name]="id()" (click)="toggleIsOpen($event)">
       <div class="trigger-wrapper">
         <ng-content select="[trigger]" />
+        <ng-content select="button" />
+        <ng-content select="[spk-button]" />
       </div>
-
-      <button spk-button class="outlined">Open popover</button>
     </div>
 
     <div popover #popoverRef class="popover" [style.position-anchor]="id()" [style]="menuStyle()">

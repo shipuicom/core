@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { SparklePopoverComponent } from '../../../../../sparkle-ui/src/public-api';
+import { SparkleButtonComponent, SparklePopoverComponent } from '../../../../../sparkle-ui/src/public-api';
 
 @Component({
   selector: 'app-spk-popover',
-  imports: [SparklePopoverComponent],
+  imports: [SparklePopoverComponent, SparkleButtonComponent],
   templateUrl: './spk-popover.component.html',
   styleUrl: './spk-popover.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

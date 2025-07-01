@@ -26,10 +26,6 @@ $spkPopover: true !default;
         &:empty + * {
           display: inherit;
         }
-
-        + [spk-button] {
-          display: none;
-        }
       }
     }
 
