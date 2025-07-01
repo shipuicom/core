@@ -41,6 +41,7 @@
     <p>Currently we only support phospher icons, but we are working on adding more.</p>
     <a spk-button class="primary raised small" href="https://phosphoricons.com/#toolbar" target="_blank">
       Search Phosphor Icons
+      <spk-icon>arrow-square-out</spk-icon>
     </a>
     <p>But we do support follow icon variation types:</p>
     <ul>
@@ -75,6 +76,53 @@
     </p>
     <p>
       <code>&lt;spk-icon&gt;cloud-warning-bold&lt;/spk-icon&gt;</code>
+    </p>
+  </section>
+
+  <section>
+    <h4>Icon CLI</h4>
+    <p>
+      We have a CLI tool that can help you generate icon fonts so you dont ship all 9000+ icons but only the ones you
+      use.
+    </p>
+    <p>
+      To generate the icon font you can run the following command:
+      <br />
+      <code>sparkle-fg --src='./src' --out='./src/assets' --rootPath='./'</code>
+    </p>
+    <p>
+      <br />
+      To watch the files and generate the icon font on change you can run the following command:
+      <code>sparkle-fg --src='./src' --out='./src/assets' --rootPath='./' --watch</code>
+    </p>
+
+    <ul>
+      <li>
+        <b>--src</b>
+        Are the src folder of your code where you use the icons.
+      </li>
+      <li>
+        <b>--out</b>
+        Are the out folder of your project we will generate the icon font here
+      </li>
+      <li>
+        <b>--rootPath</b>
+        Are the root path of your project we will use this to generate the correct path to the icons
+      </li>
+      <li>
+        <b>--watch</b>
+        Are the watch flag we will watch the files and generate the icon font on change
+      </li>
+    </ul>
+
+    <p>
+      The output will be a
+      <b>woff2</b>
+      file and a
+      <b>css</b>
+      file that you can use to import the icon font, that just need to be
+      <b>added to your index.html</b>
+      .
     </p>
   </section>
 </app-property-viewer>
