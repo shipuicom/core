@@ -1,3 +1,19 @@
+@use 'helpers' as *;
+
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: p2r(40);
+  padding: p2r(40);
+}
+
+h3 {
+  margin: 0;
+  font: var(--title-30);
+}
+
+.example {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(20);
 }

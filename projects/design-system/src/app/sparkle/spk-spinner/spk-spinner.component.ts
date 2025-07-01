@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { SparkleSpinnerComponent } from '../../../../../sparkle-ui/src/public-api';
+import { PreviewerComponent } from '../../previewer/previewer.component';
+import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
+import { SandboxSpinnerComponent } from './examples/sandbox-spinner/sandbox-spinner.component';
 
 @Component({
   selector: 'app-spk-spinner',
-  imports: [SparkleSpinnerComponent],
+  imports: [SandboxSpinnerComponent, PropertyViewerComponent, PreviewerComponent],
   templateUrl: './spk-spinner.component.html',
   styleUrl: './spk-spinner.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,0 +1,31 @@
+<spk-range-slider class="primary raised" unit="px">
+  <label for="range-slider">Set spinner size</label>
+  <input id="range-slider" type="range" step="2" min="24" max="120" [(ngModel)]="value" />
+</spk-range-slider>
+
+<spk-range-slider class="primary raised" unit="px">
+  <label for="range-slider">Spinner thickness</label>
+  <input id="range-slider" type="range" step="1" min="1" max="10" [(ngModel)]="thickness" />
+</spk-range-slider>
+
+<spk-spinner [style.--spinner-thickness]="thicknessAsPixels()" [style.--spinner-size]="valueAsPixels()"></spk-spinner>
+<spk-spinner
+  [style.--spinner-thickness]="thicknessAsPixels()"
+  [style.--spinner-size]="valueAsPixels()"
+  class="primary"></spk-spinner>
+<spk-spinner
+  [style.--spinner-thickness]="thicknessAsPixels()"
+  [style.--spinner-size]="valueAsPixels()"
+  class="accent"></spk-spinner>
+<spk-spinner
+  [style.--spinner-thickness]="thicknessAsPixels()"
+  [style.--spinner-size]="valueAsPixels()"
+  class="warn"></spk-spinner>
+<spk-spinner
+  [style.--spinner-thickness]="thicknessAsPixels()"
+  [style.--spinner-size]="valueAsPixels()"
+  class="error"></spk-spinner>
+<spk-spinner
+  [style.--spinner-thickness]="thicknessAsPixels()"
+  [style.--spinner-size]="valueAsPixels()"
+  class="success"></spk-spinner>

@@ -1,6 +1,33 @@
-<spk-spinner></spk-spinner>
-<spk-spinner class="primary"></spk-spinner>
-<spk-spinner class="accent"></spk-spinner>
-<spk-spinner class="warn"></spk-spinner>
-<spk-spinner class="error"></spk-spinner>
-<spk-spinner class="success"></spk-spinner>
+<h1>Spinner</h1>
+
+<app-property-viewer>
+  <section>
+    <h4>style.--spinner-thickness</h4>
+    <p>Set the thickness of the spinner.</p>
+
+    <h4>style.--spinner-size</h4>
+    <p>Set the size of the spinner.</p>
+  </section>
+
+  <section>
+    <h4>Colors</h4>
+    <p>
+      Chip colors can be set through the class ex
+      <code>class="primary"</code>
+      takes
+      <b>primary</b>
+      ,
+      <b>accent</b>
+      ,
+      <b>warn</b>
+      ,
+      <b>error</b>
+      and
+      <b>success</b>
+    </p>
+  </section>
+</app-property-viewer>
+
+<app-previewer path="/spk-spinner/examples/sandbox-spinner/sandbox-spinner.component" title="Sandbox">
+  <app-sandbox-spinner class="example" />
+</app-previewer>

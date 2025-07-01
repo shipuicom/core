@@ -1,157 +1,82 @@
-<section>
-  <div class="example-label">Basic</div>
-  <ul>
-    <li>
-      <spk-progress-bar class="indeterminate" />
-    </li>
-    <li>
-      <spk-progress-bar class="indeterminate accent" />
-    </li>
-    <li>
-      <spk-progress-bar class="indeterminate warn" />
-    </li>
-    <li>
-      <spk-progress-bar class="indeterminate error" />
-    </li>
-    <li>
-      <spk-progress-bar class="indeterminate success" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="10" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="25" class="primary" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="50" class="accent" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="75" class="warn" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="80" class="error" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="90" class="success" />
-    </li>
-  </ul>
-</section>
+<h1>Progress Bar</h1>
 
-<section>
-  <div class="example-label">Outlined</div>
-  <ul>
-    <li>
-      <spk-progress-bar class="outlined indeterminate" />
-    </li>
-    <li>
-      <spk-progress-bar class="outlined indeterminate accent" />
-    </li>
-    <li>
-      <spk-progress-bar class="outlined indeterminate warn" />
-    </li>
-    <li>
-      <spk-progress-bar class="outlined indeterminate error" />
-    </li>
-    <li>
-      <spk-progress-bar class="outlined indeterminate success" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="10" class="outlined" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="25" class="outlined primary" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="50" class="outlined accent" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="75" class="outlined warn" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="80" class="outlined error" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="90" class="outlined success" />
-    </li>
-  </ul>
-</section>
+<spk-alert class="warn">
+  Currently only have variants
+  <b>flat</b>
+  and
+  <b>raised</b>
+  more to come.
+</spk-alert>
 
-<section>
-  <div class="example-label">Flat</div>
-  <ul>
-    <li>
-      <spk-progress-bar class="flat indeterminate" />
-    </li>
-    <li>
-      <spk-progress-bar class="flat indeterminate accent" />
-    </li>
-    <li>
-      <spk-progress-bar class="flat indeterminate warn" />
-    </li>
-    <li>
-      <spk-progress-bar class="flat indeterminate error" />
-    </li>
-    <li>
-      <spk-progress-bar class="flat indeterminate success" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="10" class="flat" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="25" class="flat primary" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="50" class="flat accent" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="75" class="flat warn" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="80" class="flat error" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="90" class="flat success" />
-    </li>
-  </ul>
-</section>
+<app-property-viewer>
+  <section>
+    <h4>Variants</h4>
+    <p>
+      Progress bar variants can be set through the class, e.g.
+      <code>class="flat"</code>
+      . Available variants:
+      <b>base</b>
+      ,
+      <b>flat</b>
+      ,
+      <b>outlined</b>
+      ,
+      <b>raised</b>
+      .
+    </p>
+  </section>
+  <section>
+    <h4>Colors</h4>
+    <p>
+      Progress bar colors can be set through the class, e.g.
+      <code>class="primary"</code>
+      . Available colors:
+      <b>primary</b>
+      ,
+      <b>accent</b>
+      ,
+      <b>warn</b>
+      ,
+      <b>error</b>
+      ,
+      <b>success</b>
+      .
+    </p>
+  </section>
+  <section>
+    <h4>Disabled</h4>
+    <p>
+      The progress bar can be set to disabled through the attribute, e.g.
+      <code>[disabled]</code>
+      .
+    </p>
+  </section>
+</app-property-viewer>
 
-<section>
-  <div class="example-label">Raised</div>
-  <ul>
-    <li>
-      <spk-progress-bar class="raised indeterminate" />
-    </li>
-    <li>
-      <spk-progress-bar class="raised indeterminate accent" />
-    </li>
-    <li>
-      <spk-progress-bar class="raised indeterminate warn" />
-    </li>
-    <li>
-      <spk-progress-bar class="raised indeterminate error" />
-    </li>
-    <li>
-      <spk-progress-bar class="raised indeterminate success" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="10" class="raised" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="25" class="raised primary" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="50" class="raised accent" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="75" class="raised warn" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="80" class="raised error" />
-    </li>
-    <li>
-      <spk-progress-bar [value]="90" class="raised success" />
-    </li>
-  </ul>
-</section>
+<div class="content">
+  <h3>Variations</h3>
 
-<!-- <sp-progress-spinner /> -->
+  <app-previewer path="/spk-progress-bar/examples/base-progress-bar/base-progress-bar.component" title="Base">
+    <app-base-progress-bar class="example" />
+  </app-previewer>
+
+  <app-previewer
+    path="/spk-progress-bar/examples/indeterminte-progress-bar/indeterminte-progress-bar.component"
+    title="Indeterminate">
+    <app-indeterminte-progress-bar class="example" />
+  </app-previewer>
+
+  <app-previewer path="/spk-progress-bar/examples/flat-progress-bar/flat-progress-bar.component" title="Flat">
+    <app-flat-progress-bar class="example" />
+  </app-previewer>
+
+  <app-previewer
+    path="/spk-progress-bar/examples/outlined-progress-bar/outlined-progress-bar.component"
+    title="Outlined">
+    <app-outlined-progress-bar class="example" />
+  </app-previewer>
+
+  <app-previewer path="/spk-progress-bar/examples/raised-progress-bar/raised-progress-bar.component" title="Raised">
+    <app-raised-progress-bar class="example" />
+  </app-previewer>
+</div>
