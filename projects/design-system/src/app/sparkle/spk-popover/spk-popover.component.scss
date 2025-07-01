@@ -1,10 +1,39 @@
+@use '../../../../../sparkle-ui/styles/helpers.scss' as *;
+
 :host {
-  display: block;
-  height: 200vh;
+  display: flex;
+  flex-direction: column;
+  gap: p2r(20);
+  padding: p2r(40);
+  width: calc(100% - var(--spk-sidenav));
 }
 
-section {
-  background: red;
-  width: 200px;
-  overflow: hidden;
+h1 {
+  font: var(--title-20B);
+}
+
+h3 {
+  font: var(--paragraph-10);
+}
+
+app-property-viewer {
+  section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: p2r(8);
+  }
+}
+
+.example {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(8);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: p2r(20);
 }
