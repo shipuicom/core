@@ -17,4 +17,5 @@ import {
 export class SandboxSidenavComponent {
   sidenavType = signal<SparkleSidenavType>('simple');
   isNavOpen = signal(false);
+  disableDrag = signal(false);
 }

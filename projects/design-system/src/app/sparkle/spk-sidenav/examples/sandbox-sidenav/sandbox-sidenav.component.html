@@ -13,11 +13,20 @@
         <button [class.active]="sidenavType() === 'simple'" (click)="sidenavType.set('simple')">Simple</button>
       </spk-button-group>
     </div>
+
+    @if (sidenavType() === 'overlay') {
+      <div class="row">
+        <spk-toggle [class.active]="disableDrag()" class="primary raised">
+          Disable Drag
+          <input type="checkbox" [(ngModel)]="disableDrag" />
+        </spk-toggle>
+      </div>
+    }
   </header>
 </div>
 
 <div class="sandbox">
-  <spk-sidenav [class]="sidenavType()" [(isOpen)]="isNavOpen">
+  <spk-sidenav [class]="sidenavType()" [(isOpen)]="isNavOpen" [disableDrag]="disableDrag()">
     <ng-container sidenav>sidenav</ng-container>
 
     <ng-container sidenav-closed-topbar><button (click)="isNavOpen.set(!isNavOpen())">hello</button></ng-container>
