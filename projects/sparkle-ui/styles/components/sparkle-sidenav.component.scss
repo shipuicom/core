@@ -5,10 +5,12 @@ $spkSidenav: true !default;
 @if $spkSidenav == true {
   spk-sidenav {
     --sidenav-width: #{p2r(280)};
+    --sidenav-wrap-w: 100vw;
+    --sidenav-wrap-h: 100vh;
 
     display: flex;
-    width: 100vw;
-    height: 100vh;
+    width: var(--sidenav-wrap-w);
+    height: var(--sidenav-wrap-h);
 
     .sidenav {
       width: var(--sidenav-width);
@@ -88,6 +90,9 @@ $spkSidenav: true !default;
         background-color: var(--base-2);
         border-radius: p2r(2);
         box-shadow: none;
+        position: fixed;
+        top: 0;
+        left: -9999px;
       }
 
       .sidenav {

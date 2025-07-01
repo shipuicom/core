@@ -1,7 +1,21 @@
-<spk-sidenav class="overlay">
-  <ng-container sidenav>sidenav</ng-container>
+<h1>Sidenav</h1>
 
-  <ng-container sidenav-closed-topbar><button>hello</button></ng-container>
+<app-property-viewer>
+  <section>
+    <h4>Variants</h4>
+    <p>
+      Sidenav variants can be set through the class ex
+      <code>default</code>
+      ,
+      <code>simple</code>
+      and
+      <code>overlay</code>
+    </p>
+  </section>
+</app-property-viewer>
 
-  hello world
-</spk-sidenav>
+<div class="sandbox-example">
+  <app-previewer path="/spk-buttons/examples/button-sandbox/button-sandbox.component" title="Sandbox" class="no-space">
+    <app-sandbox-sidenav />
+  </app-previewer>
+</div>
