@@ -1,24 +1,30 @@
-@use 'helpers' as *;
+@use '../../../../../sparkle-ui/styles/helpers.scss' as *;
 
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: p2r(20);
+  padding: p2r(40);
+  width: calc(100% - var(--spk-sidenav));
 }
 
-section {
-  width: 200px;
-  overflow: hidden;
+h1 {
+  font: var(--title-20B);
 }
 
-button {
-  anchor-name: --owner;
-  position: relative;
+h3 {
+  font: var(--paragraph-10);
 }
 
-.popover {
-  background-color: red;
-  position-anchor: --owner;
-  position: absolute;
-  left: anchor(left);
-  top: anchor(bottom);
-  margin: 0;
+.example {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(8);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: p2r(20);
 }

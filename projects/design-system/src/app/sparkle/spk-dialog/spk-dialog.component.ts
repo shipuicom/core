@@ -1,30 +1,21 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { SparkleButtonComponent, SparkleDialogService } from '../../../../../sparkle-ui/src/public-api';
-import SpkDatepickerComponent from '../spk-datepicker/spk-datepicker.component';
-import TestComponent from './test/test.component';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { PreviewerComponent } from '../../previewer/previewer.component';
+import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
+import { BasicDynamicDialogComponent } from './examples/basic-dynamic-dialog/basic-dynamic-dialog.component';
+import { DataPassingDialogComponent } from './examples/data-passing-dialog/data-passing-dialog.component';
+import { HeaderFooterDialogComponent } from './examples/header-footer-dialog/header-footer-dialog.component';
 
 @Component({
   selector: 'app-spk-dialog',
-  imports: [SparkleButtonComponent],
+  imports: [
+    PreviewerComponent,
+    PropertyViewerComponent,
+    BasicDynamicDialogComponent,
+    HeaderFooterDialogComponent,
+    DataPassingDialogComponent,
+  ],
   templateUrl: './spk-dialog.component.html',
   styleUrl: './spk-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class SpkDialogComponent {
-  #dialog = inject(SparkleDialogService);
-  isOpen = signal(false);
-
-  openDynamicDialog() {
-    const comp = this.#dialog.open(SpkDatepickerComponent, {
-      data: { someDate: new Date(), someOtherDate: new Date() },
-
-      // closed: (data: any) => {
-      //   console.log('closed: ', data);
-      // },
-    });
-  }
-
-  openDynamicDialog2() {
-    this.#dialog.open(TestComponent);
-  }
-}
+export default class SpkDialogComponent {}

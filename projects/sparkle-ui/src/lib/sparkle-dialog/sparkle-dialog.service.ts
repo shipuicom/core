@@ -16,11 +16,6 @@ export interface SparkleDialogServiceOptions<T = any> extends SparkleDialogOptio
   closed?: (...args: any[]) => void;
 }
 
-// interface CustomSparkleDialogComponent {
-//   data?: any;
-//   close?: EventEmitter<any>;
-// }
-
 export type SparkleDialogReturn<T> = ReturnType<SparkleDialogService['open']> & {
   component: T;
 };
@@ -29,7 +24,7 @@ export type SparkleDialogReturn<T> = ReturnType<SparkleDialogService['open']> & 
   providedIn: 'root',
 })
 export class SparkleDialogService {
-  #bodyEl = document.querySelector('body')!;
+  #bodyEl = typeof document !== 'undefined' ? document.querySelector('body') : null;
   #appRef = inject(ApplicationRef);
 
   compRef: ComponentRef<SparkleDialogComponent> | null = null;
@@ -109,7 +104,7 @@ export class SparkleDialogService {
     wrapperEl.id = 'spk-dialog-ref';
 
     if (!document.getElementById('spk-dialog-ref')) {
-      this.#bodyEl.append(wrapperEl);
+      this.#bodyEl?.append(wrapperEl);
     }
 
     return document.getElementById('spk-dialog-ref')!;

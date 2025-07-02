@@ -24,7 +24,7 @@ const run = async (
   const glob = new Glob('**/*.html');
   const tsGlob = new Glob('**/*.ts');
   const regex = /<spk-icon[^>]*>\s*((?!{{.*?}})[^<]*?)\s*<\/spk-icon>/g;
-  const regex2 = /ppicon:([^']+)/g;
+  const regex2 = /spk:([^']+)/g;
   const iconsFound = new Set<string>(LIB_ICONS);
   const missingIcons = new Set<string>();
 

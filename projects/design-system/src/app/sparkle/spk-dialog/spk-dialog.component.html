@@ -1,26 +1,50 @@
-<h1>Sparkle Dialog</h1>
+<h1>Dialog</h1>
 
-<section>
-  <h3>Basic</h3>
-  <!-- <button spk-button class="outlined" (click)="isOpen.set(true)">Open dialog</button> -->
-  <button spk-button class="outlined" (click)="openDynamicDialog()">Open dialog</button>
-</section>
+<p>Utility component to create dialogs for modals, forms, and more.</p>
 
-<section>
-  <h3>Basic with header, content and footer</h3>
-  <!-- <button spk-button class="outlined" (click)="isOpen.set(true)">Open dialog</button> -->
-  <button spk-button class="outlined" (click)="openDynamicDialog2()">Open dialog</button>
-</section>
-<!-- 
-<spk-dialog [(isOpen)]="isOpen">
-  <h3>Hello world</h3>
-</spk-dialog> -->
+<app-property-viewer>
+  <section>
+    <h4>options</h4>
+    <p>
+      Dialog options object:
+      <code>width, height, maxWidth, maxHeight, closeOnButton, closeOnEsc, closeOnOutsideClick, class</code>
+      .
+    </p>
+  </section>
+  <section>
+    <h4>Data Passing</h4>
+    <p>You can pass data to the dialog content component and handle the close event with a callback.</p>
+  </section>
+  <section>
+    <h4>Header/Content/Footer</h4>
+    <p>
+      Use
+      <code>header</code>
+      ,
+      <code>content</code>
+      , and
+      <code>footer</code>
+      attributes for layout slots. Sticky header/footer supported.
+    </p>
+  </section>
+</app-property-viewer>
 
-<!-- <spk-dialog [(isOpen)]="isOpen">
-  <header header>
-    <h3>Hello world</h3>
-    <spk-icon (click)="isOpen.set(false)">x-bold</spk-icon>
-  </header>
-  <section content>Hello world</section>
-  <footer footer><button spk-button class="outlined" (click)="isOpen.set(false)">Close</button></footer>
-</spk-dialog> -->
+<div class="content">
+  <h3>Examples</h3>
+
+  <app-previewer path="/spk-dialog/examples/basic-dynamic-dialog/basic-dynamic-dialog.component" title="Basic Dialog">
+    <basic-dynamic-dialog class="example" />
+  </app-previewer>
+
+  <app-previewer
+    path="/spk-dialog/examples/header-footer-dialog/header-footer-dialog.component"
+    title="Header, Content & Footer Dialog">
+    <header-footer-dialog class="example" />
+  </app-previewer>
+
+  <app-previewer
+    path="/spk-dialog/examples/data-passing-dialog/data-passing-dialog.component"
+    title="Data Passing & Close Event">
+    <data-passing-dialog class="example" />
+  </app-previewer>
+</div>
