@@ -1,5 +1,5 @@
 <spk-table [data]="dataSource()" [class]="type()">
-  <div class="sticky" table-header>
+  <div spkStickyRows>
     <tr>
       @for (col of displayedColumns(); track col) {
         <th>{{ col }}</th>
@@ -14,7 +14,7 @@
   </div>
 
   @for (row of dataSource(); track $index) {
-    <tr>
+    <tr [class.sticky]="$index % 3 === 2">
       @for (col of displayedColumns(); track col) {
         <td>{{ row[col] }}</td>
       }

@@ -158,6 +158,43 @@ export class SparkleSortDirective {
 }
 
 @Directive({
+  selector: '[spkStickyRows]',
+
+  host: {
+    '[class.sticky]': 'spkStickyRows() === "start"',
+    '[class.sticky-end]': 'spkStickyRows() === "end"',
+  },
+})
+export class SparkleStickyRowsDirective {
+  #elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  #renderer = inject(Renderer2);
+
+  spkStickyRows = input<string>('start');
+
+  ngAfterContentInit() {
+    this.#applyGridColumnStyle();
+  }
+
+  #applyGridColumnStyle() {
+    const nativeElement = this.#elementRef.nativeElement;
+    const rowChildren = nativeElement.querySelectorAll<HTMLTableCellElement>(':scope > tr');
+    const rowSpanCount = rowChildren.length;
+
+    console.log(rowSpanCount);
+
+    if (rowSpanCount > 0) {
+      const position = this.spkStickyRows();
+
+      this.#renderer.setStyle(
+        nativeElement,
+        'grid-row',
+        position === 'end' ? `-${rowSpanCount + 1} / -1` : `1 / ${rowSpanCount + 1}`
+      );
+    }
+  }
+}
+
+@Directive({
   selector: '[spkStickyColumns]',
 
   host: {
@@ -177,9 +214,7 @@ export class SparkleStickyColumnsDirective {
 
   #applyGridColumnStyle() {
     const nativeElement = this.#elementRef.nativeElement;
-    const cellChildren = nativeElement.querySelectorAll<HTMLTableCellElement | HTMLTableHeaderCellElement>(
-      ':scope > th, :scope > td'
-    );
+    const cellChildren = nativeElement.querySelectorAll<HTMLTableCellElement>(':scope > th, :scope > td');
     const columnSpanCount = cellChildren.length;
 
     if (columnSpanCount > 0) {
@@ -201,15 +236,15 @@ type ScrollState = -1 | 0 | 1;
   selector: 'spk-table',
   imports: [SparkleProgressBarComponent],
   template: `
-    <thead #thead>
+    <!-- <thead #thead>
       <ng-content select="[table-header]" />
 
       @if (loading()) {
         <spk-progress-bar class="indeterminate primary" />
       }
-    </thead>
+    </thead> -->
 
-    <tbody>
+    <tbody #tbody>
       <ng-content />
     </tbody>
 
@@ -242,8 +277,9 @@ export class SparkleTableComponent {
   dataChange = output<any>();
   sortByColumn = model<string | null>(null);
 
-  thead = viewChild<ElementRef<HTMLTableSectionElement>>('thead');
-  columns = observeChildren<HTMLTableColElement>(this.thead, ['TR:first-child TH']);
+  // thead = viewChild<ElementRef<HTMLTableSectionElement>>('thead');
+  tbody = viewChild<ElementRef<HTMLTableSectionElement>>('tbody');
+  columns = observeChildren<HTMLTableColElement>(this.tbody, ['tr:first-child th']);
 
   class = signal<string>(this.#spkConfig?.tableType ?? 'default');
   resizing = signal(false);
@@ -261,10 +297,11 @@ export class SparkleTableComponent {
 
     return colSignal.reduce((acc, col, index) => {
       const colEl = col;
+      const colSize = colEl.getAttribute('size');
       const last = index === colSignal.length - 1;
 
-      if (colEl.dataset?.['size']) {
-        return `${acc} ${colEl.dataset['size']}`;
+      if (colSize) {
+        return `${acc} ${colSize}`;
       }
 
       if (colEl.classList.contains('sticky') || colEl.classList.contains('sticky-end')) {

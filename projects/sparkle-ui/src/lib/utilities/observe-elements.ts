@@ -65,7 +65,7 @@ export function observeChildren<T extends HTMLElement>(
 
     if (typeof MutationObserver !== 'undefined') {
       observer = new MutationObserver((_) => {
-        requestAnimationFrame(() => {
+        queueMicrotask(() => {
           const foundElements = Array.from(el.nativeElement.querySelectorAll(elementTags.join(',')));
 
           elementsSignal.set(foundElements as T[]);
@@ -91,6 +91,7 @@ export function observeChildren<T extends HTMLElement>(
         setupObserver(el, tags);
       } else {
         elementsSignal.set([]);
+
         if (observer) {
           observer.disconnect();
           observer = null;

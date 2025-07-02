@@ -1,5 +1,5 @@
 <spk-table [data]="dataSource()" [loading]="isLoading()" [class]="type()">
-  <tr class="sticky" table-header>
+  <tr class="sticky">
     <div spkStickyColumns>
       <th>im sticky</th>
       <th>im sticky</th>
@@ -16,7 +16,7 @@
   </tr>
 
   @for (row of dataSource(); track $index) {
-    <tr>
+    <tr [class.sticky]="$index % 3 === 0">
       <div spkStickyColumns>
         <td>im sticky</td>
         <td>im sticky</td>

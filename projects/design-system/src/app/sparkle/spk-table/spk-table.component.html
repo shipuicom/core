@@ -9,6 +9,7 @@
       .
     </p>
   </section>
+
   <section>
     <h4>loading</h4>
     <p>
@@ -16,6 +17,7 @@
       <code>[loading]="true"</code>
     </p>
   </section>
+
   <section>
     <h4>sortByColumn</h4>
     <p>
@@ -28,6 +30,7 @@
       .
     </p>
   </section>
+
   <section>
     <h4>spkResize</h4>
     <p>
@@ -55,6 +58,7 @@
       (column name).
     </p>
   </section>
+
   <section>
     <h4>spkStickyColumns</h4>
     <p>
@@ -72,6 +76,23 @@
       <br />
       <code>.sticky-end</code>
       : Makes a column sticky to the right.
+    </p>
+  </section>
+
+  <section>
+    <h4>Size attribute</h4>
+    <p>
+      On your
+      <code>&lt;th&gt;</code>
+      you can add a
+      <code>size</code>
+      attribute to set the column width this is consumed by spk-table and used to calculate the grid-template-columns
+      while also accounting for spkResize.
+      <br />
+      <code>&lt;th size="1fr"&gt;</code>
+      or
+      <code>&lt;th size="min-content"&gt;</code>
+      etc.
     </p>
   </section>
 </app-property-viewer>

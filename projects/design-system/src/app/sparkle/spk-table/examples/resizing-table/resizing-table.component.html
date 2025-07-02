@@ -1,5 +1,5 @@
 <spk-table [data]="dataSource()" [class]="type()">
-  <tr table-header>
+  <tr>
     @for (col of displayedColumns(); track col) {
       <th spkResize>{{ col }}</th>
     }

@@ -144,10 +144,10 @@ $spkTable: true !default;
       }
     }
 
-    thead {
+    tbody {
       position: relative;
 
-      &:has(div[table-header].sticky),
+      // &:has(div[table-header].sticky),
       &:has(tr.sticky) {
         position: sticky;
         top: 0;
@@ -164,8 +164,8 @@ $spkTable: true !default;
     }
 
     tbody,
-    thead,
-    div[table-header].sticky,
+    // thead,
+    // div[table-header].sticky,
     tr {
       display: grid;
       grid-column: 1 / -1;
@@ -339,6 +339,19 @@ $spkTable: true !default;
           padding: var(--table-th-p);
         }
       }
+    }
+
+    [spkStickyRows] {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: subgrid;
+      grid-template-rows: subgrid;
+      position: sticky;
+      top: 0;
+      z-index: 1; // Needs to be the same as regular sticky rows
+      border: 0;
+      border-color: var(--table-bc);
+      border-style: solid;
     }
 
     [spkStickyColumns] {

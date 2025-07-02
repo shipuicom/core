@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { SparkleTableComponent } from '../../../../../../../sparkle-ui/src/public-api';
+import { SparkleStickyRowsDirective, SparkleTableComponent } from '../../../../../../../sparkle-ui/src/public-api';
 
 const ELEMENT_DATA = [
   { position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },
@@ -18,7 +18,7 @@ const COLUMNS = ['position', 'name', 'weight', 'symbol'] as const;
 @Component({
   selector: 'multi-table-header',
   standalone: true,
-  imports: [SparkleTableComponent],
+  imports: [SparkleTableComponent, SparkleStickyRowsDirective],
   templateUrl: './multi-table-header.component.html',
   styleUrl: './multi-table-header.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
