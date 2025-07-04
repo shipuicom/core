@@ -1,11 +1,9 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   computed,
   effect,
   ElementRef,
-  inject,
   input,
   model,
   output,
@@ -51,28 +49,18 @@ const DEFAULT_OPTIONS: SparklePopoverOptions = {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '[class.above]': 'above()',
-    '[class.right]': 'right()',
     '[class.multi-layer]': 'asMultiLayer()',
   },
 })
 export class SparklePopoverComponent {
-  #cdr = inject(ChangeDetectorRef);
-
   #BASE_SPACE = 4;
   SUPPORTS_ANCHOR =
     typeof CSS !== 'undefined' && CSS.supports('position-anchor', '--abc') && CSS.supports('anchor-name', '--abc');
 
-  above = input<boolean>(false);
-  right = input<boolean>(false);
-  onHover = input<boolean>(false);
   asMultiLayer = input<boolean>(false);
-  markForCheck = input<unknown>(null);
-
-  _above = signal<boolean>(this.above());
-  _right = signal<boolean>(this.right());
   disableOpenByClick = input<boolean>(false);
   isOpen = model<boolean>(false);
+
   options = input<Partial<SparklePopoverOptions>>();
   closed = output<void>();
 
@@ -133,12 +121,6 @@ export class SparklePopoverComponent {
     }
   });
 
-  markForCheckEffect = effect(() => {
-    if (this.markForCheck()) {
-      this.#cdr.markForCheck();
-    }
-  });
-
   toggleIsOpen(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
@@ -184,29 +166,20 @@ export class SparklePopoverComponent {
     const outOfBoundsRight = newLeft + menuRect.width > window?.innerWidth;
     const outOfBoundsBottom = newTop + menuRect.height > window?.innerHeight;
 
-    if (this.SUPPORTS_ANCHOR) {
-      this._above.set(outOfBoundsBottom);
-      this._right.set(outOfBoundsRight);
-    } else {
-      // Default position below and left aligned
+    if (!this.SUPPORTS_ANCHOR) {
       newLeft = actionLeftInViewport;
       newTop = actionBottomInViewport + this.#BASE_SPACE;
 
       if (outOfBoundsBottom) {
-        // If overflows bottom, try positioning above
         const _newTop = triggerRect.top - menuRect.height - this.#BASE_SPACE;
-
-        // Calculate outOfBoundsTop here
         const outOfBoundsTop = _newTop < 0;
 
         if (!outOfBoundsTop) newTop = _newTop;
       }
 
       if (outOfBoundsRight) {
-        // If overflows right, position left
         newLeft = triggerRect.right - menuRect.width;
 
-        // Ensure it doesn't go off-screen to the left
         if (newLeft < 0) {
           newLeft = 0;
         }

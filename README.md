@@ -68,6 +68,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 ### Nice to haves for v1 beta
 
 - [ ] spk-select feature: add support for custom filter predicates on inlineSearch
+- [ ] spk-popover should have a pos center feature for the dropdown
 
 ### Features after v1 release
 

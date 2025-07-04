@@ -27,8 +27,6 @@ import { observeChildren } from '../utilities/observe-elements';
       [(isOpen)]="isOpen"
       [disableOpenByClick]="true"
       (closed)="close('fromPopover')"
-      [above]="above()"
-      [right]="right()"
       [asMultiLayer]="asMultiLayer()"
       [options]="{
         closeOnButton: false,
@@ -66,8 +64,6 @@ import { observeChildren } from '../utilities/observe-elements';
 })
 export class SparkleMenuComponent {
   #renderer = inject(Renderer2);
-  above = input<boolean>(false);
-  right = input<boolean>(false);
   asMultiLayer = input<boolean>(false);
   openIndicator = input(false);
   disabled = input<boolean>(false);

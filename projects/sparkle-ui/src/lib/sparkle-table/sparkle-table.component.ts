@@ -236,13 +236,9 @@ type ScrollState = -1 | 0 | 1;
   selector: 'spk-table',
   imports: [SparkleProgressBarComponent],
   template: `
-    <!-- <thead #thead>
-      <ng-content select="[table-header]" />
-
-      @if (loading()) {
-        <spk-progress-bar class="indeterminate primary" />
-      }
-    </thead> -->
+    @if (loading()) {
+      <spk-progress-bar class="indeterminate primary" />
+    }
 
     <tbody #tbody>
       <ng-content />

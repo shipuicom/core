@@ -42,6 +42,7 @@ export class SparkleTooltipWrapper {
   #renderer = inject(Renderer2);
   #positionAbort: AbortController | null = null;
 
+  // readonly BASE_SPACE = 8;
   readonly SUPPORTS_ANCHOR = typeof CSS !== 'undefined' && CSS.supports('position-anchor', '--abc');
 
   isBelow = signal<boolean>(false);
@@ -82,17 +83,14 @@ export class SparkleTooltipWrapper {
 
     if (tooltipRect.width === 0 && tooltipRect.height === 0) return;
 
+    const outOfBoundsTop = hostRect.top - tooltipRect.height < 0;
+    this.isBelow.set(outOfBoundsTop);
     if (!this.SUPPORTS_ANCHOR) {
-      const outOfBoundsTop = hostRect.top - tooltipRect.height < 0;
-
       let newTop = hostRect.top - tooltipRect.height;
       let newLeft = hostRect.left + hostRect.width / 2 - tooltipRect.width / 2;
 
       if (outOfBoundsTop) {
         newTop = hostRect.top + hostRect.height;
-        this.isBelow.set(true);
-      } else {
-        this.isBelow.set(false);
       }
 
       if (newLeft + tooltipRect.width > window?.innerWidth) {
@@ -105,8 +103,6 @@ export class SparkleTooltipWrapper {
       this.#renderer.setStyle(tooltipEl, 'left', `${newLeft}px`);
       this.#renderer.setStyle(tooltipEl, 'top', `${newTop}px`);
       this.#renderer.setStyle(tooltipEl, 'position', 'fixed');
-    } else {
-      this.isBelow.set(hostRect.top < tooltipRect.bottom);
     }
   };
 }

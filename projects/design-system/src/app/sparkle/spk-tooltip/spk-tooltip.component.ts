@@ -4,6 +4,7 @@ import { PreviewerComponent } from '../../previewer/previewer.component';
 import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
 import { BasicTooltipComponent } from './examples/basic-tooltip/basic-tooltip.component';
 import { LongTooltipComponent } from './examples/long-tooltip/long-tooltip.component';
+import { ScrolledTooltipComponent } from './examples/scrolled-tooltip/scrolled-tooltip.component';
 import { TemplateTooltipComponent } from './examples/template-tooltip/template-tooltip.component';
 import { ThemedTooltipComponent } from './examples/themed-tooltip/themed-tooltip.component';
 
@@ -11,6 +12,7 @@ import { ThemedTooltipComponent } from './examples/themed-tooltip/themed-tooltip
   selector: 'app-spk-tooltip',
   imports: [
     FormsModule,
+    ScrolledTooltipComponent,
     BasicTooltipComponent,
     TemplateTooltipComponent,
     ThemedTooltipComponent,
