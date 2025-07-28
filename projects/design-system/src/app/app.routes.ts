@@ -6,6 +6,11 @@ export const routes: Routes = [
     loadComponent: () => import('./layout/layout.component'),
     children: [
       {
+        path: '',
+        redirectTo: 'hello',
+        pathMatch: 'full',
+      },
+      {
         path: 'hello',
         loadComponent: () => import('./hello/hello.component'),
       },
