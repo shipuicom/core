@@ -275,6 +275,18 @@ $spkButtonShadow: false !default;
       --btn-bg-h: var(--base-g7);
 
       border: 0;
+      // &:before {
+      //   content: '';
+      //   position: absolute;
+      //   inset: 0;
+      //   border-radius: inherit;
+      //   background: linear-gradient(to bottom, #fff, #000);
+      //   mask:
+      //     linear-gradient(to bottom, #fff 0 0) content-box,
+      //     linear-gradient(to bottom, #fff 0 0);
+      //   // -webkit-mask: linear-gradient(to bottom, #fff 0 0) content-box, linear-gradient(to bottom, #fff 0 0);
+      //   mask-composite: exclude;
+      // }
 
       &:has(spk-icon:only-child) {
         padding: p2r(0 10);

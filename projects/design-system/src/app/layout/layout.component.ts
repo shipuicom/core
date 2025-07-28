@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
   SparkleButtonComponent,
-  SparkleButtonGroupComponent,
   SparkleIconComponent,
   SparkleListComponent,
   SparkleSidenavComponent,
@@ -17,7 +16,6 @@ import { LayoutState } from './layout.state';
     SparkleListComponent,
     SparkleIconComponent,
     SparkleButtonComponent,
-    SparkleButtonGroupComponent,
     RouterLink,
     RouterLinkActive,
     RouterOutlet,

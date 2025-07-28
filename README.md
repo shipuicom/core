@@ -58,12 +58,14 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 - [x] Make icon watcher/generator/subsetter run on node (Could make it a standalone executable)
 - [x] When using wildcard searching in spk-select and spk-menu sort the closet match to the top of the list
 - [x] Add flat and raised versions of alerts
+- [x] Create documentation with examples for all components
 - [ ] Create a accordion component
 - [ ] Create a timepicker component
 
-- [ ] Create documentation with examples for all components
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
-- [ ] Separate out icon utility into a separate package so you can add it if you need it
+- [ ] Make color themes optional/configurable (primary, accent, warn, error, success) globally.
+- [ ] Separate out icon utility into a separate package so you can add it if you need it.
+- [ ] Bug on table headers with sticky rows - sticky rows hide table headers but should add to the table headers
 
 ### Nice to haves for v1 beta
 
@@ -72,6 +74,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 
 ### Features after v1 release
 
+- [ ] CLI utility to remove unused css variables to not ship unused code
 - [ ] Create volume slider variant for range slider
 - [ ] Drag controls for number inputs (directive)
 - [ ] spk-table features
@@ -88,6 +91,7 @@ This is a early stage alpha version of the Sparkle UI. It is not ready for produ
 
 ### New components after v1 release
 
+- [ ] Create a code input (like n amont of boxes for 2FA codes etc).
 - [ ] Create a card stack component
 - [ ] Create a CSV input that create chips on comma (or enter) press, currently select has chip select which is not ideal but works for now
 - [ ] Create simple chart components (could also be core for simple charts)

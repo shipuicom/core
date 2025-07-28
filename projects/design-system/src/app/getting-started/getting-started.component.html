@@ -1,0 +1,53 @@
+<h1>Getting Started</h1>
+
+<p>To start using SparkleUI make sure you're using angular 19 or newer.</p>
+
+<p>It's signal based and Zoneless ready.</p>
+
+<h3>Base setup</h3>
+
+<p>Install</p>
+<app-highlight lang="html" [content]="`npm i -S @sparkle/core`" />
+
+<p>Add styles inside your src/styles.scss</p>
+<app-highlight lang="scss" [content]="`@use '@sparkle-ui/core/styles';`" />
+
+<p>
+  Inside your
+  <code>angular.json</code>
+  file you need to add the sparkle assets to your assets array this is to add the sparkle default font
+</p>
+
+<app-highlight
+  lang="ts"
+  [content]="
+    `
+  &quot;assets&quot;: [
+    &quot;src/assets&quot;,
+    {
+      &quot;glob&quot;: &quot;**/*&quot;,
+      &quot;input&quot;: &quot;./node_modules/@sparkle-ui/core/assets&quot;,
+      &quot;output&quot;: &quot;./sparkle-ui-assets/&quot;
+    }
+  ]
+  `
+  " />
+
+<h3>Setup Icons</h3>
+<p>
+  Sparkle comes with a custom CLI for subsetting and auto generating an icon font currently we support
+  <a href="https://phosphoricons.com/" target="_blank" rel="noopener noreferrer">Phospher icons</a>
+</p>
+
+<app-highlight
+  lang="html"
+  [content]="
+    `\<!-- Add to the head of your index.html -->
+\<link rel=&quot;stylesheet&quot; href=&quot;/spk.css&quot; /\>`
+  " />
+
+<p>Add following scripts to your package.json scripts</p>
+<app-highlight lang="ts" [content]="SCRIPTS" />
+
+<p>Now update your current start and build scripts</p>
+<app-highlight lang="ts" [content]="UPDATE_SCRIPTS" />

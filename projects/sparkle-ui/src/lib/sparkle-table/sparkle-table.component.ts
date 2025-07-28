@@ -105,7 +105,7 @@ export class SparkleResizeDirective {
       this.maxWidth() ? Math.min(width, this.maxWidth() ?? width) : width
     );
 
-    this.#renderer.setAttribute(this.#el.nativeElement, 'data-size', `${constrainedWidth}px`);
+    this.#renderer.setAttribute(this.#el.nativeElement, 'size', `${constrainedWidth}px`);
     this.#table.updateColumnSizes();
   }
 

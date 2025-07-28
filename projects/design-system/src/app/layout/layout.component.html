@@ -42,11 +42,21 @@
     </header>
 
     <spk-list class="base-1">
-      <spk-button-group>
-        <button [class.active]="sidenavType() === ''" (click)="sidenavType.set('')">Default</button>
-        <button [class.active]="sidenavType() === 'overlay'" (click)="sidenavType.set('overlay')">Overlay</button>
-        <button [class.active]="sidenavType() === 'simple'" (click)="sidenavType.set('simple')">Simple</button>
-      </spk-button-group>
+      <h3 title>Guide</h3>
+
+      <button action routerLink="/hello" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">hand-waving</spk-icon>
+        Welcome to Sparkle
+      </button>
+
+      <button
+        action
+        routerLink="/getting-started"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <spk-icon class="spk-primary">play</spk-icon>
+        Getting Started
+      </button>
 
       <h3 title>Theme</h3>
 

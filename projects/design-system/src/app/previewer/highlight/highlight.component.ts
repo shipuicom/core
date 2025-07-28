@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, input, signal, viewChild } from '@angular/core';
 import hljs from 'highlight.js';
 import scss from 'highlight.js/lib/languages/scss';
+import shell from 'highlight.js/lib/languages/shell';
 import typescript from 'highlight.js/lib/languages/typescript';
 import xml from 'highlight.js/lib/languages/xml';
 import { SparkleButtonComponent, SparkleIconComponent } from '../../../../../sparkle-ui/src/public-api';
@@ -9,6 +10,7 @@ const langMap = {
   ts: 'typescript',
   html: 'xml',
   scss: 'scss',
+  shell: 'shell',
 };
 
 @Component({
@@ -19,7 +21,7 @@ const langMap = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HighlightComponent {
-  lang = input.required<'ts' | 'html' | 'scss'>();
+  lang = input.required<'ts' | 'html' | 'scss' | 'shell'>();
   content = input.required<string>();
   langClass = computed(() => `language-${langMap[this.lang()]}`);
 
@@ -29,6 +31,7 @@ export class HighlightComponent {
     hljs.registerLanguage('typescript', typescript);
     hljs.registerLanguage('xml', xml);
     hljs.registerLanguage('scss', scss);
+    hljs.registerLanguage('shell', shell);
   }
 
   ngAfterViewInit() {

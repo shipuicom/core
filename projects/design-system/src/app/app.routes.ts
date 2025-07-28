@@ -6,8 +6,12 @@ export const routes: Routes = [
     loadComponent: () => import('./layout/layout.component'),
     children: [
       {
-        path: '',
+        path: 'hello',
         loadComponent: () => import('./hello/hello.component'),
+      },
+      {
+        path: 'getting-started',
+        loadComponent: () => import('./getting-started/getting-started.component'),
       },
       {
         path: 'example',
