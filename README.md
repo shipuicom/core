@@ -64,7 +64,6 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
 - [ ] Make color themes optional/configurable (primary, accent, warn, error, success) globally.
-- [ ] Separate out icon utility into a separate package so you can add it if you need it.
 - [ ] Bug on table headers with sticky rows - sticky rows hide table headers but should add to the table headers
 
 ### Nice to haves for v1 beta
@@ -132,6 +131,7 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 
 ### Notes
 
+- <strike>There was raised thoughts on separating out the icon utility the decision are for now not to since this package are depended on those icons for now, we can open up a new debate about it if some comes with a solid argument for it</strike>
 - <strike>For safari `<18` the selects does not support using options so you must use `<sh-option>` instead of `<option>` (this is fixed in the next select version currently suffixed with `-new`)</strike> (We circumvent this by using a templates instead of options)
 - Known issues for selects when having two selects editing the same value and it is a multi select and searchable they clear out when opened also when selecting a new item they clear the rest of the list - not a very likely scenario but it is something to keep in mind (Your UI probably should not allow this scenario write an issue if you think it should be possible with a good explanation and example)
 
