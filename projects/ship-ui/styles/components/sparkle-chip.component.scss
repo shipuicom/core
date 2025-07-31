@@ -1,0 +1,290 @@
+@use '../helpers.scss' as *;
+
+$spkChip: true !default;
+$spkChipShadow: false !default;
+
+@if $spkChip == true {
+  sh-chip {
+    --chip-h: #{p2r(32)};
+    --chip-s: calc(var(--chip-h) / 2);
+    --chip-c: var(--base-12);
+    --chip-ic: var(--base-12);
+    --chip-bg: var(--base-1);
+    --chip-bc: var(--base-4);
+
+    @if $spkChipShadow != false {
+      --chip-bs: var(--box-shadow-10);
+    } @else {
+      --chip-bs: none;
+    }
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: p2r(0 12);
+
+    font: var(--paragraph-30B);
+    height: var(--chip-h);
+    border-radius: var(--chip-s);
+    border: 1px solid var(--chip-bc);
+    box-shadow: var(--chip-bs);
+    background: var(--chip-bg);
+    white-space: nowrap;
+
+    div {
+      display: flex;
+      align-items: center;
+      gap: p2r(8);
+      color: var(--chip-c);
+    }
+
+    &.dynamic.simple,
+    &.dynamic {
+      // TODO investigate
+      // - if we can make the text if on a light colored background same color as the background but much darker
+      // - if we can make the text if on a dark colored background same color as the background but much lighter
+      // div {
+      //   color: var(--chip-bg);
+      //   filter: invert(1) grayscale(1) brightness(1.3) contrast(8000);
+      //   mix-blend-mode: luminosity;
+      //   opacity: 1;
+
+      //   sh-icon {
+      //     color: inherit;
+      //   }
+      // }
+
+      // position: relative;
+      // overflow: hidden;
+
+      // &:before {
+      //   content: '';
+      //   position: absolute;
+      //   inset: 0;
+      //   background-color: var(--chip-c);
+      //   opacity: 0.1;
+      //   z-index: 0;
+      // }
+      border-color: transparent;
+      --chip-bg: rgb(from var(--chip-c) r g b / 0.14);
+      color: var(--chip-c);
+      sh-icon {
+        color: inherit;
+      }
+    }
+
+    &.sharp {
+      --chip-s: calc(var(--chip-h) / 4);
+      padding: p2r(0 8);
+
+      &.small {
+        padding: p2r(0 6);
+      }
+    }
+
+    sh-icon {
+      color: var(--chip-ic);
+      font-size: p2r(16);
+      font-weight: inherit;
+    }
+
+    [avatar] {
+      height: calc(var(--chip-h) - #{p2r(12)});
+      width: calc(var(--chip-h) - #{p2r(12)});
+      border-radius: 50%;
+    }
+
+    &.small {
+      --chip-h: #{p2r(24)};
+
+      font: var(--paragraph-40B);
+      padding: p2r(0 8);
+
+      div {
+        gap: p2r(4);
+      }
+
+      sh-icon {
+        font-size: p2r(12);
+      }
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+    }
+
+    &[read-only],
+    &[read-only='true'],
+    &[readonly='true'],
+    &[readonly],
+    &.readonly {
+      pointer-events: none;
+      user-select: none;
+    }
+
+    &.primary {
+      --chip-ic: var(--primary-8);
+    }
+
+    &.accent {
+      --chip-ic: var(--accent-8);
+    }
+
+    &.warn {
+      --chip-ic: var(--warn-8);
+    }
+
+    &.error {
+      --chip-ic: var(--error-8);
+    }
+
+    &.success {
+      --chip-ic: var(--success-8);
+    }
+
+    &.simple,
+    &.outlined {
+      --chip-c: var(--base-12);
+      --chip-bg: var(--base-2);
+
+      transition: color 80ms linear;
+
+      &.primary {
+        --loader-c: var(--primary-8);
+
+        --chip-bg: var(--primary-1);
+        --chip-bc: var(--primary-4);
+      }
+
+      &.accent {
+        --loader-c: var(--accent-8);
+
+        --chip-bg: var(--accent-1);
+        --chip-bc: var(--accent-4);
+      }
+
+      &.warn {
+        --loader-c: var(--warn-8);
+
+        --chip-bg: var(--warn-1);
+        --chip-bc: var(--warn-4);
+      }
+
+      &.error {
+        --loader-c: var(--error-8);
+
+        --chip-bg: var(--error-1);
+        --chip-bc: var(--error-4);
+      }
+
+      &.success {
+        --loader-c: var(--success-8);
+
+        --chip-bg: var(--success-1);
+        --chip-bc: var(--success-4);
+      }
+    }
+
+    &.simple {
+      --chip-c: var(--base-12);
+      --chip-bg: var(--base-3);
+      --chip-bc: var(--chip-bg);
+
+      transition: color 80ms linear;
+
+      &.primary {
+        --chip-c: var(--primary-8);
+        --chip-bc: var(--chip-bg);
+      }
+
+      &.accent {
+        --chip-c: var(--accent-8);
+        --chip-bc: var(--chip-bg);
+      }
+
+      &.warn {
+        --chip-c: var(--warn-8);
+        --chip-bc: var(--chip-bg);
+      }
+
+      &.error {
+        --chip-c: var(--error-8);
+        --chip-bc: var(--chip-bg);
+      }
+
+      &.success {
+        --chip-c: var(--success-8);
+        --chip-bc: var(--chip-bg);
+      }
+    }
+
+    &.flat {
+      --loader-c: var(--base-1);
+      --chip-c: #fff;
+      --chip-ic: #fff;
+      --chip-bg: var(--base-8);
+
+      border: 0;
+
+      &.primary {
+        --chip-c: var(--primary-c8);
+        --chip-bg: var(--primary-8);
+      }
+
+      &.accent {
+        --chip-c: var(--accent-c8);
+        --chip-bg: var(--accent-8);
+      }
+
+      &.warn {
+        --chip-c: var(--warn-c8);
+        --chip-bg: var(--warn-8);
+      }
+
+      &.error {
+        --chip-c: var(--error-c8);
+        --chip-bg: var(--error-8);
+      }
+
+      &.success {
+        --chip-c: var(--success-c8);
+        --chip-bg: var(--success-8);
+      }
+    }
+
+    &.raised {
+      --loader-c: var(--base-1);
+      --chip-c: #fff;
+      --chip-ic: #fff;
+      --chip-bg: var(--base-g6);
+
+      border: 0;
+      box-shadow: none;
+
+      &.primary {
+        --chip-c: var(--primary-c8);
+        --chip-bg: var(--primary-g2);
+      }
+
+      &.accent {
+        --chip-c: var(--accent-c8);
+        --chip-bg: var(--accent-g2);
+      }
+
+      &.warn {
+        --chip-c: var(--warn-c8);
+        --chip-bg: var(--warn-g2);
+      }
+
+      &.error {
+        --chip-c: var(--error-c8);
+        --chip-bg: var(--error-g2);
+      }
+
+      &.success {
+        --chip-c: var(--success-c8);
+        --chip-bg: var(--success-g2);
+      }
+    }
+  }
+}

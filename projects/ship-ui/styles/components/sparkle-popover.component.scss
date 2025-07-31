@@ -1,0 +1,66 @@
+@use '../helpers.scss' as *;
+
+$spkPopover: true !default;
+
+@if $spkPopover == true {
+  sh-popover {
+    --po-d: inherit;
+
+    display: var(--po-d);
+
+    &.multi-layer {
+      .popover {
+        top: anchor(top);
+        left: calc(anchor(right) - #{p2r(10)});
+      }
+    }
+
+    .trigger {
+      cursor: pointer;
+      display: var(--po-d);
+      position: relative;
+
+      .trigger-wrapper {
+        display: var(--po-d);
+
+        &:empty + * {
+          display: inherit;
+        }
+      }
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      z-index: -1;
+    }
+
+    .popover {
+      position: absolute;
+      margin: 0;
+      min-width: p2r(180);
+      z-index: 0;
+      background-color: var(--base-1);
+      border: 1px solid var(--base-4);
+      border-radius: var(--shape-2);
+      font: var(--paragraph-30);
+      color: var(--base-8);
+
+      @supports (anchor-name: --anchor) {
+        inset: unset;
+        left: anchor(left);
+        top: calc(anchor(bottom) + #{p2r(4)});
+        position: fixed;
+        position-try-order:
+          flip-block,
+          flip-inline,
+          flip-block flip-inline;
+        position-try-fallbacks:
+          flip-block,
+          flip-inline,
+          flip-block flip-inline;
+      }
+    }
+  }
+}

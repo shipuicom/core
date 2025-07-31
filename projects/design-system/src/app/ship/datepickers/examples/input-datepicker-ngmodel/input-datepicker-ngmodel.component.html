@@ -1,0 +1,5 @@
+<sh-datepicker-input>
+  <label>Date (ngModel)</label>
+  <input type="text" [(ngModel)]="date" />
+</sh-datepicker-input>
+<p>Selected: {{ date() | date: 'mediumDate' }}</p>

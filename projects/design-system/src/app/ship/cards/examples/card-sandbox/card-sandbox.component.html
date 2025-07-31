@@ -1,0 +1,42 @@
+<div class="controls">
+  <header>
+    <div class="column">
+      <p>Controls (sh-card)</p>
+      <sh-button-group class="small">
+        <button [class.active]="cardType() === 'default'" (click)="cardType.set('default')">Default</button>
+        <button [class.active]="cardType() === 'type-a'" (click)="cardType.set('type-a')">Type A</button>
+        <button [class.active]="cardType() === 'type-b'" (click)="cardType.set('type-b')">Type B</button>
+        <button [class.active]="cardType() === 'type-c'" (click)="cardType.set('type-c')">Type C</button>
+      </sh-button-group>
+    </div>
+
+    <div class="column">
+      <p>Controls (sh-toggle-card)</p>
+      <sh-toggle
+        [class.active]="disallowToggle()"
+        class="primary raised"
+        (click)="disallowToggle.set(!disallowToggle())">
+        Disallow Toggle
+      </sh-toggle>
+    </div>
+  </header>
+</div>
+
+<div class="sandbox">
+  <sh-card [class]="cardClass()">Hello world (sh-card)</sh-card>
+
+  <sh-toggle-card [class]="cardClass()" [disallowToggle]="disallowToggle()">
+    <ng-container title>Advanced options</ng-container>
+    <p>Hello world (sh-toggle-card)</p>
+
+    <p>
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore
+      magna aliqua.
+    </p>
+
+    <p>
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore
+      magna aliqua.
+    </p>
+  </sh-toggle-card>
+</div>

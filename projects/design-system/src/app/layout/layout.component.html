@@ -1,14 +1,14 @@
-<spk-sidenav [class]="sidenavType()" [(isOpen)]="isNavOpen">
+<sh-sidenav [class]="sidenavType()" [(isOpen)]="isNavOpen">
   <ng-container sidenav-closed-topbar>
-    <button spk-button class="outlined primary" (click)="toggleNav()">
-      <spk-icon>compass</spk-icon>
+    <button sh-button class="outlined primary" (click)="toggleNav()">
+      <sh-icon>compass</sh-icon>
     </button>
   </ng-container>
 
   <div sidenav>
     <header>
       <div class="logo">
-        <img class="house-mark" src="/sparkle-favicon.png" alt="Sparkle Logo house mark" />
+        <img class="house-mark" src="/ship-favicon.png" alt="Ship Logo house mark" />
         <svg class="text" viewBox="0 0 99 29" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M91.3587 22.3681C89.9798 22.3681 88.7521 22.0565 87.6754 21.4331C86.6176 20.7909 85.7865 19.922 85.1821 18.8265C84.5776 17.712 84.2754 16.437 84.2754 15.0015C84.2754 13.547 84.5682 12.2626 85.1537 11.1481C85.7393 10.0337 86.561 9.16479 87.6187 8.54146C88.6765 7.89924 89.8854 7.57812 91.2454 7.57812C92.6621 7.57812 93.8804 7.88035 94.9004 8.48479C95.9204 9.07035 96.7043 9.89202 97.2521 10.9498C97.8187 12.0076 98.1021 13.2731 98.1021 14.7465V15.7948L86.0887 15.8231L86.1454 13.6131H94.6737C94.6737 12.6498 94.3621 11.8753 93.7387 11.2898C93.1343 10.7042 92.3126 10.4115 91.2737 10.4115C90.4615 10.4115 89.7721 10.5815 89.2054 10.9215C88.6576 11.2615 88.2421 11.7715 87.9587 12.4515C87.6754 13.1315 87.5337 13.9626 87.5337 14.9448C87.5337 16.4559 87.8548 17.5987 88.4971 18.3731C89.1582 19.1476 90.1309 19.5348 91.4154 19.5348C92.3598 19.5348 93.1343 19.3553 93.7387 18.9965C94.3621 18.6376 94.7682 18.1276 94.9571 17.4665H98.1587C97.8565 18.9965 97.1009 20.1959 95.8921 21.0648C94.7021 21.9337 93.1909 22.3681 91.3587 22.3681Z"
@@ -32,21 +32,21 @@
         </svg>
       </div>
 
-      <button spk-button class="icon small" (click)="toggleBodyClass()">
+      <button sh-button class="icon small" (click)="toggleBodyClass()">
         @if (isDarkMode()) {
-          <spk-icon>sun</spk-icon>
+          <sh-icon>sun</sh-icon>
         } @else {
-          <spk-icon>moon</spk-icon>
+          <sh-icon>moon</sh-icon>
         }
       </button>
     </header>
 
-    <spk-list class="base-1">
+    <sh-list class="base-1">
       <h3 title>Guide</h3>
 
       <button action routerLink="/hello" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">hand-waving</spk-icon>
-        Welcome to Sparkle
+        <sh-icon class="sh-primary">hand-waving</sh-icon>
+        Welcome to Ship
       </button>
 
       <button
@@ -54,177 +54,153 @@
         routerLink="/getting-started"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">play</spk-icon>
+        <sh-icon class="sh-primary">play</sh-icon>
         Getting Started
       </button>
 
       <h3 title>Theme</h3>
 
       <button action>
-        <spk-icon class="spk-primary">paint-roller</spk-icon>
+        <sh-icon class="sh-primary">paint-roller</sh-icon>
         Theme Editor (WIP)
       </button>
 
-      <button action routerLink="/spk-typography" routerLinkActive="active">
-        <spk-icon class="spk-primary">text-t</spk-icon>
+      <button action routerLink="/typography" routerLinkActive="active">
+        <sh-icon class="sh-primary">text-t</sh-icon>
         Typography
       </button>
 
       <h3 title>Components</h3>
 
-      <button action routerLink="/spk-alerts" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <button action routerLink="/alerts" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Alerts
       </button>
 
-      <button
-        action
-        routerLink="/spk-button-group"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }">
-        Button Group
+      <button action routerLink="/button-groups" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Button Groups
       </button>
 
-      <button action routerLink="/spk-buttons" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <button action routerLink="/buttons" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Buttons
       </button>
 
-      <button action routerLink="/spk-card" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <button action routerLink="/cards" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Cards
       </button>
 
-      <button
-        action
-        routerLink="/spk-color-picker"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }">
-        Color Picker (WIP)
+      <button action routerLink="/color-pickers" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Color Pickers (WIP)
       </button>
 
-      <button action routerLink="/spk-chips" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <button action routerLink="/chips" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Chips
       </button>
 
-      <button action routerLink="/spk-dialog" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Dialog
+      <button action routerLink="/dialogs" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Dialogs
       </button>
 
-      <button action routerLink="/spk-divider" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Divider
+      <button action routerLink="/dividers" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Dividers
       </button>
 
-      <button action routerLink="/spk-icons" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <button action routerLink="/icons" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Icons
       </button>
 
-      <button action routerLink="/spk-list" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        List
+      <button action routerLink="/lists" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Lists
       </button>
 
-      <button action routerLink="/spk-menu" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Menu
+      <button action routerLink="/menus" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Menus
       </button>
 
-      <button
-        action
-        routerLink="/spk-progress-bar"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }">
-        Progress Bar
+      <button action routerLink="/progress-bars" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Progress Bars
       </button>
 
-      <button action routerLink="/spk-popover" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Popover
+      <button action routerLink="/popovers" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Popovers
       </button>
 
-      <button action routerLink="/spk-sidenav" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Sidenav
+      <button action routerLink="/sidenavs" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Sidenavs
       </button>
 
-      <button action routerLink="/spk-spinner" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Spinner
+      <button action routerLink="/spinners" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Spinners
       </button>
 
-      <button action routerLink="/spk-sortable" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Sortable
+      <button action routerLink="/sortables" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Sortables
       </button>
 
-      <button action routerLink="/spk-stepper" routerLinkActive="active">Stepper</button>
+      <button action routerLink="/steppers" routerLinkActive="active">Steppers</button>
 
-      <button action routerLink="/spk-table" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Table
+      <button action routerLink="/tables" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Tables
       </button>
 
-      <button action routerLink="/spk-tabs" routerLinkActive="active">Tabs</button>
+      <button action routerLink="/tabs" routerLinkActive="active">Tabs</button>
 
-      <button action routerLink="/spk-tooltip" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Tooltip
+      <button action routerLink="/tooltips" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Tooltips
       </button>
 
       <button
         action
-        routerLink="/spk-expansion-panel"
+        routerLink="/expansion-panels"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">spinner-bold</spk-icon>
-        Expansion Panel / Accordion
+        <sh-icon class="sh-primary">spinner-bold</sh-icon>
+        Expansion Panels / Accordions
       </button>
 
       <h3 title>Form fields</h3>
 
-      <button action routerLink="/spk-checkbox" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Checkbox
+      <button action routerLink="/checkboxes" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Checkboxes
       </button>
 
-      <button action routerLink="/spk-radio" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Radio
+      <button action routerLink="/radio-inputs" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Radio inputs
       </button>
 
-      <button
-        action
-        routerLink="/spk-file-upload"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }">
-        File Upload
+      <button action routerLink="/file-uploads" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        File Uploads
       </button>
 
-      <button
-        action
-        routerLink="/spk-form-fields"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }">
+      <button action routerLink="/form-fields" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Form Fields
       </button>
 
-      <button action routerLink="/spk-select" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Select
+      <button action routerLink="/selects" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Selects
       </button>
 
-      <button action routerLink="/spk-toggle" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Toggle
+      <button action routerLink="/toggles" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Toggles
       </button>
 
-      <button action routerLink="/spk-datepicker" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Datepicker
+      <button action routerLink="/datepickers" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Datepickers
       </button>
 
-      <button
-        action
-        routerLink="/spk-range-slider"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }">
-        Range Slider
+      <button action routerLink="/range-sliders" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Range Sliders
       </button>
 
       <!-- <button
         action
-        routerLink="/spk-virtual-scroll"
+        routerLink="/virtual-scroll"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
-        <spk-icon class="spk-primary">check-bold</spk-icon>
+        <sh-icon class="sh-primary">check-bold</sh-icon>
         Virtual Scroll
       </button> -->
-    </spk-list>
+    </sh-list>
   </div>
 
   <router-outlet />
-</spk-sidenav>
+</sh-sidenav>

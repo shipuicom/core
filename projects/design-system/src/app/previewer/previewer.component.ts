@@ -1,14 +1,10 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import {
-  SparkleCardComponent,
-  SparkleIconComponent,
-  SparkleTabsComponent,
-} from '../../../../sparkle-ui/src/public-api';
+import { ShipCardComponent, ShipIconComponent, ShipTabsComponent } from '../../../../ship-ui/src/public-api';
 import { HighlightFileComponent } from './highlight-file/highlight-file.component';
 
 @Component({
   selector: 'app-previewer',
-  imports: [HighlightFileComponent, SparkleTabsComponent, SparkleIconComponent, SparkleCardComponent],
+  imports: [HighlightFileComponent, ShipTabsComponent, ShipIconComponent, ShipCardComponent],
   templateUrl: './previewer.component.html',
   styleUrl: './previewer.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

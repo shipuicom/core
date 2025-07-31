@@ -1,0 +1,70 @@
+<sh-button-group>
+  <button [class.active]="renderingType() === 'hsl'" (click)="renderingType.set('hsl')">
+    <sh-icon>circle</sh-icon>
+    HSL Wheel
+  </button>
+  <button [class.active]="renderingType() === 'rgb'" (click)="renderingType.set('rgb')">
+    <sh-icon>circle</sh-icon>
+    RGB
+  </button>
+  <button [class.active]="renderingType() === 'grid'" (click)="renderingType.set('grid')">
+    <sh-icon>circle</sh-icon>
+    Grid
+  </button>
+  <button [class.active]="renderingType() === 'hue'" (click)="renderingType.set('hue')">
+    <sh-icon>circle</sh-icon>
+    Hue
+  </button>
+  <button [class.active]="renderingType() === 'saturation'" (click)="renderingType.set('saturation')">
+    <sh-icon>circle</sh-icon>
+    Saturation
+  </button>
+</sh-button-group>
+
+@if (renderingType() === 'hsl') {
+  <sh-toggle [class.active]="showDarkColors()" class="primary raised" (click)="showDarkColors.set(!showDarkColors())">
+    Show dark colors
+  </sh-toggle>
+}
+
+@if (renderingType() === 'grid' || renderingType() === 'rgb') {
+  <!-- <sh-range-slider unit="%" class="primary raised">
+  <label>ngModel</label>
+  <input type="range" min="0" [max]="360" [(ngModel)]="gridHue" />
+</sh-range-slider>
+ -->
+
+  <sh-color-picker renderingType="hue" (currentColor)="selectedHue.set($event.hue)"></sh-color-picker>
+}
+
+@if (renderingType() === 'hue') {
+  <sh-toggle [class.active]="direction()" class="primary raised" (click)="direction.set(!direction())">
+    Direction
+  </sh-toggle>
+}
+
+@if (renderingType() === 'saturation') {
+  <sh-toggle [class.active]="direction()" class="primary raised" (click)="direction.set(!direction())">
+    Direction
+  </sh-toggle>
+}
+
+<sh-color-picker
+  [renderingType]="renderingType()"
+  [showDarkColors]="showDarkColors()"
+  [direction]="direction() ? 'vertical' : 'horizontal'"
+  [hue]="selectedHue()"
+  (currentColor)="currentColor.set($event)"></sh-color-picker>
+
+<div class="colors">
+  <div class="swatch" [style.background]="currentColor()?.hex"></div>
+
+  <div class="color-text">
+    <p>RGB: {{ currentColor()?.rgb }}</p>
+    <p>HEX: {{ currentColor()?.hex }}</p>
+    <p>HSL: {{ currentColor()?.hsl }}</p>
+    <p>Hue: {{ currentColor()?.hue }}</p>
+    <p>Saturation: {{ currentColor()?.saturation }}</p>
+  </div>
+</div>
+<!-- <pre>{{ currentColor() | json }}</pre> -->

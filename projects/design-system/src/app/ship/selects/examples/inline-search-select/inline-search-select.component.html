@@ -1,0 +1,6 @@
+<sh-select [options]="options()" label="label" value="value" [inlineSearch]="true">
+  <label>Favorite food (inline search)</label>
+  <input type="text" [(ngModel)]="selected" />
+</sh-select>
+
+<p>Selected: {{ selected() }}</p>

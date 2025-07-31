@@ -1,0 +1,54 @@
+@use '../helpers.scss' as *;
+
+$spkIcon: true !default;
+
+@if $spkIcon == true {
+  sh-icon {
+    --icon-c: inherit;
+
+    font-size: p2r(20);
+    line-height: 1em;
+    width: 1em;
+    height: 1em;
+    min-width: 1em;
+    min-height: 1em;
+    max-width: 1em;
+    max-height: 1em;
+    text-align: left;
+    overflow: hidden;
+    display: inline-block;
+    color: var(--icon-c);
+
+    &.primary {
+      --icon-c: var(--primary-8);
+    }
+
+    &.accent {
+      --icon-c: var(--accent-8);
+    }
+
+    &.warn {
+      --icon-c: var(--warn-8);
+    }
+
+    &.error {
+      --icon-c: var(--error-8);
+    }
+
+    &.success {
+      --icon-c: var(--success-8);
+    }
+
+    &.large {
+      font-size: p2r(32);
+    }
+
+    &.small {
+      font-size: p2r(16);
+    }
+
+    &.inherit {
+      font-size: inherit;
+    }
+  }
+}

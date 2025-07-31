@@ -1,4 +1,4 @@
-@use '../../../../sparkle-ui/styles/helpers.scss' as *;
+@use '../../../../ship-ui/styles/helpers.scss' as *;
 
 :host {
   display: block;
@@ -8,7 +8,7 @@
   }
 }
 
-spk-tabs {
+sh-tabs {
   align-items: center;
   padding: p2r(0 20);
 }

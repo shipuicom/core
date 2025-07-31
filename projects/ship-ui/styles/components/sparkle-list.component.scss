@@ -1,0 +1,148 @@
+@use '../helpers.scss' as *;
+
+$spkList: true !default;
+
+@if $spkList == true {
+  sh-list {
+    --list-s: var(--shape-2);
+    --list-active-bg: var(--base-1);
+    --list-color: var(--base-9);
+    --list-active-bs: none;
+    --list-p: #{p2r(20 16)};
+    --list-item-p: #{p2r(8 12)};
+    --list-item-gap: #{p2r(8)};
+
+    width: 100%;
+    padding: var(--list-p);
+    gap: p2r(8);
+    display: flex;
+    flex-direction: column;
+
+    &.base-1 {
+      --list-active-bg: var(--base-1);
+      --list-active-bs: var(--box-shadow-20);
+    }
+
+    &:empty {
+      padding: 0;
+    }
+
+    > [title] {
+      color: var(--base-8);
+      margin: 0 0.75rem;
+      font: var(--paragraph-30);
+      line-height: p2r(24);
+    }
+
+    > [action],
+    > [item] {
+      border-radius: var(--list-s);
+      padding: var(--list-item-p);
+      font: var(--paragraph-30B);
+      color: var(--list-color);
+      display: flex;
+      align-items: center;
+      gap: var(--list-item-gap);
+      width: 100%;
+      user-select: none;
+      appearance: none;
+      border: 0;
+      text-align: left;
+      text-wrap: balance;
+      background-color: transparent;
+      text-decoration: none;
+
+      &:focus {
+        outline: none;
+      }
+
+      [suffix] {
+        margin-left: auto;
+        color: var(--base-8);
+      }
+    }
+
+    :has(input[type='checkbox']),
+    :has(input[type='radio']),
+    > [action] {
+      cursor: pointer;
+    }
+
+    > [item]:has(input[type='checkbox']:checked),
+    > [action]:has(input[type='checkbox']:checked),
+    > [item]:has(input[type='radio']:checked),
+    > [action]:has(input[type='radio']:checked),
+    > [action].active,
+    > [action].selected {
+      --list-color: var(--base-12);
+
+      background-color: var(--list-active-bg);
+      box-shadow: var(--list-active-bs);
+    }
+
+    &.primary {
+      > [item]:has(input[type='checkbox']:checked),
+      > [action]:has(input[type='checkbox']:checked),
+      > [item]:has(input[type='radio']:checked),
+      > [action]:has(input[type='radio']:checked),
+      > [action].active,
+      > [action].selected {
+        sh-icon:first-child {
+          color: var(--primary-8);
+        }
+      }
+    }
+
+    &.accent {
+      > [item]:has(input[type='checkbox']:checked),
+      > [action]:has(input[type='checkbox']:checked),
+      > [item]:has(input[type='radio']:checked),
+      > [action]:has(input[type='radio']:checked),
+      > [action].active,
+      > [action].selected {
+        sh-icon:first-child {
+          color: var(--accent-8);
+        }
+      }
+    }
+
+    &.warn {
+      > [item]:has(input[type='checkbox']:checked),
+      > [action]:has(input[type='checkbox']:checked),
+      > [item]:has(input[type='radio']:checked),
+      > [action]:has(input[type='radio']:checked),
+      > [action].active,
+      > [action].selected {
+        sh-icon:first-child {
+          color: var(--warn-8);
+        }
+      }
+    }
+
+    &.error {
+      > [item]:has(input[type='checkbox']:checked),
+      > [action]:has(input[type='checkbox']:checked),
+      > [item]:has(input[type='radio']:checked),
+      > [action]:has(input[type='radio']:checked),
+      > [action].active,
+      > [action].selected {
+        sh-icon:first-child {
+          color: var(--error-8);
+        }
+      }
+    }
+
+    &.success {
+      > [item]:has(input[type='checkbox']:checked),
+      > [action]:has(input[type='checkbox']:checked),
+      > [item]:has(input[type='radio']:checked),
+      > [action]:has(input[type='radio']:checked),
+      > [action].active,
+      > [action].selected {
+        sh-icon:first-child {
+          color: var(--success-8);
+        }
+      }
+    }
+  }
+}

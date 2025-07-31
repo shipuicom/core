@@ -1,18 +1,18 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { SparkleAlertComponent } from '../../../../sparkle-ui/src/public-api';
+import { ShipAlertComponent } from '../../../../ship-ui/src/public-api';
 import { HighlightComponent } from '../previewer/highlight/highlight.component';
 
 @Component({
   selector: 'app-getting-started',
-  imports: [HighlightComponent, SparkleAlertComponent],
+  imports: [HighlightComponent, ShipAlertComponent],
   templateUrl: './getting-started.component.html',
   styleUrl: './getting-started.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class GettingStartedComponent {
   SCRIPTS = `"scripts": {
-  "gen:font": "sparkle-fg --src='./src' --out='./src/assets' --rootPath='./'",
-  "watch:font": "sparkle-fg --src='./src' --out='./src/assets' --rootPath='./' --watch",
+  "gen:font": "ship-fg --src='./src' --out='./src/assets' --rootPath='./'",
+  "watch:font": "ship-fg --src='./src' --out='./src/assets' --rootPath='./' --watch",
   ..
 }`;
   UPDATE_SCRIPTS = `"scripts": {

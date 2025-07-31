@@ -1,0 +1,122 @@
+<sh-form-field class="small">
+  <input placeholder="Placeholder no label..." />
+</sh-form-field>
+
+<sh-form-field class="small">
+  <label>
+    Label
+    <sh-icon>question</sh-icon>
+  </label>
+  <input placeholder="Placeholder..." />
+</sh-form-field>
+
+<sh-form-field class="small">
+  <label>
+    Label
+    <sh-icon>question</sh-icon>
+  </label>
+  <input placeholder="Placeholder..." />
+  <sh-icon prefix>circle</sh-icon>
+  <sh-icon>circle</sh-icon>
+</sh-form-field>
+
+<sh-form-field class="small">
+  <label>
+    Label
+    <sh-icon>question</sh-icon>
+  </label>
+  <input [formControl]="disabledCtrl" placeholder="Placeholder..." />
+  <sh-icon prefix>circle</sh-icon>
+  <sh-icon>circle</sh-icon>
+</sh-form-field>
+
+<sh-form-field class="small">
+  <label>
+    Label
+    <sh-icon>question</sh-icon>
+  </label>
+  <input [formControl]="baseCtrl" placeholder="Placeholder..." #input />
+  <span hint>Hint</span>
+
+  <span hint>{{ baseCtrl.value?.length ?? 0 }}/10</span>
+
+  @if ((baseCtrl.value?.length ?? 0) > 10) {
+    <span error>Write a message in this alert area</span>
+  }
+</sh-form-field>
+
+<sh-form-field class="small">
+  <label>
+    Label
+    <sh-icon>question</sh-icon>
+  </label>
+
+  <input placeholder="Placeholder with error ..." [formControl]="errorCtrl" />
+
+  <sh-icon prefix>circle</sh-icon>
+  <sh-icon suffix>circle</sh-icon>
+
+  @if (errorCtrl.invalid && errorCtrl.touched) {
+    <span error>Write a message in this alert area</span>
+  }
+
+  <span hint>{{ errorCtrl.value?.length ?? 0 }}/10</span>
+</sh-form-field>
+
+<sh-form-field class="small center autosize">
+  <label>
+    Number without suffix
+    <sh-icon>question</sh-icon>
+  </label>
+  <input type="number" placeholder="0" />
+  <sh-icon prefix>circle</sh-icon>
+  <span textPrefix>Hello</span>
+</sh-form-field>
+
+<sh-form-field class="small">
+  <label>
+    Label
+    <sh-icon>question</sh-icon>
+  </label>
+  <input type="number" placeholder="0" />
+  <sh-icon prefix>circle</sh-icon>
+  <span textPrefix>Hello</span>
+  <span textSuffix>.00</span>
+</sh-form-field>
+
+<sh-form-field class="small">
+  <label>
+    Label
+    <sh-icon>question</sh-icon>
+  </label>
+  <input type="number" placeholder="0" />
+  <span textPrefix>$&nbsp;</span>
+  <span textSuffix>.00</span>
+</sh-form-field>
+
+<sh-form-field class="small">
+  <label>
+    Label
+    <sh-icon>question</sh-icon>
+  </label>
+  <input [formControl]="disabledCtrl" type="number" placeholder="0" />
+  <span textPrefix>$&nbsp;</span>
+  <span textSuffix>.00</span>
+</sh-form-field>
+
+<sh-form-field class="small">
+  <label>Textarea</label>
+  <textarea></textarea>
+</sh-form-field>
+
+<sh-form-field class="small">
+  <label>Textarea</label>
+  <textarea>
+with some value very long text with some value very long text with some value very long text with some value very long text with some value very long text </textarea
+  >
+</sh-form-field>
+
+<sh-form-field class="small">
+  <label>Textarea</label>
+  <textarea [formControl]="disabledCtrl"></textarea>
+</sh-form-field>

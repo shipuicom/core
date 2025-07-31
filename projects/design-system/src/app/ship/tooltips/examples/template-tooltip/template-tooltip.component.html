@@ -1,0 +1,41 @@
+<button sh-button [spkTooltip]="richTooltip">
+  <sh-icon>star</sh-icon>
+  Rich Content
+</button>
+
+<!-- Template tooltip with rich content -->
+<ng-template #richTooltip>
+  <h4>Rich Tooltip</h4>
+  <p>
+    This tooltip contains
+    <strong>formatted content</strong>
+    with multiple elements.
+  </p>
+  <ul>
+    <li>Feature 1</li>
+    <li>Feature 2</li>
+    <li>Feature 3</li>
+  </ul>
+</ng-template>
+
+<sh-icon [spkTooltip]="dynamicTooltip">help</sh-icon>
+
+<!-- Template tooltip with dynamic content -->
+<ng-template #dynamicTooltip>
+  <sh-icon>info</sh-icon>
+  <span>Dynamic content with icon</span>
+</ng-template>
+
+<button sh-button [spkTooltip]="actionTooltip">
+  <sh-icon>question</sh-icon>
+  Confirm Action
+</button>
+
+<!-- Template tooltip with action buttons -->
+<ng-template #actionTooltip>
+  <p>Would you like to proceed?</p>
+  <div class="tooltip-actions">
+    <button sh-button size="small">Yes</button>
+    <button sh-button size="small" class="secondary">No</button>
+  </div>
+</ng-template>

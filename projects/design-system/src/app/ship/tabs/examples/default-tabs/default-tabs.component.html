@@ -1,0 +1,26 @@
+<sh-tabs class="primary">
+  <button tab [class.active]="activeTab() === 'tab1'" (click)="activeTab.set('tab1')">
+    <sh-icon>spinner</sh-icon>
+    Tab 1
+  </button>
+  <button tab [class.active]="activeTab() === 'tab2'" (click)="activeTab.set('tab2')">
+    <sh-icon>hand-palm</sh-icon>
+    Tab 2
+  </button>
+  <button tab [class.active]="activeTab() === 'tab3'" (click)="activeTab.set('tab3')">
+    <sh-icon>check</sh-icon>
+    Tab 3
+  </button>
+</sh-tabs>
+
+@let _activeTab = activeTab();
+
+<div class="tab-content">
+  @if (_activeTab === 'tab1') {
+    <app-tab [id]="_activeTab"></app-tab>
+  } @else if (_activeTab === 'tab2') {
+    <app-tab [id]="_activeTab"></app-tab>
+  } @else if (_activeTab === 'tab3') {
+    <app-tab [id]="_activeTab"></app-tab>
+  }
+</div>

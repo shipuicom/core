@@ -1,0 +1,18 @@
+@use '../../../../../ship-ui/styles/helpers.scss' as *;
+
+:host {
+  @include wrapper();
+}
+
+sh-list {
+  width: 500px;
+}
+
+.example {
+  padding: 40px;
+}
+
+.l20-example {
+  padding: 40px;
+  background-color: var(--base-2);
+}

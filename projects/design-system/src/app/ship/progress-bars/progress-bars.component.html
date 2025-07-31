@@ -1,0 +1,82 @@
+<h1>Progress Bar</h1>
+
+<sh-alert class="warn">
+  Currently only have variants
+  <b>flat</b>
+  and
+  <b>raised</b>
+  more to come.
+</sh-alert>
+
+<app-property-viewer>
+  <section>
+    <h4>Variants</h4>
+    <p>
+      Progress bar variants can be set through the class, e.g.
+      <code>class="flat"</code>
+      . Available variants:
+      <b>base</b>
+      ,
+      <b>flat</b>
+      ,
+      <b>outlined</b>
+      ,
+      <b>raised</b>
+      .
+    </p>
+  </section>
+  <section>
+    <h4>Colors</h4>
+    <p>
+      Progress bar colors can be set through the class, e.g.
+      <code>class="primary"</code>
+      . Available colors:
+      <b>primary</b>
+      ,
+      <b>accent</b>
+      ,
+      <b>warn</b>
+      ,
+      <b>error</b>
+      ,
+      <b>success</b>
+      .
+    </p>
+  </section>
+  <section>
+    <h4>Disabled</h4>
+    <p>
+      The progress bar can be set to disabled through the attribute, e.g.
+      <code>[disabled]</code>
+      .
+    </p>
+  </section>
+</app-property-viewer>
+
+<div class="content">
+  <h3>Variations</h3>
+
+  <app-previewer path="/sh-progress-bar/examples/base-progress-bar/base-progress-bar.component" title="Base">
+    <app-base-progress-bar class="example" />
+  </app-previewer>
+
+  <app-previewer
+    path="/sh-progress-bar/examples/indeterminte-progress-bar/indeterminte-progress-bar.component"
+    title="Indeterminate">
+    <app-indeterminte-progress-bar class="example" />
+  </app-previewer>
+
+  <app-previewer path="/sh-progress-bar/examples/flat-progress-bar/flat-progress-bar.component" title="Flat">
+    <app-flat-progress-bar class="example" />
+  </app-previewer>
+
+  <app-previewer
+    path="/sh-progress-bar/examples/outlined-progress-bar/outlined-progress-bar.component"
+    title="Outlined">
+    <app-outlined-progress-bar class="example" />
+  </app-previewer>
+
+  <app-previewer path="/sh-progress-bar/examples/raised-progress-bar/raised-progress-bar.component" title="Raised">
+    <app-raised-progress-bar class="example" />
+  </app-previewer>
+</div>

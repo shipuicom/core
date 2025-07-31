@@ -1,0 +1,139 @@
+@use '../helpers.scss' as *;
+
+$spkSelect: false !default;
+
+@if $spkSelect == true {
+  sh-select {
+    --miw: #{p2r(210)};
+
+    display: flex;
+
+    sh-form-field {
+      display: flex;
+      --ff-mw: var(--miw);
+    }
+
+    sh-popover {
+      flex: 1 0;
+
+      &:has(.sparkle-options:empty) .popover {
+        opacity: 0;
+      }
+    }
+
+    .selected-value {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: p2r(4);
+      color: var(--base-8);
+
+      input {
+        margin: 0;
+      }
+
+      &.is-selected {
+        color: var(--base-12);
+      }
+    }
+
+    sh-form-field .input-wrap .input {
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+
+      --ff-space: #{p2r(7 10)};
+
+      textarea,
+      input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+      }
+
+      &.show-search-text {
+        input {
+          opacity: 1;
+          height: initial;
+          min-width: min-content;
+          field-sizing: content;
+          font: var(--paragraph-30);
+          position: relative;
+        }
+
+        textarea {
+          opacity: 1;
+          height: initial;
+          margin: p2r(4 0 0);
+        }
+      }
+    }
+
+    sh-form-field.small .input-wrap .input {
+      --ff-space: #{p2r(5 8)};
+
+      sh-chip {
+        --chip-h: #{p2r(20)};
+        font-size: 80%;
+      }
+    }
+  }
+
+  .sparkle-options {
+    padding: p2r(8 0);
+    display: flex;
+    flex-direction: column;
+    max-height: p2r(180);
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    .option {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      min-height: p2r(32);
+      margin: p2r(0 8);
+      padding: p2r(0 8);
+      gap: p2r(8);
+      width: calc(100% - #{p2r(16)});
+      border-radius: var(--shape-2);
+      appearance: none;
+      background-color: transparent;
+      border: 0;
+      cursor: pointer;
+      color: var(--base-12);
+      user-select: none;
+
+      &[disabled] {
+        opacity: 0.3;
+        cursor: initial;
+
+        &:hover {
+          background-color: transparent;
+        }
+      }
+
+      sh-icon {
+        font-size: p2r(16);
+      }
+
+      &.active,
+      &:checked,
+      &:hover {
+        background-color: var(--base-2);
+        color: var(--base-12);
+      }
+
+      &.focused {
+        background-color: var(--primary-1);
+        color: var(--base-12);
+
+        &:hover {
+          background-color: var(--primary-2);
+        }
+      }
+    }
+  }
+}

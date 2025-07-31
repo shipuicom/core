@@ -1,0 +1,9 @@
+<sh-select [options]="options()" label="label" value="value">
+  <label>Favorite food (custom option template)</label>
+  <input type="text" [(ngModel)]="selected" />
+  <ng-template let-option>
+    <span>{{ option.emoji }} {{ option.label }}</span>
+  </ng-template>
+</sh-select>
+
+<p>Selected: {{ selected() }}</p>

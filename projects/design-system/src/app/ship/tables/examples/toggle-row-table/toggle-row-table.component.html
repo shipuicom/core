@@ -1,0 +1,35 @@
+<sh-table [data]="dataSource()" [loading]="isLoading()" [class]="type()">
+  <tr>
+    @for (col of displayedColumns(); track col) {
+      <th>{{ col }}</th>
+    }
+  </tr>
+
+  @for (row of dataSource(); track $index) {
+    <tr (click)="toggleRow($index)">
+      @for (col of displayedColumns(); track col) {
+        <td>
+          @if ($first) {
+            <button sh-button class="small primary raised">
+              @if ($index === openRowIndex()) {
+                <sh-icon>caret-up</sh-icon>
+              } @else {
+                <sh-icon>caret-down</sh-icon>
+              }
+            </button>
+          }
+
+          {{ row[col] }}
+        </td>
+      }
+    </tr>
+
+    @if ($index === openRowIndex()) {
+      <tr>
+        <td class="span-all" [style.background-color]="'red'">hi im a secondary row and i can be styled differently</td>
+      </tr>
+    }
+  }
+
+  <div table-no-rows>No data available</div>
+</sh-table>

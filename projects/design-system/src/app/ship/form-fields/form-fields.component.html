@@ -1,0 +1,63 @@
+<h1>Form Field</h1>
+
+<app-property-viewer>
+  <section>
+    <h4>label</h4>
+    <p>Optional label for the form field. Can include icons or other elements.</p>
+  </section>
+  <section>
+    <h4>prefix/suffix</h4>
+    <p>
+      Project content before or after the input using
+      <code>prefix</code>
+      or
+      <code>suffix</code>
+      slots.
+    </p>
+  </section>
+  <section>
+    <h4>placeholder</h4>
+    <p>Placeholder text for the input or textarea.</p>
+  </section>
+  <section>
+    <h4>hint</h4>
+    <p>Optional hint text shown below the input.</p>
+  </section>
+  <section>
+    <h4>error</h4>
+    <p>Optional error text shown below the input when in error state.</p>
+  </section>
+  <section>
+    <h4>disabled</h4>
+    <p>Disables the input or textarea.</p>
+  </section>
+  <section>
+    <h4>size/class</h4>
+    <p>
+      Use
+      <code>small</code>
+      ,
+      <code>autosize</code>
+      ,
+      <code>center</code>
+      classes for different layouts.
+    </p>
+  </section>
+</app-property-viewer>
+
+<div class="sandbox-example">
+  <app-previewer
+    path="/sh-form-fields/examples/form-field-sandbox/form-field-sandbox.component"
+    title="Sandbox"
+    class="no-space">
+    <app-form-field-sandbox />
+  </app-previewer>
+</div>
+
+<app-previewer path="/sh-form-fields/examples/base-form-field/base-form-field.component" title="Base">
+  <app-base-form-field class="example" />
+</app-previewer>
+
+<app-previewer path="/sh-form-fields/examples/small-form-field/small-form-field.component" title="Small">
+  <app-small-form-field class="example" />
+</app-previewer>

@@ -1,0 +1,28 @@
+<pre>Sort column by: {{ sortByColumn() }}</pre>
+
+<sh-table [data]="dataSource()" [(sortByColumn)]="sortByColumn" [class]="type()">
+  <tr>
+    @for (col of displayedColumns(); track col) {
+      <th [spkSort]="col">
+        {{ col }}
+
+        @if (sortByColumn() === col) {
+          <sh-icon>caret-up</sh-icon>
+        }
+        @if (sortByColumn() === `-${col}`) {
+          <sh-icon>caret-down</sh-icon>
+        }
+      </th>
+    }
+  </tr>
+
+  @for (row of dataSource(); track $index) {
+    <tr>
+      @for (col of displayedColumns(); track col) {
+        <td>{{ row[col] }}</td>
+      }
+    </tr>
+  }
+
+  <div table-no-rows>No data available</div>
+</sh-table>

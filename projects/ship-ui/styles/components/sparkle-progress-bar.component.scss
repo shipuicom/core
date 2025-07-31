@@ -1,0 +1,173 @@
+@use '../helpers.scss' as *;
+
+$spkProgressBar: true !default;
+
+@if $spkProgressBar == true {
+  sh-progress-bar {
+    --pb-h: #{p2r(8)};
+    --pb-b: var(--base-4);
+    --pb-bg: var(--base-2);
+    --pb-br: var(--shape-2);
+    --pbt-bg: var(--base-6);
+    --pbt-br: inherit;
+
+    display: block;
+    width: 100%;
+    height: var(--pb-h);
+    position: relative;
+    overflow: hidden;
+
+    border-radius: var(--pb-br);
+    background: var(--pb-bg);
+
+    .progress-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      height: 100%;
+      transform-origin: top left;
+
+      border-radius: var(--pbt-br);
+      background: var(--pbt-bg);
+    }
+
+    &.indeterminate {
+      .progress-bar {
+        right: 0;
+        animation: indeterminate-progress-bar-stripes 2s linear infinite;
+      }
+
+      &:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--base-2);
+        animation: indeterminate-progress-bar-stripes-background 2s linear infinite;
+        transform-origin: top left;
+      }
+    }
+
+    &.primary {
+      --pbt-bg: var(--primary-8);
+    }
+
+    &.accent {
+      --pbt-bg: var(--accent-8);
+    }
+
+    &.warn {
+      --pbt-bg: var(--warn-8);
+    }
+
+    &.error {
+      --pbt-bg: var(--error-8);
+    }
+
+    &.success {
+      --pbt-bg: var(--success-8);
+    }
+
+    &.outlined {
+      --pb-b: 1px solid var(--base-4);
+      --pb-bg: var(--base-1);
+
+      &:after {
+        background-color: inherit;
+      }
+    }
+
+    &.flat {
+      --pbt-bg: var(--base-8);
+
+      &:after {
+        background-color: inherit;
+      }
+
+      &.primary {
+        --pbt-bg: var(--primary-8);
+      }
+
+      &.accent {
+        --pbt-bg: var(--accent-8);
+      }
+
+      &.warn {
+        --pbt-bg: var(--warn-8);
+      }
+
+      &.error {
+        --pbt-bg: var(--error-8);
+      }
+
+      &.success {
+        --pbt-bg: var(--success-8);
+      }
+    }
+
+    &.raised {
+      --pbt-bg: var(--base-g3);
+
+      &.primary {
+        --pbt-bg: var(--primary-g3);
+      }
+
+      &.accent {
+        --pbt-bg: var(--accent-g3);
+      }
+
+      &.warn {
+        --pbt-bg: var(--warn-g3);
+      }
+
+      &.error {
+        --pbt-bg: var(--error-g3);
+      }
+
+      &.success {
+        --pbt-bg: var(--success-g3);
+      }
+    }
+  }
+
+  @keyframes indeterminate-progress-bar-stripes-background {
+    0% {
+      animation-timing-function: cubic-bezier(0.15, 0, 0.515058, 0.409685);
+      transform: translateX(0);
+    }
+
+    25% {
+      animation-timing-function: cubic-bezier(0.31033, 0.284058, 0.8, 0.733712);
+      transform: translateX(37.651913%);
+    }
+
+    48.35% {
+      animation-timing-function: cubic-bezier(0.4, 0.627035, 0.6, 0.902026);
+      transform: translateX(84.386165%);
+    }
+
+    100% {
+      transform: translateX(160.277782%);
+    }
+  }
+
+  @keyframes indeterminate-progress-bar-stripes {
+    0% {
+      transform: translateX(0);
+    }
+    20% {
+      animation-timing-function: cubic-bezier(0.5, 0, 0.701732, 0.495819);
+      transform: translateX(0);
+    }
+    59.15% {
+      animation-timing-function: cubic-bezier(0.302435, 0.381352, 0.55, 0.956352);
+      transform: translateX(83.67142%);
+    }
+    100% {
+      transform: translateX(200.611057%);
+    }
+  }
+}

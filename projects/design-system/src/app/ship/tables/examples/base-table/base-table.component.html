@@ -1,0 +1,17 @@
+<sh-table [data]="dataSource()" [loading]="isLoading()" [class]="type()">
+  <tr>
+    @for (col of displayedColumns(); track col) {
+      <th>{{ col }}</th>
+    }
+  </tr>
+
+  @for (row of dataSource(); track $index) {
+    <tr>
+      @for (col of displayedColumns(); track col) {
+        <td>{{ row[col] }}</td>
+      }
+    </tr>
+  }
+
+  <div table-no-rows>No data available</div>
+</sh-table>

@@ -1,0 +1,13 @@
+<sh-list spkSortable (afterDrop)="reorderTodo($event)">
+  @for (todo of todos(); track $index) {
+    <div item [draggable]="true" [class.active]="todo.done" (click)="toggleTodo($index)">
+      <sh-checkbox [class.active]="todo.done" class="primary raised" />
+
+      @if (todo.done) {
+        <s>{{ todo.title }}</s>
+      } @else {
+        {{ todo.title }}
+      }
+    </div>
+  }
+</sh-list>

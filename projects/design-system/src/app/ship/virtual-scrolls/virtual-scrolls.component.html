@@ -1,0 +1,13 @@
+<sh-virtual-scroll>
+  @for (item of items(); track item.id) {
+    <div #item class="my-item" [style.background-color]="item.color">
+      <div [style.font-size.px]="item.fontSize">{{ item.name }} (ID: {{ item.id }})</div>
+      @if (item.showContent) {
+        <div>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident, excepturi deserunt dignissimos corrupti
+          repellendus obcaecati.
+        </div>
+      }
+    </div>
+  }
+</sh-virtual-scroll>

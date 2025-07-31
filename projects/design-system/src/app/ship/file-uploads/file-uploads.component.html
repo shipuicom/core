@@ -1,0 +1,63 @@
+<h1>File Upload</h1>
+
+<app-property-viewer>
+  <section>
+    <h4>
+      files
+      <small>(two-way binding)</small>
+    </h4>
+    <p>
+      The array of selected files. Use
+      <code>[(files)]</code>
+      for two-way binding.
+    </p>
+  </section>
+  <section>
+    <h4>multiple</h4>
+    <p>
+      Allows selection of multiple files. Use
+      <code>[multiple]="true"</code>
+      to enable.
+    </p>
+  </section>
+  <section>
+    <h4>accept</h4>
+    <p>
+      Restricts selectable file types just like the native input. Example:
+      <code>accept=".png,.jpg,.pdf"</code>
+    </p>
+  </section>
+  <section>
+    <h4>placeholder</h4>
+    <p>
+      Placeholder text shown when no files are selected. Use
+      <code>[placeholder]</code>
+      to customize.
+    </p>
+  </section>
+  <section>
+    <h4>overlayText</h4>
+    <p>
+      Text shown when dragging files over the drop area. Use
+      <code>[overlayText]</code>
+      to customize.
+    </p>
+  </section>
+</app-property-viewer>
+
+<div class="sandbox-example">
+  <app-previewer
+    path="/sh-file-upload/examples/file-upload-sandbox/file-upload-sandbox.component"
+    title="Sandbox"
+    class="no-space">
+    <app-file-upload-sandbox />
+  </app-previewer>
+</div>
+
+<div class="content">
+  <app-previewer path="/sh-file-upload/examples/base-file-upload/base-file-upload.component" title="Base">
+    <app-base-file-upload class="example" />
+  </app-previewer>
+</div>
+
+<p>More variants to come</p>

@@ -1,0 +1,112 @@
+<h1>List</h1>
+
+<app-property-viewer>
+  <section>
+    <h4>item</h4>
+    <p>
+      Add the
+      <code>item</code>
+      attribute to a child element of
+      <code>sh-list</code>
+      to make it a list item.
+    </p>
+  </section>
+  <section>
+    <h4>action</h4>
+    <p>
+      Add the
+      <code>action</code>
+      attribute to a child element of
+      <code>sh-list</code>
+      to make it an actionable item (e.g., clickable).
+    </p>
+  </section>
+  <section>
+    <h4>suffix</h4>
+    <p>
+      Add the
+      <code>suffix</code>
+      attribute to an element inside a list item to align it to the right.
+    </p>
+  </section>
+</app-property-viewer>
+
+<app-previewer path="/sh-list/examples/base-list-example/base-list-example.component" title="Base">
+  <base-list-example class="example" />
+</app-previewer>
+
+<!-- <div class="example">
+  <sh-list class="primary">
+    <h3 title>Basic</h3>
+    <div item>
+      <sh-icon>circle</sh-icon>
+      Item 1
+      <span suffix>⌘O</span>
+    </div>
+    <div item>
+      <sh-icon>circle</sh-icon>
+      Item 2
+      <span suffix>⌘O</span>
+    </div>
+    <div action [class.active]="active()" (click)="active.set(!active())">
+      <sh-icon>circle</sh-icon>
+      Item 2
+      <span suffix>⌘O</span>
+    </div>
+    <div item (click)="checkbox1.setValue(!checkbox1.value)">
+      <sh-icon>circle</sh-icon>
+      Item 3
+      <sh-checkbox suffix>
+        <input type="checkbox" [formControl]="checkbox1" />
+      </sh-checkbox>
+    </div>
+    <div item (click)="checkbox2.setValue(!checkbox2.value)">
+      <sh-checkbox>
+        <input type="checkbox" [formControl]="checkbox2" />
+      </sh-checkbox>
+      Item 3
+    </div>
+  </sh-list>
+</div>
+
+<div class="l20-example">
+  <sh-list>
+    <h3 title>Basic</h3>
+    <div item>
+      <sh-icon>circle</sh-icon>
+      Item 1
+      <span suffix>⌘O</span>
+    </div>
+    <div item>
+      <sh-icon>circle</sh-icon>
+      Item 2
+      <span suffix>⌘O</span>
+    </div>
+    <div action [class.active]="active()" (click)="active.set(!active())">
+      <sh-icon class="sh-primary">circle</sh-icon>
+      Item 2
+      <span suffix>⌘O</span>
+    </div>
+    <div item (click)="checkbox1.setValue(!checkbox1.value)">
+      <sh-icon>circle</sh-icon>
+      Item 3
+      <sh-checkbox suffix>
+        <input type="checkbox" [formControl]="checkbox1" />
+      </sh-checkbox>
+    </div>
+    <div item (click)="checkbox2.setValue(!checkbox2.value)">
+      <sh-icon>circle</sh-icon>
+      Item 3
+      <sh-checkbox>
+        <input type="checkbox" [formControl]="checkbox2" />
+      </sh-checkbox>
+    </div>
+    <a href="#" item (click)="checkbox2.setValue(!checkbox2.value)">
+      <sh-icon>circle</sh-icon>
+      Item 4
+      <sh-checkbox>
+        <input type="checkbox" [formControl]="checkbox2" />
+      </sh-checkbox>
+    </a>
+  </sh-list>
+</div> -->

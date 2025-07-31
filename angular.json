@@ -3,23 +3,23 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "sparkle-ui": {
+    "ship-ui": {
       "projectType": "library",
-      "root": "projects/sparkle-ui",
-      "sourceRoot": "projects/sparkle-ui/src",
+      "root": "projects/ship-ui",
+      "sourceRoot": "projects/ship-ui/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular/build:ng-packagr",
           "options": {
-            "project": "projects/sparkle-ui/ng-package.json"
+            "project": "projects/ship-ui/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/sparkle-ui/tsconfig.lib.prod.json"
+              "tsConfig": "projects/ship-ui/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/sparkle-ui/tsconfig.lib.json"
+              "tsConfig": "projects/ship-ui/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -77,17 +77,17 @@
               },
               {
                 "glob": "**/*",
-                "input": "projects/sparkle-ui/assets/fonts",
-                "output": "./sparkle-ui-assets/fonts/"
+                "input": "projects/ship-ui/assets/fonts",
+                "output": "./ship-ui-assets/fonts/"
               },
               {
                 "glob": "**/examples/**/*",
-                "input": "projects/design-system/src/app/sparkle",
+                "input": "projects/design-system/src/app/ship",
                 "output": "/assets/examples/"
               }
             ],
             "stylePreprocessorOptions": {
-              "includePaths": ["projects/sparkle-ui/styles"]
+              "includePaths": ["projects/ship-ui/styles"]
             },
             "styles": ["projects/design-system/src/styles.scss", "node_modules/highlight.js/styles/github-dark.css"],
             "scripts": [],

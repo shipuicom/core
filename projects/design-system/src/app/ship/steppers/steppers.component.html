@@ -1,0 +1,45 @@
+<h1>Stepper</h1>
+
+<app-property-viewer>
+  <section>
+    <h4>Colors</h4>
+    <p>
+      Stepper colors can be set through the class, e.g.
+      <code>class="primary"</code>
+      .
+      <br />
+      Available colors:
+      <b>primary</b>
+      ,
+      <b>accent</b>
+      ,
+      <b>warn</b>
+      ,
+      <b>error</b>
+      ,
+      <b>success</b>
+      , and
+      <b>default</b>
+      (no class).
+    </p>
+  </section>
+</app-property-viewer>
+
+<div class="sandbox-example">
+  <app-previewer path="/sh-stepper/examples/stepper-sandbox/stepper-sandbox.component" title="Sandbox" class="no-space">
+    <app-stepper-sandbox />
+  </app-previewer>
+</div>
+
+<div class="content">
+  <h3>Variations</h3>
+
+  <app-previewer path="/sh-stepper/examples/default-stepper/default-stepper.component" title="Default Stepper">
+    <app-default-stepper />
+  </app-previewer>
+
+  <app-previewer path="/sh-stepper/examples/router-stepper/router-stepper.component" title="Router Stepper">
+    <app-router-steppers />
+    <router-outlet></router-outlet>
+  </app-previewer>
+</div>

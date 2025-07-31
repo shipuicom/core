@@ -1,24 +1,24 @@
-<spk-card class="type-c">
-  <spk-tabs class="primary">
+<sh-card class="type-c">
+  <sh-tabs class="primary">
     <h3 class="title">
       {{ title() }}
     </h3>
 
     <button tab [class.active]="view() === 'typescript'" (click)="toggleView('typescript')">
-      <spk-icon>brackets-curly</spk-icon>
+      <sh-icon>brackets-curly</sh-icon>
       Typescript
     </button>
 
     <button tab [class.active]="view() === 'styles'" (click)="toggleView('styles')">
-      <spk-icon>paint-brush-broad</spk-icon>
+      <sh-icon>paint-brush-broad</sh-icon>
       Styles
     </button>
 
     <button tab [class.active]="view() === 'markup'" (click)="toggleView('markup')">
-      <spk-icon>code</spk-icon>
+      <sh-icon>code</sh-icon>
       Markup
     </button>
-  </spk-tabs>
+  </sh-tabs>
 
   <div class="description">
     <ng-content select="[description]" />
@@ -43,4 +43,4 @@
   <div class="example-wrap">
     <ng-content />
   </div>
-</spk-card>
+</sh-card>

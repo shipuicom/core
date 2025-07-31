@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, input, signal, viewChild } from '@angular/core';
+import { ShipButtonComponent, ShipIconComponent } from '@ship-ui/core';
 import hljs from 'highlight.js';
 import scss from 'highlight.js/lib/languages/scss';
 import shell from 'highlight.js/lib/languages/shell';
 import typescript from 'highlight.js/lib/languages/typescript';
 import xml from 'highlight.js/lib/languages/xml';
-import { SparkleButtonComponent, SparkleIconComponent } from '../../../../../sparkle-ui/src/public-api';
 
 const langMap = {
   ts: 'typescript',
@@ -15,7 +15,7 @@ const langMap = {
 
 @Component({
   selector: 'app-highlight',
-  imports: [SparkleButtonComponent, SparkleIconComponent],
+  imports: [ShipButtonComponent, ShipIconComponent],
   templateUrl: './highlight.component.html',
   styleUrl: './highlight.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,0 +1,18 @@
+<div class="controls">
+  <sh-toggle [class.active]="disabled()" (click)="disabled.set(!disabled())">Disabled</sh-toggle>
+
+  <sh-button-group>
+    <button [class.active]="colors() === ''" (click)="colors.set('')">Base</button>
+    <button [class.active]="colors() === 'primary'" (click)="colors.set('primary')">Primary</button>
+    <button [class.active]="colors() === 'accent'" (click)="colors.set('accent')">Accent</button>
+    <button [class.active]="colors() === 'warn'" (click)="colors.set('warn')">Warn</button>
+    <button [class.active]="colors() === 'error'" (click)="colors.set('error')">Error</button>
+    <button [class.active]="colors() === 'success'" (click)="colors.set('success')">Success</button>
+  </sh-button-group>
+</div>
+
+<div>
+  <sh-datepicker class="raised" [class]="colors()" [(date)]="date" [disabled]="disabled()" />
+
+  <p>Selected date: {{ date() | date: 'mediumDate' }}</p>
+</div>

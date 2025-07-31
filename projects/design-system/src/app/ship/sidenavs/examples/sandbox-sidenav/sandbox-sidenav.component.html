@@ -1,0 +1,36 @@
+<div class="controls">
+  <p>Controls</p>
+  <header>
+    <div class="row">
+      <sh-toggle [class.active]="isNavOpen()" class="primary raised">
+        Open/Close
+        <input type="checkbox" [(ngModel)]="isNavOpen" />
+      </sh-toggle>
+
+      <sh-button-group class="small">
+        <button [class.active]="sidenavType() === ''" (click)="sidenavType.set('')">Default</button>
+        <button [class.active]="sidenavType() === 'overlay'" (click)="sidenavType.set('overlay')">Overlay</button>
+        <button [class.active]="sidenavType() === 'simple'" (click)="sidenavType.set('simple')">Simple</button>
+      </sh-button-group>
+    </div>
+
+    @if (sidenavType() === 'overlay') {
+      <div class="row">
+        <sh-toggle [class.active]="disableDrag()" class="primary raised">
+          Disable Drag
+          <input type="checkbox" [(ngModel)]="disableDrag" />
+        </sh-toggle>
+      </div>
+    }
+  </header>
+</div>
+
+<div class="sandbox">
+  <sh-sidenav [class]="sidenavType()" [(isOpen)]="isNavOpen" [disableDrag]="disableDrag()">
+    <ng-container sidenav>sidenav</ng-container>
+
+    <ng-container sidenav-closed-topbar><button (click)="isNavOpen.set(!isNavOpen())">hello</button></ng-container>
+
+    hello world
+  </sh-sidenav>
+</div>

@@ -1,0 +1,30 @@
+<h1>Sidenav</h1>
+
+<app-property-viewer>
+  <section>
+    <h4>Variants</h4>
+    <p>
+      Sidenav variants can be set through the class ex
+      <code>default</code>
+      does not allow for toggling are a fairly stupid variant ,
+      <code>simple</code>
+      is for when you wanna be able to toggle the size of the sidenav say you have icon state and a icons with text and
+      <code>overlay</code>
+      is for when you wanna be able to toggle the sidenav and have it overlay the content also supports dragging
+    </p>
+  </section>
+
+  <section>
+    <h4>disableDrag</h4>
+    <p>
+      You can pass in a boolean to disable the drag functionality for the overlay variant.
+      <code>[disableDrag]="true"</code>
+    </p>
+  </section>
+</app-property-viewer>
+
+<div class="sandbox-example">
+  <app-previewer path="/sh-buttons/examples/button-sandbox/button-sandbox.component" title="Sandbox" class="no-space">
+    <app-sandbox-sidenav />
+  </app-previewer>
+</div>

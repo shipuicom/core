@@ -1,0 +1,12 @@
+<sh-menu>
+  <button sh-button class="outlined">Open menu</button>
+  <ng-container menu>
+    @for (item of menuItems; track item.value) {
+      <button (click)="select(item)" [class.selected]="selected() === item.value">
+        <sh-icon>circle</sh-icon>
+        {{ item.label }}
+        <span suffix>{{ item.hotkey }}</span>
+      </button>
+    }
+  </ng-container>
+</sh-menu>

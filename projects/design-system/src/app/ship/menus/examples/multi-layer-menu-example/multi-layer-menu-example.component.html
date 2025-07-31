@@ -1,0 +1,23 @@
+<sh-menu [asMultiLayer]="true">
+  <button sh-button class="outlined">Open multi-layer menu</button>
+  <ng-container menu>
+    @for (item of menu; track $index) {
+      @if (item.children) {
+        <sh-menu [asMultiLayer]="true">
+          <button>{{ item.label }}</button>
+          <ng-container menu>
+            @for (sub of item.children; track sub.value) {
+              <button (click)="select(sub)" [class.selected]="selected === sub.value">
+                {{ sub.label }}
+              </button>
+            }
+          </ng-container>
+        </sh-menu>
+      } @else {
+        <button (click)="select(item)" [class.selected]="selected === item.value">
+          {{ item.label }}
+        </button>
+      }
+    }
+  </ng-container>
+</sh-menu>

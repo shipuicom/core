@@ -1,0 +1,7 @@
+<sh-select [options]="options()" label="name" value="id" [isClearable]="false">
+  <label>Favorite food (object options, not clearable)</label>
+  <input type="text" [(ngModel)]="selected" />
+</sh-select>
+
+<p>Selected: {{ selected() }}</p>
+<pre>{{ selectedObject() | json }}</pre>

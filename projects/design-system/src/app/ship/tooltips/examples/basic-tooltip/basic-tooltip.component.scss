@@ -1,0 +1,14 @@
+:host {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+div {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--sh-border-color);
+  border-radius: var(--sh-border-radius);
+  cursor: pointer;
+  background: var(--sh-surface-color);
+}

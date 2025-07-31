@@ -1,0 +1,59 @@
+<div class="controls">
+  <p>Controls</p>
+  <header>
+    <div class="row">
+      <sh-button-group class="small">
+        <button [class.active]="size() === ''" (click)="size.set('')">Default</button>
+        <button [class.active]="size() === 'large'" (click)="size.set('large')">Large</button>
+        <button [class.active]="size() === 'small'" (click)="size.set('small')">Small</button>
+        <button [class.active]="size() === 'inherit'" (click)="size.set('inherit')">Inherit</button>
+      </sh-button-group>
+
+      <sh-button-group class="small">
+        <button [class.active]="colorClass() === ''" (click)="colorClass.set('')">Default</button>
+        <button [class.active]="colorClass() === 'primary'" (click)="colorClass.set('primary')">Primary</button>
+        <button [class.active]="colorClass() === 'accent'" (click)="colorClass.set('accent')">Accent</button>
+        <button [class.active]="colorClass() === 'warn'" (click)="colorClass.set('warn')">Warn</button>
+        <button [class.active]="colorClass() === 'error'" (click)="colorClass.set('error')">Error</button>
+        <button [class.active]="colorClass() === 'success'" (click)="colorClass.set('success')">Success</button>
+      </sh-button-group>
+    </div>
+
+    @if (size() === 'inherit') {
+      <div class="row">
+        <sh-range-slider>
+          <input type="range" [min]="10" [max]="64" [step]="2" [(ngModel)]="sizeValue" />
+        </sh-range-slider>
+      </div>
+    }
+  </header>
+</div>
+
+<div class="sandbox" [style.font-size]="sizeValue() + 'px'">
+  <section>
+    <h4>Cloud-warning</h4>
+    <sh-icon [class]="size() + ' ' + colorClass()">cloud-warning</sh-icon>
+    <sh-icon [class]="size() + ' ' + colorClass()">cloud-warning-thin</sh-icon>
+    <sh-icon [class]="size() + ' ' + colorClass()">cloud-warning-light</sh-icon>
+    <sh-icon [class]="size() + ' ' + colorClass()">cloud-warning-fill</sh-icon>
+    <sh-icon [class]="size() + ' ' + colorClass()">cloud-warning-bold</sh-icon>
+  </section>
+
+  <section>
+    <h4>Warning</h4>
+    <sh-icon [class]="size() + ' ' + colorClass()">warning</sh-icon>
+    <sh-icon [class]="size() + ' ' + colorClass()">warning-thin</sh-icon>
+    <sh-icon [class]="size() + ' ' + colorClass()">warning-light</sh-icon>
+    <sh-icon [class]="size() + ' ' + colorClass()">warning-fill</sh-icon>
+    <sh-icon [class]="size() + ' ' + colorClass()">warning-bold</sh-icon>
+  </section>
+
+  <section>
+    <h4>Warning warning-octagon</h4>
+    <sh-icon [class]="size() + ' ' + colorClass()">warning-octagon</sh-icon>
+    <sh-icon [class]="size() + ' ' + colorClass()">warning-octagon-thin</sh-icon>
+    <sh-icon [class]="size() + ' ' + colorClass()">warning-octagon-light</sh-icon>
+    <sh-icon [class]="size() + ' ' + colorClass()">warning-octagon-fill</sh-icon>
+    <sh-icon [class]="size() + ' ' + colorClass()">warning-octagon-bold</sh-icon>
+  </section>
+</div>

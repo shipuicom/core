@@ -1,0 +1,31 @@
+:host {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.long-tooltip-content {
+  max-width: 300px;
+
+  h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--sh-on-surface-color);
+  }
+
+  p {
+    margin: 0 0 0.5rem 0;
+    color: var(--sh-on-surface-color);
+    line-height: 1.4;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1rem;
+    color: var(--sh-on-surface-color);
+
+    li {
+      margin-bottom: 0.25rem;
+    }
+  }
+}

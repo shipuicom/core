@@ -1,0 +1,47 @@
+<h3>Ship Theme Editor</h3>
+
+<!-- <sh-color-picker renderingType="hue" (currentColor)="selectedHue.set($event.hue)"></sh-color-picker> -->
+<sh-color-picker
+  renderingType="saturation"
+  [hue]="satHue()"
+  (currentColor)="updateSaturation($event.saturation)"></sh-color-picker>
+
+<sh-color-picker
+  [renderingType]="'hsl'"
+  [showDarkColors]="false"
+  [selectedColor]="rgbStartColor()"
+  (currentColor)="updateHsl($event.hsl)"></sh-color-picker>
+
+<sh-menu [openIndicator]="true" [closeOnClick]="false">
+  <button sh-button>
+    {{ inputName() }}
+  </button>
+
+  <ng-container menu>
+    @for (value of ['primary', 'accent', 'warn', 'error', 'success']; track $index) {
+      <button item (click)="setInputName(value)">
+        <sh-radio [class.active]="inputName() === value" class="primary raised">
+          {{ value }}
+        </sh-radio>
+      </button>
+    }
+  </ng-container>
+</sh-menu>
+
+<div class="theme-column">
+  @let _inputName = inputName();
+
+  <div class="theme-row">
+    @for (color of ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']; track $index) {
+      <div class="color-box" [style]="'background-color: var(--' + _inputName + '-' + color + ');'"></div>
+    }
+  </div>
+  <div class="theme-row flip">
+    @for (color of ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']; track $index) {
+      <div class="color-box" [style]="'background-color: var(--' + _inputName + '-' + color + ');'"></div>
+    }
+  </div>
+</div>
+
+<pre>{{ outputString() }}</pre>
+<!-- <app-sh-buttons></app-sh-buttons> -->

@@ -1,0 +1,45 @@
+{
+  "name": "@ship-ui/core",
+  "license": "MIT",
+  "version": "0.12.42",
+  "peerDependencies": {
+    "@angular/common": ">=19",
+    "@angular/core": ">=19"
+  },
+  "dependencies": {
+    "subset-font": "^2.3.0",
+    "@phosphor-icons/web": "^2.1.1",
+    "glob": "11.0.3",
+    "tslib": "^2.3.0"
+  },
+  "bin": {
+    "sparkle-fg": "./bin/sparkle-fg-node"
+  },
+  "libraryIcons": [
+    "upload-simple",
+    "magnifying-glass",
+    "x-bold",
+    "caret-left",
+    "caret-right",
+    "caret-down",
+    "caret-up",
+    "calendar",
+    "minus-bold",
+    "info",
+    "check-bold",
+    "check-circle",
+    "warning-octagon",
+    "warning",
+    "question",
+    "plus"
+  ],
+  "exports": {
+    ".": {
+      "sass": "./styles/*",
+      "assets": [
+        "./assets/**/*"
+      ]
+    }
+  },
+  "sideEffects": false
+}

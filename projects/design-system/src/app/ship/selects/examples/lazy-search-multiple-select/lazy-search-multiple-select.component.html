@@ -1,0 +1,16 @@
+<sh-select
+  [options]="options()"
+  label="label"
+  value="value"
+  [lazySearch]="true"
+  [selectMultiple]="true"
+  [isLoading]="resource.isLoading()">
+  <label>Favorite foods (lazy search, multiple)</label>
+  <input type="text" [(ngModel)]="lazySearchOption" />
+</sh-select>
+
+@if (resource.isLoading()) {
+  <p>Searching: {{ lazySearchOption() }}</p>
+} @else {
+  <p>Selected: {{ lazySearchOption() | json }}</p>
+}

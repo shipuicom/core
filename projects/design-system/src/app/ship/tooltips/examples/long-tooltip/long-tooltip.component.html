@@ -1,0 +1,25 @@
+<button sh-button [spkTooltip]="longTemplateTooltip">
+  <sh-icon>article</sh-icon>
+  Long Template
+</button>
+
+<!-- Long tooltip with template -->
+<ng-template #longTemplateTooltip>
+  <div class="long-tooltip-content">
+    <h4>Detailed Information</h4>
+    <p>
+      This is a comprehensive tooltip that contains multiple paragraphs of information. It demonstrates how the tooltip
+      component handles rich content with various HTML elements.
+    </p>
+    <p>
+      The tooltip should properly wrap text and maintain good spacing between elements. It should also handle different
+      content types gracefully.
+    </p>
+    <ul>
+      <li>Feature 1: Comprehensive documentation</li>
+      <li>Feature 2: Rich content support</li>
+      <li>Feature 3: Proper text wrapping</li>
+      <li>Feature 4: Responsive design</li>
+    </ul>
+  </div>
+</ng-template>

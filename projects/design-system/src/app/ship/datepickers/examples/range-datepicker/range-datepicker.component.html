@@ -1,0 +1,4 @@
+<label for="range-datepicker">Select a date range:</label>
+<sh-datepicker [(date)]="startDate" [(endDate)]="endDate" [asRange]="true"></sh-datepicker>
+<p>Start: {{ startDate() ? (startDate() | date: 'mediumDate') : 'None' }}</p>
+<p>End: {{ endDate() ? (endDate() | date: 'mediumDate') : 'None' }}</p>

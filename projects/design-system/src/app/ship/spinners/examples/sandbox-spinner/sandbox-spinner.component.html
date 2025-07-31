@@ -1,0 +1,31 @@
+<sh-range-slider class="primary raised" unit="px">
+  <label for="range-slider">Set spinner size</label>
+  <input id="range-slider" type="range" step="2" min="24" max="120" [(ngModel)]="value" />
+</sh-range-slider>
+
+<sh-range-slider class="primary raised" unit="px">
+  <label for="range-slider">Spinner thickness</label>
+  <input id="range-slider" type="range" step="1" min="1" max="10" [(ngModel)]="thickness" />
+</sh-range-slider>
+
+<sh-spinner [style.--spinner-thickness]="thicknessAsPixels()" [style.--spinner-size]="valueAsPixels()"></sh-spinner>
+<sh-spinner
+  [style.--spinner-thickness]="thicknessAsPixels()"
+  [style.--spinner-size]="valueAsPixels()"
+  class="primary"></sh-spinner>
+<sh-spinner
+  [style.--spinner-thickness]="thicknessAsPixels()"
+  [style.--spinner-size]="valueAsPixels()"
+  class="accent"></sh-spinner>
+<sh-spinner
+  [style.--spinner-thickness]="thicknessAsPixels()"
+  [style.--spinner-size]="valueAsPixels()"
+  class="warn"></sh-spinner>
+<sh-spinner
+  [style.--spinner-thickness]="thicknessAsPixels()"
+  [style.--spinner-size]="valueAsPixels()"
+  class="error"></sh-spinner>
+<sh-spinner
+  [style.--spinner-thickness]="thicknessAsPixels()"
+  [style.--spinner-size]="valueAsPixels()"
+  class="success"></sh-spinner>

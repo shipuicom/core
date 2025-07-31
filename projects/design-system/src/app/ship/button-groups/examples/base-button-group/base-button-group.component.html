@@ -1,0 +1,8 @@
+<sh-button-group [class.small]="small()">
+  @for (item of items(); track $index) {
+    <button [class.active]="activeIndex() === $index" (click)="updateActiveIndex($index)">
+      <sh-icon>circle</sh-icon>
+      Hello
+    </button>
+  }
+</sh-button-group>

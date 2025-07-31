@@ -1,10 +1,10 @@
-@use '../../../../sparkle-ui/styles/helpers.scss' as *;
+@use '../../../../ship-ui/styles/helpers.scss' as *;
 
 :host {
   display: block;
 }
 
-spk-card {
+sh-card {
   --card-bg: var(--primary-1);
   --card-bc: var(--primary-4);
   --card-c: var(--primary-8);

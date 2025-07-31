@@ -1,0 +1,8 @@
+<sh-daterange-input>
+  <label>Date Range (Reactive Form)</label>
+  <input type="text" [formControl]="startDate" placeholder="Start date" />
+  <input type="text" [formControl]="endDate" placeholder="End date" />
+  <sh-icon suffix>calendar</sh-icon>
+</sh-daterange-input>
+<p>Start: {{ startDate.value | date: 'mediumDate' }}</p>
+<p>End: {{ endDate.value | date: 'mediumDate' }}</p>

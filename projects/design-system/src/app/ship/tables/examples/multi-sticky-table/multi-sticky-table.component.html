@@ -1,0 +1,36 @@
+<sh-table [data]="dataSource()" [loading]="isLoading()" [class]="type()">
+  <tr class="sticky">
+    <div spkStickyColumns>
+      <th>im sticky</th>
+      <th>im sticky</th>
+    </div>
+
+    @for (col of displayedColumns(); track col) {
+      <th>{{ col }}</th>
+    }
+
+    <div spkStickyColumns="end">
+      <th>im sticky end</th>
+      <th>im sticky end</th>
+    </div>
+  </tr>
+
+  @for (row of dataSource(); track $index) {
+    <tr [class.sticky]="$index % 3 === 0">
+      <div spkStickyColumns>
+        <td>im sticky</td>
+        <td>im sticky</td>
+      </div>
+
+      @for (col of displayedColumns(); track col) {
+        <td>{{ row[col] }}</td>
+      }
+
+      <div spkStickyColumns="end">
+        <td>im sticky end</td>
+        <td>im sticky end</td>
+      </div>
+    </tr>
+  }
+  <div table-no-rows>No data available</div>
+</sh-table>

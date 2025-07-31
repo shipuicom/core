@@ -1,0 +1,32 @@
+@use '../../../../../ship-ui/styles/helpers.scss' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(20);
+  padding: p2r(40);
+  width: calc(100% - var(--sh-sidenav));
+}
+
+h1 {
+  font: var(--title-20B);
+}
+
+h3 {
+  font: var(--paragraph-10);
+}
+
+.example {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: p2r(8);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: p2r(20);
+}

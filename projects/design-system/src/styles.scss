@@ -1,11 +1,11 @@
-@use '../../sparkle-ui/styles/index.scss' with (
+@use '../../ship-ui/styles/index.scss' with (
   $useApexcharts: true,
   $useInterTight: true,
   $spkFormFieldShadow: true,
   $spkButtonShadow: true
 );
 
-@use '../../sparkle-ui/styles/helpers.scss' as *;
+@use '../../ship-ui/styles/helpers.scss' as *;
 
 // Only for styling projected content
 app-property-viewer {

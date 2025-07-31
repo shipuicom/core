@@ -1,0 +1,334 @@
+@use '../helpers.scss' as *;
+
+$spkFormField: true !default;
+$spkDatepicker: true !default;
+$spkFormFieldShadow: false !default;
+
+%smallFormField {
+  --ff-space: #{p2r(7 10)};
+  --ff-input-space: #{p2r(6 10)};
+  --ff-f: var(--paragraph-40B);
+
+  line-height: p2r(16);
+
+  .prefix,
+  .suffix {
+    line-height: p2r(16);
+
+    > sh-icon {
+      font-size: p2r(16);
+    }
+  }
+}
+
+@if $spkFormField == true {
+  sh-form-field-popover,
+  sh-form-field {
+    --ff-s: var(--shape-2);
+    --ff-bc: var(--base-4);
+    --ff-prefix-bg: var(--base-2);
+    --ff-suffix-bg: transparent;
+    --ff-ic: var(--base-8);
+    --ff-bg: var(--base-1);
+    --ff-f: var(--paragraph-30B);
+    --ff-spinner-size: #{p2r(20)};
+    --ff-spinner-thickness: #{p2r(2)};
+    --ff-space: #{p2r(9 12)};
+    --ff-input-space: #{p2r(10 12)};
+    --ff-mw: auto;
+
+    @if $spkFormFieldShadow != false {
+      --ff-bs: var(--box-shadow-10);
+    } @else {
+      --ff-bs: none;
+    }
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+    width: 100%;
+
+    &[read-only],
+    &[read-only='true'],
+    &[readonly='true'],
+    &[readonly],
+    &.readonly,
+    &[disabled],
+    &[disabled='true'],
+    &.disabled,
+    &:has(input[disabled]),
+    &:has(textarea[disabled]),
+    &:has(textarea[disabled='true']),
+    &:has(input[disabled='true']) {
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.5;
+    }
+
+    &.small {
+      @extend %smallFormField;
+    }
+
+    &.auto-width {
+      width: initial;
+
+      .input-wrap,
+      input {
+        width: initial;
+      }
+    }
+
+    &.center {
+      .input-wrap input[type='number'],
+      .input-wrap input {
+        text-align: center;
+      }
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      padding-bottom: p2r(4);
+      gap: p2r(4);
+
+      sh-icon {
+        font-size: p2r(16);
+      }
+    }
+
+    .suffix,
+    .prefix {
+      display: none;
+      align-items: center;
+      gap: p2r(4);
+      padding: var(--ff-space);
+      transition: background-color 125ms linear;
+      background-color: var(--ff-prefix-bg);
+      line-height: p2r(20);
+
+      &:not(:empty) {
+        display: flex;
+      }
+    }
+
+    .suffix {
+      background-color: var(--ff-suffix-bg);
+
+      &:has([textsuffix]) {
+        padding-left: 0;
+      }
+    }
+
+    &:has(input.ng-touched.ng-invalid) {
+      --ff-ic: var(--error-8);
+      --ff-bc: var(--error-8);
+      --ff-prefix-bg: var(--error-2);
+    }
+
+    &.autosize {
+      width: min-content;
+
+      .input-wrap {
+        height: auto;
+
+        textarea,
+        input {
+          field-sizing: content;
+        }
+      }
+    }
+
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--ff-bc);
+      border-radius: var(--ff-s);
+      background: var(--ff-bg);
+      box-shadow: var(--ff-bs);
+      overflow: hidden;
+      transition: border-color 125ms linear;
+      min-width: var(--ff-mw);
+      width: 100%;
+
+      sh-popover,
+      .input {
+        flex: 1 0;
+        margin: var(--ff-space);
+      }
+
+      textarea {
+        resize: none;
+        margin: p2r(8 0);
+        color: var(--base-8);
+        field-sizing: content;
+      }
+
+      &:has(textarea) {
+        height: auto;
+        min-width: 100%;
+        max-width: 100%;
+      }
+
+      sh-icon {
+        color: var(--ff-ic);
+        transition: color 125ms linear;
+
+        &.primary {
+          --ff-ic: var(--primary-8);
+        }
+
+        &.accent {
+          --ff-ic: var(--accent-8);
+        }
+
+        &.warn {
+          --ff-ic: var(--warn-8);
+        }
+
+        &.error {
+          --ff-ic: var(--error-8);
+        }
+
+        &.success {
+          --ff-ic: var(--success-8);
+        }
+      }
+
+      sh-chip sh-icon {
+        color: var(--chip-ic);
+      }
+
+      sh-spinner {
+        --spinner-size: var(--ff-spinner-size);
+        --spinner-thickness: var(--ff-spinner-thickness);
+      }
+
+      textarea,
+      input {
+        appearance: none;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        font: var(--paragraph-30B);
+        flex: 1 0;
+        color: var(--base-8);
+        margin: var(--ff-input-space);
+        width: 100%;
+
+        &::placeholder {
+          color: var(--base-6);
+        }
+
+        &:focus {
+          outline: none;
+        }
+
+        &[type='number'] {
+          appearance: textfield;
+          text-align: right;
+
+          &::-webkit-outer-spin-button,
+          &::-webkit-inner-spin-button {
+            display: none;
+          }
+
+          &:has(+ .suffix:not(:empty)) {
+            margin-right: 0;
+          }
+        }
+      }
+    }
+
+    .helpers {
+      height: p2r(20);
+      display: flex;
+      align-items: center;
+      gap: p2r(4);
+      padding-top: p2r(4);
+      width: 100%;
+
+      [hint] {
+        color: var(--base-9);
+
+        &[suffix] {
+          text-align: right;
+          width: 100%;
+        }
+      }
+
+      &:has(.error-wrap:not(:empty)) .hint {
+        display: none;
+      }
+    }
+
+    // &:not(:has(input.ng-touched.ng-invalid)) {
+    //   &:has(.hint:empty) .helpers {
+    //     height: 0;
+    //     padding-top: 0;
+    //   }
+    // }
+
+    &:has(.error-wrap:empty + .hint:empty) .helpers {
+      height: 0;
+      padding-top: 0;
+    }
+
+    &:has(input.ng-touched.ng-invalid) .helpers .hint {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .error-wrap {
+      color: var(--error-8);
+      opacity: 1;
+      transition: opacity 125ms linear;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+    }
+
+    .hint {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      color: var(--base-8);
+      opacity: 1;
+      transition:
+        visibility 125ms linear,
+        opacity 125ms linear;
+      visibility: visible;
+
+      &:empty {
+        opacity: 0;
+      }
+    }
+
+    &.error {
+      --ff-ic: var(--error-8);
+    }
+
+    &.warning {
+      --ff-ic: var(--warn-8);
+    }
+
+    &.success {
+      --ff-ic: var(--success-8);
+    }
+  }
+}
+
+@if $spkDatepicker == true {
+  sh-daterange-input,
+  sh-datepicker-input {
+    &.small {
+      sh-form-field-popover,
+      sh-form-field {
+        @extend %smallFormField;
+      }
+    }
+  }
+}

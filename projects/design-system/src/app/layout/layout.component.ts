@@ -1,21 +1,21 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
-  SparkleButtonComponent,
-  SparkleIconComponent,
-  SparkleListComponent,
-  SparkleSidenavComponent,
-  SparkleSidenavType,
-} from '../../../../sparkle-ui/src/public-api';
+  ShipButtonComponent,
+  ShipIconComponent,
+  ShipListComponent,
+  ShipSidenavComponent,
+  ShipSidenavType,
+} from '../../../../ship-ui/src/public-api';
 import { LayoutState } from './layout.state';
 
 @Component({
   selector: 'app-layout',
   imports: [
-    SparkleSidenavComponent,
-    SparkleListComponent,
-    SparkleIconComponent,
-    SparkleButtonComponent,
+    ShipSidenavComponent,
+    ShipListComponent,
+    ShipIconComponent,
+    ShipButtonComponent,
     RouterLink,
     RouterLinkActive,
     RouterOutlet,
@@ -27,7 +27,7 @@ import { LayoutState } from './layout.state';
 export default class LayoutComponent {
   #layoutState = inject(LayoutState);
 
-  sidenavType = signal<SparkleSidenavType>('simple');
+  sidenavType = signal<ShipSidenavType>('simple');
   isOpen = signal(false);
   isNavOpen = this.#layoutState.isNavOpen;
   isDarkMode = this.#layoutState.isDarkMode;
@@ -40,7 +40,7 @@ export default class LayoutComponent {
     this.#layoutState.toggleNav();
   }
 
-  toggleSidenavType(type: SparkleSidenavType) {
+  toggleSidenavType(type: ShipSidenavType) {
     this.sidenavType.set(type);
     this.#layoutState.closeSidenav();
   }

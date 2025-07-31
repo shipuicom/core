@@ -1,0 +1,93 @@
+<header header [class.sticky]="stickyHeader()">
+  <h3>Dialog Header</h3>
+  <button sh-button class="outlined" (click)="stickyHeader.set(!stickyHeader())">
+    {{ stickyHeader() ? 'Sticky' : 'Unsticky' }} Header
+  </button>
+</header>
+
+<section content>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+  <p>This is the dialog content area. You can put anything here.</p>
+</section>
+
+<footer footer [class.sticky]="stickyFooter()">
+  <button sh-button class="outlined" (click)="stickyFooter.set(!stickyFooter())">
+    {{ stickyFooter() ? 'Sticky' : 'Unsticky' }} Footer
+  </button>
+  <button sh-button (click)="closed.emit(false)">Close</button>
+</footer>

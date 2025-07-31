@@ -1,8 +1,0 @@
-<spk-button-group [class.small]="small()">
-  @for (item of items(); track $index) {
-    <button [class.active]="activeIndex() === $index" (click)="updateActiveIndex($index)">
-      <spk-icon>circle</spk-icon>
-      Hello
-    </button>
-  }
-</spk-button-group>

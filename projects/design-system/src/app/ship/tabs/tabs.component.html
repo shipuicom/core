@@ -1,0 +1,46 @@
+<h1>Tabs</h1>
+
+<app-property-viewer>
+  <section>
+    <h4>Colors</h4>
+    <p>
+      Tab colors can be set through the class, e.g.
+      <code>class="primary"</code>
+      .
+      <br />
+      Available colors:
+      <b>primary</b>
+      ,
+      <b>accent</b>
+      ,
+      <b>warn</b>
+      ,
+      <b>error</b>
+      ,
+      <b>success</b>
+      , and
+      <b>default</b>
+      (no class).
+    </p>
+  </section>
+</app-property-viewer>
+
+<div class="sandbox-example">
+  <app-previewer path="/sh-tabs/examples/tabs-sandbox/tabs-sandbox.component" title="Sandbox" class="no-space">
+    <app-tabs-sandbox />
+  </app-previewer>
+</div>
+
+<div class="content">
+  <h3>Variations</h3>
+
+  <app-previewer path="/sh-tabs/examples/default-tabs/default-tabs.component" title="Default Tabs">
+    <app-default-tabs />
+  </app-previewer>
+
+  <app-previewer path="/sh-tabs/examples/router-tabs/router-tabs.component" title="Router Tabs">
+    <app-router-tabs />
+
+    <router-outlet></router-outlet>
+  </app-previewer>
+</div>

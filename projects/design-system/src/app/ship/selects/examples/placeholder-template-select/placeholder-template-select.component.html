@@ -1,0 +1,19 @@
+<sh-select
+  [options]="options()"
+  label="label"
+  value="value"
+  [optionTemplate]="optionTemplate"
+  [placeholderTemplate]="placeholderTemplate">
+  <label>Favorite food (custom option template)</label>
+  <input type="text" [(ngModel)]="selected" />
+</sh-select>
+
+<ng-template let-option #optionTemplate>
+  <span>{{ option.emoji }} {{ option.label }}</span>
+</ng-template>
+
+<ng-template let-option #placeholderTemplate>
+  <div class="custom-option">Hell im a custom placeholder template 🙂‍↔️🙂‍↔️</div>
+</ng-template>
+
+<p>Selected: {{ selected() }}</p>
