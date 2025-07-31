@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipRadioComponent, ShipStepperComponent } from '@ship-ui/core';
+import { ShipRadioComponent, ShipStepperComponent } from 'ship-ui';
 
 @Component({
-  selector: 'app-default-stepper',
+  selector: 'app-default-steppers',
   standalone: true,
   imports: [ShipStepperComponent, ShipRadioComponent],
-  templateUrl: './default-stepper.component.html',
+  templateUrl: './default-steppers.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DefaultStepperComponent {

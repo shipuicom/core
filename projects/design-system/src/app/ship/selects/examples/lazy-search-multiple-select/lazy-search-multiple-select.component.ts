@@ -2,8 +2,8 @@ import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ShipSelectComponent } from '@ship-ui/core';
 import { delay, map, of } from 'rxjs';
+import { ShipSelectComponent } from 'ship-ui';
 
 const DEFAULT_OPTIONS = [
   { value: 'pizza', label: 'Pizza' },

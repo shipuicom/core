@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipCardComponent } from '@ship-ui/core';
+import { ShipCardComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-type-c-card',

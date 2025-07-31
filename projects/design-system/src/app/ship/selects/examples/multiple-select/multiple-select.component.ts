@@ -1,7 +1,7 @@
 import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipSelectComponent } from '@ship-ui/core';
+import { ShipSelectComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-multiple-select',

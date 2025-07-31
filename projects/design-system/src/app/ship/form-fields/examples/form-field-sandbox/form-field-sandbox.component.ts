@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipButtonGroupComponent, ShipCheckboxComponent, ShipFormFieldComponent } from '@ship-ui/core';
+import { ShipButtonGroupComponent, ShipCheckboxComponent, ShipFormFieldComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-form-field-sandbox',

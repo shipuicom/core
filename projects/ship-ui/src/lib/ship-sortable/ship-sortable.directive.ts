@@ -6,7 +6,7 @@ export type AfterDropResponse = {
 };
 
 @Directive({
-  selector: '[spkSortable]',
+  selector: '[shSortable]',
   standalone: true,
 })
 export class ShipSortableDirective {

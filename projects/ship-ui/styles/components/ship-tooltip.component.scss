@@ -1,0 +1,175 @@
+@use '../helpers.scss' as *;
+
+$shTooltip: true !default;
+
+%hoverState {
+  opacity: 1;
+  z-index: 0;
+  visibility: visible;
+}
+@if $shTooltip == true {
+  .tooltip {
+    position: relative;
+    pointer-events: initial !important;
+
+    &:after {
+      content: '';
+      position: absolute;
+      top: p2r(-8);
+      bottom: p2r(-8);
+      left: p2r(-8);
+      right: p2r(-8);
+      z-index: 1;
+    }
+
+    &.primary + ship-tooltip-wrapper {
+      --tt-bg: var(--primary-2);
+      --tt-c: var(--primary-8);
+    }
+
+    &.accent + ship-tooltip-wrapper {
+      --tt-bg: var(--accent-2);
+      --tt-c: var(--accent-8);
+    }
+
+    &.warn + ship-tooltip-wrapper {
+      --tt-bg: var(--warn-2);
+      --tt-c: var(--warn-8);
+    }
+
+    &.error + ship-tooltip-wrapper {
+      --tt-bg: var(--error-2);
+      --tt-c: var(--error-8);
+    }
+
+    &.success + ship-tooltip-wrapper {
+      --tt-bg: var(--success-2);
+      --tt-c: var(--success-8);
+    }
+
+    &.active {
+      z-index: 1;
+      + ship-tooltip-wrapper {
+        @extend %hoverState;
+        // transform: translateY(-#{p2r(8)}) scale(1);
+        // &.below {
+        //   transform: translateY(#{p2r(8)}) scale(1);
+        // }
+
+        transform: scale(1);
+      }
+    }
+  }
+
+  ship-tooltip-wrapper {
+    --tt-bg: var(--base-3);
+    --tt-c: var(--base-12);
+    --tt-mh: #{p2r(136)};
+    --tt-mw: #{p2r(280)};
+
+    position: fixed;
+    opacity: 0;
+    visibility: hidden;
+    padding: p2r(0 0 12);
+    transform: translateY(50%) scale(0);
+
+    width: max-content;
+    overflow: visible;
+    box-shadow: none;
+    margin: initial;
+    background: transparent;
+    border: 0;
+
+    @supports (anchor-name: --anchor) {
+      inset: unset;
+      justify-self: anchor-center;
+      bottom: anchor(top);
+      position: fixed;
+      position-try-order:
+        flip-block,
+        flip-inline,
+        flip-block flip-inline;
+      position-try-fallbacks:
+        flip-block,
+        flip-inline,
+        flip-block flip-inline;
+    }
+
+    &:before {
+      content: '';
+      position: absolute;
+      bottom: 0%;
+      left: 50%;
+      z-index: 1;
+      transform: translateX(-50%);
+      border-width: p2r(6);
+      border-style: solid;
+      border-color: transparent;
+      border-top-color: var(--tt-bg);
+      width: 0;
+      height: 0;
+      opacity: 1;
+    }
+
+    &.below {
+      padding: p2r(12 0 0);
+      &:before {
+        border-top-color: transparent;
+        border-bottom-color: var(--tt-bg);
+        top: 0%;
+        bottom: auto;
+      }
+    }
+
+    .tooltip-content {
+      padding: p2r(8 12);
+      position: relative;
+      hyphens: auto;
+      text-wrap: pretty;
+      color: var(--tt-c);
+      max-height: var(--tt-mh);
+      max-width: var(--tt-mw);
+      overflow: auto;
+      // background: none;
+      background: var(--tt-bg);
+      border-radius: var(--shape-2);
+      box-shadow: var(--box-shadow-20);
+    }
+
+    // @position-fallback --dropdown-flip-and-slide {
+    //   /* Attempt 1: Position below and align to the start (left) of the trigger */
+    //   @try {
+    //     top: calc(anchor(bottom) + 8px); /* 8px gap */
+    //     left: anchor(left);
+    //   }
+    //   /* Attempt 2: Position above and align to the start (left) of the trigger */
+    //   @try {
+    //     bottom: calc(anchor(top) + 8px); /* 8px gap */
+    //     left: anchor(left);
+    //   }
+    //   /* Attempt 3: Position below and align to the end (right) of the trigger */
+    //   @try {
+    //     top: calc(anchor(bottom) + 8px);
+    //     right: anchor(right);
+    //   }
+    //   /* Attempt 4: Position above and align to the end (right) of the trigger */
+    //   @try {
+    //     bottom: calc(anchor(top) + 8px);
+    //     right: anchor(right);
+    //   }
+    //   /* Attempt 5: (More advanced) If it's too wide, try to align center, below */
+    //   @try {
+    //     top: calc(anchor(bottom) + 8px);
+    //     left: anchor(center);
+    //     /* This might need more constraints or a width calculation if it's wider than anchor */
+    //     transform: translateX(-50%); /* Center it based on its own width */
+    //   }
+    //   /* Attempt 6: (More advanced) If it's too wide, try to align center, above */
+    //   @try {
+    //     bottom: calc(anchor(top) + 8px);
+    //     left: anchor(center);
+    //     transform: translateX(-50%);
+    //   }
+    // }
+  }
+}

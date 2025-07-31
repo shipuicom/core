@@ -11,9 +11,9 @@
       /
       <code>(dateChange)</code>
       for
-      <b>sh-datepicker</b>
+      <b>datepickers</b>
       and
-      <b>sh-datepicker-input</b>
+      <b>datepickers-input</b>
       .
     </p>
   </section>
@@ -27,7 +27,7 @@
       /
       <code>(endDateChange)</code>
       for
-      <b>sh-datepicker</b>
+      <b>datepickers</b>
       and
       <b>sh-daterange-input</b>
       .
@@ -66,7 +66,7 @@
       Date format mask for input display (e.g.
       <code>'mediumDate'</code>
       ). Applies to
-      <b>sh-datepicker-input</b>
+      <b>datepickers-input</b>
       and
       <b>sh-daterange-input</b>
       .
@@ -103,7 +103,7 @@
       The datepicker input comes with a small variant just add a class
       <code>small</code>
       to the
-      <b>sh-datepicker-input</b>
+      <b>datepickers-input</b>
       <code>class="small"</code>
     </p>
   </section>
@@ -111,7 +111,7 @@
 
 <div class="sandbox-example">
   <app-previewer
-    path="/sh-datepicker/examples/datepicker-sandbox/datepicker-sandbox.component"
+    path="/datepickers/examples/datepicker-sandbox/datepicker-sandbox.component"
     title="Sandbox"
     class="no-space">
     <app-datepicker-sandbox class="example" />
@@ -120,124 +120,33 @@
 
 <div class="sandbox-example">
   <app-previewer
-    path="/sh-datepicker/examples/range-datepicker-sandbox/range-datepicker-sandbox.component"
+    path="/datepickers/examples/range-datepicker-sandbox/range-datepicker-sandbox.component"
     title="Range Sandbox"
     class="no-space">
     <app-range-datepicker-sandbox class="example" />
   </app-previewer>
 </div>
 
-<app-previewer path="/sh-datepicker/examples/base-datepicker/base-datepicker.component" title="Base">
+<app-previewer path="/datepickers/examples/base-datepicker/base-datepicker.component" title="Base">
   <app-base-datepicker class="example" />
 </app-previewer>
 
-<app-previewer path="/sh-datepicker/examples/range-datepicker/range-datepicker.component" title="Range">
+<app-previewer path="/datepickers/examples/range-datepicker/range-datepicker.component" title="Range">
   <app-range-datepicker class="example" />
 </app-previewer>
 
 <app-previewer
-  path="/sh-datepicker/examples/input-datepicker-ngmodel/input-datepicker-ngmodel.component"
+  path="/datepickers/examples/input-datepicker-ngmodel/input-datepicker-ngmodel.component"
   title="Input (ngModel)">
   <app-input-datepicker-ngmodel class="example" />
 </app-previewer>
 
 <app-previewer
-  path="/sh-datepicker/examples/input-datepicker-reactive/input-datepicker-reactive.component"
+  path="/datepickers/examples/input-datepicker-reactive/input-datepicker-reactive.component"
   title="Input (Reactive Form)">
   <app-input-datepicker-reactive class="example" />
 </app-previewer>
 
-<app-previewer
-  path="/sh-datepicker/examples/range-input-datepicker/range-input-datepicker.component"
-  title="Range Input">
+<app-previewer path="/datepickers/examples/range-input-datepicker/range-input-datepicker.component" title="Range Input">
   <app-range-input-datepicker class="example" />
 </app-previewer>
-
-<!-- <button (click)="close()">Close</button>
-<div class="row">
-  <sh-button-group>
-    <button [class.active]="type() === 'none'" (click)="type.set('none')">None</button>
-    <button [class.active]="type() === 'raised'" (click)="type.set('raised')">Raised</button>
-    <button [class.active]="type() === 'outlined'" (click)="type.set('outlined')">Outlined</button>
-  </sh-button-group>
-
-  <sh-button-group>
-    <button [class.active]="colors() === 'none'" (click)="colors.set('none')">None</button>
-    <button [class.active]="colors() === 'primary'" (click)="colors.set('primary')">Primary</button>
-    <button [class.active]="colors() === 'accent'" (click)="colors.set('accent')">Accent</button>
-    <button [class.active]="colors() === 'warn'" (click)="colors.set('warn')">Warn</button>
-    <button [class.active]="colors() === 'error'" (click)="colors.set('error')">Error</button>
-    <button [class.active]="colors() === 'success'" (click)="colors.set('success')">Success</button>
-  </sh-button-group>
-</div>
-
-<h3>With date: {{ someDate() }}</h3>
-<sh-datepicker [(date)]="someDate" [class]="class()" />
-
-<h3>With other date: {{ someOtherDate() }}</h3>
-<sh-datepicker [(date)]="someOtherDate" [class]="class()" />
-
-<h3>As range: {{ someRangeDate() }} - {{ someEndRangeDate() }}</h3>
-<sh-datepicker [(date)]="someRangeDate" [(endDate)]="someEndRangeDate" [asRange]="true" [class]="class()" />
-
-<h3>As multi view range: {{ someRangeDate() }} - {{ someEndRangeDate() }}</h3>
-<sh-datepicker
-  [(date)]="someRangeDate"
-  [(endDate)]="someEndRangeDate"
-  [asRange]="true"
-  [class]="class()"
-  [monthsToShow]="2" />
-
-<section>
-  <h3>Date range input</h3>
-
-  <sh-daterange-input [monthsToShow]="2" [class]="class()">
-    <label>Date Range</label>
-    <input #startDate [formControl]="startDateControl" placeholder="Start date" />
-    <input #endDate [formControl]="endDateControl" placeholder="End date" />
-    <sh-icon suffix>calendar</sh-icon>
-  </sh-daterange-input>
-</section>
-
-<h3>Date picker input</h3>
-
-<sh-datepicker-input [class]="class()" [class.small]="true">
-  <label>
-    Date
-    <sh-icon>question</sh-icon>
-  </label>
-
-  <input type="text" id="date" tabindex="2" [formControl]="someDateCtrl" />
-</sh-datepicker-input>
-
-<sh-datepicker-input>
-  <label>Date</label>
-  <input type="text" [(ngModel)]="myDate" />
-</sh-datepicker-input>
-
-<sh-datepicker [(date)]="someOtherDate" /> -->
-
-<!-- 
-<form [formGroup]="formGroup1">
-  <sh-form-field>
-    <label>Text1</label>
-    <input type="text" formControlName="myTextCtrl1" />
-  </sh-form-field>
-
-  <sh-form-field>
-    <label>Textarea1</label>
-    <textarea formControlName="myTextareatCtrl1"></textarea>
-  </sh-form-field>
-
-  <sh-form-field>
-    <label>Number1</label>
-    <input type="number" formControlName="myNumbertCtrl1" />
-  </sh-form-field>
-
-  <sh-datepicker-input>
-    <label>Datepicker1</label>
-    <input type="text" formControlName="myDatetCtrl1" />
-  </sh-datepicker-input>
-</form>
-
-spk:form>text+textarea+number+datepicker spk:template>about1 -->

@@ -1,8 +1,8 @@
 @use '../../ship-ui/styles/index.scss' with (
   $useApexcharts: true,
   $useInterTight: true,
-  $spkFormFieldShadow: true,
-  $spkButtonShadow: true
+  $shipFormFieldShadow: true,
+  $shipButtonShadow: true
 );
 
 @use '../../ship-ui/styles/helpers.scss' as *;

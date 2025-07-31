@@ -1,10 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import {
-  ShipButtonGroupComponent,
-  ShipColorPickerComponent,
-  ShipIconComponent,
-  ShipToggleComponent,
-} from '@ship-ui/core';
+import { ShipButtonGroupComponent, ShipColorPickerComponent, ShipIconComponent, ShipToggleComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-base-color-picker',

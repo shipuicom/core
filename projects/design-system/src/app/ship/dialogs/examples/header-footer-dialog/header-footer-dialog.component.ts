@@ -1,5 +1,5 @@
 import { Component, inject, output, signal } from '@angular/core';
-import { ShipButtonComponent, ShipDialogService } from '@ship-ui/core';
+import { ShipButtonComponent, ShipDialogService } from 'ship-ui';
 
 @Component({
   selector: 'header-footer-dialog',

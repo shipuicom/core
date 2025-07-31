@@ -1,0 +1,63 @@
+@use '../helpers.scss' as *;
+$shipButtonGroup: true !default;
+
+@if $shipButtonGroup == true {
+  sh-button-group {
+    --btng-bg: var(--base-1);
+    --btng-c: var(--base-12);
+    --btng-ic: var(--base-12);
+    --btng-bc: var(--base-4);
+    --btng-h: #{p2r(40)};
+    --btng-p: #{p2r(0 12)};
+    --btng-s: var(--shape-2);
+    --btng-f: var(--paragraph-30);
+
+    display: inline-flex;
+    border: 1px solid var(--btng-bc);
+    border-radius: var(--btng-s);
+    height: var(--btng-h);
+    overflow: hidden;
+
+    &.small {
+      --btng-h: #{p2r(32)};
+      --btng-p: #{p2r(0 8)};
+    }
+
+    button {
+      border: 0;
+      flex: 1 0;
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: p2r(8);
+      position: relative;
+      padding: var(--btng-p);
+      transition: color 80ms linear;
+      min-width: auto;
+      cursor: pointer;
+      outline: none;
+      line-height: inherit;
+      user-select: none;
+      appearance: none;
+      overflow: visible;
+      vertical-align: middle;
+      white-space: nowrap;
+      background: var(--btng-bg);
+      color: var(--btng-c);
+      font: var(--btng-f);
+      border-left: 1px solid var(--btng-bc);
+
+      &:first-child {
+        border-left: 0;
+      }
+
+      &:hover,
+      &.active {
+        --btng-c: var(--base-12);
+        --btng-ic: var(--base-12);
+        --btng-bg: var(--base-3);
+      }
+    }
+  }
+}

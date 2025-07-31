@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipRadioComponent } from '@ship-ui/core';
+import { ShipRadioComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-raised-radio',

@@ -1,10 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import {
-  ShipButtonGroupComponent,
-  ShipCardComponent,
-  ShipToggleCardComponent,
-  ShipToggleComponent,
-} from '@ship-ui/core';
+import { ShipButtonGroupComponent, ShipCardComponent, ShipToggleCardComponent, ShipToggleComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-card-sandbox',

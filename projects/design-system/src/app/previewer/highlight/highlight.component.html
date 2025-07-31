@@ -1,6 +1,6 @@
 <pre><code [class]="langClass()" #codeRef>{{ content() }}</code></pre>
 
-<button sh-button class="small simple" [class.error]="!copied()" [class.success]="copied()" (click)="copyToClipboard()">
+<button shButton class="small simple" [class.error]="!copied()" [class.success]="copied()" (click)="copyToClipboard()">
   @if (copied()) {
     <sh-icon>check</sh-icon>
   } @else {

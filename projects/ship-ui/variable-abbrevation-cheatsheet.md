@@ -1,6 +1,6 @@
 # Variable abbrevation cheatsheet
 
-In sparkle we use a lot of abbreviations for variables perticularly for css variables because they aren't compressed before being shipped to the end user, mostly because it crosses over into javascript land, which starts to entail a lot of framework specific parsing.
+In ship we use a lot of abbreviations for variables perticularly for css variables because they aren't compressed before being shipped to the end user, mostly because it crosses over into javascript land, which starts to entail a lot of framework specific parsing.
 
 So in short we wanna keep bundle size small but still keep the utility of the css variables.
 

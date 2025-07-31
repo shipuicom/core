@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { ShipIconComponent, ShipTabsComponent } from '@ship-ui/core';
+import { ShipIconComponent, ShipTabsComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-router-tabs',

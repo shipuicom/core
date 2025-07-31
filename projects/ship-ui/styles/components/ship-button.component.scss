@@ -1,0 +1,330 @@
+@use '../helpers.scss' as *;
+$shipButton: true !default;
+$shipButtonShadow: false !default;
+
+@if $shipButton == true {
+  [shButton] {
+    --btn-h: #{p2r(40)};
+    --btn-s: var(--shape-2);
+    --btn-f: var(--paragraph-20);
+    --loader-c: var(--base-8);
+    --btn-c: var(--base-12);
+    --btn-ic: var(--base-12);
+    --btn-ir: var(0deg);
+    --btn-bg: var(--base-1);
+    --btn-bg-h: var(--base-2);
+    --btn-bc: var(--base-4);
+
+    @if $shipButtonShadow != false {
+      --btn-bs: var(--box-shadow-10);
+    } @else {
+      --btn-bs: none;
+    }
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: p2r(8);
+    position: relative;
+    padding: p2r(0 12);
+    transition: color 80ms linear;
+    min-width: auto;
+    cursor: pointer;
+    outline: none;
+    line-height: inherit;
+    user-select: none;
+    appearance: none;
+    overflow: visible;
+    vertical-align: middle;
+    text-decoration: none;
+
+    border-radius: var(--btn-s);
+    height: var(--btn-h);
+    border: 1px solid var(--btn-bc);
+    box-shadow: var(--btn-bs);
+    font: var(--btn-f);
+
+    background: var(--btn-bg);
+    color: var(--btn-c);
+    transition: background 75ms linear;
+
+    sh-icon {
+      color: var(--btn-ic);
+      rotate: var(--btn-ir);
+      transition: rotate 125ms ease-in-out;
+    }
+
+    &:has(sh-icon:only-child) {
+      padding: p2r(0 9);
+    }
+
+    &:hover {
+      --btn-c: var(--base-12);
+      background: var(--btn-bg-h);
+    }
+
+    &.loader.outlined,
+    &.loader.simple,
+    &.loader.flat,
+    &.loader.raised,
+    &.loader {
+      color: transparent;
+      width: auto;
+
+      &:hover,
+      &.primary,
+      &.accent,
+      &.warn,
+      &.error,
+      &.success {
+        color: transparent;
+      }
+
+      > * {
+        opacity: 0;
+      }
+    }
+
+    &.rotated-icon sh-icon {
+      --btn-ir: 180deg;
+    }
+
+    &.small {
+      --btn-h: #{p2r(32)};
+      --btn-f: var(--paragraph-30);
+
+      padding: p2r(0 8);
+      gap: p2r(4);
+
+      sh-icon {
+        font-size: p2r(16);
+      }
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    &[read-only],
+    &[read-only='true'],
+    &[readonly='true'],
+    &[readonly],
+    &.readonly {
+      pointer-events: none;
+      user-select: none;
+    }
+
+    // Base
+    &.primary {
+      --btn-ic: var(--primary-8);
+    }
+
+    &.accent {
+      --btn-ic: var(--accent-8);
+    }
+
+    &.warn {
+      --btn-ic: var(--warn-8);
+    }
+
+    &.error {
+      --btn-ic: var(--error-8);
+    }
+
+    &.success {
+      --btn-ic: var(--success-8);
+    }
+
+    &.simple,
+    &.outlined {
+      --btn-c: var(--base-12);
+      --btn-bg: var(--base-2);
+      --btn-bg-h: var(--base-3);
+
+      transition:
+        color 80ms linear,
+        background 80ms linear;
+
+      &.primary {
+        --loader-c: var(--primary-8);
+
+        --btn-bg: var(--primary-1);
+        --btn-bg-h: var(--primary-2);
+        --btn-bc: var(--primary-4);
+      }
+
+      &.accent {
+        --loader-c: var(--accent-8);
+
+        --btn-bg: var(--accent-1);
+        --btn-bg-h: var(--accent-2);
+        --btn-bc: var(--accent-4);
+      }
+
+      &.warn {
+        --loader-c: var(--warn-8);
+
+        --btn-bg: var(--warn-1);
+        --btn-bg-h: var(--warn-2);
+        --btn-bc: var(--warn-4);
+      }
+
+      &.error {
+        --loader-c: var(--error-8);
+
+        --btn-bg: var(--error-1);
+        --btn-bg-h: var(--error-2);
+        --btn-bc: var(--error-4);
+      }
+
+      &.success {
+        --loader-c: var(--success-8);
+
+        --btn-bg: var(--success-1);
+        --btn-bg-h: var(--success-2);
+        --btn-bc: var(--success-4);
+      }
+    }
+
+    &.simple,
+    &.simple.primary,
+    &.simple.accent,
+    &.simple.warn,
+    &.simple.error,
+    &.simple.success {
+      --btn-bc: var(--btn-bg);
+    }
+
+    &.simple {
+      &.primary {
+        --btn-c: var(--primary-8);
+      }
+
+      &.accent {
+        --btn-c: var(--accent-8);
+      }
+
+      &.warn {
+        --btn-c: var(--warn-8);
+      }
+
+      &.error {
+        --btn-c: var(--error-8);
+      }
+
+      &.success {
+        --btn-c: var(--success-8);
+      }
+    }
+
+    &.flat {
+      --loader-c: var(--base-1);
+      --btn-c: #fff;
+      --btn-ic: #fff;
+      --btn-bg: var(--base-8);
+      --btn-bg-h: #{lighten(var(--base-8), 10%)};
+
+      border: 0;
+
+      &:has(sh-icon:only-child) {
+        padding: p2r(0 10);
+      }
+
+      &.small:has(sh-icon:only-child) {
+        padding: p2r(0 8);
+      }
+
+      &.primary {
+        --btn-c: var(--primary-c8);
+        --btn-bg: var(--primary-8);
+        --btn-bg-h: var(--primary-6);
+      }
+
+      &.accent {
+        --btn-c: var(--accent-c8);
+        --btn-bg: var(--accent-8);
+        --btn-bg-h: var(--accent-6);
+      }
+
+      &.warn {
+        --btn-c: var(--warn-c8);
+        --btn-bg: var(--warn-8);
+        --btn-bg-h: var(--warn-6);
+      }
+
+      &.error {
+        --btn-c: var(--error-c8);
+        --btn-bg: var(--error-8);
+        --btn-bg-h: var(--error-6);
+      }
+
+      &.success {
+        --btn-c: var(--success-c8);
+        --btn-bg: var(--success-8);
+        --btn-bg-h: var(--success-6);
+      }
+    }
+
+    &.raised {
+      --loader-c: var(--base-1);
+      --btn-c: #fff;
+      --btn-ic: #fff;
+      --btn-bg: var(--base-g6);
+      --btn-bg-h: var(--base-g7);
+
+      border: 0;
+      // &:before {
+      //   content: '';
+      //   position: absolute;
+      //   inset: 0;
+      //   border-radius: inherit;
+      //   background: linear-gradient(to bottom, #fff, #000);
+      //   mask:
+      //     linear-gradient(to bottom, #fff 0 0) content-box,
+      //     linear-gradient(to bottom, #fff 0 0);
+      //   // -webkit-mask: linear-gradient(to bottom, #fff 0 0) content-box, linear-gradient(to bottom, #fff 0 0);
+      //   mask-composite: exclude;
+      // }
+
+      &:has(sh-icon:only-child) {
+        padding: p2r(0 10);
+      }
+
+      &.small:has(sh-icon:only-child) {
+        padding: p2r(0 8);
+      }
+
+      &.primary {
+        --btn-c: var(--primary-c8);
+        --btn-bg: var(--primary-g2);
+        --btn-bg-h: var(--primary-g3);
+      }
+
+      &.accent {
+        --btn-c: var(--accent-c8);
+        --btn-bg: var(--accent-g2);
+        --btn-bg-h: var(--accent-g3);
+      }
+
+      &.warn {
+        --btn-c: var(--warn-c8);
+        --btn-bg: var(--warn-g2);
+        --btn-bg-h: var(--warn-g3);
+      }
+
+      &.error {
+        --btn-c: var(--error-c8);
+        --btn-bg: var(--error-g2);
+        --btn-bg-h: var(--error-g3);
+      }
+
+      &.success {
+        --btn-c: var(--success-c8);
+        --btn-bg: var(--success-g2);
+        --btn-bg-h: var(--success-g3);
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipButtonComponent, ShipIconComponent, ShipTooltipDirective } from '@ship-ui/core';
+import { ShipButtonComponent, ShipIconComponent, ShipTooltipDirective } from 'ship-ui';
 
 @Component({
   selector: 'app-template-tooltip',

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { ShipButtonGroupComponent, ShipChipComponent, ShipIconComponent, ShipToggleComponent } from '@ship-ui/core';
+import { ShipButtonGroupComponent, ShipChipComponent, ShipIconComponent, ShipToggleComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-chip-sandbox',

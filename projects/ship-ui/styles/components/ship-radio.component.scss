@@ -1,0 +1,182 @@
+@use '../helpers.scss' as *;
+
+$shipRadio: true !default;
+
+@if $shipRadio == true {
+  sh-radio {
+    --radio-bw: #{p2r(1)};
+    --radio-bg: var(--base-2);
+    --radio-bc: var(--base-4);
+    --radio-c: var(--base-8);
+    --radiod-o: 0;
+    --radiod-c: var(--base-8);
+
+    display: flex;
+    align-items: center;
+    gap: p2r(8);
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+
+    > input[type='radio'] {
+      appearance: none;
+      position: absolute;
+      inset: 0;
+      cursor: pointer;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    &:has(input[disabled]),
+    &[disabled]:not([disabled='false']) {
+      opacity: 0.5;
+      pointer-events: none;
+      user-select: none;
+      cursor: initial;
+    }
+
+    &:has(input[type='radio']:checked),
+    &.active {
+      --radiod-o: 1;
+    }
+
+    .radio {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: p2r(20);
+      height: p2r(20);
+      cursor: pointer;
+      position: relative;
+      border-radius: 50%;
+      border: var(--radio-bw) solid var(--radio-bc);
+      background: var(--radio-bg);
+      font-size: p2r(12);
+      color: var(--radio-c);
+
+      &:after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        width: p2r(6);
+        height: p2r(6);
+        background-color: var(--radiod-c);
+        opacity: var(--radiod-o);
+        transition: opacity 125ms linear;
+      }
+    }
+
+    &.primary {
+      --radio-c: var(--primary-8);
+      --radiod-c: var(--primary-8);
+      --radio-bg: var(--primary-3);
+      --radio-bc: var(--primary-4);
+    }
+
+    &.accent {
+      --radio-c: var(--accent-8);
+      --radiod-c: var(--accent-8);
+      --radio-bg: var(--accent-3);
+      --radio-bc: var(--accent-4);
+    }
+
+    &.warn {
+      --radio-c: var(--warn-8);
+      --radiod-c: var(--warn-8);
+      --radio-bg: var(--warn-3);
+      --radio-bc: var(--warn-4);
+    }
+
+    &.error {
+      --radio-c: var(--error-8);
+      --radiod-c: var(--error-8);
+      --radio-bg: var(--error-3);
+      --radio-bc: var(--error-4);
+    }
+
+    &.success {
+      --radio-c: var(--success-8);
+      --radiod-c: var(--success-8);
+      --radio-bg: var(--success-3);
+      --radio-bc: var(--success-4);
+    }
+
+    &.outlined {
+      --radio-bg: var(--base-1);
+
+      &.primary,
+      &.accent,
+      &.warn,
+      &.error,
+      &.success {
+        --radio-bc: var(--base-4);
+      }
+    }
+
+    &.flat,
+    &.raised {
+      --radio-c: #fff;
+      --radio-bc: var(--base-4);
+      --radio-bg: var(--base-2);
+      --radiod-c: #fff;
+    }
+
+    &.flat:has(input[type='radio']:checked),
+    &.flat.active {
+      --radio-bw: 0;
+      --radio-bg: var(--base-8);
+      --radiod-c: #fff;
+
+      &.primary {
+        --radio-bg: var(--primary-8);
+      }
+
+      &.accent {
+        --radio-bg: var(--accent-8);
+      }
+
+      &.warn {
+        --radio-bg: var(--warn-8);
+      }
+
+      &.error {
+        --radio-bg: var(--error-8);
+      }
+
+      &.success {
+        --radio-bg: var(--success-8);
+      }
+    }
+
+    &.raised:has(input[type='radio']:checked),
+    &.raised.active {
+      --radio-bw: 0;
+      --radio-bg: var(--base-g2);
+
+      &.primary {
+        --radio-bg: var(--primary-g2);
+      }
+
+      &.accent {
+        --radio-bg: var(--accent-g2);
+      }
+
+      &.warn {
+        --radio-bg: var(--warn-g2);
+      }
+
+      &.error {
+        --radio-bg: var(--error-g2);
+      }
+
+      &.success {
+        --radio-bg: var(--success-g2);
+      }
+    }
+  }
+}

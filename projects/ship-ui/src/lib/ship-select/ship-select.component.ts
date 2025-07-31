@@ -123,7 +123,7 @@ import { ShipSpinnerComponent } from '../ship-spinner/ship-spinner.component';
         }
       </sh-form-field>
 
-      <div class="sparkle-options" #optionsWrap>
+      <div class="ship-options" #optionsWrap>
         @for (option of filteredOptions(); track $index) {
           <li
             (click)="toggleOptionByIndex($index)"

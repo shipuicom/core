@@ -24,7 +24,10 @@
       "node_modules/apexcharts/types",
       "node_modules/@angular/core/rxjs-interop",
       "node_modules/ngxtension"
-    ]
+    ],
+    "paths": {
+      "ship-ui": ["./projects/ship-ui/src/public-api.ts"]
+    }
   },
   "exclude": ["dist"],
   "angularCompilerOptions": {

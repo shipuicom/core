@@ -1,5 +1,5 @@
 <sh-menu [searchable]="true">
-  <button sh-button class="outlined">Open searchable menu</button>
+  <button shButton class="outlined">Open searchable menu</button>
   <ng-container menu>
     @for (item of filteredItems; track item.value) {
       <button (click)="select(item)" [class.selected]="selected === item.value">

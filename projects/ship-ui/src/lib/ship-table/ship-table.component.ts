@@ -19,7 +19,7 @@ import { observeChildren } from '../utilities/observe-elements';
 import { SHIP_CONFIG } from '../utilities/ship-config';
 
 @Directive({
-  selector: '[spkResize]',
+  selector: '[shResize]',
   standalone: true,
 })
 export class ShipResizeDirective {
@@ -38,7 +38,7 @@ export class ShipResizeDirective {
 
   ngOnInit() {
     if (!this.#table) {
-      console.error('spkTableResize directive must be used within a sh-table component.');
+      console.error('shTableResize directive must be used within a sh-table component.');
       return;
     }
 
@@ -117,7 +117,7 @@ export class ShipResizeDirective {
 }
 
 @Directive({
-  selector: '[spkSort]',
+  selector: '[shSort]',
   standalone: true,
   host: {
     class: 'sortable',
@@ -128,11 +128,11 @@ export class ShipResizeDirective {
 })
 export class ShipSortDirective {
   #table = inject(ShipTableComponent);
-  spkSort = input<string>();
+  shSort = input<string>();
 
   sortAsc = computed(() => {
     const currentSort = this.#table.sortByColumn();
-    const thisColumn = this.spkSort();
+    const thisColumn = this.shSort();
 
     if (!currentSort || !thisColumn) return false;
 
@@ -141,7 +141,7 @@ export class ShipSortDirective {
 
   sortDesc = computed(() => {
     const currentSort = this.#table.sortByColumn();
-    const thisColumn = this.spkSort();
+    const thisColumn = this.shSort();
 
     if (!currentSort || !thisColumn) return false;
 
@@ -149,7 +149,7 @@ export class ShipSortDirective {
   });
 
   toggleSort() {
-    const sortCol = this.spkSort();
+    const sortCol = this.shSort();
 
     if (!sortCol) return;
 
@@ -158,18 +158,18 @@ export class ShipSortDirective {
 }
 
 @Directive({
-  selector: '[spkStickyRows]',
+  selector: '[shStickyRows]',
 
   host: {
-    '[class.sticky]': 'spkStickyRows() === "start"',
-    '[class.sticky-end]': 'spkStickyRows() === "end"',
+    '[class.sticky]': 'shStickyRows() === "start"',
+    '[class.sticky-end]': 'shStickyRows() === "end"',
   },
 })
 export class ShipStickyRowsDirective {
   #elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   #renderer = inject(Renderer2);
 
-  spkStickyRows = input<string>('start');
+  shStickyRows = input<string>('start');
 
   ngAfterContentInit() {
     this.#applyGridColumnStyle();
@@ -183,7 +183,7 @@ export class ShipStickyRowsDirective {
     console.log(rowSpanCount);
 
     if (rowSpanCount > 0) {
-      const position = this.spkStickyRows();
+      const position = this.shStickyRows();
 
       this.#renderer.setStyle(
         nativeElement,
@@ -195,18 +195,18 @@ export class ShipStickyRowsDirective {
 }
 
 @Directive({
-  selector: '[spkStickyColumns]',
+  selector: '[shStickyColumns]',
 
   host: {
-    '[class.sticky]': 'spkStickyColumns() === "start"',
-    '[class.sticky-end]': 'spkStickyColumns() === "end"',
+    '[class.sticky]': 'shStickyColumns() === "start"',
+    '[class.sticky-end]': 'shStickyColumns() === "end"',
   },
 })
 export class ShipStickyColumnsDirective {
   #elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   #renderer = inject(Renderer2);
 
-  spkStickyColumns = input<string>('start');
+  shStickyColumns = input<string>('start');
 
   ngAfterContentInit() {
     this.#applyGridColumnStyle();
@@ -218,7 +218,7 @@ export class ShipStickyColumnsDirective {
     const columnSpanCount = cellChildren.length;
 
     if (columnSpanCount > 0) {
-      const position = this.spkStickyColumns();
+      const position = this.shStickyColumns();
 
       this.#renderer.setStyle(
         nativeElement,
@@ -266,7 +266,7 @@ type ScrollState = -1 | 0 | 1;
 })
 export class ShipTableComponent {
   #el = inject(ElementRef);
-  #spkConfig = inject(SHIP_CONFIG, { optional: true });
+  #shConfig = inject(SHIP_CONFIG, { optional: true });
 
   loading = input<boolean>(false);
   data = input<any>([]);
@@ -277,7 +277,7 @@ export class ShipTableComponent {
   tbody = viewChild<ElementRef<HTMLTableSectionElement>>('tbody');
   columns = observeChildren<HTMLTableColElement>(this.tbody, ['tr:first-child th']);
 
-  class = signal<string>(this.#spkConfig?.tableType ?? 'default');
+  class = signal<string>(this.#shConfig?.tableType ?? 'default');
   resizing = signal(false);
   sizeTrigger = signal(true);
   #initialData: any | null = null;

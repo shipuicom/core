@@ -1,19 +1,19 @@
 <div class="scrolled-content">
   <!-- Basic tooltip with string content -->
-  <sh-icon [spkTooltip]="'This is a basic tooltip'">circle</sh-icon>
+  <sh-icon [shTooltip]="'This is a basic tooltip'">circle</sh-icon>
 
-  <button sh-button [spkTooltip]="'Click me for more information'">
+  <button shButton [shTooltip]="'Click me for more information'">
     <sh-icon>info</sh-icon>
     Basic Button
   </button>
   <!-- Button with longer tooltip text -->
   <button
-    sh-button
-    [spkTooltip]="'This is a longer tooltip message that provides more detailed information about the action'">
+    shButton
+    [shTooltip]="'This is a longer tooltip message that provides more detailed information about the action'">
     <sh-icon>download</sh-icon>
     Download
   </button>
 
   <!-- Tooltip with different content -->
-  <div [spkTooltip]="'Hover over this text to see a tooltip'">Hover this basic div</div>
+  <div [shTooltip]="'Hover over this text to see a tooltip'">Hover this basic div</div>
 </div>

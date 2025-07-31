@@ -64,7 +64,7 @@ export class ShipAlertContainerComponent {
 
     const elementHeights = this.alerts()
       .toArray()
-      .map((element) => element._el.nativeElement.querySelector('.sparkle-alert-item').offsetHeight);
+      .map((element) => element._el.nativeElement.querySelector('.ship-alert-item').offsetHeight);
 
     if (!elementHeights) return 0;
 

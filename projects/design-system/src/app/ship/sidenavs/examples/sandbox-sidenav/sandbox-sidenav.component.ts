@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipButtonGroupComponent, ShipSidenavComponent, ShipSidenavType, ShipToggleComponent } from '@ship-ui/core';
+import { ShipButtonGroupComponent, ShipSidenavComponent, ShipSidenavType, ShipToggleComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-sandbox-sidenav',

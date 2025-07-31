@@ -13,6 +13,6 @@ import { SHIP_CONFIG } from '../utilities/ship-config';
   },
 })
 export class ShipCardComponent {
-  #spkConfig = inject(SHIP_CONFIG, { optional: true });
-  class = signal<string>(this.#spkConfig?.cardType ?? 'default');
+  #shConfig = inject(SHIP_CONFIG, { optional: true });
+  class = signal<string>(this.#shConfig?.cardType ?? 'default');
 }

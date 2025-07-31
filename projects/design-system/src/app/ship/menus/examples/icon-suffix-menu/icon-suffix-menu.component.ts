@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { ShipIconComponent, ShipMenuComponent } from '@ship-ui/core';
+import { ShipIconComponent, ShipMenuComponent } from 'ship-ui';
 
 @Component({
   selector: 'sh-icon-suffix-menu',

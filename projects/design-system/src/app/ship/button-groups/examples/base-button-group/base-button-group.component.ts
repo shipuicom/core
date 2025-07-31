@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { ShipButtonGroupComponent, ShipIconComponent } from '@ship-ui/core';
+import { ShipButtonGroupComponent, ShipIconComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-base-button-group',

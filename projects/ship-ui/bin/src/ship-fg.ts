@@ -24,7 +24,7 @@ const run = async (
   const glob = new Glob('**/*.html');
   const tsGlob = new Glob('**/*.ts');
   const regex = /<sh-icon[^>]*>\s*((?!{{.*?}})[^<]*?)\s*<\/sh-icon>/g;
-  const regex2 = /spk:([^']+)/g;
+  const regex2 = /sh:([^']+)/g;
   const iconsFound = new Set<string>(LIB_ICONS);
   const missingIcons = new Set<string>();
 
@@ -144,7 +144,7 @@ const run = async (
     const subsetBuffer = _fonts[i];
     const fontType = fontTypes[i];
     const fontWrites = await Bun.write(
-      `${PROJECT_PUBLIC}/spk${fontType === 'regular' ? '' : '-' + fontType}.${TARGET_FONT_TYPE}`,
+      `${PROJECT_PUBLIC}/sh${fontType === 'regular' ? '' : '-' + fontType}.${TARGET_FONT_TYPE}`,
       subsetBuffer
     );
 
@@ -198,11 +198,11 @@ const writeCssFile = async (
     if (key === 'text') return '';
 
     const suffix = key === 'regular' ? '' : '-' + key;
-    const fontUrl = `url('${values.rootPath}spk${suffix}.${TARGET_FONT_TYPE}') format('${TARGET_FONT_TYPE === 'ttf' ? 'truetype' : TARGET_FONT_TYPE}')`;
+    const fontUrl = `url('${values.rootPath}sh${suffix}.${TARGET_FONT_TYPE}') format('${TARGET_FONT_TYPE === 'ttf' ? 'truetype' : TARGET_FONT_TYPE}')`;
 
     return `
 @font-face {
-  font-family: 'spk${suffix}';
+  font-family: 'sh${suffix}';
   src: ${fontUrl};
   font-weight: normal;
   font-style: normal;
@@ -217,7 +217,7 @@ const writeCssFile = async (
 
     return `
 sh-icon.${key} {
-  font-family: 'spk${suffix}' !important;
+  font-family: 'sh${suffix}' !important;
 }`;
   });
   // Create a new css file
@@ -226,7 +226,7 @@ sh-icon.${key} {
   ${keys.join('\n')}
 sh-icon {
   /* use !important to prevent issues with browser extensions that change fonts */
-  font-family: "spk" !important;
+  font-family: "sh" !important;
   speak: never;
   font-style: normal;
   font-weight: normal;
@@ -248,7 +248,7 @@ sh-icon {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }`;
-  const cssWrites = await Bun.write(`${PROJECT_PUBLIC}/spk.css`, cssFileContent);
+  const cssWrites = await Bun.write(`${PROJECT_PUBLIC}/ship.css`, cssFileContent);
   const compressedCss = Bun.gzipSync(cssFileContent);
 
   writtenCssSize = cssWrites;
@@ -268,7 +268,7 @@ const textMateSnippet = async (GLYPH_MAP: Record<string, [string, string]>) => {
       "prefix": ["sh-icon"],
       "scope": "html",
       "body": "<sh-icon>\${1|${Object.keys(GLYPH_MAP).join(',')}|}</sh-icon>",
-      "description": "Add a sparkle phosphor icon"
+      "description": "Add a ship phosphor icon"
     }
   }
   `;

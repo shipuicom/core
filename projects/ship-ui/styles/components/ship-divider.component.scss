@@ -1,0 +1,27 @@
+@use '../helpers.scss' as *;
+
+$shipDivider: true !default;
+
+@if $shipDivider == true {
+  sh-divider {
+    --divider-c: var(--base-4);
+    --divider-h: #{p2r(1)};
+
+    display: flex;
+    gap: p2r(8);
+    align-items: center;
+    text-align: center;
+
+    &:empty {
+      gap: 0;
+    }
+
+    &::before,
+    &::after {
+      content: '';
+      background: var(--divider-c);
+      height: var(--divider-h);
+      flex: 1 0;
+    }
+  }
+}

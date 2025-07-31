@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { ShipButtonGroupComponent, ShipIconComponent, ShipTabsComponent } from '@ship-ui/core';
+import { ShipButtonGroupComponent, ShipIconComponent, ShipTabsComponent } from 'ship-ui';
 import TabComponent from '../../tab/tab.component';
 
 @Component({

@@ -12,7 +12,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { ShipFormFieldPopoverComponent } from '../ship-form-field/sparkle-form-field-popover.component';
+import { ShipFormFieldPopoverComponent } from '../ship-form-field/ship-form-field-popover.component';
 import { ShipIconComponent } from '../ship-icon/ship-icon.component';
 import { ShipDatepickerComponent } from './ship-datepicker.component';
 

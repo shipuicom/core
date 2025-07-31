@@ -3,7 +3,7 @@
 <sh-table [data]="dataSource()" [(sortByColumn)]="sortByColumn" [class]="type()">
   <tr>
     @for (col of displayedColumns(); track col) {
-      <th [spkSort]="col">
+      <th [shSort]="col">
         {{ col }}
 
         @if (sortByColumn() === col) {

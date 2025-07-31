@@ -16,7 +16,7 @@ const run = async (PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FON
   const startTime = performance.now();
 
   const regex = /<sh-icon[^>]*>\s*((?!{{.*?}})[^<]*?)\s*<\/sh-icon>/g;
-  const regex2 = /spk:([^']+)/g;
+  const regex2 = /sh:([^']+)/g;
   const iconsFound = new Set(LIB_ICONS);
   const missingIcons = new Set();
 
@@ -130,7 +130,7 @@ const run = async (PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FON
   for (let i = 0; i < _fonts.length; i++) {
     const subsetBuffer = _fonts[i];
     const fontType = fontTypes[i];
-    const outputPath = `${PROJECT_PUBLIC}/spk${fontType === 'regular' ? '' : '-' + fontType}.${TARGET_FONT_TYPE}`;
+    const outputPath = `${PROJECT_PUBLIC}/sh${fontType === 'regular' ? '' : '-' + fontType}.${TARGET_FONT_TYPE}`;
 
     await fs.writeFile(outputPath, subsetBuffer);
     const fontWrites = subsetBuffer.length;
@@ -177,11 +177,11 @@ const writeCssFile = async (PROJECT_PUBLIC, values, groupedIcons, TARGET_FONT_TY
     if (key === 'text') return '';
 
     const suffix = key === 'regular' ? '' : '-' + key;
-    const fontUrl = `url('${values.rootPath}spk${suffix}.${TARGET_FONT_TYPE}') format('${TARGET_FONT_TYPE === 'ttf' ? 'truetype' : TARGET_FONT_TYPE}')`;
+    const fontUrl = `url('${values.rootPath}sh${suffix}.${TARGET_FONT_TYPE}') format('${TARGET_FONT_TYPE === 'ttf' ? 'truetype' : TARGET_FONT_TYPE}')`;
 
     return `
 @font-face {
-  font-family: 'spk${suffix}';
+  font-family: 'sh${suffix}';
   src: ${fontUrl};
   font-weight: normal;
   font-style: normal;
@@ -196,7 +196,7 @@ const writeCssFile = async (PROJECT_PUBLIC, values, groupedIcons, TARGET_FONT_TY
 
     return `
 sh-icon.${key} {
-  font-family: 'spk${suffix}' !important;
+  font-family: 'sh${suffix}' !important;
 }`;
   });
 
@@ -204,7 +204,7 @@ sh-icon.${key} {
   ${groupedIconsEntries.join('\n')}
   ${keys.join('\n')}
 sh-icon {
-  font-family: "spk" !important;
+  font-family: "sh" !important;
   speak: never;
   font-style: normal;
   font-weight: normal;
@@ -225,7 +225,7 @@ sh-icon {
   -moz-osx-font-smoothing: grayscale;
 }`;
 
-  const cssOutputPath = `${PROJECT_PUBLIC}/spk.css`;
+  const cssOutputPath = `${PROJECT_PUBLIC}/ship.css`;
   await fs.writeFile(cssOutputPath, cssFileContent);
   const cssWrites = Buffer.byteLength(cssFileContent, 'utf8');
 
@@ -248,7 +248,7 @@ const textMateSnippet = async (GLYPH_MAP) => {
       "prefix": ["sh-icon"],
       "scope": "html",
       "body": "<sh-icon>\${1|${Object.keys(GLYPH_MAP).join(',')}|}</sh-icon>",
-      "description": "Add a sparkle phosphor icon"
+      "description": "Add a ship phosphor icon"
     }
   }
   `;

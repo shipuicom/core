@@ -2,7 +2,7 @@ import { RenderMode, ServerRoute } from '@angular/ssr';
 
 export const serverRoutes: ServerRoute[] = [
   {
-    path: 'sh-tabs/tab/:id',
+    path: 'tabs/tab/:id',
     renderMode: RenderMode.Prerender,
     async getPrerenderParams() {
       return [{ id: '1' }, { id: '2' }, { id: '3' }];

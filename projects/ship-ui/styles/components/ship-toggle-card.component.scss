@@ -1,0 +1,71 @@
+@use '../helpers.scss' as *;
+
+$shipToggleCard: true !default;
+
+@if $shipToggleCard == true {
+  sh-toggle-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--shape-3);
+    background-color: var(--base-2);
+
+    &.active {
+      .collapsable {
+        grid-template-rows: 1fr;
+      }
+
+      .content {
+        // grid-template-rows: 1fr;
+        // transition: max-height 1s linear;
+        padding: p2r(0 16 16);
+
+        &:empty {
+          padding: p2r(0 16);
+        }
+      }
+
+      sh-icon.toggle-icon {
+        transform: rotate(180deg);
+      }
+    }
+
+    h3 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font: var(--paragraph-10);
+      padding: p2r(16);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    sh-icon.toggle-icon {
+      cursor: pointer;
+      transform: rotate(0);
+      transform-origin: center;
+      transition: transform 200ms ease;
+    }
+
+    .collapsable {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.5s linear;
+      overflow: hidden;
+    }
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: p2r(16);
+
+      padding: p2r(0 16);
+      min-height: 0;
+      overflow: hidden;
+      // overflow: hidden;
+      // max-height: 0;
+      // transition:
+      //   max-height 250ms linear,
+      //   padding 250ms linear;
+    }
+  }
+}

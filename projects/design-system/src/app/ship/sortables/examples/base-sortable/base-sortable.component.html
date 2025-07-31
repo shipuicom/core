@@ -1,4 +1,4 @@
-<sh-list spkSortable (afterDrop)="reorderTodo($event)">
+<sh-list shSortable (afterDrop)="reorderTodo($event)">
   @for (todo of todos(); track $index) {
     <div item [draggable]="true" [class.active]="todo.done" (click)="toggleTodo($index)">
       <sh-checkbox [class.active]="todo.done" class="primary raised" />

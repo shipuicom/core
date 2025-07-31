@@ -1,0 +1,402 @@
+@use '../helpers.scss' as *;
+
+$shipTable: true !default;
+
+@mixin caret($color) {
+  border-left: p2r(3) solid $color;
+  border-bottom: p2r(3) solid $color;
+  width: p2r(8);
+  height: p2r(8);
+  transform: rotate(45deg);
+}
+
+@if $shipTable == true {
+  sh-table {
+    --table-bc: var(--base-4);
+    --table-th-bg: var(--base-1);
+    --table-tr-bg: var(--base-1);
+    --table-td-bg: var(--base-1);
+    --table-th-c: var(--base-8);
+    --table-th-f: var(--paragraph-30);
+    --table-td-c: var(--base-8);
+    --table-td-f: var(--paragraph-30);
+    --table-th-p: #{p2r(0 20)};
+    --table-td-p: #{p2r(0 20)};
+    --table-th-mh: #{p2r(48)};
+    --table-td-mh: #{p2r(78)};
+    --table-th-g: #{p2r(4)};
+    --table-td-g: #{p2r(8)};
+    --table-ws: nowrap;
+    --table-th-bw: 0;
+    --table-td-bw: #{p2r(1 0 0)};
+    --table-columns: 1fr 1fr 1fr max-content;
+    --table-sticky-bw: #{p2r(1)};
+
+    &.type-a {
+      tbody,
+      thead {
+        > th,
+        > td {
+          padding-right: 0;
+
+          &:first-child {
+            padding: 0;
+          }
+        }
+      }
+
+      &.scrolled-x.can-scroll-x {
+        [shStickyColumns=''],
+        th.sticky,
+        td.sticky {
+          border-right-width: p2r(1);
+        }
+      }
+
+      &:not(.scrolled-x-end).can-scroll-x {
+        [shStickyColumns='end'],
+        th.sticky-end,
+        td.sticky-end {
+          border-left-width: p2r(1);
+        }
+      }
+    }
+
+    &.type-b {
+      --table-th-p: #{p2r(0 12)};
+      --table-td-p: #{p2r(0 12)};
+      --table-th-mh: #{p2r(36)};
+      --table-td-mh: #{p2r(56)};
+      --table-th-bw: #{p2r(1 0 1 1)};
+      --table-td-bw: #{p2r(0 0 1 1)};
+      --table-th-bg: var(--base-2);
+      --table-sticky-bw: #{p2r(2)};
+
+      th {
+        &:first-child {
+          border-left-width: 0;
+          padding: var(--table-th-p);
+        }
+      }
+
+      td {
+        &:first-child {
+          border-left-width: 0;
+          padding: var(--table-td-p);
+        }
+      }
+
+      [shStickyColumns='end'] {
+        border-left-width: p2r(2);
+      }
+
+      &.scrolled-x {
+        [shStickyColumns=''] {
+          border-right-width: p2r(2);
+        }
+      }
+
+      &.scrolled-x-end {
+        [shStickyColumns='end'] {
+          border-left-width: p2r(1);
+        }
+      }
+
+      td,
+      th {
+        &.sticky {
+          border-left-width: 0;
+          border-right-width: p2r(1);
+        }
+        &.sticky + * {
+          border-left-width: 0;
+        }
+      }
+
+      div[table-header] tr:first-child th {
+        border-bottom: 0;
+      }
+    }
+
+    width: 100%;
+    display: grid;
+    overflow: auto;
+    grid-template-columns: var(--table-columns);
+    position: relative;
+
+    &.resizing {
+      user-select: none;
+    }
+
+    &:has([shTableResize]) {
+      td {
+        overflow: auto;
+      }
+    }
+
+    &.no-resize {
+      .sh-resizer {
+        display: none;
+      }
+
+      td {
+        overflow: initial;
+      }
+    }
+
+    tbody {
+      position: relative;
+
+      // &:has(div[table-header].sticky),
+      &:has(tr.sticky) {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+    }
+
+    sh-progress-bar {
+      grid-column: 1 / -1;
+      position: absolute;
+      top: 100%;
+      transform: translateY(-50%);
+      z-index: 200;
+    }
+
+    tbody,
+    // thead,
+    // div[table-header].sticky,
+    tr {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: subgrid;
+    }
+
+    tr {
+      background: var(--table-tr-bg);
+      position: relative;
+      z-index: 0;
+
+      &.sticky {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+
+      &.sticky-end {
+        position: sticky;
+        bottom: 0;
+        z-index: 3;
+      }
+
+      &:has(th.sticky-end) {
+        th:nth-last-child(2) {
+          padding: var(--table-th-p);
+        }
+      }
+
+      &:has(td.sticky-end) {
+        td:nth-last-child(2) {
+          padding: var(--table-td-p);
+        }
+      }
+    }
+
+    th {
+      display: flex;
+      align-items: center;
+      padding: var(--table-th-p);
+      min-height: var(--table-th-mh);
+      font: var(--table-th-f);
+      line-height: 1em;
+      white-space: var(--table-ws);
+      color: var(--table-th-c);
+      border: 0;
+      border-color: var(--table-bc);
+      border-style: solid;
+      border-width: var(--table-th-bw);
+      background: var(--table-th-bg);
+      gap: var(--table-th-g);
+      z-index: 100;
+
+      &:has(.sh-resizer) {
+        position: relative;
+      }
+
+      &.sortable {
+        --caret-color: var(--base-10);
+        --caret-size: #{p2r(6)};
+
+        cursor: pointer;
+        user-select: none;
+
+        &:not(:has(sh-icon)) {
+          &:after {
+            content: '';
+            border: var(--caret-size) solid transparent;
+            width: 0;
+            height: 0;
+            opacity: 0;
+            transition: opacity 125ms ease-in-out;
+          }
+
+          &.sort-desc::after {
+            opacity: 1;
+            transform: translateY(-4px);
+            border-bottom-color: var(--caret-color);
+          }
+
+          &.sort-asc::after {
+            opacity: 1;
+            transform: translateY(4px);
+            border-top-color: var(--caret-color);
+          }
+        }
+      }
+
+      .sh-resizer {
+        width: 10px;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        right: 0;
+        cursor: col-resize;
+
+        &:before,
+        &:after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          height: p2r(12);
+          right: p2r(3);
+          width: p2r(1);
+          background-color: var(--base-4);
+        }
+
+        &:hover {
+          &:before,
+          &:after {
+            background-color: var(--primary-8);
+          }
+        }
+
+        &:before {
+          left: p2r(3);
+        }
+      }
+    }
+
+    td {
+      display: flex;
+      align-items: center;
+      padding: var(--table-td-p);
+      min-height: var(--table-td-mh);
+      gap: var(--table-td-g);
+      color: var(--table-td-c);
+      font: var(--table-td-f);
+      white-space: var(--table-ws);
+      border-color: var(--table-bc);
+      border-style: solid;
+      border-width: var(--table-td-bw);
+      background: var(--table-td-bg);
+
+      + td.sticky-end:last-child {
+        padding: var(--table-td-p);
+      }
+    }
+
+    th,
+    td {
+      &.sticky,
+      &.sticky-end {
+        position: sticky;
+        overflow: hidden;
+        right: auto;
+        left: 0;
+        z-index: 1;
+        padding: var(--table-td-p);
+
+        &:first-child {
+          padding: var(--table-th-p);
+        }
+      }
+
+      &.sticky-end {
+        right: 0;
+        left: auto;
+      }
+    }
+
+    th {
+      &.sticky,
+      &.sticky-end {
+        background: var(--table-th-bg);
+        padding: var(--table-th-p);
+        z-index: 101;
+
+        &:first-child {
+          padding: var(--table-th-p);
+        }
+      }
+    }
+
+    [shStickyRows] {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: subgrid;
+      grid-template-rows: subgrid;
+      position: sticky;
+      top: 0;
+      z-index: 1; // Needs to be the same as regular sticky rows
+      border: 0;
+      border-color: var(--table-bc);
+      border-style: solid;
+    }
+
+    [shStickyColumns] {
+      display: grid;
+      grid-template-columns: subgrid;
+      position: sticky;
+      left: 0;
+      z-index: 1000;
+      border: 0;
+      border-color: var(--table-bc);
+      border-style: solid;
+    }
+
+    [shStickyColumns='end'] {
+      left: auto;
+      right: 0;
+    }
+
+    thead {
+      > [shStickyColumns] {
+        border-width: var(--table-th-bw);
+      }
+    }
+
+    tbody {
+      > [shStickyColumns] {
+        border-width: var(--table-td-bw);
+      }
+    }
+
+    .span-all {
+      grid-column: 1 / -1;
+      white-space: initial;
+      align-items: flex-start;
+      padding: 0;
+      border-left-width: 0;
+    }
+
+    .no-rows {
+      display: none;
+      grid-column: 1 / -1;
+    }
+
+    tbody:empty + .no-rows {
+      display: block;
+    }
+  }
+}

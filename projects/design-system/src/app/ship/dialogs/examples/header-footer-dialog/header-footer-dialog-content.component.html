@@ -1,6 +1,6 @@
 <header header [class.sticky]="stickyHeader()">
   <h3>Dialog Header</h3>
-  <button sh-button class="outlined" (click)="stickyHeader.set(!stickyHeader())">
+  <button shButton class="outlined" (click)="stickyHeader.set(!stickyHeader())">
     {{ stickyHeader() ? 'Sticky' : 'Unsticky' }} Header
   </button>
 </header>
@@ -86,8 +86,8 @@
 </section>
 
 <footer footer [class.sticky]="stickyFooter()">
-  <button sh-button class="outlined" (click)="stickyFooter.set(!stickyFooter())">
+  <button shButton class="outlined" (click)="stickyFooter.set(!stickyFooter())">
     {{ stickyFooter() ? 'Sticky' : 'Unsticky' }} Footer
   </button>
-  <button sh-button (click)="closed.emit(false)">Close</button>
+  <button shButton (click)="closed.emit(false)">Close</button>
 </footer>

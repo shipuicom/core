@@ -18,8 +18,8 @@
 }
 
 html body {
-  --sparkle-light: initial;
-  --sparkle-dark: ;
+  --ship-light: initial;
+  --ship-dark: ;
   color-scheme: light dark;
 
   --primary-1: #{light-dark(hsl(217, 91%, 95%), hsl(217, 91%, 9.5%))};
@@ -167,21 +167,21 @@ html body {
   --light-text: #fff;
 
   &.dark {
-    --sparkle-light: ;
-    --sparkle-dark: initial;
+    --ship-light: ;
+    --ship-dark: initial;
     color-scheme: dark;
   }
 
   // TODO add a good way to toggle between light and dark mode served from the ui lib
   //
   // @media (prefers-color-scheme: dark) {
-  //   --sparkle-light: ;
-  //   --sparkle-dark: initial;
+  //   --ship-light: ;
+  //   --ship-dark: initial;
   //   color-scheme: dark;
 
   //   &.light {
-  //     --sparkle-light: initial;
-  //     --sparkle-dark: ;
+  //     --ship-light: initial;
+  //     --ship-dark: ;
   //     color-scheme: light;
   //   }
   // }

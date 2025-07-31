@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { ShipSelectComponent } from '@ship-ui/core';
+import { ShipSelectComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-reactive-select-disabled',

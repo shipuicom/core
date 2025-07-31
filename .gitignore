@@ -45,6 +45,6 @@ testem.log
 Thumbs.db
 
 # Ship generated files
-/projects/design-system/public/spk.css
-/projects/design-system/public/spk.woff2
+/projects/design-system/public/ship.css
+/projects/design-system/public/ship.woff2
 /projects/design-system/public/sh-*.woff2

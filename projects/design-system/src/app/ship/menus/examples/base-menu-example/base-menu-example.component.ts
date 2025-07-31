@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ShipMenuComponent } from '@ship-ui/core';
+import { ShipMenuComponent } from 'ship-ui';
 
 @Component({
   selector: 'base-menu-example',

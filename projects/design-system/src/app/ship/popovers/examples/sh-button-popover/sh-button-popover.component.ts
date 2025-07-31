@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ShipButtonComponent, ShipPopoverComponent } from '@ship-ui/core';
+import { ShipButtonComponent, ShipPopoverComponent } from 'ship-ui';
 
 @Component({
   selector: 'sh-button-popover',

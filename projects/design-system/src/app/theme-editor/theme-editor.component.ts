@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipColorPickerComponent, ShipMenuComponent, ShipRadioComponent } from '@ship-ui/core';
+import { ShipColorPickerComponent, ShipMenuComponent, ShipRadioComponent } from 'ship-ui';
 
 interface Hsl {
   h: number;

@@ -1,0 +1,47 @@
+@use '../helpers.scss' as *;
+
+$shipFileUpload: true !default;
+
+@if $shipFileUpload == true {
+  sh-file-upload {
+    --fu-bg-active: rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: p2r(12);
+    position: relative;
+    width: 100%;
+
+    sh-list {
+      border-radius: var(--shape-3);
+      background-color: var(--base-2);
+    }
+
+    .files-text,
+    .placeholder {
+      color: var(--base-8);
+      font: var(--paragraph-30B);
+    }
+
+    input {
+      position: absolute;
+      opacity: 0;
+      inset: 0;
+      cursor: pointer;
+      z-index: 100;
+    }
+
+    .bg-overlay {
+      opacity: 0;
+      position: absolute;
+      inset: p2r(1);
+      background-color: var(--fu-bg-active);
+      transition: opacity 125ms linear;
+      z-index: 0;
+      border-radius: var(--ff-s);
+
+      &.files-over {
+        opacity: 1;
+      }
+    }
+  }
+}

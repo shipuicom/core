@@ -1,6 +1,6 @@
 <sh-sidenav [class]="sidenavType()" [(isOpen)]="isNavOpen">
   <ng-container sidenav-closed-topbar>
-    <button sh-button class="outlined primary" (click)="toggleNav()">
+    <button shButton class="outlined primary" (click)="toggleNav()">
       <sh-icon>compass</sh-icon>
     </button>
   </ng-container>
@@ -32,7 +32,7 @@
         </svg>
       </div>
 
-      <button sh-button class="icon small" (click)="toggleBodyClass()">
+      <button shButton class="icon small" (click)="toggleBodyClass()">
         @if (isDarkMode()) {
           <sh-icon>sun</sh-icon>
         } @else {
@@ -163,8 +163,8 @@
         Checkboxes
       </button>
 
-      <button action routerLink="/radio-inputs" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Radio inputs
+      <button action routerLink="/radio-buttons" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Radio buttons
       </button>
 
       <button action routerLink="/file-uploads" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipRangeSliderComponent, ShipSpinnerComponent } from '@ship-ui/core';
+import { ShipRangeSliderComponent, ShipSpinnerComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-sandbox-spinner',

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipAlertComponent } from '@ship-ui/core';
+import { ShipAlertComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-outlined-alert',

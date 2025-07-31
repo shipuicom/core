@@ -1,7 +1,7 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipRangeSliderComponent } from '@ship-ui/core';
+import { ShipRangeSliderComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-float-range-slider',

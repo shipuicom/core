@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipAlertComponent } from '@ship-ui/core';
+import { ShipAlertComponent } from 'ship-ui';
 import { PreviewerComponent } from '../../previewer/previewer.component';
 import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
 import { BaseProgressBarComponent } from './examples/base-progress-bar/base-progress-bar.component';

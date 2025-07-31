@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipProgressBarComponent } from '@ship-ui/core';
+import { ShipProgressBarComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-flat-progress-bar',

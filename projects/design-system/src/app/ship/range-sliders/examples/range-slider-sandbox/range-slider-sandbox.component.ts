@@ -5,7 +5,7 @@ import {
   ShipFormFieldComponent,
   ShipRangeSliderComponent,
   ShipToggleComponent,
-} from '@ship-ui/core';
+} from 'ship-ui';
 
 @Component({
   selector: 'app-range-slider-sandbox',

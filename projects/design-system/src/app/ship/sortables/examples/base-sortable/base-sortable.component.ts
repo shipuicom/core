@@ -1,11 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import {
-  AfterDropResponse,
-  moveIndex,
-  ShipCheckboxComponent,
-  ShipListComponent,
-  ShipSortableDirective,
-} from '@ship-ui/core';
+import { AfterDropResponse, moveIndex, ShipCheckboxComponent, ShipListComponent, ShipSortableDirective } from 'ship-ui';
 
 const TODOS = [
   {

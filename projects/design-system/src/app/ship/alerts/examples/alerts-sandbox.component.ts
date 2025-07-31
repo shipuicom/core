@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { ShipAlertComponent, ShipButtonGroupComponent } from '@ship-ui/core';
+import { ShipAlertComponent, ShipButtonGroupComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-alerts-sandbox',

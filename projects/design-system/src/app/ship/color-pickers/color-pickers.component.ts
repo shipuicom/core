@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipAlertComponent } from '@ship-ui/core';
+import { ShipAlertComponent } from 'ship-ui';
 import { PreviewerComponent } from '../../previewer/previewer.component';
 import { BaseColorPickerComponent } from './examples/base-color-picker/base-color-picker.component';
 

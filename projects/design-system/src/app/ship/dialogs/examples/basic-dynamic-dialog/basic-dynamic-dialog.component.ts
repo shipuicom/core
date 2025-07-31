@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { ShipButtonComponent, ShipDialogService } from '@ship-ui/core';
+import { ShipButtonComponent, ShipDialogService } from 'ship-ui';
 
 @Component({
   selector: 'basic-dynamic-dialog',

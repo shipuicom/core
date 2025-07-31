@@ -11,136 +11,136 @@ $useApexcharts: true !default;
 
 @use './core/core';
 
-$spkBaseTypes: ('base', 'simple', 'raised', 'outlined', 'flat');
-$spkFormFieldShadow: false !default;
-$spkButtonShadow: false !default;
-$spkChipShadow: false !default;
+$shipBaseTypes: ('base', 'simple', 'raised', 'outlined', 'flat');
+$shipFormFieldShadow: false !default;
+$shipButtonShadow: false !default;
+$shipChipShadow: false !default;
 
-$spkAlert: true !default;
-$spkToggle: true !default;
-$spkButton: true !default;
-$spkProgressBar: true !default;
-$spkCheckbox: true !default;
-$spkDatepicker: true !default;
-$spkIcon: true !default;
-$spkMenu: true !default;
-$spkDivider: true !default;
-$spkDialog: true !default;
-$spkPopover: true !default;
-$spkChip: true !default;
-$spkFormField: true !default;
-$spkColorPicker: true !default;
-$spkSidenav: true !default;
-$spkList: true !default;
-$spkRadio: true !default;
-$spkButtonGroup: true !default;
-$spkRangeSlider: true !default;
-$spkTooltip: true !default;
-$spkVirtualScroll: false !default;
-$spkSelect: true !default;
-$spkCard: true !default;
-$spkStepper: true !default;
-$spkSortable: true !default;
-$spkSpinner: true !default;
-$spkToggleCard: true !default;
-$spkTable: true !default;
-$spkTabs: true !default;
-$spkFileUpload: true !default;
+$shipAlert: true !default;
+$shipToggle: true !default;
+$shipButton: true !default;
+$shipProgressBar: true !default;
+$shipCheckbox: true !default;
+$shipDatepicker: true !default;
+$shipIcon: true !default;
+$shipMenu: true !default;
+$shipDivider: true !default;
+$shipDialog: true !default;
+$shipPopover: true !default;
+$shipChip: true !default;
+$shipFormField: true !default;
+$shipColorPicker: true !default;
+$shipSidenav: true !default;
+$shipList: true !default;
+$shipRadio: true !default;
+$shipButtonGroup: true !default;
+$shipRangeSlider: true !default;
+$shTooltip: true !default;
+$shipVirtualScroll: false !default;
+$shipSelect: true !default;
+$shipCard: true !default;
+$shipStepper: true !default;
+$shipSortable: true !default;
+$shipSpinner: true !default;
+$shipToggleCard: true !default;
+$shipTable: true !default;
+$shipTabs: true !default;
+$shipFileUpload: true !default;
 
-@use './components/sparkle-alert-container.component.scss' with (
-  $spkAlert: $spkAlert
+@use './components/ship-alert-container.component.scss' with (
+  $shipAlert: $shipAlert
 );
-@use './components/sparkle-alert.component.scss' with (
-  $spkAlert: $spkAlert
+@use './components/ship-alert.component.scss' with (
+  $shipAlert: $shipAlert
 );
-@use './components/sparkle-toggle.component.scss' with (
-  $spkToggle: $spkToggle
+@use './components/ship-toggle.component.scss' with (
+  $shipToggle: $shipToggle
 );
-@use './components/sparkle-button.component.scss' with (
-  $spkButton: $spkButton,
-  $spkButtonShadow: $spkButtonShadow
+@use './components/ship-button.component.scss' with (
+  $shipButton: $shipButton,
+  $shipButtonShadow: $shipButtonShadow
 );
-@use './components/sparkle-progress-bar.component.scss' with (
-  $spkProgressBar: $spkProgressBar
+@use './components/ship-progress-bar.component.scss' with (
+  $shipProgressBar: $shipProgressBar
 );
-@use './components/sparkle-checkbox.component.scss' with (
-  $spkCheckbox: $spkCheckbox
+@use './components/ship-checkbox.component.scss' with (
+  $shipCheckbox: $shipCheckbox
 );
-@use './components/sparkle-datepicker.component.scss' with (
-  $spkDatepicker: $spkDatepicker
+@use './components/ship-datepicker.component.scss' with (
+  $shipDatepicker: $shipDatepicker
 );
-@use './components/sparkle-icon.component.scss' with (
-  $spkIcon: $spkIcon
+@use './components/ship-icon.component.scss' with (
+  $shipIcon: $shipIcon
 );
-@use './components/sparkle-menu.component.scss' with (
-  $spkMenu: $spkMenu
+@use './components/ship-menu.component.scss' with (
+  $shipMenu: $shipMenu
 );
-@use './components/sparkle-divider.component.scss' with (
-  $spkDivider: $spkDivider
+@use './components/ship-divider.component.scss' with (
+  $shipDivider: $shipDivider
 );
-@use './components/sparkle-dialog.component.scss' with (
-  $spkDialog: $spkDialog
+@use './components/ship-dialog.component.scss' with (
+  $shipDialog: $shipDialog
 );
-@use './components/sparkle-popover.component.scss' with (
-  $spkPopover: $spkPopover
+@use './components/ship-popover.component.scss' with (
+  $shipPopover: $shipPopover
 );
-@use './components/sparkle-chip.component.scss' with (
-  $spkChip: $spkChip,
-  $spkChipShadow: $spkChipShadow
+@use './components/ship-chip.component.scss' with (
+  $shipChip: $shipChip,
+  $shipChipShadow: $shipChipShadow
 );
-@use './components/sparkle-form-field.component.scss' with (
-  $spkFormField: $spkFormField,
-  $spkDatepicker: $spkDatepicker,
-  $spkFormFieldShadow: $spkFormFieldShadow
+@use './components/ship-form-field.component.scss' with (
+  $shipFormField: $shipFormField,
+  $shipDatepicker: $shipDatepicker,
+  $shipFormFieldShadow: $shipFormFieldShadow
 );
-@use './components/sparkle-color-picker.component.scss' with (
-  $spkColorPicker: $spkColorPicker
+@use './components/ship-color-picker.component.scss' with (
+  $shipColorPicker: $shipColorPicker
 );
-@use './components/sparkle-sidenav.component.scss' with (
-  $spkSidenav: $spkSidenav
+@use './components/ship-sidenav.component.scss' with (
+  $shipSidenav: $shipSidenav
 );
-@use './components/sparkle-list.component.scss' with (
-  $spkList: $spkList
+@use './components/ship-list.component.scss' with (
+  $shipList: $shipList
 );
-@use './components/sparkle-radio.component.scss' with (
-  $spkRadio: $spkRadio
+@use './components/ship-radio.component.scss' with (
+  $shipRadio: $shipRadio
 );
-@use './components/sparkle-button-group.component.scss' with (
-  $spkButtonGroup: $spkButtonGroup
+@use './components/ship-button-group.component.scss' with (
+  $shipButtonGroup: $shipButtonGroup
 );
-@use './components/sparkle-range-slider.component.scss' with (
-  $spkRangeSlider: $spkRangeSlider
+@use './components/ship-range-slider.component.scss' with (
+  $shipRangeSlider: $shipRangeSlider
 );
-@use './components/sparkle-tooltip.component.scss' with (
-  $spkTooltip: $spkTooltip
+@use './components/ship-tooltip.component.scss' with (
+  $shTooltip: $shTooltip
 );
-@use './components/sparkle-virtual-scroll.component.scss' with (
-  $spkVirtualScroll: $spkVirtualScroll
+@use './components/ship-virtual-scroll.component.scss' with (
+  $shipVirtualScroll: $shipVirtualScroll
 );
-@use './components/sparkle-select.component.scss' with (
-  $spkSelect: $spkSelect
+@use './components/ship-select.component.scss' with (
+  $shipSelect: $shipSelect
 );
-@use './components/sparkle-card.component.scss' with (
-  $spkCard: $spkCard
+@use './components/ship-card.component.scss' with (
+  $shipCard: $shipCard
 );
-@use './components/sparkle-stepper.component.scss' with (
-  $spkStepper: $spkStepper
+@use './components/ship-stepper.component.scss' with (
+  $shipStepper: $shipStepper
 );
-@use './components/sparkle-spinner.component.scss' with (
-  $spkSpinner: $spkSpinner
+@use './components/ship-spinner.component.scss' with (
+  $shipSpinner: $shipSpinner
 );
-@use './components/sparkle-sortable.component.scss' with (
-  $spkSortable: $spkSortable
+@use './components/ship-sortable.component.scss' with (
+  $shipSortable: $shipSortable
 );
-@use './components/sparkle-toggle-card.component.scss' with (
-  $spkToggleCard: $spkToggleCard
+@use './components/ship-toggle-card.component.scss' with (
+  $shipToggleCard: $shipToggleCard
 );
-@use './components/sparkle-table.component.scss' with (
-  $spkTable: $spkTable
+@use './components/ship-table.component.scss' with (
+  $shipTable: $shipTable
 );
-@use './components/sparkle-tabs.component.scss' with (
-  $spkTabs: $spkTabs
+@use './components/ship-tabs.component.scss' with (
+  $shipTabs: $shipTabs
 );
-@use './components/sparkle-file-upload.component.scss' with (
-  $spkFileUpload: $spkFileUpload
+@use './components/ship-file-upload.component.scss' with (
+  $shipFileUpload: $shipFileUpload
 );

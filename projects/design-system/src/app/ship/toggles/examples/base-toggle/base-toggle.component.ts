@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipToggleComponent } from '@ship-ui/core';
+import { ShipToggleComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-base-toggle',

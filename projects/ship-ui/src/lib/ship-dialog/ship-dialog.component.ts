@@ -40,7 +40,7 @@ const DEFAULT_OPTIONS: ShipDialogOptions = {
   template: `
     @let options = this.defaultOptionMerge();
     <dialog
-      spkDialog
+      shDialog
       #dialogRef
       [class]="options.class"
       [style.width]="options.width ?? ''"
@@ -59,7 +59,7 @@ const DEFAULT_OPTIONS: ShipDialogOptions = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShipDialogComponent {
-  #spkConfig = inject(SHIP_CONFIG, { optional: true });
+  #shConfig = inject(SHIP_CONFIG, { optional: true });
   dialogRef = viewChild<ElementRef<HTMLDialogElement>>('dialogRef');
   isOpen = model<boolean>(false);
   options = input<Partial<ShipDialogOptions>>();
@@ -67,7 +67,7 @@ export class ShipDialogComponent {
 
   defaultOptionMerge = computed(() => ({
     ...DEFAULT_OPTIONS,
-    ...{ class: this.#spkConfig?.dialogType ?? 'default' },
+    ...{ class: this.#shConfig?.dialogType ?? 'default' },
     ...this.options(),
   }));
 

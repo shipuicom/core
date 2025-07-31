@@ -1,5 +1,5 @@
 {
-  "name": "@ship-ui/core",
+  "name": "ship-ui",
   "license": "MIT",
   "version": "0.12.42",
   "peerDependencies": {

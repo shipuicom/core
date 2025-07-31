@@ -1,0 +1,12 @@
+@use '../helpers.scss' as *;
+
+$shipVirtualScroll: false !default;
+
+@if $shipVirtualScroll == true {
+  sh-virtual-scroll {
+    overflow-y: auto;
+    position: relative;
+    display: block;
+    height: 600px;
+  }
+}

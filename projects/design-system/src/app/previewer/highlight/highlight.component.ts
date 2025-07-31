@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, input, signal, viewChild } from '@angular/core';
-import { ShipButtonComponent, ShipIconComponent } from '@ship-ui/core';
 import hljs from 'highlight.js';
 import scss from 'highlight.js/lib/languages/scss';
 import shell from 'highlight.js/lib/languages/shell';
 import typescript from 'highlight.js/lib/languages/typescript';
 import xml from 'highlight.js/lib/languages/xml';
+import { ShipButtonComponent, ShipIconComponent } from 'ship-ui';
 
 const langMap = {
   ts: 'typescript',

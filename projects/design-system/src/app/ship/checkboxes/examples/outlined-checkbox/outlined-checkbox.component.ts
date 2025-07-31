@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipCheckboxComponent } from '@ship-ui/core';
+import { ShipCheckboxComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-outlined-checkbox',

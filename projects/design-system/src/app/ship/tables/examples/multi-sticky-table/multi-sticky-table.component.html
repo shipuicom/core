@@ -1,6 +1,6 @@
 <sh-table [data]="dataSource()" [loading]="isLoading()" [class]="type()">
   <tr class="sticky">
-    <div spkStickyColumns>
+    <div shStickyColumns>
       <th>im sticky</th>
       <th>im sticky</th>
     </div>
@@ -9,7 +9,7 @@
       <th>{{ col }}</th>
     }
 
-    <div spkStickyColumns="end">
+    <div shStickyColumns="end">
       <th>im sticky end</th>
       <th>im sticky end</th>
     </div>
@@ -17,7 +17,7 @@
 
   @for (row of dataSource(); track $index) {
     <tr [class.sticky]="$index % 3 === 0">
-      <div spkStickyColumns>
+      <div shStickyColumns>
         <td>im sticky</td>
         <td>im sticky</td>
       </div>
@@ -26,7 +26,7 @@
         <td>{{ row[col] }}</td>
       }
 
-      <div spkStickyColumns="end">
+      <div shStickyColumns="end">
         <td>im sticky end</td>
         <td>im sticky end</td>
       </div>

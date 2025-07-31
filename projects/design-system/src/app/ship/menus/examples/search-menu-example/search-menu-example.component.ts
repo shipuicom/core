@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipButtonComponent, ShipMenuComponent } from '@ship-ui/core';
+import { ShipButtonComponent, ShipMenuComponent } from 'ship-ui';
 
 @Component({
   selector: 'sh-search-menu-example',

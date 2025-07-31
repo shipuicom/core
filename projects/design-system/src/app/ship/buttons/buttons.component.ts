@@ -30,9 +30,9 @@ export default class ButtonsComponent {
   isSmall = signal<boolean>(false);
   view = signal<'example' | 'code'>('example');
 
-  example1 = `<button sh-button>Default button</button>
+  example1 = `<button shButton>Default button</button>
 
 <h1>hello world</h1>
 
-<button sh-button>Default button</button>`;
+<button shButton>Default button</button>`;
 }

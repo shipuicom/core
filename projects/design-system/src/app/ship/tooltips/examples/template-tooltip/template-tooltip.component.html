@@ -1,4 +1,4 @@
-<button sh-button [spkTooltip]="richTooltip">
+<button shButton [shTooltip]="richTooltip">
   <sh-icon>star</sh-icon>
   Rich Content
 </button>
@@ -18,7 +18,7 @@
   </ul>
 </ng-template>
 
-<sh-icon [spkTooltip]="dynamicTooltip">help</sh-icon>
+<sh-icon [shTooltip]="dynamicTooltip">help</sh-icon>
 
 <!-- Template tooltip with dynamic content -->
 <ng-template #dynamicTooltip>
@@ -26,7 +26,7 @@
   <span>Dynamic content with icon</span>
 </ng-template>
 
-<button sh-button [spkTooltip]="actionTooltip">
+<button shButton [shTooltip]="actionTooltip">
   <sh-icon>question</sh-icon>
   Confirm Action
 </button>
@@ -35,7 +35,7 @@
 <ng-template #actionTooltip>
   <p>Would you like to proceed?</p>
   <div class="tooltip-actions">
-    <button sh-button size="small">Yes</button>
-    <button sh-button size="small" class="secondary">No</button>
+    <button shButton size="small">Yes</button>
+    <button shButton size="small" class="secondary">No</button>
   </div>
 </ng-template>

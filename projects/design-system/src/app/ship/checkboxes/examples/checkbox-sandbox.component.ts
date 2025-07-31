@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, effect, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ShipButtonGroupComponent, ShipCheckboxComponent, ShipToggleComponent } from '@ship-ui/core';
+import { ShipButtonGroupComponent, ShipCheckboxComponent, ShipToggleComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-checkbox-sandbox',

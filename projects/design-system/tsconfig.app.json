@@ -4,10 +4,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "../../out-tsc/app",
-    "types": ["node"],
-    "paths": {
-      "ship-ui/core": ["../ship-ui/src/public-api.ts"]
-    }
+    "types": ["node"]
   },
   "files": ["src/main.ts", "src/main.server.ts", "src/server.ts"],
   "include": ["src/**/*.d.ts"],

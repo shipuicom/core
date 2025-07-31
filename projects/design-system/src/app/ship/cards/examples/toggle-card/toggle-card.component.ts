@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipToggleCardComponent } from '@ship-ui/core';
+import { ShipToggleCardComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-toggle-card-example',

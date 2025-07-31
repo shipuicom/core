@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipCheckboxComponent, ShipFileUploadComponent, ShipFormFieldComponent } from '@ship-ui/core';
+import { ShipCheckboxComponent, ShipFileUploadComponent, ShipFormFieldComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-file-upload-sandbox',
