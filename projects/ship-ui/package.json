@@ -13,7 +13,7 @@
     "tslib": "^2.3.0"
   },
   "bin": {
-    "sparkle-fg": "./bin/sparkle-fg-node"
+    "ship-fg": "./bin/ship-fg-node"
   },
   "libraryIcons": [
     "upload-simple",
