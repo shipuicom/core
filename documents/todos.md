@@ -1,4 +1,4 @@
-# 🚢 Ship UI
+# ⛵ Ship UI
 
 This is a early stage alpha version of the Ship UI. It is not ready for production use not because the compoents are not polished but because their APIs can change drastically and often.
 
@@ -128,24 +128,3 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 ### Blocked changes
 
 - [ ] required inputs on dialogs, since its not supported by angular yet [angular/51878](https://github.com/angular/angular/issues/51878)
-
-### Notes
-
-- <strike>There was raised thoughts on separating out the icon utility the decision are for now not to since this package are depended on those icons for now, we can open up a new debate about it if some comes with a solid argument for it</strike>
-- <strike>For safari `<18` the selects does not support using options so you must use `<sh-option>` instead of `<option>` (this is fixed in the next select version currently suffixed with `-new`)</strike> (We circumvent this by using a templates instead of options)
-- Known issues for selects when having two selects editing the same value and it is a multi select and searchable they clear out when opened also when selecting a new item they clear the rest of the list - not a very likely scenario but it is something to keep in mind (Your UI probably should not allow this scenario write an issue if you think it should be possible with a good explanation and example)
-
-## Contributors
-
-### Creators
-
-- [Simon - development](https://github.com/sp90)
-- [Morten - design](https://x.com/mortenpx)
-
-### Sponsors
-
-- [Duplicati](https://duplicati.com)
-
-## License
-
-MIT
