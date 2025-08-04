@@ -1,6 +1,6 @@
-# 🚢 Ship UI
+# ⛵ Ship UI
 
-A modern signal based and zoneless compatable UI library for Angular
+A modern signal based and zoneless compatable UI library for Angular visit our website [shipui.com](https://shipui.com) for more info.
 
 ## Base setup
 

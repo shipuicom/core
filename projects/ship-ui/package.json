@@ -1,11 +1,25 @@
 {
   "name": "@ship-ui/core",
   "license": "MIT",
-  "version": "0.13.6",
+  "version": "0.13.7",
   "peerDependencies": {
     "@angular/common": ">=19",
     "@angular/core": ">=19"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shipuicom/core"
+  },
+  "contributors": [
+    {
+      "name": "SimonBitwise",
+      "url": "https://github.com/sp90"
+    },
+    {
+      "name": "Mortenpx",
+      "url": "https://x.com/mortenpx"
+    }
+  ],
   "dependencies": {
     "subset-font": "^2.3.0",
     "@phosphor-icons/web": "^2.1.1",
