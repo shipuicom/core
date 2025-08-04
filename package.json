@@ -2,6 +2,7 @@
   "name": "ship-ui",
   "version": "0.1.10",
   "license": "MIT",
+  "homepage": "https://shipui.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shipuicom/core"
