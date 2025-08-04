@@ -20,6 +20,7 @@ import { ShipFormFieldComponent } from '../ship-form-field/ship-form-field.compo
 import { ShipIconComponent } from '../ship-icon/ship-icon.component';
 import { ShipPopoverComponent } from '../ship-popover/ship-popover.component';
 import { ShipSpinnerComponent } from '../ship-spinner/ship-spinner.component';
+import { generateUniqueId } from '../utilities/random-id';
 
 @Component({
   selector: 'sh-select',
@@ -123,11 +124,13 @@ import { ShipSpinnerComponent } from '../ship-spinner/ship-spinner.component';
         }
       </sh-form-field>
 
-      <div class="ship-options" #optionsWrap>
+      <div class="ship-options" #optionsWrap id="optionsWrapId" role="listbox">
         @for (option of filteredOptions(); track $index) {
           <li
             (click)="toggleOptionByIndex($index)"
             class="option"
+            [id]="this.getLabelAsSlug(option)"
+            [attr.aria-selected]="isSelected($index)"
             [class.selected]="isSelected($index)"
             [class.focused]="$index === focusedOptionIndex()">
             @if (selectMultiple()) {
@@ -172,6 +175,7 @@ export class ShipSelectComponent {
   selectedOptions = model<unknown[]>([]);
   cleared = output<void>();
 
+  #previousSelectedOptions = signal<unknown[] | null>(null);
   inlineTemplate = contentChild<TemplateRef<unknown>>(TemplateRef);
   optionsWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('optionsWrap');
   inputRefInput = signal<ElementRef<HTMLInputElement> | null>(null);
@@ -300,6 +304,7 @@ export class ShipSelectComponent {
     return score;
   }
 
+  #componentId = generateUniqueId();
   inputRefEl = computed(() => {
     const inputRefInput = this.inputRefInput();
 
@@ -315,6 +320,10 @@ export class ShipSelectComponent {
     }
 
     input.autocomplete = 'off';
+    input.setAttribute('role', 'combobox');
+    input.setAttribute('id', `combobox-${this.#componentId}`);
+    input.setAttribute('aria-haspopup', 'listbox');
+    input.setAttribute('aria-owns', 'optionsWrapId');
 
     this.#createCustomInputEventListener(input);
 
@@ -348,11 +357,25 @@ export class ShipSelectComponent {
       }
 
       this.setSelectedOptionsFromValue(newInputValue);
-      this.setInputValueFromSelectedOptions();
+      this.setInputValueFromOptions(this.selectedOptions());
       this.#setFirstSelectedOptionAsFocused();
     });
 
     return input;
+  });
+
+  focusEffect = effect(() => {
+    const input = this.inputRefEl();
+
+    if (!input) return;
+
+    const focusedId = this.getLabelAsSlug(this.filteredOptions()[this.focusedOptionIndex()]);
+
+    if (focusedId) {
+      input.setAttribute('aria-activedescendant', focusedId);
+    } else {
+      input.removeAttribute('aria-activedescendant');
+    }
   });
 
   openAbortController: AbortController | null = null;
@@ -368,6 +391,8 @@ export class ShipSelectComponent {
       const input = this.inputRefEl();
 
       if (!input) return;
+
+      input.setAttribute('aria-expanded', this.isOpen().toString());
 
       (input as HTMLInputElement).addEventListener(
         'keydown',
@@ -409,6 +434,8 @@ export class ShipSelectComponent {
 
       if (!input) return;
 
+      input.setAttribute('aria-expanded', this.isOpen().toString());
+
       if (this.openAbortController) {
         this.openAbortController.abort();
         this.openAbortController = null;
@@ -431,7 +458,7 @@ export class ShipSelectComponent {
     this.disabled.set(input.disabled);
 
     this.setSelectedOptionsFromValue(input.value);
-    this.setInputValueFromSelectedOptions();
+    this.setInputValueFromOptions(this.selectedOptions());
   });
 
   selectedLabels = computed(() => {
@@ -540,17 +567,16 @@ export class ShipSelectComponent {
     this.selectedOptions.set(selectMultiple ? selectedOptions : [selectedOptions[0]]);
   }
 
-  setInputValueFromSelectedOptions() {
-    const selectedOptions = this.selectedOptions();
+  setInputValueFromOptions(options: unknown[]) {
     const valueKey = this.value();
 
-    if (selectedOptions.length === 0) {
+    if (options.length === 0) {
       this.inputValue.set('');
       this.updateInputElValue();
       return;
     }
 
-    const inputValue = selectedOptions
+    const inputValue = options
       .map((option) => {
         const optionValue = valueKey ? this.#getProperty(option, valueKey) : option;
         return optionValue;
@@ -567,6 +593,14 @@ export class ShipSelectComponent {
     if (!label) return option;
 
     return this.#getProperty(option, label);
+  }
+
+  getLabelAsSlug(option: unknown) {
+    const label = this.getLabel(option);
+
+    if (!label || typeof label !== 'string') return '';
+
+    return label.replaceAll(' ', '-');
   }
 
   toggleOptionByIndex(optionIndex: number, event?: MouseEvent) {
@@ -588,6 +622,7 @@ export class ShipSelectComponent {
     const optionValue = valueKey ? this.#getProperty(option, valueKey) : option;
 
     this.prevInputValue.set(null);
+    this.#previousSelectedOptions.set(null);
     this.selectedOptions.update((selectedOptions) => {
       const index = selectedOptionValues.indexOf(optionValue);
 
@@ -613,7 +648,7 @@ export class ShipSelectComponent {
       this.isOpen.set(false);
     }
 
-    this.setInputValueFromSelectedOptions();
+    this.setInputValueFromOptions(this.selectedOptions());
 
     if (selectMultiple && this.hasSearch()) {
       this.inputValue.set('');
@@ -628,7 +663,7 @@ export class ShipSelectComponent {
       return [...selectedOptions.slice(0, optionRemoveIndex), ...selectedOptions.slice(optionRemoveIndex + 1)];
     });
 
-    this.setInputValueFromSelectedOptions();
+    this.setInputValueFromOptions(this.selectedOptions());
   }
 
   isSelected(optionIndex: number): boolean {
@@ -648,6 +683,8 @@ export class ShipSelectComponent {
       this.prevInputValue.set(this.inputValue() ?? '');
       this.inputValue.set('');
       this.updateInputElValue();
+    } else {
+      this.#previousSelectedOptions.set(this.selectedOptions());
     }
 
     if (!this.selectMultiple()) {
@@ -674,6 +711,7 @@ export class ShipSelectComponent {
     this.isOpen.set(false);
 
     const prevInputValue = this.prevInputValue();
+    const prevSelectedOptions = this.#previousSelectedOptions();
 
     if (this.asFreeText()) {
       this.updateInputElValue();
@@ -682,11 +720,15 @@ export class ShipSelectComponent {
 
     if (this.hasSearch() && prevInputValue) {
       this.inputValue.set(prevInputValue);
-      this.setInputValueFromSelectedOptions();
+      this.setInputValueFromOptions(this.selectedOptions());
+    }
+
+    if (!this.hasSearch() && prevSelectedOptions !== null) {
+      this.setInputValueFromOptions(prevSelectedOptions);
     }
 
     if (this.selectMultiple()) {
-      this.setInputValueFromSelectedOptions();
+      this.setInputValueFromOptions(this.selectedOptions());
     }
   }
 
