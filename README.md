@@ -9,7 +9,7 @@ To start using ShipUI make sure you're using angular 19 or newer.
 ### Install
 
 ```sh
-npm i -S @ship/core
+npm i -S @ship-ui/core
 ```
 
 ### Add styles inside your src/styles.scss
