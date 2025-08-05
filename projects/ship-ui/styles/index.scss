@@ -35,7 +35,7 @@ $shipList: true !default;
 $shipRadio: true !default;
 $shipButtonGroup: true !default;
 $shipRangeSlider: true !default;
-$shTooltip: true !default;
+$shipTooltip: true !default;
 $shipVirtualScroll: false !default;
 $shipSelect: true !default;
 $shipCard: true !default;
@@ -112,7 +112,7 @@ $shipFileUpload: true !default;
   $shipRangeSlider: $shipRangeSlider
 );
 @use './components/ship-tooltip.component.scss' with (
-  $shTooltip: $shTooltip
+  $shipTooltip: $shipTooltip
 );
 @use './components/ship-virtual-scroll.component.scss' with (
   $shipVirtualScroll: $shipVirtualScroll

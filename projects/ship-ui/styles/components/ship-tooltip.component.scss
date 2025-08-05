@@ -1,13 +1,13 @@
 @use '../helpers.scss' as *;
 
-$shTooltip: true !default;
+$shipTooltip: true !default;
 
 %hoverState {
   opacity: 1;
   z-index: 0;
   visibility: visible;
 }
-@if $shTooltip == true {
+@if $shipTooltip == true {
   .tooltip {
     position: relative;
     pointer-events: initial !important;

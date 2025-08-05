@@ -15,7 +15,7 @@ npm i -S @ship-ui/core
 ### Add styles inside your src/styles.scss
 
 ```scss
-@use 'ship-ui/styles';
+@use '@ship-ui/core/styles';
 ```
 
 ### Inside your angular.json file
@@ -27,7 +27,7 @@ you need to add the ship assets to your assets array this is to add the ship def
   "src/assets",
   {
     "glob": "**/*",
-    "input": "./node_modules/ship-ui/assets",
+    "input": "./node_modules/@ship-ui/core/assets",
     "output": "./ship-ui-assets/"
   }
 ]

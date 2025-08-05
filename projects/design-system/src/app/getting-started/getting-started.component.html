@@ -16,7 +16,7 @@
 <app-highlight lang="html" [content]="`npm i -S @ship-ui/core`" />
 
 <p>Add styles inside your src/styles.scss</p>
-<app-highlight lang="scss" [content]="`@use 'ship-ui/styles';`" />
+<app-highlight lang="scss" [content]="`@use '@ship-ui/core/styles';`" />
 
 <p>
   Inside your
@@ -32,7 +32,7 @@
     &quot;src/assets&quot;,
     {
       &quot;glob&quot;: &quot;**/*&quot;,
-      &quot;input&quot;: &quot;./node_modules/ship-ui/assets&quot;,
+      &quot;input&quot;: &quot;./node_modules/@ship-ui/core/assets&quot;,
       &quot;output&quot;: &quot;./ship-ui-assets/&quot;
     }
   ]

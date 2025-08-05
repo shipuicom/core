@@ -16,7 +16,7 @@ const run = async (PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FON
   const startTime = performance.now();
 
   const regex = /<sh-icon[^>]*>\s*((?!{{.*?}})[^<]*?)\s*<\/sh-icon>/g;
-  const regex2 = /sh:([^']+)/g;
+  const regex2 = /shicon:([^']+)/g;
   const iconsFound = new Set(LIB_ICONS);
   const missingIcons = new Set();
 

@@ -24,7 +24,7 @@ const run = async (
   const glob = new Glob('**/*.html');
   const tsGlob = new Glob('**/*.ts');
   const regex = /<sh-icon[^>]*>\s*((?!{{.*?}})[^<]*?)\s*<\/sh-icon>/g;
-  const regex2 = /sh:([^']+)/g;
+  const regex2 = /shicon:([^']+)/g;
   const iconsFound = new Set<string>(LIB_ICONS);
   const missingIcons = new Set<string>();
 
