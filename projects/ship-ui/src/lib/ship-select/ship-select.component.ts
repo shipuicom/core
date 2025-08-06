@@ -573,17 +573,20 @@ export class ShipSelectComponent {
     if (options.length === 0) {
       this.inputValue.set('');
       this.updateInputElValue();
+
       return;
     }
 
-    const inputValue = options
+    const newInputValue = options
       .map((option) => {
         const optionValue = valueKey ? this.#getProperty(option, valueKey) : option;
         return optionValue;
       })
       .join(',');
 
-    this.inputValue.set(inputValue);
+    if (newInputValue === this.inputValue()) return;
+
+    this.inputValue.set(newInputValue);
     this.updateInputElValue();
   }
 

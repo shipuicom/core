@@ -17,4 +17,8 @@ export class BaseSelectComponent {
     { value: 'sushi', label: 'Sushi' },
   ]);
   selected = signal('pizza');
+
+  hello(val: any) {
+    console.log('updated', val);
+  }
 }

@@ -1,7 +1,7 @@
 <sh-select [options]="options()" label="label" value="value">
   <label>Favorite food</label>
 
-  <input type="text" [(ngModel)]="selected" />
+  <input type="text" [(ngModel)]="selected" (ngModelChange)="hello($event)" />
 </sh-select>
 
 <p>Selected: {{ selected() }}</p>
