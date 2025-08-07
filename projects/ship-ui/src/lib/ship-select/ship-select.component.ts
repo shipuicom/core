@@ -62,6 +62,8 @@ import { generateUniqueId } from '../utilities/random-id';
         [class.small]="small()"
         [class.readonly]="readonly() || disabled()">
         <ng-content select="label" ngProjectAs="label" />
+        <ng-content select="[prefix]" ngProjectAs="[prefix]" />
+        <ng-content select="[boxPrefix]" ngProjectAs="[boxPrefix]" />
 
         <div class="input" [class.show-search-text]="_showSearchText" ngProjectAs="input">
           <div class="selected-value" [class.is-selected]="_inputState === 'selected'">
