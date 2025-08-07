@@ -26,9 +26,9 @@ $shipFormFieldShadow: false !default;
   sh-form-field {
     --ff-s: var(--shape-2);
     --ff-bc: var(--base-4);
-    --ff-prefix-bg: var(--base-2);
+    --ff-boxfix-bg: var(--base-2);
     --ff-suffix-bg: transparent;
-    --ff-ic: var(--base-8);
+    --ff-ic: var(--base-11);
     --ff-bg: var(--base-1);
     --ff-f: var(--paragraph-30B);
     --ff-spinner-size: #{p2r(20)};
@@ -103,9 +103,29 @@ $shipFormFieldShadow: false !default;
       align-items: center;
       gap: p2r(4);
       padding: var(--ff-space);
+      padding-right: 0;
       transition: background-color 125ms linear;
-      background-color: var(--ff-prefix-bg);
+      background-color: inherit;
       line-height: p2r(20);
+
+      &:has([boxPrefix]) {
+        padding: var(--ff-space);
+        background-color: var(--ff-boxfix-bg);
+      }
+
+      &:has([boxSuffix]) {
+        padding: var(--ff-space);
+        background-color: var(--ff-boxfix-bg);
+      }
+
+      [boxPrefix],
+      [boxSuffix] {
+        --ff-ic: var(--base-8);
+
+        display: flex;
+        align-items: center;
+        gap: p2r(4);
+      }
 
       &:not(:empty) {
         display: flex;
@@ -113,6 +133,7 @@ $shipFormFieldShadow: false !default;
     }
 
     .suffix {
+      padding: var(--ff-space);
       background-color: var(--ff-suffix-bg);
 
       &:has([textsuffix]) {
@@ -123,7 +144,7 @@ $shipFormFieldShadow: false !default;
     &:has(input.ng-touched.ng-invalid) {
       --ff-ic: var(--error-8);
       --ff-bc: var(--error-8);
-      --ff-prefix-bg: var(--error-2);
+      --ff-boxfix-bg: var(--error-2);
     }
 
     &.autosize {

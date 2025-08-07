@@ -1,9 +1,16 @@
 <sh-form-field>
   <input placeholder="Placeholder no label..." />
-  <ng-container prefix>
+  <div boxPrefix>
     Hello
     <sh-icon>circle</sh-icon>
-  </ng-container>
+  </div>
+
+  <div boxSuffix>hello 123</div>
+</sh-form-field>
+
+<sh-form-field>
+  <input placeholder="Placeholder no label..." />
+  <sh-icon prefix>circle</sh-icon>
 
   <ng-container suffix>hello 123</ng-container>
 </sh-form-field>

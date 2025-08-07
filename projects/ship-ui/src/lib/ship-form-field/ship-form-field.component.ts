@@ -8,6 +8,7 @@ import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, HostLi
 
     <div class="input-wrap">
       <div class="prefix">
+        <ng-content select="[boxPrefix]"></ng-content>
         <ng-content select="[prefix]"></ng-content>
         <ng-content select="[textPrefix]"></ng-content>
       </div>
@@ -18,6 +19,7 @@ import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, HostLi
       <div class="suffix">
         <ng-content select="[textSuffix]"></ng-content>
         <ng-content select="[suffix]"></ng-content>
+        <ng-content select="[boxSuffix]"></ng-content>
       </div>
     </div>
 
