@@ -11,8 +11,11 @@ import { ShipButtonComponent, ShipDialogService } from 'ship-ui';
 export class DataPassingDialogComponent {
   #dialog = inject(ShipDialogService);
 
+  type = input<string>();
+
   openDialog() {
     this.#dialog.open(DataDialogContentComponent, {
+      class: this.type() ?? '',
       data: { message: 'Hello from parent!' },
       closed: (result: any) => {
         alert('Dialog closed with: ' + result);

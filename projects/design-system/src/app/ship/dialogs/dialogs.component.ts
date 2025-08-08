@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ShipButtonGroupComponent } from 'ship-ui';
 import { PreviewerComponent } from '../../previewer/previewer.component';
 import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
 import { BasicDynamicDialogComponent } from './examples/basic-dynamic-dialog/basic-dynamic-dialog.component';
@@ -13,9 +14,13 @@ import { HeaderFooterDialogComponent } from './examples/header-footer-dialog/hea
     BasicDynamicDialogComponent,
     HeaderFooterDialogComponent,
     DataPassingDialogComponent,
+
+    ShipButtonGroupComponent,
   ],
   templateUrl: './dialogs.component.html',
   styleUrl: './dialogs.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class DialogsComponent {}
+export default class DialogsComponent {
+  type = signal('');
+}

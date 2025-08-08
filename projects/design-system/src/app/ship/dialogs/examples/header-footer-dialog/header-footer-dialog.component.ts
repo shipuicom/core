@@ -1,4 +1,4 @@
-import { Component, inject, output, signal } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
 import { ShipButtonComponent, ShipDialogService } from 'ship-ui';
 
 @Component({
@@ -11,8 +11,12 @@ import { ShipButtonComponent, ShipDialogService } from 'ship-ui';
 export class HeaderFooterDialogComponent {
   #dialog = inject(ShipDialogService);
 
+  type = input<string>();
+
   openDialog() {
-    this.#dialog.open(HeaderFooterDialogContentComponent);
+    this.#dialog.open(HeaderFooterDialogContentComponent, {
+      class: this.type() ?? '',
+    });
   }
 }
 

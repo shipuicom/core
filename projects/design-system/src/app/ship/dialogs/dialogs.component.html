@@ -11,10 +11,23 @@
       .
     </p>
   </section>
+
+  <section>
+    <h4>variants</h4>
+    <p>
+      Dialog have two variants:
+      <code>default</code>
+      and
+      <code>type-b</code>
+      . .
+    </p>
+  </section>
+
   <section>
     <h4>Data Passing</h4>
     <p>You can pass data to the dialog content component and handle the close event with a callback.</p>
   </section>
+
   <section>
     <h4>Header/Content/Footer</h4>
     <p>
@@ -29,22 +42,29 @@
   </section>
 </app-property-viewer>
 
+<div class="controls">
+  <sh-button-group>
+    <button [class.active]="type() === 'default'" (click)="type.set('default')">Default</button>
+    <button [class.active]="type() === 'type-b'" (click)="type.set('type-b')">Type B</button>
+  </sh-button-group>
+</div>
+
 <div class="content">
   <h3>Examples</h3>
 
   <app-previewer path="/dialogs/examples/basic-dynamic-dialog/basic-dynamic-dialog.component" title="Basic Dialog">
-    <basic-dynamic-dialog class="example" />
+    <basic-dynamic-dialog class="example" [type]="type()" />
   </app-previewer>
 
   <app-previewer
     path="/dialogs/examples/header-footer-dialog/header-footer-dialog.component"
     title="Header, Content & Footer Dialog">
-    <header-footer-dialog class="example" />
+    <header-footer-dialog class="example" [type]="type()" />
   </app-previewer>
 
   <app-previewer
     path="/dialogs/examples/data-passing-dialog/data-passing-dialog.component"
     title="Data Passing & Close Event">
-    <data-passing-dialog class="example" />
+    <data-passing-dialog class="example" [type]="type()" />
   </app-previewer>
 </div>

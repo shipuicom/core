@@ -13,7 +13,7 @@ import {
 import { SHIP_CONFIG } from '../utilities/ship-config';
 
 export type ShipDialogOptions = {
-  class?: 'default' | 'type-b';
+  class?: 'default' | 'type-b' | string;
   width?: string;
   maxWidth?: string;
   height?: string;

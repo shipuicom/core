@@ -7,10 +7,12 @@ $shipDialog: true !default;
     --dialog-p: #{p2r(16)};
     --dialog-g: #{p2r(8)};
     --dialog-bg: var(--base-1);
+    --dialog-s: var(--shape-2);
+    --dialog-inner-s: var(--shape-2);
 
     border: 1px solid var(--base-4);
     background: transparent;
-    border-radius: var(--shape-2);
+    border-radius: var(--dialog-s);
     box-shadow: var(--box-shadow-40);
     color: var(--base-8);
     font: var(--paragraph-30);
@@ -19,7 +21,10 @@ $shipDialog: true !default;
     z-index: 0;
 
     &.type-b {
-      background: var(--base-2);
+      --dialog-s: #{p2r(26)};
+      --dialog-inner-s: #{p2r(20)};
+
+      background: var(--base-3);
       padding: p2r(8);
       outline: 1px solid var(--base-4);
       outline-offset: -1px;
@@ -38,7 +43,7 @@ $shipDialog: true !default;
 
     .content {
       position: relative;
-      border-radius: var(--shape-2);
+      border-radius: var(--dialog-inner-s);
       background-color: var(--dialog-bg);
       z-index: 2;
       max-width: initial;
