@@ -206,6 +206,7 @@ export class ShipSelectComponent {
   options = model<unknown[]>([]);
   selectedOptions = model<unknown[]>([]);
   cleared = output<void>();
+  onAddNewFreeTextOption = output<string>();
 
   computedFreeTextOption = computed(() => {
     const inputValue = this.inputValue();
@@ -676,6 +677,8 @@ export class ShipSelectComponent {
         const index = options.findIndex((option) => this.getValue(option) === newOptionValue);
 
         if (index > -1) return options;
+
+        this.onAddNewFreeTextOption.emit(newOptionValue as string);
 
         return [newOption, ...options];
       });
