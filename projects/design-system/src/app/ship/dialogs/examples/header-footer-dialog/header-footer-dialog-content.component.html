@@ -1,5 +1,6 @@
 <header header [class.sticky]="stickyHeader()">
   <h3>Dialog Header</h3>
+  <p>hello im a long description</p>
   <button shButton class="outlined" (click)="stickyHeader.set(!stickyHeader())">
     {{ stickyHeader() ? 'Sticky' : 'Unsticky' }} Header
   </button>

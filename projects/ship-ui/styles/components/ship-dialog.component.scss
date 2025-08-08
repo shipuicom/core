@@ -20,6 +20,10 @@ $shipDialog: true !default;
     margin: auto;
     z-index: 0;
 
+    &:focus-visible {
+      outline: none;
+    }
+
     &.type-b {
       --dialog-s: #{p2r(26)};
       --dialog-inner-s: #{p2r(20)};
@@ -82,11 +86,33 @@ $shipDialog: true !default;
     }
 
     [header] {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: grid;
+      grid-template-areas:
+        'title actions'
+        'description actions';
+      grid-template-columns: 1fr min-content;
       padding: var(--dialog-p);
       gap: var(--dialog-g);
+
+      h1,
+      h2,
+      h3,
+      h4,
+      [title] {
+        grid-area: title;
+        font: var(--title-20);
+      }
+
+      p,
+      [description] {
+        grid-area: description;
+        font: var(--paragraph-30);
+      }
+
+      button,
+      [actions] {
+        grid-area: actions;
+      }
 
       &.sticky {
         background-color: var(--dialog-bg);
