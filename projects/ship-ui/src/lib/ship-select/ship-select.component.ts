@@ -22,6 +22,8 @@ import { ShipPopoverComponent } from '../ship-popover/ship-popover.component';
 import { ShipSpinnerComponent } from '../ship-spinner/ship-spinner.component';
 import { generateUniqueId } from '../utilities/random-id';
 
+type ValidateFreeText = (value: string) => boolean;
+
 @Component({
   selector: 'sh-select',
   imports: [
@@ -36,6 +38,7 @@ import { generateUniqueId } from '../utilities/random-id';
   template: `
     @let _placeholderTemplate = placeholderTemplate();
     @let _optionTemplate = optionTemplate();
+    @let _freeTextOptionTemplate = freeTextOptionTemplate();
     @let _selectedOptionTemplate = selectedOptionTemplate();
     @let _inlineTemplate = inlineTemplate();
     @let _selectedOptions = selectedOptions();
@@ -127,6 +130,31 @@ import { generateUniqueId } from '../utilities/random-id';
       </sh-form-field>
 
       <div class="ship-options" #optionsWrap id="optionsWrapId" role="listbox">
+        @if (asFreeText()) {
+          @let freeTextOption = computedFreeTextOption();
+          @let freeTextOptionValue = getValue(freeTextOption);
+
+          @if ($any(freeTextOptionValue).length > 0) {
+            <li
+              (click)="toggleOptionByIndex(-1)"
+              class="option"
+              [id]="this.getLabelAsSlug(freeTextOption)"
+              [attr.aria-selected]="isSelected(-1)"
+              [class.selected]="isSelected(-1)"
+              [class.focused]="-1 === focusedOptionIndex()">
+              @if (_freeTextOptionTemplate) {
+                <ng-container
+                  *ngTemplateOutlet="_freeTextOptionTemplate; context: { $implicit: { option: freeTextOption } }" />
+              } @else if (_listOptionTemplate) {
+                <ng-container
+                  *ngTemplateOutlet="_listOptionTemplate; context: { $implicit: { option: freeTextOption } }" />
+              } @else {
+                {{ freeTextOptionValue }}
+              }
+            </li>
+          }
+        }
+
         @for (option of filteredOptions(); track $index) {
           <li
             (click)="toggleOptionByIndex($index)"
@@ -160,6 +188,7 @@ export class ShipSelectComponent {
   value = input<string>();
   label = input<string>();
   asFreeText = input(false);
+  validateFreeText = input<ValidateFreeText>();
   placeholder = input<string>();
   readonly = model(false);
   disabled = model(false);
@@ -171,11 +200,24 @@ export class ShipSelectComponent {
   optionTemplate = input<TemplateRef<unknown> | null>(null);
   selectedOptionTemplate = input<TemplateRef<unknown> | null>(null);
   placeholderTemplate = input<TemplateRef<unknown> | null>(null);
+  freeTextOptionTemplate = input<TemplateRef<unknown> | null>(null);
   isOpen = model(false);
   isLoading = model(false);
   options = model<unknown[]>([]);
   selectedOptions = model<unknown[]>([]);
   cleared = output<void>();
+
+  computedFreeTextOption = computed(() => {
+    const inputValue = this.inputValue();
+    const valueKey = this.value();
+    const newOption: Record<string, any> | string = valueKey ? {} : inputValue;
+
+    if (valueKey && typeof newOption === 'object') {
+      newOption[valueKey] = inputValue;
+    }
+
+    return newOption;
+  });
 
   #previousSelectedOptions = signal<unknown[] | null>(null);
   inlineTemplate = contentChild<TemplateRef<unknown>>(TemplateRef);
@@ -391,6 +433,8 @@ export class ShipSelectComponent {
       }
 
       const input = this.inputRefEl();
+      const asFreeText = this.asFreeText();
+      const baseIndex = asFreeText ? -1 : 0;
 
       if (!input) return;
 
@@ -416,7 +460,7 @@ export class ShipSelectComponent {
 
             const newIndex = (this.focusedOptionIndex() as number) + 1;
 
-            this.focusedOptionIndex.set(newIndex > this.filteredOptions().length - 1 ? 0 : newIndex);
+            this.focusedOptionIndex.set(newIndex > this.filteredOptions().length - 1 ? baseIndex : newIndex);
           }
 
           if (e.key === 'ArrowUp') {
@@ -424,7 +468,7 @@ export class ShipSelectComponent {
 
             const newIndex = (this.focusedOptionIndex() as number) - 1;
 
-            this.focusedOptionIndex.set(newIndex < 0 ? this.filteredOptions().length - 1 : newIndex);
+            this.focusedOptionIndex.set(newIndex < baseIndex ? this.filteredOptions().length - 1 : newIndex);
           }
         },
         {
@@ -592,6 +636,14 @@ export class ShipSelectComponent {
     this.updateInputElValue();
   }
 
+  getValue(option: unknown) {
+    const valueKey = this.value();
+
+    if (!valueKey) return option;
+
+    return this.#getProperty(option, valueKey);
+  }
+
   getLabel(option: unknown) {
     const label = this.label();
 
@@ -609,9 +661,28 @@ export class ShipSelectComponent {
   }
 
   toggleOptionByIndex(optionIndex: number, event?: MouseEvent) {
-    const option = this.filteredOptions()[optionIndex];
+    let option = this.filteredOptions()[optionIndex];
 
-    if ((this.asFreeText() && optionIndex === -1) || !option) {
+    if (this.asFreeText() && optionIndex === -1) {
+      const newOption = this.computedFreeTextOption();
+      const newOptionValue = this.getValue(newOption);
+      const validateFreeTextFunc = this.validateFreeText() ?? ((val: string) => true);
+
+      const isValid = validateFreeTextFunc(newOptionValue as string);
+
+      if (!isValid) return;
+
+      this.options.update((options) => {
+        const index = options.findIndex((option) => this.getValue(option) === newOptionValue);
+
+        if (index > -1) return options;
+
+        return [newOption, ...options];
+      });
+
+      optionIndex = 0;
+      option = newOption;
+    } else if (!option) {
       this.close();
       return;
     }

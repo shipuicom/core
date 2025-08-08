@@ -1,4 +1,11 @@
-<sh-select [options]="options()" label="label" value="value" [selectMultiple]="true" [asText]="true">
+<sh-select
+  [options]="options()"
+  label="value"
+  value="value"
+  [inlineSearch]="true"
+  [selectMultiple]="true"
+  [asText]="true"
+  [asFreeText]="true">
   <label>Favorite foods (multiple)</label>
 
   <input type="text" [(ngModel)]="selected" />
