@@ -85,7 +85,8 @@ type ValidateFreeText = (value: string) => boolean;
                       class="small"
                       (click)="removeSelectedOptionByIndex($event, $index)">
                       @if (_selOptionTemplate) {
-                        <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
+                        <ng-container
+                          *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption, last: $last }" />
                       } @else {
                         {{ getLabel(selectedOption) }}
                       }
@@ -95,7 +96,8 @@ type ValidateFreeText = (value: string) => boolean;
                   } @else {
                     @if (!_showSearchText) {
                       @if (_selOptionTemplate) {
-                        <ng-container *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption }" />
+                        <ng-container
+                          *ngTemplateOutlet="_selOptionTemplate; context: { $implicit: selectedOption, last: $last }" />
                       } @else {
                         {{ $last ? getLabel(selectedOption) : getLabel(selectedOption) + ',' }}
                       }
