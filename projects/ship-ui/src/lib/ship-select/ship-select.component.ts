@@ -14,6 +14,7 @@ import {
   TemplateRef,
   viewChild,
 } from '@angular/core';
+import { ShipDividerComponent } from 'ship-ui';
 import { ShipCheckboxComponent } from '../ship-checkbox/ship-checkbox.component';
 import { ShipChipComponent } from '../ship-chip/ship-chip.component';
 import { ShipFormFieldComponent } from '../ship-form-field/ship-form-field.component';
@@ -21,6 +22,8 @@ import { ShipIconComponent } from '../ship-icon/ship-icon.component';
 import { ShipPopoverComponent } from '../ship-popover/ship-popover.component';
 import { ShipSpinnerComponent } from '../ship-spinner/ship-spinner.component';
 import { generateUniqueId } from '../utilities/random-id';
+
+// TODO build in live validation response for free text validation
 
 type ValidateFreeText = (value: string) => boolean;
 
@@ -34,6 +37,7 @@ type ValidateFreeText = (value: string) => boolean;
     ShipCheckboxComponent,
     ShipSpinnerComponent,
     ShipChipComponent,
+    ShipDividerComponent,
   ],
   template: `
     @let _placeholderTemplate = placeholderTemplate();
@@ -135,6 +139,10 @@ type ValidateFreeText = (value: string) => boolean;
           @let freeTextOptionValue = getValue(freeTextOption);
 
           @if ($any(freeTextOptionValue).length > 0) {
+            @if (freeTextTitle()) {
+              <p title>{{ freeTextTitle() }}</p>
+            }
+
             <li
               (click)="toggleOptionByIndex(-1)"
               class="option"
@@ -152,7 +160,15 @@ type ValidateFreeText = (value: string) => boolean;
                 {{ freeTextOptionValue }}
               }
             </li>
+
+            @if (freeTextTitle() && filteredOptions().length > 0) {
+              <sh-divider />
+            }
           }
+        }
+
+        @if (optionTitle() && filteredOptions().length > 0) {
+          <p title>{{ optionTitle() }}</p>
         }
 
         @for (option of filteredOptions(); track $index) {
@@ -188,6 +204,9 @@ export class ShipSelectComponent {
   value = input<string>();
   label = input<string>();
   asFreeText = input(false);
+  optionTitle = input<string | null>(null);
+  freeTextTitle = input<string | null>(null);
+  freeTextPlaceholder = input<string | null>('Type to create a new option');
   validateFreeText = input<ValidateFreeText>();
   placeholder = input<string>();
   readonly = model(false);
@@ -450,7 +469,7 @@ export class ShipSelectComponent {
             this.close();
           }
 
-          if (e.key === 'Enter' || e.key === ' ') {
+          if (e.key === 'Enter') {
             e.preventDefault();
 
             this.toggleOptionByIndex(this.focusedOptionIndex());

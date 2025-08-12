@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { ShipButtonComponent, ShipMenuComponent } from 'ship-ui';
+import { ShipButtonComponent, ShipCheckboxComponent, ShipMenuComponent } from 'ship-ui';
 
 @Component({
   selector: 'sh-toggle-select-menu-example',
   templateUrl: './toggle-select-menu-example.component.html',
   styleUrls: ['./toggle-select-menu-example.component.scss'],
-  imports: [ShipMenuComponent, ShipButtonComponent],
+  imports: [ShipMenuComponent, ShipButtonComponent, ShipCheckboxComponent],
   standalone: true,
 })
 export class ToggleSelectMenuExampleComponent {
@@ -16,7 +16,9 @@ export class ToggleSelectMenuExampleComponent {
   ];
   selected: Set<string> = new Set();
 
-  toggle(item: any) {
+  toggle($event: MouseEvent, item: any) {
+    $event.stopPropagation();
+
     if (this.selected.has(item.value)) {
       this.selected.delete(item.value);
     } else {

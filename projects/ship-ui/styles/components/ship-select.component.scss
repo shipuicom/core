@@ -89,6 +89,14 @@ $shipSelect: false !default;
     overflow-y: auto;
     overflow-x: hidden;
 
+    p[title] {
+      padding: p2r(4 16);
+    }
+
+    sh-divider {
+      margin: p2r(8 0);
+    }
+
     .option {
       display: flex;
       justify-content: flex-start;
@@ -117,6 +125,10 @@ $shipSelect: false !default;
 
       sh-icon {
         font-size: p2r(16);
+      }
+
+      span.placeholder {
+        color: var(--base-7);
       }
 
       &.active,

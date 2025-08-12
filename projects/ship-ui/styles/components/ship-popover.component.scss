@@ -46,6 +46,7 @@ $shipPopover: true !default;
       border-radius: var(--shape-2);
       font: var(--paragraph-30);
       color: var(--base-8);
+      padding: 0;
 
       @supports (anchor-name: --anchor) {
         inset: unset;

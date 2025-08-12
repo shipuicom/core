@@ -2,9 +2,10 @@
   <button shButton class="outlined">Open toggle select menu</button>
   <ng-container menu>
     @for (item of menuItems; track item.value) {
-      <button (click)="toggle(item)" [class.selected]="isSelected(item)">
-        <span class="checkbox">{{ isSelected(item) ? '☑' : '☐' }}</span>
-        {{ item.label }}
+      <button (click)="toggle($event, item)">
+        <sh-checkbox [class.active]="isSelected(item)" class="primary raised">
+          {{ item.label }}
+        </sh-checkbox>
       </button>
     }
   </ng-container>

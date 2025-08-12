@@ -119,6 +119,7 @@ $shipMenu: true !default;
       max-height: var(--menu-mh);
       overflow: auto;
 
+      sh-menu:first-child,
       button:first-child {
         margin-top: p2r(8);
       }
