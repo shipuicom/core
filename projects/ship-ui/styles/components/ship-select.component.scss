@@ -5,6 +5,8 @@ $shipSelect: false !default;
 @if $shipSelect == true {
   sh-select {
     --miw: #{p2r(210)};
+    --select-option-mih: min-content;
+    --select-options-mh: #{p2r(180)};
 
     display: flex;
 
@@ -85,7 +87,7 @@ $shipSelect: false !default;
     padding: p2r(8 0);
     display: flex;
     flex-direction: column;
-    max-height: p2r(180);
+    max-height: var(--select-options-mh);
     overflow-y: auto;
     overflow-x: hidden;
 
@@ -101,7 +103,7 @@ $shipSelect: false !default;
       display: flex;
       justify-content: flex-start;
       align-items: center;
-      min-height: p2r(32);
+      min-height: var(--select-option-mih);
       margin: p2r(0 8);
       padding: p2r(0 8);
       gap: p2r(8);

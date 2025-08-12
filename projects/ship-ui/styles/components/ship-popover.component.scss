@@ -63,5 +63,14 @@ $shipPopover: true !default;
           flip-block flip-inline;
       }
     }
+
+    &.full .popover {
+      width: auto;
+
+      @supports (anchor-name: --anchor) {
+        left: anchor(left);
+        right: anchor(right);
+      }
+    }
   }
 }
