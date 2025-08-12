@@ -14,9 +14,9 @@ import {
   TemplateRef,
   viewChild,
 } from '@angular/core';
-import { ShipDividerComponent } from 'ship-ui';
 import { ShipCheckboxComponent } from '../ship-checkbox/ship-checkbox.component';
 import { ShipChipComponent } from '../ship-chip/ship-chip.component';
+import { ShipDividerComponent } from '../ship-divider/ship-divider.component';
 import { ShipFormFieldComponent } from '../ship-form-field/ship-form-field.component';
 import { ShipIconComponent } from '../ship-icon/ship-icon.component';
 import { ShipPopoverComponent } from '../ship-popover/ship-popover.component';
