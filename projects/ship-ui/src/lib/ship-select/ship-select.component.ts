@@ -151,11 +151,9 @@ type ValidateFreeText = (value: string) => boolean;
               [class.selected]="isSelected(-1)"
               [class.focused]="-1 === focusedOptionIndex()">
               @if (_freeTextOptionTemplate) {
-                <ng-container
-                  *ngTemplateOutlet="_freeTextOptionTemplate; context: { $implicit: { option: freeTextOption } }" />
+                <ng-container *ngTemplateOutlet="_freeTextOptionTemplate; context: { $implicit: freeTextOption }" />
               } @else if (_listOptionTemplate) {
-                <ng-container
-                  *ngTemplateOutlet="_listOptionTemplate; context: { $implicit: { option: freeTextOption } }" />
+                <ng-container *ngTemplateOutlet="_listOptionTemplate; context: { $implicit: freeTextOption }" />
               } @else {
                 {{ freeTextOptionValue }}
               }
