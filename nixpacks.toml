@@ -1,0 +1,2 @@
+[phases.setup]
+nixpkgs = ["pkgs.nodejs_24"]
