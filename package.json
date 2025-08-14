@@ -8,7 +8,7 @@
     "url": "git+https://github.com/shipuicom/core"
   },
   "engines": {
-    "node": "lts/*"
+    "node": "nodejs-lts"
   },
   "contributors": [
     {
