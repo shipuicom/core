@@ -1,2 +1,9 @@
 [phases.setup]
-nixpkgs = ["pkgs.nodejs_24"]
+nixPkgs = ['bun']
+aptPkgs = ['build-essential']
+
+[phases.install]
+cmds = ["bun install"] # changed
+
+[phases.build]
+cmds = ["bun run build"] # changed
