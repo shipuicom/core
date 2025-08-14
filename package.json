@@ -8,7 +8,7 @@
     "url": "git+https://github.com/shipuicom/core"
   },
   "engines": {
-    "node": "23"
+    "node": "22"
   },
   "contributors": [
     {
