@@ -6,6 +6,7 @@ buildImage = 'ghcr.io/railwayapp/nixpacks:latest'
     'nodejs_24',
     'bun',
   ]
+  
 [phases.install]
   cmds = ["npm install"] # changed
 
