@@ -1,4 +1,9 @@
-<sh-select [options]="options()" label="name" value="id" [isClearable]="false">
+<sh-select
+  [options]="options()"
+  label="name"
+  value="id"
+  [isClearable]="false"
+  (selectedOptionsChange)="newSelectedOptions($event)">
   <label>Favorite food (object options, not clearable)</label>
   <input type="text" [(ngModel)]="selected" />
 </sh-select>

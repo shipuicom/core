@@ -22,4 +22,7 @@ export class ObjectSelectComponent {
   selectedObject = computed(() => {
     return this.options().find((opt) => opt.id === this.selected());
   });
+  newSelectedOptions($event?: any) {
+    console.log('new selected options', $event);
+  }
 }
