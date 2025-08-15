@@ -51,7 +51,7 @@ type ValidateFreeText = (value: string) => boolean;
     @let _selOptionTemplate = _selectedOptionTemplate || _optionTemplate || _inlineTemplate;
     @let _listOptionTemplate = _optionTemplate || _inlineTemplate;
     @let _asChips = !asText() && selectMultiple();
-    @let _showSearchText = isOpen() && hasSearch() && (_asChips || inputValue().length > 0);
+    @let _showSearchText = isOpen() && hasSearch() && (_asChips || inputValue().length > -1);
 
     <sh-popover
       #formFieldWrapper
@@ -397,18 +397,16 @@ export class ShipSelectComponent {
       this.open();
     });
 
-    if (this.hasSearch()) {
-      input.addEventListener('input', (e: any) => {
-        const newInputValue = e.target.value;
-        const inputValue = this.inputValue();
+    input.addEventListener('input', (e: any) => {
+      const newInputValue = e.target.value;
+      const inputValue = this.inputValue();
 
-        if (newInputValue === inputValue) return;
+      if (newInputValue === inputValue) return;
 
-        this.focusedOptionIndex.set(this.asFreeText() ? -1 : 0);
-        this.inputValue.set(newInputValue);
-        this.updateInputElValue();
-      });
-    }
+      this.focusedOptionIndex.set(this.asFreeText() ? -1 : 0);
+      this.inputValue.set(newInputValue);
+      this.updateInputElValue();
+    });
 
     input.addEventListener('inputValueChanged', (event: any) => {
       const newInputValue = event.detail.value;
@@ -472,7 +470,7 @@ export class ShipSelectComponent {
           if (e.key === 'Enter') {
             e.preventDefault();
 
-            this.toggleOptionByIndex(this.focusedOptionIndex());
+            this.toggleOptionByIndex(this.focusedOptionIndex(), undefined, true);
           }
 
           if (e.key === 'ArrowDown') {
@@ -680,7 +678,7 @@ export class ShipSelectComponent {
     return label.replaceAll(' ', '-');
   }
 
-  toggleOptionByIndex(optionIndex: number, event?: MouseEvent) {
+  toggleOptionByIndex(optionIndex: number, event?: MouseEvent, enterKey = false) {
     let option = this.filteredOptions()[optionIndex];
 
     if (this.asFreeText() && optionIndex === -1) {
