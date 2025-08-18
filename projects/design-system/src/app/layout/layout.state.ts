@@ -1,5 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Injectable, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
+import { ShipSidenavType } from 'ship-ui';
 import { WINDOW } from '../core/providers/window';
 import { LOCALSTORAGE } from '../core/services/localstorage.token';
 
@@ -23,11 +24,13 @@ export class LayoutState {
 
   currentWidth = signal(this.#window.innerWidth);
   isNavOpen = signal(true);
+  sidenavType = signal<ShipSidenavType>('overlay');
 
   isMobile = computed(() => this.currentWidth() < 1024);
   isMobileEffect = effect(() => {
     console.log(this.isMobile());
     this.isNavOpen.set(!this.isMobile());
+    this.sidenavType.set(this.isMobile() ? 'overlay' : 'simple');
   });
 
   constructor() {

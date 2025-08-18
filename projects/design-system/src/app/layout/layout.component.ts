@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
   ShipButtonComponent,
   ShipIconComponent,
   ShipListComponent,
   ShipSidenavComponent,
-  ShipSidenavType,
 } from '../../../../ship-ui/src/public-api';
 import { LayoutState } from './layout.state';
 
@@ -27,7 +26,7 @@ import { LayoutState } from './layout.state';
 export default class LayoutComponent {
   #layoutState = inject(LayoutState);
 
-  sidenavType = signal<ShipSidenavType>('overlay');
+  sidenavType = this.#layoutState.sidenavType;
   isNavOpen = this.#layoutState.isNavOpen;
   isDarkMode = this.#layoutState.isDarkMode;
   isMobile = this.#layoutState.isMobile;
@@ -38,10 +37,5 @@ export default class LayoutComponent {
 
   toggleNav() {
     this.#layoutState.toggleNav();
-  }
-
-  toggleSidenavType(type: ShipSidenavType) {
-    this.sidenavType.set(type);
-    this.#layoutState.closeSidenav();
   }
 }
