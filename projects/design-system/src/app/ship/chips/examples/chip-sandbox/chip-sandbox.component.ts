@@ -1,4 +1,3 @@
-import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import {
   ShipButtonGroupComponent,
@@ -16,7 +15,6 @@ import {
     ShipButtonGroupComponent,
     ShipToggleComponent,
     ShipColorPickerComponent,
-    JsonPipe,
   ],
   templateUrl: './chip-sandbox.component.html',
   styleUrl: './chip-sandbox.component.scss',

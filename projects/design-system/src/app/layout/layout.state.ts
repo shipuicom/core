@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Injectable, PLATFORM_ID, effect, inject, signal } from '@angular/core';
+import { Injectable, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
 import { WINDOW } from '../core/providers/window';
 import { LOCALSTORAGE } from '../core/services/localstorage.token';
 
@@ -18,11 +18,17 @@ export class LayoutState {
   #platformId = inject(PLATFORM_ID);
   #storedDarkMode = this.#ls.getItemParsed<boolean>('darkTheme', true);
   #isDarkMode = signal(false);
-  #isMobile = signal(this.#window?.innerWidth <= 768);
 
   isDarkMode = this.#isDarkMode.asReadonly();
-  isMobile = this.#isMobile.asReadonly();
+
+  currentWidth = signal(this.#window.innerWidth);
   isNavOpen = signal(true);
+
+  isMobile = computed(() => this.currentWidth() < 1024);
+  isMobileEffect = effect(() => {
+    console.log(this.isMobile());
+    this.isNavOpen.set(!this.isMobile());
+  });
 
   constructor() {
     if (isPlatformBrowser(this.#platformId)) {
@@ -43,7 +49,7 @@ export class LayoutState {
       });
 
       this.#window?.addEventListener('resize', () => {
-        this.#isMobile.set(this.#window?.innerWidth <= 768);
+        this.currentWidth.set(this.#window.innerWidth);
       });
     }
   }

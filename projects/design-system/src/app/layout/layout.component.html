@@ -1,9 +1,12 @@
-<sh-sidenav [class]="sidenavType()" [(isOpen)]="isNavOpen">
-  <ng-container sidenav-closed-topbar>
-    <button shButton class="outlined primary" (click)="toggleNav()">
-      <sh-icon>compass</sh-icon>
-    </button>
-  </ng-container>
+<sh-sidenav [class]="sidenavType()" [(isOpen)]="isNavOpen" [disableDrag]="true">
+  @if (isMobile()) {
+    <ng-container sidenav-closed-topbar>
+      <button shButton class="simple primary toggle-sidebar" (click)="toggleNav()">
+        <sh-icon class="cross" [class.hidden]="!isNavOpen()">x-bold</sh-icon>
+        <sh-icon class="burger" [class.hidden]="isNavOpen()">list-bold</sh-icon>
+      </button>
+    </ng-container>
+  }
 
   <div sidenav>
     <header>
@@ -54,7 +57,7 @@
         </svg> -->
       </div>
 
-      <button shButton class="icon small" (click)="toggleBodyClass()">
+      <button shButton class="small" (click)="toggleBodyClass()">
         @if (isDarkMode()) {
           <sh-icon>sun</sh-icon>
         } @else {

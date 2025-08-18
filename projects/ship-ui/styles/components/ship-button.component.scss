@@ -54,7 +54,8 @@ $shipButtonShadow: false !default;
       transition: rotate 125ms ease-in-out;
     }
 
-    &:has(sh-icon:only-child) {
+    &:has(sh-icon:only-child),
+    &:has(sh-icon:first-child + sh-icon:last-child) {
       padding: p2r(0 9);
     }
 
@@ -98,6 +99,11 @@ $shipButtonShadow: false !default;
 
       sh-icon {
         font-size: p2r(16);
+      }
+
+      &:has(sh-icon:only-child),
+      &:has(sh-icon:first-child + sh-icon:last-child) {
+        padding: p2r(0 7);
       }
     }
 

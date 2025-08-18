@@ -50,7 +50,7 @@ export function watchHostClass(className: string): WritableSignal<boolean> {
 @Component({
   selector: 'sh-sidenav',
   template: `
-    @if (isOverlay()) {
+    @if (isOverlay() && !disableDrag()) {
       <div #dragImageElement class="drag-image"></div>
     }
 
@@ -62,7 +62,7 @@ export function watchHostClass(className: string): WritableSignal<boolean> {
       <ng-content select="[sidenav]"></ng-content>
     </div>
 
-    <div class="main-wrap" [style.transform]="draggingStyle()">
+    <div class="main-wrap" [style.transform]="!disableDrag() && draggingStyle()">
       @if (isOverlay() && !disableDrag()) {
         <div
           class="dragable"
@@ -140,7 +140,7 @@ export class ShipSidenavComponent {
   });
 
   draggingStyle = computed(() => {
-    if (!this.isOverlay()) return null;
+    if (!this.isOverlay() || this.disableDrag()) return null;
 
     if (this.isDragging()) {
       return `translateX(${this.dragActualPositionX()}px)`;
@@ -150,7 +150,7 @@ export class ShipSidenavComponent {
   });
 
   draggingEffect = effect(() => {
-    if (typeof document === 'undefined') return;
+    if (typeof document === 'undefined' || this.disableDrag()) return;
 
     if (this.isDragging()) {
       document.body.classList.add('dragging');

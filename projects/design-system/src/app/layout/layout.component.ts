@@ -27,10 +27,10 @@ import { LayoutState } from './layout.state';
 export default class LayoutComponent {
   #layoutState = inject(LayoutState);
 
-  sidenavType = signal<ShipSidenavType>('simple');
-  isOpen = signal(false);
+  sidenavType = signal<ShipSidenavType>('overlay');
   isNavOpen = this.#layoutState.isNavOpen;
   isDarkMode = this.#layoutState.isDarkMode;
+  isMobile = this.#layoutState.isMobile;
 
   toggleBodyClass() {
     this.#layoutState.toggleBodyClass();

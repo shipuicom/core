@@ -15,6 +15,25 @@ header {
   gap: p2r(12);
 }
 
+.toggle-sidebar {
+  position: relative;
+
+  .cross,
+  .burger {
+    opacity: 1;
+    transition: opacity 124ms linear;
+
+    &.hidden {
+      opacity: 0;
+    }
+  }
+
+  .burger {
+    position: absolute;
+    inset: auto;
+  }
+}
+
 .logo {
   display: flex;
   gap: p2r(12);
