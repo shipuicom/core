@@ -20,4 +20,10 @@ export class InlineSearchSelectComponent {
     { value: 'sandwich', label: 'Sandwich' },
   ]);
   selected = signal('pizza');
+
+  ngOnInit(): void {
+    setTimeout(() => {
+      this.selected.set('burger');
+    }, 1000);
+  }
 }
