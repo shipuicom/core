@@ -50,7 +50,8 @@ const run = async (PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FON
       const thin = icon.endsWith('-thin');
       const light = icon.endsWith('-light');
       const fill = icon.endsWith('-fill');
-      const regular = !bold && !thin && !light && !fill;
+      const duotone = icon.endsWith('-duotone');
+      const regular = !bold && !thin && !light && !fill && !duotone;
       const glyph = GLYPH_MAP[icon];
 
       if (!glyph) {
@@ -78,6 +79,10 @@ const run = async (PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FON
         acc['regular'].push([icon, '']);
         acc['regular'].push(glyph);
       }
+      if (duotone) {
+        acc['duotone'].push([icon, '']);
+        acc['duotone'].push(glyph);
+      }
 
       return acc;
     },
@@ -87,6 +92,7 @@ const run = async (PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FON
       light: [],
       fill: [],
       regular: [],
+      duotone: [],
       text: [],
     }
   );
@@ -239,7 +245,7 @@ const textMateSnippet = async (GLYPH_MAP) => {
   const iconsSnippetContent = `
   {
     "Phosphor icons": {
-      "prefix": ["pp:icon"],
+      "prefix": ["shicon:"],
       "scope": "javascript,typescript,html",
       "body": "\${1|${Object.keys(GLYPH_MAP).join(',')}|}",
       "description": "Add a phosphor icon"
@@ -285,9 +291,11 @@ export const main = async (values) => {
         fontVariant,
         'selection.json'
       );
-      const selectionJson = JSON.parse(await fs.readFile(selectionJsonFullPath, 'utf8'));
 
-      return getUnicodeObject(selectionJson.icons);
+      const selectionJson = JSON.parse(await fs.readFile(selectionJsonFullPath, 'utf8'));
+      const unicodeObj = getUnicodeObject(selectionJson.icons, fontVariant === 'duotone');
+
+      return unicodeObj;
     })
   );
 

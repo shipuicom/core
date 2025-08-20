@@ -12,7 +12,7 @@ export function createNameCodeObject(jsonData) {
   return nameCodeObject;
 }
 
-export const getUnicodeObject = (jsonData) => {
+export const getUnicodeObject = (jsonData, isDuotone) => {
   const nameCodeObject = {};
 
   for (let i = 0; i < jsonData.length; i++) {
@@ -24,7 +24,9 @@ export const getUnicodeObject = (jsonData) => {
       console.warn(`Invalid codepoint 0x${hexCode} for ligature ${item.properties.ligatures}`);
       continue;
     }
-    nameCodeObject[item.properties.ligatures] = [glyph, 'U+' + hexCode];
+
+    const glyphName = isDuotone ? item.properties.name : item.properties.ligatures;
+    nameCodeObject[glyphName] = [glyph, 'U+' + hexCode];
   }
 
   return nameCodeObject;

@@ -60,7 +60,8 @@ const run = async (
       const thin = icon.endsWith('-thin');
       const light = icon.endsWith('-light');
       const fill = icon.endsWith('-fill');
-      const regular = !bold && !thin && !light && !fill;
+      const duotone = icon.endsWith('-duotone');
+      const regular = !bold && !thin && !light && !fill && !duotone;
       const glyph = GLYPH_MAP[icon];
 
       if (!glyph) {
@@ -88,6 +89,10 @@ const run = async (
         acc['regular'].push([icon, '']);
         acc['regular'].push(glyph);
       }
+      if (duotone) {
+        acc['duotone'].push([icon, '']);
+        acc['duotone'].push(glyph);
+      }
 
       return acc;
     },
@@ -97,6 +102,7 @@ const run = async (
       light: [],
       fill: [],
       regular: [],
+      duotone: [],
       text: [],
     } as {
       [key: string]: [string, string][];
@@ -259,7 +265,7 @@ const textMateSnippet = async (GLYPH_MAP: Record<string, [string, string]>) => {
   const iconsSnippetContent = `
   {
     "Phosphor icons": {
-      "prefix": ["pp:icon"],
+      "prefix": ["shicon:"],
       "scope": "javascript,typescript,html",
       "body": "\${1|${Object.keys(GLYPH_MAP).join(',')}|}",
       "description": "Add a phosphor icon"
@@ -298,11 +304,11 @@ export const main = async (values: InputArguments) => {
         fontVariant,
         'selection.json'
       );
-      const selectionJson = await Bun.file(selectionJsonFullPath).json();
 
-      // return createCodepointObject(selectionJson.icons);
-      // return createNameCodeObject(selectionJson.icons);
-      return getUnicodeObject(selectionJson.icons);
+      const selectionJson = await Bun.file(selectionJsonFullPath).json();
+      const unicodeObj = getUnicodeObject(selectionJson.icons, fontVariant === 'duotone');
+
+      return unicodeObj;
     })
   );
 

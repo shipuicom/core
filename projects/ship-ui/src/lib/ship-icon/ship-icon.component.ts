@@ -1,6 +1,6 @@
 import { AfterContentInit, ChangeDetectionStrategy, Component, ElementRef, inject, Renderer2 } from '@angular/core';
 
-const iconTypes = ['bold', 'thin', 'light', 'fill'];
+const iconTypes = ['bold', 'thin', 'light', 'fill', 'duotone'];
 
 @Component({
   selector: 'sh-icon',
