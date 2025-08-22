@@ -30,6 +30,13 @@ $shipTabs: true !default;
       cursor: pointer;
       position: relative;
 
+      transition: transform 125ms linear;
+      transform: scale(1);
+
+      &:active {
+        transform: scale(0.98);
+      }
+
       &:focus {
         outline: none;
       }

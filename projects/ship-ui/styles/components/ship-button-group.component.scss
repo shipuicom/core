@@ -33,7 +33,6 @@ $shipButtonGroup: true !default;
       gap: p2r(8);
       position: relative;
       padding: var(--btng-p);
-      transition: color 80ms linear;
       min-width: auto;
       cursor: pointer;
       outline: none;
@@ -47,6 +46,14 @@ $shipButtonGroup: true !default;
       color: var(--btng-c);
       font: var(--btng-f);
       border-left: 1px solid var(--btng-bc);
+      transition:
+        color 80ms linear,
+        transform 125ms linear;
+      transform: scale(1);
+
+      &:active {
+        transform: scale(0.96);
+      }
 
       &:first-child {
         border-left: 0;

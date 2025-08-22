@@ -52,6 +52,13 @@ $shipList: true !default;
       background-color: transparent;
       text-decoration: none;
 
+      transition: transform 125ms linear;
+      transform: scale(1);
+
+      &:active {
+        transform: scale(0.98);
+      }
+
       &:focus {
         outline: none;
       }

@@ -49,6 +49,13 @@ $shipFormFieldShadow: false !default;
     position: relative;
     width: 100%;
 
+    transition: transform 125ms linear;
+    transform: scale(1);
+
+    &:active {
+      transform: scale(0.995);
+    }
+
     &[read-only],
     &[read-only='true'],
     &[readonly='true'],

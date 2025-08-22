@@ -174,6 +174,7 @@ export class ShipTooltipDirective implements OnDestroy {
       this.#wrapperComponentRef.destroy();
       this.#wrapperComponentRef = null;
     }
+
     if (this.#projectedViewRef) {
       this.#projectedViewRef.destroy();
       this.#projectedViewRef = null;

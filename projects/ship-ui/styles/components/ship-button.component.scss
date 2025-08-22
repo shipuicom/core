@@ -46,7 +46,14 @@ $shipButtonShadow: false !default;
 
     background: var(--btn-bg);
     color: var(--btn-c);
-    transition: background 75ms linear;
+    transition:
+      background 75ms linear,
+      transform 125ms linear;
+    transform: scale(1);
+
+    &:active {
+      transform: scale(0.98);
+    }
 
     sh-icon {
       color: var(--btn-ic);

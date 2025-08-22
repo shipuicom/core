@@ -20,6 +20,7 @@ export * from './lib/ship-datepicker/ship-datepicker-input.component';
 export * from './lib/ship-datepicker/ship-datepicker.component';
 export * from './lib/ship-datepicker/ship-daterange-input.component';
 export * from './lib/ship-divider/ship-divider.component';
+export * from './lib/ship-event-card/ship-event-card.component';
 export * from './lib/ship-file-upload/ship-file-upload.component';
 export * from './lib/ship-form-field/ship-form-field.component';
 export * from './lib/ship-icon/ship-icon.component';

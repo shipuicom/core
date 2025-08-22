@@ -33,6 +33,7 @@ const run = async (PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FON
   }
 
   const tsFiles = await glob('**/*.ts', { cwd: PROJECT_SRC });
+
   for (const file of tsFiles) {
     const fileText = await fs.readFile(join(PROJECT_SRC, file), 'utf8');
     const matches = Array.from(fileText.matchAll(regex2), (m) => m[1]);
