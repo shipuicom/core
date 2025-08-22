@@ -74,6 +74,7 @@ export class ShipFormFieldPopoverComponent {
 
     if (!supportFieldSizing && text !== null) {
       const text = this.#selfRef.nativeElement.querySelector('textarea');
+
       function resize() {
         text.style.height = 'auto';
         text.style.height = text.scrollHeight + 'px';
@@ -84,15 +85,17 @@ export class ShipFormFieldPopoverComponent {
         setTimeout(resize, 0);
       }
 
-      text.addEventListener('change', resize);
-      text.addEventListener('cut', delayedResize);
-      text.addEventListener('paste', delayedResize);
-      text.addEventListener('drop', delayedResize);
-      text.addEventListener('keydown', delayedResize);
+      if (text) {
+        text.addEventListener('change', resize);
+        text.addEventListener('cut', delayedResize);
+        text.addEventListener('paste', delayedResize);
+        text.addEventListener('drop', delayedResize);
+        text.addEventListener('keydown', delayedResize);
 
-      text.focus();
-      text.select();
-      resize();
+        text.focus();
+        text.select();
+        resize();
+      }
     }
   }
 }

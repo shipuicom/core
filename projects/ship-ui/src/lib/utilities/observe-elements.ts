@@ -15,6 +15,7 @@ export function observeFirstChild(
   const initialElement = _upperCaseElementTags.find((tag) => parentEl.nativeElement.querySelector(tag));
 
   if (initialElement) {
+    console.log('initialElement', initialElement);
     elementSignal.set(new ElementRef(parentEl.nativeElement.querySelector(elementTags[0]) as HTMLInputElement));
     return elementSignal.asReadonly();
   }

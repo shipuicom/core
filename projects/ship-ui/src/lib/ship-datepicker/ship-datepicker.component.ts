@@ -4,12 +4,14 @@ import {
   computed,
   effect,
   ElementRef,
+  inject,
   input,
   model,
   signal,
   viewChild,
 } from '@angular/core';
 import { ShipIconComponent } from '../ship-icon/ship-icon.component';
+import { classMutationSignal } from '../utilities/class-mutation-signal';
 
 @Component({
   selector: 'sh-datepicker',
@@ -65,6 +67,7 @@ import { ShipIconComponent } from '../ship-icon/ship-icon.component';
   },
 })
 export class ShipDatepickerComponent {
+  #selfRef = inject(ElementRef);
   #INIT_DATE = this.#getUTCDate(new Date());
 
   date = model<Date | null>(null);
@@ -90,6 +93,13 @@ export class ShipDatepickerComponent {
     const weekdayLabels = this.weekdayLabels();
 
     return weekdayLabels.slice(startOfWeek).concat(weekdayLabels.slice(0, startOfWeek));
+  });
+
+  currentClasses = classMutationSignal(this.#selfRef.nativeElement);
+  someEffect = effect(() => {
+    const _ = this.currentClasses();
+
+    this.#findSelectedAndCalc();
   });
 
   getLastVisibleMonth(): Date {

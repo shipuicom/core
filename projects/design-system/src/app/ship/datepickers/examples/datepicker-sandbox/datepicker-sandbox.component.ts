@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ShipButtonGroupComponent, ShipDatepickerComponent, ShipToggleComponent } from 'ship-ui';
 
@@ -14,5 +14,8 @@ import { ShipButtonGroupComponent, ShipDatepickerComponent, ShipToggleComponent 
 export class DatepickerSandboxComponent {
   date = signal<Date | null>(new Date());
   disabled = signal(false);
+  sharp = signal(false);
   colors = signal<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
+
+  exampleClass = computed(() => this.colors() + ' ' + (this.sharp() ? 'sharp' : ''));
 }

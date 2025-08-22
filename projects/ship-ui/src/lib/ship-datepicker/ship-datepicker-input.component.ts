@@ -10,10 +10,11 @@ import {
   model,
   output,
   signal,
-  viewChild,
 } from '@angular/core';
 import { ShipFormFieldPopoverComponent } from '../ship-form-field/ship-form-field-popover.component';
 import { ShipIconComponent } from '../ship-icon/ship-icon.component';
+import { classMutationSignal } from '../utilities/class-mutation-signal';
+import { contentProjectionSignal } from '../utilities/content-projection-signal';
 import { ShipDatepickerComponent } from './ship-datepicker.component';
 
 @Component({
@@ -27,7 +28,7 @@ import { ShipDatepickerComponent } from './ship-datepicker.component';
       <ng-content select="[prefix]" ngProjectAs="[prefix]" />
       <ng-content select="[textPrefix]" ngProjectAs="[textPrefix]" />
 
-      <div class="input" ngProjectAs="input" #inputWrap>
+      <div id="input-wrap" class="input" ngProjectAs="input">
         @if (this.masking()) {
           <div class="masked-value" (click)="open($event)">
             {{ _maskedDate() }}
@@ -42,7 +43,7 @@ import { ShipDatepickerComponent } from './ship-datepicker.component';
 
       <div popoverContent>
         @if (this.isOpen()) {
-          <sh-datepicker [date]="internalDate()" (dateChange)="onDateChange($event)" [class]="styleClasses()" />
+          <sh-datepicker [date]="internalDate()" (dateChange)="onDateChange($event)" [class]="currentClass()" />
         }
       </div>
     </sh-form-field-popover>
@@ -57,8 +58,6 @@ export class ShipDatepickerInputComponent {
   #datePipe = inject(DatePipe);
   #elementRef = inject(ElementRef<ShipDatepickerInputComponent>);
   #inputRef = signal<HTMLInputElement | null>(null);
-  #triggerInput = signal(false);
-  inputWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('inputWrap');
 
   masking = input('mediumDate');
   closed = output<Date | null>();
@@ -66,8 +65,6 @@ export class ShipDatepickerInputComponent {
   _maskedDate = computed(() => {
     const date = this.internalDate();
     const mask = this.masking();
-
-    // console.log(date, mask);
 
     if (!mask) return date;
     if (!date) return null;
@@ -77,34 +74,8 @@ export class ShipDatepickerInputComponent {
 
   internalDate = signal<Date | null>(this.#INIT_DATE);
   isOpen = model<boolean>(false);
-  styleClasses = signal(null);
-
-  #styleObserver =
-    typeof MutationObserver !== 'undefined' &&
-    new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-          const classString = this.#elementRef.nativeElement.classList.value;
-
-          let classObj = classString.split(' ').reduce((acc: any, className: string) => {
-            acc[className] = true;
-            return acc;
-          }, {});
-
-          this.styleClasses.set(classObj);
-        }
-      });
-    });
-
-  #inputObserver =
-    typeof MutationObserver !== 'undefined' &&
-    new MutationObserver((mutations) => {
-      for (var mutation of mutations) {
-        if (mutation.type == 'childList' && (mutation.target as HTMLElement).classList.contains('input')) {
-          this.#triggerInput.set(!this.#triggerInput());
-        }
-      }
-    });
+  currentClass = classMutationSignal(this.#elementRef.nativeElement);
+  #inputObserver = contentProjectionSignal<HTMLInputElement>(this.#elementRef.nativeElement, '#input-wrap input');
 
   onDateChange(date: Date | null) {
     this.internalDate.set(date);
@@ -125,21 +96,12 @@ export class ShipDatepickerInputComponent {
     this.closed.emit(this.internalDate());
   }
 
-  ngOnInit() {
-    this.styleClasses.set(this.#elementRef.nativeElement.classList.value);
-
-    if (typeof MutationObserver !== 'undefined') {
-      (this.#styleObserver as MutationObserver).observe(this.#elementRef.nativeElement, { attributes: true });
-      (this.#inputObserver as MutationObserver).observe(this.inputWrapRef().nativeElement, {
-        attributes: true,
-        childList: true,
-      });
-    }
-  }
-
   #inputRefEffect = effect(() => {
-    this.#triggerInput();
-    const input = this.inputWrapRef()?.nativeElement.querySelector('input');
+    const inputs = this.#inputObserver();
+
+    if (!inputs.length) return;
+
+    const input = inputs[0];
 
     if (!input) return;
 
@@ -188,11 +150,6 @@ export class ShipDatepickerInputComponent {
     });
 
     return input;
-  }
-
-  ngOnDestroy() {
-    this.#styleObserver && this.#styleObserver.disconnect();
-    this.#inputObserver && this.#inputObserver.disconnect();
   }
 
   #getUTCDate(date: Date): Date {

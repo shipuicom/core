@@ -1,5 +1,6 @@
 <div class="controls">
-  <sh-toggle [class.active]="disabled()" (click)="disabled.set(!disabled())">Disabled</sh-toggle>
+  <sh-toggle class="raised primary" [class.active]="disabled()" (click)="disabled.set(!disabled())">Disabled</sh-toggle>
+  <sh-toggle class="raised primary" [class.active]="sharp()" (click)="sharp.set(!sharp())">Sharp</sh-toggle>
 
   <sh-button-group>
     <button [class.active]="colors() === ''" (click)="colors.set('')">Base</button>
@@ -12,7 +13,13 @@
 </div>
 
 <div>
-  <sh-datepicker class="raised" [class]="colors()" [(date)]="date" [disabled]="disabled()" />
+  <sh-datepicker
+    class="raised"
+    [monthsToShow]="2"
+    [asRange]="true"
+    [class]="exampleClass()"
+    [(date)]="date"
+    [disabled]="disabled()" />
 
   <p>Selected date: {{ date() | date: 'mediumDate' }}</p>
 </div>

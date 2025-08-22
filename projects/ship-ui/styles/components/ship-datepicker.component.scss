@@ -60,15 +60,25 @@ $shipDatepicker: true !default;
     }
   }
 
+  sh-datepicker-input.sharp sh-datepicker,
+  sh-daterange-input.sharp sh-datepicker,
+  sh-datepicker.sharp {
+    --dp-sel-s: var(--shape-1);
+    --dp-ar: 1/0.8;
+    --dp-day-g: #{p2r(8 0)};
+  }
+
   sh-datepicker {
     --dp-sel-bg: var(--base-8);
     --dp-sel-bw: 0;
     --dp-sel-bc: transparent;
+    --dp-sel-s: 50%;
     --dp-sel-c: #fff;
     --dp-day-c: var(--base-8);
     --dp-day-g: #{p2r(4 0)};
     --dp-day-f: var(--paragraph-20);
     --dp-width: #{p2r(300)};
+    --dp-ar: 1/1;
 
     width: 100%;
     max-width: var(--dp-width);
@@ -101,14 +111,14 @@ $shipDatepicker: true !default;
           &.month-start,
           &.week-start,
           &.first {
-            border-top-left-radius: 50%;
-            border-bottom-left-radius: 50%;
+            border-top-left-radius: var(--dp-sel-s);
+            border-bottom-left-radius: var(--dp-sel-s);
           }
           &.month-end,
           &.week-end,
           &.last {
-            border-top-right-radius: 50%;
-            border-bottom-right-radius: 50%;
+            border-top-right-radius: var(--dp-sel-s);
+            border-bottom-right-radius: var(--dp-sel-s);
           }
 
           &.first,
@@ -158,7 +168,7 @@ $shipDatepicker: true !default;
     .month {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      grid-template-rows: 1fr 7fr;
+      grid-template-rows: 1fr 6fr;
       gap: var(--dp-day-g);
       align-items: flex-start;
 
@@ -187,7 +197,7 @@ $shipDatepicker: true !default;
           display: flex;
           align-items: center;
           justify-content: center;
-          aspect-ratio: 1/1;
+          aspect-ratio: var(--dp-ar);
           cursor: pointer;
           position: relative;
           z-index: 1;
@@ -212,7 +222,7 @@ $shipDatepicker: true !default;
               transform 75ms linear,
               opacity 75ms linear;
             background: var(--dp-sel-bg);
-            border-radius: 50%;
+            border-radius: var(--dp-sel-s);
             border: var(--dp-sel-bw) solid var(--dp-sel-bc);
             opacity: 0;
             box-sizing: border-box;
