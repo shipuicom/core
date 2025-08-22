@@ -76,6 +76,7 @@ body {
   $titleSizes: (10, 20, 30, 10B, 20B, 30B);
   $paragraphSizes: (10, 20, 30, 40, 10B, 20B, 30B, 40B);
   $codeSizes: (10, 20, 30);
+  $colorVariants: (primary, accent, warn, error, success);
 
   @each $displaySize in $displaySizes {
     .display-#{$displaySize} {
@@ -98,6 +99,16 @@ body {
   @each $codeSize in $codeSizes {
     .code-#{$codeSize} {
       font: var(--code-#{$codeSize});
+    }
+  }
+
+  @each $colorVariant in $colorVariants {
+    .c-#{$colorVariant} {
+      color: var(--#{$colorVariant}-8);
+
+      sh-icon {
+        color: var(--#{$colorVariant}-8);
+      }
     }
   }
 }

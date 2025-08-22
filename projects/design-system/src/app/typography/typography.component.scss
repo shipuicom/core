@@ -16,3 +16,15 @@ code {
   white-space: pre;
   display: block;
 }
+
+.align {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(8);
+
+  p {
+    display: flex;
+    align-items: center;
+    gap: p2r(4);
+  }
+}
