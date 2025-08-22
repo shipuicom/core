@@ -1,6 +1,10 @@
-import { DestroyRef, inject, signal, Signal, WritableSignal } from '@angular/core';
+import { DestroyRef, ElementRef, inject, signal, Signal, WritableSignal } from '@angular/core';
 
-export function classMutationSignal(element: HTMLElement): Signal<string> {
+export function classMutationSignal(): Signal<string> {
+  const element = inject(ElementRef).nativeElement;
+
+  if (!element) return signal('');
+
   const classListSignal: WritableSignal<string> = signal(element.className);
 
   if (typeof MutationObserver === 'undefined') return classListSignal.asReadonly();

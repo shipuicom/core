@@ -4,10 +4,13 @@ $shipCheckbox: true !default;
 
 @if $shipCheckbox == true {
   sh-checkbox {
-    --box-bw: #{p2r(1)};
-    --box-bc: var(--base-4);
-    --box-c: var(--base-8);
-    --box-bg: var(--base-2);
+    .sh-sheet {
+      --box-bw: #{p2r(1)};
+      --box-c: var(--sheet-c);
+      --box-bc: var(--sheet-bc);
+      --box-bg: var(--sheet-bg);
+      --sheet-s: var(--shape-1);
+    }
 
     display: flex;
     align-items: center;
@@ -15,6 +18,7 @@ $shipCheckbox: true !default;
     cursor: pointer;
     user-select: none;
     position: relative;
+    border: 0;
 
     > input[type='checkbox'] {
       appearance: none;
@@ -84,162 +88,6 @@ $shipCheckbox: true !default;
       .box sh-icon {
         opacity: 0.5;
       }
-    }
-
-    &.primary {
-      --box-c: var(--primary-8);
-    }
-
-    &.accent {
-      --box-c: var(--accent-8);
-    }
-
-    &.warn {
-      --box-c: var(--warn-8);
-    }
-
-    &.error {
-      --box-c: var(--error-8);
-    }
-
-    &.success {
-      --box-c: var(--success-8);
-    }
-
-    &.simple,
-    &.outlined {
-      --box-bg: var(--base-3);
-      --box-bc: var(--base-6);
-
-      &.primary {
-        --box-bg: var(--primary-3);
-        --box-bc: var(--primary-6);
-      }
-
-      &.accent {
-        --box-bg: var(--accent-3);
-        --box-bc: var(--accent-6);
-      }
-
-      &.warn {
-        --box-bg: var(--warn-3);
-        --box-bc: var(--warn-6);
-      }
-
-      &.error {
-        --box-bg: var(--error-3);
-        --box-bc: var(--error-6);
-      }
-
-      &.success {
-        --box-bg: var(--success-3);
-        --box-bc: var(--success-6);
-      }
-    }
-
-    &.simple {
-      --box-bc: var(--box-bg);
-
-      &.primary,
-      &.accent,
-      &.warn,
-      &.error,
-      &.success {
-        --box-bc: var(--box-bg);
-      }
-    }
-
-    &.flat,
-    &.raised {
-      &.primary,
-      &.accent,
-      &.warn,
-      &.error,
-      &.success {
-        --box-bc: var(--base-4);
-        --box-c: var(--base-8);
-        --box-bg: var(--base-2);
-      }
-    }
-
-    &.flat:has(input[type='checkbox']:checked),
-    &.flat.indeterminate,
-    &.flat.active {
-      @extend %flat;
-    }
-
-    &.raised:has(input[type='checkbox']:checked),
-    &.raised.indeterminate,
-    &.raised.active {
-      @extend %raised;
-    }
-  }
-
-  .ship-popup-menu sh-option[selected] {
-    sh-checkbox {
-      sh-icon {
-        opacity: 1;
-      }
-
-      &.flat {
-        @extend %flat;
-      }
-
-      &.raised {
-        @extend %raised;
-      }
-    }
-  }
-
-  %flat {
-    --box-bw: 0;
-    --box-bg: var(--base-8);
-    --box-c: #fff;
-
-    &.primary {
-      --box-bg: var(--primary-8);
-    }
-
-    &.accent {
-      --box-bg: var(--accent-8);
-    }
-
-    &.warn {
-      --box-bg: var(--warn-8);
-    }
-
-    &.error {
-      --box-bg: var(--error-8);
-    }
-
-    &.success {
-      --box-bg: var(--success-8);
-    }
-  }
-
-  %raised {
-    --box-bw: 0;
-    --box-bg: var(--base-g2);
-    --box-c: #fff;
-
-    &.primary {
-      --box-bg: var(--primary-g2);
-    }
-
-    &.accent {
-      --box-bg: var(--accent-g2);
-    }
-
-    &.warn {
-      --box-bg: var(--warn-g2);
-    }
-
-    &.error {
-      --box-bg: var(--error-g2);
-    }
-
-    &.success {
-      --box-bg: var(--success-g2);
     }
   }
 }

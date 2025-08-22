@@ -1,11 +1,12 @@
-import { ChangeDetectionStrategy, Component, ElementRef, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
 import { ShipIconComponent } from '../ship-icon/ship-icon.component';
+import { classMutationSignal } from '../utilities/class-mutation-signal';
 
 @Component({
   selector: 'sh-checkbox',
   imports: [ShipIconComponent],
   template: `
-    <div class="box">
+    <div class="box sh-sheet" [class]="showClasses()">
       <sh-icon class="inherit default-indicator">check-bold</sh-icon>
       <sh-icon class="inherit indeterminate-indicator">minus-bold</sh-icon>
     </div>
@@ -15,12 +16,10 @@ import { ShipIconComponent } from '../ship-icon/ship-icon.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShipCheckboxComponent {
-  #selfRef = inject(ElementRef);
+  currentClassList = classMutationSignal();
+  showClasses = computed(() => {
+    const classArr = this.currentClassList().split(' ');
 
-  // @HostListener('click')
-  // onClick() {
-  //   if (this.#selfRef.nativeElement.querySelector('input')) {
-  //     this.#selfRef.nativeElement.querySelector('input').focus();
-  //   }
-  // }
+    return classArr.includes('active') ? classArr : '';
+  });
 }

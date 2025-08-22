@@ -74,7 +74,7 @@ export class ShipDatepickerInputComponent {
 
   internalDate = signal<Date | null>(this.#INIT_DATE);
   isOpen = model<boolean>(false);
-  currentClass = classMutationSignal(this.#elementRef.nativeElement);
+  currentClass = classMutationSignal();
   #inputObserver = contentProjectionSignal<HTMLInputElement>(this.#elementRef.nativeElement, '#input-wrap input');
 
   onDateChange(date: Date | null) {

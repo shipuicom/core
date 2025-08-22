@@ -4,7 +4,6 @@ import {
   computed,
   effect,
   ElementRef,
-  inject,
   input,
   model,
   signal,
@@ -67,7 +66,6 @@ import { classMutationSignal } from '../utilities/class-mutation-signal';
   },
 })
 export class ShipDatepickerComponent {
-  #selfRef = inject(ElementRef);
   #INIT_DATE = this.#getUTCDate(new Date());
 
   date = model<Date | null>(null);
@@ -95,7 +93,7 @@ export class ShipDatepickerComponent {
     return weekdayLabels.slice(startOfWeek).concat(weekdayLabels.slice(0, startOfWeek));
   });
 
-  currentClasses = classMutationSignal(this.#selfRef.nativeElement);
+  currentClasses = classMutationSignal();
   someEffect = effect(() => {
     const _ = this.currentClasses();
 
