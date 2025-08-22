@@ -265,6 +265,16 @@ $shipFormFieldShadow: false !default;
             margin-right: 0;
           }
         }
+
+        &[type='time'] {
+          appearance: textfield;
+          text-align: center;
+
+          &::-webkit-calendar-picker-indicator {
+            appearance: none;
+            display: none;
+          }
+        }
       }
     }
 

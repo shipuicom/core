@@ -59,8 +59,8 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [x] When using wildcard searching in sh-select and sh-menu sort the closet match to the top of the list
 - [x] Add flat and raised versions of alerts
 - [x] Create documentation with examples for all components
+- [x] Create a timepicker component
 - [ ] Create a accordion component
-- [ ] Create a timepicker component
 
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
 - [ ] Make color themes optional/configurable (primary, accent, warn, error, success) globally.
