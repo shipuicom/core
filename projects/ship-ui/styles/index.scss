@@ -40,6 +40,7 @@ $shipTooltip: true !default;
 $shipVirtualScroll: false !default;
 $shipSelect: true !default;
 $shipCard: true !default;
+$shipSheet: true !default;
 $shipStepper: true !default;
 $shipSortable: true !default;
 $shipSpinner: true !default;
@@ -126,6 +127,9 @@ $shipFileUpload: true !default;
 );
 @use './components/ship-card.component.scss' with (
   $shipCard: $shipCard
+);
+@use './components/ship-sheet.utility.scss' with (
+  $shipSheet: $shipSheet
 );
 @use './components/ship-stepper.component.scss' with (
   $shipStepper: $shipStepper

@@ -5,5 +5,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   imports: [],
   template: '<div><ng-content></ng-content></div>',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'sh-sheet',
+  },
 })
 export class ShipChipComponent {}

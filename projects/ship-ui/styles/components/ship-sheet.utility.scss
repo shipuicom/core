@@ -1,0 +1,298 @@
+@use '../helpers.scss' as *;
+
+$shipSheet: true !default;
+
+@if $shipSheet == true {
+  .sh-sheet-h,
+  .sh-sheet {
+    --sheet-c: var(--base-12);
+    --sheet-bg: var(--base-1);
+    --sheet-bc: var(--base-4);
+    --sheet-s: var(--shape-2);
+    --sheet-ic: var(--base-12);
+    --loader-c: var(--sheet-ic);
+
+    border-radius: var(--sheet-s);
+    background: var(--sheet-bg);
+    border: 1px solid var(--sheet-bc);
+    color: var(--sheet-c);
+
+    &.sharp {
+      --sheet-s: var(--shape-1);
+    }
+
+    &.dynamic {
+      --sheet-bg: rgb(from var(--sheet-c) r g b / 0.14);
+      --sheet-p-c: rgb(from var(--sheet-c) r g b / 0.65);
+      --sheet-ic: var(--sheet-c);
+
+      color: var(--sheet-c);
+      border: 0;
+
+      p {
+        color: var(--sheet-p-c);
+      }
+
+      sh-icon {
+        color: inherit;
+      }
+    }
+
+    &.loading.outlined,
+    &.loading.simple,
+    &.loading.flat,
+    &.loading.raised,
+    &.loading {
+      color: transparent;
+
+      &:hover,
+      &.primary,
+      &.accent,
+      &.warn,
+      &.error,
+      &.success {
+        color: transparent;
+      }
+
+      > * {
+        opacity: 0;
+      }
+
+      &:before {
+        opacity: 0;
+      }
+    }
+
+    &.primary {
+      --sheet-ic: var(--primary-8);
+    }
+
+    &.accent {
+      --sheet-ic: var(--accent-8);
+    }
+
+    &.warn {
+      --sheet-ic: var(--warn-8);
+    }
+
+    &.error {
+      --sheet-ic: var(--error-8);
+    }
+
+    &.success {
+      --sheet-ic: var(--success-8);
+    }
+
+    sh-icon {
+      color: var(--sheet-ic);
+    }
+
+    &.simple,
+    &.outlined {
+      --sheet-c: var(--base-12);
+      --sheet-bg: var(--base-2);
+
+      transition:
+        color 80ms linear,
+        background 80ms linear;
+
+      &.primary {
+        --sheet-c: var(--primary-8);
+        --sheet-bg: var(--primary-1);
+        --sheet-bc: var(--primary-4);
+      }
+
+      &.accent {
+        --sheet-c: var(--accent-8);
+        --sheet-bg: var(--accent-1);
+        --sheet-bc: var(--accent-4);
+      }
+
+      &.warn {
+        --sheet-c: var(--warn-8);
+        --sheet-bg: var(--warn-1);
+        --sheet-bc: var(--warn-4);
+      }
+
+      &.error {
+        --sheet-c: var(--error-8);
+        --sheet-bg: var(--error-1);
+        --sheet-bc: var(--error-4);
+      }
+
+      &.success {
+        --sheet-c: var(--success-8);
+        --sheet-bg: var(--success-1);
+        --sheet-bc: var(--success-4);
+      }
+    }
+
+    &.simple,
+    &.simple.primary,
+    &.simple.accent,
+    &.simple.warn,
+    &.simple.error,
+    &.simple.success {
+      --sheet-bc: var(--sheet-bg);
+    }
+    &.outlined,
+    &.outlined.primary,
+    &.outlined.accent,
+    &.outlined.warn,
+    &.outlined.error,
+    &.outlined.success {
+      --sheet-c: var(--base-12);
+    }
+
+    &.flat {
+      --sheet-c: var(--base-1);
+      --sheet-ic: var(--base-1);
+      --sheet-bg: var(--base-8);
+
+      border: 0;
+
+      &.primary {
+        --sheet-c: var(--primary-c8);
+        --sheet-bg: var(--primary-8);
+      }
+
+      &.accent {
+        --sheet-c: var(--accent-c8);
+        --sheet-bg: var(--accent-8);
+      }
+
+      &.warn {
+        --sheet-c: var(--warn-c8);
+        --sheet-bg: var(--warn-8);
+      }
+
+      &.error {
+        --sheet-c: var(--error-c8);
+        --sheet-bg: var(--error-8);
+      }
+
+      &.success {
+        --sheet-c: var(--success-c8);
+        --sheet-bg: var(--success-8);
+      }
+    }
+
+    &.raised {
+      --sheet-c: var(--base-1);
+      --sheet-ic: var(--base-1);
+      --sheet-bg: var(--base-g6);
+
+      border: 0;
+
+      &.primary {
+        --sheet-c: var(--primary-c8);
+        --sheet-bg: var(--primary-g2);
+      }
+
+      &.accent {
+        --sheet-c: var(--accent-c8);
+        --sheet-bg: var(--accent-g2);
+      }
+
+      &.warn {
+        --sheet-c: var(--warn-c8);
+        --sheet-bg: var(--warn-g2);
+      }
+
+      &.error {
+        --sheet-c: var(--error-c8);
+        --sheet-bg: var(--error-g2);
+      }
+
+      &.success {
+        --sheet-c: var(--success-c8);
+        --sheet-bg: var(--success-g2);
+      }
+    }
+  }
+
+  .sh-sheet-h {
+    --sheet-bg-h: var(--base-2);
+
+    transition:
+      background 75ms linear,
+      transform 125ms linear;
+
+    &:hover {
+      --sheet-bg: var(--base-2);
+
+      &.simple,
+      &.outlined {
+        --sheet-bg: var(--base-3);
+
+        &.primary {
+          --sheet-bg: var(--primary-2);
+        }
+
+        &.accent {
+          --sheet-bg: var(--accent-2);
+        }
+
+        &.warn {
+          --sheet-bg: var(--warn-2);
+        }
+
+        &.error {
+          --sheet-bg: var(--error-2);
+        }
+
+        &.success {
+          --sheet-bg: var(--success-2);
+        }
+      }
+
+      &.flat {
+        --sheet-bg: var(--base-7);
+
+        &.primary {
+          --sheet-bg: var(--primary-7);
+        }
+
+        &.accent {
+          --sheet-bg: var(--accent-7);
+        }
+
+        &.warn {
+          --sheet-bg: var(--warn-7);
+        }
+
+        &.error {
+          --sheet-bg: var(--error-7);
+        }
+
+        &.success {
+          --sheet-bg: var(--success-7);
+        }
+      }
+
+      &.raised {
+        --sheet-bg: var(--base-g7);
+
+        &.primary {
+          --sheet-bg: var(--primary-g3);
+        }
+
+        &.accent {
+          --sheet-bg: var(--accent-g3);
+        }
+
+        &.warn {
+          --sheet-bg: var(--warn-g3);
+        }
+
+        &.error {
+          --sheet-bg: var(--error-g3);
+        }
+
+        &.success {
+          --sheet-bg: var(--success-g3);
+        }
+      }
+    }
+  }
+}

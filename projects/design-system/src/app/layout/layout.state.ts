@@ -28,7 +28,6 @@ export class LayoutState {
 
   isMobile = computed(() => this.currentWidth() < 1024);
   isMobileEffect = effect(() => {
-    console.log(this.isMobile());
     this.isNavOpen.set(!this.isMobile());
     this.sidenavType.set(this.isMobile() ? 'overlay' : 'simple');
   });

@@ -4,19 +4,10 @@ $shipEventCard: true !default;
 
 @if $shipEventCard == true {
   sh-event-card {
-    --ec-c: var(--base-12);
-    --ec-bg: var(--base-1);
-    --ec-bc: var(--base-4);
-    --ec-s: var(--shape-2);
-
     display: flex;
     gap: p2r(8);
     width: 100%;
     padding: p2r(16);
-    border-radius: var(--ec-s);
-    background: var(--ec-bg);
-    border: 1px solid var(--ec-bc);
-    color: var(--ec-c);
 
     .content {
       display: flex;
@@ -25,7 +16,7 @@ $shipEventCard: true !default;
       flex: 1;
 
       > * {
-        color: var(--ec-c);
+        color: var(--sheet-c);
       }
 
       h1,
@@ -54,155 +45,7 @@ $shipEventCard: true !default;
       display: block;
       border-radius: p2r(3);
       width: p2r(6);
-      background: var(--ec-c);
-    }
-
-    &.dynamic {
-      --ec-bg: rgb(from var(--ec-c) r g b / 0.14);
-      color: var(--ec-c);
-      border: 0;
-
-      .content {
-        p {
-          --ec-pc: rgb(from var(--ec-c) r g b / 0.65);
-          color: var(--ec-pc);
-        }
-      }
-
-      sh-icon {
-        color: inherit;
-      }
-    }
-
-    &.primary {
-      --ec-c: var(--primary-8);
-    }
-
-    &.accent {
-      --ec-c: var(--accent-8);
-    }
-
-    &.warn {
-      --ec-c: var(--warn-8);
-    }
-
-    &.error {
-      --ec-c: var(--error-8);
-    }
-
-    &.success {
-      --ec-c: var(--success-8);
-    }
-
-    &.simple,
-    &.outlined {
-      --ec-c: var(--base-12);
-      --ec-bg: var(--base-2);
-
-      &.primary {
-        --ec-c: var(--primary-8);
-        --ec-bg: var(--primary-1);
-        --ec-bc: var(--primary-4);
-      }
-
-      &.accent {
-        --ec-c: var(--accent-8);
-        --ec-bg: var(--accent-1);
-        --ec-bc: var(--accent-4);
-      }
-
-      &.warn {
-        --ec-c: var(--warn-8);
-        --ec-bg: var(--warn-1);
-        --ec-bc: var(--warn-4);
-      }
-
-      &.error {
-        --ec-c: var(--error-8);
-        --ec-bg: var(--error-1);
-        --ec-bc: var(--error-4);
-      }
-
-      &.success {
-        --ec-c: var(--success-8);
-        --ec-bg: var(--success-1);
-        --ec-bc: var(--success-4);
-      }
-    }
-
-    &.simple,
-    &.simple.primary,
-    &.simple.accent,
-    &.simple.warn,
-    &.simple.error,
-    &.simple.success {
-      --ec-bc: var(--ec-bg);
-    }
-
-    &.flat {
-      --ec-c: #fff;
-      --ec-ic: #fff;
-      --ec-bg: var(--base-8);
-
-      border: 0;
-
-      &.primary {
-        --ec-c: var(--primary-c8);
-        --ec-bg: var(--primary-8);
-      }
-
-      &.accent {
-        --ec-c: var(--accent-c8);
-        --ec-bg: var(--accent-8);
-      }
-
-      &.warn {
-        --ec-c: var(--warn-c8);
-        --ec-bg: var(--warn-8);
-      }
-
-      &.error {
-        --ec-c: var(--error-c8);
-        --ec-bg: var(--error-8);
-      }
-
-      &.success {
-        --ec-c: var(--success-c8);
-        --ec-bg: var(--success-8);
-      }
-    }
-
-    &.raised {
-      --ec-c: #fff;
-      --ec-ic: #fff;
-      --ec-bg: var(--base-g6);
-
-      border: 0;
-
-      &.primary {
-        --ec-c: var(--primary-c8);
-        --ec-bg: var(--primary-g2);
-      }
-
-      &.accent {
-        --ec-c: var(--accent-c8);
-        --ec-bg: var(--accent-g2);
-      }
-
-      &.warn {
-        --ec-c: var(--warn-c8);
-        --ec-bg: var(--warn-g2);
-      }
-
-      &.error {
-        --ec-c: var(--error-c8);
-        --ec-bg: var(--error-g2);
-      }
-
-      &.success {
-        --ec-c: var(--success-c8);
-        --ec-bg: var(--success-g2);
-      }
+      background: var(--sheet-ic);
     }
   }
 }

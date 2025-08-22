@@ -1,0 +1,21 @@
+@for (variant of variants; track $index) {
+  <section>
+    <h3>{{ variant.length > 0 ? variant : 'Base' }}</h3>
+
+    @for (color of colors; track $index) {
+      <div class="sh-sheet" [class]="color + ' ' + variant">
+        <sh-icon>circle</sh-icon>
+        hello im some content on a sheet
+      </div>
+    }
+  </section>
+}
+
+<section>
+  <h3>Dynamic</h3>
+  <input type="color" [(ngModel)]="dynamicColor" />
+  <div class="sh-sheet dynamic" [style.--sheet-c]="dynamicColor()">
+    <sh-icon>circle</sh-icon>
+    hello im some content on a sheet
+  </div>
+</section>

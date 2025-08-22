@@ -44,22 +44,22 @@
   <button
     shButton
     [class]="exampleClass()"
-    [class.loader]="isLoading()"
+    [class.loading]="isLoading()"
     [class.small]="isSmall()"
     [class.rotated-icon]="isRotated()"
     [disabled]="isDisabled()"
-    [attr.readonly]="isReadonly()">
+    [attr.readonly]="isReadonly() ? true : null">
     <sh-icon>caret-down</sh-icon>
   </button>
 
   <button
     shButton
     [class]="exampleClass()"
-    [class.loader]="isLoading()"
+    [class.loading]="isLoading()"
     [class.small]="isSmall()"
     [class.rotated-icon]="isRotated()"
     [disabled]="isDisabled()"
-    [attr.readonly]="isReadonly()">
+    [attr.readonly]="isReadonly() ? true : null">
     <sh-icon>caret-down</sh-icon>
     Default
     <sh-icon>caret-down</sh-icon>
@@ -68,11 +68,11 @@
   <button
     shButton
     [class]="exampleClass()"
-    [class.loader]="isLoading()"
+    [class.loading]="isLoading()"
     [class.small]="isSmall()"
     [class.rotated-icon]="isRotated()"
     [disabled]="isDisabled()"
-    [attr.readonly]="isReadonly()">
+    [attr.readonly]="isReadonly() ? true : null">
     <sh-icon>caret-down</sh-icon>
     Primary
   </button>
@@ -80,11 +80,11 @@
   <button
     shButton
     [class]="exampleClass()"
-    [class.loader]="isLoading()"
+    [class.loading]="isLoading()"
     [class.small]="isSmall()"
     [class.rotated-icon]="isRotated()"
     [disabled]="isDisabled()"
-    [attr.readonly]="isReadonly()">
+    [attr.readonly]="isReadonly() ? true : null">
     Primary
     <sh-icon>caret-down</sh-icon>
   </button>

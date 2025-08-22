@@ -14,5 +14,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'sh-sheet',
+  },
 })
 export class ShipEventCardComponent {}

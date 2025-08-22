@@ -12,7 +12,7 @@
 .loading {
   position: relative;
 
-  &:before {
+  &:after {
     content: '';
     width: p2r(16);
     height: p2r(16);

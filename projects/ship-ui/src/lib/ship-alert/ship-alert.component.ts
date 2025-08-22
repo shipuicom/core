@@ -10,7 +10,8 @@ export type ShipAlertType = 'error' | 'success' | 'warn' | 'primary' | 'accent' 
   template: `
     <div class="alert">
       <div #ref class="icon" [style.display]="!ref.children.length ? 'none' : 'block'">
-        <ng-content select="[icon]"></ng-content>
+        <ng-content select="[icon]" />
+        <ng-content select="sh-icon" />
       </div>
 
       <div class="icon">
@@ -32,8 +33,8 @@ export type ShipAlertType = 'error' | 'success' | 'warn' | 'primary' | 'accent' 
       </div>
 
       <div class="title">
-        <ng-content select="[title]"></ng-content>
-        <ng-content></ng-content>
+        <ng-content select="[title]" />
+        <ng-content />
       </div>
 
       @if (id()) {
@@ -41,11 +42,15 @@ export type ShipAlertType = 'error' | 'success' | 'warn' | 'primary' | 'accent' 
       }
 
       <div class="content">
-        <ng-content select="[content]"></ng-content>
+        <ng-content select="[content]" />
+        <ng-content select="p" />
       </div>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'sh-sheet',
+  },
 })
 export class ShipAlertComponent {
   _el = inject(ElementRef); // Used by alert container

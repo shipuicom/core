@@ -54,6 +54,10 @@ export const routes: Routes = [
         loadComponent: () => import('./ship/event-cards/event-cards.component'),
       },
       {
+        path: 'sheets',
+        loadComponent: () => import('./ship/sheets/sheets.component'),
+      },
+      {
         path: 'spinners',
         loadComponent: () => import('./ship/spinners/spinners.component'),
       },
