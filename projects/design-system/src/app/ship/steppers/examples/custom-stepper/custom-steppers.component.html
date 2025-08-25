@@ -1,16 +1,16 @@
 <sh-stepper>
-  <button [class.active]="activeStep() === 0" (click)="activeStep.set(0)">
+  <div step [class.active]="activeStep() === 0" (click)="activeStep.set(0)">
     <sh-radio />
     Step 1
-  </button>
-  <button [class.active]="activeStep() === 1" (click)="activeStep.set(1)">
+  </div>
+  <div step [class.active]="activeStep() === 1" (click)="activeStep.set(1)">
     <sh-radio />
     Step 2
-  </button>
-  <button [class.active]="activeStep() === 2" (click)="activeStep.set(2)">
+  </div>
+  <div step [class.active]="activeStep() === 2" (click)="activeStep.set(2)">
     <sh-radio />
     Step 3
-  </button>
+  </div>
 </sh-stepper>
 
 @let _activeStep = activeStep();

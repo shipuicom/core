@@ -16,6 +16,7 @@ $shipTabs: true !default;
     gap: p2r(16);
     border-bottom: 1px solid var(--base-4);
 
+    button,
     [tab] {
       display: flex;
       align-items: center;

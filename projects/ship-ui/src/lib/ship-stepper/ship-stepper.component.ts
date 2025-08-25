@@ -4,7 +4,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   selector: 'sh-stepper',
   imports: [],
   template: `
-    <ng-content></ng-content>
+    <ng-content />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

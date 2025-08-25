@@ -51,6 +51,13 @@ $shipStepper: true !default;
       --step-active-c: var(--success-8);
     }
 
+    button {
+      background: transparent;
+      border: 0;
+      padding: 0;
+    }
+
+    button,
     [step] {
       flex: 2 0;
       display: flex;
@@ -77,6 +84,7 @@ $shipStepper: true !default;
         z-index: 10;
       }
 
+      &:has(~ button.active),
       &:has(~ [step].active) {
         sh-radio {
           --radiod-o: 1;
