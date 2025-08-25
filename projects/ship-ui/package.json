@@ -1,7 +1,7 @@
 {
   "name": "@ship-ui/core",
   "license": "MIT",
-  "version": "0.14.4",
+  "version": "0.14.5",
   "peerDependencies": {
     "@angular/common": ">=19",
     "@angular/core": ">=19"

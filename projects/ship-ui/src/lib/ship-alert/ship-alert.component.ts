@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, signal } from '@angular/core';
 import { SHIP_CONFIG } from 'ship-ui';
 import { ShipIconComponent } from '../ship-icon/ship-icon.component';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
@@ -59,7 +59,7 @@ const POSSIBLE_VARIANTS = ['simple', 'outlined', 'flat', 'raised'];
 export class ShipAlertComponent {
   #shConfig = inject(SHIP_CONFIG, { optional: true });
   variant = signal<string>(this.#shConfig?.alertVariant ?? '');
-  // _el = inject(ElementRef); // Used by alert container
+  _el = inject(ElementRef); // Used by alert container
   alertService = input<ShipAlertService | null>(null);
   id = input<string | null>(null);
 
