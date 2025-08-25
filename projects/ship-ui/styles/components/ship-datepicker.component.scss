@@ -81,6 +81,7 @@ $shipDatepicker: true !default;
     --dp-ar: 1/1;
 
     width: 100%;
+    padding: p2r(8);
     max-width: var(--dp-width);
     display: flex;
     flex-direction: column;

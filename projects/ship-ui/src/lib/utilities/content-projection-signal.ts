@@ -20,6 +20,8 @@ export function contentProjectionSignal<T = HTMLElement>(
     projectedElementsSignal.set(elements as T[]);
   };
 
+  if (typeof MutationObserver === 'undefined') return projectedElementsSignal.asReadonly();
+
   const observer = new MutationObserver((mutations) => {
     // Only update if child nodes have been added or removed.
     const hasChildListChanges = mutations.some((mutation) => mutation.type === 'childList');

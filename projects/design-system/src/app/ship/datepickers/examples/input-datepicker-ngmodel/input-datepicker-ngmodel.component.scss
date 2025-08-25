@@ -1,3 +1,15 @@
+@use 'helpers' as *;
+
 :host {
   display: block;
+}
+
+.row {
+  display: flex;
+  gap: p2r(16);
+  align-items: center;
+
+  sh-datepicker-input {
+    flex: 1 0;
+  }
 }

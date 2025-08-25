@@ -1,5 +1,17 @@
-<sh-datepicker-input class="primary sharp">
-  <label>Date (ngModel)</label>
-  <input type="text" [(ngModel)]="date" />
-</sh-datepicker-input>
-<p>Selected: {{ date() | date: 'mediumDate' }}</p>
+<div class="row">
+  <sh-datepicker-input class="primary sharp">
+    <label>Date (ngModel)</label>
+    <input type="text" [(ngModel)]="date" />
+  </sh-datepicker-input>
+
+  <sh-form-field class="autosize">
+    <input type="time" [(ngModel)]="time" step="300" />
+    <div boxPrefix>
+      <sh-icon>clock</sh-icon>
+    </div>
+  </sh-form-field>
+</div>
+
+<p>Selected: {{ date() | date: 'medium' }}</p>
+<!-- <p>{{ date() }}</p>
+<p>{{ time() }}</p> -->

@@ -63,6 +63,7 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [ ] Create a accordion component
 - [ ] Add another button group variant
 - [ ] Apply the new sheet utility to radio buttons
+- [ ] Convert color scheme to use OKLCH instead of HSL for more consistent lighting on colors
 
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
 - [ ] Make color themes optional/configurable (primary, accent, warn, error, success) globally.

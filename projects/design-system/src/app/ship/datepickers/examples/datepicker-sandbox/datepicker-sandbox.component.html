@@ -13,13 +13,7 @@
 </div>
 
 <div>
-  <sh-datepicker
-    class="raised"
-    [monthsToShow]="2"
-    [asRange]="true"
-    [class]="exampleClass()"
-    [(date)]="date"
-    [disabled]="disabled()" />
+  <sh-datepicker class="raised" [class]="exampleClass()" [(date)]="date" [disabled]="disabled()" />
 
   <p>Selected date: {{ date() | date: 'mediumDate' }}</p>
 </div>

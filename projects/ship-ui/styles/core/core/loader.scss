@@ -28,31 +28,6 @@
   }
 }
 
-// .loading {
-//   &.outlined:before {
-//     &.primary {
-//       border-color: var(--primary-8);
-//     }
-//     &.accent {
-//       border-color: var(--accent-8);
-//     }
-//     &.warn {
-//       border-color: var(--warn-8);
-//     }
-//     &.error {
-//       border-color: var(--error-8);
-//     }
-//     &.success {
-//       border-color: var(--success-8);
-//     }
-//   }
-
-//   .raised:before,
-//   .flat:before {
-//     border-color: #fff;
-//   }
-// }
-
 @keyframes rotation {
   0% {
     transform: rotate(0deg);

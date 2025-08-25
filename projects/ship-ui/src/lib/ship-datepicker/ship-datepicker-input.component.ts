@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   effect,
   ElementRef,
   inject,
@@ -11,6 +12,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { NgModel } from '@angular/forms';
 import { ShipFormFieldPopoverComponent } from '../ship-form-field/ship-form-field-popover.component';
 import { ShipIconComponent } from '../ship-icon/ship-icon.component';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
@@ -55,6 +57,7 @@ import { ShipDatepickerComponent } from './ship-datepicker.component';
 export class ShipDatepickerInputComponent {
   #INIT_DATE = this.#getUTCDate(new Date());
 
+  ngModels = contentChild<NgModel>(NgModel);
   #datePipe = inject(DatePipe);
   #elementRef = inject(ElementRef<ShipDatepickerInputComponent>);
   #inputRef = signal<HTMLInputElement | null>(null);
@@ -82,7 +85,8 @@ export class ShipDatepickerInputComponent {
     const input = this.#inputRef();
 
     if (input) {
-      input.value = date ? date.toUTCString() : '';
+      input.value = date ? date.toString() : '';
+      input.dispatchEvent(new Event('input'));
     }
   }
 
