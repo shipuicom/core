@@ -67,6 +67,14 @@ $shipButtonShadow: false !default;
       sh-icon {
         font-size: p2r(16);
       }
+
+      &:has(sh-icon:first-child) {
+        padding-left: p2r(8);
+      }
+
+      &:has(sh-icon:last-child) {
+        padding-right: p2r(8);
+      }
     }
 
     &[disabled] {
