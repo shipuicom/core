@@ -56,21 +56,19 @@ $shipFormFieldShadow: false !default;
       transform: scale(0.995);
     }
 
-    &[read-only],
-    &[read-only='true'],
-    &[readonly='true'],
     &[readonly],
     &.readonly,
     &[disabled],
-    &[disabled='true'],
     &.disabled,
     &:has(input[disabled]),
-    &:has(textarea[disabled]),
-    &:has(textarea[disabled='true']),
-    &:has(input[disabled='true']) {
+    &:has(textarea[disabled]) {
       pointer-events: none;
       user-select: none;
       opacity: 0.5;
+
+      &:active {
+        transform: scale(1);
+      }
     }
 
     &.small {

@@ -76,9 +76,6 @@ $shipChipShadow: false !default;
       opacity: 0.5;
     }
 
-    &[read-only],
-    &[read-only='true'],
-    &[readonly='true'],
     &[readonly],
     &.readonly {
       pointer-events: none;
