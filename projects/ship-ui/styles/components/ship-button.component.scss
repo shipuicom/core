@@ -67,14 +67,6 @@ $shipButtonShadow: false !default;
       sh-icon {
         font-size: p2r(16);
       }
-
-      // &:has(sh-icon:first-child) {
-      //   padding-left: p2r(8);
-      // }
-
-      // &:has(sh-icon:last-child) {
-      //   padding-right: p2r(8);
-      // }
     }
 
     &[disabled] {
@@ -83,13 +75,17 @@ $shipButtonShadow: false !default;
       user-select: none;
     }
 
-    &[read-only],
-    &[read-only='true'],
-    &[readonly='true'],
     &[readonly],
     &.readonly {
       pointer-events: none;
       user-select: none;
+    }
+
+    &[disabled],
+    &[readonly] {
+      &:active {
+        transform: scale(1);
+      }
     }
   }
 }
