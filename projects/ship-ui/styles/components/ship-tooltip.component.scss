@@ -49,14 +49,10 @@ $shipTooltip: true !default;
 
     &.active {
       z-index: 1;
-      + ship-tooltip-wrapper {
-        @extend %hoverState;
-        // transform: translateY(-#{p2r(8)}) scale(1);
-        // &.below {
-        //   transform: translateY(#{p2r(8)}) scale(1);
-        // }
 
-        transform: scale(1);
+      + ship-tooltip-wrapper {
+        z-index: 1;
+        transform: translateY(0) scaleY(1) scaleX(1);
       }
     }
   }
@@ -68,17 +64,17 @@ $shipTooltip: true !default;
     --tt-mw: #{p2r(280)};
 
     position: fixed;
-    opacity: 0;
-    visibility: hidden;
     padding: p2r(0 0 12);
-    transform: translateY(50%) scale(0);
+    transform: translateY(50%) scaleY(0) scaleX(0.8);
 
+    font: var(--paragraph-30);
     width: max-content;
     overflow: visible;
     box-shadow: none;
     margin: initial;
     background: transparent;
     border: 0;
+    transition: transform 125ms linear;
 
     @supports (anchor-name: --anchor) {
       inset: unset;

@@ -107,6 +107,11 @@ export class ShipTooltipWrapper {
   };
 }
 
+let openRef: {
+  wrapperComponentRef: ComponentRef<ShipTooltipWrapper>;
+  component: ShipTooltipDirective;
+} | null = null;
+
 @Directive({
   selector: '[shTooltip]',
   standalone: true,
@@ -123,7 +128,7 @@ export class ShipTooltipDirective implements OnDestroy {
   #viewContainerRef = inject(ViewContainerRef);
   #environmentInjector = inject(EnvironmentInjector);
   #renderer = inject(Renderer2);
-  #wrapperComponentRef: ComponentRef<ShipTooltipWrapper> | null = null;
+
   #projectedViewRef: EmbeddedViewRef<any> | null = null;
 
   readonly anchorName = `--${generateUniqueId()}`;
@@ -131,7 +136,9 @@ export class ShipTooltipDirective implements OnDestroy {
 
   @HostListener('mouseenter')
   onMouseEnter() {
-    this.cleanupTooltip();
+    if (openRef?.component !== this) {
+      this.cleanupTooltip();
+    }
 
     queueMicrotask(() => this.showTooltip());
   }
@@ -141,9 +148,7 @@ export class ShipTooltipDirective implements OnDestroy {
   }
 
   private showTooltip() {
-    if (this.#wrapperComponentRef || !this.shTooltip()) return;
-
-    this.isOpen.set(true);
+    if (openRef?.wrapperComponentRef || !this.shTooltip()) return;
 
     let nodesToProject: Node[][];
     const content = this.shTooltip();
@@ -157,22 +162,29 @@ export class ShipTooltipDirective implements OnDestroy {
       return;
     }
 
-    this.#wrapperComponentRef = this.#viewContainerRef.createComponent(ShipTooltipWrapper, {
-      environmentInjector: this.#environmentInjector,
-      projectableNodes: nodesToProject,
+    openRef = {
+      wrapperComponentRef: this.#viewContainerRef.createComponent(ShipTooltipWrapper, {
+        environmentInjector: this.#environmentInjector,
+        projectableNodes: nodesToProject,
+      }),
+      component: this,
+    };
+
+    openRef.wrapperComponentRef.setInput('positionAnchorName', this.anchorName);
+    openRef.wrapperComponentRef.setInput('anchorEl', this.#elementRef);
+    openRef.wrapperComponentRef?.setInput('isOpen', this.isOpen);
+    openRef.wrapperComponentRef.changeDetectorRef.detectChanges();
+
+    setTimeout(() => {
+      this.isOpen.set(true);
     });
-    this.#wrapperComponentRef.setInput('positionAnchorName', this.anchorName);
-    this.#wrapperComponentRef.setInput('anchorEl', this.#elementRef);
-    this.#wrapperComponentRef.setInput('isOpen', this.isOpen);
-    this.#wrapperComponentRef.changeDetectorRef.detectChanges();
   }
 
   private cleanupTooltip(): void {
-    this.isOpen.set(false);
-
-    if (this.#wrapperComponentRef) {
-      this.#wrapperComponentRef.destroy();
-      this.#wrapperComponentRef = null;
+    if (openRef?.wrapperComponentRef) {
+      openRef.wrapperComponentRef.destroy();
+      openRef.component.isOpen.set(false);
+      openRef = null;
     }
 
     if (this.#projectedViewRef) {
