@@ -61,6 +61,8 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [x] Create documentation with examples for all components
 - [x] Create a timepicker component
 - [ ] Create a accordion component
+- [ ] Add another button group variant
+- [ ] Apply the new sheet utility to radio buttons
 
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
 - [ ] Make color themes optional/configurable (primary, accent, warn, error, success) globally.
