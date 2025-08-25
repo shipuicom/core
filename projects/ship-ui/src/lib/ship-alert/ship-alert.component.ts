@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, signal } from '@angular/core';
-import { SHIP_CONFIG } from 'ship-ui';
 import { ShipIconComponent } from '../ship-icon/ship-icon.component';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
+import { SHIP_CONFIG } from '../utilities/ship-config';
 import { ShipAlertService } from './ship-alert.service';
 
 export type ShipAlertType = 'error' | 'success' | 'warn' | 'primary' | 'accent' | 'question';
