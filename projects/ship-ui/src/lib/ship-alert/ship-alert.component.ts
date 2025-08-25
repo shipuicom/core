@@ -53,7 +53,7 @@ const POSSIBLE_VARIANTS = ['simple', 'outlined', 'flat', 'raised'];
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'sh-sheet',
+    '[class]': 'activeClass()',
   },
 })
 export class ShipAlertComponent {
@@ -66,11 +66,12 @@ export class ShipAlertComponent {
   currentClasses = classMutationSignal();
   activeClass = computed(() => {
     const variant = this.variant();
+    const _current = `${this.currentClasses()} sh-sheet`;
 
-    if (!variant) return this.currentClasses();
+    if (!variant) return _current;
 
     const hasVariant = POSSIBLE_VARIANTS.find((x) => this.currentClasses().includes(x));
-    return hasVariant ? this.currentClasses() : `${this.currentClasses()} ${variant}`;
+    return hasVariant ? _current : `${_current} ${variant}`;
   });
 
   removeAlert() {
