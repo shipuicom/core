@@ -13,6 +13,7 @@ $shipAlert: true !default;
     margin-bottom: 0;
     opacity: 1;
     overflow: hidden;
+    display: block;
     transition:
       max-height var(--alert-ad) ease-in-out,
       transform var(--alert-ad) ease-in-out,
