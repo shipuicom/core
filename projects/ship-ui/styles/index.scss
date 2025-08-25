@@ -1,5 +1,5 @@
 $useInterTight: true !default;
-$useApexcharts: true !default;
+$useApexcharts: false !default;
 
 @use './core/fonts/inter-tight' with (
   $useInterTight: $useInterTight
