@@ -6,6 +6,7 @@ $shipButtonShadow: false !default;
   [shButton] {
     --btn-h: #{p2r(40)};
     --btn-f: var(--paragraph-20);
+    --btn-a-opacity: 0.05;
 
     @if $shipButtonShadow != false {
       --btn-bs: var(--box-shadow-10);
@@ -37,8 +38,26 @@ $shipButtonShadow: false !default;
     transition: transform 125ms linear;
     transform: scale(1);
 
+    &:before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(#000 30%, rgba(0, 0, 0, 0));
+      opacity: 0;
+      transition: opacity 175ms linear;
+    }
+
     &:active {
       transform: scale(0.98);
+
+      &:before {
+        opacity: var(--btn-a-opacity);
+      }
+    }
+
+    &.raised,
+    &.flat {
+      --btn-a-opacity: 0.2;
     }
 
     sh-icon {
