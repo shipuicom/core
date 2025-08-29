@@ -64,6 +64,23 @@ $shipCheckbox: true !default;
       }
     }
 
+    &.raised,
+    &.flat {
+      &:has(input) {
+        &:not(:has(input:checked)) .box {
+          background: transparent;
+          border: 1px solid var(--box-bc);
+        }
+      }
+
+      &:not(:has(input)) {
+        .box:not(.active) {
+          background: transparent;
+          border: 1px solid var(--box-bc);
+        }
+      }
+    }
+
     &.indeterminate {
       .box sh-icon {
         &.indeterminate-indicator {

@@ -5,7 +5,6 @@ import {
   computed,
   contentChild,
   effect,
-  ElementRef,
   inject,
   input,
   model,
@@ -59,7 +58,6 @@ export class ShipDatepickerInputComponent {
 
   ngModels = contentChild<NgModel>(NgModel);
   #datePipe = inject(DatePipe);
-  #elementRef = inject(ElementRef<ShipDatepickerInputComponent>);
   #inputRef = signal<HTMLInputElement | null>(null);
 
   masking = input('mediumDate');
@@ -78,7 +76,7 @@ export class ShipDatepickerInputComponent {
   internalDate = signal<Date | null>(this.#INIT_DATE);
   isOpen = model<boolean>(false);
   currentClass = classMutationSignal();
-  #inputObserver = contentProjectionSignal<HTMLInputElement>(this.#elementRef.nativeElement, '#input-wrap input');
+  #inputObserver = contentProjectionSignal<HTMLInputElement>('#input-wrap input');
 
   onDateChange(date: Date | null) {
     this.internalDate.set(date);

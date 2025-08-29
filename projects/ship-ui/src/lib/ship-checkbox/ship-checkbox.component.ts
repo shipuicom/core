@@ -17,9 +17,10 @@ import { classMutationSignal } from '../utilities/class-mutation-signal';
 })
 export class ShipCheckboxComponent {
   currentClassList = classMutationSignal();
+
   showClasses = computed(() => {
     const classArr = this.currentClassList().split(' ');
 
-    return classArr.includes('active') ? classArr : '';
+    return classArr;
   });
 }

@@ -1,7 +1,17 @@
-<sh-checkbox [class.active]="active()" (click)="active.set(!active())" class="raised" />
+<!-- <sh-checkbox [class.active]="active()" (click)="active.set(!active())" class="raised" /> -->
 <sh-checkbox [class.active]="active()" (click)="active.set(!active())" class="raised primary" />
-<sh-checkbox [class.active]="active()" (click)="active.set(!active())" class="raised accent" />
+<!-- <sh-checkbox [class.active]="active()" (click)="active.set(!active())" class="raised accent" />
 <sh-checkbox [class.active]="active()" (click)="active.set(!active())" class="raised warn" />
 <sh-checkbox [class.active]="active()" (click)="active.set(!active())" class="raised error" />
 <sh-checkbox [class.active]="active()" (click)="active.set(!active())" class="raised success" />
-<sh-checkbox [class.active]="active()" (click)="active.set(!active())" class="raised" disabled />
+<sh-checkbox [class.active]="active()" (click)="active.set(!active())" class="raised" disabled /> -->
+
+<sh-checkbox class="raised primary">
+  Checkbox with ngModel
+  <input type="checkbox" [(ngModel)]="active" />
+</sh-checkbox>
+
+<!-- <sh-checkbox class="raised primary">
+  Checkbox with input reactive forms {{ formCtrl.value }}
+  <input type="checkbox" [formControl]="formCtrl" />
+</sh-checkbox> -->
