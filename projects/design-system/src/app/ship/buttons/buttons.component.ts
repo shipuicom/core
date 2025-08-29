@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ShipButtonComponent } from 'ship-ui';
 import { PreviewerComponent } from '../../previewer/previewer.component';
 import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
 import { BaseButtonComponent } from './examples/base-button/base-button.component';
@@ -13,6 +14,8 @@ import { SimpleButtonComponent } from './examples/simple-button/simple-button.co
   imports: [
     PreviewerComponent,
     PropertyViewerComponent,
+
+    ShipButtonComponent,
 
     ButtonSandboxComponent,
     BaseButtonComponent,

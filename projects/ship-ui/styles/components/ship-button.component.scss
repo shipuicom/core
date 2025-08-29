@@ -35,7 +35,7 @@ $shipButtonShadow: false !default;
     box-shadow: var(--btn-bs);
     font: var(--btn-f);
 
-    transition: transform 125ms linear;
+    transition: transform 250ms ease-in;
     transform: scale(1);
 
     &:before {
@@ -57,7 +57,7 @@ $shipButtonShadow: false !default;
 
     &.raised,
     &.flat {
-      --btn-a-opacity: 0.2;
+      --btn-a-opacity: 0.1;
     }
 
     sh-icon {

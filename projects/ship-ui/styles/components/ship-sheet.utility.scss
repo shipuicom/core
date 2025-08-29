@@ -209,6 +209,23 @@ $shipSheet: true !default;
         --sheet-bg: var(--success-g2);
       }
     }
+
+    // &.experimental-border {
+    //   --sheet-bc: transparent;
+
+    //   &:after {
+    //     content: '';
+    //     position: absolute;
+    //     inset: 0;
+    //     border-radius: var(--sheet-s);
+    //     padding: 2px;
+    //     background: linear-gradient(45deg, rgba(#fff, 0.1), rgba(#fff, 0.7), rgba(#fff, 0.1));
+    //     mask:
+    //       linear-gradient(#000 0 0) content-box,
+    //       linear-gradient(#000 0 0);
+    //     mask-composite: exclude;
+    //   }
+    // }
   }
 
   .sh-sheet-h {
