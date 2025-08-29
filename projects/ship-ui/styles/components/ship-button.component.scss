@@ -16,7 +16,7 @@ $shipButtonShadow: false !default;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: p2r(8);
+    gap: p2r(11);
     position: relative;
     padding: p2r(0 12);
     transition: color 80ms linear;
@@ -46,8 +46,12 @@ $shipButtonShadow: false !default;
       transition: rotate 125ms ease-in-out;
     }
 
-    &:has(sh-icon:first-child):has(sh-icon:last-child) {
-      padding: p2r(0 9);
+    sh-icon:first-child {
+      margin-left: p2r(-3);
+    }
+
+    sh-icon:last-child {
+      margin-right: p2r(-3);
     }
 
     &.rotated-icon sh-icon {
@@ -59,14 +63,18 @@ $shipButtonShadow: false !default;
       --btn-f: var(--paragraph-30);
 
       padding: p2r(0 8);
-      gap: p2r(4);
+      gap: p2r(5);
 
       sh-icon {
         font-size: p2r(16);
       }
 
-      &:has(sh-icon:first-child):has(sh-icon:last-child) {
-        padding: p2r(0 7);
+      sh-icon:first-child {
+        margin-left: p2r(-1);
+      }
+
+      sh-icon:last-child {
+        margin-right: p2r(-1);
       }
     }
 
