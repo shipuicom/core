@@ -53,7 +53,9 @@ $shipFormFieldShadow: false !default;
     transform: scale(1);
 
     &:active {
-      transform: scale(0.995);
+      .input-wrap {
+        --ff-bs: 0 0 6px 0 var(--base-4);
+      }
     }
 
     &[readonly],
@@ -173,7 +175,9 @@ $shipFormFieldShadow: false !default;
       background: var(--ff-bg);
       box-shadow: var(--ff-bs);
       overflow: hidden;
-      transition: border-color 125ms linear;
+      transition:
+        border-color 125ms linear,
+        box-shadow 75ms linear;
       min-width: var(--ff-mw);
       width: 100%;
 

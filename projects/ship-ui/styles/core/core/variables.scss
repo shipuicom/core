@@ -97,18 +97,19 @@ html body {
   --success-g2: linear-gradient(180deg, hsl(160, 84%, 54.25%) 0%, hsl(160, 84%, 39%) 50%);
   --success-g3: linear-gradient(180deg, hsl(160, 84%, 69.5%) 0%, hsl(160, 84%, 39%) 50%);
 
-  --base-1: #{light-dark(#fff, hsl(0, 0%, 5.75%))};
-  --base-2: #{light-dark(hsl(0, 0%, 98.05%), hsl(0, 0%, 8.75%))};
-  --base-3: #{light-dark(hsl(0, 0%, 94.5%), hsl(0, 0%, 11.5%))};
-  --base-4: #{light-dark(hsl(0, 0%, 84.75%), hsl(0, 0%, 17.25%))};
-  --base-5: #{light-dark(hsl(0, 0%, 79.75%), hsl(0, 0%, 17.25%))};
-  --base-6: #{light-dark(hsl(0, 0%, 66.25%), hsl(0, 0%, 28.75%))};
-  --base-7: #{light-dark(hsl(0, 0%, 54.5%), hsl(0, 0%, 34.5%))};
-  --base-8: #{light-dark(hsl(0, 0%, 46%), hsl(0, 0%, 46%))};
-  --base-9: #{light-dark(hsl(0, 0%, 35.65%), hsl(0, 0%, 59.5%))};
-  --base-10: #{light-dark(hsl(0, 0%, 25.3%), hsl(0, 0%, 73%))};
-  --base-11: #{light-dark(hsl(0, 0%, 14.95%), hsl(0, 0%, 86.5%))};
-  --base-12: #{light-dark(hsl(0, 0%, 4.6%), hsl(0, 0%, 100%))};
+  $darkThemeLightness: 0%;
+  --base-1: #{light-dark(#fff, hsl(0, 0%, (5.75% + $darkThemeLightness)))};
+  --base-2: #{light-dark(hsl(0, 0%, 98.05%), hsl(0, 0%, 8.75% + $darkThemeLightness))};
+  --base-3: #{light-dark(hsl(0, 0%, 94.5%), hsl(0, 0%, 11.5% + $darkThemeLightness))};
+  --base-4: #{light-dark(hsl(0, 0%, 84.75%), hsl(0, 0%, 17.25% + $darkThemeLightness))};
+  --base-5: #{light-dark(hsl(0, 0%, 79.75%), hsl(0, 0%, 17.25% + $darkThemeLightness))};
+  --base-6: #{light-dark(hsl(0, 0%, 66.25%), hsl(0, 0%, 28.75% + $darkThemeLightness))};
+  --base-7: #{light-dark(hsl(0, 0%, 54.5%), hsl(0, 0%, 34.5% + $darkThemeLightness))};
+  --base-8: #{light-dark(hsl(0, 0%, 46%), hsl(0, 0%, 54% + $darkThemeLightness))};
+  --base-9: #{light-dark(hsl(0, 0%, 35.65%), hsl(0, 0%, 64.5% + $darkThemeLightness))};
+  --base-10: #{light-dark(hsl(0, 0%, 25.3%), hsl(0, 0%, 73% + $darkThemeLightness))};
+  --base-11: #{light-dark(hsl(0, 0%, 14.95%), hsl(0, 0%, 86.5% + $darkThemeLightness))};
+  --base-12: #{light-dark(hsl(0, 0%, 4.6%), hsl(0, 0%, 100% + $darkThemeLightness))};
 
   --base-g2: linear-gradient(180deg, hsl(0, 0%, 66.25%) 0%, hsl(0, 0%, 46%) 50%);
   --base-g3: linear-gradient(180deg, hsl(0, 0%, 73%) 0%, hsl(0, 0%, 46%) 50%);
