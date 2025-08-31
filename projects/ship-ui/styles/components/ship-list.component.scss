@@ -34,6 +34,10 @@ $shipList: true !default;
       line-height: p2r(24);
     }
 
+    &[shsortable] [item]:active {
+      transform: scale(1);
+    }
+
     > [action],
     > [item] {
       border-radius: var(--list-s);
@@ -69,16 +73,13 @@ $shipList: true !default;
       }
     }
 
-    :has(input[type='checkbox']),
-    :has(input[type='radio']),
+    :has(input),
     > [action] {
       cursor: pointer;
     }
 
-    > [item]:has(input[type='checkbox']:checked),
-    > [action]:has(input[type='checkbox']:checked),
-    > [item]:has(input[type='radio']:checked),
-    > [action]:has(input[type='radio']:checked),
+    > [item]:has(input:checked),
+    > [action]:has(input:checked),
     > [action].active,
     > [action].selected {
       --list-color: var(--base-12);
@@ -88,10 +89,8 @@ $shipList: true !default;
     }
 
     &.primary {
-      > [item]:has(input[type='checkbox']:checked),
-      > [action]:has(input[type='checkbox']:checked),
-      > [item]:has(input[type='radio']:checked),
-      > [action]:has(input[type='radio']:checked),
+      > [item]:has(input:checked),
+      > [action]:has(input:checked),
       > [action].active,
       > [action].selected {
         sh-icon:first-child {
@@ -101,10 +100,8 @@ $shipList: true !default;
     }
 
     &.accent {
-      > [item]:has(input[type='checkbox']:checked),
-      > [action]:has(input[type='checkbox']:checked),
-      > [item]:has(input[type='radio']:checked),
-      > [action]:has(input[type='radio']:checked),
+      > [item]:has(input:checked),
+      > [action]:has(input:checked),
       > [action].active,
       > [action].selected {
         sh-icon:first-child {
@@ -114,10 +111,8 @@ $shipList: true !default;
     }
 
     &.warn {
-      > [item]:has(input[type='checkbox']:checked),
-      > [action]:has(input[type='checkbox']:checked),
-      > [item]:has(input[type='radio']:checked),
-      > [action]:has(input[type='radio']:checked),
+      > [item]:has(input:checked),
+      > [action]:has(input:checked),
       > [action].active,
       > [action].selected {
         sh-icon:first-child {
@@ -127,10 +122,8 @@ $shipList: true !default;
     }
 
     &.error {
-      > [item]:has(input[type='checkbox']:checked),
-      > [action]:has(input[type='checkbox']:checked),
-      > [item]:has(input[type='radio']:checked),
-      > [action]:has(input[type='radio']:checked),
+      > [item]:has(input:checked),
+      > [action]:has(input:checked),
       > [action].active,
       > [action].selected {
         sh-icon:first-child {
@@ -140,10 +133,8 @@ $shipList: true !default;
     }
 
     &.success {
-      > [item]:has(input[type='checkbox']:checked),
-      > [action]:has(input[type='checkbox']:checked),
-      > [item]:has(input[type='radio']:checked),
-      > [action]:has(input[type='radio']:checked),
+      > [item]:has(input:checked),
+      > [action]:has(input:checked),
       > [action].active,
       > [action].selected {
         sh-icon:first-child {
