@@ -2,6 +2,8 @@
 
 A modern signal based and zoneless compatable UI library for Angular visit our website [shipui.com](https://shipui.com) for more info.
 
+Docs can be found at [docs.shipui.com](https://docs.shipui.com)
+
 ## Base setup
 
 To start using ShipUI make sure you're using angular 19 or newer.
