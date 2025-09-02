@@ -208,7 +208,7 @@ export class ShipRangeSliderComponent {
       }
     });
 
-    this.#observer.observe(this.#inputElement, { attributes: true });
+    this.#observer.observe(this.#inputElement, { attributes: true, attributeFilter: MUTATION_ATTRIBUTES });
   }
 
   #countDecimals(value: number): number {

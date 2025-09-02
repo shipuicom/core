@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ShipIconComponent } from '../ship-icon/ship-icon.component';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
 
@@ -6,7 +6,7 @@ import { classMutationSignal } from '../utilities/class-mutation-signal';
   selector: 'sh-checkbox',
   imports: [ShipIconComponent],
   template: `
-    <div class="box sh-sheet" [class]="showClasses()">
+    <div class="box sh-sheet" [class]="currentClassList()">
       <sh-icon class="inherit default-indicator">check-bold</sh-icon>
       <sh-icon class="inherit indeterminate-indicator">minus-bold</sh-icon>
     </div>
@@ -17,10 +17,4 @@ import { classMutationSignal } from '../utilities/class-mutation-signal';
 })
 export class ShipCheckboxComponent {
   currentClassList = classMutationSignal();
-
-  showClasses = computed(() => {
-    const classArr = this.currentClassList().split(' ');
-
-    return classArr;
-  });
 }

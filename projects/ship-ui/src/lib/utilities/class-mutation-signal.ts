@@ -20,7 +20,7 @@ export function classMutationSignal(): Signal<string> {
     }
   });
 
-  observer.observe(element, { attributes: true });
+  observer.observe(element, { attributes: true, attributeFilter: ['class'] });
   destroyRef.onDestroy(() => observer.disconnect());
 
   return classListSignal.asReadonly();

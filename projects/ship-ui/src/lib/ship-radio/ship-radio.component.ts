@@ -1,22 +1,16 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { classMutationSignal } from '../utilities/class-mutation-signal';
 
 @Component({
   selector: 'sh-radio',
   imports: [],
   template: `
-    <div class="radio"></div>
+    <div class="radio sh-sheet" [class]="currentClassList()"></div>
 
     <ng-content />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShipRadioComponent {
-  #selfRef = inject(ElementRef);
-
-  @HostListener('click')
-  onClick() {
-    if (this.#selfRef.nativeElement.querySelector('input')) {
-      this.#selfRef.nativeElement.querySelector('input').focus();
-    }
-  }
+  currentClassList = classMutationSignal();
 }
