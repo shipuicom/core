@@ -2,8 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DOCUMENT,
   effect,
   ElementRef,
+  inject,
   input,
   model,
   output,
@@ -37,6 +39,7 @@ import { generateUniqueId } from '../utilities/random-id';
   },
 })
 export class ShipTooltipComponent {
+  #document = inject(DOCUMENT);
   #BASE_SPACE = 4;
   SUPPORTS_ANCHOR = CSS.supports('position-anchor', '--abc') && CSS.supports('anchor-name', '--abc');
 
@@ -91,7 +94,7 @@ export class ShipTooltipComponent {
     const scrollableParent = this.#findScrollableParent(this.tooltipRef()?.nativeElement);
 
     scrollableParent.addEventListener('scroll', () => this.calculateMenuPosition(), { signal });
-    document.addEventListener('resize', () => this.calculateMenuPosition(), { signal });
+    this.#document.addEventListener('resize', () => this.calculateMenuPosition(), { signal });
   });
 
   scrollableStyles = ['scroll', 'auto'];
@@ -109,7 +112,7 @@ export class ShipTooltipComponent {
       parent = parent.parentElement;
     }
 
-    return document.documentElement;
+    return this.#document.documentElement;
   }
 
   eventClose($event: MouseEvent) {

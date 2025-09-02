@@ -15,7 +15,7 @@ import { ShipIconComponent } from '../ship-icon/ship-icon.component';
 
     <div class="collapsable">
       <div class="content">
-        <ng-content></ng-content>
+        <ng-content />
       </div>
     </div>
   `,

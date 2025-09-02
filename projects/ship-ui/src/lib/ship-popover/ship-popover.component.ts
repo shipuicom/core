@@ -2,8 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DOCUMENT,
   effect,
   ElementRef,
+  inject,
   input,
   model,
   output,
@@ -34,12 +36,13 @@ const DEFAULT_OPTIONS: ShipPopoverOptions = {
   selector: 'sh-popover',
   imports: [],
   template: `
-    <div class="trigger" #triggerRef [style.anchor-name]="id()" (click)="toggleIsOpen($event)">
+    <div class="trigger" #triggerRef (click)="toggleIsOpen($event)">
       <div class="trigger-wrapper">
         <ng-content select="[trigger]" />
         <ng-content select="button" />
         <ng-content select="[shButton]" />
       </div>
+      <div class="trigger-anchor" [style.anchor-name]="id()"></div>
     </div>
 
     <div popover #popoverRef class="popover" [style.position-anchor]="id()" [style]="menuStyle()">
@@ -53,6 +56,7 @@ const DEFAULT_OPTIONS: ShipPopoverOptions = {
   },
 })
 export class ShipPopoverComponent {
+  #document = inject(DOCUMENT);
   #BASE_SPACE = 4;
   SUPPORTS_ANCHOR =
     typeof CSS !== 'undefined' && CSS.supports('position-anchor', '--abc') && CSS.supports('anchor-name', '--abc');
@@ -91,7 +95,7 @@ export class ShipPopoverComponent {
       };
       popoverEl?.showPopover();
 
-      document.addEventListener(
+      this.#document.addEventListener(
         'keydown',
         (e) => {
           if (e.key === 'Escape' && !this.defaultOptionMerge().closeOnEsc) {
@@ -150,7 +154,7 @@ export class ShipPopoverComponent {
       parent = parent.parentElement;
     }
 
-    return document.documentElement;
+    return this.#document.documentElement;
   }
 
   #calculateMenuPosition() {

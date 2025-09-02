@@ -10,8 +10,14 @@ $shipPopover: true !default;
 
     &.multi-layer {
       .popover {
-        top: anchor(top);
-        left: calc(anchor(right) - #{p2r(10)});
+        position-area: span-y-end right;
+      }
+
+      .trigger .trigger-anchor {
+        right: p2r(-4);
+        left: p2r(-4);
+        top: 0;
+        bottom: 0;
       }
     }
 
@@ -26,6 +32,15 @@ $shipPopover: true !default;
         &:empty + * {
           display: inherit;
         }
+      }
+
+      .trigger-anchor {
+        position: absolute;
+        top: p2r(-4);
+        bottom: p2r(-4);
+        left: 0;
+        right: 0;
+        z-index: -1;
       }
     }
 
@@ -50,17 +65,9 @@ $shipPopover: true !default;
 
       @supports (anchor-name: --anchor) {
         inset: unset;
-        left: anchor(left);
-        top: calc(anchor(bottom) + #{p2r(4)});
         position: fixed;
-        position-try-order:
-          flip-block,
-          flip-inline,
-          flip-block flip-inline;
-        position-try-fallbacks:
-          flip-block,
-          flip-inline,
-          flip-block flip-inline;
+        position-area: bottom span-right;
+        position-try-fallbacks: flip-block, flip-inline;
       }
     }
   }

@@ -2,6 +2,7 @@ import {
   ApplicationRef,
   ComponentRef,
   createComponent,
+  DOCUMENT,
   inject,
   Injectable,
   isSignal,
@@ -24,7 +25,8 @@ export type ShipDialogReturn<T> = ReturnType<ShipDialogService['open']> & {
   providedIn: 'root',
 })
 export class ShipDialogService {
-  #bodyEl = typeof document !== 'undefined' ? document.querySelector('body') : null;
+  #document = inject(DOCUMENT);
+  #bodyEl = this.#document.querySelector('body');
   #appRef = inject(ApplicationRef);
 
   compRef: ComponentRef<ShipDialogComponent> | null = null;
@@ -100,14 +102,14 @@ export class ShipDialogService {
   }
 
   #createEl(): Element {
-    const wrapperEl = document.createElement('sh-dialog-ref');
+    const wrapperEl = this.#document.createElement('sh-dialog-ref');
     wrapperEl.id = 'sh-dialog-ref';
 
-    if (!document.getElementById('sh-dialog-ref')) {
+    if (!this.#document.getElementById('sh-dialog-ref')) {
       this.#bodyEl?.append(wrapperEl);
     }
 
-    return document.getElementById('sh-dialog-ref')!;
+    return this.#document.getElementById('sh-dialog-ref')!;
   }
 
   #cleanupRefs() {

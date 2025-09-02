@@ -2,9 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DOCUMENT,
   effect,
   ElementRef,
   HostListener,
+  inject,
   input,
   model,
   output,
@@ -39,6 +41,8 @@ type A = number;
   },
 })
 export class ShipColorPickerComponent {
+  #document = inject(DOCUMENT);
+
   readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('colorCanvas');
   private canvasData = signal<{
     canvas: HTMLCanvasElement;
@@ -185,25 +189,25 @@ export class ShipColorPickerComponent {
       this.updateColorAndMarker(event);
     });
 
-    document.addEventListener('mousemove', (event) => {
+    this.#document.addEventListener('mousemove', (event) => {
       if (this.isDragging()) {
         event.preventDefault();
         this.updateColorAndMarker(event, true);
       }
     });
 
-    document.addEventListener('mouseup', () => this.isDragging.set(false));
+    this.#document.addEventListener('mouseup', () => this.isDragging.set(false));
 
     canvas.addEventListener('touchstart', (_) => this.isDragging.set(true));
-    document.addEventListener('touchmove', (event) => {
+    this.#document.addEventListener('touchmove', (event) => {
       if (this.isDragging()) {
         event.preventDefault();
         this.updateColorAndMarker(event.touches[0], true);
       }
     });
 
-    document.addEventListener('touchend', () => this.isDragging.set(false));
-    document.addEventListener('touchcancel', () => this.isDragging.set(false));
+    this.#document.addEventListener('touchend', () => this.isDragging.set(false));
+    this.#document.addEventListener('touchcancel', () => this.isDragging.set(false));
   }
 
   private setCanvasSize() {

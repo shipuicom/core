@@ -19,7 +19,7 @@ import {
     <div class="viewport" #viewport (scroll)="onScroll()">
       <div class="total-height" [style.height]="totalHeight() + 'px'"></div>
       <div class="items-container" [style.transform]="'translateY(' + translateY() + 'px)'">
-        <ng-content></ng-content>
+        <ng-content />
       </div>
     </div>
   `,

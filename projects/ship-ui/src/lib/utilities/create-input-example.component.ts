@@ -46,7 +46,7 @@ class ParentComponentExample {
       <ng-content select="div[text-wrap]" />
       <p>Text Input Value: {{ textInputValue() }}</p>
       <p>typeof text input value: {{ typeof textInputValue() }}</p>
-      <ng-content></ng-content>
+      <ng-content />
     </div>
 
     <div class="card">

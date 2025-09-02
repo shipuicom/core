@@ -5,7 +5,7 @@ import { SHIP_CONFIG } from '../utilities/ship-config';
   selector: 'sh-card',
   imports: [],
   template: `
-    <ng-content></ng-content>
+    <ng-content />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {

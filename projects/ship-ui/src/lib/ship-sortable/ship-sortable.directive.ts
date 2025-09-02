@@ -1,4 +1,14 @@
-import { Directive, effect, ElementRef, HostListener, inject, output, Renderer2, signal } from '@angular/core';
+import {
+  Directive,
+  DOCUMENT,
+  effect,
+  ElementRef,
+  HostListener,
+  inject,
+  output,
+  Renderer2,
+  signal,
+} from '@angular/core';
 
 export type AfterDropResponse = {
   fromIndex: number;
@@ -10,6 +20,7 @@ export type AfterDropResponse = {
   standalone: true,
 })
 export class ShipSortableDirective {
+  #document = inject(DOCUMENT);
   #selfEl = inject(ElementRef<HTMLElement>);
   #renderer = inject(Renderer2);
   #placeholderEl = signal<HTMLElement | null>(null);
@@ -94,7 +105,7 @@ export class ShipSortableDirective {
   dragStart(e: DragEvent) {
     if (e.target && e.dataTransfer) {
       const targetElement = e.target as HTMLElement;
-      const currentTarget = document.elementFromPoint(e.clientX, e.clientY);
+      const currentTarget = this.#document.elementFromPoint(e.clientX, e.clientY);
       const isSortingHandle =
         currentTarget?.hasAttribute('sort-handle') || currentTarget?.closest('[sort-handle]') !== null;
       let draggedElement: HTMLElement;

@@ -23,12 +23,12 @@ import { generateUniqueId } from '../utilities/random-id';
   standalone: true,
   template: `
     <div class="tooltip-content">
-      <ng-content></ng-content>
+      <ng-content />
     </div>
   `,
   host: {
     role: 'tooltip',
-    '[attr.popover]': '"auto"',
+    '[attr.popover]': '"manual"',
     '[style.position-anchor]': 'positionAnchorName()',
     '[class.below]': 'isBelow()',
   },
@@ -130,21 +130,45 @@ export class ShipTooltipDirective implements OnDestroy {
   #renderer = inject(Renderer2);
 
   #projectedViewRef: EmbeddedViewRef<any> | null = null;
+  private debounceTimer: any; // Using any for the timer ID
+  private readonly DEBOUNCE_DELAY = 500;
 
   readonly anchorName = `--${generateUniqueId()}`;
   isOpen = signal<boolean>(false);
 
   @HostListener('mouseenter')
   onMouseEnter() {
-    if (openRef?.component !== this) {
+    if (openRef?.component.anchorName !== this.anchorName) {
       this.cleanupTooltip();
     }
+
+    this.cancelCleanupTimer();
 
     queueMicrotask(() => this.showTooltip());
   }
 
+  @HostListener('mouseleave')
+  onMouseLeave() {
+    this.startCleanupTimer();
+  }
+
   ngOnDestroy() {
+    this.cancelCleanupTimer();
     this.cleanupTooltip();
+  }
+
+  private startCleanupTimer() {
+    this.cancelCleanupTimer();
+    this.debounceTimer = setTimeout(() => {
+      this.cleanupTooltip();
+    }, this.DEBOUNCE_DELAY);
+  }
+
+  private cancelCleanupTimer() {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = null;
+    }
   }
 
   private showTooltip() {
@@ -174,6 +198,13 @@ export class ShipTooltipDirective implements OnDestroy {
     openRef.wrapperComponentRef.setInput('anchorEl', this.#elementRef);
     openRef.wrapperComponentRef?.setInput('isOpen', this.isOpen);
     openRef.wrapperComponentRef.changeDetectorRef.detectChanges();
+    openRef.wrapperComponentRef.location.nativeElement.addEventListener('mouseenter', () => {
+      this.cancelCleanupTimer();
+    });
+
+    openRef.wrapperComponentRef.location.nativeElement.addEventListener('mouseleave', () => {
+      this.startCleanupTimer();
+    });
 
     setTimeout(() => {
       this.isOpen.set(true);
@@ -182,6 +213,7 @@ export class ShipTooltipDirective implements OnDestroy {
 
   private cleanupTooltip(): void {
     if (openRef?.wrapperComponentRef) {
+      openRef.component.cancelCleanupTimer();
       openRef.wrapperComponentRef.destroy();
       openRef.component.isOpen.set(false);
       openRef = null;

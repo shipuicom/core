@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipColorPickerComponent, ShipMenuComponent, ShipRadioComponent } from 'ship-ui';
+import { hsl2oklch } from 'colorizr';
+import { ShipButtonComponent, ShipColorPickerComponent, ShipMenuComponent, ShipRadioComponent } from 'ship-ui';
 
 interface Hsl {
   h: number;
@@ -21,7 +22,7 @@ const STARTING_COLOR = 'mono';
 
 @Component({
   selector: 'app-theme-editor',
-  imports: [FormsModule, ShipColorPickerComponent, ShipMenuComponent, ShipRadioComponent],
+  imports: [FormsModule, ShipColorPickerComponent, ShipMenuComponent, ShipRadioComponent, ShipButtonComponent],
   templateUrl: './theme-editor.component.html',
   styleUrl: './theme-editor.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -77,40 +78,50 @@ export default class ThemeEditorComponent {
     const hsl = this.hslSignal();
     const inputName = this.inputName();
 
-    const h = parseInt(hsl.substring(4, hsl.indexOf(',')));
-    const s = parseInt(hsl.substring(hsl.indexOf(',') + 1, hsl.indexOf('%')));
-    const lLight = parseInt(hsl.split(', ')[2].split('%')[0]);
+    const _h = parseInt(hsl.substring(4, hsl.indexOf(',')));
+    const _s = parseInt(hsl.substring(hsl.indexOf(',') + 1, hsl.indexOf('%')));
+    const _l = parseInt(hsl.split(', ')[2].split('%')[0]);
 
     const colors: { [key: string]: string } = {};
-    const range = lLight; // Range from 0 to lLight
+    const range = _l; // Range from 0 to lLight
     const clampedRange = range * 0.9; // 90% of the range
-    const start = lLight - clampedRange; // Start value
+    const start = _l - clampedRange; // Start value
 
     // Light shades (regular theme)
     for (let i = 1; i <= countLight; i++) {
-      const light = 100 - ((100 - lLight) / countLight) * i;
+      const light = 100 - ((100 - _l) / countLight) * i;
 
-      console.log('s', s);
-      colors[`--${inputName}-${i}0`] = `hsl(${h.toFixed(2)}, ${s.toFixed(2)}%, ${light.toFixed(2)}%)`;
+      // console.log('s', _s);
+      // colors[`--${inputName}-${i}0`] = `hsl(${h.toFixed(2)}, ${_s.toFixed(2)}%, ${light.toFixed(2)}%)`;
+
+      const { l, c, h } = hsl2oklch([_h, _s, light]);
+      colors[`--${inputName}-${i}0`] = `oklch(${l.toFixed(2)} ${c.toFixed(2)} ${h.toFixed(1)})`;
     }
     ('');
     // Dark shades (regular theme)
     for (let i = 1; i <= countDark; i++) {
       const dark = start + (clampedRange / countDark) * (countDark - i);
-      colors[`--${inputName}-${i + countLight}0`] = `hsl(${h.toFixed(2)}, ${s.toFixed(2)}%, ${dark.toFixed(2)}%)`;
+
+      const { l, c, h } = hsl2oklch([_h, _s, dark]);
+      colors[`--${inputName}-${i + countLight}0`] = `oklch(${l.toFixed(2)} ${c.toFixed(2)} ${h.toFixed(1)})`;
+      // colors[`--${inputName}-${i + countLight}0`] = `hsl(${h.toFixed(2)}, ${_s.toFixed(2)}%, ${dark.toFixed(2)}%)`;
     }
 
     // Light shades (dark theme) (Reversed)
     for (let i = 1; i <= countLight; i++) {
-      const darkLight = Math.max(0, Math.min(100, (lLight / countLight) * i));
-      colors[`--${inputName}-${i}0-dark`] = `hsl(${h.toFixed(2)}, ${s.toFixed(2)}%, ${darkLight.toFixed(2)}%)`;
+      const darkLight = Math.max(0, Math.min(100, (_l / countLight) * i));
+
+      const { l, c, h } = hsl2oklch([_h, _s, darkLight]);
+      colors[`--${inputName}-${i}0-dark`] = `oklch(${l.toFixed(2)} ${c.toFixed(2)} ${h.toFixed(1)})`;
+      // colors[`--${inputName}-${i}0-dark`] = `hsl(${h.toFixed(2)}, ${_s.toFixed(2)}%, ${darkLight.toFixed(2)}%)`;
     }
 
     // Dark shades (dark theme) (Reversed)
     for (let i = 1; i <= countDark; i++) {
-      const darkDark = Math.max(0, Math.min(100, 100 - ((100 - lLight) / countDark) * (countDark - i)));
-      colors[`--${inputName}-${i + countLight}0-dark`] =
-        `hsl(${h.toFixed(2)}, ${s.toFixed(2)}%, ${darkDark.toFixed(2)}%)`;
+      const darkDark = Math.max(0, Math.min(100, 100 - ((100 - _l) / countDark) * (countDark - i)));
+      const { l, c, h } = hsl2oklch([_h, _s, darkDark]);
+      colors[`--${inputName}-${i + countLight}0-dark`] = `oklch(${l.toFixed(2)} ${c.toFixed(2)} ${h.toFixed(1)})`;
+      // colors[`--${inputName}-${i + countLight}0-dark`] = `hsl(${_h.toFixed(2)}, ${_s.toFixed(2)}%, ${darkDark.toFixed(2)}%)`;
     }
 
     return colors;

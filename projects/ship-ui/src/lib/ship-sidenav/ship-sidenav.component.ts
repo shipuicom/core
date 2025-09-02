@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  DOCUMENT,
   effect,
   ElementRef,
   inject,
@@ -81,7 +82,7 @@ export function watchHostClass(className: string): WritableSignal<boolean> {
       </div>
 
       <main>
-        <ng-content></ng-content>
+        <ng-content />
       </main>
     </div>
   `,
@@ -93,6 +94,7 @@ export function watchHostClass(className: string): WritableSignal<boolean> {
   },
 })
 export class ShipSidenavComponent {
+  #document = inject(DOCUMENT);
   #selfRef = inject(ElementRef);
   openWidth = 280;
   openWidthTreshold = this.openWidth * 0.5;
@@ -150,12 +152,12 @@ export class ShipSidenavComponent {
   });
 
   draggingEffect = effect(() => {
-    if (typeof document === 'undefined' || this.disableDrag()) return;
+    if (this.disableDrag()) return;
 
     if (this.isDragging()) {
-      document.body.classList.add('dragging');
+      this.#document.body.classList.add('dragging');
     } else {
-      document.body.classList.remove('dragging');
+      this.#document.body.classList.remove('dragging');
     }
   });
 

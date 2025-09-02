@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Injectable, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
+import { DOCUMENT, Injectable, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
 import { ShipSidenavType } from 'ship-ui';
 import { WINDOW } from '../core/providers/window';
 import { LOCALSTORAGE } from '../core/services/localstorage.token';
@@ -14,11 +14,12 @@ declare global {
   providedIn: 'root',
 })
 export class LayoutState {
+  #document = inject(DOCUMENT);
   #window = inject(WINDOW);
   #ls = inject(LOCALSTORAGE);
   #platformId = inject(PLATFORM_ID);
   #storedDarkMode = this.#ls.getItemParsed<boolean>('darkTheme', true);
-  #isDarkMode = signal(false);
+  #isDarkMode = signal(this.#storedDarkMode);
 
   isDarkMode = this.#isDarkMode.asReadonly();
 
@@ -34,27 +35,21 @@ export class LayoutState {
 
   constructor() {
     if (isPlatformBrowser(this.#platformId)) {
-      const prefersDarkMode = this.#window?.matchMedia('(prefers-color-scheme:dark)').matches;
-
-      if (prefersDarkMode && this.#storedDarkMode) {
-        this.setDarkMode();
-      }
-
-      effect(() => {
-        if (this.#isDarkMode()) {
-          document.body.classList.add('dark');
-          // document.body.classList.remove('light');
-        } else {
-          document.body.classList.remove('dark');
-          // document.body.classList.add('light');
-        }
-      });
-
       this.#window?.addEventListener('resize', () => {
         this.currentWidth.set(this.#window.innerWidth);
       });
     }
   }
+
+  darkModeEffect = effect(() => {
+    if (this.#isDarkMode()) {
+      this.#document.documentElement.classList.add('dark');
+      this.#document.documentElement.classList.remove('light');
+    } else {
+      this.#document.documentElement.classList.remove('dark');
+      this.#document.documentElement.classList.add('light');
+    }
+  });
 
   toggleNav() {
     this.isNavOpen.set(!this.isNavOpen());

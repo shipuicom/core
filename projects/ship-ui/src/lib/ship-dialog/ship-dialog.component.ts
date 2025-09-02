@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DOCUMENT,
   effect,
   ElementRef,
   inject,
@@ -59,6 +60,7 @@ const DEFAULT_OPTIONS: ShipDialogOptions = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShipDialogComponent {
+  #document = inject(DOCUMENT);
   #shConfig = inject(SHIP_CONFIG, { optional: true });
   dialogRef = viewChild<ElementRef<HTMLDialogElement>>('dialogRef');
   isOpen = model<boolean>(false);
@@ -94,7 +96,7 @@ export class ShipDialogComponent {
         }
       );
 
-      document.addEventListener(
+      this.#document.addEventListener(
         'keydown',
         (e) => {
           if (e.key === 'Escape' && !this.defaultOptionMerge().closeOnEsc) {
