@@ -145,7 +145,7 @@ $shipSheet: true !default;
     }
 
     &.flat {
-      --sheet-c: var(--base-1);
+      --sheet-c: #fff;
       --sheet-ic: #fff;
       --sheet-bg: var(--base-8);
 
@@ -178,7 +178,7 @@ $shipSheet: true !default;
     }
 
     &.raised {
-      --sheet-c: var(--base-1);
+      --sheet-c: #fff;
       --sheet-ic: #fff;
       --sheet-bg: var(--base-g6);
 
