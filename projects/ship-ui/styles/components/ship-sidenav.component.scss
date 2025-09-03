@@ -172,6 +172,7 @@ $shipSidenav: true !default;
 
       &.open .main-wrap {
         transform: translateX(var(--sidenav-width));
+        box-shadow: var(--box-shadow-20);
       }
 
       .closed-topbar {
