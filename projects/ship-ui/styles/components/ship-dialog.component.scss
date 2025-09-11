@@ -19,6 +19,8 @@ $shipDialog: true !default;
     padding: 0;
     margin: auto;
     z-index: 0;
+    display: flex;
+    flex-direction: column;
 
     &:focus-visible {
       outline: none;
@@ -51,8 +53,7 @@ $shipDialog: true !default;
       background-color: var(--dialog-bg);
       z-index: 2;
       max-width: initial;
-      max-height: calc(96vh - #{p2r(16)});
-      position: relative;
+      height: 100%;
       overflow: auto;
     }
 
