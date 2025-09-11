@@ -1,0 +1,3 @@
+<button shButton (click)="openDialog()" [class.type]="type()">Open dialog as component</button>
+
+<sh-dialog [(isOpen)]="isOpen" (closed)="close()">hello im dialog content</sh-dialog>
