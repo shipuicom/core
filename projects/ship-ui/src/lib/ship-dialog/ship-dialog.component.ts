@@ -40,22 +40,25 @@ const DEFAULT_OPTIONS: ShipDialogOptions = {
   imports: [],
   template: `
     @let options = this.defaultOptionMerge();
-    <dialog
-      shDialog
-      #dialogRef
-      [class]="options.class"
-      [style.width]="options.width ?? ''"
-      [style.max-width]="options.maxWidth ?? ''"
-      [style.max-height]="options.maxHeight ?? ''"
-      [style.height]="options.height ?? ''">
-      <div class="content">
-        <ng-content />
-      </div>
 
-      @if (this.defaultOptionMerge().closeOnOutsideClick) {
-        <div class="closeable-overlay" (click)="isOpen.set(false)"></div>
-      }
-    </dialog>
+    @if (isOpen()) {
+      <dialog
+        shDialog
+        #dialogRef
+        [class]="options.class"
+        [style.width]="options.width ?? ''"
+        [style.max-width]="options.maxWidth ?? ''"
+        [style.max-height]="options.maxHeight ?? ''"
+        [style.height]="options.height ?? ''">
+        <div class="content">
+          <ng-content />
+        </div>
+
+        @if (this.defaultOptionMerge().closeOnOutsideClick) {
+          <div class="closeable-overlay" (click)="isOpen.set(false)"></div>
+        }
+      </dialog>
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -77,6 +80,7 @@ export class ShipDialogComponent {
   isOpenEffect = effect(() => {
     const dialogEl = this.dialogRef()?.nativeElement;
 
+    if (!dialogEl) return;
     if (this.abortController) {
       this.abortController.abort();
     }
@@ -84,8 +88,8 @@ export class ShipDialogComponent {
     this.abortController = new AbortController();
 
     if (this.isOpen()) {
-      dialogEl?.showModal();
-      dialogEl?.addEventListener(
+      dialogEl.showModal();
+      dialogEl.addEventListener(
         'close',
         () => {
           this.isOpen.set(false);
@@ -112,8 +116,9 @@ export class ShipDialogComponent {
         }
       );
     } else {
-      this.closed.emit();
-      dialogEl?.close();
+      dialogEl.close();
+
+      queueMicrotask(() => this.closed.emit());
     }
   });
 
