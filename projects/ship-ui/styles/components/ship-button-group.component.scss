@@ -29,6 +29,7 @@ $shipButtonGroup: true !default;
       background: var(--base-3);
       padding: p2r(3);
       gap: p2r(4);
+      border: 0;
 
       button {
         border-radius: var(--shape-1);
