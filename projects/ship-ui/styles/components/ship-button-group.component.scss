@@ -32,13 +32,19 @@ $shipButtonGroup: true !default;
       border: 0;
 
       button {
-        border-radius: var(--shape-1);
+        border-radius: p2r(6);
         border: 0;
 
-        &:hover,
-        &.active {
+        &:hover {
+          --btng-bg: var(--base-2);
+
           box-shadow: var(--box-shadow-10);
+        }
+
+        &.active {
           --btng-bg: var(--base-1);
+
+          box-shadow: var(--box-shadow-10);
         }
       }
     }
