@@ -10,6 +10,7 @@ import { ShipButtonGroupComponent, ShipIconComponent } from 'ship-ui';
 })
 export class BaseButtonGroupComponent {
   small = input<boolean>(false);
+  type = input<'' | 'type-b'>('');
   activeIndex = signal<number | null>(null);
 
   items = signal(new Array(5).fill(0));

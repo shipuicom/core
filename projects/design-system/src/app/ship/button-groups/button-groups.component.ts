@@ -13,4 +13,5 @@ import { BaseButtonGroupComponent } from './examples/base-button-group/base-butt
 })
 export default class ButtonGroupComponent {
   small = signal(false);
+  type = signal<'' | 'type-b'>('');
 }

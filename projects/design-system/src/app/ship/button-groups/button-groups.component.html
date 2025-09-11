@@ -21,12 +21,17 @@
 </app-property-viewer>
 
 <div>
-  <sh-button-group [class.small]="small()">
+  <sh-button-group>
     <button [class.active]="!small()" (click)="small.set(false)">Normal (default)</button>
     <button [class.active]="small()" (click)="small.set(true)">Small</button>
+  </sh-button-group>
+
+  <sh-button-group>
+    <button [class.active]="!type()" (click)="type.set('')">Base (default)</button>
+    <button [class.active]="type()" (click)="type.set('type-b')">Type B</button>
   </sh-button-group>
 </div>
 
 <app-previewer path="/button-groups/examples/base-button-group/base-button-group.component" title="Base">
-  <app-base-button-group class="example" [small]="small()" />
+  <app-base-button-group class="example" [small]="small()" [type]="type()" />
 </app-previewer>
