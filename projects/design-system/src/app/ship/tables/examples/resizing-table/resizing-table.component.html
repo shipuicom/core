@@ -1,5 +1,5 @@
 <sh-table [data]="dataSource()" [class]="type()">
-  <tr>
+  <tr thead>
     @for (col of displayedColumns(); track col) {
       <th shResize>{{ col }}</th>
     }
