@@ -113,6 +113,10 @@ $shipTable: true !default;
         }
       }
 
+      tr:hover td {
+        background-color: var(--base-2);
+      }
+
       div[table-header] tr:first-child th {
         border-bottom: 0;
       }
@@ -151,6 +155,16 @@ $shipTable: true !default;
       &:has(tr.sticky) {
         position: sticky;
         top: 0;
+        z-index: 1;
+      }
+    }
+
+    thead {
+      position: relative;
+
+      &:has(tr.sticky) {
+        position: sticky;
+        top: 0;
         z-index: 2;
       }
     }
@@ -164,7 +178,7 @@ $shipTable: true !default;
     }
 
     tbody,
-    // thead,
+    thead,
     // div[table-header].sticky,
     tr {
       display: grid;
@@ -339,19 +353,6 @@ $shipTable: true !default;
           padding: var(--table-th-p);
         }
       }
-    }
-
-    [shStickyRows] {
-      display: grid;
-      grid-column: 1 / -1;
-      grid-template-columns: subgrid;
-      grid-template-rows: subgrid;
-      position: sticky;
-      top: 0;
-      z-index: 1; // Needs to be the same as regular sticky rows
-      border: 0;
-      border-color: var(--table-bc);
-      border-style: solid;
     }
 
     [shStickyColumns] {

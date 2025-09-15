@@ -60,6 +60,7 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [x] Add flat and raised versions of alerts
 - [x] Create documentation with examples for all components
 - [x] Create a timepicker component
+- [x] Bug on table headers with sticky rows - sticky rows hide table headers but should add to the table headers
 - [ ] Create a accordion component
 - [ ] Add another button group variant
 - [ ] Apply the new sheet utility to radio buttons
@@ -67,7 +68,6 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
 - [ ] Make color themes optional/configurable (primary, accent, warn, error, success) globally.
-- [ ] Bug on table headers with sticky rows - sticky rows hide table headers but should add to the table headers
 
 ### Nice to haves for v1 beta
 

@@ -15,6 +15,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ShipProgressBarComponent } from '../ship-progress-bar/ship-progress-bar.component';
+import { classMutationSignal } from '../utilities/class-mutation-signal';
 import { observeChildren } from '../utilities/observe-elements';
 import { SHIP_CONFIG } from '../utilities/ship-config';
 
@@ -158,43 +159,6 @@ export class ShipSortDirective {
 }
 
 @Directive({
-  selector: '[shStickyRows]',
-
-  host: {
-    '[class.sticky]': 'shStickyRows() === "start"',
-    '[class.sticky-end]': 'shStickyRows() === "end"',
-  },
-})
-export class ShipStickyRowsDirective {
-  #elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
-  #renderer = inject(Renderer2);
-
-  shStickyRows = input<string>('start');
-
-  ngAfterContentInit() {
-    this.#applyGridColumnStyle();
-  }
-
-  #applyGridColumnStyle() {
-    const nativeElement = this.#elementRef.nativeElement;
-    const rowChildren = nativeElement.querySelectorAll<HTMLTableCellElement>(':scope > tr');
-    const rowSpanCount = rowChildren.length;
-
-    console.log(rowSpanCount);
-
-    if (rowSpanCount > 0) {
-      const position = this.shStickyRows();
-
-      this.#renderer.setStyle(
-        nativeElement,
-        'grid-row',
-        position === 'end' ? `-${rowSpanCount + 1} / -1` : `1 / ${rowSpanCount + 1}`
-      );
-    }
-  }
-}
-
-@Directive({
   selector: '[shStickyColumns]',
 
   host: {
@@ -240,6 +204,11 @@ type ScrollState = -1 | 0 | 1;
       <sh-progress-bar class="indeterminate primary" />
     }
 
+    <thead #thead>
+      <ng-content select="th" />
+      <ng-content select="[thead]" />
+    </thead>
+
     <tbody #tbody>
       <ng-content />
     </tbody>
@@ -273,9 +242,38 @@ export class ShipTableComponent {
   dataChange = output<any>();
   sortByColumn = model<string | null>(null);
 
-  // thead = viewChild<ElementRef<HTMLTableSectionElement>>('thead');
+  currentClass = classMutationSignal();
+  thead = viewChild<ElementRef<HTMLTableSectionElement>>('thead');
   tbody = viewChild<ElementRef<HTMLTableSectionElement>>('tbody');
-  columns = observeChildren<HTMLTableColElement>(this.tbody, ['tr:first-child th']);
+  columns = observeChildren<HTMLTableColElement>(this.thead, ['tr:first-child th']);
+
+  stickyHeaderHeight = computed(() => {
+    const _ = this.currentClass();
+    const height = this.thead()?.nativeElement?.clientHeight;
+
+    return height ?? 0;
+  });
+
+  bodyEffect = effect(() => {
+    const body = this.tbody()?.nativeElement;
+    const head = this.thead()?.nativeElement;
+
+    if (!body || !head) return;
+
+    const stickyHeaderHeight = this.stickyHeaderHeight();
+
+    queueMicrotask(() => {
+      const hasStickyRowHeaderStartElement = head.querySelectorAll('tr.sticky').length > 0;
+      const stickyBodyRows = body.querySelectorAll('tr.sticky');
+      const hasStickyRowStartElement = stickyBodyRows.length > 0;
+
+      if (hasStickyRowStartElement && hasStickyRowHeaderStartElement) {
+        for (let index = 0; index < stickyBodyRows.length; index++) {
+          (stickyBodyRows[index] as HTMLElement).style.top = `${stickyHeaderHeight}px`;
+        }
+      }
+    });
+  });
 
   class = signal<string>(this.#shConfig?.tableType ?? 'default');
   resizing = signal(false);

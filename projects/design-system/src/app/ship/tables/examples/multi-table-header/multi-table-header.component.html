@@ -1,17 +1,15 @@
 <sh-table [data]="dataSource()" [class]="type()">
-  <div shStickyRows>
-    <tr>
-      @for (col of displayedColumns(); track col) {
-        <th>{{ col }}</th>
-      }
-    </tr>
+  <tr thead class="sticky">
+    @for (col of displayedColumns(); track col) {
+      <th>{{ col }}</th>
+    }
+  </tr>
 
-    <tr>
-      @for (col of displayedColumns(); track col) {
-        <th>{{ col }}</th>
-      }
-    </tr>
-  </div>
+  <tr thead class="sticky">
+    @for (col of displayedColumns(); track col) {
+      <th>{{ col }}</th>
+    }
+  </tr>
 
   @for (row of dataSource(); track $index) {
     <tr [class.sticky]="$index % 3 === 2">

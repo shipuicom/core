@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { ShipStickyRowsDirective, ShipTableComponent } from 'ship-ui';
+import { ShipTableComponent } from 'ship-ui';
 
 const ELEMENT_DATA = [
   { position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },
@@ -18,7 +18,7 @@ const COLUMNS = ['position', 'name', 'weight', 'symbol'] as const;
 @Component({
   selector: 'multi-table-header',
   standalone: true,
-  imports: [ShipTableComponent, ShipStickyRowsDirective],
+  imports: [ShipTableComponent],
   templateUrl: './multi-table-header.component.html',
   styleUrl: './multi-table-header.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
