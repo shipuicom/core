@@ -271,6 +271,7 @@ $shipFormFieldShadow: false !default;
         &[type='time'] {
           appearance: textfield;
           text-align: center;
+          line-height: p2r(16);
 
           &::-webkit-calendar-picker-indicator {
             appearance: none;
