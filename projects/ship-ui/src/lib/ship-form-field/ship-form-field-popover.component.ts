@@ -36,7 +36,7 @@ import { ShipPopoverComponent } from '../ship-popover/ship-popover.component';
     </div>
 
     <div class="helpers">
-      <div class="error">
+      <div class="error-wrap">
         <ng-content select="[error]"></ng-content>
       </div>
 
