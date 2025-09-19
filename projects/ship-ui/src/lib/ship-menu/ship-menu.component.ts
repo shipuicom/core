@@ -32,7 +32,7 @@ import { observeChildren } from '../utilities/observe-elements';
         closeOnButton: false,
         closeOnEsc: true,
       }">
-      <div trigger [class.is-open]="isOpen()" (click)="!disabled() && isOpen.set(true)">
+      <div trigger [class.is-open]="isOpen()" (click)="toggleIsOpen($event)">
         <ng-content />
 
         @if (openIndicator()) {
@@ -42,7 +42,7 @@ import { observeChildren } from '../utilities/observe-elements';
 
       <div class="form-field-wrap">
         <sh-form-field class="small stretch" [class.hidden]="searchable() === false">
-          <input type="text" #input placeholder="Search" />
+          <input type="text" #inputRef placeholder="Search" />
         </sh-form-field>
       </div>
 
@@ -75,7 +75,7 @@ export class ShipMenuComponent {
 
   searchable = input<boolean>(false);
   activeOptionIndex = signal<number>(-1);
-  inputRef = viewChild<ElementRef<HTMLInputElement>>('input');
+  inputRef = viewChild<ElementRef<HTMLInputElement>>('inputRef');
   optionsRef = viewChild<ElementRef<HTMLDivElement>>('optionsRef');
 
   options = observeChildren<HTMLButtonElement>(this.optionsRef, this.customOptionElementSelectors);
@@ -192,6 +192,19 @@ export class ShipMenuComponent {
     this.activeElements.set(optionElements);
     this._lastElementList = optionElements;
   });
+
+  toggleIsOpen(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (this.disabled()) return;
+
+    this.isOpen.set(!this.isOpen());
+
+    if (this.searchable() && this.isOpen()) {
+      setTimeout(() => this.inputRef()?.nativeElement.focus());
+    }
+  }
 
   #calculateMatchScore(option: string, input: string): number {
     if (!input) return 0;

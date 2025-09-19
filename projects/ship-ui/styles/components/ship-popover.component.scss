@@ -4,7 +4,7 @@ $shipPopover: true !default;
 
 @if $shipPopover == true {
   sh-popover {
-    --po-d: inherit;
+    --po-d: block;
 
     display: var(--po-d);
 
@@ -44,14 +44,31 @@ $shipPopover: true !default;
       }
     }
 
-    .overlay {
+    .popover {
       position: fixed;
       inset: 0;
-      opacity: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      opacity: 1;
+      background-color: transparent;
       z-index: -1;
+
+      .overlay {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: transparent;
+      }
     }
 
-    .popover {
+    [popover]::backdrop {
+      display: none;
+    }
+
+    .popover-content {
       position: absolute;
       margin: 0;
       min-width: p2r(180);

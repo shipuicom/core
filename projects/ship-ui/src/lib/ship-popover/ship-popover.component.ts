@@ -36,7 +36,7 @@ const DEFAULT_OPTIONS: ShipPopoverOptions = {
   selector: 'sh-popover',
   imports: [],
   template: `
-    <div class="trigger" #triggerRef (click)="toggleIsOpen($event)">
+    <div class="trigger" #triggerRef [attr.popovertarget]="id() + 'hello'" (click)="toggleIsOpen($event)">
       <div class="trigger-wrapper">
         <ng-content select="[trigger]" />
         <ng-content select="button" />
@@ -45,10 +45,14 @@ const DEFAULT_OPTIONS: ShipPopoverOptions = {
       <div class="trigger-anchor" [style.anchor-name]="id()"></div>
     </div>
 
-    <div popover #popoverRef class="popover" [style.position-anchor]="id()" [style]="menuStyle()">
-      <div class="overlay" (click)="isOpen() && eventClose($event)"></div>
-      <ng-content />
-    </div>
+    @if (isOpen()) {
+      <div [attr.id]="id() + 'hello'" popover="manual" #popoverRef class="popover">
+        <div class="overlay" (click)="eventClose($event)"></div>
+        <div class="popover-content" [style.position-anchor]="id()" [style]="menuStyle()">
+          <ng-content />
+        </div>
+      </div>
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -74,69 +78,76 @@ export class ShipPopoverComponent {
   }));
 
   triggerRef = viewChild.required<ElementRef<HTMLElement>>('triggerRef');
-  popoverRef = viewChild.required<ElementRef<HTMLElement>>('popoverRef');
+  popoverRef = viewChild<ElementRef<HTMLElement>>('popoverRef');
 
   id = signal('--' + generateUniqueId());
   menuStyle = signal<any>(null);
 
   openAbort: AbortController | null = null;
   openEffect = effect(() => {
-    const popoverEl = this.popoverRef()?.nativeElement;
     const open = this.isOpen();
 
-    if (open) {
-      if (this.openAbort) {
-        this.openAbort.abort();
+    queueMicrotask(() => {
+      const popoverEl = this.popoverRef()?.nativeElement;
+
+      if (!popoverEl) return;
+      if (open) {
+        if (this.openAbort) {
+          this.openAbort.abort();
+        }
+
+        this.openAbort = new AbortController();
+        const abortOptions = {
+          signal: this.openAbort?.signal,
+        };
+
+        this.#document.addEventListener(
+          'keydown',
+          (e) => {
+            if (e.key === 'Escape' && !this.defaultOptionMerge().closeOnEsc) {
+              e.preventDefault();
+            }
+
+            if (e.key === 'Escape' && this.defaultOptionMerge().closeOnEsc) {
+              this.isOpen.set(false);
+            }
+          },
+          abortOptions
+        );
+
+        popoverEl.showPopover();
+
+        if (!this.SUPPORTS_ANCHOR) {
+          setTimeout(() => {
+            const scrollableParent = this.#findScrollableParent(popoverEl);
+            scrollableParent.addEventListener('scroll', () => this.#calculateMenuPosition(), abortOptions);
+            window?.addEventListener('resize', () => this.#calculateMenuPosition(), abortOptions);
+
+            this.#calculateMenuPosition();
+          });
+        }
+      } else {
+        popoverEl.hidePopover && popoverEl.hidePopover();
+        this.openAbort?.abort();
+        this.closed.emit();
       }
-
-      this.openAbort = new AbortController();
-      const abortOptions = {
-        signal: this.openAbort?.signal,
-      };
-      popoverEl?.showPopover();
-
-      this.#document.addEventListener(
-        'keydown',
-        (e) => {
-          if (e.key === 'Escape' && !this.defaultOptionMerge().closeOnEsc) {
-            e.preventDefault();
-          }
-
-          if (e.key === 'Escape' && this.defaultOptionMerge().closeOnEsc) {
-            this.isOpen.set(false);
-          }
-        },
-        abortOptions
-      );
-
-      setTimeout(() => {
-        const scrollableParent = this.#findScrollableParent(this.popoverRef()?.nativeElement);
-
-        scrollableParent.addEventListener('scroll', () => this.#calculateMenuPosition(), abortOptions);
-
-        window?.addEventListener('resize', () => this.#calculateMenuPosition(), abortOptions);
-
-        this.#calculateMenuPosition();
-      });
-    } else {
-      popoverEl.hidePopover && popoverEl.hidePopover();
-      this.openAbort?.abort();
-      this.closed.emit();
-    }
+    });
   });
 
   toggleIsOpen(event: MouseEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-
     if (!this.disableOpenByClick()) {
+      event.preventDefault();
+      event.stopPropagation();
       this.isOpen.set(!this.isOpen());
     }
   }
 
   eventClose($event: MouseEvent) {
-    $event.stopPropagation();
-    $event.preventDefault();
+    // console.log('eventClose before', $event);
+    if (!this.isOpen()) return;
+    // console.log('eventClose after', $event);
+    // $event.stopPropagation();
+    // $event.preventDefault();
     this.isOpen.set(false);
   }
 
@@ -160,6 +171,8 @@ export class ShipPopoverComponent {
   #calculateMenuPosition() {
     const triggerRect = this.triggerRef()?.nativeElement.getBoundingClientRect();
     const menuRect = this.popoverRef()?.nativeElement.getBoundingClientRect();
+
+    if (!menuRect) return;
 
     const actionLeftInViewport = triggerRect.left;
     const actionBottomInViewport = triggerRect.bottom;

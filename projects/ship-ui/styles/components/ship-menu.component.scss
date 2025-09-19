@@ -91,7 +91,7 @@ $shipMenu: true !default;
         padding: 0;
       }
 
-      .overlay ~ .form-field-wrap {
+      .form-field-wrap {
         sh-form-field {
           z-index: 10;
           background-color: var(--base-1);
