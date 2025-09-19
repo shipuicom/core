@@ -17,7 +17,6 @@ import { ShipPopoverComponent } from '../ship-popover/ship-popover.component';
 
       <sh-popover
         [(isOpen)]="isOpen"
-        [disableOpenByClick]="true"
         (closed)="close()"
         [options]="{
           closeOnButton: false,

@@ -52,6 +52,10 @@ $shipFormFieldShadow: false !default;
     transition: transform 125ms linear;
     transform: scale(1);
 
+    &:has(input[type='time']) {
+      --ff-input-space: #{p2r(9 12)};
+    }
+
     &:active {
       .input-wrap {
         --ff-bs: 0 0 6px 0 var(--base-4);

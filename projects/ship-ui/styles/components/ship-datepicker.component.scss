@@ -44,7 +44,7 @@ $shipDatepicker: true !default;
   }
 
   sh-daterange-input {
-    sh-popover .popover {
+    sh-popover .popover-content {
       --dp-width: #{p2r(300)};
       min-width: var(--dp-width);
     }
@@ -53,7 +53,7 @@ $shipDatepicker: true !default;
       sh-form-field-popover.columns-#{$i} {
         $gap: 1rem;
 
-        sh-popover .popover {
+        sh-popover .popover-content {
           --dp-width: calc(#{p2r($i * 300)} + #{(($i - 1) * $gap)});
         }
       }

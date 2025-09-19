@@ -23,7 +23,7 @@ import { ShipDatepickerComponent } from './ship-datepicker.component';
   imports: [ShipDatepickerComponent, ShipFormFieldPopoverComponent, ShipIconComponent],
   providers: [DatePipe],
   template: `
-    <sh-form-field-popover (click)="open($event)" (closed)="close()" [(isOpen)]="isOpen">
+    <sh-form-field-popover (closed)="close()" [(isOpen)]="isOpen">
       <ng-content select="label" ngProjectAs="label" />
 
       <ng-content select="[prefix]" ngProjectAs="[prefix]" />
@@ -31,7 +31,7 @@ import { ShipDatepickerComponent } from './ship-datepicker.component';
 
       <div id="input-wrap" class="input" ngProjectAs="input">
         @if (this.masking()) {
-          <div class="masked-value" (click)="open($event)">
+          <div class="masked-value">
             {{ _maskedDate() }}
           </div>
         }
@@ -54,7 +54,7 @@ import { ShipDatepickerComponent } from './ship-datepicker.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShipDatepickerInputComponent {
-  #INIT_DATE = this.#getUTCDate(new Date());
+  // #INIT_DATE = this.#getUTCDate(new Date());
 
   ngModels = contentChild<NgModel>(NgModel);
   #datePipe = inject(DatePipe);
@@ -73,25 +73,20 @@ export class ShipDatepickerInputComponent {
     return this.#datePipe.transform(date, mask);
   });
 
-  internalDate = signal<Date | null>(this.#INIT_DATE);
+  internalDate = signal<Date | null>(null);
   isOpen = model<boolean>(false);
   currentClass = classMutationSignal();
   #inputObserver = contentProjectionSignal<HTMLInputElement>('#input-wrap input');
 
   onDateChange(date: Date | null) {
     this.internalDate.set(date);
+
     const input = this.#inputRef();
 
     if (input) {
       input.value = date ? date.toString() : '';
       input.dispatchEvent(new Event('input'));
     }
-  }
-
-  open($event: MouseEvent) {
-    $event.stopPropagation();
-
-    this.isOpen.set(true);
   }
 
   close() {

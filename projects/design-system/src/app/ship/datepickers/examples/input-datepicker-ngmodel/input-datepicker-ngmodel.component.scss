@@ -7,7 +7,7 @@
 .row {
   display: flex;
   gap: p2r(16);
-  align-items: center;
+  align-items: flex-end;
 
   sh-datepicker-input {
     flex: 1 0;

@@ -127,9 +127,9 @@ export class ShipPopoverComponent {
           });
         }
       } else {
-        popoverEl.hidePopover && popoverEl.hidePopover();
-        this.openAbort?.abort();
         this.closed.emit();
+        this.openAbort?.abort();
+        this.openAbort = null;
       }
     });
   });
@@ -143,11 +143,7 @@ export class ShipPopoverComponent {
   }
 
   eventClose($event: MouseEvent) {
-    // console.log('eventClose before', $event);
     if (!this.isOpen()) return;
-    // console.log('eventClose after', $event);
-    // $event.stopPropagation();
-    // $event.preventDefault();
     this.isOpen.set(false);
   }
 
@@ -209,5 +205,10 @@ export class ShipPopoverComponent {
 
       this.menuStyle.set(style);
     }
+  }
+
+  ngOnDestroy() {
+    this.openAbort?.abort();
+    this.openAbort = null;
   }
 }

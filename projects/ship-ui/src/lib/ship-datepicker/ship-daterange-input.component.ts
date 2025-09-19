@@ -21,11 +21,7 @@ import { ShipDatepickerComponent } from './ship-datepicker.component';
   imports: [ShipDatepickerComponent, ShipFormFieldPopoverComponent, ShipIconComponent],
   providers: [DatePipe],
   template: `
-    <sh-form-field-popover
-      [class]="'columns-' + monthsToShow()"
-      (click)="open($event)"
-      (closed)="close()"
-      [(isOpen)]="isOpen">
+    <sh-form-field-popover [class]="'columns-' + monthsToShow()" (closed)="close()" [(isOpen)]="isOpen">
       <ng-content select="label" ngProjectAs="label" />
 
       <ng-content select="[prefix]" ngProjectAs="[prefix]" />
@@ -33,9 +29,7 @@ import { ShipDatepickerComponent } from './ship-datepicker.component';
 
       <div class="input" ngProjectAs="input" #inputWrap>
         @if (this.masking()) {
-          <div class="masked-value" (click)="open($event)">
-            {{ _maskedStartDate() ?? 'N/A' }} - {{ _maskedEndDate() ?? 'N/A' }}
-          </div>
+          <div class="masked-value">{{ _maskedStartDate() ?? 'N/A' }} - {{ _maskedEndDate() ?? 'N/A' }}</div>
         }
         <ng-content select="input" />
       </div>
@@ -161,11 +155,6 @@ export class ShipDaterangeInputComponent {
   private dispatchInputEvent(input: HTMLInputElement) {
     input.dispatchEvent(new Event('input', { bubbles: true }));
     input.dispatchEvent(new Event('change', { bubbles: true }));
-  }
-
-  open($event: MouseEvent) {
-    $event.stopPropagation();
-    this.isOpen.set(true);
   }
 
   close() {
