@@ -24,6 +24,7 @@ export type ShipPopoverOptions = {
   closeOnEsc?: boolean;
 };
 
+const BASE_SPACE = 4;
 const SCROLLABLE_STYLES = ['scroll', 'auto'];
 const DEFAULT_OPTIONS: ShipPopoverOptions = {
   width: undefined,
@@ -48,7 +49,7 @@ const DEFAULT_OPTIONS: ShipPopoverOptions = {
     @if (isOpen()) {
       <div [attr.id]="id() + 'hello'" popover="manual" #popoverRef class="popover">
         <div class="overlay" (click)="eventClose($event)"></div>
-        <div class="popover-content" [style.position-anchor]="id()" [style]="menuStyle()">
+        <div class="popover-content" #popoverContentRef [style.position-anchor]="id()" [style]="menuStyle()">
           <ng-content />
         </div>
       </div>
@@ -61,7 +62,6 @@ const DEFAULT_OPTIONS: ShipPopoverOptions = {
 })
 export class ShipPopoverComponent {
   #document = inject(DOCUMENT);
-  #BASE_SPACE = 4;
   SUPPORTS_ANCHOR =
     typeof CSS !== 'undefined' && CSS.supports('position-anchor', '--abc') && CSS.supports('anchor-name', '--abc');
 
@@ -79,6 +79,7 @@ export class ShipPopoverComponent {
 
   triggerRef = viewChild.required<ElementRef<HTMLElement>>('triggerRef');
   popoverRef = viewChild<ElementRef<HTMLElement>>('popoverRef');
+  popoverContentRef = viewChild<ElementRef<HTMLElement>>('popoverContentRef');
 
   id = signal('--' + generateUniqueId());
   menuStyle = signal<any>(null);
@@ -90,16 +91,17 @@ export class ShipPopoverComponent {
     queueMicrotask(() => {
       const popoverEl = this.popoverRef()?.nativeElement;
 
-      if (!popoverEl) return;
+      if (!popoverEl) {
+        this.openAbort?.abort();
+        this.openAbort = null;
+        return;
+      }
       if (open) {
         if (this.openAbort) {
           this.openAbort.abort();
         }
 
         this.openAbort = new AbortController();
-        const abortOptions = {
-          signal: this.openAbort?.signal,
-        };
 
         this.#document.addEventListener(
           'keydown',
@@ -112,7 +114,9 @@ export class ShipPopoverComponent {
               this.isOpen.set(false);
             }
           },
-          abortOptions
+          {
+            signal: this.openAbort?.signal,
+          }
         );
 
         popoverEl.showPopover();
@@ -120,8 +124,13 @@ export class ShipPopoverComponent {
         if (!this.SUPPORTS_ANCHOR) {
           setTimeout(() => {
             const scrollableParent = this.#findScrollableParent(popoverEl);
-            scrollableParent.addEventListener('scroll', () => this.#calculateMenuPosition(), abortOptions);
-            window?.addEventListener('resize', () => this.#calculateMenuPosition(), abortOptions);
+
+            scrollableParent.addEventListener('scroll', () => this.#calculateMenuPosition(), {
+              signal: this.openAbort?.signal,
+            });
+            window?.addEventListener('resize', () => this.#calculateMenuPosition(), {
+              signal: this.openAbort?.signal,
+            });
 
             this.#calculateMenuPosition();
           });
@@ -164,47 +173,74 @@ export class ShipPopoverComponent {
     return this.#document.documentElement;
   }
 
+  #alignLeftUnder(triggerRect: DOMRect) {
+    const newLeft = triggerRect.left;
+    const newTop = triggerRect.bottom + BASE_SPACE;
+
+    return {
+      left: newLeft,
+      top: newTop,
+    };
+  }
+
+  #alignTopRight(triggerRect: DOMRect) {
+    const newLeft = triggerRect.right + BASE_SPACE;
+    const newTop = triggerRect.top;
+
+    return {
+      left: newLeft,
+      top: newTop,
+    };
+  }
+
+  #alignBottomRight(triggerRect: DOMRect) {
+    const newLeft = triggerRect.right + BASE_SPACE;
+    const newTop = triggerRect.bottom;
+
+    return {
+      left: newLeft,
+      top: newTop,
+    };
+  }
+
+  #alignLeftOver(triggerRect: DOMRect) {
+    const newLeft = triggerRect.left;
+    const newTop = triggerRect.bottom - triggerRect.height - BASE_SPACE;
+
+    return {
+      left: newLeft,
+      top: newTop,
+    };
+  }
+
   #calculateMenuPosition() {
     const triggerRect = this.triggerRef()?.nativeElement.getBoundingClientRect();
-    const menuRect = this.popoverRef()?.nativeElement.getBoundingClientRect();
+    const menuRect = this.popoverContentRef()?.nativeElement.getBoundingClientRect();
 
-    if (!menuRect) return;
+    const tryOrderMultiLayer = [this.#alignTopRight, this.#alignBottomRight];
+    const tryOrderDefault = [this.#alignLeftUnder, this.#alignLeftOver];
+    const tryOrder = this.asMultiLayer() ? tryOrderMultiLayer : tryOrderDefault;
 
-    const actionLeftInViewport = triggerRect.left;
-    const actionBottomInViewport = triggerRect.bottom;
+    for (let i = 0; i < tryOrder.length; i++) {
+      const position = tryOrder[i](triggerRect);
 
-    let newLeft = actionLeftInViewport;
-    let newTop = actionBottomInViewport + this.#BASE_SPACE;
+      const outOfBoundsRight = position.left + (menuRect?.width || 0) > window.innerWidth;
+      const outOfBoundsBottom = position.top + (menuRect?.height || 0) > window.innerHeight;
 
-    const outOfBoundsRight = newLeft + menuRect.width > window?.innerWidth;
-    const outOfBoundsBottom = newTop + menuRect.height > window?.innerHeight;
-
-    if (!this.SUPPORTS_ANCHOR) {
-      newLeft = actionLeftInViewport;
-      newTop = actionBottomInViewport + this.#BASE_SPACE;
-
-      if (outOfBoundsBottom) {
-        const _newTop = triggerRect.top - menuRect.height - this.#BASE_SPACE;
-        const outOfBoundsTop = _newTop < 0;
-
-        if (!outOfBoundsTop) newTop = _newTop;
+      if (!outOfBoundsRight && !outOfBoundsBottom) {
+        this.menuStyle.set({
+          left: position.left + 'px',
+          top: position.top + 'px',
+        });
+        return;
       }
-
-      if (outOfBoundsRight) {
-        newLeft = triggerRect.right - menuRect.width;
-
-        if (newLeft < 0) {
-          newLeft = 0;
-        }
-      }
-
-      const style: any = {
-        left: newLeft + 'px',
-        top: newTop + 'px',
-      };
-
-      this.menuStyle.set(style);
     }
+
+    const fallbackPosition = tryOrder[0](triggerRect);
+    this.menuStyle.set({
+      left: fallbackPosition.left + 'px',
+      top: fallbackPosition.top + 'px',
+    });
   }
 
   ngOnDestroy() {

@@ -9,8 +9,8 @@ $shipPopover: true !default;
     display: var(--po-d);
 
     &.multi-layer {
-      .popover {
-        position-area: span-y-end right;
+      .popover-content {
+        position-area: right span-y-end;
       }
 
       .trigger .trigger-anchor {
@@ -81,7 +81,7 @@ $shipPopover: true !default;
       padding: 0;
 
       @supports (anchor-name: --anchor) {
-        inset: unset;
+        inset: auto;
         position: fixed;
         position-area: bottom span-right;
         position-try-fallbacks: flip-block, flip-inline;
@@ -89,8 +89,8 @@ $shipPopover: true !default;
     }
   }
 
-  .full-popover sh-popover .popover,
-  sh-popover.full .popover {
+  .full-popover sh-popover .popover-content,
+  sh-popover.full .popover-content {
     width: auto;
 
     @supports (anchor-name: --anchor) {
