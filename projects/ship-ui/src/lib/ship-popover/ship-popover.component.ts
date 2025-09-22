@@ -173,7 +173,7 @@ export class ShipPopoverComponent {
     return this.#document.documentElement;
   }
 
-  #alignLeftUnder(triggerRect: DOMRect) {
+  #alignLeftUnder(triggerRect: DOMRect, menuRect: DOMRect) {
     const newLeft = triggerRect.left;
     const newTop = triggerRect.bottom + BASE_SPACE;
 
@@ -183,7 +183,7 @@ export class ShipPopoverComponent {
     };
   }
 
-  #alignTopRight(triggerRect: DOMRect) {
+  #alignTopRight(triggerRect: DOMRect, menuRect: DOMRect) {
     const newLeft = triggerRect.right + BASE_SPACE;
     const newTop = triggerRect.top;
 
@@ -193,7 +193,7 @@ export class ShipPopoverComponent {
     };
   }
 
-  #alignBottomRight(triggerRect: DOMRect) {
+  #alignBottomRight(triggerRect: DOMRect, menuRect: DOMRect) {
     const newLeft = triggerRect.right + BASE_SPACE;
     const newTop = triggerRect.bottom;
 
@@ -203,9 +203,9 @@ export class ShipPopoverComponent {
     };
   }
 
-  #alignLeftOver(triggerRect: DOMRect) {
+  #alignLeftOver(triggerRect: DOMRect, menuRect: DOMRect) {
     const newLeft = triggerRect.left;
-    const newTop = triggerRect.bottom - triggerRect.height - BASE_SPACE;
+    const newTop = triggerRect.bottom - triggerRect.height - menuRect.height - BASE_SPACE;
 
     return {
       left: newLeft,
@@ -222,7 +222,7 @@ export class ShipPopoverComponent {
     const tryOrder = this.asMultiLayer() ? tryOrderMultiLayer : tryOrderDefault;
 
     for (let i = 0; i < tryOrder.length; i++) {
-      const position = tryOrder[i](triggerRect);
+      const position = tryOrder[i](triggerRect, menuRect!);
 
       const outOfBoundsRight = position.left + (menuRect?.width || 0) > window.innerWidth;
       const outOfBoundsBottom = position.top + (menuRect?.height || 0) > window.innerHeight;
@@ -236,7 +236,7 @@ export class ShipPopoverComponent {
       }
     }
 
-    const fallbackPosition = tryOrder[0](triggerRect);
+    const fallbackPosition = tryOrder[0](triggerRect, menuRect!);
     this.menuStyle.set({
       left: fallbackPosition.left + 'px',
       top: fallbackPosition.top + 'px',
