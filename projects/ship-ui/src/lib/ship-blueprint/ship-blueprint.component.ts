@@ -18,7 +18,6 @@ import {
 import { ShipCardComponent, ShipIconComponent } from 'ship-ui';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
 
-// Type definitions
 type Port = { id: string; name: string };
 type BaseNode = { id: string; x: number; y: number; inputs: Port[]; outputs: Port[] };
 type Connection = { fromNode: string; fromPort: string; toNode: string; toPort: string };
@@ -144,7 +143,6 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
         this.connections();
         this.draggingConnection();
 
-        // CHANGED: Use requestAnimationFrame to prevent timing issues
         requestAnimationFrame(() => this.drawCanvas());
       });
     }
@@ -195,7 +193,6 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     ctx.restore();
   }
 
-  // CHANGED: Updated drawGrid with dot logic
   drawGrid(ctx: CanvasRenderingContext2D) {
     const { width, height } = this.canvasRef.nativeElement;
     const dpr = window.devicePixelRatio || 1;
@@ -239,6 +236,7 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
   drawConnections(ctx: CanvasRenderingContext2D) {
     ctx.strokeStyle = '#888';
     ctx.lineWidth = 2 / this.zoomLevel();
+
     for (const conn of this.connections()) {
       const startPos = this.getNodePortPosition(conn.fromNode, conn.fromPort);
       const endPos = this.getNodePortPosition(conn.toNode, conn.toPort);
@@ -267,12 +265,11 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     ctx.bezierCurveTo(x1 + dx, y1, x2 - dx, y2, x2, y2);
   }
 
-  // --- All other event handlers and logic methods remain the same ---
-  // (The full component code from the previous step follows)
   @HostListener('document:mouseup', ['$event']) onMouseUp(event: MouseEvent) {
     this.endPan();
     this.endNodeDrag();
   }
+
   @HostListener('document:click', ['$event']) onClick(event: MouseEvent) {
     if (this.draggingConnection()) {
       const target = event.target as HTMLElement;
@@ -281,11 +278,13 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
       }
     }
   }
+
   @HostListener('document:keydown.escape', ['$event']) onEscape(event: KeyboardEvent) {
     if (this.draggingConnection()) {
       this.cancelPortDrag();
     }
   }
+
   @HostListener('document:mousemove', ['$event']) onMouseMove(event: MouseEvent) {
     if (this.#isNodeDragging()) {
       this.nodeDrag(event);
@@ -304,31 +303,42 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
       this.handleTouchMove(event);
     }
   }
+
   startNodeDrag(event: MouseEvent | TouchEvent, nodeId: string) {
     event.stopPropagation();
+
     this.#isNodeDragging.set(true);
     this.#draggedNodeId.set(nodeId);
+
     const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
     const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
+
     const blueprintRect = this.#selfRef.nativeElement.getBoundingClientRect();
     const worldX = (clientX - blueprintRect.left - this.panX()) / this.zoomLevel();
     const worldY = (clientY - blueprintRect.top - this.panY()) / this.zoomLevel();
     const draggedNode = this.nodes().find((n) => n.id === nodeId);
+
     if (draggedNode) {
       this.#dragOffset.set({ x: worldX - draggedNode.x, y: worldY - draggedNode.y });
     }
+
     this.#lastMouseX.set(clientX);
     this.#lastMouseY.set(clientY);
   }
+
   endNodeDrag() {
     this.#isNodeDragging.set(false);
     this.#draggedNodeId.set(null);
     this.#dragOffset.set(null);
   }
+
   nodeDrag(event: MouseEvent | Touch) {
     const draggedId = this.#draggedNodeId();
+
     if (!this.#isNodeDragging() || !draggedId) return;
+
     const { clientX, clientY } = event;
+
     this.nodes.update((nodes) => {
       const node = nodes.find((n) => n.id === draggedId);
       if (node) {
@@ -337,6 +347,7 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
           const blueprintRect = this.#selfRef.nativeElement.getBoundingClientRect();
           const worldX = (clientX - blueprintRect.left - this.panX()) / this.zoomLevel();
           const worldY = (clientY - blueprintRect.top - this.panY()) / this.zoomLevel();
+
           node.x = Math.round((worldX - this.#dragOffset()!.x) / grid) * grid;
           node.y = Math.round((worldY - this.#dragOffset()!.y) / grid) * grid;
         } else {
@@ -346,27 +357,36 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
           node.y += dy;
         }
       }
+
       return [...nodes];
     });
+
     this.#lastMouseX.set(clientX);
     this.#lastMouseY.set(clientY);
   }
   startPortDrag(event: MouseEvent, nodeId: string, portId: string) {
     event.stopPropagation();
+
     if (this.draggingConnection()) this.cancelPortDrag();
+
     const node = this.nodes().find((n) => n.id === nodeId);
+
     if (node) {
       this.draggingConnection.set({ fromNode: nodeId, fromPort: portId, x2: node.x, y2: node.y });
     }
+
     this.updatePathOnMove(event);
   }
   endPortDrag(event: MouseEvent, toNodeId: string, toPortId: string) {
     if (!this.draggingConnection()) return;
+
     const from = this.draggingConnection()!;
+
     if (from.fromNode === toNodeId) {
       this.cancelPortDrag();
       return;
     }
+
     const newConnection: Connection = { ...from, toNode: toNodeId, toPort: toPortId };
     const isDuplicate = this.connections().some(
       (c) =>
@@ -375,9 +395,11 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
         c.toNode === newConnection.toNode &&
         c.toPort === newConnection.toPort
     );
+
     if (!isDuplicate) {
       this.connections.update((conns) => [...conns, newConnection]);
     }
+
     this.cancelPortDrag();
   }
   cancelPortDrag() {
@@ -385,16 +407,22 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
   }
   updatePathOnMove(event: MouseEvent | Touch) {
     if (!this.draggingConnection()) return;
+
     const blueprintRect = this.#selfRef.nativeElement.getBoundingClientRect();
     const x2 = (event.clientX - blueprintRect.left - this.panX()) / this.zoomLevel();
     const y2 = (event.clientY - blueprintRect.top - this.panY()) / this.zoomLevel();
+
     this.draggingConnection.update((conn) => (conn ? { ...conn, x2, y2 } : conn));
   }
   getNodePortPosition(nodeId: string, portId: string): Coordinates {
     const node = this.nodes().find((n) => n.id === nodeId);
+
     if (!node) return { x: 0, y: 0 };
+
     const portEl = this.#selfRef.nativeElement.querySelector(`[data-node-id="${nodeId}"][data-port-id="${portId}"]`);
+
     if (!portEl) return { x: node.x, y: node.y };
+
     const nodeWrapper = this.#selfRef.nativeElement.querySelector('.nodes-wrapper')!;
     const wrapperRect = nodeWrapper.getBoundingClientRect();
     const portRect = portEl.getBoundingClientRect();
@@ -402,41 +430,55 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     const portCenterY = portRect.top + portRect.height / 2;
     const worldX = (portCenterX - wrapperRect.left) / this.zoomLevel();
     const worldY = (portCenterY - wrapperRect.top) / this.zoomLevel();
+
     return { x: worldX, y: worldY };
   }
   startPan(event: MouseEvent) {
     if (event.target instanceof HTMLElement && event.target.closest('.node')) return;
+
     event.preventDefault();
+
     this.#isDragging.set(true);
     this.#lastMouseX.set(event.clientX);
     this.#lastMouseY.set(event.clientY);
   }
+
   endPan() {
     this.#isDragging.set(false);
   }
+
   pan(event: MouseEvent) {
     if (!this.#isDragging()) return;
+
     const dx = event.clientX - this.#lastMouseX();
     const dy = event.clientY - this.#lastMouseY();
+
     this.panX.update((x) => x + dx);
     this.panY.update((y) => y + dy);
+
     this.#lastMouseX.set(event.clientX);
     this.#lastMouseY.set(event.clientY);
   }
+
   zoom(event: WheelEvent) {
     event.preventDefault();
     const oldZoom = this.zoomLevel();
     const newZoom = this.#clamp(oldZoom * (1 - event.deltaY * this.#ZOOM_SPEED), this.#MIN_ZOOM, this.#MAX_ZOOM);
+
     const panRatio = newZoom / oldZoom;
     const newPanX = event.clientX - (event.clientX - this.panX()) * panRatio;
     const newPanY = event.clientY - (event.clientY - this.panY()) * panRatio;
+
     this.zoomLevel.set(newZoom);
     this.panX.set(newPanX);
     this.panY.set(newPanY);
   }
+
   handleTouchStart(event: TouchEvent) {
     if (event.target instanceof HTMLElement && event.target.closest('.node')) return;
+
     event.preventDefault();
+
     if (event.touches.length === 1) {
       this.#isDragging.set(true);
       this.#lastMouseX.set(event.touches[0].clientX);
@@ -450,8 +492,10 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     if (event.touches.length === 1 && this.#isDragging()) {
       const dx = event.touches[0].clientX - this.#lastMouseX();
       const dy = event.touches[0].clientY - this.#lastMouseY();
+
       this.panX.update((x) => x + dx);
       this.panY.update((y) => y + dy);
+
       this.#lastMouseX.set(event.touches[0].clientX);
       this.#lastMouseY.set(event.touches[0].clientY);
     } else if (event.touches.length === 2) {
@@ -459,25 +503,33 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
       const pinchRatio = newPinchDistance / this.#initialPinchDistance();
       const oldZoom = this.zoomLevel();
       const newZoom = this.#clamp(oldZoom * pinchRatio, this.#MIN_ZOOM, this.#MAX_ZOOM);
+
       const pinchCenterX = (event.touches[0].clientX + event.touches[1].clientX) / 2;
       const pinchCenterY = (event.touches[0].clientY + event.touches[1].clientY) / 2;
+
       const panRatio = newZoom / oldZoom;
       const newPanX = pinchCenterX - (pinchCenterX - this.panX()) * panRatio;
       const newPanY = pinchCenterY - (pinchCenterY - this.panY()) * panRatio;
+
       this.zoomLevel.set(newZoom);
       this.panX.set(newPanX);
       this.panY.set(newPanY);
+
       this.#initialPinchDistance.set(newPinchDistance);
     }
   }
+
   handleTouchEnd() {
     this.#isDragging.set(false);
   }
+
   #getDistance(touch1: Touch, touch2: Touch) {
     const dx = touch1.clientX - touch2.clientX;
     const dy = touch1.clientY - touch2.clientY;
+
     return Math.sqrt(dx * dx + dy * dy);
   }
+
   #clamp(value: number, min: number, max: number) {
     return Math.max(min, Math.min(max, value));
   }
