@@ -30,6 +30,10 @@ export const routes: Routes = [
         loadComponent: () => import('./ship/buttons/buttons.component'),
       },
       {
+        path: 'blueprints',
+        loadComponent: () => import('./ship/blueprints/blueprints.component'),
+      },
+      {
         path: 'progress-bars',
         loadComponent: () => import('./ship/progress-bars/progress-bars.component'),
       },

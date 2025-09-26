@@ -10,6 +10,7 @@ export * from './lib/ship-alert/ship-alert.service';
 export * from './lib/ship-dialog/ship-dialog.component';
 export * from './lib/ship-dialog/ship-dialog.service';
 
+export * from './lib/ship-blueprint/ship-blueprint.component';
 export * from './lib/ship-button-group/ship-button-group.component';
 export * from './lib/ship-button/ship-button.component';
 export * from './lib/ship-card/ship-card.component';

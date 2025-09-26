@@ -17,6 +17,7 @@ $shipButtonShadow: false !default;
 $shipChipShadow: false !default;
 
 $shipAlert: true !default;
+$shipBlueprint: true !default;
 $shipToggle: true !default;
 $shipButton: true !default;
 $shipProgressBar: true !default;
@@ -54,6 +55,9 @@ $shipFileUpload: true !default;
 );
 @use './components/ship-alert.component.scss' with (
   $shipAlert: $shipAlert
+);
+@use './components/ship-blueprint.component.scss' with (
+  $shipBlueprint: $shipBlueprint
 );
 @use './components/ship-toggle.component.scss' with (
   $shipToggle: $shipToggle
