@@ -10,4 +10,8 @@ import { ShipBlueprintComponent, ShipToggleComponent } from 'ship-ui';
 })
 export default class BlueprintsComponent {
   showAsDots = signal(false);
+
+  onChange(event: any) {
+    console.log(event);
+  }
 }

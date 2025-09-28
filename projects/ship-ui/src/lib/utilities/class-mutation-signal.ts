@@ -1,7 +1,7 @@
 import { DestroyRef, ElementRef, inject, signal, Signal, WritableSignal } from '@angular/core';
 
-export function classMutationSignal(): Signal<string> {
-  const element = inject(ElementRef).nativeElement;
+export function classMutationSignal(_element: HTMLElement | null = null): Signal<string> {
+  const element = _element ?? (inject(ElementRef).nativeElement as HTMLElement);
 
   if (!element) return signal('');
 
@@ -10,7 +10,6 @@ export function classMutationSignal(): Signal<string> {
   if (typeof MutationObserver === 'undefined') return classListSignal.asReadonly();
 
   const destroyRef = inject(DestroyRef);
-
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       if (mutation.type === 'attributes' && mutation.attributeName === 'class') {

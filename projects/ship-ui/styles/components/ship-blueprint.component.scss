@@ -4,7 +4,7 @@ $shipBlueprint: true !default;
 @if $shipBlueprint == true {
   sh-blueprint {
     --bp-bg: var(--base-1);
-    --bp-grid-c: var(--base-4);
+    --bp-icon-c: var(--base-6);
     --bp-stroke-c: var(--base-7);
     --bp-stroke-ca: var(--primary-8);
 
@@ -17,11 +17,30 @@ $shipBlueprint: true !default;
       box-sizing: border-box;
     }
 
+    sh-icon {
+      font-size: p2r(16);
+      color: var(--bp-icon-c);
+    }
+
+    .midpoint-div {
+      position: absolute;
+      background-color: #333;
+      border: 1px solid #555;
+      padding: 10px;
+      border-radius: 5px;
+      transform: translate(-50%, -50%); /* Center the div on the coordinate */
+      z-index: 100;
+    }
+
     .canvas-container {
       position: relative;
       width: 100%;
       height: 100%;
       overflow: hidden;
+
+      &.locked {
+        pointer-events: none;
+      }
     }
     canvas {
       position: absolute;
