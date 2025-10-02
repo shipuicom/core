@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DOCUMENT,
   effect,
   ElementRef,
   inject,
@@ -63,6 +64,7 @@ import { observeChildren } from '../utilities/observe-elements';
   },
 })
 export class ShipMenuComponent {
+  #document = inject(DOCUMENT);
   #renderer = inject(Renderer2);
   asMultiLayer = input<boolean>(false);
   openIndicator = input(false);
@@ -85,20 +87,31 @@ export class ShipMenuComponent {
 
   abortController: AbortController | null = null;
   optionsEffect = effect(() => {
-    if (!this.isOpen()) return;
-
-    if (this.abortController) {
+    if (this.abortController !== null) {
       this.abortController.abort();
       this.abortController = null;
     }
 
+    if (!this.isOpen()) return;
+
     this.abortController = new AbortController();
+
+    const searchable = this.searchable();
+    if (!searchable) {
+      this.#document.documentElement.addEventListener('keydown', this.keyDownEventListener, {
+        signal: this.abortController.signal,
+      });
+    }
 
     const inputEl = this.inputRef()?.nativeElement;
 
     if (!inputEl) return;
 
     queueMicrotask(() => inputEl.focus());
+
+    inputEl.addEventListener('keydown', this.keyDownEventListener, {
+      signal: this.abortController.signal,
+    });
 
     if (!this.closeOnClick()) {
       const optionRef = this.optionsRef()?.nativeElement;
@@ -122,35 +135,29 @@ export class ShipMenuComponent {
         }
       });
     }
-
-    inputEl.addEventListener(
-      'keydown',
-      (e: KeyboardEvent) => {
-        const activeOptionIndex = this.activeOptionIndex();
-
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          this.activeOptionIndex.set(this.nextActiveIndex(activeOptionIndex));
-        } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          this.activeOptionIndex.set(this.prevActiveIndex(activeOptionIndex));
-        } else if (e.key === 'Enter') {
-          e.preventDefault();
-          if (activeOptionIndex > -1) {
-            this.activeElements()[activeOptionIndex as number].click();
-
-            queueMicrotask(() => this.close('active'));
-          }
-        } else if (e.key === 'Tab') {
-          e.preventDefault();
-          this.close('closed');
-        }
-      },
-      {
-        signal: this.abortController.signal,
-      }
-    );
   });
+
+  keyDownEventListener = (e: KeyboardEvent) => {
+    const activeOptionIndex = this.activeOptionIndex();
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      this.activeOptionIndex.set(this.nextActiveIndex(activeOptionIndex));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      this.activeOptionIndex.set(this.prevActiveIndex(activeOptionIndex));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (activeOptionIndex > -1) {
+        this.activeElements()[activeOptionIndex as number].click();
+
+        queueMicrotask(() => this.close('active'));
+      }
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      this.close('closed');
+    }
+  };
 
   _lastElementList: HTMLButtonElement[] = [];
   activeElements = signal<HTMLButtonElement[]>([]);
@@ -163,6 +170,19 @@ export class ShipMenuComponent {
     const inputValue = (this.inputValue() ?? '').toLowerCase();
 
     this.#resetActiveOption();
+
+    if (!inputValue || inputValue === '') {
+      const allOptions = this.optionsEl();
+
+      this.activeElements.set(allOptions);
+      this._lastElementList = allOptions;
+
+      for (let i = 0; i < allOptions.length; i++) {
+        this.#renderer.removeStyle(allOptions[i], 'order');
+      }
+
+      return;
+    }
 
     if (!inputValue || inputValue === '') return;
 
