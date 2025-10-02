@@ -16,7 +16,7 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
-import { ShipButtonComponent, ShipCardComponent, ShipIconComponent } from 'ship-ui';
+import { ShipButtonComponent, ShipCardComponent, ShipIconComponent } from '../../public-api';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
 import { layoutNodes } from './autolayout';
 import { findDuplicateNodeIDs, findDuplicatePortIDs } from './validatePorts';
