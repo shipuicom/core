@@ -1,9 +1,16 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipBlueprintComponent, ShipToggleComponent } from 'ship-ui';
+import {
+  Coordinates,
+  ShipBlueprintComponent,
+  ShipButtonComponent,
+  ShipIconComponent,
+  ShipToggleComponent,
+  TEST_NODES,
+} from 'ship-ui';
 
 @Component({
   selector: 'app-blueprints',
-  imports: [ShipBlueprintComponent, ShipToggleComponent],
+  imports: [ShipBlueprintComponent, ShipToggleComponent, ShipButtonComponent, ShipIconComponent],
   templateUrl: './blueprints.component.html',
   styleUrl: './blueprints.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -11,7 +18,55 @@ import { ShipBlueprintComponent, ShipToggleComponent } from 'ship-ui';
 export default class BlueprintsComponent {
   showAsDots = signal(false);
 
+  nodes = signal(TEST_NODES);
+
   onChange(event: any) {
     console.log(event);
+  }
+
+  lastCoordinates = [null, null] as Coordinates | [null, null];
+
+  addNewNode() {
+    // Generate a new node and node id
+    const newCoordinates = [
+      this.lastCoordinates[0] === null ? 20 : this.lastCoordinates[0] + 200,
+      this.lastCoordinates[1] === null ? 200 : this.lastCoordinates[1],
+    ] as Coordinates;
+
+    const { inputs, outputs } = this.#generatePorts();
+    const newNode = {
+      id: Math.random().toString(36).substring(2, 15),
+      coordinates: newCoordinates,
+      inputs: inputs,
+      outputs: outputs,
+      connections: [],
+    };
+
+    this.lastCoordinates = newCoordinates;
+
+    this.nodes.update((nodes) => [...nodes, newNode]);
+  }
+
+  #generatePorts() {
+    const inputs = [];
+    const outputs = [];
+    const randomNumberInputs = Math.floor(Math.random() * 5);
+    const randomNumberOutputs = Math.floor(Math.random() * 5);
+
+    for (let i = 0; i < randomNumberInputs; i++) {
+      inputs.push({
+        id: Math.random().toString(36).substring(2, 15),
+        name: `Input ${i + 1}`,
+      });
+    }
+
+    for (let i = 0; i < randomNumberOutputs; i++) {
+      outputs.push({
+        id: Math.random().toString(36).substring(2, 15),
+        name: `Output ${i + 1}`,
+      });
+    }
+
+    return { inputs, outputs };
   }
 }

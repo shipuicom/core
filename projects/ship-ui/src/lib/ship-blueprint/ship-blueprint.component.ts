@@ -1,4 +1,4 @@
-import { isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser, JsonPipe } from '@angular/common';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -16,29 +16,44 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
-import { ShipCardComponent, ShipIconComponent } from 'ship-ui';
+import { ShipButtonComponent, ShipCardComponent, ShipIconComponent } from 'ship-ui';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
+import { layoutNodes } from './autolayout';
+import { findDuplicateNodeIDs, findDuplicatePortIDs } from './validatePorts';
+
+// TODO - disallow infinite loops
+// TODO - drag and drop new nodes into the canvas (takes an input creatableNodes without coordinates) this are shown in a right side panel and can be dragged into the canvas
 
 type Port = { id: string; name: string };
-type BaseNode = { id: string; x: number; y: number; inputs: Port[]; outputs: Port[]; connections: Connection[] };
+
+export type BlueprintNode = {
+  id: string;
+  coordinates: Coordinates;
+  inputs: Port[];
+  outputs: Port[];
+  connections: Connection[];
+};
+
 type Connection = { fromNode: string; fromPort: string; toNode: string; toPort: string };
 type DragState = { fromNode: string; fromPort: string; x2: number; y2: number };
-type Coordinates = { x: number; y: number };
 
-const TEST_NODES: BaseNode[] = [
+export type Coordinates = [x: number, y: number];
+
+export const TEST_NODES: BlueprintNode[] = [
   {
     id: 'a1',
-    x: -300,
-    y: -200,
+    coordinates: [0, 0],
     inputs: [],
     outputs: [{ id: 'out-1', name: 'Start Output' }],
     connections: [{ fromNode: 'a1', fromPort: 'out-1', toNode: 'b1', toPort: 'in-1' }],
   },
   {
     id: 'b1',
-    x: 0,
-    y: 0,
-    inputs: [{ id: 'in-1', name: 'Input A' }],
+    coordinates: [0, 0],
+    inputs: [
+      { id: 'in-1', name: 'Input A' },
+      { id: 'in-1', name: 'Another Input A' },
+    ],
     outputs: [{ id: 'out-1', name: 'Output B' }],
     connections: [
       { fromNode: 'b1', fromPort: 'out-1', toNode: 'c6', toPort: 'in-1' },
@@ -47,79 +62,109 @@ const TEST_NODES: BaseNode[] = [
   },
   {
     id: 'c6',
-    x: 300,
-    y: 200,
+    coordinates: [0, 0],
     inputs: [{ id: 'in-1', name: 'Input C' }],
     outputs: [{ id: 'out-1', name: 'Output D' }],
     connections: [{ fromNode: 'b1', fromPort: 'out-1', toNode: 'c6', toPort: 'in-1' }],
   },
 ];
 
+type ValidationErrors = {
+  duplicateNodeIds: string[];
+  duplicatePortIds: {
+    nodeId: string;
+    duplicatePortIds: string[];
+  }[];
+};
+
 @Component({
   selector: 'sh-blueprint',
-  imports: [ShipCardComponent, ShipIconComponent],
+  imports: [ShipCardComponent, ShipIconComponent, JsonPipe, ShipButtonComponent],
   template: `
-    @if (showMidpointDiv()) {
-      <div
-        class="midpoint-div"
-        (click)="removeConnection()"
-        [style.left.px]="midpointDivPosition()?.x"
-        [style.top.px]="midpointDivPosition()?.y">
-        Remove connection
-        <sh-icon>trash</sh-icon>
-      </div>
-    }
-
     <div
       class="canvas-container"
       [class.locked]="isLocked()"
+      [class.hovering-connection]="highlightedConnection()"
       (mousedown)="startPan($event)"
       (mousemove)="pan($event)"
       (wheel)="zoom($event)"
       (touchstart)="handleTouchStart($event)"
       (touchmove)="handleTouchMove($event)"
       (touchend)="handleTouchEnd()">
+      <div class="action-panel">
+        <button shButton (click)="applyAutolayout()" class="small">
+          Autolayout
+          <sh-icon>tree-structure</sh-icon>
+        </button>
+
+        <ng-content />
+      </div>
+
       <canvas #blueprintCanvas></canvas>
 
-      <div
-        class="nodes-wrapper"
-        [style.transform]="'translate(' + panX() + 'px, ' + panY() + 'px) scale(' + zoomLevel() + ')'"
-        [style.transform-origin]="'0 0'">
-        @for (node of nodes(); track node.id) {
-          <sh-card class="node type-c" [style.transform]="'translate(' + node.x + 'px, ' + node.y + 'px)'">
-            <header (mousedown)="startNodeDrag($event, node.id)" (touchstart)="startNodeDrag($event, node.id)">
-              <span class="node-title">{{ node.id }}</span>
-              <sh-icon>list</sh-icon>
-            </header>
-            <div class="ports">
-              <div class="inputs">
-                @for (inputPort of node.inputs; track inputPort.id) {
-                  <div class="port-wrap">
-                    <div
-                      class="port input-port"
-                      [attr.data-node-id]="node.id"
-                      [attr.data-port-id]="inputPort.id"
-                      (click)="endPortDrag($event, node.id, inputPort.id)"></div>
-                    <span class="port-name">{{ inputPort.name }}</span>
-                  </div>
-                }
+      @if (validationErrors()) {
+        <sh-card class="validation-errors type-c">
+          Something went wrong you have
+          <br />
+          duplicate node IDs or port IDs
+          <pre>{{ validationErrors() | json }}</pre>
+        </sh-card>
+      } @else {
+        <div
+          class="nodes-wrapper"
+          [style.transform]="'translate(' + panX() + 'px, ' + panY() + 'px) scale(' + zoomLevel() + ')'"
+          [style.transform-origin]="'0 0'">
+          @for (node of nodes(); track node.id) {
+            <sh-card
+              class="node type-c"
+              [style.transform]="getDisplayCoordinates(node)"
+              (mouseenter)="isHoveringNode.set(true)"
+              (mouseleave)="isHoveringNode.set(false)">
+              <header (mousedown)="startNodeDrag($event, node.id)" (touchstart)="startNodeDrag($event, node.id)">
+                <span class="node-title">{{ node.id }}</span>
+                <sh-icon>list</sh-icon>
+              </header>
+              <div class="ports">
+                <div class="inputs">
+                  @for (inputPort of node.inputs; track inputPort.id) {
+                    <div class="port-wrap">
+                      <div
+                        class="port input-port"
+                        [attr.data-node-id]="node.id"
+                        [attr.data-port-id]="inputPort.id"
+                        (click)="endPortDrag($event, node.id, inputPort.id)"></div>
+                      <span class="port-name">{{ inputPort.name }}</span>
+                    </div>
+                  }
+                </div>
+                <div class="outputs">
+                  @for (outputPort of node.outputs; track outputPort.id) {
+                    <div class="port-wrap">
+                      <span class="port-name">{{ outputPort.name }}</span>
+                      <div
+                        class="port output-port"
+                        [attr.data-node-id]="node.id"
+                        [attr.data-port-id]="outputPort.id"
+                        (click)="startPortDrag($event, node.id, outputPort.id)"></div>
+                    </div>
+                  }
+                </div>
               </div>
-              <div class="outputs">
-                @for (outputPort of node.outputs; track outputPort.id) {
-                  <div class="port-wrap">
-                    <span class="port-name">{{ outputPort.name }}</span>
-                    <div
-                      class="port output-port"
-                      [attr.data-node-id]="node.id"
-                      [attr.data-port-id]="outputPort.id"
-                      (click)="startPortDrag($event, node.id, outputPort.id)"></div>
-                  </div>
-                }
-              </div>
+            </sh-card>
+          }
+
+          @if (showMidpointDiv()) {
+            <div
+              class="midpoint-div"
+              (click)="removeConnection()"
+              [style.left.px]="midpointDivPosition()?.x"
+              [style.top.px]="midpointDivPosition()?.y">
+              Remove connection
+              <sh-icon>trash</sh-icon>
             </div>
-          </sh-card>
-        }
-      </div>
+          }
+        </div>
+      }
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -138,11 +183,13 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
   asDots = computed(() => this.#currentClass().includes('dots'));
   lightMode = computed(() => this.#htmlClass().includes('light'));
 
+  forceUnique = input<boolean>(true);
+  autoLayout = input<boolean>(false);
   gridSize = input(20);
   snapToGrid = input<boolean>(true);
   gridColor = input<[string, string]>(['#d8d8d8', '#2c2c2c']);
 
-  nodes = model<BaseNode[]>(TEST_NODES);
+  nodes = model<BlueprintNode[]>([]);
 
   #currentGridColor = computed(() => this.gridColor()[this.lightMode() ? 0 : 1]);
 
@@ -151,10 +198,15 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
   zoomLevel = signal(1);
   gridSnapSize = signal(20);
 
-  midpointDivPosition = signal<Coordinates | null>(null);
+  isHoveringNode = signal(false);
+  midpointDivPosition = signal<{ x: number; y: number } | null>(null);
   showMidpointDiv = signal(false);
   isLocked = signal(false);
-  #highlightedConnection = signal<Connection | null>(null);
+  draggingConnection = signal<DragState | null>(null);
+  validationErrors = signal<ValidationErrors | null>(null);
+  highlightedConnection = signal<Connection | null>(null);
+
+  #draggingNodeCoordinates = signal<Coordinates | null>(null);
   #isDragging = signal(false);
   #lastMouseX = signal(0);
   #lastMouseY = signal(0);
@@ -163,7 +215,6 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
   #draggedNodeId = signal<string | null>(null);
   #dragOffset = signal<Coordinates | null>(null);
   #connections = signal<Connection[]>([]);
-  draggingConnection = signal<DragState | null>(null);
 
   @ViewChild('blueprintCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
   #ctx!: CanvasRenderingContext2D;
@@ -180,7 +231,8 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
         this.#connections();
         this.draggingConnection();
         this.#currentGridColor();
-        this.#highlightedConnection();
+        this.highlightedConnection();
+        this.#draggingNodeCoordinates();
 
         requestAnimationFrame(() => this.drawCanvas());
       });
@@ -212,6 +264,16 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
       this.#resizeObserver = new ResizeObserver(() => this.updateCanvasSize());
       this.#resizeObserver.observe(this.#selfRef.nativeElement);
       this.updateCanvasSize();
+
+      if (this.autoLayout()) {
+        this.applyAutolayout();
+      }
+
+      if (this.forceUnique()) {
+        this.#removeDuplicatesAndReinitiate();
+      } else {
+        this.#validateNodes();
+      }
     }
   }
 
@@ -219,6 +281,21 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     if (this.#resizeObserver) {
       this.#resizeObserver.disconnect();
     }
+  }
+
+  #validateNodes() {
+    const duplicatePortIds = findDuplicatePortIDs(this.nodes());
+    const duplicateNodeIds = findDuplicateNodeIDs(this.nodes());
+
+    this.validationErrors.set({
+      duplicateNodeIds,
+      duplicatePortIds,
+    });
+  }
+
+  applyAutolayout() {
+    const newNodes = layoutNodes(this.nodes());
+    this.nodes.set(newNodes);
   }
 
   updateCanvasSize() {
@@ -295,16 +372,22 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
   }
 
   drawConnections(ctx: CanvasRenderingContext2D) {
-    const highlighted = this.#highlightedConnection();
+    const highlighted = this.highlightedConnection();
     ctx.lineWidth = 2 / this.zoomLevel();
 
     for (const conn of this.#connections()) {
-      const isHighlighted = highlighted?.fromNode === conn.fromNode && highlighted?.fromPort === conn.fromPort;
-      console.log(isHighlighted);
+      const isHighlighted =
+        highlighted?.fromNode === conn.fromNode &&
+        highlighted?.fromPort === conn.fromPort &&
+        highlighted?.toNode === conn.toNode &&
+        highlighted?.toPort === conn.toPort;
+
       ctx.strokeStyle = isHighlighted ? '#ffc107' : '#888';
       ctx.beginPath();
+
       const startPos = this.getNodePortPosition(conn.fromNode, conn.fromPort);
       const endPos = this.getNodePortPosition(conn.toNode, conn.toPort);
+
       this.drawCurvedPath(ctx, startPos, endPos);
       ctx.stroke();
     }
@@ -313,7 +396,7 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
   drawDraggingPath(ctx: CanvasRenderingContext2D) {
     const conn = this.draggingConnection()!;
     const startPos = this.getNodePortPosition(conn.fromNode, conn.fromPort);
-    const endPos = { x: conn.x2, y: conn.y2 };
+    const endPos = [conn.x2, conn.y2] as Coordinates;
     ctx.strokeStyle = '#5a9cf8';
     ctx.lineWidth = 2 / this.zoomLevel();
     ctx.beginPath();
@@ -322,8 +405,8 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
   }
 
   drawCurvedPath(ctx: CanvasRenderingContext2D, start: Coordinates, end: Coordinates) {
-    const { x: x1, y: y1 } = start;
-    const { x: x2, y: y2 } = end;
+    const [x1, y1] = start;
+    const [x2, y2] = end;
     const dx = Math.abs(x1 - x2) * 0.7;
     ctx.moveTo(x1, y1);
     ctx.bezierCurveTo(x1 + dx, y1, x2 - dx, y2, x2, y2);
@@ -366,9 +449,14 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
       this.updatePathOnMove(event);
     } else {
       this.pan(event);
-      this.#checkConnectionHover(event);
+      if (this.isHoveringNode()) {
+        this.highlightedConnection.set(null);
+      } else {
+        this.#checkConnectionHover(event);
+      }
     }
   }
+
   @HostListener('document:touchmove', ['$event']) onTouchMove(event: TouchEvent) {
     if (this.isLocked()) return;
     if (this.#isNodeDragging()) {
@@ -382,6 +470,7 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
 
   startNodeDrag(event: MouseEvent | TouchEvent, nodeId: string) {
     event.stopPropagation();
+    event.preventDefault();
 
     this.#isNodeDragging.set(true);
     this.#draggedNodeId.set(nodeId);
@@ -395,7 +484,7 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     const draggedNode = this.nodes().find((n) => n.id === nodeId);
 
     if (draggedNode) {
-      this.#dragOffset.set({ x: worldX - draggedNode.x, y: worldY - draggedNode.y });
+      this.#dragOffset.set([worldX - draggedNode.coordinates[0], worldY - draggedNode.coordinates[1]]);
     }
 
     this.#lastMouseX.set(clientX);
@@ -403,40 +492,44 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
   }
 
   endNodeDrag() {
+    const draggedId = this.#draggedNodeId();
+    const finalCoords = this.#draggingNodeCoordinates();
+
+    if (draggedId && finalCoords) {
+      this.nodes.update((nodes) => {
+        const node = nodes.find((n) => n.id === draggedId);
+        if (node) {
+          node.coordinates = finalCoords;
+        }
+        return [...nodes];
+      });
+    }
+
     this.#isNodeDragging.set(false);
     this.#draggedNodeId.set(null);
     this.#dragOffset.set(null);
+    this.#draggingNodeCoordinates.set(null);
   }
 
   nodeDrag(event: MouseEvent | Touch) {
     const draggedId = this.#draggedNodeId();
-
     if (!this.#isNodeDragging() || !draggedId) return;
 
     const { clientX, clientY } = event;
+    const blueprintRect = this.#selfRef.nativeElement.getBoundingClientRect();
+    const worldX = (clientX - blueprintRect.left - this.panX()) / this.zoomLevel();
+    const worldY = (clientY - blueprintRect.top - this.panY()) / this.zoomLevel();
 
-    this.nodes.update((nodes) => {
-      const node = nodes.find((n) => n.id === draggedId);
-      if (node) {
-        if (this.snapToGrid() || (event instanceof MouseEvent && event.shiftKey)) {
-          const grid = this.gridSnapSize();
-          const blueprintRect = this.#selfRef.nativeElement.getBoundingClientRect();
-          const worldX = (clientX - blueprintRect.left - this.panX()) / this.zoomLevel();
-          const worldY = (clientY - blueprintRect.top - this.panY()) / this.zoomLevel();
+    let newX = worldX - this.#dragOffset()![0];
+    let newY = worldY - this.#dragOffset()![1];
 
-          node.x = Math.round((worldX - this.#dragOffset()!.x) / grid) * grid;
-          node.y = Math.round((worldY - this.#dragOffset()!.y) / grid) * grid;
-        } else {
-          const dx = (clientX - this.#lastMouseX()) / this.zoomLevel();
-          const dy = (clientY - this.#lastMouseY()) / this.zoomLevel();
-          node.x += dx;
-          node.y += dy;
-        }
-      }
+    if (this.snapToGrid() || (event instanceof MouseEvent && event.shiftKey)) {
+      const grid = this.gridSnapSize();
+      newX = Math.round(newX / grid) * grid;
+      newY = Math.round(newY / grid) * grid;
+    }
 
-      return [...nodes];
-    });
-
+    this.#draggingNodeCoordinates.set([newX, newY]);
     this.#lastMouseX.set(clientX);
     this.#lastMouseY.set(clientY);
   }
@@ -449,7 +542,12 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     const node = this.nodes().find((n) => n.id === nodeId);
 
     if (node) {
-      this.draggingConnection.set({ fromNode: nodeId, fromPort: portId, x2: node.x, y2: node.y });
+      this.draggingConnection.set({
+        fromNode: nodeId,
+        fromPort: portId,
+        x2: node.coordinates[0],
+        y2: node.coordinates[1],
+      });
     }
 
     this.updatePathOnMove(event);
@@ -465,7 +563,6 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    // Create the new connection object without x2 and y2
     const newConnection: Connection = {
       fromNode: from.fromNode,
       fromPort: from.fromPort,
@@ -525,11 +622,11 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
   getNodePortPosition(nodeId: string, portId: string): Coordinates {
     const node = this.nodes().find((n) => n.id === nodeId);
 
-    if (!node) return { x: 0, y: 0 };
+    if (!node) return [0, 0];
 
     const portEl = this.#selfRef.nativeElement.querySelector(`[data-node-id="${nodeId}"][data-port-id="${portId}"]`);
 
-    if (!portEl) return { x: node.x, y: node.y };
+    if (!portEl) return node.coordinates;
 
     const nodeWrapper = this.#selfRef.nativeElement.querySelector('.nodes-wrapper')!;
     const wrapperRect = nodeWrapper.getBoundingClientRect();
@@ -539,7 +636,7 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     const worldX = (portCenterX - wrapperRect.left) / this.zoomLevel();
     const worldY = (portCenterY - wrapperRect.top) / this.zoomLevel();
 
-    return { x: worldX, y: worldY };
+    return [worldX, worldY];
   }
 
   startPan(event: MouseEvent) {
@@ -640,28 +737,118 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     this.isLocked.set(false);
   }
 
+  getDisplayCoordinates(node: BlueprintNode) {
+    const draggedId = this.#draggedNodeId();
+    const draggingCoords = this.#draggingNodeCoordinates();
+
+    if (draggedId === node.id && draggingCoords) {
+      return `translate(${draggingCoords[0]}px, ${draggingCoords[1]}px)`;
+    }
+
+    return `translate(${node.coordinates[0]}px, ${node.coordinates[1]}px)`;
+  }
+
   removeConnection() {
-    const conn = this.#highlightedConnection();
+    const conn = this.highlightedConnection();
 
     if (!conn) return;
 
-    this.#connections.update((conns) => conns.filter((c) => c.fromNode !== conn?.fromNode));
-    this.nodes.update((nodes) =>
-      nodes.map((n) => ({ ...n, connections: n.connections.filter((c) => c.fromNode !== conn?.fromNode) }))
+    this.#connections.update((conns) =>
+      conns.filter(
+        (c) =>
+          !(
+            c.fromNode === conn.fromNode &&
+            c.fromPort === conn.fromPort &&
+            c.toNode === conn.toNode &&
+            c.toPort === conn.toPort
+          )
+      )
     );
-    this.#highlightedConnection.set(null);
 
+    this.nodes.update((nodes) =>
+      nodes.map((n) => ({
+        ...n,
+        connections: n.connections.filter(
+          (c) =>
+            !(
+              c.fromNode === conn.fromNode &&
+              c.fromPort === conn.fromPort &&
+              c.toNode === conn.toNode &&
+              c.toPort === conn.toPort
+            )
+        ),
+      }))
+    );
+    this.highlightedConnection.set(null);
     this.closeMidpointDiv();
   }
 
+  #removeDuplicatesAndReinitiate() {
+    const nodes = this.nodes();
+    const uniqueNodesMap = new Map<string, BlueprintNode>();
+    const uniqueNodes: BlueprintNode[] = [];
+
+    for (const node of nodes) {
+      if (!uniqueNodesMap.has(node.id)) {
+        uniqueNodesMap.set(node.id, node);
+        uniqueNodes.push(node);
+      }
+    }
+
+    const nodesWithUniquePorts = uniqueNodes.map((node) => {
+      const uniqueInputs = new Map<string, Port>();
+      const uniqueOutputs = new Map<string, Port>();
+
+      const uniqueNodeInputs = node.inputs.filter((port) => {
+        if (!uniqueInputs.has(port.id)) {
+          uniqueInputs.set(port.id, port);
+          return true;
+        }
+        return false;
+      });
+
+      const uniqueNodeOutputs = node.outputs.filter((port) => {
+        if (!uniqueOutputs.has(port.id)) {
+          uniqueOutputs.set(port.id, port);
+          return true;
+        }
+        return false;
+      });
+
+      return {
+        ...node,
+        inputs: uniqueNodeInputs,
+        outputs: uniqueNodeOutputs,
+      };
+    });
+
+    const finalNodes = nodesWithUniquePorts.map((node) => {
+      const validConnections = node.connections.filter((conn) => {
+        const fromNodeExists = nodesWithUniquePorts.some((n) => n.id === conn.fromNode);
+        const toNodeExists = nodesWithUniquePorts.some((n) => n.id === conn.toNode);
+        const fromPortExists = nodesWithUniquePorts
+          .find((n) => n.id === conn.fromNode)
+          ?.outputs.some((p) => p.id === conn.fromPort);
+        const toPortExists = nodesWithUniquePorts
+          .find((n) => n.id === conn.toNode)
+          ?.inputs.some((p) => p.id === conn.toPort);
+
+        return fromNodeExists && toNodeExists && fromPortExists && toPortExists;
+      });
+      return { ...node, connections: validConnections };
+    });
+
+    this.nodes.set(finalNodes);
+  }
+
   #handleConnectionClick(event: MouseEvent) {
-    if (this.#highlightedConnection()) {
-      const conn = this.#highlightedConnection()!;
+    if (this.highlightedConnection()) {
+      const conn = this.highlightedConnection()!;
       const startPos = this.getNodePortPosition(conn.fromNode, conn.fromPort);
       const endPos = this.getNodePortPosition(conn.toNode, conn.toPort);
       const midpoint = this.#getBezierMidpoint(startPos, endPos);
 
-      this.midpointDivPosition.set({ x: midpoint.x, y: midpoint.y });
+      this.midpointDivPosition.set({ x: midpoint[0], y: midpoint[1] });
       this.showMidpointDiv.set(true);
       this.isLocked.set(true);
     }
@@ -669,10 +856,8 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
 
   #getBezierMidpoint(start: Coordinates, end: Coordinates): Coordinates {
     const t = 0.5;
-    const x1 = start.x;
-    const y1 = start.y;
-    const x2 = end.x;
-    const y2 = end.y;
+    const [x1, y1] = start;
+    const [x2, y2] = end;
     const dx = Math.abs(x1 - x2) * 0.7;
     const cp1x = x1 + dx;
     const cp1y = y1;
@@ -691,14 +876,14 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
       3 * (1 - t) * Math.pow(t, 2) * cp2y +
       Math.pow(t, 3) * y2;
 
-    return { x: mx, y: my };
+    return [mx, my];
   }
 
   #checkConnectionHover(event: MouseEvent) {
     const blueprintRect = this.#selfRef.nativeElement.getBoundingClientRect();
     const worldX = (event.clientX - blueprintRect.left - this.panX()) / this.zoomLevel();
     const worldY = (event.clientY - blueprintRect.top - this.panY()) / this.zoomLevel();
-    const cursorPoint = { x: worldX, y: worldY };
+    const cursorPoint: Coordinates = [worldX, worldY];
 
     let hoveredConn: Connection | null = null;
     const tolerance = 10 / this.zoomLevel();
@@ -707,39 +892,28 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
       const startPos = this.getNodePortPosition(conn.fromNode, conn.fromPort);
       const endPos = this.getNodePortPosition(conn.toNode, conn.toPort);
 
-      if (this.#isPointNearBezierCurve(cursorPoint, startPos, endPos, this.#ctx, tolerance)) {
+      if (this.#isPointNearBezierCurve(cursorPoint, startPos, endPos, tolerance)) {
         hoveredConn = conn;
         break;
       }
     }
 
-    this.#highlightedConnection.set(hoveredConn);
+    this.highlightedConnection.set(hoveredConn);
   }
 
-  #isPointNearBezierCurve(
-    point: Coordinates,
-    start: Coordinates,
-    end: Coordinates,
-    ctx: CanvasRenderingContext2D,
-    tolerance: number = 10
-  ): boolean {
-    // Recalculate control points based on the Bezier formula
-    const x1 = start.x;
-    const y1 = start.y;
-    const x2 = end.x;
-    const y2 = end.y;
+  #isPointNearBezierCurve(point: Coordinates, start: Coordinates, end: Coordinates, tolerance: number = 10): boolean {
+    const [x1, y1] = start;
+    const [x2, y2] = end;
     const dx = Math.abs(x1 - x2) * 0.7;
     const cp1x = x1 + dx;
     const cp1y = y1;
     const cp2x = x2 - dx;
     const cp2y = y2;
 
-    // Check distance for a number of points along the curve
-    const steps = 20; // Number of points to check
+    const steps = 20;
     for (let i = 0; i <= steps; i++) {
       const t = i / steps;
 
-      // Bezier curve formula
       const x =
         Math.pow(1 - t, 3) * x1 +
         3 * Math.pow(1 - t, 2) * t * cp1x +
@@ -751,7 +925,7 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
         3 * (1 - t) * Math.pow(t, 2) * cp2y +
         Math.pow(t, 3) * y2;
 
-      const distance = Math.sqrt(Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2));
+      const distance = Math.sqrt(Math.pow(point[0] - x, 2) + Math.pow(point[1] - y, 2));
       if (distance < tolerance) {
         return true;
       }

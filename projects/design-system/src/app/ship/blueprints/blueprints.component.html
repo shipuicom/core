@@ -4,5 +4,10 @@
 </h3>
 
 <section>
-  <sh-blueprint [class.dots]="showAsDots()" (nodesChange)="onChange($event)" />
+  <sh-blueprint [class.dots]="showAsDots()" [autoLayout]="true" [(nodes)]="nodes" (nodesChange)="onChange($event)">
+    <button shButton class="small" (click)="addNewNode()">
+      Add node
+      <sh-icon>leaf</sh-icon>
+    </button>
+  </sh-blueprint>
 </section>

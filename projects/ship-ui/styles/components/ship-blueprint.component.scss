@@ -22,14 +22,30 @@ $shipBlueprint: true !default;
       color: var(--bp-icon-c);
     }
 
+    .validation-errors {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: p2r(16);
+    }
+
     .midpoint-div {
       position: absolute;
-      background-color: #333;
-      border: 1px solid #555;
-      padding: 10px;
-      border-radius: 5px;
-      transform: translate(-50%, -50%); /* Center the div on the coordinate */
+      background-color: var(--base-2);
+      border: 1px solid var(--base-4);
+      padding: p2r(8);
+      gap: p2r(8);
+      border-radius: var(--shape-2);
+      transform: translate(-50%, -50%);
       z-index: 100;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+
+      sh-icon {
+        color: var(--base-12);
+      }
     }
 
     .canvas-container {
@@ -38,10 +54,27 @@ $shipBlueprint: true !default;
       height: 100%;
       overflow: hidden;
 
+      &.hovering-connection {
+        cursor: pointer;
+      }
+
       &.locked {
-        pointer-events: none;
+        .node {
+          pointer-events: none;
+        }
       }
     }
+
+    .action-panel {
+      position: absolute;
+      top: p2r(8);
+      right: p2r(8);
+      gap: p2r(8);
+      display: flex;
+      align-items: center;
+      z-index: 1000;
+    }
+
     canvas {
       position: absolute;
       top: 0;
