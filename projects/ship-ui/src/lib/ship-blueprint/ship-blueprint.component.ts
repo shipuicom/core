@@ -22,6 +22,7 @@ import { layoutNodes } from './autolayout';
 import { findDuplicateNodeIDs, findDuplicatePortIDs } from './validatePorts';
 
 // TODO - disallow infinite loops
+// TODO - Autolayout should take port order into account
 // TODO - drag and drop new nodes into the canvas (takes an input creatableNodes without coordinates) this are shown in a right side panel and can be dragged into the canvas
 
 type Port = { id: string; name: string };
@@ -935,6 +936,29 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     }
 
     return false;
+  }
+
+  public getNewNodeCoordinates(panToCoordinates = false): Coordinates {
+    let lowestY = 0;
+    if (this.nodes().length > 0) {
+      lowestY = this.nodes().reduce((max, node) => Math.max(max, node.coordinates[1]), 0);
+    }
+
+    const newCoordinates: Coordinates = [20, lowestY + 200];
+
+    if (panToCoordinates) {
+      this.#panToCoordinates(newCoordinates);
+    }
+
+    return newCoordinates;
+  }
+
+  #panToCoordinates(coords: Coordinates): void {
+    const [x, y] = coords;
+    const rect = this.#selfRef.nativeElement.getBoundingClientRect();
+
+    this.panX.set(rect.width / 2 - x * this.zoomLevel());
+    this.panY.set(rect.height / 2 - y * this.zoomLevel());
   }
 
   #getDistance(touch1: Touch, touch2: Touch) {

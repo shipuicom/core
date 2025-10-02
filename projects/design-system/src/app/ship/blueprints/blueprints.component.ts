@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, viewChild } from '@angular/core';
 import {
   Coordinates,
   ShipBlueprintComponent,
@@ -19,6 +19,7 @@ export default class BlueprintsComponent {
   showAsDots = signal(false);
 
   nodes = signal(TEST_NODES);
+  blueprint = viewChild.required(ShipBlueprintComponent);
 
   onChange(event: any) {
     console.log(event);
@@ -27,11 +28,14 @@ export default class BlueprintsComponent {
   lastCoordinates = [null, null] as Coordinates | [null, null];
 
   addNewNode() {
+    const blueprint = this.blueprint();
+    const newCoordinates = blueprint.getNewNodeCoordinates(false);
+
     // Generate a new node and node id
-    const newCoordinates = [
-      this.lastCoordinates[0] === null ? 20 : this.lastCoordinates[0] + 200,
-      this.lastCoordinates[1] === null ? 200 : this.lastCoordinates[1],
-    ] as Coordinates;
+    // const newCoordinates = [
+    //   this.lastCoordinates[0] === null ? 20 : this.lastCoordinates[0] + 200,
+    //   this.lastCoordinates[1] === null ? 200 : this.lastCoordinates[1],
+    // ] as Coordinates;
 
     const { inputs, outputs } = this.#generatePorts();
     const newNode = {
