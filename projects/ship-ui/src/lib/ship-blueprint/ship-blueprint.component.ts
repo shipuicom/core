@@ -28,6 +28,7 @@ type Port = { id: string; name: string };
 
 export type BlueprintNode = {
   id: string;
+  name?: string;
   coordinates: Coordinates;
   inputs: Port[];
   outputs: Port[];
@@ -42,6 +43,7 @@ export type Coordinates = [x: number, y: number];
 export const TEST_NODES: BlueprintNode[] = [
   {
     id: 'a1',
+    name: 'hello a1',
     coordinates: [0, 0],
     inputs: [],
     outputs: [{ id: 'out-1', name: 'Start Output' }],
@@ -62,6 +64,7 @@ export const TEST_NODES: BlueprintNode[] = [
   },
   {
     id: 'c6',
+    name: 'hello c6',
     coordinates: [0, 0],
     inputs: [{ id: 'in-1', name: 'Input C' }],
     outputs: [{ id: 'out-1', name: 'Output D' }],
@@ -121,7 +124,7 @@ type ValidationErrors = {
               (mouseenter)="isHoveringNode.set(true)"
               (mouseleave)="isHoveringNode.set(false)">
               <header (mousedown)="startNodeDrag($event, node.id)" (touchstart)="startNodeDrag($event, node.id)">
-                <span class="node-title">{{ node.id }}</span>
+                <span class="node-title">{{ node.name ? node.name : node.id }}</span>
                 <sh-icon>list</sh-icon>
               </header>
               <div class="ports">
