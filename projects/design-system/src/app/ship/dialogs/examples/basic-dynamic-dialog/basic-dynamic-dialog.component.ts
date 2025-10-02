@@ -1,4 +1,4 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { ShipButtonComponent, ShipDialogService } from 'ship-ui';
 
 @Component({
@@ -14,8 +14,12 @@ export class BasicDynamicDialogComponent {
   type = input<string>();
 
   openDialog() {
-    this.#dialog.open(SimpleDialogContentComponent, {
+    const dialogRef = this.#dialog.open(SimpleDialogContentComponent, {
       class: this.type() ?? '',
+    });
+
+    dialogRef.component.closed.subscribe((res) => {
+      console.log('closed res', res);
     });
   }
 }
@@ -27,4 +31,6 @@ export class BasicDynamicDialogComponent {
     <div style="padding: 2rem;">Hello from a basic dialog!</div>
   `,
 })
-class SimpleDialogContentComponent {}
+class SimpleDialogContentComponent {
+  closed = output<string>();
+}

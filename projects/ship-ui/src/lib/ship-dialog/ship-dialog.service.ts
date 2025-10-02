@@ -21,6 +21,8 @@ export type ShipDialogReturn<T> = ReturnType<ShipDialogService['open']> & {
   component: T;
 };
 
+type TWithClosed<T> = T & { closed: OutputEmitterRef<any> };
+
 @Injectable({
   providedIn: 'root',
 })
@@ -38,11 +40,12 @@ export class ShipDialogService {
   open<T, K = any>(component: Type<T>, options?: ShipDialogServiceOptions<K>) {
     const environmentInjector = this.#appRef.injector;
     const hostElement = this.#createEl();
+    let closingCalled = false;
 
     const { data, closed, ...rest } = options || {};
 
     if (this.compRef) {
-      this.#cleanupRefs();
+      this.#cleanupRefs(true);
     }
 
     this.insertedCompRef = createComponent<T>(component, {
@@ -68,9 +71,15 @@ export class ShipDialogService {
 
     if (closedField instanceof OutputEmitterRef) {
       this.closedFieldSub = closedField.subscribe((...args: any[]) => {
+        this.#cleanupRefs();
+
+        if (closingCalled) return;
+
+        closingCalled = true;
+
         closed?.(...args);
 
-        this.#cleanupRefs();
+        this.compRef?.instance.closed.emit(...args);
       });
     }
 
@@ -81,23 +90,29 @@ export class ShipDialogService {
     this.compRef.changeDetectorRef.detectChanges();
     this.compRef.instance.isOpen.set(true);
     this.compRef.setInput('options', rest);
-    this.compRef.instance.closed.subscribe(() => closeAction());
+
+    this.compClosedSub = this.compRef.instance.closed.subscribe(() => closeAction());
 
     const _self = this;
 
-    function closeAction() {
+    function closeAction<U>(arg: U | undefined = undefined) {
+      _self.#cleanupRefs();
+
+      if (closingCalled) return;
+
+      closingCalled = true;
+
       if (closedField && closedField instanceof OutputEmitterRef) {
-        closedField.emit(false);
-      } else {
-        closed?.(undefined);
+        closedField.emit(arg);
       }
 
-      _self.#cleanupRefs();
+      closed?.(arg);
     }
 
     return {
       component: this.insertedCompRef.instance as T,
       close: closeAction,
+      closed: this.compRef.instance.closed,
     };
   }
 
@@ -112,21 +127,27 @@ export class ShipDialogService {
     return this.#document.getElementById('sh-dialog-ref')!;
   }
 
-  #cleanupRefs() {
-    if (this.insertedCompRef) {
-      this.#appRef.detachView(this.insertedCompRef.hostView);
-      this.closedFieldSub?.unsubscribe();
-      this.insertedCompRef.destroy();
+  #cleanupRefs(instant = false) {
+    const _self = this;
+
+    instant ? cleanup : queueMicrotask(() => cleanup());
+
+    function cleanup() {
+      if (_self.insertedCompRef) {
+        _self.#appRef.detachView(_self.insertedCompRef.hostView);
+        _self.closedFieldSub?.unsubscribe();
+        _self.insertedCompRef.destroy();
+      }
+
+      if (!_self.compRef) return;
+
+      _self.#appRef.detachView(_self.compRef.hostView);
+      _self.compClosedSub?.unsubscribe();
+      _self.compRef.destroy();
     }
-
-    if (!this.compRef) return;
-
-    this.#appRef.detachView(this.compRef.hostView);
-    this.compClosedSub?.unsubscribe();
-    this.compRef.destroy();
   }
 
   ngOnDestroy() {
-    this.#cleanupRefs();
+    this.#cleanupRefs(true);
   }
 }

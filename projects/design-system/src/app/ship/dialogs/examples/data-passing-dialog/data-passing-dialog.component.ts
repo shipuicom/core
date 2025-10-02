@@ -14,12 +14,20 @@ export class DataPassingDialogComponent {
   type = input<string>();
 
   openDialog() {
-    this.#dialog.open(DataDialogContentComponent, {
+    const dialogRef = this.#dialog.open(DataDialogContentComponent, {
       class: this.type() ?? '',
       data: { message: 'Hello from parent!' },
       closed: (result: any) => {
-        alert('Dialog closed with: ' + result);
+        console.log('Dialog function closed with: \t' + result);
       },
+    });
+
+    dialogRef.component.closed.subscribe((res) => {
+      console.log('Dialog component closed: \t', res);
+    });
+
+    dialogRef.closed.subscribe((res) => {
+      console.log('Dialog ref closed: \t', res);
     });
   }
 }
@@ -36,6 +44,7 @@ class DataDialogContentComponent {
   closed = output<string>();
 
   closeWithValue() {
+    console.log('closeWithValue');
     this.closed.emit('Some value from dialog');
   }
 }
