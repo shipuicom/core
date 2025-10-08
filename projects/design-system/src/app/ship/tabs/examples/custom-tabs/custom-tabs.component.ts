@@ -7,6 +7,7 @@ import TabComponent from '../../tab/tab.component';
   standalone: true,
   imports: [ShipTabsComponent, ShipIconComponent, TabComponent],
   templateUrl: './custom-tabs.component.html',
+  styleUrls: ['./custom-tabs.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomTabsComponent {

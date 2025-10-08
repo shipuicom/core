@@ -1,7 +1,11 @@
+@use 'helpers' as *;
+
 :host {
   display: flex;
   height: 500px;
   overflow: auto;
+  border: 1px solid var(--base-4);
+  border-radius: p2r(8);
 }
 
 div {
@@ -18,4 +22,5 @@ div {
   display: flex;
   gap: 1rem;
   justify-content: flex-start;
+  background-image: repeating-linear-gradient(0deg, #eee 0px 20px, transparent 20px 40px);
 }

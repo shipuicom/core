@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject } from '@angular/core';
 import { ShipButtonComponent, ShipIconComponent, ShipTooltipDirective } from 'ship-ui';
 
 @Component({
@@ -8,10 +8,17 @@ import { ShipButtonComponent, ShipIconComponent, ShipTooltipDirective } from 'sh
   styleUrl: './scrolled-tooltip.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ScrolledTooltipComponent {
+export class ScrolledTooltipComponent implements AfterViewInit {
   #selfRef = inject(ElementRef);
 
-  ngOnAfterViewInit() {
-    // this.#selfRef.nativeElement.scrollTo(1000, 0);
+  ngAfterViewInit() {
+    const el = this.#selfRef.nativeElement;
+
+    setTimeout(() => {
+      el.scrollTo({
+        top: el.scrollHeight,
+        behavior: 'smooth',
+      });
+    }, 250);
   }
 }

@@ -31,6 +31,9 @@ header {
 .sandbox {
   display: flex;
   gap: p2r(8);
-  flex-wrap: wrap;
-  padding: p2r(20);
+  // flex-wrap: wrap;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  padding: p2r(60 20);
 }

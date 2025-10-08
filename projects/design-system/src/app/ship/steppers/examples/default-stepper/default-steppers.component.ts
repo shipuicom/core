@@ -6,6 +6,7 @@ import { ShipRadioComponent, ShipStepperComponent } from 'ship-ui';
   standalone: true,
   imports: [ShipStepperComponent, ShipRadioComponent],
   templateUrl: './default-steppers.component.html',
+  styleUrls: ['./default-steppers.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DefaultStepperComponent {

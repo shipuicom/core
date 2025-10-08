@@ -1,3 +1,26 @@
+@use 'helpers' as *;
+
 :host {
   display: block;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: p2r(16);
+  padding: p2r(60 20);
+  width: 100%;
+  max-width: p2r(640);
+  align-self: center;
+}
+
+sh-range-slider {
+  width: p2r(320);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: p2r(16);
 }

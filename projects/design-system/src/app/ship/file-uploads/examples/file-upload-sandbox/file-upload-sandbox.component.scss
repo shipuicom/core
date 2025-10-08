@@ -29,9 +29,13 @@ header {
 
 .sandbox {
   display: flex;
+  flex-direction: column;
   gap: p2r(8);
-  flex-wrap: wrap;
-  padding: p2r(20);
+  padding: p2r(60 20);
+  width: 100%;
+  max-width: p2r(640);
+  align-self: center;
+  margin: 0 auto;
 }
 
 .files-list {
