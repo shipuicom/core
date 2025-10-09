@@ -9,9 +9,9 @@ import { ShipButtonGroupComponent, ShipCardComponent, ShipToggleCardComponent, S
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardSandboxComponent {
-  cardType = signal<'default' | 'type-a' | 'type-b' | 'type-c'>('default');
+  cardType = signal<'type-a' | 'type-b' | 'type-c'>('type-a');
   useToggleCard = signal<boolean>(false);
   disallowToggle = signal<boolean>(false);
 
-  cardClass = computed(() => (this.cardType() === 'default' ? '' : this.cardType()));
+  cardClass = computed(() => (this.cardType() === 'type-a' ? '' : this.cardType()));
 }

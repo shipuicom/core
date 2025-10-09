@@ -47,6 +47,7 @@ $shipCard: true !default;
     }
 
     &.type-c {
+      --card-bg: transparent;
       --card-ibg: var(--card-bg);
       --card-p: 0;
     }

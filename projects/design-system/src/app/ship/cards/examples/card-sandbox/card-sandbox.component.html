@@ -3,7 +3,6 @@
     <div class="column">
       <p>Controls (sh-card)</p>
       <sh-button-group class="small">
-        <button [class.active]="cardType() === 'default'" (click)="cardType.set('default')">Default</button>
         <button [class.active]="cardType() === 'type-a'" (click)="cardType.set('type-a')">Type A</button>
         <button [class.active]="cardType() === 'type-b'" (click)="cardType.set('type-b')">Type B</button>
         <button [class.active]="cardType() === 'type-c'" (click)="cardType.set('type-c')">Type C</button>
