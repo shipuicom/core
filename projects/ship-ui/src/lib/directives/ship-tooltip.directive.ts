@@ -1,5 +1,4 @@
 import {
-  afterNextRender,
   Component,
   ComponentRef,
   Directive,
@@ -58,16 +57,14 @@ export class ShipTooltipWrapper {
     }
   });
 
-  constructor() {
-    afterNextRender(() => {
-      this.#positionAbort = new AbortController();
+  ngAfterViewInit() {
+    this.#positionAbort = new AbortController();
 
-      const options = { signal: this.#positionAbort.signal, capture: true };
-      window?.addEventListener('scroll', this.calculateTooltipPosition, options);
-      window?.addEventListener('resize', this.calculateTooltipPosition, { signal: this.#positionAbort.signal });
+    const options = { signal: this.#positionAbort.signal, capture: true };
+    window?.addEventListener('scroll', this.calculateTooltipPosition, options);
+    window?.addEventListener('resize', this.calculateTooltipPosition, { signal: this.#positionAbort.signal });
 
-      setTimeout(() => this.calculateTooltipPosition());
-    });
+    setTimeout(() => this.calculateTooltipPosition());
   }
 
   ngOnDestroy(): void {
@@ -84,8 +81,11 @@ export class ShipTooltipWrapper {
     if (tooltipRect.width === 0 && tooltipRect.height === 0) return;
 
     const outOfBoundsTop = hostRect.top - tooltipRect.height < 0;
+
     this.isBelow.set(outOfBoundsTop);
+
     if (!this.SUPPORTS_ANCHOR) {
+      const tooltipRect = tooltipEl.getBoundingClientRect();
       let newTop = hostRect.top - tooltipRect.height;
       let newLeft = hostRect.left + hostRect.width / 2 - tooltipRect.width / 2;
 
