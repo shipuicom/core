@@ -4,6 +4,7 @@ $shipButtonGroup: true !default;
 @if $shipButtonGroup == true {
   sh-button-group {
     --btng-bg: var(--base-1);
+    --btng-item-bg: var(--base-3);
     --btng-c: var(--base-12);
     --btng-ic: var(--base-12);
     --btng-bc: var(--base-4);
@@ -16,6 +17,7 @@ $shipButtonGroup: true !default;
     border: 1px solid var(--btng-bc);
     border-radius: var(--btng-s);
     height: var(--btng-h);
+    background: var(--btng-bg);
     overflow: hidden;
 
     &.small {
@@ -25,8 +27,9 @@ $shipButtonGroup: true !default;
 
     &.type-b {
       --btng-bg: var(--base-3);
+      --btng-item-bg: var(--base-1);
+      --btng-s-a: var(--shape-2);
 
-      background: var(--base-3);
       padding: p2r(3);
       gap: p2r(4);
       border: 0;
@@ -35,14 +38,21 @@ $shipButtonGroup: true !default;
         border-radius: p2r(6);
         border: 0;
 
-        &:hover {
-          --btng-bg: var(--base-2);
-
-          box-shadow: var(--box-shadow-10);
+        @supports not (anchor-name: --anchor) {
+          --btng-item-bg: var(--base-3);
         }
 
+        &:hover {
+          --btng-bg: var(--base-2);
+        }
+
+        &:hover,
         &.active {
           --btng-bg: var(--base-1);
+
+          @supports not (anchor-name: --anchor) {
+            --btng-item-bg: var(--base-1);
+          }
 
           box-shadow: var(--box-shadow-10);
         }
@@ -68,7 +78,7 @@ $shipButtonGroup: true !default;
       overflow: visible;
       vertical-align: middle;
       white-space: nowrap;
-      background: var(--btng-bg);
+      background: transparent;
       color: var(--btng-c);
       font: var(--btng-f);
       border-left: 1px solid var(--btng-bc);
@@ -85,11 +95,54 @@ $shipButtonGroup: true !default;
         border-left: 0;
       }
 
-      &:hover,
-      &.active {
-        --btng-c: var(--base-12);
-        --btng-ic: var(--base-12);
-        --btng-bg: var(--base-3);
+      @supports not (anchor-name: --anchor) {
+        --btng-item-bg: var(--base-1);
+        background: var(--btng-item-bg);
+
+        &:hover,
+        &.active {
+          --btng-c: var(--base-12);
+          --btng-ic: var(--base-12);
+          --btng-bg: var(--base-3);
+          --btng-item-bg: var(--base-3);
+        }
+      }
+
+      @supports (anchor-name: --anchor) {
+        z-index: 1;
+        &.active {
+          position: relative;
+          anchor-name: var(--btng-id);
+        }
+      }
+    }
+
+    @supports (anchor-name: --anchor) {
+      &:after {
+        content: '';
+        background: var(--btng-item-bg);
+        pointer-events: none;
+        position: absolute;
+        z-index: 0;
+        top: anchor(top);
+        bottom: anchor(bottom);
+        left: anchor(left);
+        right: anchor(right);
+        position-anchor: var(--btng-id);
+        transition: all 0.175s ease-out;
+        border-radius: var(--btng-s-a);
+      }
+
+      &:not(.type-b):has(button:first-child.active) {
+        &:after {
+          --btng-s-a: #{p2r(4 0 0 4)};
+        }
+      }
+
+      &:not(.type-b):has(button:last-child.active) {
+        &:after {
+          --btng-s-a: #{p2r(0 4 4 0)};
+        }
       }
     }
   }

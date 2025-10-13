@@ -49,8 +49,15 @@ $shipTabs: true !default;
       &.active {
         color: var(--tabs-c-active);
 
-        &::after {
-          display: block;
+        @supports (anchor-name: --anchor) {
+          position: relative;
+          anchor-name: var(--tabs-id);
+        }
+
+        @supports not (anchor-name: --anchor) {
+          &::after {
+            display: block;
+          }
         }
       }
 
@@ -58,11 +65,31 @@ $shipTabs: true !default;
         content: '';
         display: none;
         width: 100%;
-        height: 2px;
+        height: p2r(2);
         background: var(--tabs-sel-bg);
         position: absolute;
         left: 0;
         bottom: 0;
+
+        @supports (anchor-name: --anchor) {
+          display: none;
+        }
+      }
+    }
+
+    @supports (anchor-name: --anchor) {
+      &:after {
+        content: '';
+        background: var(--tabs-sel-bg);
+        pointer-events: none;
+        position: absolute;
+        z-index: 10;
+        height: p2r(2);
+        bottom: anchor(bottom);
+        left: anchor(left);
+        right: anchor(right);
+        position-anchor: var(--tabs-id);
+        transition: all 0.175s ease-out;
       }
     }
 
