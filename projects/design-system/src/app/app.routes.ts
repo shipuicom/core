@@ -196,6 +196,10 @@ export const routes: Routes = [
         loadComponent: () => import('./ship/expansion-panels/expansion-panels.component'),
       },
       {
+        path: 'input-mask',
+        loadComponent: () => import('./ship/input-mask/input-mask.component'),
+      },
+      {
         path: 'virtual-scrolls',
         loadComponent: () => import('./ship/virtual-scrolls/virtual-scrolls.component'),
       },

@@ -47,6 +47,7 @@ export * from './lib/ship-virtual-scroll/ship-virtual-scroll.component';
 
 // Global directives
 export * from './lib/directives/ship-file-drag-drop.directive';
+export * from './lib/directives/ship-input-mask';
 export * from './lib/directives/ship-prevent-wheel.directive';
 export * from './lib/directives/ship-tooltip.directive';
 

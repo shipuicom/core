@@ -1,0 +1,39 @@
+<sh-form-field>
+  <label for="phone1">Phone 1</label>
+  <input id="phone1" placeholder="(999) 999-9999" type="text" shInputMask="(999) 999-9999" />
+  <div boxPrefix>
+    <sh-icon>phone</sh-icon>
+  </div>
+</sh-form-field>
+
+<sh-form-field>
+  <label for="phone2">Phone 2</label>
+  <input id="phone2" placeholder="99 99 99 99" type="text" shInputMask="99 99 99 99" />
+  <div boxPrefix>
+    <sh-icon>phone</sh-icon>
+  </div>
+</sh-form-field>
+
+<sh-form-field>
+  <label for="date1">Date 1</label>
+  <input id="date1" placeholder="99/99/9999" type="text" shInputMask="99/99/9999" />
+  <div boxPrefix>
+    <sh-icon>calendar</sh-icon>
+  </div>
+</sh-form-field>
+
+<sh-form-field>
+  <label for="date2">Date 2</label>
+  <input id="date2" placeholder="99/99 - 9999" type="text" shInputMask="99/99 - 9999" />
+  <div boxPrefix>
+    <sh-icon>calendar</sh-icon>
+  </div>
+</sh-form-field>
+
+<sh-form-field>
+  <label for="decimal1">Decimal using function</label>
+  <input id="decimal1" placeholder="Hello im a decimal pipe" type="text" [shInputMask]="maskingFunction" />
+  <div boxPrefix>
+    <sh-icon>calendar</sh-icon>
+  </div>
+</sh-form-field>
