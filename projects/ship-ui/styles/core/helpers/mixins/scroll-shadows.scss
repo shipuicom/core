@@ -1,0 +1,44 @@
+@use 'sass:list' as list;
+@use 'sass:map' as map;
+
+@mixin scroll-shadows($options) {
+  $background: map.get($options, 'background');
+  $colorFrom: map.get($options, 'colorFrom');
+  $colorTo: map.get($options, 'colorTo');
+  $size: map.get($options, 'size');
+  $fadeInSize: map.get($options, 'fadeInSize');
+
+  @if $background == null {
+    $background: var(--base1);
+  }
+
+  @if $colorFrom == null {
+    $colorFrom: rgb(from var(--base-12) r g b / 10%);
+  }
+
+  @if $colorTo == null {
+    $colorTo: rgb(from var(--base-12) r g b / 0%);
+  }
+
+  @if $size == null {
+    $size: p2r(14);
+  }
+
+  @if $fadeInSize == null {
+    $fadeInSize: p2r(40);
+  }
+
+  background:
+    linear-gradient($background 30%, rgba(255, 255, 255, 0)) center top,
+    linear-gradient(rgba(255, 255, 255, 0), $background 70%) center bottom,
+    radial-gradient(farthest-side at 50% 0, $colorFrom, $colorTo) center top,
+    radial-gradient(farthest-side at 50% 100%, $colorFrom, $colorTo) center bottom;
+
+  background-repeat: no-repeat;
+  background-size:
+    100% $fadeInSize,
+    100% $fadeInSize,
+    100% $size,
+    100% $size;
+  background-attachment: local, local, scroll, scroll;
+}
