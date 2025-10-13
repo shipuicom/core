@@ -49,12 +49,11 @@ $shipButtonGroup: true !default;
         &:hover,
         &.active {
           --btng-bg: var(--base-1);
+          box-shadow: var(--box-shadow-10);
 
           @supports not (anchor-name: --anchor) {
             --btng-item-bg: var(--base-1);
           }
-
-          box-shadow: var(--box-shadow-10);
         }
       }
     }
