@@ -22,6 +22,10 @@ $shipBlueprint: true !default;
       color: var(--bp-icon-c);
     }
 
+    sh-card.type-c {
+      --card-bg: var(--base-1);
+    }
+
     .validation-errors {
       position: absolute;
       top: 50%;

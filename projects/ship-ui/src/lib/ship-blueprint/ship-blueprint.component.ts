@@ -462,6 +462,7 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
   }
 
   @HostListener('document:touchmove', ['$event']) onTouchMove(event: TouchEvent) {
+    event.preventDefault();
     if (this.isLocked()) return;
     if (this.#isNodeDragging()) {
       this.nodeDrag(event.touches[0]);
@@ -470,6 +471,12 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     } else {
       this.handleTouchMove(event);
     }
+  }
+
+  @HostListener('document:touchend', ['$event']) onDocumentTouchEnd(event: TouchEvent) {
+    if (this.isLocked()) return;
+
+    this.handleTouchEnd();
   }
 
   startNodeDrag(event: MouseEvent | TouchEvent, nodeId: string) {
@@ -539,6 +546,7 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
   }
 
   startPortDrag(event: MouseEvent, nodeId: string, portId: string) {
+    event.preventDefault();
     event.stopPropagation();
 
     if (this.draggingConnection()) this.cancelPortDrag();
@@ -701,6 +709,8 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
   }
 
   handleTouchMove(event: TouchEvent) {
+    event.preventDefault();
+
     if (event.touches.length === 1 && this.#isDragging()) {
       const dx = event.touches[0].clientX - this.#lastMouseX();
       const dy = event.touches[0].clientY - this.#lastMouseY();
@@ -733,6 +743,11 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
 
   handleTouchEnd() {
     this.#isDragging.set(false);
+    this.endNodeDrag();
+
+    if (this.draggingConnection()) {
+      this.cancelPortDrag();
+    }
   }
 
   closeMidpointDiv() {
