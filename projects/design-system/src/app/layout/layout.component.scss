@@ -7,12 +7,42 @@
   grid-template-columns: p2r(400) 1fr;
 }
 
+[sidenav] {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
 header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: p2r(20);
   gap: p2r(12);
+  border-bottom: 1px solid var(--base-4);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: p2r(12);
+
+  a {
+    display: inline-flex;
+    text-decoration: none;
+    color: var(--base-12);
+
+    &:hover {
+      color: var(--primary-8);
+    }
+  }
+}
+
+sh-list {
+  @include overflowScrolling();
+
+  flex: 1 0;
 }
 
 .toggle-sidebar {
@@ -31,27 +61,5 @@ header {
   .burger {
     position: absolute;
     inset: auto;
-  }
-}
-
-.logo {
-  display: flex;
-  gap: p2r(12);
-  align-items: center;
-  justify-content: center;
-
-  img {
-    height: p2r(36);
-    width: auto;
-  }
-
-  .house-mark {
-    box-shadow: var(--box-shadow-20);
-    border-radius: p2r(8);
-  }
-
-  .text {
-    height: p2r(24);
-    fill: var(--base-12);
   }
 }

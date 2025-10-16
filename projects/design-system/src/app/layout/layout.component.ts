@@ -7,6 +7,7 @@ import {
   ShipSidenavComponent,
 } from '../../../../ship-ui/src/public-api';
 import { LayoutState } from './layout.state';
+import { LogoComponent } from './logo/logo.component';
 
 @Component({
   selector: 'app-layout',
@@ -18,6 +19,7 @@ import { LayoutState } from './layout.state';
     RouterLink,
     RouterLinkActive,
     RouterOutlet,
+    LogoComponent,
   ],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.scss',

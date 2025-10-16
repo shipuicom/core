@@ -131,25 +131,25 @@ type ValidationErrors = {
               <div class="ports">
                 <div class="inputs">
                   @for (inputPort of node.inputs; track inputPort.id) {
-                    <div class="port-wrap">
-                      <div
-                        class="port input-port"
-                        [attr.data-node-id]="node.id"
-                        [attr.data-port-id]="inputPort.id"
-                        (click)="endPortDrag($event, node.id, inputPort.id)"></div>
+                    <div
+                      class="port-wrap"
+                      [attr.data-node-id]="node.id"
+                      [attr.data-port-id]="inputPort.id"
+                      (click)="endPortDrag($event, node.id, inputPort.id)">
+                      <div class="port input-port"></div>
                       <span class="port-name">{{ inputPort.name }}</span>
                     </div>
                   }
                 </div>
                 <div class="outputs">
                   @for (outputPort of node.outputs; track outputPort.id) {
-                    <div class="port-wrap">
+                    <div
+                      class="port-wrap"
+                      [attr.data-node-id]="node.id"
+                      [attr.data-port-id]="outputPort.id"
+                      (click)="startPortDrag($event, node.id, outputPort.id)">
                       <span class="port-name">{{ outputPort.name }}</span>
-                      <div
-                        class="port output-port"
-                        [attr.data-node-id]="node.id"
-                        [attr.data-port-id]="outputPort.id"
-                        (click)="startPortDrag($event, node.id, outputPort.id)"></div>
+                      <div class="port output-port"></div>
                     </div>
                   }
                 </div>
