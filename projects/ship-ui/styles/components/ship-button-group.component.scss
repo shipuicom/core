@@ -128,7 +128,9 @@ $shipButtonGroup: true !default;
         left: anchor(left);
         right: anchor(right);
         position-anchor: var(--btng-id);
-        transition: all 0.175s ease-out;
+        transition:
+          left 0.175s ease-out,
+          right 0.175s ease-out;
         border-radius: var(--btng-s-a);
       }
 
