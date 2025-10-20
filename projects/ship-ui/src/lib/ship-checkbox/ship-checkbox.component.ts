@@ -11,7 +11,9 @@ import { classMutationSignal } from '../utilities/class-mutation-signal';
       <sh-icon class="inherit indeterminate-indicator">minus-bold</sh-icon>
     </div>
 
-    <ng-content />
+    <div class="label">
+      <ng-content />
+    </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -53,6 +53,16 @@
     Checkbox with label
   </sh-checkbox>
 
+  <sh-checkbox
+    [class]="exampleClass()"
+    [class.active]="isChecked()"
+    [attr.disabled]="isDisabled()"
+    (click)="isChecked.set(!isChecked())"
+    [class.indeterminate]="isIndeterminate()">
+    Checkbox with link in
+    <a href="https://docs.shipui.com">ShipUI</a>
+  </sh-checkbox>
+
   <sh-checkbox [class]="exampleClass()" [class.indeterminate]="isIndeterminate()">
     Checkbox with ngModel
     <input type="checkbox" [(ngModel)]="isChecked" [disabled]="isDisabled()" />
