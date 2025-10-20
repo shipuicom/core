@@ -118,7 +118,7 @@ type ValidationErrors = {
           class="nodes-wrapper"
           [style.transform]="'translate(' + panX() + 'px, ' + panY() + 'px) scale(' + zoomLevel() + ')'"
           [style.transform-origin]="'0 0'">
-          @for (node of nodes(); track node.id) {
+          @for (node of visibleNodes(); track node.id) {
             <sh-card
               class="node type-c"
               [style.transform]="getDisplayCoordinates(node)"
@@ -177,6 +177,9 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
   readonly #ZOOM_SPEED = 0.01;
   readonly #MAX_ZOOM = 1.5;
   readonly #MIN_ZOOM = 0.5;
+  readonly #NODE_WIDTH = 180;
+  readonly #NODE_HEADER_HEIGHT = 40;
+  readonly #PORT_ROW_HEIGHT = 28;
 
   #document = inject(DOCUMENT);
   #platformId = inject(PLATFORM_ID);
@@ -219,10 +222,40 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
   #draggedNodeId = signal<string | null>(null);
   #dragOffset = signal<Coordinates | null>(null);
   #connections = signal<Connection[]>([]);
+  #canvasWidth = signal(0);
+  #canvasHeight = signal(0);
 
   @ViewChild('blueprintCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
   #ctx!: CanvasRenderingContext2D;
   #resizeObserver!: ResizeObserver;
+
+  visibleNodes = computed(() => {
+    const nodes = this.nodes();
+    const panX = this.panX();
+    const panY = this.panY();
+    const zoom = this.zoomLevel();
+    const width = this.#canvasWidth();
+    const height = this.#canvasHeight();
+
+    if (width === 0 || height === 0) {
+      return nodes;
+    }
+
+    const bufferX = width / zoom;
+    const bufferY = height / zoom;
+
+    const viewbox = {
+      x1: -panX / zoom - bufferX,
+      y1: -panY / zoom - bufferY,
+      x2: (-panX + width) / zoom + bufferX,
+      y2: (-panY + height) / zoom + bufferY,
+    };
+
+    return nodes.filter((node) => {
+      const [x, y] = node.coordinates;
+      return x > viewbox.x1 && x < viewbox.x2 && y > viewbox.y1 && y < viewbox.y2;
+    });
+  });
 
   constructor() {
     if (isPlatformBrowser(this.#platformId)) {
@@ -287,14 +320,67 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  #validateNodes() {
-    const duplicatePortIds = findDuplicatePortIDs(this.nodes());
-    const duplicateNodeIds = findDuplicateNodeIDs(this.nodes());
+  @HostListener('document:mouseup', ['$event']) onMouseUp(event: MouseEvent) {
+    if (this.isLocked()) return;
 
-    this.validationErrors.set({
-      duplicateNodeIds,
-      duplicatePortIds,
-    });
+    this.endPan();
+    this.endNodeDrag();
+  }
+
+  @HostListener('document:click', ['$event']) onClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+
+    if (this.draggingConnection()) {
+      if (!target.closest('.port')) {
+        this.cancelPortDrag();
+      }
+    } else if (this.isLocked() && !target.closest('.midpoint-div')) {
+      this.closeMidpointDiv();
+    } else {
+      this.#handleConnectionClick(event);
+    }
+  }
+
+  @HostListener('document:keydown.escape', ['$event']) onEscape(event: KeyboardEvent) {
+    if (this.draggingConnection()) {
+      this.cancelPortDrag();
+    } else if (this.isLocked()) {
+      this.closeMidpointDiv();
+    }
+  }
+
+  @HostListener('document:mousemove', ['$event']) onMouseMove(event: MouseEvent) {
+    if (this.isLocked()) return;
+    if (this.#isNodeDragging()) {
+      this.nodeDrag(event);
+    } else if (this.draggingConnection()) {
+      this.updatePathOnMove(event);
+    } else {
+      this.pan(event);
+      if (this.isHoveringNode()) {
+        this.highlightedConnection.set(null);
+      } else {
+        this.#checkConnectionHover(event);
+      }
+    }
+  }
+
+  @HostListener('document:touchmove', ['$event']) onTouchMove(event: TouchEvent) {
+    event.preventDefault();
+    if (this.isLocked()) return;
+    if (this.#isNodeDragging()) {
+      this.nodeDrag(event.touches[0]);
+    } else if (this.draggingConnection()) {
+      this.updatePathOnMove(event.touches[0]);
+    } else {
+      this.handleTouchMove(event);
+    }
+  }
+
+  @HostListener('document:touchend', ['$event']) onDocumentTouchEnd(event: TouchEvent) {
+    if (this.isLocked()) return;
+
+    this.handleTouchEnd();
   }
 
   applyAutolayout() {
@@ -311,6 +397,10 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     this.#ctx.scale(dpr, dpr);
     canvas.style.width = `${rect.width}px`;
     canvas.style.height = `${rect.height}px`;
+
+    this.#canvasWidth.set(rect.width);
+    this.#canvasHeight.set(rect.height);
+
     this.drawCanvas();
   }
 
@@ -414,69 +504,6 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     const dx = Math.abs(x1 - x2) * 0.7;
     ctx.moveTo(x1, y1);
     ctx.bezierCurveTo(x1 + dx, y1, x2 - dx, y2, x2, y2);
-  }
-
-  @HostListener('document:mouseup', ['$event']) onMouseUp(event: MouseEvent) {
-    if (this.isLocked()) return;
-
-    this.endPan();
-    this.endNodeDrag();
-  }
-
-  @HostListener('document:click', ['$event']) onClick(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-
-    if (this.draggingConnection()) {
-      if (!target.closest('.port')) {
-        this.cancelPortDrag();
-      }
-    } else if (this.isLocked() && !target.closest('.midpoint-div')) {
-      this.closeMidpointDiv();
-    } else {
-      this.#handleConnectionClick(event);
-    }
-  }
-
-  @HostListener('document:keydown.escape', ['$event']) onEscape(event: KeyboardEvent) {
-    if (this.draggingConnection()) {
-      this.cancelPortDrag();
-    } else if (this.isLocked()) {
-      this.closeMidpointDiv();
-    }
-  }
-
-  @HostListener('document:mousemove', ['$event']) onMouseMove(event: MouseEvent) {
-    if (this.isLocked()) return;
-    if (this.#isNodeDragging()) {
-      this.nodeDrag(event);
-    } else if (this.draggingConnection()) {
-      this.updatePathOnMove(event);
-    } else {
-      this.pan(event);
-      if (this.isHoveringNode()) {
-        this.highlightedConnection.set(null);
-      } else {
-        this.#checkConnectionHover(event);
-      }
-    }
-  }
-
-  @HostListener('document:touchmove', ['$event']) onTouchMove(event: TouchEvent) {
-    event.preventDefault();
-    if (this.isLocked()) return;
-    if (this.#isNodeDragging()) {
-      this.nodeDrag(event.touches[0]);
-    } else if (this.draggingConnection()) {
-      this.updatePathOnMove(event.touches[0]);
-    } else {
-      this.handleTouchMove(event);
-    }
-  }
-
-  @HostListener('document:touchend', ['$event']) onDocumentTouchEnd(event: TouchEvent) {
-    if (this.isLocked()) return;
-
-    this.handleTouchEnd();
   }
 
   startNodeDrag(event: MouseEvent | TouchEvent, nodeId: string) {
@@ -638,17 +665,29 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
 
     const portEl = this.#selfRef.nativeElement.querySelector(`[data-node-id="${nodeId}"][data-port-id="${portId}"]`);
 
-    if (!portEl) return node.coordinates;
+    if (portEl) {
+      const nodeWrapper = this.#selfRef.nativeElement.querySelector('.nodes-wrapper')!;
+      const wrapperRect = nodeWrapper.getBoundingClientRect();
+      const portRect = portEl.getBoundingClientRect();
+      const portCenterX = portRect.left + portRect.width / 2;
+      const portCenterY = portRect.top + portRect.height / 2;
+      const worldX = (portCenterX - wrapperRect.left) / this.zoomLevel();
+      const worldY = (portCenterY - wrapperRect.top) / this.zoomLevel();
 
-    const nodeWrapper = this.#selfRef.nativeElement.querySelector('.nodes-wrapper')!;
-    const wrapperRect = nodeWrapper.getBoundingClientRect();
-    const portRect = portEl.getBoundingClientRect();
-    const portCenterX = portRect.left + portRect.width / 2;
-    const portCenterY = portRect.top + portRect.height / 2;
-    const worldX = (portCenterX - wrapperRect.left) / this.zoomLevel();
-    const worldY = (portCenterY - wrapperRect.top) / this.zoomLevel();
+      return [worldX, worldY];
+    }
 
-    return [worldX, worldY];
+    const isInput = node.inputs.some((p) => p.id === portId);
+    const portIndex = isInput
+      ? node.inputs.findIndex((p) => p.id === portId)
+      : node.outputs.findIndex((p) => p.id === portId);
+
+    if (portIndex === -1) return node.coordinates;
+
+    const portYOffset = this.#NODE_HEADER_HEIGHT + portIndex * this.#PORT_ROW_HEIGHT + this.#PORT_ROW_HEIGHT / 2;
+    const portXOffset = isInput ? 0 : this.#NODE_WIDTH;
+
+    return [node.coordinates[0] + portXOffset, node.coordinates[1] + portYOffset];
   }
 
   startPan(event: MouseEvent) {
@@ -966,6 +1005,16 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     }
 
     return newCoordinates;
+  }
+
+  #validateNodes() {
+    const duplicatePortIds = findDuplicatePortIDs(this.nodes());
+    const duplicateNodeIds = findDuplicateNodeIDs(this.nodes());
+
+    this.validationErrors.set({
+      duplicateNodeIds,
+      duplicatePortIds,
+    });
   }
 
   #panToCoordinates(coords: Coordinates): void {
