@@ -9,7 +9,7 @@
   $fadeInSize: map.get($options, 'fadeInSize');
 
   @if $background == null {
-    $background: var(--base1);
+    $background: var(--base-1);
   }
 
   @if $colorFrom == null {
