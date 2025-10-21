@@ -21,11 +21,11 @@
   }
 
   @if $size == null {
-    $size: p2r(14);
+    $size: #{p2r(14)};
   }
 
   @if $fadeInSize == null {
-    $fadeInSize: p2r(40);
+    $fadeInSize: #{p2r(40)};
   }
 
   background:
