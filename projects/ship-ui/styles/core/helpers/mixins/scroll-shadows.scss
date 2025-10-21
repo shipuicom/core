@@ -1,5 +1,6 @@
 @use 'sass:list' as list;
 @use 'sass:map' as map;
+@use '../fn/p2r.scss' as *;
 
 @mixin scroll-shadows($options: ()) {
   $background: map.get($options, 'background');
