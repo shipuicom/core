@@ -18,7 +18,7 @@ $shipCheckbox: true !default;
     position: relative;
     border: 0;
 
-    > input {
+    .label > input {
       appearance: none;
       position: absolute;
       inset: 0;
