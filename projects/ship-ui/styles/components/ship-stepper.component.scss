@@ -63,7 +63,7 @@ $shipStepper: true !default;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       gap: p2r(8);
       position: relative;
       color: var(--base-8);
@@ -78,6 +78,7 @@ $shipStepper: true !default;
       &:last-child {
         align-items: flex-end;
         flex: 1 0;
+        text-align: end;
       }
 
       &:not(.active) sh-radio {

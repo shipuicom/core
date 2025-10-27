@@ -8,6 +8,8 @@ $shipList: true !default;
     --list-active-bg: var(--base-1);
     --list-color: var(--base-9);
     --list-active-bs: none;
+    --list-item-b: 1px solid transparent;
+    --list-item-active-b: 1px solid --list-active-bg;
     --list-p: #{p2r(20 16)};
     --list-item-p: #{p2r(8 12)};
     --list-item-gap: #{p2r(8)};
@@ -21,6 +23,13 @@ $shipList: true !default;
     &.base-1 {
       --list-active-bg: var(--base-1);
       --list-active-bs: var(--box-shadow-20);
+    }
+
+    &.outlined {
+      --list-active-bg: transparent;
+      --list-active-bs: none;
+      --list-item-b: 1px solid transparent;
+      --list-item-active-b: 1px solid var(--primary-8);
     }
 
     &:empty {
@@ -44,6 +53,7 @@ $shipList: true !default;
       padding: var(--list-item-p);
       font: var(--paragraph-30B);
       color: var(--list-color);
+      border: var(--list-item-b);
       display: flex;
       align-items: center;
       gap: var(--list-item-gap);
@@ -89,6 +99,7 @@ $shipList: true !default;
 
       background-color: var(--list-active-bg);
       box-shadow: var(--list-active-bs);
+      border: var(--list-item-active-b);
     }
 
     &.primary {
