@@ -25,17 +25,19 @@ export class ShipAlertContainerComponent {
   scroller = viewChild.required<ElementRef<HTMLDivElement>>('scroller');
   alertService = input.required<ShipAlertService>();
 
-  alertHistory = this.alertService()?.alertHistory;
-  alertHistoryIsOpen = this.alertService()?.alertHistoryIsOpen;
-  alertHistoryIsHidden = this.alertService()?.alertHistoryIsHidden;
+  // alertHistory = this.alertService()?.alertHistory;
+  // alertHistoryIsOpen = this.alertService()?.alertHistoryIsOpen;
+  // alertHistoryIsHidden = this.alertService()?.alertHistoryIsHidden;
 
   numberOfOpenAlerts = computed(() => {
-    return this.alertHistory().filter((x) => x.isOpen).length;
+    return this.alertService()
+      .alertHistory()
+      .filter((x) => x.isOpen).length;
   });
 
   readonly #e = effect(() => {
-    this.alertHistory();
-    this.alertHistoryIsOpen();
+    this.alertService().alertHistory();
+    this.alertService().alertHistoryIsOpen();
     this.#scrollToBottom();
   });
 
@@ -82,6 +84,8 @@ export class ShipAlertContainerComponent {
   }
 
   transitionDelay(i: number, allOpen = false) {
-    return allOpen ? this.alertHistory().length - 1 * 40 + 'ms' : (this.numberOfOpenAlerts() - i) * 40 + 'ms';
+    return allOpen
+      ? this.alertService().alertHistory().length - 1 * 40 + 'ms'
+      : (this.numberOfOpenAlerts() - i) * 40 + 'ms';
   }
 }
