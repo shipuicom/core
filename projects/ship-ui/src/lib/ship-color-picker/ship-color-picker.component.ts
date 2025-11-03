@@ -86,7 +86,7 @@ export class ShipColorPickerComponent {
     });
   });
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize')
   onResize() {
     this.setCanvasSize();
   }

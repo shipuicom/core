@@ -13,7 +13,7 @@ export class ShipInputMaskDirective {
   shInputMask = input<string | MaskingFunction>('(999) 999-9999');
 
   @HostListener('input', ['$event'])
-  onInput(event: InputEvent) {
+  onInput(event: Event) {
     const inputElement = this.#selfRef.nativeElement;
     const oldRawValue = inputElement.value;
     const newRawValue = (event.target as HTMLInputElement).value;

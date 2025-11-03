@@ -320,7 +320,7 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  @HostListener('document:mouseup', ['$event']) onMouseUp(event: MouseEvent) {
+  @HostListener('document:mouseup') onMouseUp() {
     if (this.isLocked()) return;
 
     this.endPan();
@@ -341,7 +341,7 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  @HostListener('document:keydown.escape', ['$event']) onEscape(event: KeyboardEvent) {
+  @HostListener('document:keydown.escape') onEscape() {
     if (this.draggingConnection()) {
       this.cancelPortDrag();
     } else if (this.isLocked()) {
@@ -377,7 +377,7 @@ export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  @HostListener('document:touchend', ['$event']) onDocumentTouchEnd(event: TouchEvent) {
+  @HostListener('document:touchend') onDocumentTouchEnd() {
     if (this.isLocked()) return;
 
     this.handleTouchEnd();

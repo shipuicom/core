@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Field, form } from '@angular/forms/signals';
 import { ShipFormFieldComponent, ShipIconComponent, ShipTooltipDirective } from 'ship-ui';
 
 @Component({
   selector: 'app-base-form-field',
-  imports: [ShipFormFieldComponent, ShipIconComponent, ShipTooltipDirective, FormsModule, ReactiveFormsModule],
+  imports: [Field, ShipFormFieldComponent, ShipIconComponent, ShipTooltipDirective, FormsModule, ReactiveFormsModule],
   templateUrl: './base-form-field.component.html',
   styleUrl: './base-form-field.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -14,6 +15,15 @@ export class BaseFormFieldComponent {
   disabledCtrl = new FormControl({ value: '', disabled: true });
   errorCtrl = new FormControl('', [Validators.required]);
   errorCtrl1 = new FormControl('', [Validators.required, Validators.minLength(10)]);
+
+  helloObj = signal({
+    hello: 'world',
+    foo: 'bar',
+    bar: 31,
+    time: '12:03',
+  });
+
+  helloForm = form(this.helloObj);
 
   ngOnInit() {
     this.errorCtrl.markAsTouched();

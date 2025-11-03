@@ -1,5 +1,5 @@
 <sh-form-field>
-  <input placeholder="Placeholder no label..." type="text" />
+  <input placeholder="Placeholder no label..." [field]="helloForm.hello" type="text" />
   <div boxPrefix>
     Hello
     <sh-icon>circle</sh-icon>
@@ -16,7 +16,7 @@
 </sh-form-field>
 
 <sh-form-field class="autosize">
-  <input type="time" />
+  <input type="time" [field]="helloForm.time" />
   <div boxPrefix>
     <sh-icon>clock</sh-icon>
   </div>
