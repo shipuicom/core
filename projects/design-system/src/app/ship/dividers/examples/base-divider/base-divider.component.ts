@@ -5,8 +5,8 @@ import { ShipDivider } from 'ship-ui';
   selector: 'app-base-divider',
   standalone: true,
   imports: [ShipDivider],
-  templateUrl: './base-divider.component.html',
-  styleUrl: './base-divider.component.scss',
+  templateUrl: './base-divider.html',
+  styleUrl: './base-divider.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BaseDividerComponent {}

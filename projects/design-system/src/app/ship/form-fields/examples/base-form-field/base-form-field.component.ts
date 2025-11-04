@@ -5,8 +5,8 @@ import { ShipFormField, ShipIcon, ShipTooltip } from 'ship-ui';
 @Component({
   selector: 'app-base-form-field',
   imports: [ShipFormField, ShipIcon, ShipTooltip, FormsModule, ReactiveFormsModule],
-  templateUrl: './base-form-field.component.html',
-  styleUrl: './base-form-field.component.scss',
+  templateUrl: './base-form-field.html',
+  styleUrl: './base-form-field.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BaseFormFieldComponent {

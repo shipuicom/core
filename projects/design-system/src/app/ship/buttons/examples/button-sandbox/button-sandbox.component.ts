@@ -4,8 +4,8 @@ import { ShipButton, ShipButtonGroup, ShipIcon, ShipToggle } from 'ship-ui';
 @Component({
   selector: 'app-button-sandbox',
   imports: [ShipButton, ShipButtonGroup, ShipIcon, ShipToggle],
-  templateUrl: './button-sandbox.component.html',
-  styleUrl: './button-sandbox.component.scss',
+  templateUrl: './button-sandbox.html',
+  styleUrl: './button-sandbox.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ButtonSandboxComponent {

@@ -1,0 +1,34 @@
+import { Component } from '@angular/core';
+import { ShipButton, ShipCheckbox, ShipMenu } from 'ship-ui';
+
+@Component({
+  selector: 'sh-toggle-select-menu-example',
+  templateUrl: './toggle-select-menu-example.html',
+  styleUrls: ['./toggle-select-menu-example.scss'],
+  imports: [ShipMenu, ShipButton, ShipCheckbox],
+  standalone: true,
+})
+export class ToggleSelectMenuExample {
+  menuItems = [
+    { label: 'Email Notifications', value: 'email' },
+    { label: 'SMS Alerts', value: 'sms' },
+    { label: 'Push Notifications', value: 'push' },
+  ];
+  selected: Set<string> = new Set();
+
+  toggle($event: MouseEvent, item: any) {
+    $event.stopPropagation();
+
+    if (this.selected.has(item.value)) {
+      this.selected.delete(item.value);
+    } else {
+      this.selected.add(item.value);
+    }
+    // Force change detection for Set
+    this.selected = new Set(this.selected);
+  }
+
+  isSelected(item: any) {
+    return this.selected.has(item.value);
+  }
+}

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { PreviewerComponent } from '../../previewer/previewer.component';
-import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
+import { Previewer } from '../../previewer/previewer';
+import { PropertyViewer } from '../../property-viewer/property-viewer';
 import { BaseButtonComponent } from './examples/base-button/base-button.component';
 import { ButtonSandboxComponent } from './examples/button-sandbox/button-sandbox.component';
 import { FlatButtonComponent } from './examples/flat-button/flat-button.component';
@@ -11,8 +11,8 @@ import { SimpleButtonComponent } from './examples/simple-button/simple-button.co
 @Component({
   selector: 'app-buttons',
   imports: [
-    PreviewerComponent,
-    PropertyViewerComponent,
+    Previewer,
+    PropertyViewer,
 
     // ShipButton,
 
@@ -22,10 +22,10 @@ import { SimpleButtonComponent } from './examples/simple-button/simple-button.co
     SimpleButtonComponent,
     FlatButtonComponent,
     RaisedButtonComponent,
-    PropertyViewerComponent,
+    PropertyViewer,
   ],
-  templateUrl: './buttons.component.html',
-  styleUrl: './buttons.component.scss',
+  templateUrl: './buttons.html',
+  styleUrl: './buttons.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class ButtonsComponent {

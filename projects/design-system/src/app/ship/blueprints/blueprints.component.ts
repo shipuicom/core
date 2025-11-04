@@ -4,8 +4,8 @@ import { Coordinates, ShipBlueprint, ShipButton, ShipIcon, ShipToggle, TEST_NODE
 @Component({
   selector: 'app-blueprints',
   imports: [ShipBlueprint, ShipToggle, ShipButton, ShipIcon],
-  templateUrl: './blueprints.component.html',
-  styleUrl: './blueprints.component.scss',
+  templateUrl: './blueprints.html',
+  styleUrl: './blueprints.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class BlueprintsComponent {

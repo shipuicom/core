@@ -6,8 +6,8 @@ import { ShipCheckbox, ShipIcon, ShipList } from 'ship-ui';
   selector: 'base-list-example',
   standalone: true,
   imports: [FormsModule, ReactiveFormsModule, ShipList, ShipIcon, ShipCheckbox],
-  templateUrl: './base-list-example.component.html',
-  styleUrls: ['./base-list-example.component.scss'],
+  templateUrl: './base-list-example.html',
+  styleUrls: ['./base-list-example.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BaseListExampleComponent {

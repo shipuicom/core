@@ -5,8 +5,8 @@ import { ShipDivider } from 'ship-ui';
   selector: 'app-text-divider',
   standalone: true,
   imports: [ShipDivider],
-  templateUrl: './text-divider.component.html',
-  styleUrl: './text-divider.component.scss',
+  templateUrl: './text-divider.html',
+  styleUrl: './text-divider.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TextDividerComponent {}

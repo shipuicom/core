@@ -19,7 +19,7 @@ const COLUMNS = ['position', 'name', 'weight', 'symbol'] as const;
   selector: 'base-table',
   standalone: true,
   imports: [ShipTable],
-  templateUrl: './base-table.component.html',
+  templateUrl: './base-table.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BaseTableComponent {
