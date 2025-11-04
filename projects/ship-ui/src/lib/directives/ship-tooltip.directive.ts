@@ -109,7 +109,7 @@ export class ShipTooltipWrapper {
 
 let openRef: {
   wrapperComponentRef: ComponentRef<ShipTooltipWrapper>;
-  component: ShipTooltipDirective;
+  component: ShipTooltip;
 } | null = null;
 
 @Directive({
@@ -121,7 +121,7 @@ let openRef: {
     '[class.active]': 'isOpen()',
   },
 })
-export class ShipTooltipDirective implements OnDestroy {
+export class ShipTooltip implements OnDestroy {
   shTooltip = input.required<string | TemplateRef<any> | null | undefined>();
 
   #elementRef = inject(ElementRef<HTMLElement>);
