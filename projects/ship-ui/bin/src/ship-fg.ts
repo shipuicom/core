@@ -117,7 +117,6 @@ const run = async (
 
   writeCssFile(PROJECT_PUBLIC, values, groupedIcons, TARGET_FONT_TYPE);
 
-  // We dont load fonts we dont use
   const fontTypes = ['bold', 'thin', 'light', 'fill', 'regular'].filter((x) => groupedIcons[x].length > 0);
   const targetFormat = (TARGET_FONT_TYPE as SupportedFontTypes) === 'ttf' ? 'truetype' : TARGET_FONT_TYPE;
   const fonts = fontTypes.map(async (fontType) => {
@@ -180,14 +179,13 @@ const run = async (
 };
 
 function uniqueString(s: string): string {
-  const seen = new Set<string>(); // Use a Set to track seen characters
+  const seen = new Set<string>();
   let result = '';
 
   for (const char of s) {
     if (!seen.has(char)) {
-      // Check if the character has been seen
-      seen.add(char); // Add the character to the seen set
-      result += char; // Append the character to the result
+      seen.add(char);
+      result += char;
     }
   }
 
@@ -226,12 +224,11 @@ sh-icon.${key} {
   font-family: 'sh${suffix}' !important;
 }`;
   });
-  // Create a new css file
+
   const cssFileContent = `
   ${groupedIconsEntries.join('\n')}
   ${keys.join('\n')}
 sh-icon {
-  /* use !important to prevent issues with browser extensions that change fonts */
   font-family: "sh" !important;
   speak: never;
   font-style: normal;
@@ -240,7 +237,6 @@ sh-icon {
   text-transform: none;
   line-height: 1;
 
-  /* Enable Ligatures ================ */
   letter-spacing: 0;
   -webkit-font-feature-settings: "liga";
   -moz-font-feature-settings: "liga=1";
@@ -250,7 +246,6 @@ sh-icon {
   -webkit-font-variant-ligatures: discretionary-ligatures;
   font-variant-ligatures: discretionary-ligatures;
 
-  /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }`;
@@ -293,6 +288,7 @@ export const main = async (values: InputArguments) => {
   const PROJECT_SRC = values.src;
   const PROJECT_PUBLIC = values.out;
   const fontVariants = ['bold', 'thin', 'light', 'fill', 'regular'];
+
   const GLYPH_MAPS = await Promise.all(
     fontVariants.map(async (fontVariant) => {
       const selectionJsonFullPath = path.resolve(
@@ -322,19 +318,51 @@ export const main = async (values: InputArguments) => {
     {} as Record<string, [string, string]>
   );
 
-  const LIB_ICONS = packageJson.libraryIcons as string[];
+  let LIB_ICONS = packageJson.libraryIcons as string[];
+
+  try {
+    await textMateSnippet(GLYPH_MAP);
+    await run(PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
+  } catch (error) {
+    console.error('An error occurred during the initial run:', error);
+    if (!values.watch && !values.watchLib) {
+      process.exit(1);
+    }
+  }
+
+  if (!values.watch && !values.watchLib) {
+    return;
+  }
+
+  console.log('\nWatching for file changes. Press Cmd+C to stop.');
   let watchers: FSWatcher[] = [];
 
-  textMateSnippet(GLYPH_MAP);
+  function killWatchers() {
+    console.log(`\n✅ The icon font generation watch process has been stopped.`);
+
+    for (let index = 0; index < watchers.length; index++) {
+      const watcher = watchers[index];
+      watcher.close();
+      watcher.removeAllListeners();
+    }
+
+    process.exit(0);
+  }
+
+  process.on('SIGINT', killWatchers);
+  process.on('SIGTERM', killWatchers);
+  process.on('SIGBREAK', killWatchers);
 
   if (values.watch) {
     const excludeFolders = ['node_modules', '.git', '.vscode', 'bin', 'assets'].concat([PROJECT_PUBLIC]);
-    const watcher = watch(PROJECT_SRC, { recursive: true }, (_, filename) => {
-      if (
-        filename && // Ensure filename is provided (can be null in some cases)
-        !excludeFolders.some((folder) => resolve(join(PROJECT_SRC, filename)).includes(folder))
-      ) {
-        run(PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
+    const watcher = watch(PROJECT_SRC, { recursive: true }, async (_, filename) => {
+      if (filename && !excludeFolders.some((folder) => resolve(join(PROJECT_SRC, filename)).includes(folder))) {
+        console.log(`Change detected in ${filename}, regenerating...`);
+        try {
+          await run(PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
+        } catch (error) {
+          console.error('Error during watched run:', error);
+        }
       }
     });
 
@@ -343,32 +371,16 @@ export const main = async (values: InputArguments) => {
 
   if (values.watchLib) {
     const watcher = watch(packageJsonPath, {}, async (_, filename) => {
-      const packageJson = await Bun.file(packageJsonPath).json();
-      const newLibIcons = packageJson.libraryIcons as string[];
-
-      run(PROJECT_SRC, newLibIcons, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
+      console.log(`Change detected in package.json, regenerating...`);
+      try {
+        const packageJson = await Bun.file(packageJsonPath).json();
+        LIB_ICONS = packageJson.libraryIcons as string[];
+        await run(PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
+      } catch (error) {
+        console.error('Error during package.json watched run:', error);
+      }
     });
 
     watchers.push(watcher);
-  }
-
-  run(PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
-
-  process.on('SIGKILL', killWatchers);
-  process.on('SIGINT', killWatchers);
-  process.on('SIGTERM', killWatchers);
-  process.on('SIGBREAK', killWatchers);
-
-  function killWatchers() {
-    console.log(`✅ The icon font generation watch process has been stopped.`);
-
-    for (let index = 0; index < watchers.length; index++) {
-      const watcher = watchers[index];
-
-      watcher.close();
-      watcher.removeAllListeners();
-    }
-
-    process.exit(0);
   }
 };

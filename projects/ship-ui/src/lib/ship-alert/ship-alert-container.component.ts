@@ -9,13 +9,13 @@ import {
   input,
   viewChild,
 } from '@angular/core';
-import { ShipIconComponent } from '../ship-icon/ship-icon.component';
+import { ShipIcon } from '../ship-icon/ship-icon';
 import { ShipAlertComponent } from './ship-alert.component';
 import { ShipAlertService } from './ship-alert.service';
 
 @Component({
   selector: 'ship-alert-container',
-  imports: [ShipAlertComponent, ShipIconComponent],
+  imports: [ShipAlertComponent, ShipIcon],
   templateUrl: './ship-alert-container.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

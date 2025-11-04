@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipIconComponent, ShipTabsComponent } from 'ship-ui';
+import { ShipIcon, ShipTabsComponent } from 'ship-ui';
 import TabComponent from '../../tab/tab.component';
 
 @Component({
   selector: 'app-custom-tabs',
   standalone: true,
-  imports: [ShipTabsComponent, ShipIconComponent, TabComponent],
+  imports: [ShipTabsComponent, ShipIcon, TabComponent],
   templateUrl: './custom-tabs.component.html',
   styleUrls: ['./custom-tabs.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

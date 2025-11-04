@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ShipFormFieldComponent, ShipIconComponent, ShipTooltipDirective } from 'ship-ui';
+import { ShipFormFieldComponent, ShipIcon, ShipTooltipDirective } from 'ship-ui';
 
 @Component({
   selector: 'app-base-form-field',
-  imports: [ShipFormFieldComponent, ShipIconComponent, ShipTooltipDirective, FormsModule, ReactiveFormsModule],
+  imports: [ShipFormFieldComponent, ShipIcon, ShipTooltipDirective, FormsModule, ReactiveFormsModule],
   templateUrl: './base-form-field.component.html',
   styleUrl: './base-form-field.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

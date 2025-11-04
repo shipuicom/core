@@ -24,7 +24,7 @@ export * from './lib/ship-divider/ship-divider.component';
 export * from './lib/ship-event-card/ship-event-card.component';
 export * from './lib/ship-file-upload/ship-file-upload.component';
 export * from './lib/ship-form-field/ship-form-field.component';
-export * from './lib/ship-icon/ship-icon.component';
+export * from './lib/ship-icon/ship-icon';
 export * from './lib/ship-list/ship-list.component';
 export * from './lib/ship-menu/ship-menu.component';
 export * from './lib/ship-popover/ship-popover.component';

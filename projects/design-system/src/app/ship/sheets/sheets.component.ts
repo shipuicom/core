@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipIconComponent } from 'ship-ui';
+import { ShipIcon } from 'ship-ui';
 
 @Component({
   selector: 'app-sheets',
-  imports: [FormsModule, ShipIconComponent],
+  imports: [FormsModule, ShipIcon],
   templateUrl: './sheets.component.html',
   styleUrl: './sheets.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

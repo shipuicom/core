@@ -13,14 +13,14 @@ import {
 } from '@angular/core';
 import { NgModel } from '@angular/forms';
 import { ShipFormFieldPopoverComponent } from '../ship-form-field/ship-form-field-popover.component';
-import { ShipIconComponent } from '../ship-icon/ship-icon.component';
+import { ShipIcon } from '../ship-icon/ship-icon';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
 import { contentProjectionSignal } from '../utilities/content-projection-signal';
 import { ShipDatepickerComponent } from './ship-datepicker.component';
 
 @Component({
   selector: 'sh-datepicker-input',
-  imports: [ShipDatepickerComponent, ShipFormFieldPopoverComponent, ShipIconComponent],
+  imports: [ShipDatepickerComponent, ShipFormFieldPopoverComponent, ShipIcon],
   providers: [DatePipe],
   template: `
     <sh-form-field-popover (closed)="close()" [(isOpen)]="isOpen">

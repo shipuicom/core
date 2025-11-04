@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
-import { ShipIconComponent } from '../ship-icon/ship-icon.component';
+import { ShipIcon } from '../ship-icon/ship-icon';
 
 @Component({
   selector: 'sh-toggle-card',
-  imports: [ShipIconComponent],
+  imports: [ShipIcon],
   template: `
     <h3 (click)="disallowToggle() || toggle()">
       <ng-content select="[title]">Title</ng-content>

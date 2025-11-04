@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, signal } from '@angular/core';
-import { ShipIconComponent } from '../ship-icon/ship-icon.component';
+import { ShipIcon } from '../ship-icon/ship-icon';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
 import { SHIP_CONFIG } from '../utilities/ship-config';
 import { ShipAlertService } from './ship-alert.service';
@@ -10,7 +10,7 @@ const POSSIBLE_VARIANTS = ['simple', 'outlined', 'flat', 'raised'];
 
 @Component({
   selector: 'sh-alert',
-  imports: [ShipIconComponent],
+  imports: [ShipIcon],
   template: `
     <div class="alert">
       <div #ref class="icon" [style.display]="!ref.children.length ? 'none' : 'block'">

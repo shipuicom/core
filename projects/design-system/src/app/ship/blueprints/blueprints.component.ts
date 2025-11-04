@@ -3,14 +3,14 @@ import {
   Coordinates,
   ShipBlueprintComponent,
   ShipButtonComponent,
-  ShipIconComponent,
+  ShipIcon,
   ShipToggleComponent,
   TEST_NODES,
 } from 'ship-ui';
 
 @Component({
   selector: 'app-blueprints',
-  imports: [ShipBlueprintComponent, ShipToggleComponent, ShipButtonComponent, ShipIconComponent],
+  imports: [ShipBlueprintComponent, ShipToggleComponent, ShipButtonComponent, ShipIcon],
   templateUrl: './blueprints.component.html',
   styleUrl: './blueprints.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

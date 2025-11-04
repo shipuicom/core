@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { ShipIconComponent, ShipSortDirective, ShipTableComponent } from 'ship-ui';
+import { ShipIcon, ShipSortDirective, ShipTableComponent } from 'ship-ui';
 
 const ELEMENT_DATA = [
   { position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },
@@ -18,7 +18,7 @@ const COLUMNS = ['position', 'name', 'weight', 'symbol'] as const;
 @Component({
   selector: 'sorting-table',
   standalone: true,
-  imports: [ShipTableComponent, ShipSortDirective, ShipIconComponent],
+  imports: [ShipTableComponent, ShipSortDirective, ShipIcon],
   templateUrl: './sorting-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

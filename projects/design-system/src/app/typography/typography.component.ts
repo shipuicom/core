@@ -1,10 +1,10 @@
 import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipIconComponent } from 'ship-ui';
+import { ShipIcon } from 'ship-ui';
 
 @Component({
   selector: 'app-typography',
-  imports: [JsonPipe, ShipIconComponent],
+  imports: [JsonPipe, ShipIcon],
   templateUrl: './typography.component.html',
   styleUrl: './typography.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

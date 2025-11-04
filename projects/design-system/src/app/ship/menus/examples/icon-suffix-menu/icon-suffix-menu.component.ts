@@ -1,11 +1,11 @@
 import { Component, signal } from '@angular/core';
-import { ShipButtonComponent, ShipIconComponent, ShipMenuComponent } from 'ship-ui';
+import { ShipButtonComponent, ShipIcon, ShipMenuComponent } from 'ship-ui';
 
 @Component({
   selector: 'sh-icon-suffix-menu',
   templateUrl: './icon-suffix-menu.component.html',
   styleUrls: ['./icon-suffix-menu.component.scss'],
-  imports: [ShipMenuComponent, ShipIconComponent, ShipButtonComponent],
+  imports: [ShipMenuComponent, ShipIcon, ShipButtonComponent],
 })
 export class IconSuffixMenuComponent {
   menuItems = [

@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ShipFormFieldComponent, ShipIconComponent } from 'ship-ui';
+import { ShipFormFieldComponent, ShipIcon } from 'ship-ui';
 
 @Component({
   selector: 'app-small-form-field',
-  imports: [ShipFormFieldComponent, ShipIconComponent, FormsModule, ReactiveFormsModule],
+  imports: [ShipFormFieldComponent, ShipIcon, FormsModule, ReactiveFormsModule],
   templateUrl: './small-form-field.component.html',
   styleUrl: './small-form-field.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

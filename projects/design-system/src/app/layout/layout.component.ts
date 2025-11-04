@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
   ShipButtonComponent,
-  ShipIconComponent,
+  ShipIcon,
   ShipListComponent,
   ShipSidenavComponent,
 } from '../../../../ship-ui/src/public-api';
@@ -14,7 +14,7 @@ import { LogoComponent } from './logo/logo.component';
   imports: [
     ShipSidenavComponent,
     ShipListComponent,
-    ShipIconComponent,
+    ShipIcon,
     ShipButtonComponent,
     RouterLink,
     RouterLinkActive,

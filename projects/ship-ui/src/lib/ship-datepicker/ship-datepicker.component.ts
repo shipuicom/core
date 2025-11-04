@@ -9,12 +9,12 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { ShipIconComponent } from '../ship-icon/ship-icon.component';
+import { ShipIcon } from '../ship-icon/ship-icon';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
 
 @Component({
   selector: 'sh-datepicker',
-  imports: [ShipIconComponent],
+  imports: [ShipIcon],
   template: `
     <header>
       <button (click)="previousMonth()"><sh-icon>caret-left</sh-icon></button>

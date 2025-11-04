@@ -11,7 +11,7 @@ const iconTypes = ['bold', 'thin', 'light', 'fill', 'duotone'];
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipIconComponent implements AfterContentInit {
+export class ShipIcon implements AfterContentInit {
   #selfRef: ElementRef<HTMLElement> = inject(ElementRef);
   #renderer = inject(Renderer2);
 

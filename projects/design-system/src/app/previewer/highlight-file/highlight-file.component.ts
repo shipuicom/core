@@ -13,7 +13,7 @@ import hljs from 'highlight.js';
 import scss from 'highlight.js/lib/languages/scss';
 import typescript from 'highlight.js/lib/languages/typescript';
 import xml from 'highlight.js/lib/languages/xml';
-import { ShipButtonComponent, ShipIconComponent } from 'ship-ui';
+import { ShipButtonComponent, ShipIcon } from 'ship-ui';
 
 const langMap = {
   ts: 'typescript',
@@ -22,7 +22,7 @@ const langMap = {
 };
 @Component({
   selector: 'app-highlight-file',
-  imports: [ShipButtonComponent, ShipIconComponent],
+  imports: [ShipButtonComponent, ShipIcon],
   templateUrl: './highlight-file.component.html',
   styleUrl: './highlight-file.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

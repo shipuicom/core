@@ -3,19 +3,13 @@ import {
   ShipButtonGroupComponent,
   ShipChipComponent,
   ShipColorPickerComponent,
-  ShipIconComponent,
+  ShipIcon,
   ShipToggleComponent,
 } from 'ship-ui';
 
 @Component({
   selector: 'app-chip-sandbox',
-  imports: [
-    ShipIconComponent,
-    ShipChipComponent,
-    ShipButtonGroupComponent,
-    ShipToggleComponent,
-    ShipColorPickerComponent,
-  ],
+  imports: [ShipIcon, ShipChipComponent, ShipButtonGroupComponent, ShipToggleComponent, ShipColorPickerComponent],
   templateUrl: './chip-sandbox.component.html',
   styleUrl: './chip-sandbox.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

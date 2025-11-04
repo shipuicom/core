@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipIconComponent } from '../ship-icon/ship-icon.component';
+import { ShipIcon } from '../ship-icon/ship-icon';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
 
 @Component({
   selector: 'sh-checkbox',
-  imports: [ShipIconComponent],
+  imports: [ShipIcon],
   template: `
     <div class="box sh-sheet" [class]="currentClassList()">
       <sh-icon class="inherit default-indicator">check-bold</sh-icon>

@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { ShipButtonComponent, ShipButtonGroupComponent, ShipIconComponent, ShipToggleComponent } from 'ship-ui';
+import { ShipButtonComponent, ShipButtonGroupComponent, ShipIcon, ShipToggleComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-button-sandbox',
-  imports: [ShipButtonComponent, ShipButtonGroupComponent, ShipIconComponent, ShipToggleComponent],
+  imports: [ShipButtonComponent, ShipButtonGroupComponent, ShipIcon, ShipToggleComponent],
   templateUrl: './button-sandbox.component.html',
   styleUrl: './button-sandbox.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
