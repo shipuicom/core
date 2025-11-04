@@ -30,6 +30,21 @@
   </div>
 </sh-form-field>
 
+<div class="credit-card">
+  <sh-form-field>
+    <label for="creditCard">Credit card</label>
+    <input id="creditCard" placeholder="1234 5678 1234 5678" type="text" shInputMask="9999 9999 9999 9999" />
+    <div boxPrefix>
+      <sh-icon>credit-card</sh-icon>
+    </div>
+  </sh-form-field>
+
+  <sh-form-field>
+    <label for="creditCard">CVV</label>
+    <input id="creditCard" placeholder="123" type="text" shInputMask="999" />
+  </sh-form-field>
+</div>
+
 <sh-form-field>
   <label for="decimal1">Decimal using function</label>
   <input id="decimal1" placeholder="Hello im a decimal pipe" type="text" [shInputMask]="maskingFunction" />

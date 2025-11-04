@@ -1,3 +1,11 @@
+@use 'helpers' as *;
+
 :host {
   display: block;
+}
+
+.credit-card {
+  display: grid;
+  grid-template-columns: 1fr p2r(80);
+  gap: p2r(8);
 }
