@@ -13,7 +13,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { ShipFormFieldComponent } from '../ship-form-field/ship-form-field.component';
+import { ShipFormField } from '../ship-form-field/ship-form-field.component';
 import { ShipIcon } from '../ship-icon/ship-icon';
 import { ShipPopoverComponent } from '../ship-popover/ship-popover.component';
 import { createInputSignal } from '../utilities/create-input-signal';
@@ -21,7 +21,7 @@ import { observeChildren } from '../utilities/observe-elements';
 
 @Component({
   selector: 'sh-menu',
-  imports: [ShipPopoverComponent, ShipFormFieldComponent, ShipIcon],
+  imports: [ShipPopoverComponent, ShipFormField, ShipIcon],
   template: `
     <sh-popover
       #formFieldWrapper

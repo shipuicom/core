@@ -35,7 +35,7 @@ import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, HostLi
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipFormFieldComponent {
+export class ShipFormField {
   #selfRef = inject(ElementRef);
 
   @HostListener('click')

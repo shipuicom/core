@@ -10,12 +10,12 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { ShipFormFieldComponent } from '../ship-form-field/ship-form-field.component';
+import { ShipFormField } from '../ship-form-field/ship-form-field.component';
 import { ShipIcon } from '../ship-icon/ship-icon';
 
 @Component({
   selector: 'sh-file-upload',
-  imports: [ShipFormFieldComponent, ShipIcon],
+  imports: [ShipFormField, ShipIcon],
   template: `
     <sh-form-field [class]="fileUploadClasses()">
       <ng-content select="label" ngProjectAs="label"></ng-content>

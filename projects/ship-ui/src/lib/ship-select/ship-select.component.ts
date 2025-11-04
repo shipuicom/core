@@ -17,7 +17,7 @@ import {
 import { ShipCheckboxComponent } from '../ship-checkbox/ship-checkbox.component';
 import { ShipChipComponent } from '../ship-chip/ship-chip.component';
 import { ShipDividerComponent } from '../ship-divider/ship-divider.component';
-import { ShipFormFieldComponent } from '../ship-form-field/ship-form-field.component';
+import { ShipFormField } from '../ship-form-field/ship-form-field.component';
 import { ShipIcon } from '../ship-icon/ship-icon';
 import { ShipPopoverComponent } from '../ship-popover/ship-popover.component';
 import { ShipSpinnerComponent } from '../ship-spinner/ship-spinner.component';
@@ -32,7 +32,7 @@ type ValidateFreeText = (value: string) => boolean;
   imports: [
     NgTemplateOutlet,
     ShipPopoverComponent,
-    ShipFormFieldComponent,
+    ShipFormField,
     ShipIcon,
     ShipCheckboxComponent,
     ShipSpinnerComponent,

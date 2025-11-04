@@ -1,10 +1,10 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { ShipFormFieldComponent, ShipIcon, ShipInputMaskDirective } from 'ship-ui';
+import { ShipFormField, ShipIcon, ShipInputMaskDirective } from 'ship-ui';
 
 @Component({
   selector: 'app-base-input-mask',
-  imports: [ShipFormFieldComponent, ShipIcon, ShipInputMaskDirective],
+  imports: [ShipFormField, ShipIcon, ShipInputMaskDirective],
   templateUrl: './base-input-mask.component.html',
   styleUrl: './base-input-mask.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

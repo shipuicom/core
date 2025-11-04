@@ -1,22 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  ShipButtonGroupComponent,
-  ShipFormFieldComponent,
-  ShipRangeSliderComponent,
-  ShipToggleComponent,
-} from 'ship-ui';
+import { ShipButtonGroupComponent, ShipFormField, ShipRangeSliderComponent, ShipToggleComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-range-slider-sandbox',
   standalone: true,
-  imports: [
-    FormsModule,
-    ShipRangeSliderComponent,
-    ShipButtonGroupComponent,
-    ShipToggleComponent,
-    ShipFormFieldComponent,
-  ],
+  imports: [FormsModule, ShipRangeSliderComponent, ShipButtonGroupComponent, ShipToggleComponent, ShipFormField],
   templateUrl: './range-slider-sandbox.component.html',
   styleUrl: './range-slider-sandbox.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
