@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ShipCheckboxComponent, ShipIcon, ShipListComponent } from 'ship-ui';
+import { ShipCheckboxComponent, ShipIcon, ShipList } from 'ship-ui';
 
 @Component({
   selector: 'base-list-example',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, ShipListComponent, ShipIcon, ShipCheckboxComponent],
+  imports: [FormsModule, ReactiveFormsModule, ShipList, ShipIcon, ShipCheckboxComponent],
   templateUrl: './base-list-example.component.html',
   styleUrls: ['./base-list-example.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
