@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipButtonComponent, ShipButtonGroupComponent, ShipEventCardComponent, ShipToggleComponent } from 'ship-ui';
+import { ShipButton, ShipButtonGroupComponent, ShipEventCardComponent, ShipToggleComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-event-card-sandbox',
-  imports: [FormsModule, ShipEventCardComponent, ShipButtonComponent, ShipToggleComponent, ShipButtonGroupComponent],
+  imports: [FormsModule, ShipEventCardComponent, ShipButton, ShipToggleComponent, ShipButtonGroupComponent],
   templateUrl: './event-card-sandbox.component.html',
   styleUrl: './event-card-sandbox.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

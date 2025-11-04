@@ -9,7 +9,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     class: 'sh-sheet-h',
   },
 })
-export class ShipButtonComponent {
+export class ShipButton {
   // #selfRef = inject(ElementRef);
   //   '[class.not-first-node-text]': 'notFirstNodeText()',
   //   '[class.not-last-node-text]': 'notLastNodeText()',

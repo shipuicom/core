@@ -1,9 +1,9 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject } from '@angular/core';
-import { ShipButtonComponent, ShipIcon, ShipTooltip } from 'ship-ui';
+import { ShipButton, ShipIcon, ShipTooltip } from 'ship-ui';
 
 @Component({
   selector: 'app-scrolled-tooltip',
-  imports: [ShipIcon, ShipButtonComponent, ShipTooltip],
+  imports: [ShipIcon, ShipButton, ShipTooltip],
   templateUrl: './scrolled-tooltip.component.html',
   styleUrl: './scrolled-tooltip.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

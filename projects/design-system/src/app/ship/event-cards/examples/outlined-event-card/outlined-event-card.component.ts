@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipButtonComponent, ShipEventCardComponent } from 'ship-ui';
+import { ShipButton, ShipEventCardComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-outlined-event-card',
-  imports: [ShipEventCardComponent, ShipButtonComponent],
+  imports: [ShipEventCardComponent, ShipButton],
   templateUrl: './outlined-event-card.component.html',
   styleUrl: './outlined-event-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

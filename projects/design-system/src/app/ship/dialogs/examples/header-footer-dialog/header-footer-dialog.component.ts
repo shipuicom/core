@@ -1,10 +1,10 @@
 import { Component, inject, input, output, signal } from '@angular/core';
-import { ShipButtonComponent, ShipDialogService } from 'ship-ui';
+import { ShipButton, ShipDialogService } from 'ship-ui';
 
 @Component({
   selector: 'header-footer-dialog',
   standalone: true,
-  imports: [ShipButtonComponent],
+  imports: [ShipButton],
   templateUrl: './header-footer-dialog.component.html',
   styleUrl: './header-footer-dialog.component.scss',
 })
@@ -23,7 +23,7 @@ export class HeaderFooterDialogComponent {
 @Component({
   selector: 'header-footer-dialog-content',
   standalone: true,
-  imports: [ShipButtonComponent],
+  imports: [ShipButton],
   templateUrl: './header-footer-dialog-content.component.html',
   styleUrl: './header-footer-dialog-content.component.scss',
 })

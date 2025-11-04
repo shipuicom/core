@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { hsl2oklch } from 'colorizr';
-import { ShipButtonComponent, ShipColorPickerComponent, ShipMenuComponent, ShipRadioComponent } from 'ship-ui';
+import { ShipButton, ShipColorPickerComponent, ShipMenuComponent, ShipRadioComponent } from 'ship-ui';
 
 interface Hsl {
   h: number;
@@ -22,7 +22,7 @@ const STARTING_COLOR = 'mono';
 
 @Component({
   selector: 'app-theme-editor',
-  imports: [FormsModule, ShipColorPickerComponent, ShipMenuComponent, ShipRadioComponent, ShipButtonComponent],
+  imports: [FormsModule, ShipColorPickerComponent, ShipMenuComponent, ShipRadioComponent, ShipButton],
   templateUrl: './theme-editor.component.html',
   styleUrl: './theme-editor.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

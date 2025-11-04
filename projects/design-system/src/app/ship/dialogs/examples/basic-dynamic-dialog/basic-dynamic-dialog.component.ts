@@ -1,10 +1,10 @@
 import { Component, inject, input, output } from '@angular/core';
-import { ShipButtonComponent, ShipDialogService } from 'ship-ui';
+import { ShipButton, ShipDialogService } from 'ship-ui';
 
 @Component({
   selector: 'basic-dynamic-dialog',
   standalone: true,
-  imports: [ShipButtonComponent],
+  imports: [ShipButton],
   templateUrl: './basic-dynamic-dialog.component.html',
   styleUrl: './basic-dynamic-dialog.component.scss',
 })

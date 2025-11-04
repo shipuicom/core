@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { ShipButtonComponent, ShipCheckbox, ShipMenuComponent } from 'ship-ui';
+import { ShipButton, ShipCheckbox, ShipMenuComponent } from 'ship-ui';
 
 @Component({
   selector: 'sh-toggle-select-menu-example',
   templateUrl: './toggle-select-menu-example.component.html',
   styleUrls: ['./toggle-select-menu-example.component.scss'],
-  imports: [ShipMenuComponent, ShipButtonComponent, ShipCheckbox],
+  imports: [ShipMenuComponent, ShipButton, ShipCheckbox],
   standalone: true,
 })
 export class ToggleSelectMenuExampleComponent {

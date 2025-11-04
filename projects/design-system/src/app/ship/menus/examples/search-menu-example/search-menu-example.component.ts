@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipButtonComponent, ShipMenuComponent } from 'ship-ui';
+import { ShipButton, ShipMenuComponent } from 'ship-ui';
 
 @Component({
   selector: 'sh-search-menu-example',
   templateUrl: './search-menu-example.component.html',
   styleUrls: ['./search-menu-example.component.scss'],
-  imports: [FormsModule, ShipMenuComponent, ShipButtonComponent],
+  imports: [FormsModule, ShipMenuComponent, ShipButton],
   standalone: true,
 })
 export class SearchMenuExampleComponent {

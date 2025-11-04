@@ -4,7 +4,7 @@ import scss from 'highlight.js/lib/languages/scss';
 import shell from 'highlight.js/lib/languages/shell';
 import typescript from 'highlight.js/lib/languages/typescript';
 import xml from 'highlight.js/lib/languages/xml';
-import { ShipButtonComponent, ShipIcon } from 'ship-ui';
+import { ShipButton, ShipIcon } from 'ship-ui';
 
 const langMap = {
   ts: 'typescript',
@@ -15,7 +15,7 @@ const langMap = {
 
 @Component({
   selector: 'app-highlight',
-  imports: [ShipButtonComponent, ShipIcon],
+  imports: [ShipButton, ShipIcon],
   templateUrl: './highlight.component.html',
   styleUrl: './highlight.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

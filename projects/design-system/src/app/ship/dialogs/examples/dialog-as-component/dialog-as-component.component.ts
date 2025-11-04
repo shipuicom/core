@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { ShipButtonComponent, ShipDialogComponent } from 'ship-ui';
+import { ShipButton, ShipDialogComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-dialog-as-component',
-  imports: [ShipDialogComponent, ShipButtonComponent],
+  imports: [ShipDialogComponent, ShipButton],
   templateUrl: './dialog-as-component.component.html',
   styleUrl: './dialog-as-component.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

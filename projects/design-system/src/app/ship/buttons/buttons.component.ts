@@ -14,7 +14,7 @@ import { SimpleButtonComponent } from './examples/simple-button/simple-button.co
     PreviewerComponent,
     PropertyViewerComponent,
 
-    // ShipButtonComponent,
+    // ShipButton,
 
     ButtonSandboxComponent,
     BaseButtonComponent,

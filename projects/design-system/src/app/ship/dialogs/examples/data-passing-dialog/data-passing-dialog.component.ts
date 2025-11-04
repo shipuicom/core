@@ -1,10 +1,10 @@
 import { Component, inject, input, output } from '@angular/core';
-import { ShipButtonComponent, ShipDialogService } from 'ship-ui';
+import { ShipButton, ShipDialogService } from 'ship-ui';
 
 @Component({
   selector: 'data-passing-dialog',
   standalone: true,
-  imports: [ShipButtonComponent],
+  imports: [ShipButton],
   templateUrl: './data-passing-dialog.component.html',
   styleUrl: './data-passing-dialog.component.scss',
 })
@@ -35,7 +35,7 @@ export class DataPassingDialogComponent {
 @Component({
   selector: 'data-dialog-content',
   standalone: true,
-  imports: [ShipButtonComponent],
+  imports: [ShipButton],
   templateUrl: './data-dialog-content.component.html',
   styleUrl: './data-dialog-content.component.scss',
 })

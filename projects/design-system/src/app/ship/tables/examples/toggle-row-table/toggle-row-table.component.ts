@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { ShipButtonComponent, ShipIcon, ShipTableComponent } from 'ship-ui';
+import { ShipButton, ShipIcon, ShipTableComponent } from 'ship-ui';
 
 const ELEMENT_DATA = [
   { position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },
@@ -18,7 +18,7 @@ const COLUMNS = ['position', 'name', 'weight', 'symbol'] as const;
 @Component({
   selector: 'toggle-row-table',
   standalone: true,
-  imports: [ShipTableComponent, ShipIcon, ShipButtonComponent],
+  imports: [ShipTableComponent, ShipIcon, ShipButton],
   templateUrl: './toggle-row-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

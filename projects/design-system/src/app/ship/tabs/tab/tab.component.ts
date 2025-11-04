@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, input, TemplateRef, viewChild } from '@angular/core';
-import { ShipButtonComponent } from 'ship-ui';
+import { ShipButton } from 'ship-ui';
 
 @Component({
   selector: 'app-tab',
-  imports: [ShipButtonComponent],
+  imports: [ShipButton],
   templateUrl: './tab.component.html',
   styleUrl: './tab.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

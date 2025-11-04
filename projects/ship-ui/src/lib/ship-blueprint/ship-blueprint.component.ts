@@ -16,7 +16,7 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
-import { ShipButtonComponent, ShipCardComponent, ShipIcon } from '../../public-api';
+import { ShipButton, ShipCardComponent, ShipIcon } from '../../public-api';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
 import { layoutNodes } from './autolayout';
 import { findDuplicateNodeIDs, findDuplicatePortIDs } from './validatePorts';
@@ -83,7 +83,7 @@ type ValidationErrors = {
 
 @Component({
   selector: 'sh-blueprint',
-  imports: [ShipCardComponent, ShipIcon, JsonPipe, ShipButtonComponent],
+  imports: [ShipCardComponent, ShipIcon, JsonPipe, ShipButton],
   template: `
     <div
       class="canvas-container"
