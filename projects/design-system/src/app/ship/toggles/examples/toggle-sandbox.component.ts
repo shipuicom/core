@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, effect, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ShipButtonGroup, ShipToggleComponent } from 'ship-ui';
+import { ShipButtonGroup, ShipToggle } from 'ship-ui';
 
 @Component({
   selector: 'app-toggle-sandbox',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, ShipToggleComponent, ShipButtonGroup],
+  imports: [ReactiveFormsModule, FormsModule, ShipToggle, ShipButtonGroup],
   templateUrl: './toggle-sandbox.component.html',
   styleUrl: './toggle-sandbox.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

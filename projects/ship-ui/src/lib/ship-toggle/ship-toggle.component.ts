@@ -12,4 +12,4 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipToggleComponent {}
+export class ShipToggle {}

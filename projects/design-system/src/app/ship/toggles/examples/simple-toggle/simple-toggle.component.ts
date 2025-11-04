@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipToggleComponent } from 'ship-ui';
+import { ShipToggle } from 'ship-ui';
 
 @Component({
   selector: 'app-simple-toggle',
   standalone: true,
-  imports: [ShipToggleComponent],
+  imports: [ShipToggle],
   templateUrl: './simple-toggle.component.html',
   styleUrl: './simple-toggle.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

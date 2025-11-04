@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipToggleComponent } from 'ship-ui';
+import { ShipToggle } from 'ship-ui';
 
 @Component({
   selector: 'app-outlined-toggle',
   standalone: true,
-  imports: [ShipToggleComponent],
+  imports: [ShipToggle],
   templateUrl: './outlined-toggle.component.html',
   styleUrl: './outlined-toggle.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

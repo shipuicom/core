@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, signal, viewChild } from '@angular/core';
-import { Coordinates, ShipBlueprintComponent, ShipButton, ShipIcon, ShipToggleComponent, TEST_NODES } from 'ship-ui';
+import { Coordinates, ShipBlueprintComponent, ShipButton, ShipIcon, ShipToggle, TEST_NODES } from 'ship-ui';
 
 @Component({
   selector: 'app-blueprints',
-  imports: [ShipBlueprintComponent, ShipToggleComponent, ShipButton, ShipIcon],
+  imports: [ShipBlueprintComponent, ShipToggle, ShipButton, ShipIcon],
   templateUrl: './blueprints.component.html',
   styleUrl: './blueprints.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

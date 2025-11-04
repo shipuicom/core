@@ -1,12 +1,12 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipButtonGroup, ShipDatepickerComponent, ShipToggleComponent } from 'ship-ui';
+import { ShipButtonGroup, ShipDatepickerComponent, ShipToggle } from 'ship-ui';
 
 @Component({
   selector: 'app-datepicker-sandbox',
   standalone: true,
-  imports: [FormsModule, ShipDatepickerComponent, ShipToggleComponent, ShipButtonGroup, DatePipe],
+  imports: [FormsModule, ShipDatepickerComponent, ShipToggle, ShipButtonGroup, DatePipe],
   templateUrl: './datepicker-sandbox.component.html',
   styleUrl: './datepicker-sandbox.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
