@@ -14,13 +14,13 @@ import {
   TemplateRef,
   viewChild,
 } from '@angular/core';
-import { ShipCheckbox } from '../ship-checkbox/ship-checkbox.component';
-import { ShipChipComponent } from '../ship-chip/ship-chip.component';
-import { ShipDividerComponent } from '../ship-divider/ship-divider.component';
-import { ShipFormField } from '../ship-form-field/ship-form-field.component';
+import { ShipCheckbox } from '../ship-checkbox/ship-checkbox';
+import { ShipChip } from '../ship-chip/ship-chip';
+import { ShipDivider } from '../ship-divider/ship-divider';
+import { ShipFormField } from '../ship-form-field/ship-form-field';
 import { ShipIcon } from '../ship-icon/ship-icon';
-import { ShipPopoverComponent } from '../ship-popover/ship-popover.component';
-import { ShipSpinnerComponent } from '../ship-spinner/ship-spinner.component';
+import { ShipPopover } from '../ship-popover/ship-popover';
+import { ShipSpinner } from '../ship-spinner/ship-spinner.component';
 import { generateUniqueId } from '../utilities/random-id';
 
 // TODO build in live validation response for free text validation
@@ -29,16 +29,7 @@ type ValidateFreeText = (value: string) => boolean;
 
 @Component({
   selector: 'sh-select',
-  imports: [
-    NgTemplateOutlet,
-    ShipPopoverComponent,
-    ShipFormField,
-    ShipIcon,
-    ShipCheckbox,
-    ShipSpinnerComponent,
-    ShipChipComponent,
-    ShipDividerComponent,
-  ],
+  imports: [NgTemplateOutlet, ShipPopover, ShipFormField, ShipIcon, ShipCheckbox, ShipSpinner, ShipChip, ShipDivider],
   template: `
     @let _placeholderTemplate = placeholderTemplate();
     @let _optionTemplate = optionTemplate();
@@ -198,7 +189,7 @@ type ValidateFreeText = (value: string) => boolean;
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipSelectComponent {
+export class ShipSelect {
   #selfRef = inject<ElementRef<HTMLElement>>(ElementRef<HTMLElement>);
 
   value = input<string>();

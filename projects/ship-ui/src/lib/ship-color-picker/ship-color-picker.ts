@@ -40,7 +40,7 @@ type A = number;
     '[class.vertical]': '(renderingType() === "hue" || renderingType() === "saturation") && direction() === "vertical"',
   },
 })
-export class ShipColorPickerComponent {
+export class ShipColorPicker {
   #document = inject(DOCUMENT);
 
   readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('colorCanvas');

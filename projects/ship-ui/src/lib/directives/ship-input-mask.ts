@@ -6,7 +6,7 @@ type MaskingFunction = (cleanValue: string) => string | null;
   selector: '[shInputMask]',
   standalone: true,
 })
-export class ShipInputMaskDirective {
+export class ShipInputMask {
   #selfRef: ElementRef<HTMLInputElement> = inject(ElementRef);
   #renderer: Renderer2 = inject(Renderer2);
 

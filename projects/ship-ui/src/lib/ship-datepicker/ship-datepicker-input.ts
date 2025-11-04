@@ -12,15 +12,15 @@ import {
   signal,
 } from '@angular/core';
 import { NgModel } from '@angular/forms';
-import { ShipFormFieldPopoverComponent } from '../ship-form-field/ship-form-field-popover.component';
+import { ShipFormFieldPopover } from '../ship-form-field/ship-form-field-popover';
 import { ShipIcon } from '../ship-icon/ship-icon';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
 import { contentProjectionSignal } from '../utilities/content-projection-signal';
-import { ShipDatepickerComponent } from './ship-datepicker.component';
+import { ShipDatepicker } from './ship-datepicker';
 
 @Component({
   selector: 'sh-datepicker-input',
-  imports: [ShipDatepickerComponent, ShipFormFieldPopoverComponent, ShipIcon],
+  imports: [ShipDatepicker, ShipFormFieldPopover, ShipIcon],
   providers: [DatePipe],
   template: `
     <sh-form-field-popover (closed)="close()" [(isOpen)]="isOpen">
@@ -53,7 +53,7 @@ import { ShipDatepickerComponent } from './ship-datepicker.component';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipDatepickerInputComponent {
+export class ShipDatepickerInput {
   // #INIT_DATE = this.#getUTCDate(new Date());
 
   ngModels = contentChild<NgModel>(NgModel);

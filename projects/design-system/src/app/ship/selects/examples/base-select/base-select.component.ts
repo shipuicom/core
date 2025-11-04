@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipIcon, ShipSelectComponent } from 'ship-ui';
+import { ShipIcon, ShipSelect } from 'ship-ui';
 
 @Component({
   selector: 'app-base-select',
   standalone: true,
-  imports: [FormsModule, ShipSelectComponent, ShipIcon],
+  imports: [FormsModule, ShipSelect, ShipIcon],
   templateUrl: './base-select.component.html',
   styleUrl: './base-select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipRadioComponent } from 'ship-ui';
+import { ShipRadio } from 'ship-ui';
 
 @Component({
   selector: 'app-flat-radio',
   standalone: true,
-  imports: [ShipRadioComponent],
+  imports: [ShipRadio],
   templateUrl: './flat-radio.component.html',
   styleUrl: './flat-radio.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

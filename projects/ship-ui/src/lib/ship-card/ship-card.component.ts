@@ -12,7 +12,7 @@ import { SHIP_CONFIG } from '../utilities/ship-config';
     '[class]': 'class()',
   },
 })
-export class ShipCardComponent {
+export class ShipCard {
   #shConfig = inject(SHIP_CONFIG, { optional: true });
   class = signal<string>(this.#shConfig?.cardType ?? 'type-a');
 }

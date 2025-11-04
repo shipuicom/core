@@ -41,7 +41,7 @@ import {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipRangeSliderComponent {
+export class ShipRangeSlider {
   #selfRef = inject(ElementRef<HTMLElement>);
   #observer: MutationObserver | null = null;
   #inputElement: HTMLInputElement | null = null;
@@ -104,7 +104,7 @@ export class ShipRangeSliderComponent {
 
       this.#setupMutationObserver();
     } else {
-      console.error('ShipRangeSliderComponent: No <input type="range"> element found projected inside.');
+      console.error('ShipRangeSlider: No <input type="range"> element found projected inside.');
     }
   }
 

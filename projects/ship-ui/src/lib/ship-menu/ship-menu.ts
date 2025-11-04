@@ -13,15 +13,15 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { ShipFormField } from '../ship-form-field/ship-form-field.component';
+import { ShipFormField } from '../ship-form-field/ship-form-field';
 import { ShipIcon } from '../ship-icon/ship-icon';
-import { ShipPopoverComponent } from '../ship-popover/ship-popover.component';
+import { ShipPopover } from '../ship-popover/ship-popover';
 import { createInputSignal } from '../utilities/create-input-signal';
 import { observeChildren } from '../utilities/observe-elements';
 
 @Component({
   selector: 'sh-menu',
-  imports: [ShipPopoverComponent, ShipFormField, ShipIcon],
+  imports: [ShipPopover, ShipFormField, ShipIcon],
   template: `
     <sh-popover
       #formFieldWrapper
@@ -63,7 +63,7 @@ import { observeChildren } from '../utilities/observe-elements';
     '[class.multi-layer]': 'asMultiLayer()',
   },
 })
-export class ShipMenuComponent {
+export class ShipMenu {
   #document = inject(DOCUMENT);
   #renderer = inject(Renderer2);
   asMultiLayer = input<boolean>(false);

@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipCheckbox, ShipFileUploadComponent, ShipFormField } from 'ship-ui';
+import { ShipCheckbox, ShipFileUpload, ShipFormField } from 'ship-ui';
 
 @Component({
   selector: 'app-file-upload-sandbox',
   standalone: true,
-  imports: [FormsModule, ShipFileUploadComponent, ShipCheckbox, ShipFormField],
+  imports: [FormsModule, ShipFileUpload, ShipCheckbox, ShipFormField],
   templateUrl: './file-upload-sandbox.component.html',
   styleUrl: './file-upload-sandbox.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

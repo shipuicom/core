@@ -24,7 +24,7 @@ import { ShipIcon } from '../ship-icon/ship-icon';
     '[class.active]': 'isActive()',
   },
 })
-export class ShipToggleCardComponent {
+export class ShipToggleCard {
   isActive = model(false);
   disallowToggle = input(false);
 

@@ -1,4 +1,4 @@
-import { BlueprintNode } from './ship-blueprint.component';
+import { BlueprintNode } from './ship-blueprint';
 
 export function layoutNodes(nodes: BlueprintNode[]): BlueprintNode[] {
   if (!nodes || nodes.length === 0) return nodes;

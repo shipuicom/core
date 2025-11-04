@@ -11,6 +11,6 @@ import { classMutationSignal } from '../utilities/class-mutation-signal';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipRadioComponent {
+export class ShipRadio {
   currentClassList = classMutationSignal();
 }

@@ -10,7 +10,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { ShipFormField } from '../ship-form-field/ship-form-field.component';
+import { ShipFormField } from '../ship-form-field/ship-form-field';
 import { ShipIcon } from '../ship-icon/ship-icon';
 
 @Component({
@@ -37,7 +37,7 @@ import { ShipIcon } from '../ship-icon/ship-icon';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipFileUploadComponent {
+export class ShipFileUpload {
   _el = inject(ElementRef);
   inputRef = viewChild.required<ElementRef<HTMLInputElement>>('input');
   filesOver = signal(false);

@@ -8,4 +8,4 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipDividerComponent {}
+export class ShipDivider {}

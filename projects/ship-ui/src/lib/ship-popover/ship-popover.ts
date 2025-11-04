@@ -60,7 +60,7 @@ const DEFAULT_OPTIONS: ShipPopoverOptions = {
     '[class.multi-layer]': 'asMultiLayer()',
   },
 })
-export class ShipPopoverComponent {
+export class ShipPopover {
   #document = inject(DOCUMENT);
   SUPPORTS_ANCHOR =
     typeof CSS !== 'undefined' && CSS.supports('position-anchor', '--abc') && CSS.supports('anchor-name', '--abc');

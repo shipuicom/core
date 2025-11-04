@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/c
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { delay, map, of } from 'rxjs';
-import { ShipSelectComponent } from 'ship-ui';
+import { ShipSelect } from 'ship-ui';
 
 const DEFAULT_OPTIONS = [
   { value: 'pizza', label: 'Pizza' },
@@ -16,7 +16,7 @@ const DEFAULT_OPTIONS = [
 @Component({
   selector: 'app-lazy-search-multiple-select',
   standalone: true,
-  imports: [FormsModule, ShipSelectComponent, JsonPipe],
+  imports: [FormsModule, ShipSelect, JsonPipe],
   templateUrl: './lazy-search-multiple-select.component.html',
   styleUrl: './lazy-search-multiple-select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

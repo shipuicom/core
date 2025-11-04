@@ -4,7 +4,7 @@ import { Directive, ElementRef, HostListener, inject, Renderer2 } from '@angular
   standalone: true,
   selector: '[shGridSortable]',
 })
-export class GridSortableDirective {
+export class GridSortable {
   #selfRef = inject(ElementRef<HTMLElement>);
   #renderer = inject(Renderer2);
   #draggedItem: HTMLElement | null = null;

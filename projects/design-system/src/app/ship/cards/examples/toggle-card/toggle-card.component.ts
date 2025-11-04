@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipToggleCardComponent } from 'ship-ui';
+import { ShipToggleCard } from 'ship-ui';
 
 @Component({
   selector: 'app-toggle-card-example',
   standalone: true,
-  imports: [ShipToggleCardComponent],
+  imports: [ShipToggleCard],
   templateUrl: './toggle-card.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

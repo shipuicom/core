@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipRangeSliderComponent } from 'ship-ui';
+import { ShipRangeSlider } from 'ship-ui';
 
 @Component({
   selector: 'app-unit-range-slider',
   standalone: true,
-  imports: [FormsModule, ShipRangeSliderComponent],
+  imports: [FormsModule, ShipRangeSlider],
   templateUrl: './unit-range-slider.component.html',
   styleUrl: './unit-range-slider.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

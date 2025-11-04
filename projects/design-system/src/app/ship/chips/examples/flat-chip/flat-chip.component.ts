@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipChipComponent, ShipIcon } from 'ship-ui';
+import { ShipChip, ShipIcon } from 'ship-ui';
 
 @Component({
   selector: 'app-flat-chip',
-  imports: [ShipIcon, ShipChipComponent],
+  imports: [ShipIcon, ShipChip],
   templateUrl: './flat-chip.component.html',
   styleUrl: './flat-chip.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -10,6 +10,6 @@ export type ShipProgressBarMode = 'determinate' | 'indeterminate';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipProgressBarComponent {
+export class ShipProgressBar {
   value = input<number | undefined>(undefined);
 }

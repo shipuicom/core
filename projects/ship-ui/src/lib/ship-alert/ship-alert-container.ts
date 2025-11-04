@@ -10,18 +10,18 @@ import {
   viewChild,
 } from '@angular/core';
 import { ShipIcon } from '../ship-icon/ship-icon';
-import { ShipAlertComponent } from './ship-alert.component';
+import { ShipAlert } from './ship-alert';
 import { ShipAlertService } from './ship-alert.service';
 
 @Component({
   selector: 'ship-alert-container',
-  imports: [ShipAlertComponent, ShipIcon],
-  templateUrl: './ship-alert-container.component.html',
+  imports: [ShipAlert, ShipIcon],
+  templateUrl: './ship-alert-container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipAlertContainerComponent {
+export class ShipAlertContainer {
   inline = input<string | null>(null);
-  alerts = viewChild.required<QueryList<ShipAlertComponent>>('alerts');
+  alerts = viewChild.required<QueryList<ShipAlert>>('alerts');
   scroller = viewChild.required<ElementRef<HTMLDivElement>>('scroller');
   alertService = input.required<ShipAlertService>();
 

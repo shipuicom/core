@@ -93,7 +93,7 @@ export function watchHostClass(className: string): WritableSignal<boolean> {
     '[class.is-dragging]': 'isDragging()',
   },
 })
-export class ShipSidenavComponent {
+export class ShipSidenav {
   #document = inject(DOCUMENT);
   #selfRef = inject(ElementRef);
   openWidth = 280;

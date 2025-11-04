@@ -1,12 +1,12 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { ShipDatepickerInputComponent } from 'ship-ui';
+import { ShipDatepickerInput } from 'ship-ui';
 
 @Component({
   selector: 'app-input-datepicker-reactive',
   standalone: true,
-  imports: [ReactiveFormsModule, ShipDatepickerInputComponent, DatePipe],
+  imports: [ReactiveFormsModule, ShipDatepickerInput, DatePipe],
   templateUrl: './input-datepicker-reactive.component.html',
   styleUrl: './input-datepicker-reactive.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

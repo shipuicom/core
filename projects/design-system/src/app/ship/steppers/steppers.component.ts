@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ShipAlertComponent } from 'ship-ui';
+import { ShipAlert } from 'ship-ui';
 import { PreviewerComponent } from '../../previewer/previewer.component';
 import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
 import { CustomSteppersComponent } from './examples/custom-stepper/custom-steppers.component';
@@ -18,7 +18,7 @@ import { StepperSandboxComponent } from './examples/stepper-sandbox/stepper-sand
     DefaultStepperComponent,
     SteppersComponent,
     StepperSandboxComponent,
-    ShipAlertComponent,
+    ShipAlert,
   ],
   templateUrl: './steppers.component.html',
   styleUrl: './steppers.component.scss',

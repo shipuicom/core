@@ -1,12 +1,12 @@
 import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipSelectComponent } from 'ship-ui';
+import { ShipSelect } from 'ship-ui';
 
 @Component({
   selector: 'app-multiple-select',
   standalone: true,
-  imports: [FormsModule, ShipSelectComponent, JsonPipe],
+  imports: [FormsModule, ShipSelect, JsonPipe],
   templateUrl: './multiple-select.component.html',
   styleUrl: './multiple-select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

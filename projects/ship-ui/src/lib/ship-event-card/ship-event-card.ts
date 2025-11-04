@@ -18,4 +18,4 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     class: 'sh-sheet',
   },
 })
-export class ShipEventCardComponent {}
+export class ShipEventCard {}

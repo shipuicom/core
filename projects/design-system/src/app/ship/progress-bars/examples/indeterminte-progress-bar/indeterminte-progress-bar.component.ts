@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipProgressBarComponent } from 'ship-ui';
+import { ShipProgressBar } from 'ship-ui';
 
 @Component({
   selector: 'app-indeterminte-progress-bar',
-  imports: [ShipProgressBarComponent],
+  imports: [ShipProgressBar],
   templateUrl: './indeterminte-progress-bar.component.html',
   styleUrl: './indeterminte-progress-bar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

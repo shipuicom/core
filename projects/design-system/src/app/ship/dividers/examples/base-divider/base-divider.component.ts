@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipDividerComponent } from 'ship-ui';
+import { ShipDivider } from 'ship-ui';
 
 @Component({
   selector: 'app-base-divider',
   standalone: true,
-  imports: [ShipDividerComponent],
+  imports: [ShipDivider],
   templateUrl: './base-divider.component.html',
   styleUrl: './base-divider.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { ShipAlertComponent, ShipButtonGroup } from 'ship-ui';
+import { ShipAlert, ShipButtonGroup } from 'ship-ui';
 
 @Component({
   selector: 'app-alerts-sandbox',
   standalone: true,
-  imports: [ShipAlertComponent, ShipButtonGroup],
+  imports: [ShipAlert, ShipButtonGroup],
   templateUrl: './alerts-sandbox.component.html',
   styleUrl: './alerts-sandbox.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

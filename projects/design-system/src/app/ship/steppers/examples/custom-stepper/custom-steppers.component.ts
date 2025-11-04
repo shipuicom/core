@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipRadioComponent, ShipStepperComponent } from 'ship-ui';
+import { ShipRadio, ShipStepper } from 'ship-ui';
 
 @Component({
   selector: 'app-custom-steppers',
   standalone: true,
-  imports: [ShipStepperComponent, ShipRadioComponent],
+  imports: [ShipStepper, ShipRadio],
   templateUrl: './custom-steppers.component.html',
   styleUrls: ['./custom-steppers.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

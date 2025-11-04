@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipAlertComponent } from 'ship-ui';
+import { ShipAlert } from 'ship-ui';
 
 @Component({
   selector: 'app-flat-alert',
   standalone: true,
-  imports: [ShipAlertComponent],
+  imports: [ShipAlert],
   templateUrl: './flat-alert.component.html',
   styleUrl: './flat-alert.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { ShipSelectComponent } from 'ship-ui';
+import { ShipSelect } from 'ship-ui';
 
 @Component({
   selector: 'app-reactive-select',
   standalone: true,
-  imports: [ReactiveFormsModule, ShipSelectComponent],
+  imports: [ReactiveFormsModule, ShipSelect],
   templateUrl: './reactive-select-example.component.html',
   styleUrl: './reactive-select-example.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

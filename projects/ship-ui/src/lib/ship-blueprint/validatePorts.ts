@@ -1,4 +1,4 @@
-import { BlueprintNode } from './ship-blueprint.component';
+import { BlueprintNode } from './ship-blueprint';
 
 export type PortValidationError = {
   nodeId: string;

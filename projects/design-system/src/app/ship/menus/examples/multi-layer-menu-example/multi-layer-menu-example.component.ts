@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { ShipButton, ShipMenuComponent } from 'ship-ui';
+import { ShipButton, ShipMenu } from 'ship-ui';
 
 @Component({
   selector: 'sh-multi-layer-menu-example',
   templateUrl: './multi-layer-menu-example.component.html',
   styleUrls: ['./multi-layer-menu-example.component.scss'],
-  imports: [ShipMenuComponent, ShipButton],
+  imports: [ShipMenu, ShipButton],
   standalone: true,
 })
 export class MultiLayerMenuExampleComponent {

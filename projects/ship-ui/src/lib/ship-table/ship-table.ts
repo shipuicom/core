@@ -14,7 +14,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { ShipProgressBarComponent } from '../ship-progress-bar/ship-progress-bar.component';
+import { ShipProgressBar } from '../ship-progress-bar/ship-progress-bar';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
 import { observeChildren } from '../utilities/observe-elements';
 import { SHIP_CONFIG } from '../utilities/ship-config';
@@ -23,10 +23,10 @@ import { SHIP_CONFIG } from '../utilities/ship-config';
   selector: '[shResize]',
   standalone: true,
 })
-export class ShipResizeDirective {
+export class ShipResize {
   #el = inject(ElementRef) as ElementRef<HTMLTableCellElement>;
   #renderer = inject(Renderer2);
-  #table = inject(ShipTableComponent);
+  #table = inject(ShipTable);
 
   resizable = input<boolean>(true);
   minWidth = input<number>(50);
@@ -127,8 +127,8 @@ export class ShipResizeDirective {
     '[class.sort-desc]': 'sortDesc()',
   },
 })
-export class ShipSortDirective {
-  #table = inject(ShipTableComponent);
+export class ShipSort {
+  #table = inject(ShipTable);
   shSort = input<string>();
 
   sortAsc = computed(() => {
@@ -166,7 +166,7 @@ export class ShipSortDirective {
     '[class.sticky-end]': 'shStickyColumns() === "end"',
   },
 })
-export class ShipStickyColumnsDirective {
+export class ShipStickyColumns {
   #elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   #renderer = inject(Renderer2);
 
@@ -198,7 +198,7 @@ type ScrollState = -1 | 0 | 1;
 
 @Component({
   selector: 'sh-table',
-  imports: [ShipProgressBarComponent],
+  imports: [ShipProgressBar],
   template: `
     @if (loading()) {
       <sh-progress-bar class="indeterminate primary" />
@@ -233,7 +233,7 @@ type ScrollState = -1 | 0 | 1;
     '[class.scrolled-y-end]': 'scrollYState() === 1',
   },
 })
-export class ShipTableComponent {
+export class ShipTable {
   #el = inject(ElementRef);
   #shConfig = inject(SHIP_CONFIG, { optional: true });
 

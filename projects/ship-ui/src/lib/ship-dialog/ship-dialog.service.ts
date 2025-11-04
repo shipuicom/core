@@ -10,7 +10,7 @@ import {
   OutputRefSubscription,
   Type,
 } from '@angular/core';
-import { ShipDialogComponent, ShipDialogOptions } from './ship-dialog.component';
+import { ShipDialog, ShipDialogOptions } from './ship-dialog';
 
 export interface ShipDialogServiceOptions<T = any> extends ShipDialogOptions {
   data?: T;
@@ -31,7 +31,7 @@ export class ShipDialogService {
   #bodyEl = this.#document.querySelector('body');
   #appRef = inject(ApplicationRef);
 
-  compRef: ComponentRef<ShipDialogComponent> | null = null;
+  compRef: ComponentRef<ShipDialog> | null = null;
   insertedCompRef: ComponentRef<unknown> | null = null;
 
   closedFieldSub: OutputRefSubscription | null = null;
@@ -52,7 +52,7 @@ export class ShipDialogService {
       environmentInjector,
     });
 
-    this.compRef = createComponent(ShipDialogComponent, {
+    this.compRef = createComponent(ShipDialog, {
       hostElement,
       environmentInjector,
       projectableNodes: [[this.insertedCompRef.location.nativeElement]],

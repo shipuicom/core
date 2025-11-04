@@ -1,12 +1,12 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { ShipDaterangeInputComponent, ShipIcon } from 'ship-ui';
+import { ShipDaterangeInput, ShipIcon } from 'ship-ui';
 
 @Component({
   selector: 'app-range-input-datepicker',
   standalone: true,
-  imports: [ReactiveFormsModule, ShipDaterangeInputComponent, ShipIcon, DatePipe],
+  imports: [ReactiveFormsModule, ShipDaterangeInput, ShipIcon, DatePipe],
   templateUrl: './range-input-datepicker.component.html',
   styleUrl: './range-input-datepicker.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

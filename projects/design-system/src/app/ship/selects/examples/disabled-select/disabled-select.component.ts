@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipSelectComponent } from 'ship-ui';
+import { ShipSelect } from 'ship-ui';
 
 @Component({
   selector: 'app-disabled-select',
   standalone: true,
-  imports: [FormsModule, ShipSelectComponent],
+  imports: [FormsModule, ShipSelect],
   templateUrl: './disabled-select.component.html',
   styleUrl: './disabled-select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

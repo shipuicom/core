@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipChipComponent, ShipIcon } from 'ship-ui';
+import { ShipChip, ShipIcon } from 'ship-ui';
 
 @Component({
   selector: 'app-base-chip',
-  imports: [ShipIcon, ShipChipComponent],
+  imports: [ShipIcon, ShipChip],
   templateUrl: './base-chip.component.html',
   styleUrl: './base-chip.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

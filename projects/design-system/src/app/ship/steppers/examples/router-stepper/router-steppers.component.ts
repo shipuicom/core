@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { ShipRadioComponent, ShipStepperComponent } from 'ship-ui';
+import { ShipRadio, ShipStepper } from 'ship-ui';
 
 @Component({
   selector: 'app-router-steppers',
   standalone: true,
-  imports: [ShipStepperComponent, ShipRadioComponent, RouterLink, RouterLinkActive],
+  imports: [ShipStepper, ShipRadio, RouterLink, RouterLinkActive],
   templateUrl: './router-steppers.component.html',
   styleUrl: './router-steppers.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

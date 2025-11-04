@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { ShipIcon, ShipTabsComponent } from 'ship-ui';
+import { ShipIcon, ShipTabs } from 'ship-ui';
 
 @Component({
   selector: 'app-router-tabs',
-  imports: [ShipTabsComponent, ShipIcon, RouterLinkActive, RouterLink],
+  imports: [ShipTabs, ShipIcon, RouterLinkActive, RouterLink],
   templateUrl: './router-tabs.component.html',
   styleUrl: './router-tabs.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

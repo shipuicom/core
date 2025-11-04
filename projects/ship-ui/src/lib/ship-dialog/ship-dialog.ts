@@ -62,7 +62,7 @@ const DEFAULT_OPTIONS: ShipDialogOptions = {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipDialogComponent {
+export class ShipDialog {
   #document = inject(DOCUMENT);
   #shConfig = inject(SHIP_CONFIG, { optional: true });
   dialogRef = viewChild<ElementRef<HTMLDialogElement>>('dialogRef');

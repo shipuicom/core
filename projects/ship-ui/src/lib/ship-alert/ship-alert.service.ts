@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { generateUniqueId } from '../utilities/random-id';
-import { ShipAlertType } from './ship-alert.component';
+import { ShipAlertType } from './ship-alert';
 
 export type ShipAlertItem = {
   type: ShipAlertType;

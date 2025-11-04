@@ -56,7 +56,7 @@ const POSSIBLE_VARIANTS = ['simple', 'outlined', 'flat', 'raised'];
     '[class]': 'activeClass()',
   },
 })
-export class ShipAlertComponent {
+export class ShipAlert {
   #shConfig = inject(SHIP_CONFIG, { optional: true });
   variant = signal<string>(this.#shConfig?.alertVariant ?? '');
   _el = inject(ElementRef); // Used by alert container

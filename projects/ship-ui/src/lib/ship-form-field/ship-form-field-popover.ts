@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, model, output } from '@angular/core';
-import { ShipPopoverComponent } from '../ship-popover/ship-popover.component';
+import { ShipPopover } from '../ship-popover/ship-popover';
 
 @Component({
   selector: 'sh-form-field-popover',
-  imports: [ShipPopoverComponent],
+  imports: [ShipPopover],
   template: `
     <ng-content select="label"></ng-content>
 
@@ -46,7 +46,7 @@ import { ShipPopoverComponent } from '../ship-popover/ship-popover.component';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipFormFieldPopoverComponent {
+export class ShipFormFieldPopover {
   #selfRef = inject(ElementRef);
 
   isOpen = model<boolean>(false);

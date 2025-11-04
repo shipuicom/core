@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, signal, viewChild } from '@angular/core';
-import { Coordinates, ShipBlueprintComponent, ShipButton, ShipIcon, ShipToggle, TEST_NODES } from 'ship-ui';
+import { Coordinates, ShipBlueprint, ShipButton, ShipIcon, ShipToggle, TEST_NODES } from 'ship-ui';
 
 @Component({
   selector: 'app-blueprints',
-  imports: [ShipBlueprintComponent, ShipToggle, ShipButton, ShipIcon],
+  imports: [ShipBlueprint, ShipToggle, ShipButton, ShipIcon],
   templateUrl: './blueprints.component.html',
   styleUrl: './blueprints.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -12,7 +12,7 @@ export default class BlueprintsComponent {
   showAsDots = signal(false);
 
   nodes = signal(TEST_NODES);
-  blueprint = viewChild.required(ShipBlueprintComponent);
+  blueprint = viewChild.required(ShipBlueprint);
 
   onChange(event: any) {
     console.log(event);

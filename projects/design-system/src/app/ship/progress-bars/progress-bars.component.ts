@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipAlertComponent } from 'ship-ui';
+import { ShipAlert } from 'ship-ui';
 import { PreviewerComponent } from '../../previewer/previewer.component';
 import { PropertyViewerComponent } from '../../property-viewer/property-viewer.component';
 import { BaseProgressBarComponent } from './examples/base-progress-bar/base-progress-bar.component';
@@ -11,7 +11,7 @@ import { RaisedProgressBarComponent } from './examples/raised-progress-bar/raise
 @Component({
   selector: 'app-progress-bars',
   imports: [
-    ShipAlertComponent,
+    ShipAlert,
     PropertyViewerComponent,
     PreviewerComponent,
     BaseProgressBarComponent,

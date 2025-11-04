@@ -25,7 +25,7 @@ import {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipVirtualScrollComponent {
+export class ShipVirtualScroll {
   #changeRef = inject(ChangeDetectorRef);
   #renderer = inject(Renderer2);
   #hostElement = inject(ElementRef);

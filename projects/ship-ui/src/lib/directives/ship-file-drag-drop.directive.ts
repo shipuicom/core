@@ -7,7 +7,7 @@ import { Directive, HostListener, output, signal } from '@angular/core';
     '[class.filesover]': 'filesOver()',
   },
 })
-export class ShipFileDragDropDirective {
+export class ShipFileDragDrop {
   filesOver = signal(false);
   filesDropped = output<FileList>();
 

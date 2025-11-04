@@ -16,7 +16,7 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
-import { ShipButton, ShipCardComponent, ShipIcon } from '../../public-api';
+import { ShipButton, ShipCard, ShipIcon } from '../../public-api';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
 import { layoutNodes } from './autolayout';
 import { findDuplicateNodeIDs, findDuplicatePortIDs } from './validatePorts';
@@ -83,7 +83,7 @@ type ValidationErrors = {
 
 @Component({
   selector: 'sh-blueprint',
-  imports: [ShipCardComponent, ShipIcon, JsonPipe, ShipButton],
+  imports: [ShipCard, ShipIcon, JsonPipe, ShipButton],
   template: `
     <div
       class="canvas-container"
@@ -173,7 +173,7 @@ type ValidationErrors = {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipBlueprintComponent implements AfterViewInit, OnDestroy {
+export class ShipBlueprint implements AfterViewInit, OnDestroy {
   readonly #ZOOM_SPEED = 0.01;
   readonly #MAX_ZOOM = 1.5;
   readonly #MIN_ZOOM = 0.5;

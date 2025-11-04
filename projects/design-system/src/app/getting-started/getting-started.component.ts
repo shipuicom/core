@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipAlertComponent } from '../../../../ship-ui/src/public-api';
+import { ShipAlert } from '../../../../ship-ui/src/public-api';
 import { HighlightComponent } from '../previewer/highlight/highlight.component';
 
 @Component({
   selector: 'app-getting-started',
-  imports: [HighlightComponent, ShipAlertComponent],
+  imports: [HighlightComponent, ShipAlert],
   templateUrl: './getting-started.component.html',
   styleUrl: './getting-started.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

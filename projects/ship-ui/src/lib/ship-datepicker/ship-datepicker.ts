@@ -65,7 +65,7 @@ import { classMutationSignal } from '../utilities/class-mutation-signal';
     '[class.disabled]': 'disabled()',
   },
 })
-export class ShipDatepickerComponent {
+export class ShipDatepicker {
   #INIT_DATE = this.#getUTCDate(new Date());
 
   date = model<Date | null>(null);

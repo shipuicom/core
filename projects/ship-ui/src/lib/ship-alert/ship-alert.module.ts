@@ -1,10 +1,10 @@
 import { NgModule } from '@angular/core';
-import { ShipAlertContainerComponent } from './ship-alert-container.component';
-import { ShipAlertComponent } from './ship-alert.component';
+import { ShipAlert } from './ship-alert';
+import { ShipAlertContainer } from './ship-alert-container';
 
 @NgModule({
-  imports: [ShipAlertComponent, ShipAlertContainerComponent],
-  exports: [ShipAlertComponent, ShipAlertContainerComponent],
+  imports: [ShipAlert, ShipAlertContainer],
+  exports: [ShipAlert, ShipAlertContainer],
   providers: [],
 })
 export class ShipAlertModule {}

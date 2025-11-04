@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipSelectComponent } from 'ship-ui';
+import { ShipSelect } from 'ship-ui';
 
 @Component({
   selector: 'app-inline-search-select',
   standalone: true,
-  imports: [FormsModule, ShipSelectComponent],
+  imports: [FormsModule, ShipSelect],
   templateUrl: './inline-search-select.component.html',
   styleUrl: './inline-search-select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

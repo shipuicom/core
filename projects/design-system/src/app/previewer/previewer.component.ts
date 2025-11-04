@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { ShipCardComponent, ShipIcon, ShipTabsComponent } from '../../../../ship-ui/src/public-api';
+import { ShipCard, ShipIcon, ShipTabs } from '../../../../ship-ui/src/public-api';
 import { HighlightFileComponent } from './highlight-file/highlight-file.component';
 
 @Component({
   selector: 'app-previewer',
-  imports: [HighlightFileComponent, ShipTabsComponent, ShipIcon, ShipCardComponent],
+  imports: [HighlightFileComponent, ShipTabs, ShipIcon, ShipCard],
   templateUrl: './previewer.component.html',
   styleUrl: './previewer.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

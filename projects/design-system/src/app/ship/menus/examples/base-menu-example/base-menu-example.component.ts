@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { ShipButton, ShipMenuComponent } from 'ship-ui';
+import { ShipButton, ShipMenu } from 'ship-ui';
 
 @Component({
   selector: 'base-menu-example',
   templateUrl: './base-menu-example.component.html',
   styleUrls: ['./base-menu-example.component.scss'],
-  imports: [ShipMenuComponent, ShipButton],
+  imports: [ShipMenu, ShipButton],
 })
 export class BaseMenuExampleComponent {
   menuItems = [

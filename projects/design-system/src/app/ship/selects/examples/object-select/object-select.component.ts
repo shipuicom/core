@@ -1,12 +1,12 @@
 import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipSelectComponent } from 'ship-ui';
+import { ShipSelect } from 'ship-ui';
 
 @Component({
   selector: 'app-object-select',
   standalone: true,
-  imports: [FormsModule, ShipSelectComponent, JsonPipe],
+  imports: [FormsModule, ShipSelect, JsonPipe],
   templateUrl: './object-select.component.html',
   styleUrl: './object-select.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

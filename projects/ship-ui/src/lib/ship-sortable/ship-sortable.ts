@@ -19,7 +19,7 @@ export type AfterDropResponse = {
   selector: '[shSortable]',
   standalone: true,
 })
-export class ShipSortableDirective {
+export class ShipSortable {
   #document = inject(DOCUMENT);
   #selfEl = inject(ElementRef<HTMLElement>);
   #renderer = inject(Renderer2);

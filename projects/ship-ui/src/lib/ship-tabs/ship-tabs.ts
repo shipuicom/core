@@ -11,6 +11,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     '[style.--tabs-id]': 'id',
   },
 })
-export class ShipTabsComponent {
+export class ShipTabs {
   id = '--' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 12);
 }

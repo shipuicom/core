@@ -12,13 +12,13 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { ShipFormFieldPopoverComponent } from '../ship-form-field/ship-form-field-popover.component';
+import { ShipFormFieldPopover } from '../ship-form-field/ship-form-field-popover';
 import { ShipIcon } from '../ship-icon/ship-icon';
-import { ShipDatepickerComponent } from './ship-datepicker.component';
+import { ShipDatepicker } from './ship-datepicker';
 
 @Component({
   selector: 'sh-daterange-input',
-  imports: [ShipDatepickerComponent, ShipFormFieldPopoverComponent, ShipIcon],
+  imports: [ShipDatepicker, ShipFormFieldPopover, ShipIcon],
   providers: [DatePipe],
   template: `
     <sh-form-field-popover [class]="'columns-' + monthsToShow()" (closed)="close()" [(isOpen)]="isOpen">
@@ -54,7 +54,7 @@ import { ShipDatepickerComponent } from './ship-datepicker.component';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipDaterangeInputComponent {
+export class ShipDaterangeInput {
   #selfRef = inject(ElementRef);
 
   startDateInputs = contentChildren<ElementRef<HTMLInputElement>>('startDate');

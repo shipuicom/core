@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipVirtualScrollComponent } from 'ship-ui';
+import { ShipVirtualScroll } from 'ship-ui';
 
 type ExampleItem = {
   id: number;
@@ -24,7 +24,7 @@ for (let i = 0; i < 1000; i++) {
 
 @Component({
   selector: 'app-virtual-scrolls',
-  imports: [ShipVirtualScrollComponent],
+  imports: [ShipVirtualScroll],
   templateUrl: './virtual-scrolls.component.html',
   styleUrl: './virtual-scrolls.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
