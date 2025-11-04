@@ -1,10 +1,10 @@
 {
   "name": "@ship-ui/core",
   "license": "MIT",
-  "version": "0.15.41",
+  "version": "0.16.0",
   "peerDependencies": {
-    "@angular/common": ">=19",
-    "@angular/core": ">=19"
+    "@angular/common": ">=20",
+    "@angular/core": ">=20"
   },
   "homepage": "https://shipui.com",
   "repository": {
