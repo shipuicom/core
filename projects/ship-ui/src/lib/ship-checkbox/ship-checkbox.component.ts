@@ -17,6 +17,6 @@ import { classMutationSignal } from '../utilities/class-mutation-signal';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShipCheckboxComponent {
+export class ShipCheckbox {
   currentClassList = classMutationSignal();
 }

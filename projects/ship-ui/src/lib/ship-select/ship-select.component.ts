@@ -14,7 +14,7 @@ import {
   TemplateRef,
   viewChild,
 } from '@angular/core';
-import { ShipCheckboxComponent } from '../ship-checkbox/ship-checkbox.component';
+import { ShipCheckbox } from '../ship-checkbox/ship-checkbox.component';
 import { ShipChipComponent } from '../ship-chip/ship-chip.component';
 import { ShipDividerComponent } from '../ship-divider/ship-divider.component';
 import { ShipFormField } from '../ship-form-field/ship-form-field.component';
@@ -34,7 +34,7 @@ type ValidateFreeText = (value: string) => boolean;
     ShipPopoverComponent,
     ShipFormField,
     ShipIcon,
-    ShipCheckboxComponent,
+    ShipCheckbox,
     ShipSpinnerComponent,
     ShipChipComponent,
     ShipDividerComponent,

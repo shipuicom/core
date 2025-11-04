@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, effect, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ShipButtonGroupComponent, ShipCheckboxComponent, ShipToggleComponent } from 'ship-ui';
+import { ShipButtonGroupComponent, ShipCheckbox, ShipToggleComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-checkbox-sandbox',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, ShipCheckboxComponent, ShipButtonGroupComponent, ShipToggleComponent],
+  imports: [ReactiveFormsModule, FormsModule, ShipCheckbox, ShipButtonGroupComponent, ShipToggleComponent],
   templateUrl: './checkbox-sandbox.component.html',
   styleUrl: './checkbox-sandbox.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

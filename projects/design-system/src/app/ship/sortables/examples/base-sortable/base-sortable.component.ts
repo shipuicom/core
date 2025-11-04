@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { AfterDropResponse, moveIndex, ShipCheckboxComponent, ShipList, ShipSortableDirective } from 'ship-ui';
+import { AfterDropResponse, moveIndex, ShipCheckbox, ShipList, ShipSortableDirective } from 'ship-ui';
 
 const TODOS = [
   {
@@ -41,7 +41,7 @@ type Todo = (typeof TODOS)[0];
 @Component({
   selector: 'app-base-sortable',
   standalone: true,
-  imports: [ShipList, ShipSortableDirective, ShipCheckboxComponent],
+  imports: [ShipList, ShipSortableDirective, ShipCheckbox],
   templateUrl: './base-sortable.component.html',
   styleUrl: './base-sortable.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
