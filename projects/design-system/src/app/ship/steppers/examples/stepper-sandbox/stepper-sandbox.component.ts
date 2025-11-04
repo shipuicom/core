@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { ShipButtonGroupComponent, ShipRadioComponent, ShipStepperComponent } from 'ship-ui';
+import { ShipButtonGroup, ShipRadioComponent, ShipStepperComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-stepper-sandbox',
   standalone: true,
-  imports: [ShipStepperComponent, ShipRadioComponent, ShipButtonGroupComponent],
+  imports: [ShipStepperComponent, ShipRadioComponent, ShipButtonGroup],
   templateUrl: './stepper-sandbox.component.html',
   styleUrl: './stepper-sandbox.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

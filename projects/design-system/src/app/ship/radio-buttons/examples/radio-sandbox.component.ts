@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, effect, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ShipButtonGroupComponent, ShipRadioComponent, ShipToggleComponent } from 'ship-ui';
+import { ShipButtonGroup, ShipRadioComponent, ShipToggleComponent } from 'ship-ui';
 
 @Component({
   selector: 'app-radio-sandbox',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, ShipRadioComponent, ShipButtonGroupComponent, ShipToggleComponent],
+  imports: [ReactiveFormsModule, FormsModule, ShipRadioComponent, ShipButtonGroup, ShipToggleComponent],
   templateUrl: './radio-sandbox.component.html',
   styleUrl: './radio-sandbox.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

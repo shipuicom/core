@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { ShipButtonGroupComponent, ShipIcon, ShipTabsComponent } from 'ship-ui';
+import { ShipButtonGroup, ShipIcon, ShipTabsComponent } from 'ship-ui';
 import TabComponent from '../../tab/tab.component';
 
 @Component({
   selector: 'app-tabs-sandbox',
   standalone: true,
-  imports: [ShipTabsComponent, ShipIcon, ShipButtonGroupComponent, TabComponent],
+  imports: [ShipTabsComponent, ShipIcon, ShipButtonGroup, TabComponent],
   templateUrl: './tabs-sandbox.component.html',
   styleUrl: './tabs-sandbox.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
