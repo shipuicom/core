@@ -50,109 +50,109 @@ $shipTable: true !default;
 $shipTabs: true !default;
 $shipFileUpload: true !default;
 
-@use './components/ship-alert-container.component.scss' with (
+@use './components/ship-alert-container.scss' with (
   $shipAlert: $shipAlert
 );
-@use './components/ship-alert.component.scss' with (
+@use './components/ship-alert.scss' with (
   $shipAlert: $shipAlert
 );
-@use './components/ship-blueprint.component.scss' with (
+@use './components/ship-blueprint.scss' with (
   $shipBlueprint: $shipBlueprint
 );
-@use './components/ship-toggle.component.scss' with (
+@use './components/ship-toggle.scss' with (
   $shipToggle: $shipToggle
 );
-@use './components/ship-button.component.scss' with (
+@use './components/ship-button.scss' with (
   $shipButton: $shipButton,
   $shipButtonShadow: $shipButtonShadow
 );
-@use './components/ship-progress-bar.component.scss' with (
+@use './components/ship-progress-bar.scss' with (
   $shipProgressBar: $shipProgressBar
 );
-@use './components/ship-checkbox.component.scss' with (
+@use './components/ship-checkbox.scss' with (
   $shipCheckbox: $shipCheckbox
 );
-@use './components/ship-datepicker.component.scss' with (
+@use './components/ship-datepicker.scss' with (
   $shipDatepicker: $shipDatepicker
 );
-@use './components/ship-event-card.component.scss' with (
+@use './components/ship-event-card.scss' with (
   $shipEventCard: $shipEventCard
 );
-@use './components/ship-icon.component.scss' with (
+@use './components/ship-icon.scss' with (
   $shipIcon: $shipIcon
 );
-@use './components/ship-menu.component.scss' with (
+@use './components/ship-menu.scss' with (
   $shipMenu: $shipMenu
 );
-@use './components/ship-divider.component.scss' with (
+@use './components/ship-divider.scss' with (
   $shipDivider: $shipDivider
 );
-@use './components/ship-dialog.component.scss' with (
+@use './components/ship-dialog.scss' with (
   $shipDialog: $shipDialog
 );
-@use './components/ship-popover.component.scss' with (
+@use './components/ship-popover.scss' with (
   $shipPopover: $shipPopover
 );
-@use './components/ship-chip.component.scss' with (
+@use './components/ship-chip.scss' with (
   $shipChip: $shipChip,
   $shipChipShadow: $shipChipShadow
 );
-@use './components/ship-form-field.component.scss' with (
+@use './components/ship-form-field.scss' with (
   $shipFormField: $shipFormField,
   $shipDatepicker: $shipDatepicker,
   $shipFormFieldShadow: $shipFormFieldShadow
 );
-@use './components/ship-color-picker.component.scss' with (
+@use './components/ship-color-picker.scss' with (
   $shipColorPicker: $shipColorPicker
 );
-@use './components/ship-sidenav.component.scss' with (
+@use './components/ship-sidenav.scss' with (
   $shipSidenav: $shipSidenav
 );
-@use './components/ship-list.component.scss' with (
+@use './components/ship-list.scss' with (
   $shipList: $shipList
 );
-@use './components/ship-radio.component.scss' with (
+@use './components/ship-radio.scss' with (
   $shipRadio: $shipRadio
 );
-@use './components/ship-button-group.component.scss' with (
+@use './components/ship-button-group.scss' with (
   $shipButtonGroup: $shipButtonGroup
 );
-@use './components/ship-range-slider.component.scss' with (
+@use './components/ship-range-slider.scss' with (
   $shipRangeSlider: $shipRangeSlider
 );
-@use './components/ship-tooltip.component.scss' with (
+@use './components/ship-tooltip.scss' with (
   $shipTooltip: $shipTooltip
 );
-@use './components/ship-virtual-scroll.component.scss' with (
+@use './components/ship-virtual-scroll.scss' with (
   $shipVirtualScroll: $shipVirtualScroll
 );
-@use './components/ship-select.component.scss' with (
+@use './components/ship-select.scss' with (
   $shipSelect: $shipSelect
 );
-@use './components/ship-card.component.scss' with (
+@use './components/ship-card.scss' with (
   $shipCard: $shipCard
 );
 @use './components/ship-sheet.utility.scss' with (
   $shipSheet: $shipSheet
 );
-@use './components/ship-stepper.component.scss' with (
+@use './components/ship-stepper.scss' with (
   $shipStepper: $shipStepper
 );
-@use './components/ship-spinner.component.scss' with (
+@use './components/ship-spinner.scss' with (
   $shipSpinner: $shipSpinner
 );
-@use './components/ship-sortable.component.scss' with (
+@use './components/ship-sortable.scss' with (
   $shipSortable: $shipSortable
 );
-@use './components/ship-toggle-card.component.scss' with (
+@use './components/ship-toggle-card.scss' with (
   $shipToggleCard: $shipToggleCard
 );
-@use './components/ship-table.component.scss' with (
+@use './components/ship-table.scss' with (
   $shipTable: $shipTable
 );
-@use './components/ship-tabs.component.scss' with (
+@use './components/ship-tabs.scss' with (
   $shipTabs: $shipTabs
 );
-@use './components/ship-file-upload.component.scss' with (
+@use './components/ship-file-upload.scss' with (
   $shipFileUpload: $shipFileUpload
 );
