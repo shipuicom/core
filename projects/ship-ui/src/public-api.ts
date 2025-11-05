@@ -12,7 +12,7 @@ export * from './lib/ship-dialog/ship-dialog.service';
 export * from './lib/ship-blueprint/ship-blueprint';
 export * from './lib/ship-button-group/ship-button-group';
 export * from './lib/ship-button/ship-button';
-export * from './lib/ship-card/ship-card.component';
+export * from './lib/ship-card/ship-card';
 export * from './lib/ship-checkbox/ship-checkbox';
 export * from './lib/ship-chip/ship-chip';
 export * from './lib/ship-color-picker/ship-color-picker';

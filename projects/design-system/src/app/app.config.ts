@@ -2,7 +2,7 @@ import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 
 import { provideHttpClient, withFetch } from '@angular/common/http';
-import { SHIP_CONFIG } from 'ship-ui';
+import { SHIP_CONFIG, ShipConfig } from 'ship-ui';
 import { environment } from '../environments/environment';
 import { ENVIRONMENT_TOKEN } from '../environments/environment-token';
 import { routes } from './app.routes';
@@ -24,7 +24,7 @@ export const appConfig: ApplicationConfig = {
         // dialogType: 'type-b',
         // tableType: 'type-b',
         sidenavType: 'overlay',
-      },
+      } as ShipConfig,
     },
   ],
 };
