@@ -15,7 +15,12 @@ export class BasicDynamicDialog {
 
   openDialog() {
     const dialogRef = this.#dialog.open(SimpleDialogContentComponent, {
+      data: { message: 'Hello from parent!', yellow: false },
       class: this.type() ?? '',
+    });
+
+    dialogRef.closed.subscribe((res) => {
+      console.log('closed res', res);
     });
 
     dialogRef.component.closed.subscribe((res) => {
@@ -32,5 +37,6 @@ export class BasicDynamicDialog {
   `,
 })
 class SimpleDialogContentComponent {
+  data = input<{ message: string; yellow: boolean }>();
   closed = output<string>();
 }

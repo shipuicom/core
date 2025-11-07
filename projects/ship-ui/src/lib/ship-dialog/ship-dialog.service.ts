@@ -5,6 +5,7 @@ import {
   DOCUMENT,
   inject,
   Injectable,
+  InputSignal,
   isSignal,
   OutputEmitterRef,
   OutputRefSubscription,
@@ -12,16 +13,20 @@ import {
 } from '@angular/core';
 import { ShipDialog, ShipDialogOptions } from './ship-dialog';
 
-export interface ShipDialogServiceOptions<T = any> extends ShipDialogOptions {
-  data?: T;
-  closed?: (...args: any[]) => void;
+export type Exact<T, U> = U extends T ? (keyof U extends keyof T ? U : never) : never;
+export type ComponentDataType<T> = T extends { data: InputSignal<infer K> } ? K : void;
+export type ComponentClosedType<T> = T extends { closed: OutputEmitterRef<infer U> } ? U : undefined;
+
+export interface ShipDialogServiceOptions<TData = any, TResult = undefined> extends ShipDialogOptions {
+  data?: TData extends void ? void : TData & Exact<TData, TData>;
+  closed?: (res: TResult) => void;
 }
 
-export type ShipDialogReturn<T> = ReturnType<ShipDialogService['open']> & {
+export type ShipDialogInstance<T> = {
   component: T;
+  close: (res?: ComponentClosedType<T> | undefined) => void;
+  closed: OutputEmitterRef<ComponentClosedType<T> | undefined>;
 };
-
-type TWithClosed<T> = T & { closed: OutputEmitterRef<any> };
 
 @Injectable({
   providedIn: 'root',
@@ -37,7 +42,12 @@ export class ShipDialogService {
   closedFieldSub: OutputRefSubscription | null = null;
   compClosedSub: OutputRefSubscription | null = null;
 
-  open<T, K = any>(component: Type<T>, options?: ShipDialogServiceOptions<K>) {
+  open<
+    T extends { data?: InputSignal<any>; closed?: OutputEmitterRef<any> },
+    K = ComponentDataType<T>,
+    U = ComponentClosedType<T>,
+    _Options extends ShipDialogServiceOptions<K, U | undefined> = ShipDialogServiceOptions<K, U | undefined>,
+  >(component: Type<T>, options?: _Options): ShipDialogInstance<T> {
     const environmentInjector = this.#appRef.injector;
     const hostElement = this.#createEl();
     let closingCalled = false;
@@ -58,8 +68,9 @@ export class ShipDialogService {
       projectableNodes: [[this.insertedCompRef.location.nativeElement]],
     });
 
-    const dataField = (this.insertedCompRef.instance as any)?.data;
-    const closedField = (this.insertedCompRef.instance as any)?.closed;
+    const insertedInstance = this.insertedCompRef.instance as T;
+    const dataField = insertedInstance.data;
+    const closedField = insertedInstance.closed;
 
     if (data) {
       if (isSignal(dataField)) {
@@ -70,16 +81,16 @@ export class ShipDialogService {
     }
 
     if (closedField instanceof OutputEmitterRef) {
-      this.closedFieldSub = closedField.subscribe((...args: any[]) => {
+      this.closedFieldSub = closedField.subscribe((arg: U | undefined) => {
         this.#cleanupRefs();
 
         if (closingCalled) return;
 
         closingCalled = true;
 
-        closed?.(...args);
+        closed?.(arg as U);
 
-        this.compRef?.instance.closed.emit(...args);
+        (this.compRef?.instance.closed as OutputEmitterRef<U | undefined>).emit(arg);
       });
     }
 
@@ -95,7 +106,7 @@ export class ShipDialogService {
 
     const _self = this;
 
-    function closeAction<U>(arg: U | undefined = undefined) {
+    function closeAction(arg: U | undefined = undefined) {
       _self.#cleanupRefs();
 
       if (closingCalled) return;
@@ -103,17 +114,18 @@ export class ShipDialogService {
       closingCalled = true;
 
       if (closedField && closedField instanceof OutputEmitterRef) {
-        closedField.emit(arg);
+        closedField.emit(arg as any);
       }
 
-      closed?.(arg);
+      closed?.(arg as U);
     }
 
     return {
+      ...(this.insertedCompRef.instance as T),
       component: this.insertedCompRef.instance as T,
       close: closeAction,
-      closed: this.compRef.instance.closed,
-    };
+      closed: this.compRef.instance.closed as OutputEmitterRef<U | undefined>,
+    } as ShipDialogInstance<T>;
   }
 
   #createEl(): Element {
