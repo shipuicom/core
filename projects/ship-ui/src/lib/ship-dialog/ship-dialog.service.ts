@@ -73,8 +73,8 @@ export class ShipDialogService {
     });
 
     const insertedInstance = this.insertedCompRef.instance as T;
-    const dataField = insertedInstance.data;
-    const closedField = insertedInstance.closed;
+    const dataField = (insertedInstance as any).data as InputSignal<K>;
+    const closedField = (insertedInstance as any).closed as OutputEmitterRef<U | undefined>;
 
     if (data) {
       if (isSignal(dataField)) {
