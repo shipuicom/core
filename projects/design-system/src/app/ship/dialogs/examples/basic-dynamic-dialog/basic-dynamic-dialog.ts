@@ -1,4 +1,4 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, inject, input, signal } from '@angular/core';
 import { ShipButton, ShipDialogService } from 'ship-ui';
 
 @Component({
@@ -29,6 +29,7 @@ export class BasicDynamicDialog {
   `,
 })
 class SimpleDialogContentComponent {
+  hello = signal<string>('hello');
   data = input<{ message: string; yellow: boolean; hello: boolean }>();
-  closed = output<string>();
+  // closed = output<string>();
 }

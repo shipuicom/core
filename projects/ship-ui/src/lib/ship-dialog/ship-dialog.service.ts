@@ -43,7 +43,11 @@ export class ShipDialogService {
   compClosedSub: OutputRefSubscription | null = null;
 
   open<
-    T extends { data?: InputSignal<any>; closed?: OutputEmitterRef<any> },
+    T extends
+      | { data?: InputSignal<any>; closed?: OutputEmitterRef<any> }
+      | { data?: InputSignal<any> }
+      | { closed?: OutputEmitterRef<any> }
+      | {},
     K = ComponentDataType<T>,
     U = ComponentClosedType<T>,
     _Options extends ShipDialogServiceOptions<K, U | undefined> = ShipDialogServiceOptions<K, U | undefined>,
@@ -121,7 +125,6 @@ export class ShipDialogService {
     }
 
     return {
-      ...(this.insertedCompRef.instance as T),
       component: this.insertedCompRef.instance as T,
       close: closeAction,
       closed: this.compRef.instance.closed as OutputEmitterRef<U | undefined>,
