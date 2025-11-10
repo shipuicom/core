@@ -133,7 +133,7 @@ $shipMenu: true !default;
           display: none;
         }
 
-        *:not(button) {
+        > *:not(button) {
           display: none;
         }
       }
@@ -160,13 +160,13 @@ $shipMenu: true !default;
 
       button {
         display: flex;
-        justify-content: flex-start;
-        align-items: center;
+        flex-direction: column;
+        justify-content: center;
         text-align: left;
         min-height: p2r(32);
         margin: p2r(0 8);
-        padding: p2r(0 8);
-        gap: p2r(8);
+        padding: p2r(4 8);
+        gap: p2r(0 8);
         width: calc(100% - #{p2r(16)});
         border-radius: var(--shape-2);
         appearance: none;
@@ -176,6 +176,13 @@ $shipMenu: true !default;
         color: var(--base-12);
         transition: transform 125ms linear;
         transform: scale(1);
+
+        &.as-row,
+        &:has([suffix]) {
+          justify-content: flex-start;
+          align-items: center;
+          flex-direction: row;
+        }
 
         &:active {
           transform: scale(0.98);

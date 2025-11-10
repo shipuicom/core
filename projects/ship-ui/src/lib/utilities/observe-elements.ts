@@ -1,22 +1,33 @@
-import { DestroyRef, effect, EffectRef, ElementRef, inject, Injector, Signal, signal } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
+import {
+  DestroyRef,
+  effect,
+  EffectRef,
+  ElementRef,
+  inject,
+  Injector,
+  PLATFORM_ID,
+  Signal,
+  signal,
+} from '@angular/core';
 import { SIGNAL } from '@angular/core/primitives/signals';
 
-export function observeFirstChild(
+export function observeFirstChild<T extends HTMLElement>(
   parentEl: ElementRef<HTMLElement>,
   elementTags: string[]
-): Signal<ElementRef<HTMLElement> | null> {
-  const elementSignal = signal<ElementRef<HTMLElement> | null>(null);
+): Signal<ElementRef<T> | null> {
+  const elementSignal = signal<ElementRef<T> | null>(null);
   const _upperCaseElementTags = elementTags.map((tag) => tag.toUpperCase());
   const injector = inject(Injector);
   const destroyRef = injector.get(DestroyRef);
 
-  if (typeof MutationObserver === 'undefined') return elementSignal.asReadonly();
+  if (isPlatformServer(injector.get(PLATFORM_ID)) || typeof MutationObserver === 'undefined')
+    return elementSignal.asReadonly();
 
   const initialElement = _upperCaseElementTags.find((tag) => parentEl.nativeElement.querySelector(tag));
 
   if (initialElement) {
-    console.log('initialElement', initialElement);
-    elementSignal.set(new ElementRef(parentEl.nativeElement.querySelector(elementTags[0]) as HTMLInputElement));
+    elementSignal.set(new ElementRef(parentEl.nativeElement.querySelector(elementTags[0]) as T));
     return elementSignal.asReadonly();
   }
 
@@ -25,7 +36,7 @@ export function observeFirstChild(
       if (mutation.addedNodes) {
         for (const node of Array.from(mutation.addedNodes)) {
           if (node.nodeType === Node.ELEMENT_NODE && _upperCaseElementTags.includes(node.nodeName)) {
-            elementSignal.set(new ElementRef(node as HTMLElement));
+            elementSignal.set(new ElementRef(node as T));
             observer.disconnect();
             return;
           }

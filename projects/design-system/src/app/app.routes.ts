@@ -78,6 +78,10 @@ export const routes: Routes = [
         loadComponent: () => import('./ship/form-fields/form-fields'),
       },
       {
+        path: 'form-fields-experimental',
+        loadComponent: () => import('./ship/form-fields/examples/experimental-form-field/experimental-form-field'),
+      },
+      {
         path: 'sidenavs',
         loadComponent: () => import('./ship/sidenavs/sidenavs'),
       },

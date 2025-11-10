@@ -3,6 +3,7 @@
   <ng-container menu>
     @for (item of filteredItems; track item.value) {
       <button (click)="select(item)" [class.selected]="selected === item.value">
+        <p>hello world</p>
         {{ item.label }}
       </button>
     }

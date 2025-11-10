@@ -1,0 +1,11 @@
+<section>
+  <sh-form-field-experimental>
+    <label>ReactiveFormsField: {{ reactiveFormValue() }}</label>
+    <input placeholder="Placeholder no label..." type="text" [formControl]="reactiveFormControl" />
+  </sh-form-field-experimental>
+
+  <sh-form-field-experimental>
+    <label>NgModel: {{ ngModelControl() }}</label>
+    <input placeholder="Placeholder no label..." type="text" [(ngModel)]="ngModelControl" />
+  </sh-form-field-experimental>
+</section>

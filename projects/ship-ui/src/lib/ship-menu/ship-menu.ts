@@ -16,7 +16,7 @@ import {
 import { ShipFormField } from '../ship-form-field/ship-form-field';
 import { ShipIcon } from '../ship-icon/ship-icon';
 import { ShipPopover } from '../ship-popover/ship-popover';
-import { createInputSignal } from '../utilities/create-input-signal';
+import { createFormInputSignal } from '../utilities/create-form-input-signal';
 import { observeChildren } from '../utilities/observe-elements';
 
 @Component({
@@ -82,8 +82,7 @@ export class ShipMenu {
 
   options = observeChildren<HTMLButtonElement>(this.optionsRef, this.customOptionElementSelectors);
   optionsEl = computed(() => this.options.signal().filter((x) => !x.disabled));
-
-  inputValue = createInputSignal<string>(this.inputRef);
+  inputValue = createFormInputSignal(this.inputRef);
 
   abortController: AbortController | null = null;
   optionsEffect = effect(() => {
@@ -97,6 +96,7 @@ export class ShipMenu {
     this.abortController = new AbortController();
 
     const searchable = this.searchable();
+
     if (!searchable) {
       this.#document.documentElement.addEventListener('keydown', this.keyDownEventListener, {
         signal: this.abortController.signal,

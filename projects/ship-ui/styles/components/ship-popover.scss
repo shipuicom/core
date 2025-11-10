@@ -36,10 +36,7 @@ $shipPopover: true !default;
 
       .trigger-anchor {
         position: absolute;
-        top: p2r(-4);
-        bottom: p2r(-4);
-        left: 0;
-        right: 0;
+        inset: 0;
         z-index: -1;
       }
     }
@@ -82,9 +79,12 @@ $shipPopover: true !default;
 
       @supports (anchor-name: --anchor) {
         inset: auto;
+        top: p2r(4);
         position: fixed;
         position-area: bottom span-right;
-        position-try-fallbacks: flip-block, flip-inline;
+        position-try-fallbacks:
+          --top-span-right, --bottom-span-left, --top-span-left, --right-span-bottom, --left-span-bottom,
+          --right-center, --left-center, --right-span-top, --left-span-top;
       }
     }
   }
@@ -98,4 +98,64 @@ $shipPopover: true !default;
       right: anchor(right);
     }
   }
+}
+
+@position-try --bottom-span-right {
+  position-area: bottom span-right;
+  inset: auto;
+  top: p2r(4);
+}
+
+@position-try --bottom-span-left {
+  position-area: bottom span-left;
+  inset: auto;
+  top: p2r(4);
+}
+
+@position-try --top-span-right {
+  position-area: top span-right;
+  inset: auto;
+  bottom: p2r(4);
+}
+
+@position-try --top-span-left {
+  position-area: top span-left;
+  inset: auto;
+  bottom: p2r(4);
+}
+
+@position-try --right-span-top {
+  position-area: right span-top;
+  inset: auto;
+  left: p2r(4);
+}
+
+@position-try --left-span-top {
+  position-area: left span-top;
+  inset: auto;
+  right: p2r(4);
+}
+
+@position-try --right-center {
+  position-area: right center;
+  inset: auto;
+  left: p2r(4);
+}
+
+@position-try --left-center {
+  position-area: left center;
+  inset: auto;
+  right: p2r(4);
+}
+
+@position-try --right-span-bottom {
+  position-area: right span-bottom;
+  inset: auto;
+  left: p2r(4);
+}
+
+@position-try --left-span-bottom {
+  position-area: left span-bottom;
+  inset: auto;
+  right: p2r(4);
 }

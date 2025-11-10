@@ -42,6 +42,9 @@ export * from './lib/ship-toggle-card/ship-toggle-card';
 export * from './lib/ship-toggle/ship-toggle';
 export * from './lib/ship-virtual-scroll/ship-virtual-scroll.component';
 
+// Experimental
+export * from './lib/sh-form-field-experimental/sh-form-field-experimental';
+
 // Global directives
 export * from './lib/directives/ship-file-drag-drop.directive';
 export * from './lib/directives/ship-input-mask';
