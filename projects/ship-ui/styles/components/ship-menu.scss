@@ -91,6 +91,10 @@ $shipMenu: true !default;
         padding: 0;
       }
 
+      .popover-content {
+        overflow: hidden;
+      }
+
       .form-field-wrap {
         sh-form-field {
           z-index: 10;
