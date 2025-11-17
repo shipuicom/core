@@ -164,12 +164,10 @@ $shipMenu: true !default;
 
       button {
         display: flex;
-        // flex-direction: column;
         justify-content: flex-start;
         align-items: center;
-        // justify-content: center;
         text-align: left;
-        // min-height: p2r(32);
+        min-height: p2r(32);
         height: min-content;
         margin: p2r(0 8);
         padding: p2r(4 8);
@@ -183,11 +181,6 @@ $shipMenu: true !default;
         color: var(--base-12);
         transition: transform 125ms linear;
         transform: scale(1);
-
-        // &.as-row,
-        // &:has([suffix]) {
-        //   flex-direction: row;
-        // }
 
         &:active {
           transform: scale(0.98);
