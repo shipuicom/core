@@ -341,7 +341,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     }
   }
 
-  @HostListener('document:keydown.escape', ['$event']) onEscape(event: KeyboardEvent) {
+  @HostListener('document:keydown.escape', []) onEscape() {
     if (this.draggingConnection()) {
       this.cancelPortDrag();
     } else if (this.isLocked()) {
