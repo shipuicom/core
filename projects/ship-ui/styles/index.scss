@@ -38,6 +38,7 @@ $shipRadio: true !default;
 $shipButtonGroup: true !default;
 $shipRangeSlider: true !default;
 $shipTooltip: true !default;
+$shipThemeToggle: true !default;
 $shipVirtualScroll: false !default;
 $shipSelect: true !default;
 $shipCard: true !default;
@@ -61,6 +62,9 @@ $shipFileUpload: true !default;
 );
 @use './components/ship-toggle.scss' with (
   $shipToggle: $shipToggle
+);
+@use './components/ship-theme-toggle.scss' with (
+  $shipThemeToggle: $shipThemeToggle
 );
 @use './components/ship-button.scss' with (
   $shipButton: $shipButton,

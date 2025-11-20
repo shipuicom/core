@@ -12,13 +12,8 @@
         <a href="https://github.com/shipuicom/core" target="_blank" rel="noopener noreferrer">
           <sh-icon>github-logo-bold</sh-icon>
         </a>
-        <button shButton class="small" (click)="toggleBodyClass()">
-          @if (isDarkMode()) {
-            <sh-icon>sun-bold</sh-icon>
-          } @else {
-            <sh-icon>moon-bold</sh-icon>
-          }
-        </button>
+
+        <ship-theme-toggle />
       </div>
     </ng-container>
   }
@@ -33,13 +28,7 @@
             <sh-icon>github-logo-bold</sh-icon>
           </a>
 
-          <button shButton class="small theme-toggle" (click)="toggleBodyClass()">
-            @if (isDarkMode()) {
-              <sh-icon>sun-bold</sh-icon>
-            } @else {
-              <sh-icon>moon-bold</sh-icon>
-            }
-          </button>
+          <ship-theme-toggle />
         </div>
       </header>
     }

@@ -1,0 +1,41 @@
+@use '../helpers.scss' as *;
+
+$shipThemeToggle: true !default;
+
+@if $shipThemeToggle == true {
+  ship-theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+
+    [shButton].small sh-icon.small-icon {
+      font-size: p2r(10);
+    }
+
+    &:has(sh-icon.small-icon) {
+      [shButton].small {
+        gap: 0;
+      }
+
+      sh-icon:first-child {
+        transform: translate(p2r(-1), p2r(-4));
+      }
+
+      sh-icon:last-child {
+        transform: translate(p2r(1), p2r(4));
+      }
+
+      &:after {
+        content: '';
+        height: p2r(16);
+        width: 1px;
+        background: var(--base-12);
+        position: absolute;
+        inset: 0;
+        margin: auto;
+        transform: rotate(30deg);
+      }
+    }
+  }
+}

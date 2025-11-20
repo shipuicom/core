@@ -38,6 +38,7 @@ export * from './lib/ship-spinner/ship-spinner.component';
 export * from './lib/ship-stepper/ship-stepper';
 export * from './lib/ship-table/ship-table';
 export * from './lib/ship-tabs/ship-tabs';
+export * from './lib/ship-theme-toggle/ship-theme-toggle';
 export * from './lib/ship-toggle-card/ship-toggle-card';
 export * from './lib/ship-toggle/ship-toggle';
 export * from './lib/ship-virtual-scroll/ship-virtual-scroll.component';

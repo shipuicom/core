@@ -18,10 +18,6 @@ export class LayoutState {
   #window = inject(WINDOW);
   #ls = inject(LOCALSTORAGE);
   #platformId = inject(PLATFORM_ID);
-  #storedDarkMode = this.#ls.getItemParsed<boolean>('darkTheme', true);
-  #isDarkMode = signal(this.#storedDarkMode);
-
-  isDarkMode = this.#isDarkMode.asReadonly();
 
   currentWidth = signal(this.#window.innerWidth);
   isNavOpen = signal(true);
@@ -41,36 +37,11 @@ export class LayoutState {
     }
   }
 
-  darkModeEffect = effect(() => {
-    if (this.#isDarkMode()) {
-      this.#document.documentElement.classList.add('dark');
-      this.#document.documentElement.classList.remove('light');
-    } else {
-      this.#document.documentElement.classList.remove('dark');
-      this.#document.documentElement.classList.add('light');
-    }
-  });
-
   toggleNav() {
     this.isNavOpen.set(!this.isNavOpen());
   }
 
-  toggleBodyClass() {
-    this.#ls.setItemParsed('darkTheme', !this.isDarkMode(), true);
-    this.#isDarkMode.set(!this.isDarkMode());
-  }
-
   closeSidenav() {
     this.isNavOpen.set(false);
-  }
-
-  setDarkMode() {
-    this.#ls.setItemParsed('darkTheme', true, true);
-    this.#isDarkMode.set(true);
-  }
-
-  setLightMode() {
-    this.#ls.setItemParsed('darkTheme', false, true);
-    this.#isDarkMode.set(false);
   }
 }
