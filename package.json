@@ -29,6 +29,7 @@
     "watch:font": "node ./dist/ship-ui/bin/ship-fg-node --src='./projects/design-system/src' --out='./projects/design-system/public' --rootPath='/' --watch --verbose",
     "start": "bun run watch:font & ng serve --port=4205",
     "build": "ng build ship-ui",
+    "test": "ng test ship-ui",
     "build:prod": "ng build ship-ui --configuration production",
     "build:docs": "npm run build:prod && npm run gen:font && ng build design-system --configuration production",
     "serve:docs": "npm run serve-docs",
