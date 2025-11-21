@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { ShipButton, ShipIcon } from 'ship-ui';
+import { ShipButton, ShipIcon } from '../../public-api';
 import { ShipThemeOption, ShipThemeState } from './ship-theme-state';
 
 @Component({
