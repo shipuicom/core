@@ -120,6 +120,11 @@ $shipTable: true !default;
       div[table-header] tr:first-child th {
         border-bottom: 0;
       }
+
+      .actionbar {
+        background-color: var(--base-2);
+        border-width: p2r(1 0 0);
+      }
     }
 
     width: 100%;
@@ -145,6 +150,40 @@ $shipTable: true !default;
 
       td {
         overflow: initial;
+      }
+    }
+
+    .actionbar {
+      /* 1. Set up the layout */
+      display: grid;
+      grid-column: 1 / -1;
+      align-items: start;
+      gap: p2r(8);
+      grid-template-rows: 1fr;
+      padding: p2r(8 0);
+      border: 1px solid var(--base-4);
+      border-width: p2r(1 0);
+      opacity: 1;
+
+      transition:
+        grid-template-rows 300ms ease-out,
+        padding 300ms ease-out,
+        border-width 300ms ease-out,
+        opacity 300ms ease-out;
+
+      overflow: hidden;
+
+      &:empty {
+        grid-template-rows: 0fr;
+        padding-top: 0;
+        padding-bottom: 0;
+        border-width: 0;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      & > * {
+        min-height: 0;
       }
     }
 

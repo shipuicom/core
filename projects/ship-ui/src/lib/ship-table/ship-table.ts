@@ -200,6 +200,10 @@ type ScrollState = -1 | 0 | 1;
   selector: 'sh-table',
   imports: [ShipProgressBar],
   template: `
+    <div class="actionbar">
+      <ng-content select="[actionbar]" />
+    </div>
+
     @if (loading()) {
       <sh-progress-bar class="indeterminate primary" />
     }

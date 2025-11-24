@@ -1,4 +1,6 @@
 <sh-table [data]="dataSource()" [loading]="isLoading()" [class]="type()">
+  <button actionbar>hello</button>
+
   <tr thead>
     @for (col of displayedColumns(); track col) {
       <th>{{ col }}</th>
