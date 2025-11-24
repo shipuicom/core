@@ -18,14 +18,20 @@ $shipCheckbox: true !default;
     position: relative;
     border: 0;
 
-    .label > input {
-      appearance: none;
-      position: absolute;
-      inset: 0;
-      cursor: pointer;
+    .label {
+      &:empty {
+        display: none;
+      }
 
-      &:focus {
-        outline: none;
+      > input {
+        appearance: none;
+        position: absolute;
+        inset: 0;
+        cursor: pointer;
+
+        &:focus {
+          outline: none;
+        }
       }
     }
 
