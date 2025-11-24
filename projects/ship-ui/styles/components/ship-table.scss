@@ -154,13 +154,14 @@ $shipTable: true !default;
     }
 
     .actionbar {
-      /* 1. Set up the layout */
       display: grid;
       grid-column: 1 / -1;
       align-items: start;
       gap: p2r(8);
       grid-template-rows: 1fr;
-      padding: p2r(8 0);
+      grid-auto-flow: column;
+      grid-auto-columns: max-content;
+      padding: p2r(8);
       border: 1px solid var(--base-4);
       border-width: p2r(1 0);
       opacity: 1;
