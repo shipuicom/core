@@ -5,7 +5,7 @@ $shipAlert: true !default;
   sh-alert {
     --alert-ad: 400ms;
     --alert-bs: var(--box-shadow-10);
-    --alert-p: #{p2r(8 12)};
+    --alert-p: #{p2r(8)};
 
     max-height: #{p2r(300)};
     padding-top: 0;
@@ -51,6 +51,25 @@ $shipAlert: true !default;
       padding: var(--alert-p);
       align-items: flex-start;
       gap: p2r(4 8);
+    }
+
+    .actions {
+      grid-area: closeIcon;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: p2r(4);
+    }
+
+    &:has(.actions:not(:empty)) {
+      .alert {
+        align-items: center;
+        grid-template-columns: auto 1fr 1fr;
+      }
+
+      .close-icon {
+        display: none;
+      }
     }
 
     .icon {

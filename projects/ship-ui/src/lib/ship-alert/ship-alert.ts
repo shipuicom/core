@@ -45,6 +45,10 @@ const POSSIBLE_VARIANTS = ['simple', 'outlined', 'flat', 'raised'];
         <sh-icon class="close-icon" (click)="removeAlert()">plus</sh-icon>
       }
 
+      <div class="actions">
+        <ng-content select="button" />
+      </div>
+
       <div class="content">
         <ng-content select="[content]" />
         <ng-content select="p" />
