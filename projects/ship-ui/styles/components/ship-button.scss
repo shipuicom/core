@@ -96,6 +96,26 @@ $shipButtonShadow: false !default;
       }
     }
 
+    &.xsmall {
+      --btn-h: #{p2r(24)};
+      --btn-f: var(--paragraph-40);
+
+      padding: p2r(0 8);
+      gap: p2r(4);
+
+      sh-icon {
+        font-size: p2r(12);
+      }
+
+      sh-icon:first-child {
+        margin-left: p2r(-3);
+      }
+
+      sh-icon:last-child {
+        margin-right: p2r(-3);
+      }
+    }
+
     &[disabled] {
       opacity: 0.5;
       pointer-events: none;

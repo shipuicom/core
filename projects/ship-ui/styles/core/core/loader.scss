@@ -14,8 +14,8 @@
 
   &:after {
     content: '';
-    width: p2r(16);
-    height: p2r(16);
+    width: 1em;
+    height: 1em;
     border: 2px solid var(--loader-c);
     border-bottom-color: transparent;
     border-radius: 50%;

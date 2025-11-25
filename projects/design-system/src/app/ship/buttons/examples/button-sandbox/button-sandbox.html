@@ -2,7 +2,14 @@
   <p>Controls</p>
   <header>
     <div class="row">
-      <sh-toggle [class.active]="isSmall()" class="primary raised" (click)="isSmall.set(!isSmall())">Small</sh-toggle>
+      <!-- <sh-toggle [class.active]="isSmall()" class="primary raised" (click)="isSmall.set(!isSmall())">Small</sh-toggle> -->
+
+      <sh-button-group class="small type-b">
+        <button [class.active]="sizeClass() === ''" (click)="sizeClass.set('')">Normal</button>
+        <button [class.active]="sizeClass() === 'small'" (click)="sizeClass.set('small')">Small</button>
+        <button [class.active]="sizeClass() === 'xsmall'" (click)="sizeClass.set('xsmall')">XSmall</button>
+      </sh-button-group>
+
       <sh-toggle [class.active]="isRotated()" class="primary raised" (click)="isRotated.set(!isRotated())">
         Rotated
       </sh-toggle>
@@ -18,7 +25,7 @@
     </div>
 
     <div class="row">
-      <sh-button-group class="small">
+      <sh-button-group class="small type-b">
         <button [class.active]="colorClass() === ''" (click)="colorClass.set('')">Default</button>
         <button [class.active]="colorClass() === 'primary'" (click)="colorClass.set('primary')">Primary</button>
         <button [class.active]="colorClass() === 'accent'" (click)="colorClass.set('accent')">Accent</button>
@@ -27,7 +34,7 @@
         <button [class.active]="colorClass() === 'success'" (click)="colorClass.set('success')">Success</button>
       </sh-button-group>
 
-      <sh-button-group class="small">
+      <sh-button-group class="small type-b">
         <button [class.active]="variationClass() === ''" (click)="variationClass.set('')">Default</button>
         <button [class.active]="variationClass() === 'simple'" (click)="variationClass.set('simple')">Simple</button>
         <button [class.active]="variationClass() === 'outlined'" (click)="variationClass.set('outlined')">
@@ -45,7 +52,6 @@
     shButton
     [class]="exampleClass()"
     [class.loading]="isLoading()"
-    [class.small]="isSmall()"
     [class.rotated-icon]="isRotated()"
     [disabled]="isDisabled()"
     [attr.readonly]="isReadonly() ? true : null">
@@ -56,7 +62,6 @@
     shButton
     [class]="exampleClass()"
     [class.loading]="isLoading()"
-    [class.small]="isSmall()"
     [class.rotated-icon]="isRotated()"
     [disabled]="isDisabled()"
     [attr.readonly]="isReadonly() ? true : null">
@@ -69,7 +74,6 @@
     shButton
     [class]="exampleClass()"
     [class.loading]="isLoading()"
-    [class.small]="isSmall()"
     [class.rotated-icon]="isRotated()"
     [disabled]="isDisabled()"
     [attr.readonly]="isReadonly() ? true : null">
@@ -81,7 +85,6 @@
     shButton
     [class]="exampleClass()"
     [class.loading]="isLoading()"
-    [class.small]="isSmall()"
     [class.rotated-icon]="isRotated()"
     [disabled]="isDisabled()"
     [attr.readonly]="isReadonly() ? true : null">

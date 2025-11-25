@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
-import { BaseButtonComponent } from './examples/base-button/base-button.component';
-import { ButtonSandboxComponent } from './examples/button-sandbox/button-sandbox.component';
-import { FlatButtonComponent } from './examples/flat-button/flat-button.component';
-import { OutlinedButtonComponent } from './examples/outlined-button/outlined-button.component';
-import { RaisedButtonComponent } from './examples/raised-button/raised-button.component';
-import { SimpleButtonComponent } from './examples/simple-button/simple-button.component';
+import { BaseButton } from './examples/base-button/base-button';
+import { ButtonSandbox } from './examples/button-sandbox/button-sandbox';
+import { FlatButton } from './examples/flat-button/flat-button';
+import { OutlinedButton } from './examples/outlined-button/outlined-button';
+import { RaisedButton } from './examples/raised-button/raised-button';
+import { SimpleButton } from './examples/simple-button/simple-button';
 
 @Component({
   selector: 'app-buttons',
@@ -16,12 +16,12 @@ import { SimpleButtonComponent } from './examples/simple-button/simple-button.co
 
     // ShipButton,
 
-    ButtonSandboxComponent,
-    BaseButtonComponent,
-    OutlinedButtonComponent,
-    SimpleButtonComponent,
-    FlatButtonComponent,
-    RaisedButtonComponent,
+    ButtonSandbox,
+    BaseButton,
+    OutlinedButton,
+    SimpleButton,
+    FlatButton,
+    RaisedButton,
     PropertyViewer,
   ],
   templateUrl: './buttons.html',

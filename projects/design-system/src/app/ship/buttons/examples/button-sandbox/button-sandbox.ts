@@ -15,7 +15,8 @@ export class ButtonSandbox {
   isDisabled = signal<boolean>(false);
   isReadonly = signal<boolean>(false);
 
+  sizeClass = signal<'' | 'small' | 'xsmall'>('');
   colorClass = signal<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
   variationClass = signal<'' | 'simple' | 'outlined' | 'flat' | 'raised'>('raised');
-  exampleClass = computed(() => this.colorClass() + ' ' + this.variationClass());
+  exampleClass = computed(() => this.colorClass() + ' ' + this.variationClass() + ' ' + this.sizeClass());
 }
