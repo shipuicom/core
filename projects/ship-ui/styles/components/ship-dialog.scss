@@ -120,6 +120,7 @@ $shipDialog: true !default;
         box-shadow: var(--box-shadow-35);
         position: sticky;
         top: 0;
+        z-index: 100;
       }
     }
 
@@ -144,6 +145,7 @@ $shipDialog: true !default;
         box-shadow: var(--box-shadow-35);
         position: sticky;
         bottom: 0;
+        z-index: 100;
       }
     }
   }
