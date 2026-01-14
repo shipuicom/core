@@ -42,12 +42,12 @@ $shipDialog: true !default;
         -webkit-backdrop-filter: blur(10px);
       }
 
-      .content {
+      > .content {
         border: 1px solid rgb(from var(--base-4) r g b / 70%);
       }
     }
 
-    .content {
+    > .content {
       position: relative;
       border-radius: var(--dialog-inner-s);
       background-color: var(--dialog-bg);
