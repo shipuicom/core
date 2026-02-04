@@ -13,7 +13,8 @@
       <p>Controls (sh-toggle-card)</p>
       <sh-toggle
         [class.active]="disallowToggle()"
-        class="primary raised"
+        color="primary"
+        variant="raised"
         (click)="disallowToggle.set(!disallowToggle())">
         Disallow Toggle
       </sh-toggle>
@@ -22,9 +23,9 @@
 </div>
 
 <div class="sandbox">
-  <sh-card [class]="cardClass()">Hello world (sh-card)</sh-card>
+  <sh-card [variant]="cardType()">Hello world (sh-card)</sh-card>
 
-  <sh-toggle-card [class]="cardClass()" [disallowToggle]="disallowToggle()">
+  <sh-toggle-card [variant]="cardType()" [disallowToggle]="disallowToggle()">
     <ng-container title>Advanced options</ng-container>
     <p>Hello world (sh-toggle-card)</p>
 

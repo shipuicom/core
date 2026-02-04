@@ -15,7 +15,7 @@
 </div>
 
 <div class="sandbox">
-  <sh-stepper [class]="stepperClass()">
+  <sh-stepper [color]="colorClass()">
     <div step [class.active]="activeStep() === 0" (click)="activeStep.set(0)">
       <sh-radio />
       Step 1

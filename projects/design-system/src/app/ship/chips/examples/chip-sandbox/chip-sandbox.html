@@ -2,9 +2,13 @@
   <p>Controls</p>
   <header>
     <div class="row">
-      <sh-toggle [class.active]="isSmall()" class="primary raised" (click)="isSmall.set(!isSmall())">Small</sh-toggle>
-      <sh-toggle [class.active]="isSharp()" class="primary raised" (click)="isSharp.set(!isSharp())">Sharp</sh-toggle>
-      <sh-toggle [class.active]="isDynamic()" class="primary raised" (click)="isDynamic.set(!isDynamic())">
+      <sh-toggle [class.active]="isSmall()" color="primary" variant="raised" (click)="isSmall.set(!isSmall())">
+        Small
+      </sh-toggle>
+      <sh-toggle [class.active]="isSharp()" color="primary" variant="raised" (click)="isSharp.set(!isSharp())">
+        Sharp
+      </sh-toggle>
+      <sh-toggle [class.active]="isDynamic()" color="primary" variant="raised" (click)="isDynamic.set(!isDynamic())">
         Dynamic coloring
       </sh-toggle>
     </div>
@@ -46,39 +50,43 @@
 
 <div class="sandbox">
   <sh-chip
-    [class]="exampleClass()"
-    [class.small]="isSmall()"
-    [class.sharp]="isSharp()"
-    [class.dynamic]="isDynamic()"
+    [color]="colorClass()"
+    [variant]="variationClass()"
+    [size]="sizeClass()"
+    [sharp]="isSharp()"
+    [dynamic]="isDynamic()"
     [style.--chip-c]="isDynamic() ? currentColor()?.hsl : undefined">
     <sh-icon>circle</sh-icon>
   </sh-chip>
 
   <sh-chip
-    [class]="exampleClass()"
-    [class.small]="isSmall()"
-    [class.sharp]="isSharp()"
-    [class.dynamic]="isDynamic()"
+    [color]="colorClass()"
+    [variant]="variationClass()"
+    [size]="sizeClass()"
+    [sharp]="isSharp()"
+    [dynamic]="isDynamic()"
     [style.--chip-c]="isDynamic() ? currentColor()?.hsl : undefined">
     <span>Chip</span>
     <sh-icon>circle</sh-icon>
   </sh-chip>
 
   <sh-chip
-    [class]="exampleClass()"
-    [class.small]="isSmall()"
-    [class.sharp]="isSharp()"
-    [class.dynamic]="isDynamic()"
+    [color]="colorClass()"
+    [variant]="variationClass()"
+    [size]="sizeClass()"
+    [sharp]="isSharp()"
+    [dynamic]="isDynamic()"
     [style.--chip-c]="isDynamic() ? currentColor()?.hsl : undefined">
     <sh-icon>circle</sh-icon>
     <span>Chip</span>
   </sh-chip>
 
   <sh-chip
-    [class]="exampleClass()"
-    [class.small]="isSmall()"
-    [class.sharp]="isSharp()"
-    [class.dynamic]="isDynamic()"
+    [color]="colorClass()"
+    [variant]="variationClass()"
+    [size]="sizeClass()"
+    [sharp]="isSharp()"
+    [dynamic]="isDynamic()"
     [style.--chip-c]="isDynamic() ? currentColor()?.hsl : undefined">
     <sh-icon>circle</sh-icon>
     <span>Chip</span>
@@ -86,28 +94,31 @@
   </sh-chip>
 
   <sh-chip
-    [class]="exampleClass()"
-    [class.small]="isSmall()"
-    [class.sharp]="isSharp()"
-    [class.dynamic]="isDynamic()"
+    [color]="colorClass()"
+    [variant]="variationClass()"
+    [size]="sizeClass()"
+    [sharp]="isSharp()"
+    [dynamic]="isDynamic()"
     [style.--chip-c]="isDynamic() ? currentColor()?.hsl : undefined">
     <sh-icon>circle</sh-icon>
   </sh-chip>
 
   <sh-chip
-    [class]="exampleClass()"
-    [class.small]="isSmall()"
-    [class.sharp]="isSharp()"
-    [class.dynamic]="isDynamic()"
+    [color]="colorClass()"
+    [variant]="variationClass()"
+    [size]="sizeClass()"
+    [sharp]="isSharp()"
+    [dynamic]="isDynamic()"
     [style.--chip-c]="isDynamic() ? currentColor()?.hsl : undefined">
     <sh-icon>circle</sh-icon>
   </sh-chip>
 
   <sh-chip
-    [class]="exampleClass()"
-    [class.small]="isSmall()"
-    [class.sharp]="isSharp()"
-    [class.dynamic]="isDynamic()"
+    [color]="colorClass()"
+    [variant]="variationClass()"
+    [size]="sizeClass()"
+    [sharp]="isSharp()"
+    [dynamic]="isDynamic()"
     [style.--chip-c]="isDynamic() ? currentColor()?.hsl : undefined">
     <span>Chip</span>
   </sh-chip>

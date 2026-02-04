@@ -2,31 +2,41 @@
 
 <app-property-viewer>
   <section>
-    <h4>asMultiLayer</h4>
-    <p>Enable multi-layer (nested) menu support.</p>
-  </section>
-
-  <section>
-    <h4>searchable</h4>
-    <p>Show a search input to filter menu options it's a wildcard search.</p>
-  </section>
-
-  <section>
-    <h4>closeOnClick</h4>
+    <h4>Searchable</h4>
     <p>
-      Close the menu when an option is clicked (default is true), good when you want to keep the menu open for selecting
-      multiple options.
+      Enable a wildcard search input to filter menu options using the
+      <code>searchable</code>
+      attribute.
     </p>
   </section>
 
   <section>
-    <h4>disabled</h4>
-    <p>Disable the menu trigger and menu.</p>
+    <h4>Behavior</h4>
+    <p>Customize menu interaction:</p>
+    <ul>
+      <li>
+        <code>asMultiLayer</code>
+        : Enables nested menu support.
+      </li>
+      <li>
+        <code>closeOnClick</code>
+        : Determines if the menu closes when an option is selected (default: true).
+      </li>
+      <li>
+        <code>disabled</code>
+        : Disables the menu trigger and content.
+      </li>
+    </ul>
   </section>
 
   <section>
-    <h4>Suffix</h4>
-    <p>You can add a suffix attribute to an element inside the option to show a hotkey, icon, etc.</p>
+    <h4>Slots</h4>
+    <p>
+      Add a
+      <code>suffix</code>
+      attribute to an element inside a menu option to display hotkeys, icons, or secondary information at the trailing
+      end.
+    </p>
   </section>
 </app-property-viewer>
 

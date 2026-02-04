@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
 import { ShipIcon } from '../ship-icon/ship-icon';
+import { shipComponentClasses } from '../utilities/ship-component';
+import { ShipCardVariant, ShipColor } from '../utilities/ship-types';
 
 @Component({
   selector: 'sh-toggle-card',
@@ -22,11 +24,19 @@ import { ShipIcon } from '../ship-icon/ship-icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class.active]': 'isActive()',
+    '[class]': 'hostClasses()',
   },
 })
 export class ShipToggleCard {
   isActive = model(false);
   disallowToggle = input(false);
+
+  color = input<ShipColor | null>(null);
+  variant = input<ShipCardVariant | null>(null);
+  hostClasses = shipComponentClasses('card', {
+    color: this.color,
+    variant: this.variant,
+  });
 
   ngOnInit() {
     if (this.disallowToggle()) {

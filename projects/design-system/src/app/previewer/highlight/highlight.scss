@@ -8,6 +8,14 @@
   &.hidden {
     display: none;
   }
+
+  &.small {
+    pre {
+      code {
+        font-size: p2r(10);
+      }
+    }
+  }
 }
 
 button {
@@ -22,4 +30,8 @@ pre {
   border: none;
   background: none;
   overflow: auto;
+
+  code {
+    border-radius: var(--shape-2);
+  }
 }

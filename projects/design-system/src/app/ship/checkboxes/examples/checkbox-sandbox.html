@@ -2,16 +2,17 @@
   <p>Controls</p>
   <header>
     <div class="row">
-      <sh-toggle [class.active]="isChecked()" class="primary raised" (click)="isChecked.set(!isChecked())">
+      <sh-toggle [class.active]="isChecked()" color="primary" variant="raised" (click)="isChecked.set(!isChecked())">
         Checked
       </sh-toggle>
       <sh-toggle
         [class.active]="isIndeterminate()"
-        class="primary raised"
+        color="primary"
+        variant="raised"
         (click)="isIndeterminate.set(!isIndeterminate())">
         Indeterminate
       </sh-toggle>
-      <sh-toggle [class.active]="isDisabled()" class="primary raised" (click)="isDisabled.set(!isDisabled())">
+      <sh-toggle [class.active]="isDisabled()" color="primary" variant="raised" (click)="isDisabled.set(!isDisabled())">
         Disabled
       </sh-toggle>
     </div>
@@ -38,14 +39,16 @@
 </div>
 <div class="sandbox">
   <sh-checkbox
-    [class]="exampleClass()"
+    [color]="colorClass()"
+    [variant]="variationClass()"
     [class.active]="isChecked()"
     [attr.disabled]="isDisabled()"
     (click)="isChecked.set(!isChecked())"
     [class.indeterminate]="isIndeterminate()" />
 
   <sh-checkbox
-    [class]="exampleClass()"
+    [color]="colorClass()"
+    [variant]="variationClass()"
     [class.active]="isChecked()"
     [attr.disabled]="isDisabled()"
     (click)="isChecked.set(!isChecked())"
@@ -54,7 +57,8 @@
   </sh-checkbox>
 
   <sh-checkbox
-    [class]="exampleClass()"
+    [variant]="variationClass()"
+    [color]="colorClass()"
     [class.active]="isChecked()"
     [attr.disabled]="isDisabled()"
     (click)="isChecked.set(!isChecked())"
@@ -63,12 +67,12 @@
     <a href="https://docs.shipui.com">ShipUI</a>
   </sh-checkbox>
 
-  <sh-checkbox [class]="exampleClass()" [class.indeterminate]="isIndeterminate()">
+  <sh-checkbox [variant]="variationClass()" [color]="colorClass()" [class.indeterminate]="isIndeterminate()">
     Checkbox with ngModel
     <input type="checkbox" [(ngModel)]="isChecked" [disabled]="isDisabled()" />
   </sh-checkbox>
 
-  <sh-checkbox [class]="exampleClass()" [class.indeterminate]="isIndeterminate()">
+  <sh-checkbox [variant]="variationClass()" [color]="colorClass()" [class.indeterminate]="isIndeterminate()">
     Checkbox with input reactive forms {{ formCtrl.value }}
     <input type="checkbox" [formControl]="formCtrl" />
   </sh-checkbox>

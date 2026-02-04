@@ -2,29 +2,31 @@
 
 <app-property-viewer>
   <section>
-    <h4>shSortable</h4>
+    <h4>Enable Sorting</h4>
     <p>
-      Directive to make a list sortable via drag-and-drop. Add
+      Apply the
       <code>shSortable</code>
-      to a
+      directive to a
       <code>sh-list</code>
-      or container element.
+      or any container element to enable drag-and-drop reordering.
     </p>
   </section>
   <section>
-    <h4>afterDrop</h4>
+    <h4>Event Handling</h4>
     <p>
-      Event emitted after an item is dropped. Use
+      Listen to the
+      <code>afterDrop</code>
+      event to update your data source when an item is moved:
       <code>(afterDrop)="reorder($event)"</code>
-      to update your data source.
+      .
     </p>
   </section>
   <section>
-    <h4>sort-handle</h4>
+    <h4>Handles</h4>
     <p>
       Add the
       <code>sort-handle</code>
-      attribute to an element inside your item to restrict drag start to that handle.
+      attribute to a specific element within a sortable item to limit dragging to that specific area.
     </p>
   </section>
 </app-property-viewer>

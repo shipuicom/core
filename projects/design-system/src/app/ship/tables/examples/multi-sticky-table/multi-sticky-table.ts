@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { ShipStickyColumns, ShipTable } from 'ship-ui';
+import { ShipStickyColumns, ShipTable, ShipTableVariant } from 'ship-ui';
 
 const ELEMENT_DATA = [
   { position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },
@@ -64,7 +64,7 @@ const COLUMNS = ['position', 'name', 'weight', 'symbol'] as const;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MultiStickyTable {
-  type = input<string>();
+  variant = input<ShipTableVariant | null>(null);
   displayedColumns = signal([...COLUMNS]);
   dataSource = signal([...ELEMENT_DATA]);
   sortByColumn = signal<string | null>(null);

@@ -25,10 +25,12 @@
     "subset-font": "^2.3.0",
     "@phosphor-icons/web": "^2.1.1",
     "glob": "11.0.3",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "@modelcontextprotocol/sdk": "^1.25.3"
   },
   "bin": {
-    "ship-fg": "./bin/ship-fg-node"
+    "ship-fg": "./bin/ship-fg-node",
+    "ship-mcp": "./bin/mcp/index.js"
   },
   "libraryIcons": [
     "upload-simple",
@@ -58,7 +60,8 @@
       "sass": "./styles/*",
       "assets": [
         "./assets/**/*"
-      ]
+      ],
+      "snippets": "./snippets/ship-ui.code-snippets"
     }
   },
   "sideEffects": false

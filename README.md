@@ -70,6 +70,27 @@ You now wanna add when to build the font and when to watch so it works well toge
 }
 ```
 
+## AI & Developer Experience
+
+ShipUI comes with built-in tools to enhance your development workflow through AI and IDE integrations.
+
+### Model Context Protocol (MCP)
+
+ShipUI includes an MCP server that allows AI agents (like Cursor, Claude Desktop, or custom tools) to understand and correctly use ShipUI components.
+
+To start the MCP server:
+
+```sh
+npx ship-mcp
+```
+
+### VS Code Snippets
+
+The library includes high-quality TextMate snippets for all components, including "full" versions with choices for colors, variants, and sizes.
+
+To use them in VS Code, you can add a link to the snippets file in your `.vscode/settings.json` or copy the content to your project's snippets. The file is located at:
+`./node_modules/@ship-ui/core/snippets/ship-ui.code-snippets`
+
 ## Follow our progress
 
 We have a [todos](documents/todos.md) file where we try keep track of features/bugs/blockers currently in pipeline etc

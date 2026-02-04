@@ -2,97 +2,71 @@
 
 <app-property-viewer>
   <section>
-    <h4>data</h4>
+    <h4>Data & Loading</h4>
     <p>
-      The data array to display in the table. Is a one-way binding.
+      Provide data via
       <code>[data]</code>
-      .
+      and toggle a loading state using the
+      <code>loading</code>
+      attribute.
     </p>
   </section>
 
   <section>
-    <h4>loading</h4>
+    <h4>Sorting</h4>
     <p>
-      Boolean. Shows a loading indicator when true.
-      <code>[loading]="true"</code>
-    </p>
-  </section>
-
-  <section>
-    <h4>sortByColumn</h4>
-    <p>
-      The column to sort by. Two-way bindable via can also be used with a model signal.
-      <code>[(sortByColumn)]</code>
-      or
-      <code>[sortByColumn]</code>
-      /
-      <code>(sortByColumnChange)</code>
-      .
-    </p>
-  </section>
-
-  <section>
-    <h4>shResize</h4>
-    <p>
-      Makes a column resizable. Inputs:
-      <code>resizable</code>
-      (default: true),
-      <code>minWidth</code>
-      (default: 50),
-      <code>maxWidth</code>
-      (default: null).
-    </p>
-
-    <p>
-      Can be disabled by adding class
-      <code>.no-resize</code>
-      to the table.
-    </p>
-  </section>
-
-  <section>
-    <h4>shSort</h4>
-    <p>
-      Makes a column sortable. Input:
+      Enable sorting by applying
       <code>shSort</code>
-      (column name).
+      to header cells. Track the active column with
+      <code>sortByColumn</code>
+      (two-way bindable).
     </p>
   </section>
 
   <section>
-    <h4>shStickyColumns</h4>
+    <h4>Resizing</h4>
     <p>
-      Makes columns sticky. Input:
+      Apply the
+      <code>shResize</code>
+      directive to header cells to allow column width adjustment. Available inputs:
+      <code>resizable</code>
+      ,
+      <code>minWidth</code>
+      , and
+      <code>maxWidth</code>
+      .
+    </p>
+  </section>
+
+  <section>
+    <h4>Sticky Columns</h4>
+    <p>
+      Use the
       <code>shStickyColumns</code>
-      ('start' or 'end', default: 'start').
-    </p>
-  </section>
-
-  <section>
-    <h4>CSS Classes</h4>
-    <p>
-      <code>.sticky</code>
-      : Makes a column sticky to the left.
-      <br />
-      <code>.sticky-end</code>
-      : Makes a column sticky to the right.
-    </p>
-  </section>
-
-  <section>
-    <h4>Size attribute</h4>
-    <p>
-      On your
-      <code>&lt;th&gt;</code>
-      you can add a
-      <code>size</code>
-      attribute to set the column width this is consumed by sh-table and used to calculate the grid-template-columns
-      while also accounting for shResize.
-      <br />
-      <code>&lt;th size="1fr"&gt;</code>
+      attribute (
+      <b>start</b>
       or
-      <code>&lt;th size="min-content"&gt;</code>
-      etc.
+      <b>end</b>
+      ) or apply
+      <code>.sticky</code>
+      /
+      <code>.sticky-end</code>
+      classes to header cells to pin columns.
+    </p>
+  </section>
+
+  <section>
+    <h4>Column Sizing</h4>
+    <p>
+      Use the
+      <code>size</code>
+      attribute on
+      <code>&lt;th&gt;</code>
+      elements to set initial or fixed widths (e.g.,
+      <code>size="1fr"</code>
+      ,
+      <code>size="200px"</code>
+      ).
     </p>
   </section>
 </app-property-viewer>
@@ -105,25 +79,25 @@
 </div>
 
 <app-previewer path="/tables/examples/base-table/base-table" title="Basic Table">
-  <base-table class="example" [type]="type()" />
+  <base-table class="example" [variant]="type()" />
 </app-previewer>
 
 <app-previewer path="/tables/examples/toggle-row-table/toggle-row-table" title="Toggle Row Table">
-  <toggle-row-table class="example" [type]="type()" />
+  <toggle-row-table class="example" [variant]="type()" />
 </app-previewer>
 
 <app-previewer path="/tables/examples/multi-sticky-table/multi-sticky-table" title="Multi Sticky Columns">
-  <multi-sticky-table class="example" [type]="type()" />
+  <multi-sticky-table class="example" [variant]="type()" />
 </app-previewer>
 
-<app-previewer path="/tables/examples/multi-table-header/multi-table-header" title="Resizing Table">
-  <resizing-table class="example" [type]="type()" />
+<app-previewer path="/tables/examples/resizing-table/resizing-table" title="Resizing Table">
+  <resizing-table class="example" [variant]="type()" />
 </app-previewer>
 
 <app-previewer path="/tables/examples/multi-table-header/multi-table-header" title="Multi Table Header">
-  <multi-table-header class="example" [type]="type()" />
+  <multi-table-header class="example" [variant]="type()" />
 </app-previewer>
 
 <app-previewer path="/tables/examples/sorting-table/sorting-table" title="Sorting Table">
-  <sorting-table class="example" [type]="type()" />
+  <sorting-table class="example" [variant]="type()" />
 </app-previewer>

@@ -15,9 +15,9 @@ import {
   viewChild,
 } from '@angular/core';
 import { ShipProgressBar } from '../ship-progress-bar/ship-progress-bar';
-import { classMutationSignal } from '../utilities/class-mutation-signal';
 import { observeChildren } from '../utilities/observe-elements';
-import { SHIP_CONFIG } from '../utilities/ship-config';
+import { shipComponentClasses } from '../utilities/ship-component';
+import { ShipColor, ShipTableVariant } from '../utilities/ship-types';
 
 @Directive({
   selector: '[shResize]',
@@ -170,7 +170,7 @@ export class ShipStickyColumns {
   #elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   #renderer = inject(Renderer2);
 
-  shStickyColumns = input<string>('start');
+  shStickyColumns = input<'start' | 'end' | (string & {})>('start');
 
   ngAfterContentInit() {
     this.#applyGridColumnStyle();
@@ -225,7 +225,7 @@ type ScrollState = -1 | 0 | 1;
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '[class]': 'class()',
+    '[class]': 'hostClasses()',
     '[style.grid-template-columns]': 'columnSizes()',
     '[class.resizing]': 'resizing()',
     '(scroll)': 'onScroll()',
@@ -239,20 +239,26 @@ type ScrollState = -1 | 0 | 1;
 })
 export class ShipTable {
   #el = inject(ElementRef);
-  #shConfig = inject(SHIP_CONFIG, { optional: true });
 
   loading = input<boolean>(false);
   data = input<any>([]);
   dataChange = output<any>();
   sortByColumn = model<string | null>(null);
 
-  currentClass = classMutationSignal();
+  color = input<ShipColor | null>(null);
+  variant = input<ShipTableVariant | null>(null);
+
+  hostClasses = shipComponentClasses('table', {
+    color: this.color,
+    variant: this.variant,
+  });
+
   thead = viewChild<ElementRef<HTMLTableSectionElement>>('thead');
   tbody = viewChild<ElementRef<HTMLTableSectionElement>>('tbody');
   columns = observeChildren<HTMLTableColElement>(this.thead, ['tr:first-child th']);
 
   stickyHeaderHeight = computed(() => {
-    const _ = this.currentClass();
+    const _ = this.hostClasses();
     const height = this.thead()?.nativeElement?.clientHeight;
 
     return height ?? 0;
@@ -279,7 +285,6 @@ export class ShipTable {
     });
   });
 
-  class = signal<string>(this.#shConfig?.tableType ?? 'default');
   resizing = signal(false);
   sizeTrigger = signal(true);
   #initialData: any | null = null;
@@ -293,7 +298,7 @@ export class ShipTable {
     this.sizeTrigger();
     const colSignal = this.columns.signal();
 
-    return colSignal.reduce((acc, col, index) => {
+    return colSignal.reduce((acc: string, col: any, index: number) => {
       const colEl = col;
       const colSize = colEl.getAttribute('size');
       const last = index === colSignal.length - 1;

@@ -2,55 +2,84 @@
 
 <app-property-viewer>
   <section>
-    <h4>label</h4>
-    <p>Optional label for the form field. Can include icons or other elements.</p>
+    <h4>Label</h4>
+    <p>
+      Optional label for the form field. Use a
+      <code>&lt;label&gt;</code>
+      element inside
+      <code>&lt;sh-form-field&gt;</code>
+      .
+    </p>
   </section>
   <section>
-    <h4>prefix/suffix</h4>
+    <h4>Prefix / Suffix</h4>
     <p>
-      Project content before or after the input using
+      Project content before or after the input using the
       <code>prefix</code>
       or
       <code>suffix</code>
-      slots.
+      attributes.
     </p>
   </section>
   <section>
-    <h4>placeholder</h4>
-    <p>Placeholder text for the input or textarea.</p>
-  </section>
-  <section>
-    <h4>boxPref/boxSuffix</h4>
+    <h4>Box Prefix / Suffix</h4>
     <p>
-      Project content before or after the input but inside a box style
+      Project content before or after the input but inside the input box using the
       <code>boxPrefix</code>
       or
       <code>boxSuffix</code>
-      slots.
+      attributes on a container.
     </p>
   </section>
   <section>
-    <h4>hint</h4>
-    <p>Optional hint text shown below the input.</p>
-  </section>
-  <section>
-    <h4>error</h4>
-    <p>Optional error text shown below the input when in error state.</p>
-  </section>
-  <section>
-    <h4>disabled</h4>
-    <p>Disables the input or textarea.</p>
-  </section>
-  <section>
-    <h4>size/class</h4>
+    <h4>Hint</h4>
     <p>
-      Use
-      <code>small</code>
+      Optional hint text shown below the input using the
+      <code>hint</code>
+      attribute.
+    </p>
+  </section>
+  <section>
+    <h4>Error</h4>
+    <p>
+      Optional error text shown below the input when in an error state. Use the
+      <code>error</code>
+      attribute.
+    </p>
+  </section>
+  <section>
+    <h4>Variants</h4>
+    <p>
+      Use the
+      <code>variant</code>
+      attribute for different layouts, such as:
+      <b>autosize</b>
+      .
+    </p>
+  </section>
+  <section>
+    <h4>Sizes</h4>
+    <p>
+      Use the
+      <code>size</code>
+      attribute for different sizes or alignments, such as:
+      <b>small</b>
       ,
-      <code>autosize</code>
-      ,
-      <code>center</code>
-      classes for different layouts.
+      <b>large</b>
+      , or
+      <b>center</b>
+      .
+    </p>
+  </section>
+
+  <section>
+    <h4>Readonly</h4>
+    <p>
+      The form field can be set to readonly through the
+      <code>readonly</code>
+      input (adds the
+      <code>readonly</code>
+      class).
     </p>
   </section>
 </app-property-viewer>

@@ -4,95 +4,64 @@
   <section>
     <h4>Content Types</h4>
     <p>
-      Tooltips can display different types of content using the
+      The
       <code>[shTooltip]</code>
-      directive:
+      directive supports multiple content types:
     </p>
     <ul>
       <li>
         <b>String</b>
-        : Simple text content
+        : Simple text content.
       </li>
       <li>
         <b>Template</b>
-        : Rich HTML content using
+        : Rich HTML using
         <code>ng-template</code>
+        .
       </li>
       <li>
-        <b>null/undefined</b>
-        : Disables the tooltip
+        <b>null / undefined</b>
+        : Disables the tooltip.
       </li>
     </ul>
   </section>
 
   <section>
     <h4>Positioning</h4>
-    <p>Tooltips automatically position themselves based on available space. They can appear:</p>
-    <ul>
-      <li>
-        <b>Above</b>
-        : When there's not enough space below
-      </li>
-      <li>
-        <b>Below</b>
-        : Default position
-      </li>
-      <li>
-        <b>Left/Right</b>
-        : Automatically adjusted to stay within viewport
-      </li>
-    </ul>
+    <p>Tooltips automatically position themselves (top, bottom, left, right) based on viewport space.</p>
   </section>
 
   <section>
     <h4>Theming</h4>
     <p>
-      Tooltips inherit the theme from their trigger element. Apply theme classes like
-      <code>class="primary"</code>
+      Tooltips inherit their color from the trigger element. Use the
+      <code>color</code>
+      attribute on the trigger:
+      <b>primary</b>
       ,
-      <code>class="accent"</code>
+      <b>accent</b>
       ,
-      <code>class="warn"</code>
+      <b>warn</b>
       ,
-      <code>class="error"</code>
-      and
-      <code>class="success"</code>
-      to the trigger element.
+      <b>error</b>
+      , or
+      <b>success</b>
+      .
     </p>
   </section>
 
   <section>
-    <h4>Trigger Elements</h4>
+    <h4>Target Elements</h4>
     <p>
-      The
+      Apply
       <code>[shTooltip]</code>
-      directive can be applied to any element. Common triggers include:
-    </p>
-    <ul>
-      <li>
-        <b>Buttons</b>
-        : For action explanations
-      </li>
-      <li>
-        <b>Icons</b>
-        : For quick help text
-      </li>
-      <li>
-        <b>Text</b>
-        : For additional context
-      </li>
-      <li>
-        <b>Form elements</b>
-        : For validation messages
-      </li>
-    </ul>
-  </section>
-
-  <section>
-    <h4>Accessibility</h4>
-    <p>
-      Tooltips automatically handle accessibility features including proper ARIA attributes and keyboard navigation.
-      They appear on hover and disappear on mouse leave.
+      to any interactive element like
+      <b>buttons</b>
+      ,
+      <b>icons</b>
+      , or
+      <b>form fields</b>
+      .
     </p>
   </section>
 </app-property-viewer>

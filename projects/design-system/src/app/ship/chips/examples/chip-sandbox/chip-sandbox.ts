@@ -18,11 +18,7 @@ export class ChipSandbox {
 
   colorClass = signal<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
   variationClass = signal<'' | 'simple' | 'outlined' | 'flat' | 'raised'>('raised');
-  exampleClass = computed(() => {
-    if (this.isDynamic()) return '';
-
-    return this.colorClass() + ' ' + this.variationClass();
-  });
+  sizeClass = computed(() => (this.isSmall() ? 'small' : ''));
 
   // Color picker
   selectedColor = signal<[number, number, number]>([60, 131, 246]);

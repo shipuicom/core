@@ -1,4 +1,4 @@
-<sh-table [data]="dataSource()" [loading]="isLoading()" [class]="type()">
+<sh-table [data]="dataSource()" [loading]="isLoading()" [variant]="variant()">
   <tr>
     @for (col of displayedColumns(); track col) {
       <th>{{ col }}</th>

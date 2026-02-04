@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { ShipTable } from 'ship-ui';
+import { ShipTable, ShipTableVariant } from 'ship-ui';
 
 const ELEMENT_DATA = [
   { position: 1, name: 'Hydrogens', weight: 1.0079, symbol: 'H' },
@@ -23,7 +23,7 @@ const COLUMNS = ['position', 'name', 'weight', 'symbol'] as const;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BaseTable {
-  type = input<string>();
+  variant = input<ShipTableVariant | null>(null);
   displayedColumns = signal([...COLUMNS]);
   dataSource = signal([...ELEMENT_DATA]);
   isLoading = signal(true);

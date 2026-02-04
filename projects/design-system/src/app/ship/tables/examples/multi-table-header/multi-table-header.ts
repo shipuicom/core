@@ -24,7 +24,7 @@ const COLUMNS = ['position', 'name', 'weight', 'symbol'] as const;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MultiTableHeader {
-  type = input<string>();
+  variant = input<string | null>(null);
   displayedColumns = signal([...COLUMNS]);
   dataSource = signal([...ELEMENT_DATA]);
 }

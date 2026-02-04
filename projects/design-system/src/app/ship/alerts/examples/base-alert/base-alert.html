@@ -1,21 +1,29 @@
+<!-- Using attribute inputs -->
 <sh-alert>Base alert</sh-alert>
+<sh-alert color="primary">Primary alert</sh-alert>
+<sh-alert color="accent">Accent alert</sh-alert>
+<sh-alert color="warn">Warn alert</sh-alert>
+<sh-alert color="error">Error alert</sh-alert>
+<sh-alert color="success">Success alert</sh-alert>
+<sh-alert color="success">
+  Success alert
+  <p>with a paragraph</p>
+</sh-alert>
+
+<sh-alert color="primary">
+  Success alert
+  <button shButton color="primary" variant="outlined" size="small">Button</button>
+</sh-alert>
+
+<sh-alert color="primary">
+  Success alert
+  <p>with a paragraph</p>
+  <button shButton color="primary" variant="outlined" size="small">Button</button>
+</sh-alert>
+
+<!-- Alternative: Using CSS classes -->
+<!--
 <sh-alert class="primary">Primary alert</sh-alert>
 <sh-alert class="accent">Accent alert</sh-alert>
-<sh-alert class="warn">Warn alert</sh-alert>
-<sh-alert class="error">Error alert</sh-alert>
-<sh-alert class="success">Success alert</sh-alert>
-<sh-alert class="success">
-  Success alert
-  <p>with a paragraph</p>
-</sh-alert>
-
-<sh-alert class="primary">
-  Success alert
-  <button shButton class="outlined primary small">Button</button>
-</sh-alert>
-
-<sh-alert class="primary">
-  Success alert
-  <p>with a paragraph</p>
-  <button shButton class="outlined primary small">Button</button>
-</sh-alert>
+<button shButton class="outlined primary small">Button</button>
+-->

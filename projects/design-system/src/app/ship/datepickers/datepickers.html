@@ -2,110 +2,71 @@
 
 <app-property-viewer>
   <section>
-    <h4>date</h4>
+    <h4>Selection</h4>
     <p>
-      The selected date. Two-way bindable via
+      Selected values are available via
+      <code>date</code>
+      and
+      <code>endDate</code>
+      . Use
       <code>[(date)]</code>
-      or
-      <code>[date]</code>
-      /
-      <code>(dateChange)</code>
-      for
-      <b>datepickers</b>
       and
-      <b>datepickers-input</b>
-      .
-    </p>
-  </section>
-  <section>
-    <h4>endDate</h4>
-    <p>
-      The end date for range selection. Two-way bindable via
       <code>[(endDate)]</code>
-      or
-      <code>[endDate]</code>
-      /
-      <code>(endDateChange)</code>
-      for
-      <b>datepickers</b>
-      and
-      <b>sh-daterange-input</b>
-      .
+      for two-way binding.
     </p>
   </section>
   <section>
-    <h4>asRange</h4>
-    <p>
-      Enable range selection mode.
-      <code>[asRange]="true"</code>
-      (default:
-      <code>false</code>
-      )
-    </p>
+    <h4>Configuration</h4>
+    <p>Customize the picker behavior:</p>
+    <ul>
+      <li>
+        <code>asRange</code>
+        : Enable range selection mode.
+      </li>
+      <li>
+        <code>monthsToShow</code>
+        : Set the number of months displayed (default: 1).
+      </li>
+      <li>
+        <code>startOfWeek</code>
+        : Specify the first day of the week (0-6).
+      </li>
+      <li>
+        <code>weekdayLabels</code>
+        : Provide custom labels for week days.
+      </li>
+    </ul>
   </section>
   <section>
-    <h4>monthsToShow</h4>
-    <p>
-      Number of months to display at once.
-      <code>[monthsToShow]="2"</code>
-      (default:
-      <code>1</code>
-      )
-    </p>
+    <h4>Input Display</h4>
+    <p>Customize how dates appear in inputs:</p>
+    <ul>
+      <li>
+        <code>masking</code>
+        : Set the date format mask (e.g.,
+        <code>'mediumDate'</code>
+        ).
+      </li>
+      <li>
+        <code>size</code>
+        : Use the
+        <code>small</code>
+        attribute/class for a compact input.
+      </li>
+    </ul>
   </section>
   <section>
-    <h4>disabled</h4>
-    <p>
-      Disable the datepicker.
-      <code>[disabled]="true"</code>
-    </p>
-  </section>
-  <section>
-    <h4>masking</h4>
-    <p>
-      Date format mask for input display (e.g.
-      <code>'mediumDate'</code>
-      ). Applies to
-      <b>datepickers-input</b>
-      and
-      <b>sh-daterange-input</b>
-      .
-    </p>
-  </section>
-  <section>
-    <h4>closed</h4>
-    <p>
-      Event emitted when the picker closes.
-      <code>(closed)</code>
-      (returns selected date(s)).
-    </p>
-  </section>
-  <section>
-    <h4>startOfWeek</h4>
-    <p>
-      First day of the week (0 = Sunday, 1 = Monday, ...).
-      <code>[startOfWeek]</code>
-      (default:
-      <code>1</code>
-      ).
-    </p>
-  </section>
-  <section>
-    <h4>weekdayLabels</h4>
-    <p>
-      Custom weekday labels.
-      <code>[weekdayLabels]="['Su','Mo','Tu','We','Th','Fr','Sa']"</code>
-    </p>
-  </section>
-  <section>
-    <h4>small</h4>
-    <p>
-      The datepicker input comes with a small variant just add a class
-      <code>small</code>
-      to the
-      <b>datepickers-input</b>
-      <code>class="small"</code>
-    </p>
+    <h4>Interaction</h4>
+    <ul>
+      <li>
+        <code>closed</code>
+        : Event emitted when the picker is dismissed.
+      </li>
+      <li>
+        <code>disabled</code>
+        : Standard attribute to disable interaction.
+      </li>
+    </ul>
   </section>
 </app-property-viewer>
 

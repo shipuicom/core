@@ -1,4 +1,4 @@
-<sh-table [data]="dataSource()" [class]="type()">
+<sh-table [data]="dataSource()" [variant]="variant()">
   <tr thead>
     @for (col of displayedColumns(); track col) {
       <th shResize>{{ col }}</th>

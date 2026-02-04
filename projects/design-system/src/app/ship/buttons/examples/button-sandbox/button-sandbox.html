@@ -10,16 +10,16 @@
         <button [class.active]="sizeClass() === 'xsmall'" (click)="sizeClass.set('xsmall')">XSmall</button>
       </sh-button-group>
 
-      <sh-toggle [class.active]="isRotated()" class="primary raised" (click)="isRotated.set(!isRotated())">
+      <sh-toggle [class.active]="isRotated()" color="primary" variant="raised" (click)="isRotated.set(!isRotated())">
         Rotated
       </sh-toggle>
-      <sh-toggle [class.active]="isLoading()" class="primary raised" (click)="isLoading.set(!isLoading())">
+      <sh-toggle [class.active]="isLoading()" color="primary" variant="raised" (click)="isLoading.set(!isLoading())">
         Loading
       </sh-toggle>
-      <sh-toggle [class.active]="isDisabled()" class="primary raised" (click)="isDisabled.set(!isDisabled())">
+      <sh-toggle [class.active]="isDisabled()" color="primary" variant="raised" (click)="isDisabled.set(!isDisabled())">
         Disabled
       </sh-toggle>
-      <sh-toggle [class.active]="isReadonly()" class="primary raised" (click)="isReadonly.set(!isReadonly())">
+      <sh-toggle [class.active]="isReadonly()" color="primary" variant="raised" (click)="isReadonly.set(!isReadonly())">
         Readonly
       </sh-toggle>
     </div>
@@ -50,7 +50,9 @@
 <div class="sandbox">
   <button
     shButton
-    [class]="exampleClass()"
+    [color]="colorClass()"
+    [variant]="variationClass()"
+    [size]="sizeClass()"
     [class.loading]="isLoading()"
     [class.rotated-icon]="isRotated()"
     [disabled]="isDisabled()"
@@ -60,7 +62,9 @@
 
   <button
     shButton
-    [class]="exampleClass()"
+    [color]="colorClass()"
+    [variant]="variationClass()"
+    [size]="sizeClass()"
     [class.loading]="isLoading()"
     [class.rotated-icon]="isRotated()"
     [disabled]="isDisabled()"
@@ -72,7 +76,9 @@
 
   <button
     shButton
-    [class]="exampleClass()"
+    [color]="colorClass()"
+    [variant]="variationClass()"
+    [size]="sizeClass()"
     [class.loading]="isLoading()"
     [class.rotated-icon]="isRotated()"
     [disabled]="isDisabled()"
@@ -83,7 +89,9 @@
 
   <button
     shButton
-    [class]="exampleClass()"
+    [color]="colorClass()"
+    [variant]="variationClass()"
+    [size]="sizeClass()"
     [class.loading]="isLoading()"
     [class.rotated-icon]="isRotated()"
     [disabled]="isDisabled()"

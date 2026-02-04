@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { SHIP_CONFIG } from '../utilities/ship-config';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { shipComponentClasses } from '../utilities/ship-component';
+import { ShipCardVariant, ShipColor } from '../utilities/ship-types';
 
 @Component({
   selector: 'sh-card',
@@ -9,10 +10,15 @@ import { SHIP_CONFIG } from '../utilities/ship-config';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '[class]': 'class()',
+    '[class]': 'hostClasses()',
   },
 })
 export class ShipCard {
-  #shConfig = inject(SHIP_CONFIG, { optional: true });
-  class = signal<string>(this.#shConfig?.cardType ?? 'type-a');
+  color = input<ShipColor | null>(null);
+  variant = input<ShipCardVariant | null>(null);
+
+  hostClasses = shipComponentClasses('card', {
+    color: this.color,
+    variant: this.variant,
+  });
 }

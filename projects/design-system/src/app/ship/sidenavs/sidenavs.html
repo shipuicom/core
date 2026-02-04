@@ -4,21 +4,34 @@
   <section>
     <h4>Variants</h4>
     <p>
-      Sidenav variants can be set through the class ex
-      <code>default</code>
-      does not allow for toggling are a fairly stupid variant ,
-      <code>simple</code>
-      is for when you wanna be able to toggle the size of the sidenav say you have icon state and a icons with text and
-      <code>overlay</code>
-      is for when you wanna be able to toggle the sidenav and have it overlay the content also supports dragging
+      Sidenavs support multiple behaviors via the
+      <code>variant</code>
+      attribute:
     </p>
+    <ul>
+      <li>
+        <b>default</b>
+        : Fixed position, non-toggleable.
+      </li>
+      <li>
+        <b>simple</b>
+        : Support for toggling width (e.g., icon-only vs. full expanded view).
+      </li>
+      <li>
+        <b>overlay</b>
+        : Overlays content when opened and supports swipe-to-close gestures.
+      </li>
+    </ul>
   </section>
 
   <section>
-    <h4>disableDrag</h4>
+    <h4>Drag Interaction</h4>
     <p>
-      You can pass in a boolean to disable the drag functionality for the overlay variant.
-      <code>[disableDrag]="true"</code>
+      Use the
+      <code>disableDrag</code>
+      attribute/binding to disable swipe gestures on the
+      <b>overlay</b>
+      variant.
     </p>
   </section>
 </app-property-viewer>

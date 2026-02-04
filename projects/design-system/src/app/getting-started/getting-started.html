@@ -1,59 +1,171 @@
-<h1>Getting Started</h1>
+<section class="hero">
+  <sh-chip color="primary" variant="outlined" size="small">⛵ ShipUI Core</sh-chip>
+  <h1>
+    Build faster,
+    <br />
+    ship better.
+  </h1>
+  <p>
+    Modern, high-performance UI components for Angular 19+. Designed for speed, accessibility, and the best developer
+    experience.
+  </p>
+  <div class="actions">
+    <button shButton variant="raised" color="primary" routerLink="/buttons">Explore Components</button>
+    <button shButton variant="outlined" (click)="window.open('https://github.com/shipuicom/core', '_blank')">
+      <sh-icon>github-logo</sh-icon>
+      GitHub
+    </button>
+  </div>
+</section>
 
-<p>To start using ShipUI make sure you're using angular 19 or newer.</p>
+<section class="features">
+  <sh-card variant="type-b">
+    <sh-icon>swatches</sh-icon>
+    <h3>Modern Aesthetics</h3>
+    <p>Beautifully crafted components with a focus on typography, spacing, and subtle animations.</p>
+  </sh-card>
 
-<sh-alert class="primary">
-  It's
-  <strong>signal</strong>
-  based and
-  <strong>zoneless</strong>
-  compliant.
-</sh-alert>
+  <sh-card variant="type-b">
+    <sh-icon>lightning</sh-icon>
+    <h3>Signal-Based</h3>
+    <p>Leverage the power of Angular Signals for fine-grained reactivity and peak performance.</p>
+  </sh-card>
 
-<h3>Base setup</h3>
+  <sh-card variant="type-b">
+    <sh-icon>cube</sh-icon>
+    <h3>Zoneless Ready</h3>
+    <p>Built from the ground up to be fully compliant with zoneless Angular applications.</p>
+  </sh-card>
 
-<p>Install</p>
-<app-highlight lang="html" [content]="`npm i -S @ship-ui/core`" />
+  <sh-card variant="type-b">
+    <sh-icon>robot</sh-icon>
+    <h3>AI-First DX</h3>
+    <p>Built-in MCP server and snippets to make AI agents your best co-pilot.</p>
+  </sh-card>
+</section>
 
-<p>Add styles inside your src/styles.scss</p>
-<app-highlight lang="scss" [content]="`@use '@ship-ui/core/styles';`" />
+<sh-divider />
 
-<p>
-  Inside your
-  <code>angular.json</code>
-  file you need to add the ship assets to your assets array this is to add the ship default font
-</p>
+<section class="setup-section">
+  <div class="section-header">
+    <h2>Quick Setup</h2>
+    <p>Get up and running with ShipUI in less than 2 minutes.</p>
+  </div>
 
-<app-highlight
-  lang="ts"
-  [content]="
-    `
-  &quot;assets&quot;: [
-    &quot;src/assets&quot;,
-    {
-      &quot;glob&quot;: &quot;**/*&quot;,
-      &quot;input&quot;: &quot;./node_modules/@ship-ui/core/assets&quot;,
-      &quot;output&quot;: &quot;./ship-ui-assets/&quot;
-    }
-  ]
-  `
-  " />
+  <sh-list class="base-1">
+    <div item>
+      <sh-chip color="primary" variant="outlined" size="small">1</sh-chip>
+      <div class="setup-item">
+        <h4>Install Core Package</h4>
+        <p>Add the core components and styles to your project.</p>
+        <app-highlight lang="html" content="npm i -S @ship-ui/core" />
+      </div>
+    </div>
 
-<h3>Setup Icons</h3>
-<p>
-  Ship comes with a custom CLI for subsetting and auto generating an icon font currently we support
-  <a href="https://phosphoricons.com/" target="_blank" rel="noopener noreferrer">Phospher icons</a>
-</p>
+    <div item>
+      <sh-chip color="primary" variant="outlined" size="small">2</sh-chip>
+      <div class="setup-item">
+        <h4>Configure Styles</h4>
+        <p>Import the base design system styles in your main stylesheet.</p>
+        <app-highlight lang="scss" content="@use '@ship-ui/core/styles';" />
+      </div>
+    </div>
 
-<app-highlight
-  lang="html"
-  [content]="
-    `\<!-- Add to the head of your index.html -->
-\<link rel=&quot;stylesheet&quot; href=&quot;/ship.css&quot; /\>`
-  " />
+    <div item>
+      <sh-chip color="primary" variant="outlined" size="small">3</sh-chip>
+      <div class="setup-item">
+        <h4>Register Assets</h4>
+        <p>Ensure the default fonts and assets are available in your build.</p>
+        <app-highlight lang="ts" [content]="ASSETS_CONFIG" />
+      </div>
+    </div>
+  </sh-list>
+</section>
 
-<p>Add following scripts to your package.json scripts</p>
-<app-highlight lang="ts" [content]="SCRIPTS" />
+<section class="ai-section">
+  <div class="ai-content">
+    <div class="ai-badge">
+      <sh-chip color="primary" variant="raised" size="small">
+        <sh-icon>magic-wand</sh-icon>
+        AI-Powered
+      </sh-chip>
+    </div>
+    <h2>The Future of Component Libraries</h2>
+    <p>
+      ShipUI is built from the ground up for the AI era. We provide a native MCP server that allows AI agents to
+      perfectly understand, manipulate, and generate code using our design system.
+    </p>
 
-<p>Now update your current start and build scripts</p>
-<app-highlight lang="ts" [content]="UPDATE_SCRIPTS" />
+    <div class="ai-info-grid">
+      <div class="ai-info-item">
+        <div class="icon-box"><sh-icon>terminal-window</sh-icon></div>
+        <div class="text-box">
+          <h4>Native MCP Server</h4>
+          <p>Connect Claude, Cursor or GPT-4 directly to your UI components.</p>
+          <code>npx ship-mcp</code>
+        </div>
+      </div>
+      <div class="ai-info-item">
+        <div class="icon-box"><sh-icon>lightning</sh-icon></div>
+        <div class="text-box">
+          <h4>Vibe Coding Ready</h4>
+          <p>Describe what you want and let your AI co-pilot do the heavy lifting.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ai-visual">
+    <div class="visual-container">
+      <sh-card variant="type-c" class="code-preview">
+        <div class="code-header">
+          <div class="dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <sh-chip size="small" variant="outlined">button-example.ts</sh-chip>
+        </div>
+        <app-highlight lang="ts" class="small" [content]="COMPONENT_PREVIEW" />
+      </sh-card>
+
+      <div class="glow-sphere"></div>
+
+      <sh-card variant="type-a" class="ai-response">
+        <div class="ai-avatar">AI</div>
+        <div class="ai-content-bubble">
+          <div class="ai-message">I've generated a primary button with an icon for you!</div>
+          <div class="ai-result">
+            <button shButton color="primary" size="small">
+              <sh-icon>pen</sh-icon>
+              Edit
+            </button>
+          </div>
+        </div>
+      </sh-card>
+    </div>
+  </div>
+</section>
+
+<section class="setup-section">
+  <div class="section-header">
+    <h2>Icon Font Setup</h2>
+    <p>Custom CLI for subsetting and auto-generating light-weight icon fonts.</p>
+  </div>
+
+  <sh-list class="base-1">
+    <div item>
+      <div class="setup-item">
+        <p>Add following scripts to your package.json</p>
+        <app-highlight lang="ts" [content]="SCRIPTS" />
+      </div>
+    </div>
+
+    <div item>
+      <div class="setup-item">
+        <p>Update your start and build scripts</p>
+        <app-highlight lang="ts" [content]="UPDATE_SCRIPTS" />
+      </div>
+    </div>
+  </sh-list>
+</section>

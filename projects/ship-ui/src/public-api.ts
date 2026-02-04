@@ -54,3 +54,4 @@ export * from './lib/directives/ship-tooltip.directive';
 
 // Global config
 export * from './lib/utilities/ship-config';
+export * from './lib/utilities/ship-types';

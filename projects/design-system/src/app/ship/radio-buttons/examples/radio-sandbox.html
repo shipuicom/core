@@ -2,7 +2,7 @@
   <p>Controls</p>
   <header>
     <div class="row">
-      <sh-toggle [class.active]="isDisabled()" class="primary raised" (click)="isDisabled.set(!isDisabled())">
+      <sh-toggle [class.active]="isDisabled()" color="primary" variant="raised" (click)="isDisabled.set(!isDisabled())">
         Disabled
       </sh-toggle>
     </div>
@@ -37,7 +37,8 @@
 
     @for (value of values; track value) {
       <sh-radio
-        [class]="exampleClass()"
+        [variant]="variationClass()"
+        [color]="colorClass()"
         [attr.disabled]="isDisabled()"
         [class.active]="selected() === value"
         (click)="selected.set(value)"
@@ -54,7 +55,7 @@
     </p>
 
     @for (value of values; track value) {
-      <sh-radio [class]="exampleClass()" [attr.disabled]="isDisabled()">
+      <sh-radio [variant]="variationClass()" [color]="colorClass()" [attr.disabled]="isDisabled()">
         {{ value }}
         <input type="radio" name="model-group" [(ngModel)]="model" [value]="value" />
       </sh-radio>
@@ -69,7 +70,7 @@
     </p>
 
     @for (value of values; track value) {
-      <sh-radio [class]="exampleClass()" [attr.disabled]="isDisabled()">
+      <sh-radio [variant]="variationClass()" [color]="colorClass()" [attr.disabled]="isDisabled()">
         {{ value }}
         <input type="radio" name="form-group" [formControl]="formCtrl" [value]="value" />
       </sh-radio>

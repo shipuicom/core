@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { shipComponentClasses } from '../utilities/ship-component';
+import { ShipButtonSize, ShipColor, ShipSheetVariant } from '../utilities/ship-types';
 
 @Component({
   selector: '[shButton]',
@@ -7,17 +9,19 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'sh-sheet-h',
+    '[class]': 'hostClasses()',
   },
 })
 export class ShipButton {
-  // #selfRef = inject(ElementRef);
-  //   '[class.not-first-node-text]': 'notFirstNodeText()',
-  //   '[class.not-last-node-text]': 'notLastNodeText()',
-  // notFirstNodeText = signal<boolean>(false);
-  // notLastNodeText = signal<boolean>(false);
-  // ngOnInit() {
-  //   const childNodes = this.#selfRef.nativeElement.childNodes;
-  //   this.notFirstNodeText.set(childNodes[0].nodeType !== Node.TEXT_NODE);
-  //   this.notLastNodeText.set(childNodes[childNodes.length - 1].nodeType !== Node.TEXT_NODE);
-  // }
+  color = input<ShipColor | null>(null);
+  variant = input<ShipSheetVariant | null>(null);
+  size = input<ShipButtonSize | null>(null);
+  readonly = input<boolean>(false);
+
+  hostClasses = shipComponentClasses('button', {
+    color: this.color,
+    variant: this.variant,
+    size: this.size,
+    readonly: this.readonly,
+  });
 }

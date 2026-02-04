@@ -15,7 +15,7 @@
   <ng-container suffix>hello 123</ng-container>
 </sh-form-field>
 
-<sh-form-field class="autosize">
+<sh-form-field variant="autosize">
   <input type="time" />
   <div boxPrefix>
     <sh-icon>clock</sh-icon>
@@ -102,7 +102,7 @@
   <span hint>{{ errorCtrl.value?.length ?? 0 }}/10</span>
 </sh-form-field>
 
-<sh-form-field class="center autosize">
+<sh-form-field variant="autosize" size="center">
   <label>
     Number without suffix auto
     <sh-icon>question</sh-icon>
@@ -112,7 +112,7 @@
   <span textPrefix>Hello</span>
 </sh-form-field>
 
-<sh-form-field class="center autosize">
+<sh-form-field variant="autosize" size="center">
   <label>
     Number without suffix
     <sh-icon>question</sh-icon>
@@ -120,7 +120,7 @@
   <input type="number" placeholder="0" />
 </sh-form-field>
 
-<sh-form-field class="auto-width">
+<sh-form-field variant="auto-width">
   <label>
     Label
     <sh-icon>question</sh-icon>

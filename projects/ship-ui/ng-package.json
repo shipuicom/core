@@ -5,7 +5,7 @@
     "entryFile": "src/public-api.ts",
     "styleIncludePaths": ["styles"]
   },
-  "assets": ["styles/**/*", "assets/**/*", "bin/**/*"],
+  "assets": ["styles/**/*", "assets/**/*", "bin/**/*", "snippets/**/*"],
   "inlineStyleLanguage": "scss",
   "allowedNonPeerDependencies": ["subset-font", "@phosphor-icons/web", "glob"]
 }

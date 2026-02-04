@@ -23,7 +23,7 @@ const COLUMNS = ['position', 'name', 'weight', 'symbol'] as const;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToggleRowTable {
-  type = input<string>();
+  variant = input<string | null>(null);
   displayedColumns = signal([...COLUMNS]);
   dataSource = signal([...ELEMENT_DATA]);
   isLoading = signal(true);

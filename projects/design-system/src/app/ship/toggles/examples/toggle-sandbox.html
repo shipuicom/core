@@ -2,10 +2,10 @@
   <p>Controls</p>
   <header>
     <div class="row">
-      <sh-toggle [class.active]="isChecked()" class="primary raised" (click)="isChecked.set(!isChecked())">
+      <sh-toggle [class.active]="isChecked()" color="primary" variant="raised" (click)="isChecked.set(!isChecked())">
         Checked
       </sh-toggle>
-      <sh-toggle [class.active]="isDisabled()" class="primary raised" (click)="isDisabled.set(!isDisabled())">
+      <sh-toggle [class.active]="isDisabled()" color="primary" variant="raised" (click)="isDisabled.set(!isDisabled())">
         Disabled
       </sh-toggle>
     </div>
@@ -32,25 +32,27 @@
 </div>
 <div class="sandbox">
   <sh-toggle
-    [class]="exampleClass()"
+    [color]="colorClass()"
+    [variant]="variationClass()"
     [class.active]="isChecked()"
     [attr.disabled]="isDisabled()"
     (click)="isChecked.set(!isChecked())" />
 
   <sh-toggle
-    [class]="exampleClass()"
+    [color]="colorClass()"
+    [variant]="variationClass()"
     [class.active]="isChecked()"
     [attr.disabled]="isDisabled()"
     (click)="isChecked.set(!isChecked())">
     Toggle with label
   </sh-toggle>
 
-  <sh-toggle [class]="exampleClass()">
+  <sh-toggle [color]="colorClass()" [variant]="variationClass()">
     Toggle with ngModel
     <input type="checkbox" [(ngModel)]="isChecked" [disabled]="isDisabled()" />
   </sh-toggle>
 
-  <sh-toggle [class]="exampleClass()">
+  <sh-toggle [color]="colorClass()" [variant]="variationClass()">
     Toggle with input reactive forms {{ formCtrl.value }}
     <input type="checkbox" [formControl]="formCtrl" />
   </sh-toggle>

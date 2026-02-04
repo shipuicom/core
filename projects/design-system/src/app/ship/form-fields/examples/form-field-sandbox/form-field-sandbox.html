@@ -1,21 +1,21 @@
 <div class="controls">
   <div class="row">
-    <sh-checkbox class="primary raised" [class.active]="showLabel()" (click)="showLabel.set(!showLabel())">
+    <sh-checkbox color="primary" variant="raised" [class.active]="showLabel()" (click)="showLabel.set(!showLabel())">
       Label
     </sh-checkbox>
-    <sh-checkbox class="primary raised" [class.active]="showPrefix()" (click)="showPrefix.set(!showPrefix())">
+    <sh-checkbox color="primary" variant="raised" [class.active]="showPrefix()" (click)="showPrefix.set(!showPrefix())">
       Prefix
     </sh-checkbox>
-    <sh-checkbox class="primary raised" [class.active]="showSuffix()" (click)="showSuffix.set(!showSuffix())">
+    <sh-checkbox color="primary" variant="raised" [class.active]="showSuffix()" (click)="showSuffix.set(!showSuffix())">
       Suffix
     </sh-checkbox>
-    <sh-checkbox class="primary raised" [class.active]="showHint()" (click)="showHint.set(!showHint())">
+    <sh-checkbox color="primary" variant="raised" [class.active]="showHint()" (click)="showHint.set(!showHint())">
       Hint
     </sh-checkbox>
-    <sh-checkbox class="primary raised" [class.active]="showError()" (click)="showError.set(!showError())">
+    <sh-checkbox color="primary" variant="raised" [class.active]="showError()" (click)="showError.set(!showError())">
       Error
     </sh-checkbox>
-    <sh-checkbox class="primary raised" [class.active]="disabled()" (click)="disabled.set(!disabled())">
+    <sh-checkbox color="primary" variant="raised" [class.active]="disabled()" (click)="disabled.set(!disabled())">
       Disabled
     </sh-checkbox>
   </div>
@@ -57,7 +57,7 @@
 </div>
 
 <div class="sandbox">
-  <sh-form-field [class]="size()">
+  <sh-form-field [variant]="size()">
     @if (showLabel()) {
       <label>{{ label() }}</label>
     }

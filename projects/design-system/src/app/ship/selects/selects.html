@@ -2,91 +2,83 @@
 
 <app-property-viewer>
   <section>
-    <h4>options</h4>
+    <h4>Options</h4>
     <p>
-      Array of options to display. Can be array of objects or strings.
-      <code>[options]="options()"</code>
+      Provide the data source using the
+      <code>options</code>
+      attribute. This can be an array of strings or objects.
     </p>
   </section>
 
   <section>
-    <h4>label</h4>
-    <p>
-      Key or property to use as the display label for each option passed as a string using dot notation.
-      <code>label="some.label.on.option.object"</code>
-    </p>
+    <h4>Labels & Values</h4>
+    <p>If your options are objects, specify which properties to use for display and selection:</p>
+    <ul>
+      <li>
+        <code>label</code>
+        : Property path to the display text (e.g.,
+        <code>"user.name"</code>
+        ).
+      </li>
+      <li>
+        <code>value</code>
+        : Property path to the selection value (e.g.,
+        <code>"user.id"</code>
+        ).
+      </li>
+    </ul>
   </section>
 
   <section>
-    <h4>value</h4>
-    <p>
-      Key or property to use as the value for each option passed as a string using dot notation.
-      <code>value="some.value.on.option.object"</code>
-    </p>
+    <h4>Selection Modes</h4>
+    <p>Toggle selection behavior:</p>
+    <ul>
+      <li>
+        <code>selectMultiple</code>
+        : Enables picking multiple options.
+      </li>
+      <li>
+        <code>isClearable</code>
+        : Adds a clear button to remove the selection (default: true).
+      </li>
+    </ul>
   </section>
 
   <section>
-    <h4>selectMultiple</h4>
-    <p>
-      Enable multiple selection mode.
-      <code>{{ '\<sh-select [selectMultiple]="true"...' }}</code>
-    </p>
+    <h4>Interaction</h4>
+    <ul>
+      <li>
+        <code>inlineSearch</code>
+        : Adds a search field within the dropdown to filter options.
+      </li>
+      <li>
+        <code>readonly</code>
+        : Prevents selection changes while maintaining focusability.
+      </li>
+      <li>
+        <code>disabled</code>
+        : Standard attribute to disable the component.
+      </li>
+    </ul>
   </section>
 
   <section>
-    <h4>disabled</h4>
+    <h4>Templates</h4>
     <p>
-      Disable the select input.
-      <code>{{ '\<sh-select>\<input [disabled]="true" />\</sh-select>' }}</code>
+      Customize rendering using
+      <code>ng-template</code>
+      :
     </p>
-  </section>
-
-  <section>
-    <h4>readonly</h4>
-    <p>
-      Make the select readonly by adding it to the select component.
-      <code>{{ '\<sh-select [readonly]="true"...' }}</code>
-    </p>
-  </section>
-
-  <section>
-    <h4>inlineSearch</h4>
-    <p>
-      Enable inline search/filtering of options.
-      <code>{{ '\<sh-select [inlineSearch]="true"...' }}</code>
-    </p>
-  </section>
-
-  <section>
-    <h4>isClearable</h4>
-    <p>
-      set to false to hide the clear button and make the field unclearable.
-      <code>{{ '\<sh-select [isClearable]="false"...' }}</code>
-    </p>
-  </section>
-
-  <section>
-    <h4>optionTemplate</h4>
-    <p>
-      Custom template for rendering options create a ng-template and pass it to the select component.
-      <code>{{ '\<sh-select [optionTemplate]="optionTemplate"...' }}</code>
-    </p>
-  </section>
-
-  <section>
-    <h4>placeholderTemplate</h4>
-    <p>
-      Custom template for rendering placeholder if you pass a optionTemplate it will be used as a fallback.
-      <code>{{ '\<sh-select [placeholderTemplate]="placeholderTemplate"...' }}</code>
-    </p>
-  </section>
-
-  <section>
-    <h4>selectedOptionsChanged</h4>
-    <p>
-      So ngModel triggers also when the dropdown are opened
-      <code>{{ '\<sh-select [placeholderTemplate]="placeholderTemplate"...' }}</code>
-    </p>
+    <ul>
+      <li>
+        <code>optionTemplate</code>
+        : Custom rendering for items in the dropdown.
+      </li>
+      <li>
+        <code>placeholderTemplate</code>
+        : Custom rendering for the selected state/placeholder.
+      </li>
+    </ul>
   </section>
 </app-property-viewer>
 

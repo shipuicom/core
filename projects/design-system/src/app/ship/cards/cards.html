@@ -2,13 +2,11 @@
 
 <app-property-viewer>
   <section>
-    <h4>Types</h4>
+    <h4>Variants</h4>
     <p>
-      Card types can be set through the class, e.g.
-      <code>class="type-a"</code>
-      .
-      <br />
-      Available types:
+      Card variants can be set using the
+      <code>variant</code>
+      attribute. Available options:
       <b>type-a</b>
       ,
       <b>type-b</b>
@@ -16,7 +14,7 @@
       <b>type-c</b>
       , and
       <b>default</b>
-      (no class).
+      .
     </p>
   </section>
   <section>
@@ -24,10 +22,9 @@
     <p>
       Use
       <code>&lt;sh-toggle-card&gt;</code>
-      for a card with collapsible content.
-      <br />
-      <b>disallowToggle</b>
-      input disables toggling and keeps the card open.
+      for collapsible content. Use the
+      <code>disallowToggle</code>
+      attribute or binding to keep the card open.
     </p>
   </section>
 </app-property-viewer>

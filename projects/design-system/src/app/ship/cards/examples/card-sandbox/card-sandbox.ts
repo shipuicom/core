@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ShipButtonGroup, ShipCard, ShipToggle, ShipToggleCard } from 'ship-ui';
 
 @Component({
@@ -12,6 +12,4 @@ export class CardSandbox {
   cardType = signal<'type-a' | 'type-b' | 'type-c'>('type-a');
   useToggleCard = signal<boolean>(false);
   disallowToggle = signal<boolean>(false);
-
-  cardClass = computed(() => (this.cardType() === 'type-a' ? '' : this.cardType()));
 }

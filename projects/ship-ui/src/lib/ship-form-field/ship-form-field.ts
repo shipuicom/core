@@ -1,4 +1,14 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, HostListener, inject } from '@angular/core';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostListener,
+  inject,
+  input,
+} from '@angular/core';
+import { shipComponentClasses } from '../utilities/ship-component';
+import { ShipColor, ShipSheetVariant, ShipSize } from '../utilities/ship-types';
 
 @Component({
   selector: 'sh-form-field',
@@ -34,9 +44,24 @@ import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, HostLi
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class]': 'hostClasses()',
+  },
 })
 export class ShipFormField {
   #selfRef = inject(ElementRef);
+
+  color = input<ShipColor | null>(null);
+  variant = input<ShipSheetVariant | null>(null);
+  size = input<ShipSize | null>(null);
+  readonly = input<boolean>(false);
+
+  hostClasses = shipComponentClasses('formField', {
+    color: this.color,
+    variant: this.variant,
+    size: this.size,
+    readonly: this.readonly,
+  });
 
   @HostListener('click')
   onClick() {

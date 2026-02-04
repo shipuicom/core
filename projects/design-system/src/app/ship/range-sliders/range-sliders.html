@@ -2,85 +2,87 @@
 
 <app-property-viewer>
   <section>
-    <h4>ngModel / formControl</h4>
+    <h4>Binding</h4>
     <p>
-      Two-way bindable value for the slider. Use
+      Two-way bindable value. Use
       <code>[(ngModel)]</code>
       or
       <code>[formControl]</code>
-      for reactive forms.
+      .
     </p>
   </section>
   <section>
-    <h4>min</h4>
+    <h4>Constraints</h4>
     <p>
-      Minimum value of the slider.
-      <code>[min]="0"</code>
-      (default:
-      <code>0</code>
-      )
+      Set the range limits and increments using the
+      <code>min</code>
+      ,
+      <code>max</code>
+      , and
+      <code>step</code>
+      attributes.
     </p>
   </section>
   <section>
-    <h4>max</h4>
+    <h4>Visuals</h4>
+    <p>Customize the look and feel:</p>
+    <ul>
+      <li>
+        <code>color</code>
+        :
+        <b>primary</b>
+        ,
+        <b>accent</b>
+        ,
+        <b>warn</b>
+        ,
+        <b>success</b>
+        , or
+        <b>error</b>
+        .
+      </li>
+      <li>
+        <code>variant</code>
+        :
+        <b>base</b>
+        ,
+        <b>thick</b>
+        ,
+        <b>outlined</b>
+        ,
+        <b>flat</b>
+        , or
+        <b>raised</b>
+        .
+      </li>
+      <li>
+        <code>sharp</code>
+        : Use sharp corners instead of rounded.
+      </li>
+      <li>
+        <code>always-show</code>
+        : Keep the value indicator visible at all times.
+      </li>
+    </ul>
+  </section>
+  <section>
+    <h4>Unit</h4>
     <p>
-      Maximum value of the slider.
-      <code>[max]="100"</code>
-      (default:
-      <code>100</code>
-      )
+      Specify a suffix for the value display using the
+      <code>unit</code>
+      attribute (e.g.,
+      <code>unit="%"</code>
+      ).
     </p>
   </section>
   <section>
-    <h4>step</h4>
+    <h4>Disabled</h4>
     <p>
-      Step size for the slider.
-      <code>[step]="1"</code>
-      (default:
-      <code>1</code>
-      )
-    </p>
-  </section>
-  <section>
-    <h4>disabled</h4>
-    <p>
-      Disable the slider.
-      <code>[disabled]="true"</code>
-    </p>
-  </section>
-  <section>
-    <h4>color</h4>
-    <p>
-      Color theme for the slider.
-      <code>[color]="'primary' | 'accent' | 'warn' | 'success' | 'error'"</code>
-    </p>
-  </section>
-  <section>
-    <h4>always-show</h4>
-    <p>
-      Always show the value indicator.
-      <code>[always-show]="true"</code>
-    </p>
-  </section>
-  <section>
-    <h4>sharp</h4>
-    <p>
-      Use sharp corners for the slider.
-      <code>[sharp]="true"</code>
-    </p>
-  </section>
-  <section>
-    <h4>unit</h4>
-    <p>
-      Unit of the slider.
-      <code>[unit]="'%'"</code>
-    </p>
-  </section>
-  <section>
-    <h4>variation</h4>
-    <p>
-      Variation of the slider.
-      <code>[variation]="'base' | 'thick' | 'outlined' | 'flat' | 'raised'"</code>
+      The slider can be disabled using the standard
+      <code>disabled</code>
+      attribute or
+      <code>[disabled]</code>
+      binding.
     </p>
   </section>
 </app-property-viewer>

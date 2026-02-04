@@ -2,46 +2,44 @@
 
 <app-property-viewer>
   <section>
-    <h4>
-      files
-      <small>(two-way binding)</small>
-    </h4>
+    <h4>Files</h4>
     <p>
-      The array of selected files. Use
+      Selected files are available via the
+      <code>files</code>
+      attribute. Use
       <code>[(files)]</code>
       for two-way binding.
     </p>
   </section>
   <section>
-    <h4>multiple</h4>
-    <p>
-      Allows selection of multiple files. Use
-      <code>[multiple]="true"</code>
-      to enable.
-    </p>
+    <h4>Selection</h4>
+    <p>Customize selection behavior:</p>
+    <ul>
+      <li>
+        <code>multiple</code>
+        : Allows selecting more than one file.
+      </li>
+      <li>
+        <code>accept</code>
+        : Restricts file types (e.g.,
+        <code>accept=".png,.jpg"</code>
+        ).
+      </li>
+    </ul>
   </section>
   <section>
-    <h4>accept</h4>
-    <p>
-      Restricts selectable file types just like the native input. Example:
-      <code>accept=".png,.jpg,.pdf"</code>
-    </p>
-  </section>
-  <section>
-    <h4>placeholder</h4>
-    <p>
-      Placeholder text shown when no files are selected. Use
-      <code>[placeholder]</code>
-      to customize.
-    </p>
-  </section>
-  <section>
-    <h4>overlayText</h4>
-    <p>
-      Text shown when dragging files over the drop area. Use
-      <code>[overlayText]</code>
-      to customize.
-    </p>
+    <h4>Text</h4>
+    <p>Customize displayed labels:</p>
+    <ul>
+      <li>
+        <code>placeholder</code>
+        : Text shown when empty.
+      </li>
+      <li>
+        <code>overlayText</code>
+        : Text shown during drag-and-drop.
+      </li>
+    </ul>
   </section>
 </app-property-viewer>
 

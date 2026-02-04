@@ -4,33 +4,37 @@
   <section>
     <h4>Variants</h4>
     <p>
-      Chip variants can be set through the class ex
-      <code>class="simple"</code>
-      takes
+      Chip variants can be set using the
+      <code>variant</code>
+      attribute. Valid options are:
       <b>simple</b>
       ,
       <b>outlined</b>
       ,
       <b>flat</b>
-      and
+      , and
       <b>raised</b>
+      .
     </p>
   </section>
 
   <section>
     <h4>Sizes</h4>
     <p>
-      Chip sizes can be set through the class ex
-      <code>class="small"</code>
+      Chip sizes can be set using the
+      <code>size</code>
+      attribute. For example:
+      <code>size="small"</code>
+      .
     </p>
   </section>
 
   <section>
     <h4>Colors</h4>
     <p>
-      Chip colors can be set through the class ex
-      <code>class="primary"</code>
-      takes
+      Chip colors can be set using the
+      <code>color</code>
+      attribute. Valid options are:
       <b>primary</b>
       ,
       <b>accent</b>
@@ -38,19 +42,20 @@
       <b>warn</b>
       ,
       <b>error</b>
-      and
+      , and
       <b>success</b>
+      .
     </p>
   </section>
 
   <section>
-    <h4>Dynamic coloring</h4>
+    <h4>Dynamic Coloring</h4>
     <p>
-      You can set a color using the css variable
+      You can set a custom color using the CSS variable
       <code>--chip-c</code>
-      together with the class
+      together with the
       <code>dynamic</code>
-      . This way you can support a wide range of colors for fx tagging purposes.
+      input (as an attribute or binding). This is ideal for tagging purposes where you need a wide range of colors.
     </p>
   </section>
 
@@ -59,17 +64,31 @@
     <p>
       Chips can contain icons using the
       <code>sh-icon</code>
-      component. Use
+      component. Use the
       <code>suffix</code>
       attribute for trailing icons.
     </p>
   </section>
 
   <section>
+    <h4>Readonly</h4>
+    <p>
+      The chip can be set to readonly through the
+      <code>readonly</code>
+      input (adds the
+      <code>readonly</code>
+      class).
+    </p>
+  </section>
+
+  <section>
     <h4>Disabled</h4>
     <p>
-      The chip can be set to disabled through the attribute ex
+      The chip can be disabled using the standard
+      <code>disabled</code>
+      attribute or
       <code>[disabled]</code>
+      binding.
     </p>
   </section>
 </app-property-viewer>

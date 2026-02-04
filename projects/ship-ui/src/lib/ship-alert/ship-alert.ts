@@ -1,12 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject, input } from '@angular/core';
 import { ShipIcon } from '../ship-icon/ship-icon';
-import { classMutationSignal } from '../utilities/class-mutation-signal';
-import { SHIP_CONFIG } from '../utilities/ship-config';
+import { shipComponentClasses } from '../utilities/ship-component';
+import { ShipColor, ShipSheetVariant } from '../utilities/ship-types';
 import { ShipAlertService } from './ship-alert.service';
 
 export type ShipAlertType = 'error' | 'success' | 'warn' | 'primary' | 'accent' | 'question';
-
-const POSSIBLE_VARIANTS = ['simple', 'outlined', 'flat', 'raised'];
 
 @Component({
   selector: 'sh-alert',
@@ -19,7 +17,7 @@ const POSSIBLE_VARIANTS = ['simple', 'outlined', 'flat', 'raised'];
       </div>
 
       <div class="icon">
-        @let _alertClasses = currentClasses();
+        @let _alertClasses = hostClasses();
 
         @if (_alertClasses.includes('primary')) {
           <sh-icon class="state-icon">info</sh-icon>
@@ -47,6 +45,7 @@ const POSSIBLE_VARIANTS = ['simple', 'outlined', 'flat', 'raised'];
 
       <div class="actions">
         <ng-content select="button" />
+        <ng-content select="[actions]" />
       </div>
 
       <div class="content">
@@ -57,26 +56,22 @@ const POSSIBLE_VARIANTS = ['simple', 'outlined', 'flat', 'raised'];
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '[class]': 'activeClass()',
+    class: 'sh-sheet',
+    '[class]': 'hostClasses()',
   },
 })
 export class ShipAlert {
-  #shConfig = inject(SHIP_CONFIG, { optional: true });
-  variant = signal<string>(this.#shConfig?.alertVariant ?? '');
+  color = input<ShipColor | null>(null);
+  variant = input<ShipSheetVariant | null>(null);
+
+  hostClasses = shipComponentClasses('alert', {
+    color: this.color,
+    variant: this.variant,
+  });
+
   _el = inject(ElementRef); // Used by alert container
   alertService = input<ShipAlertService | null>(null);
   id = input<string | null>(null);
-
-  currentClasses = classMutationSignal();
-  activeClass = computed(() => {
-    const variant = this.variant();
-    const _current = `${this.currentClasses()} sh-sheet`;
-
-    if (!variant) return _current;
-
-    const hasVariant = POSSIBLE_VARIANTS.find((x) => this.currentClasses().includes(x));
-    return hasVariant ? _current : `${_current} ${variant}`;
-  });
 
   removeAlert() {
     if (this.id() && this.alertService()) {

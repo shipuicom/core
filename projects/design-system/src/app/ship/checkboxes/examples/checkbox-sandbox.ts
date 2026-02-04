@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ShipButtonGroup, ShipCheckbox, ShipToggle } from 'ship-ui';
 
@@ -15,7 +15,6 @@ export class CheckboxSandbox {
   isDisabled = signal<boolean>(false);
   colorClass = signal<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
   variationClass = signal<'' | 'simple' | 'outlined' | 'flat' | 'raised'>('raised');
-  exampleClass = computed(() => this.colorClass() + ' ' + this.variationClass());
 
   isChecked = signal<boolean>(true);
   formCtrl = new FormControl<boolean | null>(true);

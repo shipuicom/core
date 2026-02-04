@@ -1,6 +1,6 @@
 <pre>Sort column by: {{ sortByColumn() }}</pre>
 
-<sh-table [data]="dataSource()" [(sortByColumn)]="sortByColumn" [class]="type()">
+<sh-table [data]="dataSource()" [(sortByColumn)]="sortByColumn" [variant]="variant()">
   <tr>
     @for (col of displayedColumns(); track col) {
       <th [shSort]="col">

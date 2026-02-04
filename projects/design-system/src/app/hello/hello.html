@@ -1,49 +1,87 @@
-<h1>Hello and welcome to ⛵ShipUI!</h1>
+<section class="hero">
+  <sh-chip color="primary" variant="outlined" size="small" class="badge">Open Source Beta</sh-chip>
+  <h1>Welcome to ⛵ShipUI</h1>
+  <p>
+    The ultimate UI foundation for Angular 19+. Built with passion to help you ship beautiful, consistent, and
+    high-performing applications.
+  </p>
+  <div class="actions">
+    <button shButton variant="raised" color="primary" class="large" routerLink="/buttons">Explore Components</button>
+    <button
+      shButton
+      variant="outlined"
+      class="large"
+      (click)="window.open('https://github.com/shipuicom/core', '_blank')">
+      <sh-icon>star</sh-icon>
+      Star on GitHub
+    </button>
+  </div>
+</section>
 
-<p>
-  Ship UI is a UI library for
-  <a href="https://angular.io/" target="_blank">Angular.</a>
-  It's built to have a minimal set of dependencies and use the cutting edge features of angular.
-</p>
+<section class="stats">
+  <div class="stat-item">
+    <div class="value">0</div>
+    <div class="label">Runtime dependencies</div>
+  </div>
+  <div class="stat-item">
+    <div class="value">100%</div>
+    <div class="label">Signal Based</div>
+  </div>
+  <div class="stat-item">
+    <div class="value">Modern</div>
+    <div class="label">Zoneless compatible</div>
+  </div>
+</section>
 
-<p>Ship UI are signal based and Zoneless compliant.</p>
+<section class="manifesto">
+  <div class="content">
+    <h2>Why ShipUI?</h2>
+    <p>
+      We were frustrated that most UI libraries look clunky and many teams fail to ship good-looking products. Most UI
+      libs come with inconsistent API design, heavy dependencies, and monstrous CSS files.
+    </p>
+    <p>
+      ShipUI is our answer. Developed while building real-world applications like
+      <strong>Duplicati</strong>
+      , it focuses on what actually matters: agility, consistency, and style.
+    </p>
+  </div>
+</section>
 
-<p>
-  Nothing is perfect from the beginning this is why ShipUI have been developed while also being used in a range of
-  applications like
-  <a href="https://duplicati.com/" target="_blank" rel="noopener noreferrer">Duplicati</a>
-  its used in their console and client.
-</p>
+<sh-divider />
 
-<p>
-  We will keep developing more smaller apps and maintain their codebases so you have some open source examples on how to
-  build different types of applications with ShipUI.
-</p>
+<section class="team">
+  <h2>The Minds Behind ShipUI</h2>
+  <div class="profiles">
+    <div class="profile">
+      <div class="avatar">
+        <img src="https://unavatar.io/twitter/mortenpx" alt="Morten" />
+      </div>
+      <h4>Morten</h4>
+      <p style="color: var(--base-7); margin: 0">Design & Vision</p>
+      <a href="https://x.com/mortenpx" target="_blank">&#x40;mortenpx</a>
+    </div>
 
-<p>
-  There are a couple of reasons why ShipUI came to be, first and foremost the design
-  <a href="https://x.com/mortenpx" target="_blank" rel="noopener noreferrer">&#x40;mortenpx</a>
-  and I
-  <a href="https://x.com/SimonBitwise" target="_blank" rel="noopener noreferrer">&#x40;simonbitwise</a>
-  have been frustrated that most UI look clunky and many teams fail to ship good looking products we both have more than
-  15years of experience in our respective fields. So in the end of 2023 to start 2024 we decided to do something about
-  it. ShipUI are a product of a share frustration from a developer perspektive i feel most UI libs comes with
-  inconsistent API design, many dependencies, lacking key feature and ships monstrosities of a css file.
-</p>
+    <div class="profile">
+      <div class="avatar">
+        <img src="https://unavatar.io/twitter/simonbitwise" alt="Simon" />
+      </div>
+      <h4>Simon</h4>
+      <p style="color: var(--base-7); margin: 0">Engineering & DX</p>
+      <a href="https://x.com/SimonBitwise" target="_blank">&#x40;simonbitwise</a>
+    </div>
+  </div>
+</section>
 
-<p>
-  We wanted to make something that was agile enough so you could adapt it for your product, but also something that was
-  simple and consistent to use.
-</p>
-
-<p>
-  Ship will never be finished and we have a loooong list of components and features we wanna ship swing by the
-  <a href="https://github.com/shipuicom/core" target="_blank" rel="noopener noreferrer">README.MD</a>
-  on our github repo to read more about what kind if UI elements we wanna ship but also what kind of features we wanna
-  add.
-</p>
-
-<p>
-  It's gonna be in a public pre-release beta for a while because we wanna be able to rewrite how components are used
-  completely.
-</p>
+<section style="text-align: center; background: var(--base-2); padding: 60px; border-radius: 24px">
+  <h2 style="margin-bottom: 24px">Ready to start building?</h2>
+  <button
+    shButton
+    variant="raised"
+    color="primary"
+    size="small"
+    style="padding: 0 40px; height: 50px"
+    routerLink="/getting-started">
+    Get Started Now
+  </button>
+</section>

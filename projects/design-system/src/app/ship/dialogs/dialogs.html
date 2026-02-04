@@ -4,40 +4,51 @@
 
 <app-property-viewer>
   <section>
-    <h4>options</h4>
+    <h4>Customization</h4>
     <p>
-      Dialog options object:
-      <code>width, height, maxWidth, maxHeight, closeOnButton, closeOnEsc, closeOnOutsideClick, class</code>
+      The
+      <code>options</code>
+      attribute accepts a configuration object for:
+      <code>width</code>
+      ,
+      <code>height</code>
+      ,
+      <code>maxWidth</code>
+      ,
+      <code>maxHeight</code>
+      ,
+      <code>closeOnButton</code>
+      ,
+      <code>closeOnEsc</code>
+      , and
+      <code>closeOnOutsideClick</code>
       .
     </p>
   </section>
 
   <section>
-    <h4>variants</h4>
+    <h4>Variants</h4>
     <p>
-      Dialog have two variants:
-      <code>default</code>
+      Dialogs support multiple layouts via the
+      <code>variant</code>
+      attribute. Valid options:
+      <b>default</b>
       and
-      <code>type-b</code>
-      . .
+      <b>type-b</b>
+      .
     </p>
   </section>
 
   <section>
-    <h4>Data Passing</h4>
-    <p>You can pass data to the dialog content component and handle the close event with a callback.</p>
-  </section>
-
-  <section>
-    <h4>Header/Content/Footer</h4>
+    <h4>Slots</h4>
     <p>
-      Use
+      Structure your dialog content using the
       <code>header</code>
       ,
       <code>content</code>
       , and
       <code>footer</code>
-      attributes for layout slots. Sticky header/footer supported.
+      attributes on container elements.
     </p>
   </section>
 </app-property-viewer>

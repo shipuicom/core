@@ -6,7 +6,7 @@ import { ShipThemeOption, ShipThemeState } from './ship-theme-state';
   selector: 'ship-theme-toggle',
   imports: [ShipIcon, ShipButton],
   template: `
-    <button shButton class="small" (click)="toggleTheme()">
+    <button shButton size="small" (click)="toggleTheme()">
       @if (theme() === 'dark') {
         <sh-icon>moon-bold</sh-icon>
       } @else if (theme() === 'light') {
