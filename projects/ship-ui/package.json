@@ -1,10 +1,11 @@
 {
   "name": "@ship-ui/core",
   "license": "MIT",
-  "version": "0.17.0",
+  "version": "0.17.1",
   "peerDependencies": {
     "@angular/common": ">=20",
-    "@angular/core": ">=20"
+    "@angular/core": ">=20",
+    "@modelcontextprotocol/sdk": ">=1.25"
   },
   "homepage": "https://shipui.com",
   "repository": {
@@ -25,8 +26,7 @@
     "subset-font": "^2.3.0",
     "@phosphor-icons/web": "^2.1.1",
     "glob": "11.0.3",
-    "tslib": "^2.3.0",
-    "@modelcontextprotocol/sdk": "^1.25.3"
+    "tslib": "^2.3.0"
   },
   "bin": {
     "ship-fg": "./bin/ship-fg-node",
