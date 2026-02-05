@@ -18,14 +18,13 @@ jobs:
       - name: Deepen Clone
         run: git fetch --unshallow
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: '20'
-          cache: 'npm'
+          bun-version: latest
 
       - name: Install Dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Check if package.json was modified
         id: check_package_json_change
@@ -41,13 +40,13 @@ jobs:
 
       - name: Build Library
         if: env.changed == 'true' && github.ref == 'refs/heads/main'
-        run: npm run build:prod
+        run: bun run build:prod
 
       - name: Publish (if package.json changed)
         if: env.changed == 'true' && github.ref == 'refs/heads/main'
         working-directory: ./dist/ship-ui
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
-          npm publish --access public
+          bun publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }} # Your NPM token from secrets
