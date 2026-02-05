@@ -28,7 +28,7 @@
     "gen:font": "node ./dist/ship-ui/bin/ship-fg-node --src='./projects/design-system/src' --out='./projects/design-system/public' --rootPath='/' --verbose",
     "watch:font": "node ./dist/ship-ui/bin/ship-fg-node --src='./projects/design-system/src' --out='./projects/design-system/public' --rootPath='/' --watch --verbose",
     "start": "bun run watch:font & ng serve --port=4205",
-    "mcp:prep": "bun mcp-server/scan.ts && mkdir -p projects/ship-ui/bin/mcp && bun build mcp-server/index.ts --outfile projects/ship-ui/bin/mcp/index.js --target node --bundle && echo '#!/usr/bin/env node' | cat - projects/ship-ui/bin/mcp/index.js > projects/ship-ui/bin/mcp/index.js.tmp && mv projects/ship-ui/bin/mcp/index.js.tmp projects/ship-ui/bin/mcp/index.js && chmod +x projects/ship-ui/bin/mcp/index.js",
+    "mcp:prep": "bun mcp-server/scan.ts && mkdir -p projects/ship-ui/bin/mcp && bun build mcp-server/index.ts --outfile projects/ship-ui/bin/mcp/index.js --target node --bundle && chmod +x projects/ship-ui/bin/mcp/index.js",
     "build": "bun run mcp:prep && ng build ship-ui",
     "test": "ng test ship-ui",
     "build:prod": "bun run mcp:prep && ng build ship-ui --configuration production",
