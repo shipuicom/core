@@ -11,7 +11,7 @@
   </p>
   <div class="actions">
     <button shButton variant="raised" color="primary" routerLink="/buttons">Explore Components</button>
-    <button shButton variant="outlined" (click)="window.open('https://github.com/shipuicom/core', '_blank')">
+    <button shButton variant="outlined" (click)="openGithub()">
       <sh-icon>github-logo</sh-icon>
       GitHub
     </button>
@@ -143,6 +143,76 @@
           </div>
         </div>
       </sh-card>
+    </div>
+  </div>
+</section>
+
+<section class="setup-section">
+  <div class="section-header">
+    <h2>AI & MCP Setup</h2>
+    <p>Enable AI agents to understand and use ShipUI components directly in your editor.</p>
+  </div>
+
+  <div class="mcp-setup-container">
+    <sh-tabs color="primary">
+      <button [class.active]="activeMcpTab() === 'cursor'" (click)="activeMcpTab.set('cursor')">
+        <sh-icon>mouse</sh-icon>
+        Cursor
+      </button>
+      <button [class.active]="activeMcpTab() === 'vscode'" (click)="activeMcpTab.set('vscode')">
+        <sh-icon>terminal</sh-icon>
+        VS Code
+      </button>
+      <button [class.active]="activeMcpTab() === 'windsurf'" (click)="activeMcpTab.set('windsurf')">
+        <sh-icon>wave-triangle</sh-icon>
+        Windsurf
+      </button>
+      <button [class.active]="activeMcpTab() === 'webstorm'" (click)="activeMcpTab.set('webstorm')">
+        <sh-icon>code</sh-icon>
+        WebStorm
+      </button>
+      <button [class.active]="activeMcpTab() === 'antigravity'" (click)="activeMcpTab.set('antigravity')">
+        <sh-icon>waveform</sh-icon>
+        Antigravity
+      </button>
+    </sh-tabs>
+
+    <div class="tab-content">
+      @if (activeMcpTab() === 'cursor') {
+        <div class="setup-item">
+          <h4>Cursor Configuration</h4>
+          <p>Go to Settings > Models > MCP and add a new command server.</p>
+          <app-highlight lang="ts" [content]="CURSOR_CONFIG" />
+        </div>
+      } @else if (activeMcpTab() === 'vscode') {
+        <div class="setup-item">
+          <h4>VS Code Configuration</h4>
+          <p>Use an MCP-compatible extension like Cline, Roo Code, or Continue.</p>
+          <app-highlight lang="ts" [content]="VSCODE_CONFIG" />
+        </div>
+      } @else if (activeMcpTab() === 'windsurf') {
+        <div class="setup-item">
+          <h4>Windsurf Configuration</h4>
+          <p>Add the configuration to your Codeium user settings.</p>
+          <app-highlight lang="ts" [content]="WINDSURF_CONFIG" />
+        </div>
+      } @else if (activeMcpTab() === 'webstorm') {
+        <div class="setup-item">
+          <h4>WebStorm Configuration</h4>
+          <p>
+            Available in version 2024.3+. Go to
+            <b>Settings | Tools | MCP Servers</b>
+            .
+          </p>
+          <app-highlight lang="ts" [content]="WEBSTORM_CONFIG" />
+        </div>
+      } @else if (activeMcpTab() === 'antigravity') {
+        <div class="setup-item">
+          <h4>Antigravity Configuration</h4>
+          <p>Add the following to your MCP servers list or workspace configuration.</p>
+          <app-highlight lang="ts" [content]="ANTIGRAVITY_CONFIG" />
+        </div>
+      }
     </div>
   </div>
 </section>

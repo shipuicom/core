@@ -78,10 +78,34 @@ ShipUI comes with built-in tools to enhance your development workflow through AI
 
 ShipUI includes an MCP server that allows AI agents (like Cursor, Claude Desktop, or custom tools) to understand and correctly use ShipUI components.
 
-To start the MCP server:
+#### Setup in Editors
+
+To use ShipUI with your favorite AI-powered editor, add the following configuration:
+
+**Command:** `npx @ship-ui/core ship-mcp`
+
+- **Cursor**:
+  1. Go to **Settings** > **Models** > **MCP**.
+  2. Click **+ Add new MCP server**.
+  3. Name: `ShipUI`, Type: `command`, Command: `npx @ship-ui/core ship-mcp`.
+- **Antigravity**:
+  1. Open your workspace or global configuration.
+  2. Add `@ship-ui/core` to your `mcpServers` list or run with `npx @ship-ui/core ship-mcp`.
+- **Claude Desktop**:
+  Add to your `claude_desktop_config.json`:
+  ```json
+  "mcpServers": {
+    "ship-ui": {
+      "command": "npx",
+      "args": ["-y", "@ship-ui/core", "ship-mcp"]
+    }
+  }
+  ```
+
+To manually verify the server is working:
 
 ```sh
-npx ship-mcp
+npx @ship-ui/core ship-mcp
 ```
 
 ### VS Code Snippets
