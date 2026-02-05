@@ -29,6 +29,7 @@ interface ComponentData {
   description?: string;
   inputs: { name: string; type: string; description?: string; defaultValue?: string; options?: string[] }[];
   outputs: { name: string; type: string; description?: string }[];
+  methods: { name: string; parameters: string; returnType: string; description?: string }[];
   cssVariables: { name: string; defaultValue?: string; description?: string }[];
   examples: {
     name: string;
@@ -135,14 +136,23 @@ function scanComponents() {
       } else if (file.endsWith('.ts') && !file.endsWith('.spec.ts')) {
         const content = fs.readFileSync(filePath, 'utf-8');
 
-        if (content.includes('@Component') || content.includes('@Directive')) {
+        if (content.includes('@Component') || content.includes('@Directive') || content.includes('@Injectable')) {
           const selectorMatch = content.match(/selector:\s*['"](.*?)['"]/);
           const classNameMatch = content.match(/export class (\w+)/);
 
-          if (selectorMatch && classNameMatch) {
+          if (classNameMatch) {
             const name = classNameMatch[1];
-            const selector = selectorMatch[1];
-            if (!name || !selector) continue;
+            if (!name) continue;
+
+            let selector = selectorMatch ? selectorMatch[1] : '';
+
+            if (!selector && content.includes('@Injectable')) {
+              // Generate a selector for services so they can be searched
+              selector = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+              if (!selector.endsWith('-service') && name.endsWith('Service')) selector += '-service';
+            }
+
+            if (!selector) continue;
 
             // Extract inputs
             const inputs: ComponentData['inputs'] = [];
@@ -247,6 +257,48 @@ function scanComponents() {
             }
 
             const uniqueOutputs = Array.from(new Map(outputs.map((o) => [o.name, o])).values());
+
+            // Extract methods
+            const methods: ComponentData['methods'] = [];
+
+            // This is a naive regex but should capture most public methods in our codebase
+            // We look for method definitions that aren't inputs/outputs/models/etc
+            const methodMatches = content.matchAll(
+              /^(?:\s+)?(?:public\s+)?(\w+)\s*(?:<[\s\S]*?>)?\s*\(([\s\S]*?)\)\s*(?::\s*([^\{]*))?\s*{/gm
+            );
+            for (const match of methodMatches) {
+              const methodName = match[1];
+              if (!methodName) continue;
+
+              // Filter out known lifecycle hooks and other properties
+              if (
+                [
+                  'constructor',
+                  'ngOnInit',
+                  'ngOnDestroy',
+                  'ngOnChanges',
+                  'ngAfterViewInit',
+                  'if',
+                  'for',
+                  'switch',
+                  'setTimeout',
+                  'setInterval',
+                  'queueMicrotask',
+                ].includes(methodName)
+              )
+                continue;
+              if (uniqueInputs.some((i) => i.name === methodName)) continue;
+              if (uniqueOutputs.some((o) => o.name === methodName)) continue;
+
+              methods.push({
+                name: methodName,
+                parameters: match[2]?.trim() || '',
+                returnType: match[3]?.trim() || 'any',
+                description: getJsDoc(content, methodName),
+              });
+            }
+
+            const uniqueMethods = Array.from(new Map(methods.map((m) => [m.name, m])).values());
 
             // Extract CSS variables from SCSS
             const cssVariables: ComponentData['cssVariables'] = [];
@@ -394,6 +446,7 @@ function scanComponents() {
               description,
               inputs: uniqueInputs,
               outputs: uniqueOutputs,
+              methods: uniqueMethods,
               cssVariables,
               examples,
             });
@@ -414,6 +467,7 @@ function scanComponents() {
     description: 'Global CSS variables for ShipUI including colors, typography, and spacing.',
     inputs: [],
     outputs: [],
+    methods: [],
     cssVariables: globalVariables,
     examples: [],
   });
@@ -427,6 +481,7 @@ function scanComponents() {
       'Common CSS variables for components using the "sh-sheet" class. These variables control background, border, and color scales for different variants.',
     inputs: [],
     outputs: [],
+    methods: [],
     cssVariables: sheetVariables,
     examples: [],
   });

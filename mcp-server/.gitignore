@@ -5,6 +5,7 @@ node_modules
 out
 dist
 *.tgz
+components.json
 
 # code coverage
 coverage

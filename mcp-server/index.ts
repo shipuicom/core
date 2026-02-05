@@ -27,6 +27,7 @@ interface ComponentData {
   description?: string;
   inputs: { name: string; type: string; description?: string; defaultValue?: string; options?: string[] }[];
   outputs: { name: string; type: string; description?: string }[];
+  methods: { name: string; parameters: string; returnType: string; description?: string }[];
   cssVariables: { name: string; defaultValue?: string; description?: string }[];
   examples: {
     name: string;
@@ -238,6 +239,13 @@ ${component.outputs.map((o) => `- ${o.name} (${o.type})${o.description ? `: ${o.
 
 CSS Variables:
 ${component.cssVariables.map((v) => `- ${v.name}${v.defaultValue ? ` (default: ${v.defaultValue})` : ''}`).join('\n')}
+
+Methods:
+${
+  component.methods
+    ?.map((m) => `- ${m.name}(${m.parameters}): ${m.returnType}${m.description ? `: ${m.description}` : ''}`)
+    .join('\n') || 'None'
+}
 
 Example HTML:
 \`\`\`html
