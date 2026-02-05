@@ -2,7 +2,7 @@
   {
     "name": "ShipTooltipWrapper",
     "selector": "ship-tooltip-wrapper",
-    "path": "ship-ui/projects/ship-ui/src/lib/directives/ship-tooltip.directive.ts",
+    "path": "projects/ship-ui/src/lib/directives/ship-tooltip.directive.ts",
     "description": "",
     "inputs": [
       {
@@ -19,7 +19,7 @@
   {
     "name": "ShipFileDragDrop",
     "selector": "[shDragDrop]",
-    "path": "ship-ui/projects/ship-ui/src/lib/directives/ship-file-drag-drop.directive.ts",
+    "path": "projects/ship-ui/src/lib/directives/ship-file-drag-drop.directive.ts",
     "description": "",
     "inputs": [],
     "outputs": [
@@ -40,7 +40,7 @@
   {
     "name": "ShipInputMask",
     "selector": "[shInputMask]",
-    "path": "ship-ui/projects/ship-ui/src/lib/directives/ship-input-mask.ts",
+    "path": "projects/ship-ui/src/lib/directives/ship-input-mask.ts",
     "description": "",
     "inputs": [
       {
@@ -57,7 +57,7 @@
   {
     "name": "ShipPreventWheel",
     "selector": "[shPreventWheel]",
-    "path": "ship-ui/projects/ship-ui/src/lib/directives/ship-prevent-wheel.directive.ts",
+    "path": "projects/ship-ui/src/lib/directives/ship-prevent-wheel.directive.ts",
     "description": "",
     "inputs": [],
     "outputs": [],
@@ -67,7 +67,7 @@
   {
     "name": "ShipSidenav",
     "selector": "sh-sidenav",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-sidenav/ship-sidenav.ts",
+    "path": "projects/ship-ui/src/lib/ship-sidenav/ship-sidenav.ts",
     "description": "### Variants\n\nSidenavs support multiple behaviors via the\n`variant`\nattribute:\n\n<li>\n**default**\n: Fixed position, non-toggleable.\n</li>\n<li>\n**simple**\n: Support for toggling width (e.g., icon-only vs. full expanded view).\n</li>\n<li>\n**overlay**\n: Overlays content when opened and supports swipe-to-close gestures.\n</li>\n\n### Drag Interaction\n\nUse the\n`disableDrag`\nattribute/binding to disable swipe gestures on the\n**overlay**\nvariant.",
     "inputs": [
       {
@@ -109,7 +109,7 @@
   {
     "name": "ShipCard",
     "selector": "sh-card",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-card/ship-card.ts",
+    "path": "projects/ship-ui/src/lib/ship-card/ship-card.ts",
     "description": "### Variants\n\nCard variants can be set using the\n`variant`\nattribute. Available options:\n**type-a**\n,\n**type-b**\n,\n**type-c**\n, and\n**default**\n.\n\n### Toggle Card\n\nUse\n`&lt;sh-toggle-card&gt;`\nfor collapsible content. Use the\n`disallowToggle`\nattribute or binding to keep the card open.",
     "inputs": [
       {
@@ -200,7 +200,7 @@
   {
     "name": "ShipFormFieldExperimental",
     "selector": "sh-form-field-experimental",
-    "path": "ship-ui/projects/ship-ui/src/lib/sh-form-field-experimental/sh-form-field-experimental.ts",
+    "path": "projects/ship-ui/src/lib/sh-form-field-experimental/sh-form-field-experimental.ts",
     "description": "",
     "inputs": [],
     "outputs": [],
@@ -210,8 +210,8 @@
   {
     "name": "ShipEventCard",
     "selector": "sh-event-card",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-event-card/ship-event-card.ts",
-    "description": "### Variants\n\nEvent card variants can be set using the\n`variant`\nattribute. Valid options are:\n**simple**\n,\n**outlined**\n,\n**flat**\n, and\n**raised**\n.\n\n### Colors\n\nColors can be set using the\n`color`\nattribute. Valid options are:\n**primary**\n,\n**accent**\n,\n**warn**\n,\n**error**\n, and\n**success**\n.",
+    "path": "projects/ship-ui/src/lib/ship-event-card/ship-event-card.ts",
+    "description": "### Variants\n\nEvent card variants can be set using the\n`variant`\nattribute. Valid options are:\n**simple**\n,\n**outlined**\n,\n**flat**\n, and\n**raised**\n.\n\n### Colors\n\nColors can be set using the\n`color`\nattribute. Valid options are:\n**primary**\n,\n**accent**\n,\n**warn**\n,\n**error**\n, and\n**success**\n.\n\n:::info\nThis component utilizes the **Ship Sheet** utility for its visual structure. It supports standard sheet variations and is affected by global sheet variables.\n:::",
     "inputs": [
       {
         "name": "color",
@@ -282,7 +282,7 @@
   {
     "name": "ShipFileUpload",
     "selector": "sh-file-upload",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-file-upload/ship-file-upload.ts",
+    "path": "projects/ship-ui/src/lib/ship-file-upload/ship-file-upload.ts",
     "description": "### Files\n\nSelected files are available via the\n`files`\nattribute. Use\n`[(files)]`\nfor two-way binding.\n\n### Selection\n\nCustomize selection behavior:\n\n<li>\n`multiple`\n: Allows selecting more than one file.\n</li>\n<li>\n`accept`\n: Restricts file types (e.g.,\n`accept=\".png,.jpg\"`\n).\n</li>\n\n### Text\n\nCustomize displayed labels:\n\n<li>\n`placeholder`\n: Text shown when empty.\n</li>\n<li>\n`overlayText`\n: Text shown during drag-and-drop.\n</li>",
     "inputs": [
       {
@@ -338,7 +338,7 @@
   {
     "name": "ShipTabs",
     "selector": "sh-tabs",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-tabs/ship-tabs.ts",
+    "path": "projects/ship-ui/src/lib/ship-tabs/ship-tabs.ts",
     "description": "### Colors\n\nTab colors can be set using the\n`color`\nattribute. Available options are:\n**primary**\n,\n**accent**\n,\n**warn**\n,\n**error**\n, and\n**success**\n.",
     "inputs": [
       {
@@ -424,7 +424,7 @@
   {
     "name": "ShipVirtualScroll",
     "selector": "sh-virtual-scroll",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-virtual-scroll/ship-virtual-scroll.component.ts",
+    "path": "projects/ship-ui/src/lib/ship-virtual-scroll/ship-virtual-scroll.component.ts",
     "description": "",
     "inputs": [],
     "outputs": [],
@@ -434,7 +434,7 @@
   {
     "name": "ShipProgressBar",
     "selector": "sh-progress-bar",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-progress-bar/ship-progress-bar.ts",
+    "path": "projects/ship-ui/src/lib/ship-progress-bar/ship-progress-bar.ts",
     "description": "### Variants\n\nProgress bar variants can be set using the\n`variant`\nattribute. Available variants:\n**base**\n,\n**flat**\n,\n**outlined**\n, and\n**raised**\n.\n\n### Colors\n\nProgress bar colors can be set using the\n`color`\nattribute. Available colors:\n**primary**\n,\n**accent**\n,\n**warn**\n,\n**error**\n, and\n**success**\n.\n\n### Disabled\n\nThe progress bar can be disabled using the standard\n`disabled`\nattribute or\n`[disabled]`\nbinding.",
     "inputs": [
       {
@@ -527,7 +527,7 @@
   {
     "name": "ShipSortable",
     "selector": "[shSortable]",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-sortable/ship-sortable.ts",
+    "path": "projects/ship-ui/src/lib/ship-sortable/ship-sortable.ts",
     "description": "### Enable Sorting\n\nApply the\n`shSortable`\ndirective to a\n`sh-list`\nor any container element to enable drag-and-drop reordering.\n\n### Event Handling\n\nListen to the\n`afterDrop`\nevent to update your data source when an item is moved:\n`(afterDrop)=\"reorder($event)\"`\n.\n\n### Handles\n\nAdd the\n`sort-handle`\nattribute to a specific element within a sortable item to limit dragging to that specific area.",
     "inputs": [],
     "outputs": [
@@ -549,7 +549,7 @@
   {
     "name": "GridSortable",
     "selector": "[shGridSortable]",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-sortable/grid-sortable.ts",
+    "path": "projects/ship-ui/src/lib/ship-sortable/grid-sortable.ts",
     "description": "### Enable Sorting\n\nApply the\n`shSortable`\ndirective to a\n`sh-list`\nor any container element to enable drag-and-drop reordering.\n\n### Event Handling\n\nListen to the\n`afterDrop`\nevent to update your data source when an item is moved:\n`(afterDrop)=\"reorder($event)\"`\n.\n\n### Handles\n\nAdd the\n`sort-handle`\nattribute to a specific element within a sortable item to limit dragging to that specific area.",
     "inputs": [],
     "outputs": [],
@@ -565,7 +565,7 @@
   {
     "name": "ShipFormField",
     "selector": "sh-form-field",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-form-field/ship-form-field.ts",
+    "path": "projects/ship-ui/src/lib/ship-form-field/ship-form-field.ts",
     "description": "### label\n\nOptional label for the form field. Can include icons or other elements.\n\n### prefix/suffix\n\nProject content before or after the input using\n`prefix`\nor\n`suffix`\nslots.\n\n### placeholder\n\nPlaceholder text for the input or textarea.\n\n### boxPref/boxSuffix\n\nProject content before or after the input but inside a box style\n`boxPrefix`\nor\n`boxSuffix`\nslots.\n\n### hint\n\nOptional hint text shown below the input.\n\n### error\n\nOptional error text shown below the input when in error state.\n\n### disabled\n\nDisables the input or textarea.\n\n### size/class\n\nUse\n`small`\n,\n`autosize`\n,\n`center`\nclasses for different layouts.",
     "inputs": [
       {
@@ -698,7 +698,7 @@
   {
     "name": "ShipFormFieldPopover",
     "selector": "sh-form-field-popover",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-form-field/ship-form-field-popover.ts",
+    "path": "projects/ship-ui/src/lib/ship-form-field/ship-form-field-popover.ts",
     "description": "### label\n\nOptional label for the form field. Can include icons or other elements.\n\n### prefix/suffix\n\nProject content before or after the input using\n`prefix`\nor\n`suffix`\nslots.\n\n### placeholder\n\nPlaceholder text for the input or textarea.\n\n### boxPref/boxSuffix\n\nProject content before or after the input but inside a box style\n`boxPrefix`\nor\n`boxSuffix`\nslots.\n\n### hint\n\nOptional hint text shown below the input.\n\n### error\n\nOptional error text shown below the input when in error state.\n\n### disabled\n\nDisables the input or textarea.\n\n### size/class\n\nUse\n`small`\n,\n`autosize`\n,\n`center`\nclasses for different layouts.",
     "inputs": [
       {
@@ -742,7 +742,7 @@
   {
     "name": "ShipRangeSlider",
     "selector": "sh-range-slider",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-range-slider/ship-range-slider.ts",
+    "path": "projects/ship-ui/src/lib/ship-range-slider/ship-range-slider.ts",
     "description": "### Binding\n\nTwo-way bindable value. Use\n`[(ngModel)]`\nor\n`[formControl]`\n.\n\n### Constraints\n\nSet the range limits and increments using the\n`min`\n,\n`max`\n, and\n`step`\nattributes.\n\n### Visuals\n\nCustomize the look and feel:\n\n<li>\n`color`\n:\n**primary**\n,\n**accent**\n,\n**warn**\n,\n**success**\n, or\n**error**\n.\n</li>\n<li>\n`variant`\n:\n**base**\n,\n**thick**\n,\n**outlined**\n,\n**flat**\n, or\n**raised**\n.\n</li>\n<li>\n`sharp`\n: Use sharp corners instead of rounded.\n</li>\n<li>\n`always-show`\n: Keep the value indicator visible at all times.\n</li>\n\n### Unit\n\nSpecify a suffix for the value display using the\n`unit`\nattribute (e.g.,\n`unit=\"%\"`\n).\n\n### Disabled\n\nThe slider can be disabled using the standard\n`disabled`\nattribute or\n`[disabled]`\nbinding.",
     "inputs": [
       {
@@ -875,7 +875,7 @@
   {
     "name": "ShipResize",
     "selector": "[shResize]",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-table/ship-table.ts",
+    "path": "projects/ship-ui/src/lib/ship-table/ship-table.ts",
     "description": "### Data & Loading\n\nProvide data via\n`[data]`\nand toggle a loading state using the\n`loading`\nattribute.\n\n### Sorting\n\nEnable sorting by applying\n`shSort`\nto header cells. Track the active column with\n`sortByColumn`\n(two-way bindable).\n\n### Resizing\n\nApply the\n`shResize`\ndirective to header cells to allow column width adjustment. Available inputs:\n`resizable`\n,\n`minWidth`\n, and\n`maxWidth`\n.\n\n### Sticky Columns\n\nUse the\n`shStickyColumns`\nattribute (\n**start**\nor\n**end**\n) or apply\n`.sticky`\n/\n`.sticky-end`\nclasses to header cells to pin columns.\n\n### Column Sizing\n\nUse the\n`size`\nattribute on\n`&lt;th&gt;`\nelements to set initial or fixed widths (e.g.,\n`size=\"1fr\"`\n,\n`size=\"200px\"`\n).",
     "inputs": [
       {
@@ -1078,7 +1078,7 @@
   {
     "name": "ShipTableFilterBar",
     "selector": "sh-table-filter-bar",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-table-filter-bar/ship-table-filter-bar.ts",
+    "path": "projects/ship-ui/src/lib/ship-table-filter-bar/ship-table-filter-bar.ts",
     "description": "",
     "inputs": [],
     "outputs": [],
@@ -1088,7 +1088,7 @@
   {
     "name": "ShipSpinner",
     "selector": "sh-spinner",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-spinner/ship-spinner.component.ts",
+    "path": "projects/ship-ui/src/lib/ship-spinner/ship-spinner.component.ts",
     "description": "### Size & Thickness\n\nCustomize the spinner appearance using CSS variables:\n`--spinner-size`\nand\n`--spinner-thickness`\n.\n\n### Colors\n\nSpinner colors can be set using the\n`color`\nattribute. Valid options are:\n**primary**\n,\n**accent**\n,\n**warn**\n,\n**error**\n, and\n**success**\n.",
     "inputs": [
       {
@@ -1131,7 +1131,7 @@
   {
     "name": "ShipStepper",
     "selector": "sh-stepper",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-stepper/ship-stepper.ts",
+    "path": "projects/ship-ui/src/lib/ship-stepper/ship-stepper.ts",
     "description": "### Colors\n\nStepper colors can be set using the\n`color`\nattribute. Available options are:\n**primary**\n,\n**accent**\n,\n**warn**\n,\n**error**\n, and\n**success**\n.",
     "inputs": [
       {
@@ -1205,8 +1205,8 @@
   {
     "name": "ShipChip",
     "selector": "sh-chip",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-chip/ship-chip.ts",
-    "description": "### Variants\n\nChip variants can be set using the\n`variant`\nattribute. Valid options are:\n**simple**\n,\n**outlined**\n,\n**flat**\n, and\n**raised**\n.\n\n### Sizes\n\nChip sizes can be set using the\n`size`\nattribute. For example:\n`size=\"small\"`\n.\n\n### Colors\n\nChip colors can be set using the\n`color`\nattribute. Valid options are:\n**primary**\n,\n**accent**\n,\n**warn**\n,\n**error**\n, and\n**success**\n.\n\n### Dynamic Coloring\n\nYou can set a custom color using the CSS variable\n`--chip-c`\ntogether with the\n`dynamic`\ninput (as an attribute or binding). This is ideal for tagging purposes where you need a wide range of colors.\n\n### Icons\n\nChips can contain icons using the\n`sh-icon`\ncomponent. Use the\n`suffix`\nattribute for trailing icons.\n\n### Readonly\n\nThe chip can be set to readonly through the\n`readonly`\ninput (adds the\n`readonly`\nclass).\n\n### Disabled\n\nThe chip can be disabled using the standard\n`disabled`\nattribute or\n`[disabled]`\nbinding.",
+    "path": "projects/ship-ui/src/lib/ship-chip/ship-chip.ts",
+    "description": "### Variants\n\nChip variants can be set using the\n`variant`\nattribute. Valid options are:\n**simple**\n,\n**outlined**\n,\n**flat**\n, and\n**raised**\n.\n\n### Sizes\n\nChip sizes can be set using the\n`size`\nattribute. For example:\n`size=\"small\"`\n.\n\n### Colors\n\nChip colors can be set using the\n`color`\nattribute. Valid options are:\n**primary**\n,\n**accent**\n,\n**warn**\n,\n**error**\n, and\n**success**\n.\n\n### Dynamic Coloring\n\nYou can set a custom color using the CSS variable\n`--chip-c`\ntogether with the\n`dynamic`\ninput (as an attribute or binding). This is ideal for tagging purposes where you need a wide range of colors.\n\n### Icons\n\nChips can contain icons using the\n`sh-icon`\ncomponent. Use the\n`suffix`\nattribute for trailing icons.\n\n### Readonly\n\nThe chip can be set to readonly through the\n`readonly`\ninput (adds the\n`readonly`\nclass).\n\n### Disabled\n\nThe chip can be disabled using the standard\n`disabled`\nattribute or\n`[disabled]`\nbinding.\n\n:::info\nThis component utilizes the **Ship Sheet** utility for its visual structure. It supports standard sheet variations and is affected by global sheet variables.\n:::",
     "inputs": [
       {
         "name": "color",
@@ -1320,7 +1320,7 @@
   {
     "name": "ShipThemeToggle",
     "selector": "ship-theme-toggle",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-theme-toggle/ship-theme-toggle.ts",
+    "path": "projects/ship-ui/src/lib/ship-theme-toggle/ship-theme-toggle.ts",
     "description": "",
     "inputs": [],
     "outputs": [],
@@ -1330,7 +1330,7 @@
   {
     "name": "ChildComponent",
     "selector": "app-child",
-    "path": "ship-ui/projects/ship-ui/src/lib/utilities/create-input-example.component.ts",
+    "path": "projects/ship-ui/src/lib/utilities/create-input-example.component.ts",
     "description": "",
     "inputs": [],
     "outputs": [],
@@ -1340,7 +1340,7 @@
   {
     "name": "ShipList",
     "selector": "sh-list",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-list/ship-list.ts",
+    "path": "projects/ship-ui/src/lib/ship-list/ship-list.ts",
     "description": "### item\n\nAdd the\n`item`\nattribute to a child element of\n`sh-list`\nto make it a list item.\n\n### action\n\nAdd the\n`action`\nattribute to a child element of\n`sh-list`\nto make it an actionable item (e.g., clickable).\n\n### suffix\n\nAdd the\n`suffix`\nattribute to an element inside a list item to align it to the right.",
     "inputs": [],
     "outputs": [],
@@ -1393,7 +1393,7 @@
   {
     "name": "ShipMenu",
     "selector": "sh-menu",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-menu/ship-menu.ts",
+    "path": "projects/ship-ui/src/lib/ship-menu/ship-menu.ts",
     "description": "### Searchable\n\nEnable a wildcard search input to filter menu options using the\n`searchable`\nattribute.\n\n### Behavior\n\nCustomize menu interaction:\n\n<li>\n`asMultiLayer`\n: Enables nested menu support.\n</li>\n<li>\n`closeOnClick`\n: Determines if the menu closes when an option is selected (default: true).\n</li>\n<li>\n`disabled`\n: Disables the menu trigger and content.\n</li>\n\n### Slots\n\nAdd a\n`suffix`\nattribute to an element inside a menu option to display hotkeys, icons, or secondary information at the trailing\nend.",
     "inputs": [
       {
@@ -1489,8 +1489,8 @@
   {
     "name": "ShipAlert",
     "selector": "sh-alert",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-alert/ship-alert.ts",
-    "description": "### Variants\n\nAlert variants can be set using the\n`variant`\nattribute. Valid options are:\n**simple**\n,\n**outlined**\n,\n**flat**\n, and\n**raised**\n.\n\n### Colors\n\nAlert colors can be set using the\n`color`\nattribute. Valid options are:\n**primary**\n,\n**accent**\n,\n**warn**\n,\n**error**\n, and\n**success**\n.",
+    "path": "projects/ship-ui/src/lib/ship-alert/ship-alert.ts",
+    "description": "### Variants\n\nAlert variants can be set using the\n`variant`\nattribute. Valid options are:\n**simple**\n,\n**outlined**\n,\n**flat**\n, and\n**raised**\n.\n\n### Colors\n\nAlert colors can be set using the\n`color`\nattribute. Valid options are:\n**primary**\n,\n**accent**\n,\n**warn**\n,\n**error**\n, and\n**success**\n.\n\n:::info\nThis component utilizes the **Ship Sheet** utility for its visual structure. It supports standard sheet variations and is affected by global sheet variables.\n:::",
     "inputs": [
       {
         "name": "color",
@@ -1580,7 +1580,7 @@
   {
     "name": "ShipAlertContainer",
     "selector": "ship-alert-container",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-alert/ship-alert-container.ts",
+    "path": "projects/ship-ui/src/lib/ship-alert/ship-alert-container.ts",
     "description": "### Variants\n\nAlert variants can be set using the\n`variant`\nattribute. Valid options are:\n**simple**\n,\n**outlined**\n,\n**flat**\n, and\n**raised**\n.\n\n### Colors\n\nAlert colors can be set using the\n`color`\nattribute. Valid options are:\n**primary**\n,\n**accent**\n,\n**warn**\n,\n**error**\n, and\n**success**\n.",
     "inputs": [
       {
@@ -1623,7 +1623,7 @@
   {
     "name": "ShipDatepickerInput",
     "selector": "sh-datepicker-input",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-datepicker/ship-datepicker-input.ts",
+    "path": "projects/ship-ui/src/lib/ship-datepicker/ship-datepicker-input.ts",
     "description": "### Selection\n\nSelected values are available via\n`date`\nand\n`endDate`\n. Use\n`[(date)]`\nand\n`[(endDate)]`\nfor two-way binding.\n\n### Configuration\n\nCustomize the picker behavior:\n\n<li>\n`asRange`\n: Enable range selection mode.\n</li>\n<li>\n`monthsToShow`\n: Set the number of months displayed (default: 1).\n</li>\n<li>\n`startOfWeek`\n: Specify the first day of the week (0-6).\n</li>\n<li>\n`weekdayLabels`\n: Provide custom labels for week days.\n</li>\n\n### Input Display\n\nCustomize how dates appear in inputs:\n\n<li>\n`masking`\n: Set the date format mask (e.g.,\n`'mediumDate'`\n).\n</li>\n<li>\n`size`\n: Use the\n`small`\nattribute/class for a compact input.\n</li>\n\n### Interaction\n\n<li>\n`closed`\n: Event emitted when the picker is dismissed.\n</li>\n<li>\n`disabled`\n: Standard attribute to disable interaction.\n</li>",
     "inputs": [
       {
@@ -1688,7 +1688,7 @@
   {
     "name": "ShipDatepicker",
     "selector": "sh-datepicker",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-datepicker/ship-datepicker.ts",
+    "path": "projects/ship-ui/src/lib/ship-datepicker/ship-datepicker.ts",
     "description": "### Selection\n\nSelected values are available via\n`date`\nand\n`endDate`\n. Use\n`[(date)]`\nand\n`[(endDate)]`\nfor two-way binding.\n\n### Configuration\n\nCustomize the picker behavior:\n\n<li>\n`asRange`\n: Enable range selection mode.\n</li>\n<li>\n`monthsToShow`\n: Set the number of months displayed (default: 1).\n</li>\n<li>\n`startOfWeek`\n: Specify the first day of the week (0-6).\n</li>\n<li>\n`weekdayLabels`\n: Provide custom labels for week days.\n</li>\n\n### Input Display\n\nCustomize how dates appear in inputs:\n\n<li>\n`masking`\n: Set the date format mask (e.g.,\n`'mediumDate'`\n).\n</li>\n<li>\n`size`\n: Use the\n`small`\nattribute/class for a compact input.\n</li>\n\n### Interaction\n\n<li>\n`closed`\n: Event emitted when the picker is dismissed.\n</li>\n<li>\n`disabled`\n: Standard attribute to disable interaction.\n</li>",
     "inputs": [
       {
@@ -1818,7 +1818,7 @@
   {
     "name": "ShipDaterangeInput",
     "selector": "sh-daterange-input",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-datepicker/ship-daterange-input.ts",
+    "path": "projects/ship-ui/src/lib/ship-datepicker/ship-daterange-input.ts",
     "description": "### Selection\n\nSelected values are available via\n`date`\nand\n`endDate`\n. Use\n`[(date)]`\nand\n`[(endDate)]`\nfor two-way binding.\n\n### Configuration\n\nCustomize the picker behavior:\n\n<li>\n`asRange`\n: Enable range selection mode.\n</li>\n<li>\n`monthsToShow`\n: Set the number of months displayed (default: 1).\n</li>\n<li>\n`startOfWeek`\n: Specify the first day of the week (0-6).\n</li>\n<li>\n`weekdayLabels`\n: Provide custom labels for week days.\n</li>\n\n### Input Display\n\nCustomize how dates appear in inputs:\n\n<li>\n`masking`\n: Set the date format mask (e.g.,\n`'mediumDate'`\n).\n</li>\n<li>\n`size`\n: Use the\n`small`\nattribute/class for a compact input.\n</li>\n\n### Interaction\n\n<li>\n`closed`\n: Event emitted when the picker is dismissed.\n</li>\n<li>\n`disabled`\n: Standard attribute to disable interaction.\n</li>",
     "inputs": [
       {
@@ -1889,7 +1889,7 @@
   {
     "name": "ShipButtonGroup",
     "selector": "sh-button-group",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-button-group/ship-button-group.ts",
+    "path": "projects/ship-ui/src/lib/ship-button-group/ship-button-group.ts",
     "description": "### Variants\n\nButton groups support different layouts via the\n`variant`\nattribute. Valid options:\n**default**\nand\n**type-b**\n.\n\n### Sizes\n\nUse the\n`size`\nattribute to change the scale of the group, e.g.,\n`size=\"small\"`\n.\n\n### Active State\n\nApply the\n`active`\nattribute or class to a button within the group to highlight it as the current selection.",
     "inputs": [
       {
@@ -1979,7 +1979,7 @@
   {
     "name": "ShipPopover",
     "selector": "sh-popover",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-popover/ship-popover.ts",
+    "path": "projects/ship-ui/src/lib/ship-popover/ship-popover.ts",
     "description": "### Hover Trigger\n\nUse the\n`onHover`\nattribute or binding to open the popover on hover instead of click.\n\n### Nesting\n\nUse the\n`asMultiLayer`\nattribute to enable nested popover support.\n\n### Customization\n\nThe\n`options`\nattribute accepts a configuration object with:\n`width`\n,\n`height`\n,\n`closeOnButton`\n, and\n`closeOnEsc`\n.",
     "inputs": [
       {
@@ -2040,8 +2040,8 @@
   {
     "name": "ShipButton",
     "selector": "[shButton]",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-button/ship-button.ts",
-    "description": "### Variants\n\nButton variants can be set using the\n`variant`\nattribute. Valid options are:\n**simple**\n,\n**outlined**\n,\n**flat**\n, and\n**raised**\n.\n\n### Sizes\n\nButton sizes can be set using the\n`size`\nattribute. For example:\n`size=\"small\"`\n.\n\n### Colors\n\nButton colors can be set using the\n`color`\nattribute. Valid options are:\n**primary**\n,\n**accent**\n,\n**warn**\n,\n**error**\n, and\n**success**\n.\n\n### Loading\n\nThe button can be set to loading state by adding the\n`loading`\nclass.\n\n### Readonly\n\nThe button can be set to readonly through the\n`readonly`\ninput (adds the\n`readonly`\nclass) or the standard\n`readonly`\nattribute.\n\n### Rotate icon\n\nIcons within the button can be rotated by adding the\n`rotated-icon`\nclass.\n\n### Disabled\n\nThe button can be disabled using the standard\n`disabled`\nattribute or\n`[disabled]`\nbinding.",
+    "path": "projects/ship-ui/src/lib/ship-button/ship-button.ts",
+    "description": "### Variants\n\nButton variants can be set using the\n`variant`\nattribute. Valid options are:\n**simple**\n,\n**outlined**\n,\n**flat**\n, and\n**raised**\n.\n\n### Sizes\n\nButton sizes can be set using the\n`size`\nattribute. For example:\n`size=\"small\"`\n.\n\n### Colors\n\nButton colors can be set using the\n`color`\nattribute. Valid options are:\n**primary**\n,\n**accent**\n,\n**warn**\n,\n**error**\n, and\n**success**\n.\n\n### Loading\n\nThe button can be set to loading state by adding the\n`loading`\nclass.\n\n### Readonly\n\nThe button can be set to readonly through the\n`readonly`\ninput (adds the\n`readonly`\nclass) or the standard\n`readonly`\nattribute.\n\n### Rotate icon\n\nIcons within the button can be rotated by adding the\n`rotated-icon`\nclass.\n\n### Disabled\n\nThe button can be disabled using the standard\n`disabled`\nattribute or\n`[disabled]`\nbinding.\n\n:::info\nThis component utilizes the **Ship Sheet** utility for its visual structure. It supports standard sheet variations and is affected by global sheet variables.\n:::",
     "inputs": [
       {
         "name": "color",
@@ -2144,7 +2144,7 @@
   {
     "name": "ShipDivider",
     "selector": "sh-divider",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-divider/ship-divider.ts",
+    "path": "projects/ship-ui/src/lib/ship-divider/ship-divider.ts",
     "description": "### Orientation\n\nUse the\n`&lt;sh-divider&gt;`\nelement to visually separate sections. By default, it is horizontal.\n\n### Content\n\nYou can place text or icons inside the divider tags to create a divider with integrated content:\n`&lt;sh-divider&gt;OR&lt;/sh-divider&gt;`\n.",
     "inputs": [],
     "outputs": [],
@@ -2174,7 +2174,7 @@
   {
     "name": "ShipColorPicker",
     "selector": "sh-color-picker",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-color-picker/ship-color-picker.ts",
+    "path": "projects/ship-ui/src/lib/ship-color-picker/ship-color-picker.ts",
     "description": "",
     "inputs": [
       {
@@ -2233,7 +2233,7 @@
   {
     "name": "ShipDialog",
     "selector": "sh-dialog",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-dialog/ship-dialog.ts",
+    "path": "projects/ship-ui/src/lib/ship-dialog/ship-dialog.ts",
     "description": "### Customization\n\nThe\n`options`\nattribute accepts a configuration object for:\n`width`\n,\n`height`\n,\n`maxWidth`\n,\n`maxHeight`\n,\n`closeOnButton`\n,\n`closeOnEsc`\n, and\n`closeOnOutsideClick`\n.\n\n### Variants\n\nDialogs support multiple layouts via the\n`variant`\nattribute. Valid options:\n**default**\nand\n**type-b**\n.\n\n### Slots\n\nStructure your dialog content using the\n`header`\n,\n`content`\n, and\n`footer`\nattributes on container elements.",
     "inputs": [
       {
@@ -2303,7 +2303,7 @@
   {
     "name": "ShipToggle",
     "selector": "sh-toggle",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-toggle/ship-toggle.ts",
+    "path": "projects/ship-ui/src/lib/ship-toggle/ship-toggle.ts",
     "description": "### Variants\n\nToggle variants can be set using the\n`variant`\nattribute. Valid options are:\n**simple**\n,\n**outlined**\n,\n**flat**\n, and\n**raised**\n.\n\n### Colors\n\nToggle colors can be set using the\n`color`\nattribute. Valid options are:\n**primary**\n,\n**accent**\n,\n**warn**\n,\n**error**\n, and\n**success**\n.\n\n### Readonly\n\nThe toggle can be set to readonly through the\n`readonly`\ninput (adds the\n`readonly`\nclass).\n\n### Disabled\n\nThe toggle can be disabled using the standard\n`disabled`\nattribute or\n`[disabled]`\nbinding.",
     "inputs": [
       {
@@ -2388,7 +2388,7 @@
   {
     "name": "ShipToggleCard",
     "selector": "sh-toggle-card",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-toggle-card/ship-toggle-card.ts",
+    "path": "projects/ship-ui/src/lib/ship-toggle-card/ship-toggle-card.ts",
     "description": "",
     "inputs": [
       {
@@ -2435,8 +2435,8 @@
   {
     "name": "ShipCheckbox",
     "selector": "sh-checkbox",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-checkbox/ship-checkbox.ts",
-    "description": "",
+    "path": "projects/ship-ui/src/lib/ship-checkbox/ship-checkbox.ts",
+    "description": ":::info\nThis component utilizes the **Ship Sheet** utility for its visual structure. It supports standard sheet variations and is affected by global sheet variables.\n:::",
     "inputs": [
       {
         "name": "color",
@@ -2490,8 +2490,8 @@
   {
     "name": "ShipRadio",
     "selector": "sh-radio",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-radio/ship-radio.ts",
-    "description": "",
+    "path": "projects/ship-ui/src/lib/ship-radio/ship-radio.ts",
+    "description": ":::info\nThis component utilizes the **Ship Sheet** utility for its visual structure. It supports standard sheet variations and is affected by global sheet variables.\n:::",
     "inputs": [
       {
         "name": "color",
@@ -2545,7 +2545,7 @@
   {
     "name": "ShipIcon",
     "selector": "sh-icon",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-icon/ship-icon.ts",
+    "path": "projects/ship-ui/src/lib/ship-icon/ship-icon.ts",
     "description": "### Sizes\n\nIcons can be set to different sizes using the\n`size`\nattribute. Valid options are:\n**small**\n,\n**large**\n, or\n**inherit**\n.\n\n### Colors\n\nIcon colors can be set using the\n`color`\nattribute. Valid options are:\n**primary**\n,\n**accent**\n,\n**warn**\n,\n**error**\n, and\n**success**\n.\n\nColor can also be overridden with CSS color variables:\n`{{ `\\<sh-icon [style.--icon-c]=\"'blue'\">cloud-warning\\</sh-icon>` }}`\n\n### Icon Packs\n\nCurrently we support Phosphor Icons. Search for icons here:\n\n<a shButton variant=\"raised\" color=\"primary\" size=\"small\" href=\"https://phosphoricons.com/#toolbar\" target=\"_blank\">\nSearch Phosphor Icons\n<sh-icon>arrow-square-out</sh-icon>\n</a>\nWe support multiple weight variations using ligatures:\n\n<li>\n`cloud-warning`\n(Regular - default)\n</li>\n- `cloud-warning-thin`\n- `cloud-warning-light`\n- `cloud-warning-fill`\n- `cloud-warning-bold`\n\n### Icon CLI\n\nUse our CLI tool to generate optimized icon fonts containing only the icons you use.\n\nGenerate once:\n`ship-fg --src='./src' --out='./src/assets' --rootPath='./'`\n\nWatch mode:\n`ship-fg --src='./src' --out='./src/assets' --rootPath='./' --watch`",
     "inputs": [
       {
@@ -2602,7 +2602,7 @@
   {
     "name": "ShipBlueprint",
     "selector": "sh-blueprint",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-blueprint/ship-blueprint.ts",
+    "path": "projects/ship-ui/src/lib/ship-blueprint/ship-blueprint.ts",
     "description": "",
     "inputs": [
       {
@@ -2670,7 +2670,7 @@
   {
     "name": "ShipSelect",
     "selector": "sh-select",
-    "path": "ship-ui/projects/ship-ui/src/lib/ship-select/ship-select.ts",
+    "path": "projects/ship-ui/src/lib/ship-select/ship-select.ts",
     "description": "### Options\n\nProvide the data source using the\n`options`\nattribute. This can be an array of strings or objects.\n\n### Labels & Values\n\nIf your options are objects, specify which properties to use for display and selection:\n\n<li>\n`label`\n: Property path to the display text (e.g.,\n`\"user.name\"`\n).\n</li>\n<li>\n`value`\n: Property path to the selection value (e.g.,\n`\"user.id\"`\n).\n</li>\n\n### Selection Modes\n\nToggle selection behavior:\n\n<li>\n`selectMultiple`\n: Enables picking multiple options.\n</li>\n<li>\n`isClearable`\n: Adds a clear button to remove the selection (default: true).\n</li>\n\n### Interaction\n\n<li>\n`inlineSearch`\n: Adds a search field within the dropdown to filter options.\n</li>\n<li>\n`readonly`\n: Prevents selection changes while maintaining focusability.\n</li>\n<li>\n`disabled`\n: Standard attribute to disable the component.\n</li>\n\n### Templates\n\nCustomize rendering using\n`ng-template`\n:\n\n<li>\n`optionTemplate`\n: Custom rendering for items in the dropdown.\n</li>\n<li>\n`placeholderTemplate`\n: Custom rendering for the selected state/placeholder.\n</li>",
     "inputs": [
       {
@@ -2716,40 +2716,6 @@
         "name": "placeholder",
         "type": "string",
         "description": ""
-      },
-      {
-        "name": "color",
-        "type": "ShipColor | null",
-        "description": "",
-        "defaultValue": "null",
-        "options": [
-          "primary",
-          "accent",
-          "warn",
-          "error",
-          "success"
-        ]
-      },
-      {
-        "name": "variant",
-        "type": "ShipSheetVariant | null",
-        "description": "",
-        "defaultValue": "null",
-        "options": [
-          "simple",
-          "outlined",
-          "flat",
-          "raised"
-        ]
-      },
-      {
-        "name": "size",
-        "type": "ShipSize | null",
-        "description": "",
-        "defaultValue": "null",
-        "options": [
-          "small"
-        ]
       },
       {
         "name": "lazySearch",
@@ -2952,5 +2918,567 @@
         "ts": "import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';\nimport { rxResource } from '@angular/core/rxjs-interop';\nimport { FormsModule } from '@angular/forms';\nimport { delay, map, of } from 'rxjs';\nimport { ShipSelect } from 'ship-ui';\n\nconst DEFAULT_OPTIONS = [\n  { value: 'pizza', label: 'Pizza' },\n  { value: 'burger', label: 'Burger' },\n  { value: 'sushi', label: 'Sushi' },\n  { value: 'pasta', label: 'Pasta' },\n  { value: 'salad', label: 'Salad' },\n  { value: 'sandwich', label: 'Sandwich' },\n];\n@Component({\n  selector: 'app-lazy-search-select',\n  standalone: true,\n  imports: [FormsModule, ShipSelect],\n  templateUrl: './lazy-search-select.html',\n  styleUrl: './lazy-search-select.scss',\n  changeDetection: ChangeDetectionStrategy.OnPush,\n})\nexport class LazySearchSelect {\n  lazySearchOption = signal('pizza');\n\n  options = computed(() => this.resource.value() ?? DEFAULT_OPTIONS);\n  resource = rxResource({\n    params: () => ({\n      query: this.lazySearchOption(),\n    }),\n    stream: ({ params }) => {\n      const search = params.query.toLowerCase();\n\n      return of(DEFAULT_OPTIONS).pipe(\n        delay(200),\n        map((res) => res.filter((opt) => opt.label.toLowerCase().includes(search)))\n      );\n    },\n  });\n}\n"
       }
     ]
+  },
+  {
+    "name": "GlobalVariables",
+    "selector": "global-variables",
+    "path": "projects/ship-ui/styles/core/core/variables.scss",
+    "description": "Global CSS variables for ShipUI including colors, typography, and spacing.",
+    "inputs": [],
+    "outputs": [],
+    "cssVariables": [
+      {
+        "name": "--font-size",
+        "defaultValue": "16px"
+      },
+      {
+        "name": "--primary-1",
+        "defaultValue": "light-dark(oklch(0.95 0.02 260), oklch(0.17 0.05 260))"
+      },
+      {
+        "name": "--primary-2",
+        "defaultValue": "light-dark(oklch(0.9 0.04 260), oklch(0.25 0.09 260))"
+      },
+      {
+        "name": "--primary-3",
+        "defaultValue": "light-dark(oklch(0.86 0.07 260), oklch(0.32 0.12 260))"
+      },
+      {
+        "name": "--primary-4",
+        "defaultValue": "light-dark(oklch(0.81 0.09 260), oklch(0.38 0.15 260))"
+      },
+      {
+        "name": "--primary-5",
+        "defaultValue": "light-dark(oklch(0.76 0.11 260), oklch(0.45 0.18 260))"
+      },
+      {
+        "name": "--primary-6",
+        "defaultValue": "light-dark(oklch(0.71 0.14 260), oklch(0.51 0.21 260))"
+      },
+      {
+        "name": "--primary-7",
+        "defaultValue": "light-dark(oklch(0.67 0.16 260), oklch(0.57 0.22 260))"
+      },
+      {
+        "name": "--primary-8",
+        "defaultValue": "light-dark(oklch(0.63 0.19 260), oklch(0.63 0.19 260))"
+      },
+      {
+        "name": "--primary-9",
+        "defaultValue": "light-dark(oklch(0.52 0.21 260), oklch(0.71 0.14 260))"
+      },
+      {
+        "name": "--primary-10",
+        "defaultValue": "light-dark(oklch(0.41 0.16 260), oklch(0.81 0.09 260))"
+      },
+      {
+        "name": "--primary-11",
+        "defaultValue": "light-dark(oklch(0.29 0.11 260), oklch(0.9 0.04 260))"
+      },
+      {
+        "name": "--primary-12",
+        "defaultValue": "light-dark(oklch(0.15 0.04 260), oklch(0.95 0.02 260))"
+      },
+      {
+        "name": "--primary-g2",
+        "defaultValue": "linear-gradient(180deg, oklch(0.71 0.14 260) 0%, oklch(0.63 0.19 260) 50%)"
+      },
+      {
+        "name": "--primary-g3",
+        "defaultValue": "linear-gradient(180deg, oklch(0.81 0.09 260.01) 0%, oklch(0.63 0.19 260) 50%)"
+      },
+      {
+        "name": "--accent-1",
+        "defaultValue": "light-dark(hsl(258, 90%, 95.75%), hsl(258, 90%, 9.25%))"
+      },
+      {
+        "name": "--accent-2",
+        "defaultValue": "light-dark(hsl(258, 90%, 91.5%), hsl(258, 90%, 16.5%))"
+      },
+      {
+        "name": "--accent-3",
+        "defaultValue": "light-dark(hsl(258, 90%, 87.25%), hsl(258, 90%, 24.75%))"
+      },
+      {
+        "name": "--accent-4",
+        "defaultValue": "light-dark(hsl(258, 90%, 83%), hsl(258, 90%, 33%))"
+      },
+      {
+        "name": "--accent-5",
+        "defaultValue": "light-dark(hsl(258, 89%, 78%), hsl(258, 90%, 41.25%))"
+      },
+      {
+        "name": "--accent-6",
+        "defaultValue": "light-dark(hsl(258, 90%, 74.5%), hsl(258, 90%, 49.5%))"
+      },
+      {
+        "name": "--accent-7",
+        "defaultValue": "light-dark(hsl(258, 90%, 70.25%), hsl(258, 90%, 57.75%))"
+      },
+      {
+        "name": "--accent-8",
+        "defaultValue": "light-dark(hsl(258, 90%, 66%), hsl(258, 90%, 66%))"
+      },
+      {
+        "name": "--accent-9",
+        "defaultValue": "light-dark(hsl(258, 90%, 51.15%), hsl(258, 90%, 74.5%))"
+      },
+      {
+        "name": "--accent-10",
+        "defaultValue": "light-dark(hsl(258, 90%, 36.3%), hsl(258, 90%, 83%))"
+      },
+      {
+        "name": "--accent-11",
+        "defaultValue": "light-dark(hsl(258, 90%, 21.45%), hsl(258, 90%, 91.5%))"
+      },
+      {
+        "name": "--accent-12",
+        "defaultValue": "light-dark(hsl(258, 90%, 6.6%), hsl(258, 90%, 100%))"
+      },
+      {
+        "name": "--accent-g2",
+        "defaultValue": "linear-gradient(180deg, hsl(258, 90%, 74.5%) 0%, hsl(258, 90%, 66%) 50%)"
+      },
+      {
+        "name": "--accent-g3",
+        "defaultValue": "linear-gradient(180deg, hsl(258, 90%, 83%) 0%, hsl(258, 90%, 66%) 50%)"
+      },
+      {
+        "name": "--warn-1",
+        "defaultValue": "light-dark(hsl(37, 92%, 93.75%), hsl(37, 92%, 9.25%))"
+      },
+      {
+        "name": "--warn-2",
+        "defaultValue": "light-dark(hsl(37, 92%, 87.5%), hsl(37, 92%, 12.5%))"
+      },
+      {
+        "name": "--warn-3",
+        "defaultValue": "light-dark(hsl(37, 92%, 81.25%), hsl(37, 92%, 18.75%))"
+      },
+      {
+        "name": "--warn-4",
+        "defaultValue": "light-dark(hsl(37, 92%, 75%), hsl(37, 92%, 25%))"
+      },
+      {
+        "name": "--warn-5",
+        "defaultValue": "light-dark(hsl(37, 92%, 68.75%), hsl(37, 92%, 31.25%))"
+      },
+      {
+        "name": "--warn-6",
+        "defaultValue": "light-dark(hsl(37, 92%, 62.5%), hsl(37, 92%, 37.5%))"
+      },
+      {
+        "name": "--warn-7",
+        "defaultValue": "light-dark(hsl(37, 92%, 56.25%), hsl(37, 92%, 43.75%))"
+      },
+      {
+        "name": "--warn-8",
+        "defaultValue": "light-dark(hsl(37, 92%, 50%), hsl(37, 92%, 50%))"
+      },
+      {
+        "name": "--warn-9",
+        "defaultValue": "light-dark(hsl(37, 92%, 38.75%), hsl(37, 92%, 62.5%))"
+      },
+      {
+        "name": "--warn-10",
+        "defaultValue": "light-dark(hsl(37, 92%, 27.5%), hsl(37, 92%, 75%))"
+      },
+      {
+        "name": "--warn-11",
+        "defaultValue": "light-dark(hsl(37, 92%, 16.25%), hsl(37, 92%, 87.5%))"
+      },
+      {
+        "name": "--warn-12",
+        "defaultValue": "light-dark(hsl(37, 92%, 5%), hsl(37, 92%, 100%))"
+      },
+      {
+        "name": "--warn-g2",
+        "defaultValue": "linear-gradient(180deg, hsl(37, 92%, 62.5%) 0%, hsl(37, 92%, 50%) 50%)"
+      },
+      {
+        "name": "--warn-g3",
+        "defaultValue": "linear-gradient(180deg, hsl(37, 92%, 75%) 0%, hsl(37, 92%, 50%) 50%)"
+      },
+      {
+        "name": "--error-1",
+        "defaultValue": "light-dark(hsl(0, 84%, 95%), hsl(0, 84%, 7.5%))"
+      },
+      {
+        "name": "--error-2",
+        "defaultValue": "light-dark(hsl(0, 84%, 90%), hsl(0, 84%, 15%))"
+      },
+      {
+        "name": "--error-3",
+        "defaultValue": "light-dark(hsl(0, 84%, 85%), hsl(0, 84%, 22.5%))"
+      },
+      {
+        "name": "--error-4",
+        "defaultValue": "light-dark(hsl(0, 84%, 80%), hsl(0, 84%, 30%))"
+      },
+      {
+        "name": "--error-5",
+        "defaultValue": "light-dark(hsl(0, 84%, 75%), hsl(0, 27%, 10%))"
+      },
+      {
+        "name": "--error-6",
+        "defaultValue": "light-dark(hsl(0, 84%, 70%), hsl(0, 84%, 45%))"
+      },
+      {
+        "name": "--error-7",
+        "defaultValue": "light-dark(hsl(0, 84%, 65%), hsl(0, 84%, 52.5%))"
+      },
+      {
+        "name": "--error-8",
+        "defaultValue": "light-dark(hsl(0, 84%, 60%), hsl(0, 84%, 60%))"
+      },
+      {
+        "name": "--error-9",
+        "defaultValue": "light-dark(hsl(0, 84%, 46.5%), hsl(0, 84%, 70%))"
+      },
+      {
+        "name": "--error-10",
+        "defaultValue": "light-dark(hsl(0, 84%, 33%), hsl(0, 84%, 80%))"
+      },
+      {
+        "name": "--error-11",
+        "defaultValue": "light-dark(hsl(0, 84%, 19.5%), hsl(0, 84%, 90%))"
+      },
+      {
+        "name": "--error-12",
+        "defaultValue": "light-dark(hsl(0, 84%, 6%), hsl(0, 84%, 100%))"
+      },
+      {
+        "name": "--error-g2",
+        "defaultValue": "linear-gradient(180deg, hsl(0, 84%, 70%) 0%, hsl(0, 84%, 60%) 50%)"
+      },
+      {
+        "name": "--error-g3",
+        "defaultValue": "linear-gradient(180deg, hsl(0, 84%, 80%) 0%, hsl(0, 84%, 60%) 50%)"
+      },
+      {
+        "name": "--success-1",
+        "defaultValue": "light-dark(hsl(160, 84%, 92.38%), hsl(160, 84%, 7.88%))"
+      },
+      {
+        "name": "--success-2",
+        "defaultValue": "light-dark(hsl(160, 84%, 84.75%), hsl(160, 3%, 17%))"
+      },
+      {
+        "name": "--success-3",
+        "defaultValue": "light-dark(hsl(160, 84%, 77.13%), hsl(160, 84%, 14.63%))"
+      },
+      {
+        "name": "--success-4",
+        "defaultValue": "light-dark(hsl(160, 84%, 69.5%), hsl(160, 84%, 19.5%))"
+      },
+      {
+        "name": "--success-5",
+        "defaultValue": "light-dark(hsl(160, 84%, 61.88%), hsl(160, 84%, 24.38%))"
+      },
+      {
+        "name": "--success-6",
+        "defaultValue": "light-dark(hsl(160, 84%, 54.25%), hsl(160, 84%, 29.25%))"
+      },
+      {
+        "name": "--success-7",
+        "defaultValue": "light-dark(hsl(160, 84%, 46.63%), hsl(160, 84%, 34.13%))"
+      },
+      {
+        "name": "--success-8",
+        "defaultValue": "light-dark(hsl(160, 84%, 39%), hsl(160, 84%, 39%))"
+      },
+      {
+        "name": "--success-9",
+        "defaultValue": "light-dark(hsl(160, 84%, 30.23%), hsl(160, 84%, 54.25%))"
+      },
+      {
+        "name": "--success-10",
+        "defaultValue": "light-dark(hsl(160, 84%, 21.45%), hsl(160, 84%, 69.5%))"
+      },
+      {
+        "name": "--success-11",
+        "defaultValue": "light-dark(hsl(160, 84%, 12.67%), hsl(160, 84%, 84.75%))"
+      },
+      {
+        "name": "--success-12",
+        "defaultValue": "light-dark(hsl(160, 84%, 3.9%), hsl(160, 84%, 100%))"
+      },
+      {
+        "name": "--success-g2",
+        "defaultValue": "linear-gradient(180deg, hsl(160, 84%, 54.25%) 0%, hsl(160, 84%, 39%) 50%)"
+      },
+      {
+        "name": "--success-g3",
+        "defaultValue": "linear-gradient(180deg, hsl(160, 84%, 69.5%) 0%, hsl(160, 84%, 39%) 50%)"
+      },
+      {
+        "name": "--base-1",
+        "defaultValue": "light-dark(#fff, hsl(0, 0%, 5.75%))"
+      },
+      {
+        "name": "--base-2",
+        "defaultValue": "light-dark(hsl(0, 0%, 98.05%), hsl(0, 0%, 8.75%))"
+      },
+      {
+        "name": "--base-3",
+        "defaultValue": "light-dark(hsl(0, 0%, 94.5%), hsl(0, 0%, 11.5%))"
+      },
+      {
+        "name": "--base-4",
+        "defaultValue": "light-dark(hsl(0, 0%, 84.75%), hsl(0, 0%, 17.25%))"
+      },
+      {
+        "name": "--base-5",
+        "defaultValue": "light-dark(hsl(0, 0%, 79.75%), hsl(0, 0%, 21%))"
+      },
+      {
+        "name": "--base-6",
+        "defaultValue": "light-dark(hsl(0, 0%, 66.25%), hsl(0, 0%, 28.75%))"
+      },
+      {
+        "name": "--base-7",
+        "defaultValue": "light-dark(hsl(0, 0%, 54.5%), hsl(0, 0%, 34.5%))"
+      },
+      {
+        "name": "--base-8",
+        "defaultValue": "light-dark(hsl(0, 0%, 46%), hsl(0, 0%, 54%))"
+      },
+      {
+        "name": "--base-9",
+        "defaultValue": "light-dark(hsl(0, 0%, 35.65%), hsl(0, 0%, 64.5%))"
+      },
+      {
+        "name": "--base-10",
+        "defaultValue": "light-dark(hsl(0, 0%, 25.3%), hsl(0, 0%, 73%))"
+      },
+      {
+        "name": "--base-11",
+        "defaultValue": "light-dark(hsl(0, 0%, 14.95%), hsl(0, 0%, 86.5%))"
+      },
+      {
+        "name": "--base-12",
+        "defaultValue": "light-dark(hsl(0, 0%, 4.6%), hsl(0, 0%, 100%))"
+      },
+      {
+        "name": "--base-g2",
+        "defaultValue": "linear-gradient(180deg, hsl(0, 0%, 66.25%) 0%, hsl(0, 0%, 46%) 50%)"
+      },
+      {
+        "name": "--base-g3",
+        "defaultValue": "linear-gradient(180deg, hsl(0, 0%, 73%) 0%, hsl(0, 0%, 46%) 50%)"
+      },
+      {
+        "name": "--base-g6",
+        "defaultValue": "linear-gradient(180deg, hsl(0, 0%, 25.3%) 0%, hsl(0, 0%, 14.95%) 50%)"
+      },
+      {
+        "name": "--base-g7",
+        "defaultValue": "linear-gradient(180deg, hsl(0, 0%, 35.65%) 0%, hsl(0, 0%, 14.95%) 50%)"
+      },
+      {
+        "name": "--primary-c8",
+        "defaultValue": "var(--light-text)"
+      },
+      {
+        "name": "--accent-c8",
+        "defaultValue": "var(--light-text)"
+      },
+      {
+        "name": "--warn-c8",
+        "defaultValue": "var(--light-text)"
+      },
+      {
+        "name": "--error-c8",
+        "defaultValue": "var(--light-text)"
+      },
+      {
+        "name": "--success-c8",
+        "defaultValue": "var(--light-text)"
+      },
+      {
+        "name": "--display-10",
+        "defaultValue": "600 #{p2r(80)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--display-20",
+        "defaultValue": "600 #{p2r(72)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--display-30",
+        "defaultValue": "600 #{p2r(64)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--display-40",
+        "defaultValue": "600 #{p2r(56)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--display-50",
+        "defaultValue": "600 #{p2r(48)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--title-10",
+        "defaultValue": "500 #{p2r(40)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--title-20",
+        "defaultValue": "500 #{p2r(32)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--title-30",
+        "defaultValue": "500 #{p2r(24)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--title-10B",
+        "defaultValue": "600 #{p2r(40)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--title-20B",
+        "defaultValue": "600 #{p2r(32)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--title-30B",
+        "defaultValue": "600 #{p2r(24)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--paragraph-10",
+        "defaultValue": "500 #{p2r(18)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--paragraph-20",
+        "defaultValue": "500 #{p2r(16)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--paragraph-30",
+        "defaultValue": "500 #{p2r(14)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--paragraph-40",
+        "defaultValue": "500 #{p2r(12)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--paragraph-10B",
+        "defaultValue": "600 #{p2r(18)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--paragraph-20B",
+        "defaultValue": "600 #{p2r(16)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--paragraph-30B",
+        "defaultValue": "600 #{p2r(14)} / #{p2r(18)} Inter Tight, sans-serif"
+      },
+      {
+        "name": "--paragraph-40B",
+        "defaultValue": "600 #{p2r(12)} / normal Inter Tight, sans-serif"
+      },
+      {
+        "name": "--code-10",
+        "defaultValue": "500 #{p2r(16)} / normal monospace"
+      },
+      {
+        "name": "--code-20",
+        "defaultValue": "500 #{p2r(14)} / normal monospace"
+      },
+      {
+        "name": "--code-30",
+        "defaultValue": "500 #{p2r(12)} / normal monospace"
+      },
+      {
+        "name": "--shape-1",
+        "defaultValue": "#{p2r(4)}"
+      },
+      {
+        "name": "--shape-2",
+        "defaultValue": "#{p2r(8)}"
+      },
+      {
+        "name": "--shape-3",
+        "defaultValue": "#{p2r(12)}"
+      },
+      {
+        "name": "--shape-4",
+        "defaultValue": "#{p2r(16)}"
+      },
+      {
+        "name": "--shape-5",
+        "defaultValue": "#{p2r(20)}"
+      },
+      {
+        "name": "--box-shadow-10",
+        "defaultValue": "0 1px 2px 0 rgba(18, 18, 23, 0.07)"
+      },
+      {
+        "name": "--box-shadow-20",
+        "defaultValue": "0 1px 3px 0 rgba(18, 18, 23, 0.1)"
+      },
+      {
+        "name": "--box-shadow-30",
+        "defaultValue": "0 1px 4px -1px rgba(18, 18, 23, 0.08)"
+      },
+      {
+        "name": "--box-shadow-35",
+        "defaultValue": "0 4px 6px -1px rgba(18, 18, 23, 0.08)"
+      },
+      {
+        "name": "--box-shadow-40",
+        "defaultValue": "0 10px 15px -3px rgba(18, 18, 23, 0.08)"
+      },
+      {
+        "name": "--box-shadow-50",
+        "defaultValue": "0 20px 25px -5px rgba(18, 18, 23, 0.1)"
+      },
+      {
+        "name": "--box-shadow-60",
+        "defaultValue": "0 25px 50px -12px rgba(18, 18, 23, 0.25)"
+      },
+      {
+        "name": "--dark-text",
+        "defaultValue": "#000"
+      },
+      {
+        "name": "--light-text",
+        "defaultValue": "#fff"
+      }
+    ],
+    "examples": []
+  },
+  {
+    "name": "SheetVariables",
+    "selector": "sheet-variables",
+    "path": "projects/ship-ui/styles/components/ship-sheet.utility.scss",
+    "description": "Common CSS variables for components using the \"sh-sheet\" class. These variables control background, border, and color scales for different variants.",
+    "inputs": [],
+    "outputs": [],
+    "cssVariables": [
+      {
+        "name": "--sheet-c",
+        "defaultValue": "var(--base-12)"
+      },
+      {
+        "name": "--sheet-bg",
+        "defaultValue": "var(--base-1)"
+      },
+      {
+        "name": "--sheet-bc",
+        "defaultValue": "var(--base-4)"
+      },
+      {
+        "name": "--sheet-s",
+        "defaultValue": "var(--shape-2)"
+      },
+      {
+        "name": "--sheet-ic",
+        "defaultValue": "var(--base-12)"
+      },
+      {
+        "name": "--sheet-p-c",
+        "defaultValue": "rgb(from var(--sheet-c) r g b / 0.65)"
+      },
+      {
+        "name": "--sheet-bg-h",
+        "defaultValue": "var(--base-2)"
+      }
+    ],
+    "examples": []
   }
 ]

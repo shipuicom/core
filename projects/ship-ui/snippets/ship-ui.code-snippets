@@ -463,7 +463,7 @@
   "ShipSelect: With Options": {
     "prefix": "sh-select-full",
     "body": [
-      "<sh-select [color]=\"${1|primary,accent,warn,error,success|}\" [variant]=\"${2|simple,outlined,flat,raised|}\" [size]=\"${3|small|}\" [readonly]=\"${4:false}\">",
+      "<sh-select [readonly]=\"${1:false}\">",
       "  $0",
       "</sh-select>"
     ],

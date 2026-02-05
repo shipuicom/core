@@ -7,9 +7,12 @@ const LIB_PATH = path.join(rootPath, 'projects/ship-ui/src/lib');
 const STYLES_PATH = path.join(rootPath, 'projects/ship-ui/styles/components');
 const EXAMPLES_PATH = path.join(rootPath, 'projects/design-system/src/app/ship');
 const TYPES_FILE = path.join(rootPath, 'projects/ship-ui/src/lib/utilities/ship-types.ts');
+const VARIABLES_FILE = path.join(rootPath, 'projects/ship-ui/styles/core/core/variables.scss');
+const SHEET_FILE = path.join(rootPath, 'projects/ship-ui/styles/components/ship-sheet.utility.scss');
 
 // Default outputs to the library project so they get bundled
 const DEFAULT_OUTPUT = path.join(rootPath, 'projects/ship-ui/assets/mcp/components.json');
+const LOCAL_OUTPUT = path.join(__dirname, 'components.json');
 const DEFAULT_SNIPPETS = path.join(rootPath, 'projects/ship-ui/snippets/ship-ui.code-snippets');
 
 const OUTPUT_FILE = process.argv[2] ? path.resolve(process.argv[2]) : DEFAULT_OUTPUT;
@@ -61,12 +64,14 @@ function parseTypes() {
     for (const match of typeMatches) {
       const name = match[1];
       const definition = match[2];
-      const values = definition
-        .split('|')
-        .map((v) => v.trim())
-        .filter((v: string) => v.startsWith("'") || v.startsWith('"'))
-        .map((v: string) => v.replace(/['"]/g, ''));
-      types[name] = values;
+      if (name && definition) {
+        const values = definition
+          .split('|')
+          .map((v) => v.trim())
+          .filter((v: string) => v.startsWith("'") || v.startsWith('"'))
+          .map((v: string) => v.replace(/['"]/g, ''));
+        types[name] = values;
+      }
     }
   }
   return types;
@@ -80,6 +85,40 @@ function getOptions(type: string, knownTypes: Record<string, string[]>): string[
     }
   }
   return undefined;
+}
+
+function getGlobalVariables(): ComponentData['cssVariables'] {
+  const variables: ComponentData['cssVariables'] = [];
+  if (fs.existsSync(VARIABLES_FILE)) {
+    const content = fs.readFileSync(VARIABLES_FILE, 'utf-8');
+    const varMatches = content.matchAll(/^\s*(--[\w-]+):\s*([^;!]+)/gm);
+    for (const match of varMatches) {
+      if (match[1] && !variables.some((v) => v.name === match[1])) {
+        variables.push({
+          name: match[1],
+          defaultValue: match[2]?.trim(),
+        });
+      }
+    }
+  }
+  return variables;
+}
+
+function getSheetVariables(): ComponentData['cssVariables'] {
+  const variables: ComponentData['cssVariables'] = [];
+  if (fs.existsSync(SHEET_FILE)) {
+    const content = fs.readFileSync(SHEET_FILE, 'utf-8');
+    const varMatches = content.matchAll(/(--sheet-[\w-]+):\s*([^;!]+)/g);
+    for (const match of varMatches) {
+      if (match[1] && !variables.some((v) => v.name === match[1])) {
+        variables.push({
+          name: match[1],
+          defaultValue: match[2]?.trim(),
+        });
+      }
+    }
+  }
+  return variables;
 }
 
 function scanComponents() {
@@ -307,6 +346,14 @@ function scanComponents() {
               }
             }
 
+            // Detect sh-sheet usage
+            const usesSheet = content.includes('sh-sheet');
+            if (usesSheet) {
+              description =
+                (description ? description + '\n\n' : '') +
+                ':::info\nThis component utilizes the **Ship Sheet** utility for its visual structure. It supports standard sheet variations and is affected by global sheet variables.\n:::';
+            }
+
             // Generate snippets
             const tag = selector.startsWith('[') ? (selector === '[shButton]' ? 'button' : 'div') : selector;
             const isAttribute = selector.startsWith('[');
@@ -358,7 +405,36 @@ function scanComponents() {
 
   traverse(LIB_PATH);
 
+  // Add global variables as a virtual component
+  const globalVariables = getGlobalVariables();
+  components.push({
+    name: 'GlobalVariables',
+    selector: 'global-variables',
+    path: path.relative(rootPath, VARIABLES_FILE),
+    description: 'Global CSS variables for ShipUI including colors, typography, and spacing.',
+    inputs: [],
+    outputs: [],
+    cssVariables: globalVariables,
+    examples: [],
+  });
+
+  const sheetVariables = getSheetVariables();
+  components.push({
+    name: 'SheetVariables',
+    selector: 'sheet-variables',
+    path: path.relative(rootPath, SHEET_FILE),
+    description:
+      'Common CSS variables for components using the "sh-sheet" class. These variables control background, border, and color scales for different variants.',
+    inputs: [],
+    outputs: [],
+    cssVariables: sheetVariables,
+    examples: [],
+  });
+
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(components, null, 2));
+  if (OUTPUT_FILE !== LOCAL_OUTPUT) {
+    fs.writeFileSync(LOCAL_OUTPUT, JSON.stringify(components, null, 2));
+  }
   fs.writeFileSync(SNIPPETS_FILE, JSON.stringify(allSnippets, null, 2));
   console.log(`Scanned ${components.length} components.`);
   console.log(`Generated metadata in ${OUTPUT_FILE}`);
