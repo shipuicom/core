@@ -1,8 +1,7 @@
 import { isPlatformBrowser } from '@angular/common';
-import { DOCUMENT, Injectable, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
+import { Injectable, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
 import { ShipSidenavType } from 'ship-ui';
 import { WINDOW } from '../core/providers/window';
-import { LOCALSTORAGE } from '../core/services/localstorage.token';
 
 declare global {
   interface Window {
@@ -14,9 +13,7 @@ declare global {
   providedIn: 'root',
 })
 export class LayoutState {
-  #document = inject(DOCUMENT);
   #window = inject(WINDOW);
-  #ls = inject(LOCALSTORAGE);
   #platformId = inject(PLATFORM_ID);
 
   currentWidth = signal(this.#window.innerWidth);
