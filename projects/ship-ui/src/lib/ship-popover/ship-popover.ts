@@ -14,9 +14,6 @@ import {
 } from '@angular/core';
 import { generateUniqueId } from '../utilities/random-id';
 
-// TODOS
-// - Dynamic location where if outside of the window automatically position it to the top or left
-
 export type ShipPopoverOptions = {
   width?: string;
   height?: string;
@@ -173,43 +170,76 @@ export class ShipPopover {
     return this.#document.documentElement;
   }
 
-  #alignLeftUnder(triggerRect: DOMRect, menuRect: DOMRect) {
-    const newLeft = triggerRect.left;
-    const newTop = triggerRect.bottom + BASE_SPACE;
+  /**
+   * Position generators that mirror the CSS position-try-fallbacks.
+   * Each returns { left, top } for the popover-content in fixed coordinates.
+   */
 
-    return {
-      left: newLeft,
-      top: newTop,
-    };
+  // bottom span-right: below trigger, left edge aligned with trigger left
+  #bottomSpanRight(t: DOMRect, _m: DOMRect) {
+    return { left: t.left, top: t.bottom + BASE_SPACE };
   }
 
-  #alignTopRight(triggerRect: DOMRect, menuRect: DOMRect) {
-    const newLeft = triggerRect.right + BASE_SPACE;
-    const newTop = triggerRect.top;
-
-    return {
-      left: newLeft,
-      top: newTop,
-    };
+  // top span-right: above trigger, left edge aligned with trigger left
+  #topSpanRight(t: DOMRect, m: DOMRect) {
+    return { left: t.left, top: t.top - m.height - BASE_SPACE };
   }
 
-  #alignBottomRight(triggerRect: DOMRect, menuRect: DOMRect) {
-    const newLeft = triggerRect.right + BASE_SPACE;
-    const newTop = triggerRect.bottom;
-
-    return {
-      left: newLeft,
-      top: newTop,
-    };
+  // bottom span-left: below trigger, right edge aligned with trigger right
+  #bottomSpanLeft(t: DOMRect, m: DOMRect) {
+    return { left: t.right - m.width, top: t.bottom + BASE_SPACE };
   }
 
-  #alignLeftOver(triggerRect: DOMRect, menuRect: DOMRect) {
-    const newLeft = triggerRect.left;
-    const newTop = triggerRect.bottom - triggerRect.height - menuRect.height - BASE_SPACE;
+  // top span-left: above trigger, right edge aligned with trigger right
+  #topSpanLeft(t: DOMRect, m: DOMRect) {
+    return { left: t.right - m.width, top: t.top - m.height - BASE_SPACE };
+  }
 
+  // right span-bottom: to the right of trigger, top edge aligned with trigger top
+  #rightSpanBottom(t: DOMRect, _m: DOMRect) {
+    return { left: t.right + BASE_SPACE, top: t.top };
+  }
+
+  // left span-bottom: to the left of trigger, top edge aligned with trigger top
+  #leftSpanBottom(t: DOMRect, m: DOMRect) {
+    return { left: t.left - m.width - BASE_SPACE, top: t.top };
+  }
+
+  // right center: to the right of trigger, vertically centered
+  #rightCenter(t: DOMRect, m: DOMRect) {
+    return { left: t.right + BASE_SPACE, top: t.top + t.height / 2 - m.height / 2 };
+  }
+
+  // left center: to the left of trigger, vertically centered
+  #leftCenter(t: DOMRect, m: DOMRect) {
+    return { left: t.left - m.width - BASE_SPACE, top: t.top + t.height / 2 - m.height / 2 };
+  }
+
+  // right span-top: to the right of trigger, bottom edge aligned with trigger bottom
+  #rightSpanTop(t: DOMRect, m: DOMRect) {
+    return { left: t.right + BASE_SPACE, top: t.bottom - m.height };
+  }
+
+  // left span-top: to the left of trigger, bottom edge aligned with trigger bottom
+  #leftSpanTop(t: DOMRect, m: DOMRect) {
+    return { left: t.left - m.width - BASE_SPACE, top: t.bottom - m.height };
+  }
+
+  /** Check if a position fits entirely within the viewport */
+  #fitsInViewport(pos: { left: number; top: number }, m: DOMRect): boolean {
+    return (
+      pos.left >= 0 &&
+      pos.top >= 0 &&
+      pos.left + m.width <= window.innerWidth &&
+      pos.top + m.height <= window.innerHeight
+    );
+  }
+
+  /** Clamp a position so the popover stays within the viewport */
+  #clampToViewport(pos: { left: number; top: number }, m: DOMRect): { left: number; top: number } {
     return {
-      left: newLeft,
-      top: newTop,
+      left: Math.max(0, Math.min(pos.left, window.innerWidth - m.width)),
+      top: Math.max(0, Math.min(pos.top, window.innerHeight - m.height)),
     };
   }
 
@@ -217,30 +247,50 @@ export class ShipPopover {
     const triggerRect = this.triggerRef()?.nativeElement.getBoundingClientRect();
     const menuRect = this.popoverContentRef()?.nativeElement.getBoundingClientRect();
 
-    const tryOrderMultiLayer = [this.#alignTopRight, this.#alignBottomRight];
-    const tryOrderDefault = [this.#alignLeftUnder, this.#alignLeftOver];
+    if (!triggerRect || !menuRect) return;
+
+    // Mirror the CSS position-try-fallbacks order
+    const tryOrderDefault = [
+      this.#bottomSpanRight,
+      this.#topSpanRight,
+      this.#bottomSpanLeft,
+      this.#topSpanLeft,
+      this.#rightSpanBottom,
+      this.#leftSpanBottom,
+      this.#rightCenter,
+      this.#leftCenter,
+      this.#rightSpanTop,
+      this.#leftSpanTop,
+    ];
+
+    const tryOrderMultiLayer = [
+      this.#rightSpanBottom,
+      this.#rightSpanTop,
+      this.#leftSpanBottom,
+      this.#leftSpanTop,
+      this.#rightCenter,
+      this.#leftCenter,
+      this.#bottomSpanRight,
+      this.#topSpanRight,
+      this.#bottomSpanLeft,
+      this.#topSpanLeft,
+    ];
+
     const tryOrder = this.asMultiLayer() ? tryOrderMultiLayer : tryOrderDefault;
 
-    for (let i = 0; i < tryOrder.length; i++) {
-      const position = tryOrder[i](triggerRect, menuRect!);
+    // Try each position, use the first one that fits
+    for (const positionFn of tryOrder) {
+      const pos = positionFn.call(this, triggerRect, menuRect);
 
-      const outOfBoundsRight = position.left + (menuRect?.width || 0) > window.innerWidth;
-      const outOfBoundsBottom = position.top + (menuRect?.height || 0) > window.innerHeight;
-
-      if (!outOfBoundsRight && !outOfBoundsBottom) {
-        this.menuStyle.set({
-          left: position.left + 'px',
-          top: position.top + 'px',
-        });
+      if (this.#fitsInViewport(pos, menuRect)) {
+        this.menuStyle.set({ left: pos.left + 'px', top: pos.top + 'px' });
         return;
       }
     }
 
-    const fallbackPosition = tryOrder[0](triggerRect, menuRect!);
-    this.menuStyle.set({
-      left: fallbackPosition.left + 'px',
-      top: fallbackPosition.top + 'px',
-    });
+    // If nothing fits perfectly, use the first position clamped to viewport
+    const fallback = this.#clampToViewport(tryOrder[0].call(this, triggerRect, menuRect), menuRect);
+    this.menuStyle.set({ left: fallback.left + 'px', top: fallback.top + 'px' });
   }
 
   ngOnDestroy() {

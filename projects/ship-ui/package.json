@@ -1,7 +1,7 @@
 {
   "name": "@ship-ui/core",
   "license": "MIT",
-  "version": "0.17.7",
+  "version": "0.17.8",
   "peerDependencies": {
     "@angular/common": ">=20",
     "@angular/core": ">=20",
@@ -25,7 +25,7 @@
   "dependencies": {
     "subset-font": "^2.3.0",
     "@phosphor-icons/web": "^2.1.1",
-    "glob": "11.0.3",
+    "glob": "13.0.2",
     "tslib": "^2.3.0"
   },
   "bin": {
