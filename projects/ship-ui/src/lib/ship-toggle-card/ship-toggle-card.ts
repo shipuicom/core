@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
-import { ShipIcon } from '../ship-icon/ship-icon';
+import { ShipIcon } from '../../public-api';
 import { shipComponentClasses } from '../utilities/ship-component';
 import { ShipCardVariant, ShipColor } from '../utilities/ship-types';
 
@@ -7,10 +7,10 @@ import { ShipCardVariant, ShipColor } from '../utilities/ship-types';
   selector: 'sh-toggle-card',
   imports: [ShipIcon],
   template: `
-    <h3 (click)="disallowToggle() || toggle()">
+    <h3 (click)="!disableToggle() && toggle()">
       <ng-content select="[title]">Title</ng-content>
 
-      @if (!disallowToggle()) {
+      @if (!disableToggle()) {
         <sh-icon class="toggle-icon">caret-down</sh-icon>
       }
     </h3>
@@ -28,8 +28,9 @@ import { ShipCardVariant, ShipColor } from '../utilities/ship-types';
   },
 })
 export class ShipToggleCard {
-  isActive = model(false);
-  disallowToggle = input(false);
+  isActive = model<boolean>(false);
+
+  disableToggle = input(false);
 
   color = input<ShipColor | null>(null);
   variant = input<ShipCardVariant | null>(null);
@@ -37,12 +38,6 @@ export class ShipToggleCard {
     color: this.color,
     variant: this.variant,
   });
-
-  ngOnInit() {
-    if (this.disallowToggle()) {
-      this.isActive.set(true);
-    }
-  }
 
   toggle() {
     this.isActive.set(!this.isActive());

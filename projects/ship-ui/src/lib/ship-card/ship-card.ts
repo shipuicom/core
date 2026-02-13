@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { shipComponentClasses } from '../utilities/ship-component';
-import { ShipCardVariant, ShipColor } from '../utilities/ship-types';
+import type { ShipCardVariant, ShipColor } from '../utilities/ship-types';
 
 @Component({
   selector: 'sh-card',

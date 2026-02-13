@@ -9,14 +9,17 @@ $shipToggleCard: true !default;
     border-radius: var(--shape-3);
     background-color: var(--base-2);
 
+    &.type-a {
+      background-color: transparent;
+      border: 1px solid var(--base-4);
+    }
+
     &.active {
       .collapsable {
         grid-template-rows: 1fr;
       }
 
       .content {
-        // grid-template-rows: 1fr;
-        // transition: max-height 1s linear;
         padding: p2r(0 16 16);
 
         &:empty {

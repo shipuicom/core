@@ -11,5 +11,5 @@ import { ShipButtonGroup, ShipCard, ShipToggle, ShipToggleCard } from 'ship-ui';
 export class CardSandbox {
   cardType = signal<'type-a' | 'type-b' | 'type-c'>('type-a');
   useToggleCard = signal<boolean>(false);
-  disallowToggle = signal<boolean>(false);
+  disableToggle = signal<boolean>(false);
 }
