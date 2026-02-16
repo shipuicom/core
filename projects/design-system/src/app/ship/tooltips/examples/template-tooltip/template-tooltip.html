@@ -32,11 +32,11 @@
 </button>
 
 <!-- Template tooltip with action buttons -->
-<ng-template #actionTooltip>
+<ng-template #actionTooltip let-ctx>
   <p>Would you like to proceed?</p>
   <div class="tooltip-actions">
-    <button shButton size="small">Yes</button>
-    <button shButton size="small" class="secondary">No</button>
+    <button shButton size="small" (click)="ctx.close()">Yes</button>
+    <button shButton size="small" class="secondary" (click)="ctx.close()">No</button>
   </div>
 </ng-template>
 
@@ -50,8 +50,8 @@
   <div>Tooltip B</div>
 </ng-template>
 
-<!-- <button shButton [shTooltip]="tooltipContent">Changing Tooltip content</button>
+<button shButton [shTooltip]="tooltipContent">Changing Tooltip content</button>
 
 <ng-template #tooltipContent>
   <div>{{ value() }}</div>
-</ng-template> -->
+</ng-template>

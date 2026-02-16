@@ -1,10 +1,11 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
   ComponentRef,
+  computed,
   Directive,
   effect,
   ElementRef,
-  EmbeddedViewRef,
   EnvironmentInjector,
   HostListener,
   inject,
@@ -21,9 +22,14 @@ import { generateUniqueId } from '../utilities/random-id';
 @Component({
   selector: 'ship-tooltip-wrapper',
   standalone: true,
+  imports: [NgTemplateOutlet],
   template: `
     <div class="tooltip-content">
-      <ng-content />
+      @if (isTemplate()) {
+        <ng-container *ngTemplateOutlet="$any(content()); context: { $implicit: tooltipContext }" />
+      } @else {
+        {{ content() }}
+      }
     </div>
   `,
   host: {
@@ -37,6 +43,14 @@ export class ShipTooltipWrapper {
   positionAnchorName = input.required<string>();
   anchorEl = input.required<ElementRef<HTMLElement>>();
   isOpen = input<boolean>(false);
+  content = input<string | TemplateRef<any> | null | undefined>();
+  close = input<() => void>(() => {});
+
+  protected tooltipContext = {
+    close: () => this.close()(),
+  };
+
+  isTemplate = computed(() => this.content() instanceof TemplateRef);
 
   #selfRef = inject(ElementRef<HTMLElement>);
   #renderer = inject(Renderer2);
@@ -125,12 +139,12 @@ export class ShipTooltip implements OnDestroy {
   shTooltip = input.required<string | TemplateRef<any> | null | undefined>();
 
   #contentReplacedEffect = effect(() => {
-    this.shTooltip();
+    const content = this.shTooltip();
 
     untracked(() => {
-      if (this.isOpen()) {
-        this.cleanupTooltip();
-        this.showTooltip();
+      if (this.isOpen() && openRef?.component === this && openRef?.wrapperComponentRef) {
+        openRef.wrapperComponentRef.setInput('content', content);
+        openRef.wrapperComponentRef.changeDetectorRef.detectChanges();
       }
     });
   });
@@ -140,7 +154,6 @@ export class ShipTooltip implements OnDestroy {
   #environmentInjector = inject(EnvironmentInjector);
   #renderer = inject(Renderer2);
 
-  #projectedViewRef: EmbeddedViewRef<any> | null = null;
   private debounceTimer: any; // Using any for the timer ID
   private readonly DEBOUNCE_DELAY = 500;
 
@@ -183,31 +196,25 @@ export class ShipTooltip implements OnDestroy {
   }
 
   private showTooltip() {
-    if (openRef?.wrapperComponentRef || !this.shTooltip()) return;
-
-    let nodesToProject: Node[][];
-    const content = this.shTooltip();
-    if (typeof content === 'string') {
-      nodesToProject = [[this.#renderer.createText(content)]];
-    } else if (content instanceof TemplateRef) {
-      this.#projectedViewRef = content.createEmbeddedView({});
-      this.#projectedViewRef.detectChanges();
-      nodesToProject = [this.#projectedViewRef.rootNodes];
-    } else {
+    if (openRef?.wrapperComponentRef || !this.shTooltip()) {
+      if (openRef?.component === this && openRef?.wrapperComponentRef) {
+        openRef.wrapperComponentRef.setInput('content', this.shTooltip());
+      }
       return;
     }
 
     openRef = {
       wrapperComponentRef: this.#viewContainerRef.createComponent(ShipTooltipWrapper, {
         environmentInjector: this.#environmentInjector,
-        projectableNodes: nodesToProject,
       }),
       component: this,
     };
 
     openRef.wrapperComponentRef.setInput('positionAnchorName', this.anchorName);
     openRef.wrapperComponentRef.setInput('anchorEl', this.#elementRef);
-    openRef.wrapperComponentRef?.setInput('isOpen', this.isOpen);
+    openRef.wrapperComponentRef.setInput('isOpen', this.isOpen);
+    openRef.wrapperComponentRef.setInput('content', this.shTooltip());
+    openRef.wrapperComponentRef.setInput('close', () => this.cleanupTooltip());
     openRef.wrapperComponentRef.changeDetectorRef.detectChanges();
     openRef.wrapperComponentRef.location.nativeElement.addEventListener('mouseenter', () => {
       this.cancelCleanupTimer();
@@ -228,11 +235,6 @@ export class ShipTooltip implements OnDestroy {
       openRef.wrapperComponentRef.destroy();
       openRef.component.isOpen.set(false);
       openRef = null;
-    }
-
-    if (this.#projectedViewRef) {
-      this.#projectedViewRef.destroy();
-      this.#projectedViewRef = null;
     }
   }
 }
