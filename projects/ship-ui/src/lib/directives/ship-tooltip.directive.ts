@@ -13,6 +13,7 @@ import {
   Renderer2,
   signal,
   TemplateRef,
+  untracked,
   ViewContainerRef,
 } from '@angular/core';
 import { generateUniqueId } from '../utilities/random-id';
@@ -41,7 +42,6 @@ export class ShipTooltipWrapper {
   #renderer = inject(Renderer2);
   #positionAbort: AbortController | null = null;
 
-  // readonly BASE_SPACE = 8;
   readonly SUPPORTS_ANCHOR = typeof CSS !== 'undefined' && CSS.supports('position-anchor', '--abc');
 
   isBelow = signal<boolean>(false);
@@ -123,6 +123,17 @@ let openRef: {
 })
 export class ShipTooltip implements OnDestroy {
   shTooltip = input.required<string | TemplateRef<any> | null | undefined>();
+
+  #contentReplacedEffect = effect(() => {
+    this.shTooltip();
+
+    untracked(() => {
+      if (this.isOpen()) {
+        this.cleanupTooltip();
+        this.showTooltip();
+      }
+    });
+  });
 
   #elementRef = inject(ElementRef<HTMLElement>);
   #viewContainerRef = inject(ViewContainerRef);

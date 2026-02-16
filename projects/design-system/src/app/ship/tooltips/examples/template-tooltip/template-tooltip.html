@@ -39,3 +39,13 @@
     <button shButton size="small" class="secondary">No</button>
   </div>
 </ng-template>
+
+<button shButton [shTooltip]="toggle() ? tooltipA : tooltipB">Changing Tooltip</button>
+
+<ng-template #tooltipA>
+  <div>Tooltip A</div>
+</ng-template>
+
+<ng-template #tooltipB>
+  <div>Tooltip B</div>
+</ng-template>
