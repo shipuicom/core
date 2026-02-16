@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, input, model } from '@angular/core';
 import { ShipIcon } from '../../public-api';
 import { shipComponentClasses } from '../utilities/ship-component';
 import { ShipCardVariant, ShipColor } from '../utilities/ship-types';
@@ -28,9 +28,14 @@ import { ShipCardVariant, ShipColor } from '../utilities/ship-types';
   },
 })
 export class ShipToggleCard {
-  isActive = model<boolean>(false);
-
   disableToggle = input(false);
+  isActive = model<boolean>();
+
+  #disabledEffect = effect(() => {
+    if (this.disableToggle()) {
+      this.isActive.set(true);
+    }
+  });
 
   color = input<ShipColor | null>(null);
   variant = input<ShipCardVariant | null>(null);
