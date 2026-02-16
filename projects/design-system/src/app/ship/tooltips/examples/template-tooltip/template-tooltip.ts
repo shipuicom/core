@@ -15,9 +15,12 @@ export class TemplateTooltip implements OnInit, OnDestroy {
 
   intervalId?: Timeout;
 
+  value = signal('Tooltip A');
+
   ngOnInit() {
     this.intervalId = setInterval(() => {
       this.toggle.update((v) => !v);
+      this.value.set(this.toggle() ? 'Tooltip A' : 'Tooltip B');
     }, 1000);
   }
 
