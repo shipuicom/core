@@ -5,6 +5,7 @@ import {
   DOCUMENT,
   effect,
   ElementRef,
+  HostListener,
   inject,
   input,
   model,
@@ -18,6 +19,7 @@ import { ShipIcon } from '../ship-icon/ship-icon';
 import { ShipPopover } from '../ship-popover/ship-popover';
 import { createFormInputSignal } from '../utilities/create-form-input-signal';
 import { observeChildren } from '../utilities/observe-elements';
+import { generateUniqueId } from '../utilities/random-id';
 
 @Component({
   selector: 'sh-menu',
@@ -33,7 +35,15 @@ import { observeChildren } from '../utilities/observe-elements';
         closeOnButton: false,
         closeOnEsc: true,
       }">
-      <div trigger [class.is-open]="isOpen()" (click)="toggleIsOpen($event)">
+      <div
+        trigger
+        [class.is-open]="isOpen()"
+        (click)="toggleIsOpen($event)"
+        role="combobox"
+        [attr.aria-expanded]="isOpen()"
+        aria-haspopup="listbox"
+        [attr.aria-controls]="optionsId"
+        [attr.aria-activedescendant]="activeOptionId()">
         <ng-content />
 
         @if (openIndicator()) {
@@ -43,7 +53,15 @@ import { observeChildren } from '../utilities/observe-elements';
 
       <div class="form-field-wrap">
         <sh-form-field class="small stretch" [class.hidden]="searchable() === false">
-          <input type="text" #inputRef placeholder="Search" />
+          <input
+            type="text"
+            #inputRef
+            placeholder="Search"
+            role="combobox"
+            [attr.aria-expanded]="isOpen()"
+            [attr.aria-controls]="optionsId"
+            [attr.aria-activedescendant]="activeOptionId()"
+            aria-autocomplete="list" />
         </sh-form-field>
       </div>
 
@@ -51,7 +69,10 @@ import { observeChildren } from '../utilities/observe-elements';
         class="options"
         #optionsRef
         (click)="close('active')"
-        [class.searching]="searchable() && inputValue() !== ''">
+        [class.searching]="searchable() && inputValue() !== ''"
+        role="listbox"
+        [id]="optionsId"
+        [attr.aria-activedescendant]="activeOptionId()">
         <ng-content select="[menu]" />
       </div>
     </sh-popover>
@@ -80,9 +101,27 @@ export class ShipMenu {
   inputRef = viewChild<ElementRef<HTMLInputElement>>('inputRef');
   optionsRef = viewChild<ElementRef<HTMLDivElement>>('optionsRef');
 
+  private static openMenus: ShipMenu[] = [];
+
+  openMenusEffect = effect((onCleanup) => {
+    if (this.isOpen()) {
+      ShipMenu.openMenus.push(this);
+    }
+
+    onCleanup(() => {
+      const index = ShipMenu.openMenus.indexOf(this);
+      if (index > -1) {
+        ShipMenu.openMenus.splice(index, 1);
+      }
+    });
+  });
+
   options = observeChildren<HTMLButtonElement>(this.optionsRef, this.customOptionElementSelectors);
   optionsEl = computed(() => this.options.signal().filter((x) => !x.disabled));
   inputValue = createFormInputSignal(this.inputRef);
+
+  readonly optionsId = generateUniqueId();
+  activeOptionId = signal<string | undefined>(undefined);
 
   abortController: AbortController | null = null;
   optionsEffect = effect(() => {
@@ -138,6 +177,9 @@ export class ShipMenu {
   });
 
   keyDownEventListener = (e: KeyboardEvent) => {
+    // Only handle events if this is the most recently opened menu
+    if (ShipMenu.openMenus.at(-1) !== this) return;
+
     const activeOptionIndex = this.activeOptionIndex();
 
     if (e.key === 'ArrowDown') {
@@ -149,9 +191,21 @@ export class ShipMenu {
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (activeOptionIndex > -1) {
-        this.activeElements()[activeOptionIndex as number].click();
+        const el = this.activeElements()[activeOptionIndex as number];
+        const parent = el.parentElement;
 
-        queueMicrotask(() => this.close('active'));
+        // For nested menu's
+        if (parent?.hasAttribute('trigger')) {
+          const event = new CustomEvent('ship-menu-open', {
+            bubbles: true,
+            cancelable: true,
+          });
+
+          el.dispatchEvent(event);
+        } else {
+          el.click();
+          queueMicrotask(() => this.close('active'));
+        }
       }
     } else if (e.key === 'Tab') {
       e.preventDefault();
@@ -179,6 +233,10 @@ export class ShipMenu {
 
       for (let i = 0; i < allOptions.length; i++) {
         this.#renderer.removeStyle(allOptions[i], 'order');
+        if (!allOptions[i].id) {
+          allOptions[i].id = `${this.optionsId}-option-${i}`;
+        }
+        allOptions[i].setAttribute('role', 'option');
       }
 
       return;
@@ -211,6 +269,14 @@ export class ShipMenu {
 
     this.activeElements.set(optionElements);
     this._lastElementList = optionElements;
+
+    // Assign IDs to options for ARIA support
+    for (let i = 0; i < optionElements.length; i++) {
+      if (!optionElements[i].id) {
+        optionElements[i].id = `${this.optionsId}-option-${i}`;
+      }
+      optionElements[i].setAttribute('role', 'option');
+    }
   });
 
   toggleIsOpen(event: MouseEvent) {
@@ -219,11 +285,27 @@ export class ShipMenu {
 
     if (this.disabled()) return;
 
-    this.isOpen.set(!this.isOpen());
+    if (this.isOpen()) {
+      this.close('fromPopover');
+    } else {
+      this.open();
+    }
+  }
 
-    if (this.searchable() && this.isOpen()) {
+  open() {
+    if (this.disabled()) return;
+    this.isOpen.set(true);
+
+    if (this.searchable()) {
       setTimeout(() => this.inputRef()?.nativeElement.focus());
     }
+  }
+
+  @HostListener('ship-menu-open', ['$event'])
+  onShipMenuOpen(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.open();
   }
 
   #calculateMatchScore(option: string, input: string): number {
@@ -273,11 +355,17 @@ export class ShipMenu {
 
     for (let index = 0; index < optionElements.length; index++) {
       optionElements[index].classList.remove('active');
+      optionElements[index].removeAttribute('aria-selected');
     }
 
     if (activeOptionIndex > -1) {
-      optionElements[activeOptionIndex].scrollIntoView({ block: 'center' });
-      optionElements[activeOptionIndex].classList.add('active');
+      const activeOption = optionElements[activeOptionIndex];
+      activeOption.scrollIntoView({ block: 'center' });
+      activeOption.classList.add('active');
+      activeOption.setAttribute('aria-selected', 'true');
+      this.activeOptionId.set(activeOption.id);
+    } else {
+      this.activeOptionId.set(undefined);
     }
   });
 
@@ -351,6 +439,7 @@ export class ShipMenu {
 
     for (let index = 0; index < optionElements.length; index++) {
       optionElements[index].classList.remove('active');
+      optionElements[index].removeAttribute('aria-selected');
     }
   }
 
@@ -358,6 +447,10 @@ export class ShipMenu {
     if (this.abortController) {
       this.abortController.abort();
       this.abortController = null;
+    }
+    const index = ShipMenu.openMenus.indexOf(this);
+    if (index > -1) {
+      ShipMenu.openMenus.splice(index, 1);
     }
   }
 }

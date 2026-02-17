@@ -64,7 +64,7 @@ export class ShipTooltipWrapper {
     if (this.isOpen()) {
       setTimeout(() => {
         this.#selfRef.nativeElement.showPopover();
-        this.calculateTooltipPosition();
+        this.schedulePositionUpdate();
       });
     } else {
       this.#selfRef.nativeElement.hidePopover();
@@ -74,18 +74,36 @@ export class ShipTooltipWrapper {
   ngAfterViewInit() {
     this.#positionAbort = new AbortController();
 
-    const options = { signal: this.#positionAbort.signal, capture: true };
-    window?.addEventListener('scroll', this.calculateTooltipPosition, options);
-    window?.addEventListener('resize', this.calculateTooltipPosition, { signal: this.#positionAbort.signal });
+    const options = { signal: this.#positionAbort.signal, capture: true, passive: true };
+    window?.addEventListener('scroll', this.schedulePositionUpdate, options);
+    window?.addEventListener('resize', this.schedulePositionUpdate, {
+      signal: this.#positionAbort.signal,
+      passive: true,
+    });
 
-    setTimeout(() => this.calculateTooltipPosition());
+    this.schedulePositionUpdate();
   }
 
   ngOnDestroy(): void {
     this.#positionAbort?.abort();
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
   }
 
+  private rafId: number | null = null;
+
+  private schedulePositionUpdate = () => {
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+    }
+    this.rafId = requestAnimationFrame(this.calculateTooltipPosition);
+  };
+
   private calculateTooltipPosition = (): void => {
+    this.rafId = null;
+
     if (!this.anchorEl()) return;
 
     const hostRect = this.anchorEl().nativeElement.getBoundingClientRect();
@@ -96,7 +114,9 @@ export class ShipTooltipWrapper {
 
     const outOfBoundsTop = hostRect.top - tooltipRect.height < 0;
 
-    this.isBelow.set(outOfBoundsTop);
+    if (this.isBelow() !== outOfBoundsTop) {
+      this.isBelow.set(outOfBoundsTop);
+    }
 
     if (!this.SUPPORTS_ANCHOR) {
       const tooltipRect = tooltipEl.getBoundingClientRect();
@@ -114,9 +134,18 @@ export class ShipTooltipWrapper {
         newLeft = -(tooltipRect.width / 2);
       }
 
-      this.#renderer.setStyle(tooltipEl, 'left', `${newLeft}px`);
-      this.#renderer.setStyle(tooltipEl, 'top', `${newTop}px`);
-      this.#renderer.setStyle(tooltipEl, 'position', 'fixed');
+      const leftStyle = `${newLeft}px`;
+      const topStyle = `${newTop}px`;
+
+      if (tooltipEl.style.left !== leftStyle) {
+        this.#renderer.setStyle(tooltipEl, 'left', leftStyle);
+      }
+      if (tooltipEl.style.top !== topStyle) {
+        this.#renderer.setStyle(tooltipEl, 'top', topStyle);
+      }
+      if (tooltipEl.style.position !== 'fixed') {
+        this.#renderer.setStyle(tooltipEl, 'position', 'fixed');
+      }
     }
   };
 }

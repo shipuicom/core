@@ -116,6 +116,8 @@ export class ShipPopover {
           }
         );
 
+        if (!popoverEl.isConnected) return;
+
         popoverEl.showPopover();
 
         if (!this.SUPPORTS_ANCHOR) {
