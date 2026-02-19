@@ -12,3 +12,17 @@
     }
   </ng-container>
 </sh-menu>
+
+<sh-menu [searchable]="true">
+  <button shButton class="outlined">Open searchable menu</button>
+  <ng-container menu>
+    @for (item of filteredItems; track item.value) {
+      <button (click)="select(item)" [class.selected]="selected === item.value">
+        <div class="option-col">
+          {{ item.label }} asdlkjadskljjkladsjkldaljkdaslkjad jklsjkl dasjkld as
+          <p>hello world but im extra long so i should wrap to the next line</p>
+        </div>
+      </button>
+    }
+  </ng-container>
+</sh-menu>

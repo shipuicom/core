@@ -11,6 +11,7 @@ $shipTooltip: true !default;
 @if $shipTooltip == true {
   .tooltip {
     position: relative;
+    display: flex;
     pointer-events: initial !important;
 
     &:after {
@@ -55,7 +56,9 @@ $shipTooltip: true !default;
         z-index: 1;
 
         @supports (anchor-name: --anchor) {
-          transform: translateY(0) scaleY(1) scaleX(1);
+          .tooltip-content {
+            transform: translateY(0) scaleY(1) scaleX(1);
+          }
         }
       }
     }
@@ -66,29 +69,27 @@ $shipTooltip: true !default;
     --tt-c: var(--base-12);
     --tt-mh: #{p2r(136)};
     --tt-mw: #{p2r(280)};
+    --tt-translate-y: 50%;
 
     position: fixed;
-    padding: p2r(0 0 12);
-
     font: var(--paragraph-30);
     width: max-content;
     overflow: visible;
     box-shadow: none;
-    margin: initial;
     background: transparent;
     border: 0;
 
+    padding: 0;
+    margin: 0;
+    margin-block-end: p2r(12);
+
     @supports (anchor-name: --anchor) {
-      transform: translateY(50%) scaleY(0) scaleX(0.8);
-      transition: transform 125ms linear;
       inset: unset;
       justify-self: anchor-center;
       bottom: anchor(top);
       position: fixed;
-      position-try-order:
-        flip-block,
-        flip-inline,
-        flip-block flip-inline;
+
+      position-try-order: normal;
       position-try-fallbacks:
         flip-block,
         flip-inline,
@@ -98,7 +99,8 @@ $shipTooltip: true !default;
     &:before {
       content: '';
       position: absolute;
-      bottom: 0%;
+      bottom: p2r(-12);
+      top: auto;
       left: 50%;
       z-index: 1;
       transform: translateX(-50%);
@@ -112,12 +114,18 @@ $shipTooltip: true !default;
     }
 
     &.below {
-      padding: p2r(12 0 0);
+      --tt-translate-y: -50%;
+
       &:before {
         border-top-color: transparent;
         border-bottom-color: var(--tt-bg);
-        top: 0%;
+        top: p2r(-12);
         bottom: auto;
+      }
+
+      @supports not (anchor-name: --anchor) {
+        margin-block-start: p2r(12);
+        margin-block-end: 0;
       }
     }
 
@@ -130,46 +138,14 @@ $shipTooltip: true !default;
       max-height: var(--tt-mh);
       max-width: var(--tt-mw);
       overflow: auto;
-      // background: none;
       background: var(--tt-bg);
       border-radius: var(--shape-2);
       box-shadow: var(--box-shadow-20);
-    }
 
-    // @position-fallback --dropdown-flip-and-slide {
-    //   /* Attempt 1: Position below and align to the start (left) of the trigger */
-    //   @try {
-    //     top: calc(anchor(bottom) + 8px); /* 8px gap */
-    //     left: anchor(left);
-    //   }
-    //   /* Attempt 2: Position above and align to the start (left) of the trigger */
-    //   @try {
-    //     bottom: calc(anchor(top) + 8px); /* 8px gap */
-    //     left: anchor(left);
-    //   }
-    //   /* Attempt 3: Position below and align to the end (right) of the trigger */
-    //   @try {
-    //     top: calc(anchor(bottom) + 8px);
-    //     right: anchor(right);
-    //   }
-    //   /* Attempt 4: Position above and align to the end (right) of the trigger */
-    //   @try {
-    //     bottom: calc(anchor(top) + 8px);
-    //     right: anchor(right);
-    //   }
-    //   /* Attempt 5: (More advanced) If it's too wide, try to align center, below */
-    //   @try {
-    //     top: calc(anchor(bottom) + 8px);
-    //     left: anchor(center);
-    //     /* This might need more constraints or a width calculation if it's wider than anchor */
-    //     transform: translateX(-50%); /* Center it based on its own width */
-    //   }
-    //   /* Attempt 6: (More advanced) If it's too wide, try to align center, above */
-    //   @try {
-    //     bottom: calc(anchor(top) + 8px);
-    //     left: anchor(center);
-    //     transform: translateX(-50%);
-    //   }
-    // }
+      @supports (anchor-name: --anchor) {
+        transform: translateY(var(--tt-translate-y)) scaleY(0) scaleX(0.8);
+        transition: transform 125ms linear;
+      }
+    }
   }
 }

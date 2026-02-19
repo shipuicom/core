@@ -21,3 +21,9 @@ input[type='text'] {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+
+.option-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

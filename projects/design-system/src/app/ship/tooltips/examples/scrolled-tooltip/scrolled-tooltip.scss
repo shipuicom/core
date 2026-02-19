@@ -21,6 +21,7 @@ div {
   min-height: 700px;
   display: flex;
   gap: 1rem;
+  align-items: flex-start;
   justify-content: flex-start;
   background-image: repeating-linear-gradient(0deg, #eee 0px 20px, transparent 20px 40px);
 }

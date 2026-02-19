@@ -167,7 +167,7 @@ $shipMenu: true !default;
         justify-content: flex-start;
         align-items: center;
         text-align: left;
-        height: min-content;
+        height: auto;
         margin: p2r(0 8);
         padding: p2r(4 8);
         gap: p2r(0 8);
@@ -180,6 +180,15 @@ $shipMenu: true !default;
         color: var(--base-12);
         transition: transform 125ms linear;
         transform: scale(1);
+
+        &:before {
+          content: '';
+
+          min-height: p2r(24);
+          display: inline-block;
+          width: 0;
+          margin-right: p2r(-8);
+        }
 
         &:active {
           transform: scale(0.98);

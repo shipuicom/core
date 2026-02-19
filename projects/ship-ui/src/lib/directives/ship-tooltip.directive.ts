@@ -19,6 +19,8 @@ import {
 } from '@angular/core';
 import { generateUniqueId } from '../utilities/random-id';
 
+type Timeout = ReturnType<typeof setTimeout>;
+
 @Component({
   selector: 'ship-tooltip-wrapper',
   standalone: true,
@@ -112,40 +114,47 @@ export class ShipTooltipWrapper {
 
     if (tooltipRect.width === 0 && tooltipRect.height === 0) return;
 
-    const outOfBoundsTop = hostRect.top - tooltipRect.height < 0;
+    if (this.SUPPORTS_ANCHOR) {
+      const isPlacedBelow = tooltipRect.top > hostRect.top;
+
+      if (this.isBelow() !== isPlacedBelow) {
+        this.isBelow.set(isPlacedBelow);
+      }
+      return;
+    }
+
+    const gap = 12;
+    const outOfBoundsTop = hostRect.top - tooltipRect.height - gap < 0;
 
     if (this.isBelow() !== outOfBoundsTop) {
       this.isBelow.set(outOfBoundsTop);
     }
 
-    if (!this.SUPPORTS_ANCHOR) {
-      const tooltipRect = tooltipEl.getBoundingClientRect();
-      let newTop = hostRect.top - tooltipRect.height;
-      let newLeft = hostRect.left + hostRect.width / 2 - tooltipRect.width / 2;
+    let newTop = hostRect.top - tooltipRect.height - gap;
+    let newLeft = hostRect.left + hostRect.width / 2 - tooltipRect.width / 2;
 
-      if (outOfBoundsTop) {
-        newTop = hostRect.top + hostRect.height;
-      }
+    if (outOfBoundsTop) {
+      newTop = hostRect.top + hostRect.height;
+    }
 
-      if (newLeft + tooltipRect.width > window?.innerWidth) {
-        newLeft = hostRect.right - tooltipRect.width / 2;
-      }
-      if (newLeft < 0) {
-        newLeft = -(tooltipRect.width / 2);
-      }
+    if (newLeft + tooltipRect.width > window?.innerWidth) {
+      newLeft = hostRect.right - tooltipRect.width / 2;
+    }
+    if (newLeft < 0) {
+      newLeft = -(tooltipRect.width / 2);
+    }
 
-      const leftStyle = `${newLeft}px`;
-      const topStyle = `${newTop}px`;
+    const leftStyle = `${newLeft}px`;
+    const topStyle = `${newTop}px`;
 
-      if (tooltipEl.style.left !== leftStyle) {
-        this.#renderer.setStyle(tooltipEl, 'left', leftStyle);
-      }
-      if (tooltipEl.style.top !== topStyle) {
-        this.#renderer.setStyle(tooltipEl, 'top', topStyle);
-      }
-      if (tooltipEl.style.position !== 'fixed') {
-        this.#renderer.setStyle(tooltipEl, 'position', 'fixed');
-      }
+    if (tooltipEl.style.left !== leftStyle) {
+      this.#renderer.setStyle(tooltipEl, 'left', leftStyle);
+    }
+    if (tooltipEl.style.top !== topStyle) {
+      this.#renderer.setStyle(tooltipEl, 'top', topStyle);
+    }
+    if (tooltipEl.style.position !== 'fixed') {
+      this.#renderer.setStyle(tooltipEl, 'position', 'fixed');
     }
   };
 }
@@ -181,9 +190,8 @@ export class ShipTooltip implements OnDestroy {
   #elementRef = inject(ElementRef<HTMLElement>);
   #viewContainerRef = inject(ViewContainerRef);
   #environmentInjector = inject(EnvironmentInjector);
-  #renderer = inject(Renderer2);
 
-  private debounceTimer: any; // Using any for the timer ID
+  private debounceTimer: Timeout | null = null;
   private readonly DEBOUNCE_DELAY = 500;
 
   readonly anchorName = `--${generateUniqueId()}`;
@@ -261,6 +269,12 @@ export class ShipTooltip implements OnDestroy {
   private cleanupTooltip(): void {
     if (openRef?.wrapperComponentRef) {
       openRef.component.cancelCleanupTimer();
+
+      const nativeEl = openRef.wrapperComponentRef.location.nativeElement;
+      if (nativeEl && typeof nativeEl.matches === 'function' && nativeEl.matches(':popover-open')) {
+        nativeEl.hidePopover();
+      }
+
       openRef.wrapperComponentRef.destroy();
       openRef.component.isOpen.set(false);
       openRef = null;
