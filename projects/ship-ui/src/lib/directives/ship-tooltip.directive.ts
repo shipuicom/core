@@ -4,6 +4,7 @@ import {
   ComponentRef,
   computed,
   Directive,
+  DOCUMENT,
   effect,
   ElementRef,
   EnvironmentInjector,
@@ -54,58 +55,86 @@ export class ShipTooltipWrapper {
 
   isTemplate = computed(() => this.content() instanceof TemplateRef);
 
+  #document = inject(DOCUMENT);
   #selfRef = inject(ElementRef<HTMLElement>);
   #renderer = inject(Renderer2);
   #positionAbort: AbortController | null = null;
 
-  readonly SUPPORTS_ANCHOR = typeof CSS !== 'undefined' && CSS.supports('position-anchor', '--abc');
+  readonly SUPPORTS_ANCHOR =
+    typeof CSS !== 'undefined' && CSS.supports('position-anchor', '--abc') && CSS.supports('anchor-name', '--abc');
 
   isBelow = signal<boolean>(false);
 
   openEffect = effect(() => {
     if (this.isOpen()) {
-      setTimeout(() => {
-        this.#selfRef.nativeElement.showPopover();
-        this.schedulePositionUpdate();
+      queueMicrotask(() => {
+        const tooltipEl = this.#selfRef.nativeElement;
+        if (!tooltipEl || !tooltipEl.isConnected) return;
+
+        if (this.#positionAbort) {
+          this.#positionAbort.abort();
+        }
+        this.#positionAbort = new AbortController();
+
+        tooltipEl.showPopover();
+
+        if (!this.SUPPORTS_ANCHOR) {
+          setTimeout(() => {
+            const scrollableParent = this.#findScrollableParent(tooltipEl);
+
+            scrollableParent.addEventListener('scroll', () => this.calculateTooltipPosition(), {
+              signal: this.#positionAbort?.signal,
+              passive: true,
+            });
+            window?.addEventListener('resize', () => this.calculateTooltipPosition(), {
+              signal: this.#positionAbort?.signal,
+              passive: true,
+            });
+
+            this.calculateTooltipPosition();
+          });
+        }
       });
     } else {
-      this.#selfRef.nativeElement.hidePopover();
+      const tooltipEl = this.#selfRef.nativeElement;
+      if (tooltipEl) {
+        try {
+          if (tooltipEl.matches(':popover-open')) {
+            tooltipEl.hidePopover();
+          }
+        } catch (e) {
+          // Ignore if already hidden or other errors
+        }
+      }
+      this.#positionAbort?.abort();
+      this.#positionAbort = null;
     }
   });
 
-  ngAfterViewInit() {
-    this.#positionAbort = new AbortController();
-
-    const options = { signal: this.#positionAbort.signal, capture: true, passive: true };
-    window?.addEventListener('scroll', this.schedulePositionUpdate, options);
-    window?.addEventListener('resize', this.schedulePositionUpdate, {
-      signal: this.#positionAbort.signal,
-      passive: true,
-    });
-
-    this.schedulePositionUpdate();
-  }
-
   ngOnDestroy(): void {
     this.#positionAbort?.abort();
-    if (this.rafId !== null) {
-      cancelAnimationFrame(this.rafId);
-      this.rafId = null;
-    }
+    this.#positionAbort = null;
   }
 
-  private rafId: number | null = null;
+  #findScrollableParent(element: HTMLElement) {
+    const SCROLLABLE_STYLES = ['scroll', 'auto'];
+    let parent = element.parentElement;
 
-  private schedulePositionUpdate = () => {
-    if (this.rafId !== null) {
-      cancelAnimationFrame(this.rafId);
+    while (parent) {
+      if (
+        SCROLLABLE_STYLES.indexOf(window?.getComputedStyle(parent).overflowY) > -1 &&
+        parent.scrollHeight > parent.clientHeight
+      ) {
+        return parent;
+      }
+
+      parent = parent.parentElement;
     }
-    this.rafId = requestAnimationFrame(this.calculateTooltipPosition);
-  };
+
+    return this.#document.documentElement;
+  }
 
   private calculateTooltipPosition = (): void => {
-    this.rafId = null;
-
     if (!this.anchorEl()) return;
 
     const hostRect = this.anchorEl().nativeElement.getBoundingClientRect();
@@ -114,49 +143,61 @@ export class ShipTooltipWrapper {
 
     if (tooltipRect.width === 0 && tooltipRect.height === 0) return;
 
-    if (this.SUPPORTS_ANCHOR) {
-      const isPlacedBelow = tooltipRect.top > hostRect.top;
+    const BASE_SPACE = 8;
 
-      if (this.isBelow() !== isPlacedBelow) {
-        this.isBelow.set(isPlacedBelow);
+    // Position generators
+    const topCenter = (t: DOMRect, m: DOMRect) => ({
+      left: t.left + t.width / 2 - m.width / 2,
+      top: t.top - m.height - BASE_SPACE,
+    });
+    const bottomCenter = (t: DOMRect, m: DOMRect) => ({
+      left: t.left + t.width / 2 - m.width / 2,
+      top: t.bottom + BASE_SPACE,
+    });
+
+    const topSpanLeft = (t: DOMRect, m: DOMRect) => ({ left: t.right - m.width, top: t.top - m.height - BASE_SPACE });
+    const topSpanRight = (t: DOMRect, m: DOMRect) => ({ left: t.left, top: t.top - m.height - BASE_SPACE });
+    const bottomSpanLeft = (t: DOMRect, m: DOMRect) => ({ left: t.right - m.width, top: t.bottom + BASE_SPACE });
+    const bottomSpanRight = (t: DOMRect, m: DOMRect) => ({ left: t.left, top: t.bottom + BASE_SPACE });
+
+    const tryOrder = [topCenter, topSpanLeft, topSpanRight, bottomCenter, bottomSpanLeft, bottomSpanRight];
+
+    for (const positionFn of tryOrder) {
+      const pos = positionFn(hostRect, tooltipRect);
+      if (this.#fitsInViewport(pos, tooltipRect)) {
+        this.#applyPosition(pos, tooltipEl);
+        this.isBelow.set(pos.top > hostRect.top);
+        return;
       }
-      return;
     }
 
-    const gap = 12;
-    const outOfBoundsTop = hostRect.top - tooltipRect.height - gap < 0;
-
-    if (this.isBelow() !== outOfBoundsTop) {
-      this.isBelow.set(outOfBoundsTop);
-    }
-
-    let newTop = hostRect.top - tooltipRect.height - gap;
-    let newLeft = hostRect.left + hostRect.width / 2 - tooltipRect.width / 2;
-
-    if (outOfBoundsTop) {
-      newTop = hostRect.top + hostRect.height;
-    }
-
-    if (newLeft + tooltipRect.width > window?.innerWidth) {
-      newLeft = hostRect.right - tooltipRect.width / 2;
-    }
-    if (newLeft < 0) {
-      newLeft = -(tooltipRect.width / 2);
-    }
-
-    const leftStyle = `${newLeft}px`;
-    const topStyle = `${newTop}px`;
-
-    if (tooltipEl.style.left !== leftStyle) {
-      this.#renderer.setStyle(tooltipEl, 'left', leftStyle);
-    }
-    if (tooltipEl.style.top !== topStyle) {
-      this.#renderer.setStyle(tooltipEl, 'top', topStyle);
-    }
-    if (tooltipEl.style.position !== 'fixed') {
-      this.#renderer.setStyle(tooltipEl, 'position', 'fixed');
-    }
+    const fallback = this.#clampToViewport(topCenter(hostRect, tooltipRect), tooltipRect);
+    this.#applyPosition(fallback, tooltipEl);
+    this.isBelow.set(fallback.top > hostRect.top);
   };
+
+  #applyPosition(pos: { left: number; top: number }, element: HTMLElement) {
+    this.#renderer.setStyle(element, 'left', `${pos.left}px`);
+    this.#renderer.setStyle(element, 'top', `${pos.top}px`);
+    this.#renderer.setStyle(element, 'position', 'fixed');
+    this.#renderer.setStyle(element, 'margin', '0');
+  }
+
+  #fitsInViewport(pos: { left: number; top: number }, m: DOMRect): boolean {
+    return (
+      pos.left >= 0 &&
+      pos.top >= 0 &&
+      pos.left + m.width <= window.innerWidth &&
+      pos.top + m.height <= window.innerHeight
+    );
+  }
+
+  #clampToViewport(pos: { left: number; top: number }, m: DOMRect): { left: number; top: number } {
+    return {
+      left: Math.max(0, Math.min(pos.left, window.innerWidth - m.width)),
+      top: Math.max(0, Math.min(pos.top, window.innerHeight - m.height)),
+    };
+  }
 }
 
 let openRef: {
@@ -269,12 +310,6 @@ export class ShipTooltip implements OnDestroy {
   private cleanupTooltip(): void {
     if (openRef?.wrapperComponentRef) {
       openRef.component.cancelCleanupTimer();
-
-      const nativeEl = openRef.wrapperComponentRef.location.nativeElement;
-      if (nativeEl && typeof nativeEl.matches === 'function' && nativeEl.matches(':popover-open')) {
-        nativeEl.hidePopover();
-      }
-
       openRef.wrapperComponentRef.destroy();
       openRef.component.isOpen.set(false);
       openRef = null;
