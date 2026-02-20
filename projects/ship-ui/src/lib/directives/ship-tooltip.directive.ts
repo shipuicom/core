@@ -242,8 +242,6 @@ export class ShipTooltip implements OnDestroy {
   onMouseEnter(event: MouseEvent) {
     event.stopPropagation();
 
-    console.log('openRef?.component.anchorName this.anchorName', openRef?.component.anchorName, this.anchorName);
-
     if (openRef?.component.anchorName !== this.anchorName) {
       this.cleanupTooltip();
     } else {
