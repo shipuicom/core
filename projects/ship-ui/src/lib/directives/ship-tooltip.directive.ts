@@ -233,7 +233,7 @@ export class ShipTooltip implements OnDestroy {
   #environmentInjector = inject(EnvironmentInjector);
 
   private debounceTimer: Timeout | null = null;
-  private readonly DEBOUNCE_DELAY = 300;
+  private readonly DEBOUNCE_DELAY = 50;
 
   readonly anchorName = `--${generateUniqueId()}`;
   isOpen = signal<boolean>(false);
@@ -242,13 +242,16 @@ export class ShipTooltip implements OnDestroy {
   onMouseEnter(event: MouseEvent) {
     event.stopPropagation();
 
+    console.log('openRef?.component.anchorName this.anchorName', openRef?.component.anchorName, this.anchorName);
+
     if (openRef?.component.anchorName !== this.anchorName) {
       this.cleanupTooltip();
+    } else {
+      this.cancelCleanupTimer();
     }
 
-    this.cancelCleanupTimer();
-
-    queueMicrotask(() => this.showTooltip());
+    this.showTooltip();
+    // queueMicrotask(() => );
   }
 
   @HostListener('mouseleave', ['$event'])

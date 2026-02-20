@@ -6,5 +6,12 @@
 
   <input type="text" [(ngModel)]="selected" />
 </sh-select>
+<sh-select color="primary" variant="raised" [options]="options()" label="label" value="value" [selectMultiple]="true">
+  <label>
+    Favorite foods (multiple) another
+    <sh-icon class="primary" [shTooltip]="'hello im a description'">question</sh-icon>
+  </label>
 
+  <input type="text" [(ngModel)]="selected" />
+</sh-select>
 <p>Selected: {{ selected() | json }}</p>
