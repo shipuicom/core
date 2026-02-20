@@ -136,6 +136,7 @@ export class ShipPopover {
         }
       } else {
         this.closed.emit();
+        popoverEl.hidePopover();
         this.openAbort?.abort();
         this.openAbort = null;
       }

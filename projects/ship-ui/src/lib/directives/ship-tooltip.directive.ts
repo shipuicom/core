@@ -233,13 +233,15 @@ export class ShipTooltip implements OnDestroy {
   #environmentInjector = inject(EnvironmentInjector);
 
   private debounceTimer: Timeout | null = null;
-  private readonly DEBOUNCE_DELAY = 500;
+  private readonly DEBOUNCE_DELAY = 300;
 
   readonly anchorName = `--${generateUniqueId()}`;
   isOpen = signal<boolean>(false);
 
-  @HostListener('mouseenter')
-  onMouseEnter() {
+  @HostListener('mouseenter', ['$event'])
+  onMouseEnter(event: MouseEvent) {
+    event.stopPropagation();
+
     if (openRef?.component.anchorName !== this.anchorName) {
       this.cleanupTooltip();
     }
@@ -249,8 +251,9 @@ export class ShipTooltip implements OnDestroy {
     queueMicrotask(() => this.showTooltip());
   }
 
-  @HostListener('mouseleave')
-  onMouseLeave() {
+  @HostListener('mouseleave', ['$event'])
+  onMouseLeave(event: MouseEvent) {
+    event.stopPropagation();
     this.startCleanupTimer();
   }
 
@@ -270,6 +273,11 @@ export class ShipTooltip implements OnDestroy {
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);
       this.debounceTimer = null;
+    }
+
+    if (this.destroyTimeout) {
+      clearTimeout(this.destroyTimeout);
+      this.destroyTimeout = null;
     }
   }
 
@@ -294,11 +302,13 @@ export class ShipTooltip implements OnDestroy {
     openRef.wrapperComponentRef.setInput('content', this.shTooltip());
     openRef.wrapperComponentRef.setInput('close', () => this.cleanupTooltip());
     openRef.wrapperComponentRef.changeDetectorRef.detectChanges();
-    openRef.wrapperComponentRef.location.nativeElement.addEventListener('mouseenter', () => {
+    openRef.wrapperComponentRef.location.nativeElement.addEventListener('mouseenter', (event: MouseEvent) => {
+      event.stopPropagation();
       this.cancelCleanupTimer();
     });
 
-    openRef.wrapperComponentRef.location.nativeElement.addEventListener('mouseleave', () => {
+    openRef.wrapperComponentRef.location.nativeElement.addEventListener('mouseleave', (event: MouseEvent) => {
+      event.stopPropagation();
       this.startCleanupTimer();
     });
 
@@ -307,16 +317,20 @@ export class ShipTooltip implements OnDestroy {
     });
   }
 
+  destroyTimeout: Timeout | null = null;
+
   private cleanupTooltip(): void {
     if (openRef?.wrapperComponentRef) {
       openRef.component.cancelCleanupTimer();
       openRef.component.isOpen.set(false);
       openRef!.wrapperComponentRef.location.nativeElement.hidePopover();
 
-      setTimeout(() => {
-        openRef!.wrapperComponentRef.destroy();
-        openRef = null;
-      });
+      this.destroyTimeout = setTimeout(() => {
+        queueMicrotask(() => {
+          openRef?.wrapperComponentRef.destroy();
+          openRef = null;
+        });
+      }, this.DEBOUNCE_DELAY);
     }
   }
 }
