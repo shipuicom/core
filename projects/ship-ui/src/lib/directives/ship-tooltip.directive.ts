@@ -310,9 +310,13 @@ export class ShipTooltip implements OnDestroy {
   private cleanupTooltip(): void {
     if (openRef?.wrapperComponentRef) {
       openRef.component.cancelCleanupTimer();
-      openRef.wrapperComponentRef.destroy();
       openRef.component.isOpen.set(false);
-      openRef = null;
+      openRef!.wrapperComponentRef.location.nativeElement.hidePopover();
+
+      setTimeout(() => {
+        openRef!.wrapperComponentRef.destroy();
+        openRef = null;
+      });
     }
   }
 }
