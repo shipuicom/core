@@ -2,7 +2,7 @@
   <sh-toggle class="raised primary" [class.active]="disabled()" (click)="disabled.set(!disabled())">Disabled</sh-toggle>
   <sh-toggle class="raised primary" [class.active]="sharp()" (click)="sharp.set(!sharp())">Sharp</sh-toggle>
 
-  <sh-button-group>
+  <sh-button-group class="type-b">
     <button [class.active]="colors() === ''" (click)="colors.set('')">Base</button>
     <button [class.active]="colors() === 'primary'" (click)="colors.set('primary')">Primary</button>
     <button [class.active]="colors() === 'accent'" (click)="colors.set('accent')">Accent</button>
@@ -10,10 +10,25 @@
     <button [class.active]="colors() === 'error'" (click)="colors.set('error')">Error</button>
     <button [class.active]="colors() === 'success'" (click)="colors.set('success')">Success</button>
   </sh-button-group>
+
+  <sh-button-group class="type-b">
+    <button [class.active]="startOfWeek() === 1" (click)="startOfWeek.set(1)">Monday</button>
+    <button [class.active]="startOfWeek() === 2" (click)="startOfWeek.set(2)">Tuesday</button>
+    <button [class.active]="startOfWeek() === 3" (click)="startOfWeek.set(3)">Wednesday</button>
+    <button [class.active]="startOfWeek() === 4" (click)="startOfWeek.set(4)">Thursday</button>
+    <button [class.active]="startOfWeek() === 5" (click)="startOfWeek.set(5)">Friday</button>
+    <button [class.active]="startOfWeek() === 6" (click)="startOfWeek.set(6)">Saturday</button>
+    <button [class.active]="startOfWeek() === 0" (click)="startOfWeek.set(0)">Sunday</button>
+  </sh-button-group>
 </div>
 
 <div class="content">
-  <sh-datepicker class="raised" [class]="exampleClass()" [(date)]="date" [disabled]="disabled()" />
+  <sh-datepicker
+    class="raised"
+    [class]="exampleClass()"
+    [(date)]="date"
+    [disabled]="disabled()"
+    [startOfWeek]="startOfWeek()" />
 
   <p>Selected date: {{ date() | date: 'mediumDate' }}</p>
 </div>

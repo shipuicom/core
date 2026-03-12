@@ -66,7 +66,7 @@ import { classMutationSignal } from '../utilities/class-mutation-signal';
   },
 })
 export class ShipDatepicker {
-  #INIT_DATE = this.#getUTCDate(new Date());
+  #INIT_DATE = new Date(new Date().setHours(0, 0, 0, 0));
 
   date = model<Date | null>(null);
   endDate = model<Date | null>(null);
@@ -147,10 +147,10 @@ export class ShipDatepicker {
   }
 
   #generateMonthDates(date: Date, startOfWeek: number): Date[] {
-    const year = date.getUTCFullYear();
-    const month = date.getUTCMonth();
-    const firstDay = new Date(Date.UTC(year, month)).getUTCDay();
-    const daysInMonth = 32 - new Date(Date.UTC(year, month, 32)).getUTCDate();
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
     const dates: Date[] = [];
 
     let offset = firstDay - startOfWeek;
@@ -158,20 +158,19 @@ export class ShipDatepicker {
       offset += 7;
     }
 
-    const lastDayOfPrevMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const lastDayOfPrevMonth = new Date(year, month, 0).getDate();
 
     for (let i = offset - 1; i >= 0; i--) {
-      const prevMonthDate = new Date(Date.UTC(year, month - 1, lastDayOfPrevMonth - i));
-      dates.push(prevMonthDate);
+      dates.push(new Date(year, month - 1, lastDayOfPrevMonth - i, 0, 0, 0, 0));
     }
 
     for (let i = 1; i <= daysInMonth; i++) {
-      dates.push(new Date(Date.UTC(year, month, i)));
+      dates.push(new Date(year, month, i, 0, 0, 0, 0));
     }
 
     let nextMonthDay = 1;
     while (dates.length % 7 !== 0) {
-      dates.push(new Date(Date.UTC(year, month + 1, nextMonthDay++)));
+      dates.push(new Date(year, month + 1, nextMonthDay++, 0, 0, 0, 0));
     }
 
     return dates;
@@ -199,23 +198,19 @@ export class ShipDatepicker {
 
   setDate(newDate: Date, selectedElement: HTMLDivElement) {
     const createDateWithExistingTime = (newDate: Date, existingDate: Date | null) => {
-      const hours = existingDate?.getUTCHours() ?? 0;
-      const minutes = existingDate?.getUTCMinutes() ?? 0;
-      const seconds = existingDate?.getUTCSeconds() ?? 0;
-      const milliseconds = existingDate?.getUTCMilliseconds() ?? 0;
+      const hours = existingDate?.getHours() ?? 0;
+      const minutes = existingDate?.getMinutes() ?? 0;
+      const seconds = existingDate?.getSeconds() ?? 0;
+      const milliseconds = existingDate?.getMilliseconds() ?? 0;
 
-      return this.#getUTCDate(
-        new Date(
-          Date.UTC(
-            newDate.getUTCFullYear(),
-            newDate.getUTCMonth(),
-            newDate.getUTCDate(),
-            hours,
-            minutes,
-            seconds,
-            milliseconds
-          )
-        )
+      return new Date(
+        newDate.getFullYear(),
+        newDate.getMonth(),
+        newDate.getDate(),
+        hours,
+        minutes,
+        seconds,
+        milliseconds
       );
     };
 
@@ -254,11 +249,11 @@ export class ShipDatepicker {
     if (startDate === null) return null;
 
     const startOfDay = (date: Date) => {
-      return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0));
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
     };
 
     const endOfDay = (date: Date) => {
-      return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 23, 59, 59, 999));
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
     };
 
     const currentDate = startOfDay(date);
@@ -284,7 +279,7 @@ export class ShipDatepicker {
         if (currentDate >= rangeStart && currentDate <= rangeEnd) {
           classes.push('sel');
 
-          const dayOfWeek = currentDate.getUTCDay();
+          const dayOfWeek = currentDate.getDay();
           const startOfWeek = this.startOfWeek();
 
           if (dayOfWeek === startOfWeek) {
@@ -298,12 +293,12 @@ export class ShipDatepicker {
         }
 
         const nextDate = new Date(currentDate);
-        nextDate.setUTCDate(currentDate.getUTCDate() + 1);
+        nextDate.setDate(currentDate.getDate() + 1);
         const prevDate = new Date(currentDate);
-        prevDate.setUTCDate(currentDate.getUTCDate() - 1);
+        prevDate.setDate(currentDate.getDate() - 1);
 
-        const isFirstOfMonth = currentDate.getUTCDate() === 1;
-        const isLastOfMonth = nextDate.getUTCMonth() !== currentDate.getUTCMonth();
+        const isFirstOfMonth = currentDate.getDate() === 1;
+        const isLastOfMonth = nextDate.getMonth() !== currentDate.getMonth();
 
         if (isFirstOfMonth) {
           classes.push('month-start');
@@ -341,22 +336,5 @@ export class ShipDatepicker {
   isCurrentMonth(date: Date, monthOffset: number): boolean {
     const offsetDate = this.getOffsetDate(monthOffset);
     return date.getMonth() === offsetDate.getMonth();
-  }
-
-  #getUTCDate(date: Date): Date {
-    const offsetMinutes = date.getTimezoneOffset();
-    const timeDiffMillis = offsetMinutes * 60 * 1000;
-
-    return new Date(
-      Date.UTC(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        date.getHours(),
-        date.getMinutes(),
-        date.getSeconds(),
-        date.getMilliseconds()
-      ) + timeDiffMillis
-    );
   }
 }

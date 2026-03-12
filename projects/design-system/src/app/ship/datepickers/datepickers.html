@@ -68,6 +68,24 @@
       </li>
     </ul>
   </section>
+  <section>
+    <h4>Local Time & Timezones</h4>
+    <p>
+      The datepicker operates using standard native JavaScript
+      <code>Date</code>
+      objects, so it automatically adapts to the user's operating system timezone.
+    </p>
+    <p>
+      <strong>Testing different timezones:</strong>
+      Because it relies on the browser's native timezone API, you cannot spoof the timezone programmatically within the
+      component. To test how the datepicker looks and behaves in other regions, use your browser's Developer Tools. In
+      Chrome or Edge, open DevTools, press
+      <code>Esc</code>
+      to bring up the bottom drawer, find the
+      <strong>Sensors</strong>
+      tab, and change the Location override to a different city (e.g., Tokyo or London).
+    </p>
+  </section>
 </app-property-viewer>
 
 <div class="sandbox-example">

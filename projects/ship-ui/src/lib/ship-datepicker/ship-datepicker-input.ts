@@ -105,7 +105,7 @@ export class ShipDatepickerInput {
     this.#createCustomInputEventListener(input);
 
     input.addEventListener('inputValueChanged', (event: any) => {
-      this.internalDate.set(event.detail.value ? this.#getUTCDate(new Date(event.detail.value)) : null);
+      this.internalDate.set(event.detail.value ? new Date(event.detail.value) : null);
     });
 
     input.addEventListener('focus', () => {
@@ -117,7 +117,7 @@ export class ShipDatepickerInput {
     input.autocomplete = 'off';
 
     if (typeof input.value === 'string') {
-      this.internalDate.set(input.value ? this.#getUTCDate(new Date(input.value)) : null);
+      this.internalDate.set(input.value ? new Date(input.value) : null);
     }
   });
 
@@ -147,22 +147,5 @@ export class ShipDatepickerInput {
     });
 
     return input;
-  }
-
-  #getUTCDate(date: Date): Date {
-    const offsetMinutes = date.getTimezoneOffset();
-    const timeDiffMillis = offsetMinutes * 60 * 1000;
-
-    return new Date(
-      Date.UTC(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        date.getHours(),
-        date.getMinutes(),
-        date.getSeconds(),
-        date.getMilliseconds()
-      ) + timeDiffMillis
-    );
   }
 }

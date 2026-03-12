@@ -7,32 +7,31 @@ import { ShipPopover } from '../ship-popover/ship-popover';
   template: `
     <ng-content select="label"></ng-content>
 
-    <div class="input-wrap">
-      <div class="prefix">
-        <ng-content select="[prefix]"></ng-content>
-        <ng-content select="[textPrefix]"></ng-content>
+    <sh-popover
+      [(isOpen)]="isOpen"
+      (closed)="close()"
+      [options]="{
+        closeOnButton: false,
+        closeOnEsc: true,
+      }">
+      <div trigger class="input-wrap">
+        <div class="prefix">
+          <ng-content select="[prefix]"></ng-content>
+          <ng-content select="[textPrefix]"></ng-content>
+        </div>
+
+        <div class="prefix-space"></div>
+
+        <ng-content select="input"></ng-content>
+
+        <ng-content select="textarea"></ng-content>
+
+        <ng-content select="[textSuffix]"></ng-content>
+        <div class="suffix-space"></div>
+        <ng-content select="[suffix]"></ng-content>
       </div>
-
-      <div class="prefix-space"></div>
-
-      <sh-popover
-        [(isOpen)]="isOpen"
-        (closed)="close()"
-        [options]="{
-          closeOnButton: false,
-          closeOnEsc: true,
-        }">
-        <ng-content trigger select="input"></ng-content>
-
-        <ng-content select="[popoverContent]"></ng-content>
-      </sh-popover>
-
-      <ng-content select="textarea"></ng-content>
-
-      <ng-content select="[textSuffix]"></ng-content>
-      <div class="suffix-space"></div>
-      <ng-content select="[suffix]"></ng-content>
-    </div>
+      <ng-content select="[popoverContent]"></ng-content>
+    </sh-popover>
 
     <div class="helpers">
       <div class="error-wrap">
