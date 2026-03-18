@@ -43,7 +43,7 @@ $shipAlert: true !default;
 
     .alert {
       display: grid;
-      grid-template-columns: auto 1fr auto;
+      grid-template-columns: auto 1fr 1fr;
       grid-template-rows: auto auto;
       grid-template-areas:
         'stateIcon title closeIcon'
@@ -51,6 +51,25 @@ $shipAlert: true !default;
       padding: var(--alert-p);
       align-items: flex-start;
       gap: p2r(4 8);
+
+      .close-icon {
+        display: none;
+      }
+
+      &:has(.actions:empty) {
+        grid-template-columns: auto 1fr;
+        grid-template-areas:
+          'stateIcon title'
+          '. content';
+
+        .actions {
+          display: none;
+        }
+
+        .close-icon {
+          display: block;
+        }
+      }
     }
 
     .actions {
