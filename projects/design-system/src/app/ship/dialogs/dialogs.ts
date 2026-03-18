@@ -6,6 +6,7 @@ import { BasicDynamicDialog } from './examples/basic-dynamic-dialog/basic-dynami
 import { DataPassingDialog } from './examples/data-passing-dialog/data-passing-dialog';
 import { DialogAsComponent } from './examples/dialog-as-component/dialog-as-component';
 import { HeaderFooterDialog } from './examples/header-footer-dialog/header-footer-dialog';
+import { TemplateDialog } from './examples/template-dialog/template-dialog';
 
 @Component({
   selector: 'app-dialogs',
@@ -16,6 +17,7 @@ import { HeaderFooterDialog } from './examples/header-footer-dialog/header-foote
     HeaderFooterDialog,
     DataPassingDialog,
     DialogAsComponent,
+    TemplateDialog,
 
     ShipButtonGroup,
   ],

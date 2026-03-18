@@ -1,0 +1,11 @@
+<button shButton (click)="openTemplateDialog(myDialog)">Open Template Dialog</button>
+
+<ng-template #myDialog let-data let-close="close">
+  <div content>
+    <h2>{{ data.message }}</h2>
+    <p>This dialog is rendered entirely from a TemplateRef.</p>
+    <div>
+      <button shButton (click)="close()">Close Dialog</button>
+    </div>
+  </div>
+</ng-template>

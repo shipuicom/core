@@ -3,19 +3,37 @@ import {
   ComponentRef,
   createComponent,
   DOCUMENT,
+  EmbeddedViewRef,
   inject,
   Injectable,
   InputSignal,
   isSignal,
   OutputEmitterRef,
   OutputRefSubscription,
+  TemplateRef,
   Type,
 } from '@angular/core';
 import { ShipDialog, ShipDialogOptions } from './ship-dialog';
 
 export type Exact<T, U> = U extends T ? (keyof U extends keyof T ? U : never) : never;
-export type ComponentDataType<T> = T extends { data: InputSignal<infer K> } ? K : void;
-export type ComponentClosedType<T> = T extends { closed: OutputEmitterRef<infer U> } ? U : undefined;
+export type ComponentDataType<T> = T extends TemplateRef<infer C>
+  ? C extends { $implicit: infer K }
+    ? K
+    : void
+  : T extends Type<infer I>
+    ? I extends { data: InputSignal<infer K> }
+      ? K
+      : void
+    : void;
+export type ComponentClosedType<T> = T extends TemplateRef<infer C>
+  ? C extends { close: (res?: infer U) => void }
+    ? U
+    : undefined
+  : T extends Type<infer I>
+    ? I extends { closed: OutputEmitterRef<infer U> }
+      ? U
+      : undefined
+    : undefined;
 
 export interface ShipDialogServiceOptions<TData = any, TResult = undefined> extends ShipDialogOptions {
   data?: TData extends void ? void : TData & Exact<TData, TData>;
@@ -24,6 +42,12 @@ export interface ShipDialogServiceOptions<TData = any, TResult = undefined> exte
 
 export type ShipDialogInstance<T> = {
   component: T;
+  close: (res?: ComponentClosedType<T> | undefined) => void;
+  closed: OutputEmitterRef<ComponentClosedType<T> | undefined>;
+};
+
+export type ShipDialogTemplateInstance<T> = {
+  component: undefined;
   close: (res?: ComponentClosedType<T> | undefined) => void;
   closed: OutputEmitterRef<ComponentClosedType<T> | undefined>;
 };
@@ -38,75 +62,34 @@ export class ShipDialogService {
 
   compRef: ComponentRef<ShipDialog> | null = null;
   insertedCompRef: ComponentRef<unknown> | null = null;
+  insertedTemplateRef: EmbeddedViewRef<unknown> | null = null;
 
   closedFieldSub: OutputRefSubscription | null = null;
   compClosedSub: OutputRefSubscription | null = null;
 
   open<
-    T extends
-      | { data?: InputSignal<any>; closed?: OutputEmitterRef<any> }
-      | { data?: InputSignal<any> }
-      | { closed?: OutputEmitterRef<any> }
-      | {},
+    T extends TemplateRef<any> | Type<any>,
     K = ComponentDataType<T>,
     U = ComponentClosedType<T>,
     _Options extends ShipDialogServiceOptions<K, U | undefined> = ShipDialogServiceOptions<K, U | undefined>,
-  >(component: Type<T>, options?: _Options): ShipDialogInstance<T> {
+  >(
+    componentOrTemplate: T,
+    options?: _Options
+  ): T extends TemplateRef<any> ? ShipDialogTemplateInstance<T> : T extends Type<infer I> ? ShipDialogInstance<I> : never;
+  open<T = any, K = ComponentDataType<T>, U = ComponentClosedType<T>>(
+    componentOrTemplate: Type<T> | TemplateRef<any>,
+    options?: any
+  ): ShipDialogInstance<any> {
     const environmentInjector = this.#appRef.injector;
     const hostElement = this.#createEl();
     let closingCalled = false;
+    let closedField: OutputEmitterRef<U | undefined> | undefined;
 
     const { data, closed, ...rest } = options || {};
 
     if (this.compRef) {
       this.#cleanupRefs(true);
     }
-
-    this.insertedCompRef = createComponent<T>(component, {
-      environmentInjector,
-    });
-
-    this.compRef = createComponent(ShipDialog, {
-      hostElement,
-      environmentInjector,
-      projectableNodes: [[this.insertedCompRef.location.nativeElement]],
-    });
-
-    const insertedInstance = this.insertedCompRef.instance as T;
-    const dataField = (insertedInstance as any).data as InputSignal<K>;
-    const closedField = (insertedInstance as any).closed as OutputEmitterRef<U | undefined>;
-
-    if (data) {
-      if (isSignal(dataField)) {
-        this.insertedCompRef.setInput('data', data);
-      } else if (!isSignal(dataField)) {
-        throw new Error('data is not an input signal on the passed component');
-      }
-    }
-
-    if (closedField instanceof OutputEmitterRef) {
-      this.closedFieldSub = closedField.subscribe((arg: U | undefined) => {
-        this.#cleanupRefs();
-
-        if (closingCalled) return;
-
-        closingCalled = true;
-
-        closed?.(arg as U);
-
-        (this.compRef?.instance.closed as OutputEmitterRef<U | undefined>).emit(arg);
-      });
-    }
-
-    this.#appRef.attachView(this.insertedCompRef.hostView);
-    this.#appRef.attachView(this.compRef.hostView);
-
-    this.insertedCompRef.changeDetectorRef.detectChanges();
-    this.compRef.changeDetectorRef.detectChanges();
-    this.compRef.instance.isOpen.set(true);
-    this.compRef.setInput('options', rest);
-
-    this.compClosedSub = this.compRef.instance.closed.subscribe(() => closeAction());
 
     const _self = this;
 
@@ -124,8 +107,73 @@ export class ShipDialogService {
       closed?.(arg as U);
     }
 
+    let projectableNodes: any[][] = [];
+
+    if (componentOrTemplate instanceof TemplateRef) {
+      this.insertedTemplateRef = componentOrTemplate.createEmbeddedView({
+        $implicit: data,
+        close: (res?: any) => closeAction(res),
+      });
+      projectableNodes = [this.insertedTemplateRef.rootNodes];
+    } else {
+      this.insertedCompRef = createComponent<T>(componentOrTemplate, {
+        environmentInjector,
+      });
+      projectableNodes = [[this.insertedCompRef.location.nativeElement]];
+
+      const insertedInstance = this.insertedCompRef.instance as T;
+      const dataField = (insertedInstance as any).data as InputSignal<K>;
+      closedField = (insertedInstance as any).closed as OutputEmitterRef<U | undefined>;
+
+      if (data) {
+        if (isSignal(dataField)) {
+          this.insertedCompRef.setInput('data', data);
+        } else if (!isSignal(dataField)) {
+          throw new Error('data is not an input signal on the passed component');
+        }
+      }
+
+      if (closedField && closedField instanceof OutputEmitterRef) {
+        this.closedFieldSub = closedField.subscribe((arg: U | undefined) => {
+          this.#cleanupRefs();
+
+          if (closingCalled) return;
+
+          closingCalled = true;
+
+          closed?.(arg as U);
+
+          (this.compRef?.instance.closed as OutputEmitterRef<U | undefined>).emit(arg);
+        });
+      }
+    }
+
+    this.compRef = createComponent(ShipDialog, {
+      hostElement,
+      environmentInjector,
+      projectableNodes,
+    });
+
+    if (this.insertedCompRef) {
+      this.#appRef.attachView(this.insertedCompRef.hostView);
+      this.insertedCompRef.changeDetectorRef.detectChanges();
+    }
+
+    if (this.insertedTemplateRef) {
+      this.#appRef.attachView(this.insertedTemplateRef);
+      this.insertedTemplateRef.detectChanges();
+    }
+
+    this.#appRef.attachView(this.compRef.hostView);
+
+    this.compRef.changeDetectorRef.detectChanges();
+    this.compRef.instance.isOpen.set(true);
+    this.compRef.setInput('options', rest);
+
+    this.compClosedSub = this.compRef.instance.closed.subscribe(() => closeAction());
+
     return {
-      component: this.insertedCompRef.instance as T,
+      component: this.insertedCompRef?.instance as T | undefined,
       close: closeAction,
       closed: this.compRef.instance.closed as OutputEmitterRef<U | undefined>,
     } as ShipDialogInstance<T>;
@@ -152,6 +200,13 @@ export class ShipDialogService {
         _self.#appRef.detachView(_self.insertedCompRef.hostView);
         _self.closedFieldSub?.unsubscribe();
         _self.insertedCompRef.destroy();
+        _self.insertedCompRef = null;
+      }
+
+      if (_self.insertedTemplateRef) {
+        _self.#appRef.detachView(_self.insertedTemplateRef);
+        _self.insertedTemplateRef.destroy();
+        _self.insertedTemplateRef = null;
       }
 
       if (!_self.compRef) return;
