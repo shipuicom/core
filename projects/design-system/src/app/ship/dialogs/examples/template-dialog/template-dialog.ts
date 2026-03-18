@@ -15,7 +15,7 @@ export class TemplateDialog {
   openTemplateDialog(template: TemplateRef<any>) {
     this.#dialog.open(template, {
       data: { message: 'Hello from Template!' },
-      class: this.type() || 'default',
+      class: this.type() || '',
     });
   }
 }

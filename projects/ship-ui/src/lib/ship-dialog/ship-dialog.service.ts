@@ -17,25 +17,21 @@ import { ShipDialog, ShipDialogOptions } from './ship-dialog';
 
 export type Exact<T, U> = U extends T ? (keyof U extends keyof T ? U : never) : never;
 export type ComponentDataType<T> = T extends TemplateRef<infer C>
-  ? C extends { $implicit: infer K }
-    ? K
+  ? (C extends { $implicit: infer K } ? K : unknown) & Partial<Omit<C, 'close' | '$implicit'>> extends infer R
+    ? keyof R extends never
+      ? void
+      : R
     : void
-  : T extends Type<infer I>
-    ? I extends { data: InputSignal<infer K> }
-      ? K
-      : void
+  : T extends { data: InputSignal<infer K> }
+    ? K
     : void;
 export type ComponentClosedType<T> = T extends TemplateRef<infer C>
   ? C extends { close: (res?: infer U) => void }
     ? U
     : undefined
-  : T extends Type<infer I>
-    ? I extends { closed: OutputEmitterRef<infer U> }
-      ? U
-      : undefined
-    : T extends { closed: OutputEmitterRef<infer U> }
-      ? U
-      : undefined;
+  : T extends { closed: OutputEmitterRef<infer U> }
+    ? U
+    : undefined;
 
 export interface ShipDialogServiceOptions<TData = any, TResult = undefined> extends ShipDialogOptions {
   data?: TData extends void ? void : TData & Exact<TData, TData>;
@@ -70,14 +66,14 @@ export class ShipDialogService {
   compClosedSub: OutputRefSubscription | null = null;
 
   open<
-    T extends TemplateRef<any> | Type<any>,
-    K = ComponentDataType<T>,
-    U = ComponentClosedType<T>,
+    I,
+    K = ComponentDataType<I>,
+    U = ComponentClosedType<I>,
     _Options extends ShipDialogServiceOptions<K, U> = ShipDialogServiceOptions<K, U>,
   >(
-    componentOrTemplate: T,
+    componentOrTemplate: Type<I> | (I extends TemplateRef<any> ? I : never),
     options?: _Options
-  ): T extends TemplateRef<any> ? ShipDialogTemplateInstance<T> : T extends Type<infer I> ? ShipDialogInstance<I> : never;
+  ): I extends TemplateRef<any> ? ShipDialogTemplateInstance<I> : ShipDialogInstance<I>;
   open<T = any, K = ComponentDataType<T>, U = ComponentClosedType<T>>(
     componentOrTemplate: Type<T> | TemplateRef<any>,
     options?: any
