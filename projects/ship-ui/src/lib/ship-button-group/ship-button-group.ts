@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { shipComponentClasses } from '../utilities/ship-component';
 import { ShipButtonGroupVariant, ShipColor, ShipSize } from '../utilities/ship-types';
+import { ShipSelectionGroup } from '../utilities/ship-selection-group';
 
 @Component({
   selector: 'sh-button-group',
@@ -14,12 +15,16 @@ import { ShipButtonGroupVariant, ShipColor, ShipSize } from '../utilities/ship-t
     '[style.--btng-id]': 'id',
   },
 })
-export class ShipButtonGroup {
+export class ShipButtonGroup extends ShipSelectionGroup<string> {
   id = '--' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 12);
 
   color = input<ShipColor | null>(null);
   variant = input<ShipButtonGroupVariant | null>(null);
   size = input<ShipSize | null>(null);
+
+  constructor() {
+    super('button', 'active');
+  }
 
   hostClasses = shipComponentClasses('buttonGroup', {
     color: this.color,

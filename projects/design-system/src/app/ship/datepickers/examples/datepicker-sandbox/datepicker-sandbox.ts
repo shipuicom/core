@@ -15,8 +15,10 @@ export class DatepickerSandbox {
   date = signal<Date | null>(new Date());
   disabled = signal(false);
   sharp = signal(false);
-  startOfWeek = signal(1);
+  startOfWeek = signal('1');
   colors = signal<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
 
   exampleClass = computed(() => this.colors() + ' ' + (this.sharp() ? 'sharp' : ''));
+
+  startOfWeekComputed = computed(() => parseInt(this.startOfWeek()));
 }

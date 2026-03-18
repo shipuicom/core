@@ -18,7 +18,8 @@ $shipTabs: true !default;
     position: relative;
 
     button,
-    [tab] {
+    [tab],
+    [value] {
       display: flex;
       align-items: center;
       gap: p2r(8);
@@ -35,12 +36,14 @@ $shipTabs: true !default;
       transition: transform 125ms linear;
       transform: scale(1);
 
-      &:active {
-        transform: scale(0.98);
+      &:focus-visible {
+        outline: 2px solid var(--primary-8);
+        outline-offset: -2px;
+        border-radius: var(--shape-1);
       }
 
-      &:focus {
-        outline: none;
+      &:active {
+        transform: scale(0.98);
       }
 
       &:hover {

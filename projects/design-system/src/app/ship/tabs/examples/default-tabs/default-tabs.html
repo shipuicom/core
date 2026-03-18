@@ -1,13 +1,13 @@
-<sh-tabs color="primary">
-  <button [class.active]="activeTab() === 'tab1'" (click)="activeTab.set('tab1')">
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="tab1">
     <sh-icon>spinner</sh-icon>
     Tab 1
   </button>
-  <button [class.active]="activeTab() === 'tab2'" (click)="activeTab.set('tab2')">
+  <button value="tab2">
     <sh-icon>hand-palm</sh-icon>
     Tab 2
   </button>
-  <button [class.active]="activeTab() === 'tab3'" (click)="activeTab.set('tab3')">
+  <button value="tab3">
     <sh-icon>check</sh-icon>
     Tab 3
   </button>

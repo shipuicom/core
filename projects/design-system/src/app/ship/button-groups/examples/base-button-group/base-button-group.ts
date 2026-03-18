@@ -12,6 +12,7 @@ export class BaseButtonGroup {
   small = input<boolean>(false);
   type = input<'' | 'type-b'>('');
   activeIndex = signal<number | null>(null);
+  selected = signal<string | null>(null);
 
   items = signal(new Array(5).fill(0));
 

@@ -1,7 +1,7 @@
-<sh-toggle [class.active]="active()" (click)="active.set(!active())" variant="flat" />
-<sh-toggle [class.active]="active()" (click)="active.set(!active())" variant="flat" color="primary" />
-<sh-toggle [class.active]="active()" (click)="active.set(!active())" variant="flat" color="accent" />
-<sh-toggle [class.active]="active()" (click)="active.set(!active())" variant="flat" color="warn" />
-<sh-toggle [class.active]="active()" (click)="active.set(!active())" variant="flat" color="error" />
-<sh-toggle [class.active]="active()" (click)="active.set(!active())" variant="flat" color="success" />
-<sh-toggle [class.active]="active()" (click)="active.set(!active())" variant="flat" disabled />
+<sh-toggle [(checked)]="active" variant="flat" />
+<sh-toggle [(checked)]="active" variant="flat" color="primary" />
+<sh-toggle [(checked)]="active" variant="flat" color="accent" />
+<sh-toggle [(checked)]="active" variant="flat" color="warn" />
+<sh-toggle [(checked)]="active" variant="flat" color="error" />
+<sh-toggle [(checked)]="active" variant="flat" color="success" />
+<sh-toggle [(checked)]="active" variant="flat" [disabled]="true" />

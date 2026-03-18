@@ -204,12 +204,36 @@ export class ShipMenu {
           el.dispatchEvent(event);
         } else {
           el.click();
-          queueMicrotask(() => this.close('active'));
+          if (!el.querySelector('sh-checkbox')) {
+            queueMicrotask(() => this.close('active'));
+          }
         }
       }
     } else if (e.key === 'Tab') {
-      e.preventDefault();
-      this.close('closed');
+      let optionElements = this.activeElements();
+      if (!optionElements.length) {
+        const newOptionElements = this.optionsEl();
+        this.activeElements.set(newOptionElements);
+        optionElements = newOptionElements;
+      }
+
+      if (e.shiftKey) {
+        if (activeOptionIndex <= 0) {
+          e.preventDefault();
+          this.close('closed');
+        } else {
+          e.preventDefault();
+          this.activeOptionIndex.set(this.prevActiveIndex(activeOptionIndex));
+        }
+      } else {
+        if (activeOptionIndex >= optionElements.length - 1) {
+          e.preventDefault();
+          this.close('closed');
+        } else {
+          e.preventDefault();
+          this.activeOptionIndex.set(this.nextActiveIndex(activeOptionIndex));
+        }
+      }
     }
   };
 
@@ -423,6 +447,11 @@ export class ShipMenu {
 
   close(action: 'fromPopover' | 'closed' | 'active' = 'closed', event?: MouseEvent) {
     this.inputValue.set('');
+
+    const inputEl = this.inputRef()?.nativeElement;
+    if (inputEl) {
+      inputEl.value = '';
+    }
 
     if (this.closeOnClick()) {
       (!this.keepClickedOptionActive() || action === 'closed') && this.#resetActiveOption();

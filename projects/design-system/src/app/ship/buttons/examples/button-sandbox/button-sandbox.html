@@ -2,46 +2,36 @@
   <p>Controls</p>
   <header>
     <div class="row">
-      <!-- <sh-toggle [class.active]="isSmall()" class="primary raised" (click)="isSmall.set(!isSmall())">Small</sh-toggle> -->
+      <!-- <sh-toggle [(checked)]="isSmall" class="primary raised">Small</sh-toggle> -->
 
-      <sh-button-group class="small type-b">
-        <button [class.active]="sizeClass() === ''" (click)="sizeClass.set('')">Normal</button>
-        <button [class.active]="sizeClass() === 'small'" (click)="sizeClass.set('small')">Small</button>
-        <button [class.active]="sizeClass() === 'xsmall'" (click)="sizeClass.set('xsmall')">XSmall</button>
+      <sh-button-group class="small type-b" [(value)]="sizeClass">
+        <button value="">Normal</button>
+        <button value="small">Small</button>
+        <button value="xsmall">XSmall</button>
       </sh-button-group>
 
-      <sh-toggle [class.active]="isRotated()" color="primary" variant="raised" (click)="isRotated.set(!isRotated())">
-        Rotated
-      </sh-toggle>
-      <sh-toggle [class.active]="isLoading()" color="primary" variant="raised" (click)="isLoading.set(!isLoading())">
-        Loading
-      </sh-toggle>
-      <sh-toggle [class.active]="isDisabled()" color="primary" variant="raised" (click)="isDisabled.set(!isDisabled())">
-        Disabled
-      </sh-toggle>
-      <sh-toggle [class.active]="isReadonly()" color="primary" variant="raised" (click)="isReadonly.set(!isReadonly())">
-        Readonly
-      </sh-toggle>
+      <sh-toggle [(checked)]="isRotated" color="primary" variant="raised">Rotated</sh-toggle>
+      <sh-toggle [(checked)]="isLoading" color="primary" variant="raised">Loading</sh-toggle>
+      <sh-toggle [(checked)]="isDisabled" color="primary" variant="raised">Disabled</sh-toggle>
+      <sh-toggle [(checked)]="isReadonly" color="primary" variant="raised">Readonly</sh-toggle>
     </div>
 
     <div class="row">
-      <sh-button-group class="small type-b">
-        <button [class.active]="colorClass() === ''" (click)="colorClass.set('')">Default</button>
-        <button [class.active]="colorClass() === 'primary'" (click)="colorClass.set('primary')">Primary</button>
-        <button [class.active]="colorClass() === 'accent'" (click)="colorClass.set('accent')">Accent</button>
-        <button [class.active]="colorClass() === 'warn'" (click)="colorClass.set('warn')">Warn</button>
-        <button [class.active]="colorClass() === 'error'" (click)="colorClass.set('error')">Error</button>
-        <button [class.active]="colorClass() === 'success'" (click)="colorClass.set('success')">Success</button>
+      <sh-button-group class="small type-b" [(value)]="colorClass">
+        <button value="">Default</button>
+        <button value="primary">Primary</button>
+        <button value="accent">Accent</button>
+        <button value="warn">Warn</button>
+        <button value="error">Error</button>
+        <button value="success">Success</button>
       </sh-button-group>
 
-      <sh-button-group class="small type-b">
-        <button [class.active]="variationClass() === ''" (click)="variationClass.set('')">Default</button>
-        <button [class.active]="variationClass() === 'simple'" (click)="variationClass.set('simple')">Simple</button>
-        <button [class.active]="variationClass() === 'outlined'" (click)="variationClass.set('outlined')">
-          Outlined
-        </button>
-        <button [class.active]="variationClass() === 'flat'" (click)="variationClass.set('flat')">Flat</button>
-        <button [class.active]="variationClass() === 'raised'" (click)="variationClass.set('raised')">Raised</button>
+      <sh-button-group class="small type-b" [(value)]="variationClass">
+        <button value="">Default</button>
+        <button value="simple">Simple</button>
+        <button value="outlined">Outlined</button>
+        <button value="flat">Flat</button>
+        <button value="raised">Raised</button>
       </sh-button-group>
     </div>
   </header>

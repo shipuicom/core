@@ -20,7 +20,7 @@
   <ng-container menu>
     @for (value of ['primary', 'accent', 'warn', 'error', 'success']; track $index) {
       <button item (click)="setInputName(value)">
-        <sh-radio [class.active]="inputName() === value" class="primary raised">
+        <sh-radio [checked]="inputName() === value" class="primary raised">
           {{ value }}
         </sh-radio>
       </button>

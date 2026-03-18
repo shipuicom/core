@@ -18,20 +18,34 @@ $shipCheckbox: true !default;
     position: relative;
     border: 0;
 
+    &:focus-visible > .box,
+    &:has(input:focus-visible) > .box {
+      outline: 2px solid var(--primary-8);
+      outline-offset: 2px;
+    }
+
+    > input.internal-input,
+    .label > input {
+      appearance: none;
+      position: absolute;
+      inset: 0;
+      cursor: pointer;
+      z-index: 0;
+      margin: 0;
+
+      &:focus,
+      &:focus-visible {
+        outline: none;
+      }
+    }
+
+    &:has(.label > input) > input.internal-input {
+      display: none;
+    }
+
     .label {
       &:empty {
         display: none;
-      }
-
-      > input {
-        appearance: none;
-        position: absolute;
-        inset: 0;
-        cursor: pointer;
-
-        &:focus {
-          outline: none;
-        }
       }
     }
 
@@ -66,18 +80,9 @@ $shipCheckbox: true !default;
 
     &.raised,
     &.flat {
-      &:has(input) {
-        &:not(:has(input:checked)) .box {
-          background: transparent;
-          border: 1px solid var(--box-bc);
-        }
-      }
-
-      &:not(:has(input)) {
-        .box:not(.active) {
-          background: transparent;
-          border: 1px solid var(--box-bc);
-        }
+      &:not(:has(input:checked)):not(.active) .box {
+        background: transparent;
+        border: 1px solid var(--box-bc);
       }
     }
 

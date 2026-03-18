@@ -54,9 +54,9 @@
 </app-property-viewer>
 
 <div class="controls">
-  <sh-button-group>
-    <button [class.active]="type() === 'default'" (click)="type.set('default')">Default</button>
-    <button [class.active]="type() === 'type-b'" (click)="type.set('type-b')">Type B</button>
+  <sh-button-group [(value)]="type">
+    <button value="default">Default</button>
+    <button value="type-b">Type B</button>
   </sh-button-group>
 </div>
 
@@ -79,5 +79,9 @@
 
   <app-previewer path="/dialogs/examples/data-passing-dialog/data-passing-dialog" title="Data Passing & Close Event">
     <data-passing-dialog class="example" [type]="type()" />
+  </app-previewer>
+
+  <app-previewer path="/dialogs/examples/template-dialog/template-dialog" title="Template-based Dialog">
+    <template-dialog class="example" [type]="type()" />
   </app-previewer>
 </div>

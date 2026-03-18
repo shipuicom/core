@@ -72,9 +72,9 @@
 </app-property-viewer>
 
 <div class="controls">
-  <sh-button-group>
-    <button [class.active]="type() === 'type-a'" (click)="type.set('type-a')">Type A</button>
-    <button [class.active]="type() === 'type-b'" (click)="type.set('type-b')">Type B</button>
+  <sh-button-group [(value)]="type">
+    <button value="type-a">Type A</button>
+    <button value="type-b">Type B</button>
   </sh-button-group>
 </div>
 

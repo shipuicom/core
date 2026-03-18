@@ -1,6 +1,9 @@
 import { DestroyRef, ElementRef, inject, signal, Signal, WritableSignal } from '@angular/core';
 
-export function contentProjectionSignal<T = HTMLElement>(querySelector: string): Signal<T[]> {
+export function contentProjectionSignal<T = HTMLElement>(
+  querySelector: string,
+  options: MutationObserverInit = { childList: true }
+): Signal<T[]> {
   const hostElement = inject(ElementRef<HTMLElement>).nativeElement;
   const destroyRef = inject(DestroyRef);
 
@@ -20,7 +23,7 @@ export function contentProjectionSignal<T = HTMLElement>(querySelector: string):
     }
   });
 
-  observer.observe(hostElement, { childList: true });
+  observer.observe(hostElement, options);
   destroyRef.onDestroy(() => observer.disconnect());
 
   return projectedElementsSignal.asReadonly();

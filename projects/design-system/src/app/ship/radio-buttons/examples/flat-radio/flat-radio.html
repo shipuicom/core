@@ -1,7 +1,7 @@
-<sh-radio [class.active]="active()" (click)="active.set(!active())" variant="flat" />
-<sh-radio [class.active]="active()" (click)="active.set(!active())" variant="flat" color="primary" />
-<sh-radio [class.active]="active()" (click)="active.set(!active())" variant="flat" color="accent" />
-<sh-radio [class.active]="active()" (click)="active.set(!active())" variant="flat" color="warn" />
-<sh-radio [class.active]="active()" (click)="active.set(!active())" variant="flat" color="error" />
-<sh-radio [class.active]="active()" (click)="active.set(!active())" variant="flat" color="success" />
-<sh-radio [class.active]="active()" (click)="active.set(!active())" variant="flat" disabled />
+<sh-radio [(checked)]="active" variant="flat" />
+<sh-radio [(checked)]="active" variant="flat" color="primary" />
+<sh-radio [(checked)]="active" variant="flat" color="accent" />
+<sh-radio [(checked)]="active" variant="flat" color="warn" />
+<sh-radio [(checked)]="active" variant="flat" color="error" />
+<sh-radio [(checked)]="active" variant="flat" color="success" />
+<sh-radio [(checked)]="active" variant="flat" [disabled]="true" />

@@ -2,22 +2,16 @@
   <header>
     <div class="column">
       <p>Controls (sh-card)</p>
-      <sh-button-group class="small">
-        <button [class.active]="cardType() === 'type-a'" (click)="cardType.set('type-a')">Type A</button>
-        <button [class.active]="cardType() === 'type-b'" (click)="cardType.set('type-b')">Type B</button>
-        <button [class.active]="cardType() === 'type-c'" (click)="cardType.set('type-c')">Type C</button>
+      <sh-button-group class="small" [(value)]="cardType">
+        <button value="type-a">Type A</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
       </sh-button-group>
     </div>
 
     <div class="column">
       <p>Controls (sh-toggle-card)</p>
-      <sh-toggle
-        [class.active]="disableToggle()"
-        color="primary"
-        variant="raised"
-        (click)="disableToggle.set(!disableToggle())">
-        Disable Toggle
-      </sh-toggle>
+      <sh-toggle [(checked)]="disableToggle" color="primary" variant="raised">Disable Toggle</sh-toggle>
     </div>
   </header>
 </div>

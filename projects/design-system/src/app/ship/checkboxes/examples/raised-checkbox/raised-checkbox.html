@@ -1,10 +1,10 @@
-<sh-checkbox [class.active]="active()" (click)="active.set(!active())" variant="raised" />
-<sh-checkbox [class.active]="active()" (click)="active.set(!active())" variant="raised" color="primary" />
-<sh-checkbox [class.active]="active()" (click)="active.set(!active())" variant="raised" color="accent" />
-<sh-checkbox [class.active]="active()" (click)="active.set(!active())" variant="raised" color="warn" />
-<sh-checkbox [class.active]="active()" (click)="active.set(!active())" variant="raised" color="error" />
-<sh-checkbox [class.active]="active()" (click)="active.set(!active())" variant="raised" color="success" />
-<sh-checkbox [class.active]="active()" (click)="active.set(!active())" variant="raised" disabled />
+<sh-checkbox [(checked)]="active" variant="raised" />
+<sh-checkbox [(checked)]="active" variant="raised" color="primary" />
+<sh-checkbox [(checked)]="active" variant="raised" color="accent" />
+<sh-checkbox [(checked)]="active" variant="raised" color="warn" />
+<sh-checkbox [(checked)]="active" variant="raised" color="error" />
+<sh-checkbox [(checked)]="active" variant="raised" color="success" />
+<sh-checkbox [(checked)]="active" variant="raised" [disabled]="true" />
 
 <sh-checkbox variant="raised" color="primary">
   Checkbox with ngModel

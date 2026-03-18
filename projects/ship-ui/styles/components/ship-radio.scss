@@ -3,6 +3,7 @@
 $shipRadio: true !default;
 
 @if $shipRadio == true {
+  .sh-radio,
   sh-radio {
     --radiod-c: var(--base-8);
     --radiod-o: 0;
@@ -15,15 +16,26 @@ $shipRadio: true !default;
     user-select: none;
     position: relative;
 
+    &:focus-visible > .radio,
+    &:has(input:focus-visible) > .radio {
+      outline: 2px solid var(--primary-8);
+      outline-offset: 2px;
+    }
+
     > input {
       appearance: none;
       position: absolute;
       inset: 0;
       cursor: pointer;
 
-      &:focus {
+      &:focus,
+      &:focus-visible {
         outline: none;
       }
+    }
+
+    &:has(> input:not(.internal-input)) > input.internal-input {
+      display: none;
     }
 
     &:has(input[disabled]),
@@ -91,18 +103,9 @@ $shipRadio: true !default;
 
     &.raised,
     &.flat {
-      &:has(input) {
-        &:not(:has(input:checked)) .radio {
-          background: transparent;
-          border: 1px solid var(--radio-bc);
-        }
-      }
-
-      &:not(:has(input)) {
-        .radio:not(.active) {
-          background: transparent;
-          border: 1px solid var(--radio-bc);
-        }
+      &:not(:has(input:checked)):not(.active) .radio {
+        background: transparent;
+        border: 1px solid var(--radio-bc);
       }
     }
   }

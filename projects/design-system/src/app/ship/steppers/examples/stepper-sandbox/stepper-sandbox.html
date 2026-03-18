@@ -2,42 +2,33 @@
   <p>Controls</p>
   <header>
     <div class="row">
-      <sh-button-group class="small">
-        <button [class.active]="colorClass() === ''" (click)="colorClass.set('')">Default</button>
-        <button [class.active]="colorClass() === 'primary'" (click)="colorClass.set('primary')">Primary</button>
-        <button [class.active]="colorClass() === 'accent'" (click)="colorClass.set('accent')">Accent</button>
-        <button [class.active]="colorClass() === 'warn'" (click)="colorClass.set('warn')">Warn</button>
-        <button [class.active]="colorClass() === 'error'" (click)="colorClass.set('error')">Error</button>
-        <button [class.active]="colorClass() === 'success'" (click)="colorClass.set('success')">Success</button>
+      <sh-button-group class="small" [(value)]="colorClass">
+        <button value="">Default</button>
+        <button value="primary">Primary</button>
+        <button value="accent">Accent</button>
+        <button value="warn">Warn</button>
+        <button value="error">Error</button>
+        <button value="success">Success</button>
       </sh-button-group>
     </div>
   </header>
 </div>
 
 <div class="sandbox">
-  <sh-stepper [color]="colorClass()">
-    <div step [class.active]="activeStep() === 0" (click)="activeStep.set(0)">
-      <sh-radio />
-      Step 1
-    </div>
-    <div step [class.active]="activeStep() === 1" (click)="activeStep.set(1)">
-      <sh-radio />
-      Step 2
-    </div>
-    <div step [class.active]="activeStep() === 2" (click)="activeStep.set(2)">
-      <sh-radio />
-      Step 3
-    </div>
+  <sh-stepper [color]="colorClass()" [(value)]="activeStep">
+    <div value="0">Step 1</div>
+    <div value="1">Step 2</div>
+    <div value="2">Step 3</div>
   </sh-stepper>
 
   @let _activeStep = activeStep();
 
   <div class="step-content">
-    @if (_activeStep === 0) {
+    @if (_activeStep === '0') {
       <div>Step 1 Content</div>
-    } @else if (_activeStep === 1) {
+    } @else if (_activeStep === '1') {
       <div>Step 2 Content</div>
-    } @else if (_activeStep === 2) {
+    } @else if (_activeStep === '2') {
       <div>Step 3 Content</div>
     }
   </div>

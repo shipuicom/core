@@ -1,14 +1,11 @@
-<sh-stepper>
-  <button [class.active]="activeStep() === 0" (click)="activeStep.set(0)">
-    <sh-radio />
+<sh-stepper [(value)]="activeStep">
+  <button value="0">
     Step 1
   </button>
-  <button [class.active]="activeStep() === 1" (click)="activeStep.set(1)">
-    <sh-radio />
+  <button value="1">
     Step 2
   </button>
-  <button [class.active]="activeStep() === 2" (click)="activeStep.set(2)">
-    <sh-radio />
+  <button value="2">
     Step 3
   </button>
 </sh-stepper>
@@ -16,11 +13,11 @@
 @let _activeStep = activeStep();
 
 <div class="step-content">
-  @if (_activeStep === 0) {
+  @if (_activeStep === '0') {
     <div>Step 1 Content</div>
-  } @else if (_activeStep === 1) {
+  } @else if (_activeStep === '1') {
     <div>Step 2 Content</div>
-  } @else if (_activeStep === 2) {
+  } @else if (_activeStep === '2') {
     <div>Step 3 Content</div>
   }
 </div>

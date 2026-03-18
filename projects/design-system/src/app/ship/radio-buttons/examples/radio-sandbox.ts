@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, effect, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { disabled, form, FormField } from '@angular/forms/signals';
 import { ShipButtonGroup, ShipRadio, ShipToggle } from 'ship-ui';
 
 @Component({
   selector: 'app-radio-sandbox',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, ShipRadio, ShipButtonGroup, ShipToggle],
+  imports: [ReactiveFormsModule, FormsModule, FormField, ShipRadio, ShipButtonGroup, ShipToggle],
   templateUrl: './radio-sandbox.html',
   styleUrl: './radio-sandbox.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,6 +21,9 @@ export class RadioSandbox {
   selected = signal<string>('one');
   model = signal<string>('two');
   formCtrl = new FormControl<string>('three');
+  formFieldAsForm = form(this.model, (schemaPath) => {
+    disabled(schemaPath, () => this.isDisabled());
+  });
 
   disabledEffect = effect(() => {
     const isDisabled = this.isDisabled();

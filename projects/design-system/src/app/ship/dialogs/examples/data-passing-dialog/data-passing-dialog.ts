@@ -16,7 +16,7 @@ export class DataPassingDialog {
   openDialog() {
     const dialogRef = this.#dialog.open(DataDialogContent, {
       class: this.type() ?? '',
-      data: { message: 'Hello from parent!' },
+      data: { message: 'Hello from parent!', hello: true },
       closed: (result: any) => {
         console.log('Dialog function closed with: \t' + result);
       },
@@ -40,7 +40,7 @@ export class DataPassingDialog {
   styleUrl: './data-dialog-content.scss',
 })
 class DataDialogContent {
-  data = input<{ message: string }>();
+  data = input<{ message: string; hello: boolean }>();
   closed = output<string>();
 
   closeWithValue() {

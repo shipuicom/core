@@ -1,30 +1,28 @@
-<sh-button-group>
-  <button [class.active]="renderingType() === 'hsl'" (click)="renderingType.set('hsl')">
+<sh-button-group [(value)]="renderingType">
+  <button value="hsl">
     <sh-icon>circle</sh-icon>
     HSL Wheel
   </button>
-  <button [class.active]="renderingType() === 'rgb'" (click)="renderingType.set('rgb')">
+  <button value="rgb">
     <sh-icon>circle</sh-icon>
     RGB
   </button>
-  <button [class.active]="renderingType() === 'grid'" (click)="renderingType.set('grid')">
+  <button value="grid">
     <sh-icon>circle</sh-icon>
     Grid
   </button>
-  <button [class.active]="renderingType() === 'hue'" (click)="renderingType.set('hue')">
+  <button value="hue">
     <sh-icon>circle</sh-icon>
     Hue
   </button>
-  <button [class.active]="renderingType() === 'saturation'" (click)="renderingType.set('saturation')">
+  <button value="saturation">
     <sh-icon>circle</sh-icon>
     Saturation
   </button>
 </sh-button-group>
 
 @if (renderingType() === 'hsl') {
-  <sh-toggle [class.active]="showDarkColors()" class="primary raised" (click)="showDarkColors.set(!showDarkColors())">
-    Show dark colors
-  </sh-toggle>
+  <sh-toggle [(checked)]="showDarkColors" color="primary" variant="raised">Show dark colors</sh-toggle>
 }
 
 @if (renderingType() === 'grid' || renderingType() === 'rgb') {
@@ -38,15 +36,11 @@
 }
 
 @if (renderingType() === 'hue') {
-  <sh-toggle [class.active]="direction()" class="primary raised" (click)="direction.set(!direction())">
-    Direction
-  </sh-toggle>
+  <sh-toggle [(checked)]="direction" color="primary" variant="raised">Direction</sh-toggle>
 }
 
 @if (renderingType() === 'saturation') {
-  <sh-toggle [class.active]="direction()" class="primary raised" (click)="direction.set(!direction())">
-    Direction
-  </sh-toggle>
+  <sh-toggle [(checked)]="direction" color="primary" variant="raised">Direction</sh-toggle>
 }
 
 <sh-color-picker

@@ -80,6 +80,11 @@ $shipList: true !default;
         outline: none;
       }
 
+      &:focus-visible {
+        outline: 2px solid var(--primary-8);
+        outline-offset: 2px;
+      }
+
       [suffix] {
         margin-left: auto;
         color: var(--base-8);

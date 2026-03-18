@@ -38,6 +38,10 @@ $shipButtonGroup: true !default;
         border-radius: p2r(6);
         border: 0;
 
+        &:focus-visible {
+          outline-offset: -2px;
+        }
+
         @supports not (anchor-name: --anchor) {
           --btng-item-bg: var(--base-3);
         }
@@ -85,6 +89,11 @@ $shipButtonGroup: true !default;
         color 80ms linear,
         transform 125ms linear;
       transform: scale(1);
+
+      &:focus-visible {
+        outline: 2px solid var(--primary-8);
+        outline-offset: -4px;
+      }
 
       &:active {
         transform: scale(0.96);

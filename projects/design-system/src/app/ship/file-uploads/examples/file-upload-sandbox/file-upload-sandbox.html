@@ -17,7 +17,7 @@
       <input type="text" [(ngModel)]="overlayText" />
     </sh-form-field>
 
-    <sh-checkbox class="primary raised" [class.active]="multiple()" (click)="multiple.set(!multiple())">
+    <sh-checkbox class="primary raised" [(checked)]="multiple">
       Multiple
     </sh-checkbox>
   </div>

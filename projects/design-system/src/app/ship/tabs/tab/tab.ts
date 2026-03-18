@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, input, TemplateRef, viewChild } from '@angular/core';
-import { ShipButton } from 'ship-ui';
+import { ChangeDetectionStrategy, Component, inject, input, TemplateRef, viewChild } from '@angular/core';
+import { ShipButton, ShipDialogService } from 'ship-ui';
 
 @Component({
   selector: 'app-tab',
@@ -9,9 +9,12 @@ import { ShipButton } from 'ship-ui';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class Tab {
+  #dialog = inject(ShipDialogService);
   id = input.required();
 
   myDialog = viewChild.required<TemplateRef<any>>('myDialog');
 
-  openDialog() {}
+  openDialog() {
+    this.#dialog.open(this.myDialog());
+  }
 }

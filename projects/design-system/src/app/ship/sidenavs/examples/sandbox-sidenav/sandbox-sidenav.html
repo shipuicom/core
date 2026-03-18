@@ -2,24 +2,18 @@
   <p>Controls</p>
   <header>
     <div class="row">
-      <sh-toggle [class.active]="isNavOpen()" class="primary raised">
-        Open/Close
-        <input type="checkbox" [(ngModel)]="isNavOpen" />
-      </sh-toggle>
+      <sh-toggle [(checked)]="isNavOpen" class="primary raised">Open/Close</sh-toggle>
 
-      <sh-button-group class="small">
-        <button [class.active]="sidenavType() === ''" (click)="sidenavType.set('')">Default</button>
-        <button [class.active]="sidenavType() === 'overlay'" (click)="sidenavType.set('overlay')">Overlay</button>
-        <button [class.active]="sidenavType() === 'simple'" (click)="sidenavType.set('simple')">Simple</button>
+      <sh-button-group class="small" [(value)]="sidenavType">
+        <button value="">Default</button>
+        <button value="overlay">Overlay</button>
+        <button value="simple">Simple</button>
       </sh-button-group>
     </div>
 
     @if (sidenavType() === 'overlay') {
       <div class="row">
-        <sh-toggle [class.active]="disableDrag()" class="primary raised">
-          Disable Drag
-          <input type="checkbox" [(ngModel)]="disableDrag" />
-        </sh-toggle>
+        <sh-toggle [(checked)]="disableDrag" class="primary raised">Disable Drag</sh-toggle>
       </div>
     }
   </header>

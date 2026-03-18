@@ -171,7 +171,7 @@ type ValidateFreeText = (value: string) => boolean;
             [class.selected]="isSelected($index)"
             [class.focused]="$index === focusedOptionIndex()">
             @if (selectMultiple()) {
-              <sh-checkbox [class]="selectClasses()" [class.active]="isSelected($index)" />
+              <sh-checkbox [class]="selectClasses()" [checked]="isSelected($index)" />
             }
 
             @if (_listOptionTemplate) {

@@ -16,6 +16,12 @@ $shipToggle: true !default;
     user-select: none;
     position: relative;
 
+    &:focus-visible > .box,
+    &:has(input:focus-visible) > .box {
+      outline: 2px solid var(--primary-8);
+      outline-offset: 2px;
+    }
+
     label {
       display: flex;
       align-items: center;
@@ -27,6 +33,7 @@ $shipToggle: true !default;
     .box {
       display: block;
       width: p2r(34);
+      min-width: p2r(34);
       height: p2r(20);
       cursor: pointer;
       position: relative;
@@ -42,6 +49,16 @@ $shipToggle: true !default;
       inset: 0;
       cursor: pointer;
       z-index: 0;
+      margin: 0;
+
+      &:focus,
+      &:focus-visible {
+        outline: none;
+      }
+    }
+
+    &:has(> input:not(.internal-input)) > input.internal-input {
+      display: none;
     }
 
     &:has(input[disabled]),

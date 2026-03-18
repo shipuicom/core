@@ -2,15 +2,9 @@
   <p>Controls</p>
   <header>
     <div class="row">
-      <sh-toggle [class.active]="isSmall()" color="primary" variant="raised" (click)="isSmall.set(!isSmall())">
-        Small
-      </sh-toggle>
-      <sh-toggle [class.active]="isSharp()" color="primary" variant="raised" (click)="isSharp.set(!isSharp())">
-        Sharp
-      </sh-toggle>
-      <sh-toggle [class.active]="isDynamic()" color="primary" variant="raised" (click)="isDynamic.set(!isDynamic())">
-        Dynamic coloring
-      </sh-toggle>
+      <sh-toggle [(checked)]="isSmall" color="primary" variant="raised">Small</sh-toggle>
+      <sh-toggle [(checked)]="isSharp" color="primary" variant="raised">Sharp</sh-toggle>
+      <sh-toggle [(checked)]="isDynamic" color="primary" variant="raised">Dynamic coloring</sh-toggle>
     </div>
 
     <div class="row">
@@ -25,23 +19,21 @@
             (currentColor)="currentColor.set($event)" />
         </div>
       } @else {
-        <sh-button-group class="small">
-          <button [class.active]="colorClass() === ''" (click)="colorClass.set('')">Default</button>
-          <button [class.active]="colorClass() === 'primary'" (click)="colorClass.set('primary')">Primary</button>
-          <button [class.active]="colorClass() === 'accent'" (click)="colorClass.set('accent')">Accent</button>
-          <button [class.active]="colorClass() === 'warn'" (click)="colorClass.set('warn')">Warn</button>
-          <button [class.active]="colorClass() === 'error'" (click)="colorClass.set('error')">Error</button>
-          <button [class.active]="colorClass() === 'success'" (click)="colorClass.set('success')">Success</button>
+        <sh-button-group class="small" [(value)]="colorClass">
+          <button value="">Default</button>
+          <button value="primary">Primary</button>
+          <button value="accent">Accent</button>
+          <button value="warn">Warn</button>
+          <button value="error">Error</button>
+          <button value="success">Success</button>
         </sh-button-group>
 
-        <sh-button-group class="small">
-          <button [class.active]="variationClass() === ''" (click)="variationClass.set('')">Default</button>
-          <button [class.active]="variationClass() === 'simple'" (click)="variationClass.set('simple')">Simple</button>
-          <button [class.active]="variationClass() === 'outlined'" (click)="variationClass.set('outlined')">
-            Outlined
-          </button>
-          <button [class.active]="variationClass() === 'flat'" (click)="variationClass.set('flat')">Flat</button>
-          <button [class.active]="variationClass() === 'raised'" (click)="variationClass.set('raised')">Raised</button>
+        <sh-button-group class="small" [(value)]="variationClass">
+          <button value="">Default</button>
+          <button value="simple">Simple</button>
+          <button value="outlined">Outlined</button>
+          <button value="flat">Flat</button>
+          <button value="raised">Raised</button>
         </sh-button-group>
       }
     </div>

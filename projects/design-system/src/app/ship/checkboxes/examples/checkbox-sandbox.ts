@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { disabled, form, FormField } from '@angular/forms/signals';
 import { ShipButtonGroup, ShipCheckbox, ShipToggle } from 'ship-ui';
 
 @Component({
   selector: 'app-checkbox-sandbox',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, ShipCheckbox, ShipButtonGroup, ShipToggle],
+  imports: [ReactiveFormsModule, FormsModule, FormField, ShipCheckbox, ShipButtonGroup, ShipToggle],
   templateUrl: './checkbox-sandbox.html',
   styleUrl: './checkbox-sandbox.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,6 +19,10 @@ export class CheckboxSandbox {
 
   isChecked = signal<boolean>(true);
   formCtrl = new FormControl<boolean | null>(true);
+  formFieldSignal = signal(true);
+  formFieldAsForm = form(this.formFieldSignal, (schemaPath) => {
+    disabled(schemaPath, () => this.isDisabled());
+  });
 
   disabledEffect = effect(() => {
     const isDisabled = this.isDisabled();

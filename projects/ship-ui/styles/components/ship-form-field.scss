@@ -185,6 +185,12 @@ $shipFormFieldShadow: false !default;
       min-width: var(--ff-mw);
       width: 100%;
 
+      &:has(textarea:focus-visible),
+      &:has(input:focus-visible) {
+        outline: 2px solid var(--primary-8);
+        outline-offset: 2px;
+      }
+
       sh-popover,
       .input {
         flex: 1 0;

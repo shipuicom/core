@@ -1,39 +1,39 @@
 <div class="controls">
   <div class="row">
-    <sh-checkbox color="primary" variant="raised" [class.active]="showLabel()" (click)="showLabel.set(!showLabel())">
+    <sh-checkbox color="primary" variant="raised" [(checked)]="showLabel">
       Label
     </sh-checkbox>
-    <sh-checkbox color="primary" variant="raised" [class.active]="showPrefix()" (click)="showPrefix.set(!showPrefix())">
+    <sh-checkbox color="primary" variant="raised" [(checked)]="showPrefix">
       Prefix
     </sh-checkbox>
-    <sh-checkbox color="primary" variant="raised" [class.active]="showSuffix()" (click)="showSuffix.set(!showSuffix())">
+    <sh-checkbox color="primary" variant="raised" [(checked)]="showSuffix">
       Suffix
     </sh-checkbox>
-    <sh-checkbox color="primary" variant="raised" [class.active]="showHint()" (click)="showHint.set(!showHint())">
+    <sh-checkbox color="primary" variant="raised" [(checked)]="showHint">
       Hint
     </sh-checkbox>
-    <sh-checkbox color="primary" variant="raised" [class.active]="showError()" (click)="showError.set(!showError())">
+    <sh-checkbox color="primary" variant="raised" [(checked)]="showError">
       Error
     </sh-checkbox>
-    <sh-checkbox color="primary" variant="raised" [class.active]="disabled()" (click)="disabled.set(!disabled())">
+    <sh-checkbox color="primary" variant="raised" [(checked)]="disabled">
       Disabled
     </sh-checkbox>
   </div>
 
   <div class="row">
-    <sh-button-group class="small">
-      <button type="button" [class.active]="inputType() === 'text'" (click)="inputType.set('text')">Text</button>
-      <button type="button" [class.active]="inputType() === 'number'" (click)="inputType.set('number')">Number</button>
-      <button type="button" [class.active]="inputType() === 'textarea'" (click)="inputType.set('textarea')">
+    <sh-button-group class="small" [(value)]="inputType">
+      <button type="button" value="text">Text</button>
+      <button type="button" value="number">Number</button>
+      <button type="button" value="textarea">
         Textarea
       </button>
     </sh-button-group>
 
-    <sh-button-group class="small">
-      <button type="button" [class.active]="size() === ''" (click)="size.set('')">Default</button>
-      <button type="button" [class.active]="size() === 'small'" (click)="size.set('small')">Small</button>
-      <button type="button" [class.active]="size() === 'autosize'" (click)="size.set('autosize')">Autosize</button>
-      <button type="button" [class.active]="size() === 'center'" (click)="size.set('center')">Center</button>
+    <sh-button-group class="small" [(value)]="size">
+      <button type="button" value="">Default</button>
+      <button type="button" value="small">Small</button>
+      <button type="button" value="autosize">Autosize</button>
+      <button type="button" value="center">Center</button>
     </sh-button-group>
   </div>
   <div class="row">

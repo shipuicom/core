@@ -36,14 +36,11 @@
 </app-property-viewer>
 
 <div>
-  <sh-button-group>
-    <button [class.active]="!small()" (click)="small.set(false)">Normal (default)</button>
-    <button [class.active]="small()" (click)="small.set(true)">Small</button>
-  </sh-button-group>
+  <sh-toggle [(checked)]="small">Small</sh-toggle>
 
-  <sh-button-group>
-    <button [class.active]="!type()" (click)="type.set('')">Base (default)</button>
-    <button [class.active]="type()" (click)="type.set('type-b')">Type B</button>
+  <sh-button-group [(value)]="type">
+    <button value="">Base (default)</button>
+    <button value="type-b">Type B</button>
   </sh-button-group>
 </div>
 

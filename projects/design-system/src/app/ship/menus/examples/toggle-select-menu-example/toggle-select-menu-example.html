@@ -3,7 +3,7 @@
   <ng-container menu>
     @for (item of menuItems; track item.value) {
       <button (click)="toggle($event, item)">
-        <sh-checkbox [class.active]="isSelected(item)" class="primary raised">
+        <sh-checkbox [checked]="isSelected(item)" class="primary raised">
           {{ item.label }}
         </sh-checkbox>
       </button>

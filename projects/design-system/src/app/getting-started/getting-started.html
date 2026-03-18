@@ -154,24 +154,24 @@
   </div>
 
   <div class="mcp-setup-container">
-    <sh-tabs color="primary">
-      <button [class.active]="activeMcpTab() === 'cursor'" (click)="activeMcpTab.set('cursor')">
+    <sh-tabs color="primary" [(value)]="activeMcpTab">
+      <button value="cursor">
         <sh-icon>mouse</sh-icon>
         Cursor
       </button>
-      <button [class.active]="activeMcpTab() === 'vscode'" (click)="activeMcpTab.set('vscode')">
+      <button value="vscode">
         <sh-icon>terminal</sh-icon>
         VS Code
       </button>
-      <button [class.active]="activeMcpTab() === 'windsurf'" (click)="activeMcpTab.set('windsurf')">
+      <button value="windsurf">
         <sh-icon>wave-triangle</sh-icon>
         Windsurf
       </button>
-      <button [class.active]="activeMcpTab() === 'webstorm'" (click)="activeMcpTab.set('webstorm')">
+      <button value="webstorm">
         <sh-icon>code</sh-icon>
         WebStorm
       </button>
-      <button [class.active]="activeMcpTab() === 'antigravity'" (click)="activeMcpTab.set('antigravity')">
+      <button value="antigravity">
         <sh-icon>waveform</sh-icon>
         Antigravity
       </button>
