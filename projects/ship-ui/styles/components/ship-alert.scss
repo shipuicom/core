@@ -70,6 +70,16 @@ $shipAlert: true !default;
           display: block;
         }
       }
+
+      &:has(.content:empty) {
+        grid-template-rows: auto;
+        grid-template-areas: 'stateIcon title closeIcon';
+      }
+
+      &:has(.actions:empty):has(.content:empty) {
+        grid-template-columns: auto 1fr;
+        grid-template-areas: 'stateIcon title';
+      }
     }
 
     .actions {
@@ -78,17 +88,6 @@ $shipAlert: true !default;
       align-items: center;
       justify-content: flex-end;
       gap: p2r(4);
-    }
-
-    &:has(.actions:not(:empty)) {
-      .alert {
-        align-items: center;
-        grid-template-columns: auto 1fr 1fr;
-      }
-
-      .close-icon {
-        display: none;
-      }
     }
 
     .icon {
@@ -169,11 +168,6 @@ $shipAlert: true !default;
       &::before {
         opacity: 0;
       }
-    }
-
-    &:has(.content:empty) .alert {
-      grid-template-rows: auto;
-      grid-template-areas: 'stateIcon title closeIcon';
     }
 
     &:has([content]) .alert {
