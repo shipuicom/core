@@ -33,7 +33,9 @@ export type ComponentClosedType<T> = T extends TemplateRef<infer C>
     ? I extends { closed: OutputEmitterRef<infer U> }
       ? U
       : undefined
-    : undefined;
+    : T extends { closed: OutputEmitterRef<infer U> }
+      ? U
+      : undefined;
 
 export interface ShipDialogServiceOptions<TData = any, TResult = undefined> extends ShipDialogOptions {
   data?: TData extends void ? void : TData & Exact<TData, TData>;
@@ -42,14 +44,14 @@ export interface ShipDialogServiceOptions<TData = any, TResult = undefined> exte
 
 export type ShipDialogInstance<T> = {
   component: T;
-  close: (res?: ComponentClosedType<T> | undefined) => void;
-  closed: OutputEmitterRef<ComponentClosedType<T> | undefined>;
+  close: (res?: ComponentClosedType<T>) => void;
+  closed: OutputEmitterRef<ComponentClosedType<T>>;
 };
 
 export type ShipDialogTemplateInstance<T> = {
   component: undefined;
-  close: (res?: ComponentClosedType<T> | undefined) => void;
-  closed: OutputEmitterRef<ComponentClosedType<T> | undefined>;
+  close: (res?: ComponentClosedType<T>) => void;
+  closed: OutputEmitterRef<ComponentClosedType<T>>;
 };
 
 @Injectable({
@@ -71,7 +73,7 @@ export class ShipDialogService {
     T extends TemplateRef<any> | Type<any>,
     K = ComponentDataType<T>,
     U = ComponentClosedType<T>,
-    _Options extends ShipDialogServiceOptions<K, U | undefined> = ShipDialogServiceOptions<K, U | undefined>,
+    _Options extends ShipDialogServiceOptions<K, U> = ShipDialogServiceOptions<K, U>,
   >(
     componentOrTemplate: T,
     options?: _Options

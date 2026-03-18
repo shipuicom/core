@@ -17,8 +17,10 @@ export class DataPassingDialog {
     const dialogRef = this.#dialog.open(DataDialogContent, {
       class: this.type() ?? '',
       data: { message: 'Hello from parent!', hello: true },
-      closed: (result: any) => {
-        console.log('Dialog function closed with: \t' + result);
+      closed: (result) => {
+        // Keep so we can easily see if the types break
+        const someString: string = result;
+        console.log('Dialog function closed with: \t' + someString);
       },
     });
 
