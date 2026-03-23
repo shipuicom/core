@@ -23,6 +23,7 @@ export * from './lib/ship-divider/ship-divider';
 export * from './lib/ship-event-card/ship-event-card';
 export * from './lib/ship-file-upload/ship-file-upload';
 export * from './lib/ship-form-field/ship-form-field';
+export * from './lib/ship-accordion/ship-accordion';
 export * from './lib/ship-icon/ship-icon';
 export * from './lib/ship-list/ship-list';
 export * from './lib/ship-menu/ship-menu';

@@ -30,6 +30,10 @@ export interface ShipConfig {
   icon?: ShipComponentConfig;
   stepper?: ShipComponentConfig;
   select?: ShipComponentConfig;
+  accordion?: ShipComponentConfig;
+  tabs?: ShipComponentConfig;
+  'event-card'?: ShipComponentConfig;
+  datepicker?: ShipComponentConfig;
 
   // Existing properties for backward compatibility
   alertVariant?: '' | 'simple' | 'outlined' | 'flat' | 'raised';

@@ -1,0 +1,13 @@
+@use '../../../../../../../ship-ui/styles/helpers.scss' as *;
+
+.sandbox {
+  display: flex;
+  position: relative;
+  width: 100%;
+  height: p2r(500);
+  background-color: var(--base-3);
+
+  sh-sidenav {
+    border: 1px solid var(--base-4);
+  }
+}

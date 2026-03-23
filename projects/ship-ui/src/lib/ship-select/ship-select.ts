@@ -12,6 +12,7 @@ import {
   output,
   signal,
   TemplateRef,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { ShipCheckbox } from '../ship-checkbox/ship-checkbox';
@@ -22,6 +23,8 @@ import { ShipIcon } from '../ship-icon/ship-icon';
 import { ShipPopover } from '../ship-popover/ship-popover';
 import { ShipSpinner } from '../ship-spinner/ship-spinner.component';
 import { generateUniqueId } from '../utilities/random-id';
+import { shipComponentClasses } from '../utilities/ship-component';
+import { ShipColor, ShipSheetVariant, ShipSize } from '../utilities/ship-types';
 
 // TODO build in live validation response for free text validation
 
@@ -56,6 +59,9 @@ type ValidateFreeText = (value: string) => boolean;
       <sh-form-field
         trigger
         (click)="open()"
+        [color]="color()"
+        [variant]="variant()"
+        [size]="size()"
         [class.stretch]="stretch()"
         [class.small]="small()"
         [class.readonly]="readonly() || disabled()">
@@ -186,6 +192,7 @@ type ValidateFreeText = (value: string) => boolean;
   `,
   host: {
     '[class.multiple]': 'selectMultiple()',
+    '[class]': 'hostClasses()',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -195,6 +202,11 @@ export class ShipSelect {
   value = input<string>();
   label = input<string>();
   asFreeText = input(false);
+  
+  color = input<ShipColor | null>(null);
+  variant = input<ShipSheetVariant | null>(null);
+  size = input<ShipSize | null>(null);
+
   optionTitle = input<string | null>(null);
   freeTextTitle = input<string | null>(null);
   freeTextPlaceholder = input<string | null>('Type to create a new option');
@@ -202,6 +214,13 @@ export class ShipSelect {
   placeholder = input<string>();
   readonly = model(false);
   disabled = model(false);
+
+  hostClasses = shipComponentClasses('select', {
+    color: this.color,
+    variant: this.variant,
+    size: this.size,
+    readonly: this.readonly,
+  });
   lazySearch = input(false);
   inlineSearch = input(false);
   asText = input(false);
@@ -402,12 +421,9 @@ export class ShipSelect {
     input.addEventListener('inputValueChanged', (event: any) => {
       const newInputValue = event.detail.value;
       const inputValue = this.inputValue();
+      const selectedOptionsLength = untracked(() => this.selectedOptions().length);
 
-      if (newInputValue === inputValue) return;
-      if (newInputValue === '') {
-        this.clear();
-        return;
-      }
+      if (newInputValue === inputValue && (newInputValue !== '' || selectedOptionsLength > 0)) return;
 
       this.setSelectedOptionsFromValue(newInputValue);
       this.setInputValueFromOptions(this.selectedOptions());
@@ -508,12 +524,16 @@ export class ShipSelect {
     const input = this.inputRefEl();
 
     if (!input) return;
-    if (input.value === this._inputValue) return;
+
+    const selectedOptionsLength = untracked(() => this.selectedOptions().length);
+    if (input.value === this._inputValue && (input.value !== '' || selectedOptionsLength > 0)) return;
 
     this.disabled.set(input.disabled);
 
-    this.setSelectedOptionsFromValue(input.value);
-    this.setInputValueFromOptions(this.selectedOptions());
+    untracked(() => {
+      this.setSelectedOptionsFromValue(input.value);
+      this.setInputValueFromOptions(this.selectedOptions());
+    });
   });
 
   selectedLabels = computed(() => {
@@ -616,10 +636,11 @@ export class ShipSelect {
     const selectedOptions = options.filter((option) => {
       const optionValue = valueKey ? this.#getProperty(option, valueKey)?.toString() : option?.toString();
 
-      return optionValue && inputAsArray.includes(optionValue);
+      return optionValue !== undefined && optionValue !== null && inputAsArray.includes(optionValue);
     });
 
-    this.selectedOptions.set(selectMultiple ? selectedOptions : [selectedOptions[0]]);
+    const isMatched = selectedOptions.length > 0;
+    this.selectedOptions.set(selectMultiple ? selectedOptions : isMatched ? [selectedOptions[0]] : []);
   }
 
   setInputValueFromOptions(options: unknown[]) {

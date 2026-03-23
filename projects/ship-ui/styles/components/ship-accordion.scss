@@ -1,0 +1,83 @@
+@use '../helpers.scss' as *;
+
+$shipAccordion: true !default;
+
+@if $shipAccordion == true {
+  sh-accordion {
+    --acc-pad: #{p2r(16)};
+    --acc-f: var(--paragraph-30);
+    --acc-bc: var(--base-4);
+    --acc-s: var(--shape-2);
+
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--acc-bc);
+    border-radius: var(--acc-s);
+    overflow: hidden;
+
+    &:empty {
+      display: none;
+    }
+
+    &.small {
+      --acc-pad: #{p2r(12)};
+      --acc-f: var(--paragraph-40);
+    }
+
+    details {
+      width: 100%;
+
+      // Hide standard browser marker
+      & > summary {
+        list-style: none;
+
+        &::-webkit-details-marker {
+          display: none;
+        }
+      }
+
+      summary {
+        display: flex;
+        align-items: center;
+        padding: var(--acc-pad);
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.2s;
+        font-weight: 500;
+        font-size: var(--acc-f);
+        border-bottom: 1px solid var(--acc-bc);
+
+        &:focus-visible {
+          outline: 2px solid var(--primary-8);
+          outline-offset: -2px;
+          border-radius: var(--acc-s);
+        }
+
+        sh-icon {
+          transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          color: var(--mono-11);
+          margin-left: auto;
+        }
+      }
+
+      &[open] {
+        summary {
+          border-bottom: 1px solid var(--acc-bc);
+
+          sh-icon {
+            transform: rotate(180deg);
+          }
+        }
+
+        + details {
+          border-top: 1px solid var(--acc-bc);
+        }
+      }
+
+      > .content {
+        padding: var(--acc-pad);
+        background: var(--base-2);
+      }
+    }
+  }
+}

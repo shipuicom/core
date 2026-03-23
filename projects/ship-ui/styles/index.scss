@@ -50,6 +50,7 @@ $shipToggleCard: true !default;
 $shipTable: true !default;
 $shipTabs: true !default;
 $shipFileUpload: true !default;
+$shipAccordion: true !default;
 
 @use './components/ship-alert-container.scss' with (
   $shipAlert: $shipAlert
@@ -159,4 +160,7 @@ $shipFileUpload: true !default;
 );
 @use './components/ship-file-upload.scss' with (
   $shipFileUpload: $shipFileUpload
+);
+@use './components/ship-accordion.scss' with (
+  $shipAccordion: $shipAccordion
 );

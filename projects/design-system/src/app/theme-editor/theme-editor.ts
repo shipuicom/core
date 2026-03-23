@@ -42,6 +42,7 @@ export default class ThemeEditor {
   inputName = signal<keyof typeof DEFAULT_COLORS>(STARTING_COLOR);
   rgbStartColor = signal<[number, number, number]>(DEFAULT_COLORS[STARTING_COLOR]);
 
+
   // rgbStartColor = signal<[number, number, number]>([59, 130, 246]); // Primary
   // rgbStartColor = signal<[number, number, number]>([139, 92, 246]); // Accent
   // rgbStartColor = signal<[number, number, number]>([245, 158, 11]); // Warn

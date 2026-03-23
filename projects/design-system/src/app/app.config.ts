@@ -1,11 +1,12 @@
-import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
+import { ApplicationConfig, inject, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 
 import { provideHttpClient, withFetch } from '@angular/common/http';
-import { SHIP_CONFIG, ShipConfig } from 'ship-ui';
+import { SHIP_CONFIG } from 'ship-ui';
 import { environment } from '../environments/environment';
 import { ENVIRONMENT_TOKEN } from '../environments/environment-token';
 import { routes } from './app.routes';
+import { AppConfigService } from './core/services/app-config.service';
 import { LOCALSTORAGE } from './core/services/localstorage.token';
 
 export const appConfig: ApplicationConfig = {
@@ -20,11 +21,12 @@ export const appConfig: ApplicationConfig = {
     { provide: ENVIRONMENT_TOKEN, useValue: environment },
     {
       provide: SHIP_CONFIG,
-      useValue: {
-        // dialogType: 'type-b',
-        // tableType: 'type-b',
-        sidenavType: 'overlay',
-      } as ShipConfig,
+      useFactory: () => {
+        const localStorage = inject(LOCALSTORAGE);
+        const service = inject(AppConfigService);
+        return service.reactiveConfig;
+      },
+      deps: [AppConfigService],
     },
   ],
 };

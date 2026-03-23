@@ -1,0 +1,44 @@
+<div class="controls">
+  <p>Controls</p>
+  <header>
+    <div class="row">
+      <sh-toggle [(checked)]="allowMultiple" class="primary raised">Allow Multiple Open</sh-toggle>
+      <sh-select
+        class="raised primary"
+        color="primary"
+        variant="raised"
+        [selectMultiple]="allowMultiple()"
+        [options]="availablePanels"
+        [(selectedOptions)]="selectedPanelsArray">
+        <label>Open Panels</label>
+        <!-- Hidden input since select needs an element natively -->
+        <input type="text" style="display: none" />
+      </sh-select>
+    </div>
+  </header>
+</div>
+
+<div class="sandbox">
+  <sh-accordion [(value)]="openPanels" [allowMultiple]="allowMultiple()" [variant]="variantType()">
+    <details value="panel1">
+      <summary>Personal Information</summary>
+      <p>
+        This is standard content projected inside native HTML tags! The entire accordion is configured seamlessly with
+        DOM structure.
+      </p>
+    </details>
+
+    <details value="panel2">
+      <summary>Advanced Settings</summary>
+      <div style="display: flex; flex-direction: column; gap: 0.5rem">
+        <label>Settings A</label>
+        <input type="text" value="Configuration" />
+      </div>
+    </details>
+
+    <details value="panel3">
+      <summary>Danger Zone</summary>
+      <button class="sh-button error flat">Delete Account</button>
+    </details>
+  </sh-accordion>
+</div>

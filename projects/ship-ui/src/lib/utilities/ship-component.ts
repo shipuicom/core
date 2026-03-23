@@ -41,6 +41,10 @@ export function shipComponentClasses(
     // Resolve color (Input > Component Config > empty)
     const color = inputs.color?.() || componentConfig?.color;
 
+    if (!variant) {
+      variant = 'base';
+    }
+
     // Resolve size (Input > Component Config > empty)
     const size = inputs.size?.() || componentConfig?.size;
 

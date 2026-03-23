@@ -369,6 +369,27 @@ $shipFormFieldShadow: false !default;
     &.success {
       --ff-ic: var(--success-8);
     }
+
+    &.horizontal {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 0 p2r(16);
+
+      label {
+        padding-bottom: 0;
+        margin-bottom: 0;
+        grid-column: 1;
+      }
+
+      .input-wrap {
+        grid-column: 2;
+      }
+
+      .helpers {
+        grid-column: 2;
+      }
+    }
   }
 }
 

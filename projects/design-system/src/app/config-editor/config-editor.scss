@@ -1,0 +1,141 @@
+@use 'helpers' as *;
+
+.floating-toggle {
+  position: fixed;
+  right: p2r(24);
+  bottom: p2r(24);
+  z-index: 1000;
+  border-radius: 50%;
+  width: p2r(56);
+  height: p2r(56);
+  padding: 0;
+  box-shadow: var(--shadow-2);
+}
+
+.config-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(400px, 100vw);
+  background-color: var(--base-1);
+  border-left: 1px solid var(--base-5);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.open {
+    transform: translateX(0);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: p2r(24);
+  padding-bottom: p2r(8);
+
+  h2 {
+    margin: 0;
+    font-size: p2r(20);
+  }
+}
+
+.subtitle {
+  padding: 0 p2r(24);
+  margin-top: 0;
+  color: var(--base-11);
+  font-size: p2r(14);
+}
+
+.search-wrapper {
+  padding: p2r(24);
+}
+
+.group-title {
+  padding: p2r(16) p2r(20) p2r(8);
+  margin: 0;
+  font-size: p2r(12);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--base-11);
+}
+
+sh-accordion summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scroll-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: p2r(12 24 24 24);
+  border-top: 1px solid var(--base-4);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(8);
+}
+
+.preview {
+  margin-top: p2r(24);
+  padding-top: p2r(16);
+  border-top: 1px dashed var(--mono-6);
+
+  .preview-label {
+    font-size: p2r(12);
+    color: var(--mono-10);
+    margin-bottom: p2r(16);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+.footer {
+  padding: p2r(24);
+  border-top: 1px solid var(--base-4);
+  background-color: var(--base-2);
+  display: flex;
+  gap: p2r(8);
+
+  button {
+    flex: 1;
+  }
+}
+
+.fallback {
+  padding: p2r(24);
+}
+
+.changed-indicator {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--primary-9);
+  box-shadow: 0 0 0 2px var(--primary-3);
+}
+
+.reset-btn {
+  width: p2r(80);
+
+  .text-hover {
+    display: none;
+  }
+  &:hover {
+    .text-default {
+      display: none;
+    }
+    .text-hover {
+      display: inline;
+    }
+  }
+}

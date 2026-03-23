@@ -1,0 +1,21 @@
+<div class="sandbox">
+  <sh-sidenav class="simple" [(isOpen)]="isNavOpen">
+    <ng-container sidenav>
+      <div style="padding: 16px;">
+        <h3>Simple</h3>
+        <p>Links</p>
+      </div>
+    </ng-container>
+
+    <ng-container sidenav-closed-topbar>
+      <button shButton class="simple icon" (click)="isNavOpen.set(!isNavOpen())">
+        <sh-icon>list</sh-icon>
+      </button>
+    </ng-container>
+
+    <div style="padding: 16px; display: flex; flex-direction: column; gap: 16px;">
+      <button shButton class="primary" (click)="isNavOpen.set(!isNavOpen())">Toggle Simple Sidenav</button>
+      <p>This variant supports collapsing gracefully down to either an icon-only mode or top-bar mode based on breakpoints.</p>
+    </div>
+  </sh-sidenav>
+</div>

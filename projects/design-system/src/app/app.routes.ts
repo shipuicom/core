@@ -188,8 +188,8 @@ export const routes: Routes = [
         loadComponent: () => import('./ship/datepickers/datepickers'),
       },
       {
-        path: 'expansion-panels',
-        loadComponent: () => import('./ship/expansion-panels/expansion-panels'),
+        path: 'accordions',
+        loadComponent: () => import('./ship/accordions/accordions'),
       },
       {
         path: 'input-mask',

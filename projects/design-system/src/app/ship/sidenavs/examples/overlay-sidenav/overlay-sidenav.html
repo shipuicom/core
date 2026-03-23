@@ -1,0 +1,15 @@
+<div class="sandbox">
+  <sh-sidenav class="overlay" [(isOpen)]="isNavOpen">
+    <ng-container sidenav>
+      <div style="padding: 16px;">
+        <h3>Overlay</h3>
+        <p>Links</p>
+      </div>
+    </ng-container>
+
+    <div style="padding: 16px; display: flex; flex-direction: column; gap: 16px;">
+      <button shButton class="primary" (click)="isNavOpen.set(true)">Open Overlay Sidenav</button>
+      <p>This variant completely overlays the content and provides a backdrop scrim that dismisses the nav on click.</p>
+    </div>
+  </sh-sidenav>
+</div>

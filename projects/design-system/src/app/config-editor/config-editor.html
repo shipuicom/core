@@ -1,0 +1,144 @@
+<aside class="config-overlay" [class.open]="isEditorOpen()">
+  <div class="header">
+    <h2>ShipUI Config Editor</h2>
+    <div style="display: flex; gap: 8px; align-items: center">
+      <ship-theme-toggle />
+      <button shButton size="small" (click)="toggleEditor()">
+        <sh-icon>x-bold</sh-icon>
+      </button>
+    </div>
+  </div>
+
+  <p class="subtitle">Preview changes that immediately reflect across the application via responsive Signals.</p>
+
+  <sh-form-field class="search-wrapper">
+    <input type="text" placeholder="Search components..." [(ngModel)]="searchQuery" />
+  </sh-form-field>
+
+  <div class="scroll-content">
+    <h3 class="group-title">Components</h3>
+    <sh-accordion [(value)]="openAccordion">
+      @for (comp of filteredEditorComponents(); track comp.name) {
+        <details (toggle)="onAccordionToggle($event, comp.route)" [attr.value]="comp.route">
+          <summary>
+            {{ comp.name }}
+            @if (isAltered(comp)) {
+              <button
+                shButton
+                class="reset-btn"
+                size="xsmall"
+                variant="outlined"
+                (click)="resetComponentConfig(comp); $event.stopPropagation()">
+                <span class="changed-indicator"></span>
+                <span class="text-default">Changed</span>
+                <span class="text-hover">Reset</span>
+              </button>
+            }
+          </summary>
+          <div class="content">
+            @for (ctrl of comp.controls; track ctrl.key) {
+              <div class="control-group">
+                @if (ctrl.type === 'select' && ctrl.options) {
+                  <sh-select
+                    variant="horizontal"
+                    size="small"
+                    [options]="ctrl.options"
+                    label="label"
+                    value="value"
+                    [isClearable]="false">
+                    <label>{{ ctrl.label }}</label>
+                    <input
+                      type="text"
+                      [ngModel]="getComponentConfigValue(comp.configKey, ctrl.key)"
+                      (ngModelChange)="
+                        comp.configKey === 'alert' && ctrl.key === 'variant'
+                          ? updateAlertVariant($event)
+                          : comp.configKey === 'sidenavType'
+                            ? updateGlobalSidenavType($event)
+                            : updateComponentConfig(comp.configKey, ctrl.key, $event)
+                      " />
+                  </sh-select>
+                } @else if (ctrl.type === 'toggle') {
+                  <sh-toggle
+                    color="primary"
+                    variant="raised"
+                    [checked]="getComponentConfigValue(comp.configKey, ctrl.key)"
+                    (checkedChange)="updateComponentConfig(comp.configKey, ctrl.key, $event)">
+                    {{ ctrl.label }}
+                  </sh-toggle>
+                }
+              </div>
+            }
+          </div>
+        </details>
+      } @empty {
+        <p class="fallback">No components found</p>
+      }
+    </sh-accordion>
+
+    <div style="height: 16px"></div>
+
+    <h3 class="group-title">Form fields</h3>
+    <sh-accordion [(value)]="openAccordion">
+      @for (comp of filteredEditorFormFields(); track comp.name) {
+        <details (toggle)="onAccordionToggle($event, comp.route)" [attr.value]="comp.route">
+          <summary>
+            {{ comp.name }}
+            @if (isAltered(comp)) {
+              <button
+                shButton
+                class="reset-btn"
+                size="xsmall"
+                variant="outlined"
+                (click)="resetComponentConfig(comp); $event.stopPropagation()">
+                <span class="changed-indicator"></span>
+                <span class="text-default">Changed</span>
+                <span class="text-hover">Reset</span>
+              </button>
+            }
+          </summary>
+          <div class="content">
+            @for (ctrl of comp.controls; track ctrl.key) {
+              @if (ctrl.type === 'select' && ctrl.options) {
+                <sh-select
+                  variant="horizontal"
+                  size="small"
+                  [options]="ctrl.options"
+                  label="label"
+                  value="value"
+                  [isClearable]="false">
+                  <label>{{ ctrl.label }}</label>
+                  <input
+                    type="text"
+                    [ngModel]="getComponentConfigValue(comp.configKey, ctrl.key)"
+                    (ngModelChange)="
+                      comp.configKey === 'alert' && ctrl.key === 'variant'
+                        ? updateAlertVariant($event)
+                        : comp.configKey === 'sidenavType'
+                          ? updateGlobalSidenavType($event)
+                          : updateComponentConfig(comp.configKey, ctrl.key, $event)
+                    " />
+                </sh-select>
+              } @else if (ctrl.type === 'toggle') {
+                <sh-toggle
+                  color="primary"
+                  variant="raised"
+                  [checked]="getComponentConfigValue(comp.configKey, ctrl.key)"
+                  (checkedChange)="updateComponentConfig(comp.configKey, ctrl.key, $event)">
+                  {{ ctrl.label }}
+                </sh-toggle>
+              }
+            }
+          </div>
+        </details>
+      } @empty {
+        <p class="fallback">No form fields found</p>
+      }
+    </sh-accordion>
+  </div>
+
+  <div class="footer">
+    <button shButton size="small" variant="outlined" (click)="resetConfig()">Reset Config</button>
+    <button shButton size="small" variant="raised" color="primary" (click)="exportConfig()">Export Config</button>
+  </div>
+</aside>

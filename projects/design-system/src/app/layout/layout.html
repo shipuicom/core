@@ -12,8 +12,9 @@
         <a href="https://github.com/shipuicom/core" target="_blank" rel="noopener noreferrer">
           <sh-icon>github-logo-bold</sh-icon>
         </a>
-
-        <ship-theme-toggle />
+        <button shButton size="small" (click)="toggleEditor()">
+          <sh-icon>gear</sh-icon>
+        </button>
       </div>
     </ng-container>
   }
@@ -27,8 +28,9 @@
           <a href="https://github.com/shipuicom/core" target="_blank" rel="noopener noreferrer">
             <sh-icon>github-logo-bold</sh-icon>
           </a>
-
-          <ship-theme-toggle />
+          <button shButton size="small" (click)="toggleEditor()">
+            <sh-icon>gear</sh-icon>
+          </button>
         </div>
       </header>
     }
@@ -64,13 +66,17 @@
 
       <h3 title>Components</h3>
 
+      <button action routerLink="/accordions" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Accordions
+      </button>
+
       <button action routerLink="/alerts" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Alerts
       </button>
 
       <button action routerLink="/blueprints" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Blueprints
-        <sh-icon class="small">traffic-cone</sh-icon>
+        <sh-icon size="small">traffic-cone</sh-icon>
       </button>
 
       <button action routerLink="/button-groups" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
@@ -85,13 +91,13 @@
         Cards
       </button>
 
-      <button action routerLink="/color-pickers" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Color Pickers
-        <sh-icon class="small">traffic-cone</sh-icon>
-      </button>
-
       <button action routerLink="/chips" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Chips
+      </button>
+
+      <button action routerLink="/color-pickers" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Color Pickers
+        <sh-icon size="small">traffic-cone</sh-icon>
       </button>
 
       <button action routerLink="/dialogs" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
@@ -118,12 +124,12 @@
         Menus
       </button>
 
-      <button action routerLink="/progress-bars" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Progress Bars
-      </button>
-
       <button action routerLink="/popovers" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Popovers
+      </button>
+
+      <button action routerLink="/progress-bars" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Progress Bars
       </button>
 
       <button action routerLink="/sheets" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
@@ -134,12 +140,12 @@
         Sidenavs
       </button>
 
-      <button action routerLink="/spinners" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Spinners
-      </button>
-
       <button action routerLink="/sortables" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Sortables
+      </button>
+
+      <button action routerLink="/spinners" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Spinners
       </button>
 
       <button action routerLink="/steppers" routerLinkActive="active">Steppers</button>
@@ -154,23 +160,14 @@
         Tooltips
       </button>
 
-      <button
-        action
-        routerLink="/expansion-panels"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }">
-        <sh-icon class="sh-primary">spinner-bold</sh-icon>
-        Expansion Panels / Accordions
-      </button>
-
       <h3 title>Form fields</h3>
 
       <button action routerLink="/checkboxes" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Checkboxes
       </button>
 
-      <button action routerLink="/radio-buttons" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Radio buttons
+      <button action routerLink="/datepickers" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Datepickers
       </button>
 
       <button action routerLink="/file-uploads" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
@@ -181,20 +178,20 @@
         Form Fields
       </button>
 
+      <button action routerLink="/radio-buttons" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Radio buttons
+      </button>
+
+      <button action routerLink="/range-sliders" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Range Sliders
+      </button>
+
       <button action routerLink="/selects" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Selects
       </button>
 
       <button action routerLink="/toggles" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Toggles
-      </button>
-
-      <button action routerLink="/datepickers" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Datepickers
-      </button>
-
-      <button action routerLink="/range-sliders" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Range Sliders
       </button>
 
       <h3 title>Directives</h3>
@@ -216,3 +213,5 @@
 
   <router-outlet />
 </sh-sidenav>
+
+<app-config-editor></app-config-editor>

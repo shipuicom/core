@@ -8,7 +8,7 @@ import {
   Renderer2,
 } from '@angular/core';
 import { shipComponentClasses } from '../utilities/ship-component';
-import { ShipColor, ShipIconSize, ShipSheetVariant } from '../utilities/ship-types';
+import { ShipColor, ShipIconSize } from '../utilities/ship-types';
 
 const iconTypes = ['bold', 'thin', 'light', 'fill', 'duotone'];
 
@@ -29,12 +29,12 @@ export class ShipIcon implements AfterContentInit {
   #renderer = inject(Renderer2);
 
   color = input<ShipColor | null>(null);
-  variant = input<ShipSheetVariant | null>(null);
+
   size = input<ShipIconSize | null>(null);
 
   hostClasses = shipComponentClasses('icon', {
     color: this.color,
-    variant: this.variant,
+
     size: this.size,
   });
 

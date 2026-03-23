@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { ShipButton, ShipIcon, ShipList, ShipSidenav, ShipThemeToggle } from 'ship-ui';
+import { ShipButton, ShipIcon, ShipList, ShipSidenav } from 'ship-ui';
+import { AppConfigService } from '../core/services/app-config.service';
 import { LayoutState } from './layout.state';
 import { Logo } from './logo/logo';
+import { ConfigEditor } from '../config-editor/config-editor';
 
 @Component({
   selector: 'app-layout',
@@ -15,7 +17,7 @@ import { Logo } from './logo/logo';
     RouterLinkActive,
     RouterOutlet,
     Logo,
-    ShipThemeToggle,
+    ConfigEditor,
   ],
   templateUrl: './layout.html',
   styleUrl: './layout.scss',
@@ -28,7 +30,13 @@ export default class Layout {
   isNavOpen = this.#layoutState.isNavOpen;
   isMobile = this.#layoutState.isMobile;
 
+  configService = inject(AppConfigService);
+
   toggleNav() {
     this.#layoutState.toggleNav();
+  }
+
+  toggleEditor() {
+    this.configService.isEditorOpen.set(!this.configService.isEditorOpen());
   }
 }

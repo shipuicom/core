@@ -1,6 +1,6 @@
 @for (variant of variants; track $index) {
   <section>
-    <h3>{{ variant.length > 0 ? variant : 'Base' }}</h3>
+    <h3>{{ variant.length > 0 ? variant : 'Default' }}</h3>
 
     @for (color of colors; track $index) {
       <div class="sh-sheet" [class]="color + ' ' + variant">

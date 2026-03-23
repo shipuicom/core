@@ -1,0 +1,15 @@
+<div class="sandbox">
+  <sh-sidenav [(isOpen)]="isNavOpen">
+    <ng-container sidenav>
+      <div style="padding: 16px;">
+        <h3>Default Nav</h3>
+        <p>Links</p>
+      </div>
+    </ng-container>
+
+    <div style="padding: 16px; display: flex; flex-direction: column; gap: 16px;">
+      <button shButton class="primary" (click)="isNavOpen.set(!isNavOpen())">Toggle Sidenav</button>
+      <p>This is the default fixed position sidenav variant.</p>
+    </div>
+  </sh-sidenav>
+</div>
