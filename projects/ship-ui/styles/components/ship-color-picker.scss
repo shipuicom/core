@@ -101,7 +101,7 @@ $shipColorPicker: true !default;
       flex: 1 0;
       display: flex;
       align-items: center;
-      gap: p2r(8);
+      gap: p2r(4);
       padding-right: p2r(8);
 
       input {
@@ -112,10 +112,10 @@ $shipColorPicker: true !default;
 
     .color-indicator {
       position: relative;
-      width: p2r(20);
-      height: p2r(20);
-      border-radius: var(--shape-1);
-      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+      width: p2r(24);
+      height: p2r(24);
+      border-radius: var(--shape-2);
+      border: 1px solid var(--base-4);
       overflow: hidden;
 
       background-color: #fff;

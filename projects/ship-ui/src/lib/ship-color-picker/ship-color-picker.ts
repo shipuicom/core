@@ -85,70 +85,64 @@ export class ShipColorPicker {
   selectedColorHex = computed(() => this.rgbToHex(...(this.selectedColor() as [number, number, number])));
   selectedColorHsl = computed(() => this.rgbToHsl(...(this.selectedColor() as [number, number, number])).string);
 
-  alphaEffect = effect(
-    () => {
-      const a = this.alpha();
-      const current = untracked(() => this.selectedColor());
+  alphaEffect = effect(() => {
+    const a = this.alpha();
+    const current = untracked(() => this.selectedColor());
 
-      if (current[3] !== a) {
-        this.#skipMarkerUpdate = false;
-        this.selectedColor.set([current[0], current[1], current[2], a]);
-      }
-    },
-    { allowSignalWrites: true }
-  );
+    if (current[3] !== a) {
+      this.#skipMarkerUpdate = false;
+      this.selectedColor.set([current[0], current[1], current[2], a]);
+    }
+  });
 
   _prevColorStr = '';
-  selectedColorEffect = effect(
-    () => {
-      const selectedColor = this.selectedColor();
-      const r = selectedColor[0];
-      const g = selectedColor[1];
-      const b = selectedColor[2];
-      const a = selectedColor[3] ?? 1;
+  selectedColorEffect = effect(() => {
+    const selectedColor = this.selectedColor();
+    const r = selectedColor[0];
+    const g = selectedColor[1];
+    const b = selectedColor[2];
+    const a = selectedColor[3] ?? 1;
 
-      untracked(() => {
-        if (this.alpha() !== a) {
-          this.alpha.set(a);
-        }
-      });
-
-      const str = `${r},${g},${b},${a}`;
-      if (this._prevColorStr === str && !this.#skipMarkerUpdate) {
-        // We still want to clear skipMarkerUpdate if it was set
-        // wait, actually if skipMarkerUpdate is true, it means we JUST dragged. 
-        // In that case we do want to emit currentColor. 
+    untracked(() => {
+      if (this.alpha() !== a) {
+        this.alpha.set(a);
       }
+    });
 
-      const hsl = this.rgbToHsl(r, g, b);
-      const hex = this.rgbToHex(r, g, b);
+    const str = `${r},${g},${b},${a}`;
+    if (this._prevColorStr === str && !this.#skipMarkerUpdate) {
+      // We still want to clear skipMarkerUpdate if it was set
+      // wait, actually if skipMarkerUpdate is true, it means we JUST dragged.
+      // In that case we do want to emit currentColor.
+    }
 
-      if (this.#skipMarkerUpdate) {
-        this.#skipMarkerUpdate = false;
+    const hsl = this.rgbToHsl(r, g, b);
+    const hex = this.rgbToHex(r, g, b);
+
+    if (this.#skipMarkerUpdate) {
+      this.#skipMarkerUpdate = false;
+      this._prevColorStr = str;
+    } else {
+      if (this._prevColorStr !== str) {
+        this.updateMarkerFromColor(selectedColor);
         this._prevColorStr = str;
       } else {
-        if (this._prevColorStr !== str) {
-           this.updateMarkerFromColor(selectedColor);
-           this._prevColorStr = str;
-        } else {
-           // Color is structurally identical and not from a drag event, skip marker jump
-        }
+        // Color is structurally identical and not from a drag event, skip marker jump
       }
+    }
 
-      this.currentColor.emit({
-        rgb: `rgb(${r}, ${g}, ${b})`,
-        rgba: `rgba(${r}, ${g}, ${b}, ${a})`,
-        hex: hex,
-        hex8: this.rgbaToHex8(r, g, b, a),
-        hsl: hsl.string,
-        hsla: `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${a})`,
-        hue: hsl.h,
-        saturation: hsl.s,
-        alpha: a,
-      });
-    },
-    { allowSignalWrites: true }
-  );
+    this.currentColor.emit({
+      rgb: `rgb(${r}, ${g}, ${b})`,
+      rgba: `rgba(${r}, ${g}, ${b}, ${a})`,
+      hex: hex,
+      hex8: this.rgbaToHex8(r, g, b, a),
+      hsl: hsl.string,
+      hsla: `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${a})`,
+      hue: hsl.h,
+      saturation: hsl.s,
+      alpha: a,
+    });
+  });
 
   private alphaColorRedrawEffect = effect(() => {
     const color = this.selectedColor();

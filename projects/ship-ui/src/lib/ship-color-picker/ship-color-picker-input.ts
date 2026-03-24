@@ -11,14 +11,16 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { ShipButton } from 'ship-ui';
 import { ShipFormFieldPopover } from '../ship-form-field/ship-form-field-popover';
+import { ShipIcon } from '../ship-icon/ship-icon';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
 import { contentProjectionSignal } from '../utilities/content-projection-signal';
 import { ShipColorPicker } from './ship-color-picker';
 
 @Component({
   selector: 'sh-color-picker-input',
-  imports: [ShipFormFieldPopover, ShipColorPicker],
+  imports: [ShipFormFieldPopover, ShipColorPicker, ShipIcon, ShipButton],
   template: `
     <sh-form-field-popover (closed)="close()" [(isOpen)]="isOpen" [class]="currentClass()">
       <ng-content select="label" ngProjectAs="label" />
@@ -28,7 +30,14 @@ import { ShipColorPicker } from './ship-color-picker';
 
       <div id="input-wrap" class="input-container" ngProjectAs="input">
         <ng-content select="input" />
+
         <div class="color-indicator" [style.--indicator-color]="formattedColorString()"></div>
+
+        @if (isEyeDropperSupported) {
+          <button size="xsmall" tabindex="-1" variant="outlined" shButton (click)="openEyeDropper($event)">
+            <sh-icon>eyedropper</sh-icon>
+          </button>
+        }
       </div>
 
       <ng-content select="[textSuffix]" ngProjectAs="[textSuffix]" />
@@ -76,6 +85,8 @@ export class ShipColorPickerInput {
   isOpen = model<boolean>(false);
   currentClass = classMutationSignal();
 
+  isEyeDropperSupported = typeof window !== 'undefined' && 'EyeDropper' in window;
+
   internalHue = signal(0);
   internalAlpha = signal(1);
   internalColorTuple = signal<[number, number, number, number?]>([255, 255, 255, 1]);
@@ -112,8 +123,10 @@ export class ShipColorPickerInput {
     const str = this.formattedColorString();
     const input = untracked(() => this.#inputRef());
     if (input && input.value !== str) {
-      input.value = str;
-      input.dispatchEvent(new Event('input'));
+      if (this.#document.activeElement !== input) {
+        input.value = str;
+        input.dispatchEvent(new Event('input'));
+      }
     }
   });
 
@@ -138,6 +151,31 @@ export class ShipColorPickerInput {
     }
   }
 
+  async openEyeDropper(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    try {
+      // @ts-ignore
+      const eyeDropper = new window.EyeDropper();
+      const result = await eyeDropper.open();
+      if (result && result.sRGBHex) {
+        this.parseAndSetColor(result.sRGBHex);
+
+        // Force the text field to immediately display the new output string according to the active format
+        const input = untracked(() => this.#inputRef());
+        if (input) {
+          const str = this.formattedColorString();
+          if (input.value !== str) {
+            input.value = str;
+            input.dispatchEvent(new Event('input'));
+          }
+        }
+      }
+    } catch (e) {
+      // User cancelled
+    }
+  }
+
   close() {
     this.closed.emit(this.formattedColorString());
   }
@@ -155,9 +193,21 @@ export class ShipColorPickerInput {
       this.parseAndSetColor(event.detail.value);
     });
 
+    input.addEventListener('input', (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      this.parseAndSetColor(target.value);
+    });
+
+    input.addEventListener('blur', () => {
+      const str = untracked(() => this.formattedColorString());
+      if (input.value !== str) {
+        input.value = str;
+        input.dispatchEvent(new Event('input'));
+      }
+    });
+
     input.addEventListener('focus', () => {
       this.isOpen.set(true);
-      input.blur();
     });
 
     this.#inputRef.set(input);
@@ -173,6 +223,8 @@ export class ShipColorPickerInput {
 
     const div = this.#document.createElement('div');
     div.style.color = colorStr;
+    if (div.style.color === '') return; // Not a valid color format
+
     this.#document.body.appendChild(div);
     const computedColor = getComputedStyle(div).color;
     this.#document.body.removeChild(div);
