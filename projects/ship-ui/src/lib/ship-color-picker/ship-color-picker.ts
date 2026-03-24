@@ -16,6 +16,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
+import { rgbToHsv, rgbToHex, rgbToHsl, hslToRgbExact, hsvToRgbExact, rgbaToHex8 } from '../utilities/color-conversions';
 
 type R = number;
 type G = number;
@@ -82,8 +83,8 @@ export class ShipColorPicker {
     const c = this.selectedColor();
     return c[3] !== undefined ? `rgba(${c[0]},${c[1]},${c[2]},${c[3]})` : `rgb(${c[0]},${c[1]},${c[2]})`;
   });
-  selectedColorHex = computed(() => this.rgbToHex(...(this.selectedColor() as [number, number, number])));
-  selectedColorHsl = computed(() => this.rgbToHsl(...(this.selectedColor() as [number, number, number])).string);
+  selectedColorHex = computed(() => rgbToHex(...(this.selectedColor() as [number, number, number])));
+  selectedColorHsl = computed(() => rgbToHsl(...(this.selectedColor() as [number, number, number])).string);
 
   alphaEffect = effect(() => {
     const a = this.alpha();
@@ -110,14 +111,15 @@ export class ShipColorPicker {
     });
 
     const str = `${r},${g},${b},${a}`;
+
     if (this._prevColorStr === str && !this.#skipMarkerUpdate) {
       // We still want to clear skipMarkerUpdate if it was set
       // wait, actually if skipMarkerUpdate is true, it means we JUST dragged.
       // In that case we do want to emit currentColor.
     }
 
-    const hsl = this.rgbToHsl(r, g, b);
-    const hex = this.rgbToHex(r, g, b);
+    const hsl = rgbToHsl(r, g, b);
+    const hex = rgbToHex(r, g, b);
 
     if (this.#skipMarkerUpdate) {
       this.#skipMarkerUpdate = false;
@@ -135,7 +137,7 @@ export class ShipColorPicker {
       rgb: `rgb(${r}, ${g}, ${b})`,
       rgba: `rgba(${r}, ${g}, ${b}, ${a})`,
       hex: hex,
-      hex8: this.rgbaToHex8(r, g, b, a),
+      hex8: rgbaToHex8(r, g, b, a),
       hsl: hsl.string,
       hsla: `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${a})`,
       hue: hsl.h,
@@ -150,13 +152,6 @@ export class ShipColorPicker {
       untracked(() => this.drawAlpha());
     }
   });
-
-  private rgbaToHex8(r: number, g: number, b: number, a: number): string {
-    const alphaHex = Math.round(a * 255)
-      .toString(16)
-      .padStart(2, '0');
-    return this.rgbToHex(r, g, b) + alphaHex;
-  }
 
   @HostListener('window:resize', [])
   onResize() {
@@ -273,7 +268,7 @@ export class ShipColorPicker {
     }
 
     if (this.renderingType() === 'hue') {
-      const hsl = this.rgbToHsl(r, g, b);
+      const hsl = rgbToHsl(r, g, b);
       const ratio = hsl.h / 360;
       if (this.direction() === 'horizontal') {
         return { x: Math.round(ratio * (canvas.width - 1)), y: Math.round((canvas.height - 1) / 2) };
@@ -283,15 +278,15 @@ export class ShipColorPicker {
     }
 
     if (this.renderingType() === 'rgb') {
-      const hsv = this.rgbToHsv(r, g, b);
-      return { 
-        x: Math.round((hsv.s / 100) * (canvas.width - 1)), 
-        y: Math.round((1 - hsv.v / 100) * (canvas.height - 1)) 
+      const hsv = rgbToHsv(r, g, b);
+      return {
+        x: Math.round((hsv.s / 100) * (canvas.width - 1)),
+        y: Math.round((1 - hsv.v / 100) * (canvas.height - 1)),
       };
     }
 
     if (this.renderingType() === 'saturation') {
-      const hsl = this.rgbToHsl(r, g, b);
+      const hsl = rgbToHsl(r, g, b);
       const ratio = hsl.s / 100;
       if (this.direction() === 'horizontal') {
         return { x: Math.round(ratio * (canvas.width - 1)), y: Math.round((canvas.height - 1) / 2) };
@@ -302,7 +297,7 @@ export class ShipColorPicker {
 
     if (this.renderingType() === 'hsl') {
       const { centerX, centerY, radius } = canvasData;
-      const hsl = this.rgbToHsl(r, g, b);
+      const hsl = rgbToHsl(r, g, b);
       const centerL = this.centerLightness();
       let distance = 0;
       if (centerL > 0) {
@@ -311,7 +306,7 @@ export class ShipColorPicker {
       const angle = (hsl.h / 360) * 2 * Math.PI - Math.PI;
       return {
         x: Math.round(centerX + distance * Math.cos(angle)),
-        y: Math.round(centerY + distance * Math.sin(angle))
+        y: Math.round(centerY + distance * Math.sin(angle)),
       };
     }
 
@@ -429,13 +424,13 @@ export class ShipColorPicker {
     const yRatio = mouseY / h;
 
     if (this.renderingType() === 'rgb') {
-      return this.hsvToRgbExact(this.hue(), xRatio * 100, (1 - yRatio) * 100);
+      return hsvToRgbExact(this.hue(), xRatio * 100, (1 - yRatio) * 100);
     } else if (this.renderingType() === 'saturation') {
       const ratio = this.direction() === 'horizontal' ? xRatio : yRatio;
-      return this.hslToRgbExact(this.hue(), ratio * 100, 50);
+      return hslToRgbExact(this.hue(), ratio * 100, 50);
     } else if (this.renderingType() === 'hue') {
       const ratio = this.direction() === 'horizontal' ? xRatio : yRatio;
-      return this.hslToRgbExact(ratio * 360, 100, 50);
+      return hslToRgbExact(ratio * 360, 100, 50);
     } else if (this.renderingType() === 'alpha') {
       const ratio = this.direction() === 'horizontal' ? xRatio : yRatio;
       const current = this.selectedColor();
@@ -645,115 +640,4 @@ export class ShipColorPicker {
     }
   }
 
-  private rgbToHsv(r: number, g: number, b: number): { h: number; s: number; v: number } {
-    r /= 255;
-    g /= 255;
-    b /= 255;
-    const max = Math.max(r, g, b), min = Math.min(r, g, b);
-    const d = max - min;
-    const v = max;
-    const s = max === 0 ? 0 : d / max;
-    let h = 0;
-    if (max !== min) {
-      switch (max) {
-        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-        case g: h = (b - r) / d + 2; break;
-        case b: h = (r - g) / d + 4; break;
-      }
-      h /= 6;
-    }
-    return { h: h * 360, s: s * 100, v: v * 100 };
-  }
-
-  private rgbToHex(r: number, g: number, b: number): string {
-    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-  }
-
-  private rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: number; string: string } {
-    r /= 255;
-    g /= 255;
-    b /= 255;
-
-    const max = Math.max(r, g, b),
-      min = Math.min(r, g, b);
-    let h = 0,
-      s = 0,
-      l = (max + min) / 2;
-
-    if (max === min) {
-      h = s = 0;
-    } else {
-      const d = max - min;
-      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-      switch (max) {
-        case r:
-          h = (g - b) / d + (g < b ? 6 : 0);
-          break;
-        case g:
-          h = (b - r) / d + 2;
-          break;
-        case b:
-          h = (r - g) / d + 4;
-          break;
-      }
-      h /= 6;
-    }
-
-    const hDeg = Math.floor(h * 360);
-    const sPct = Math.round(s * 100);
-    const lPct = Math.round(l * 100);
-
-    return {
-      h: hDeg,
-      s: sPct,
-      l: lPct,
-      string: `hsl(${hDeg}, ${sPct}%, ${lPct}%)`,
-    };
-  }
-
-  private hslToRgbExact(h: number, s: number, l: number): [number, number, number] {
-    s /= 100;
-    l /= 100;
-    const k = (n: number) => (n + h / 30) % 12;
-    const a = s * Math.min(l, 1 - l);
-    const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-    return [Math.round(255 * f(0)), Math.round(255 * f(8)), Math.round(255 * f(4))];
-  }
-
-  private hsvToRgbExact(h: number, s: number, v: number): [number, number, number] {
-    const sNorm = s / 100;
-    const vNorm = v / 100;
-    const c = vNorm * sNorm;
-    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-    const m = vNorm - c;
-    let r = 0,
-      g = 0,
-      b = 0;
-    if (h >= 0 && h < 60) {
-      r = c;
-      g = x;
-      b = 0;
-    } else if (h >= 60 && h < 120) {
-      r = x;
-      g = c;
-      b = 0;
-    } else if (h >= 120 && h < 180) {
-      r = 0;
-      g = c;
-      b = x;
-    } else if (h >= 180 && h < 240) {
-      r = 0;
-      g = x;
-      b = c;
-    } else if (h >= 240 && h < 300) {
-      r = x;
-      g = 0;
-      b = c;
-    } else if (h >= 300 && h < 360) {
-      r = c;
-      g = 0;
-      b = x;
-    }
-    return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
-  }
 }

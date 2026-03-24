@@ -50,7 +50,6 @@
     "@angular/platform-server": "^21.2.3",
     "@angular/router": "^21.2.3",
     "@angular/ssr": "^21.2.3",
-    "colorizr": "^3.0.8",
     "express": "^5.1.0",
     "highlight.js": "^11.11.1",
     "rxjs": "~7.8.2",

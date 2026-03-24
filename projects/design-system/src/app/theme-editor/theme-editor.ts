@@ -1,13 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { hsl2oklch } from 'colorizr';
-import { ShipButton, ShipColorPicker, ShipMenu, ShipRadio } from 'ship-ui';
-
-interface Hsl {
-  h: number;
-  s: number;
-  l: number;
-}
+import { hslToOklch, ShipButton, ShipColorPicker, ShipMenu, ShipRadio } from 'ship-ui';
 
 const DEFAULT_COLORS: { [key: string]: [number, number, number] } = {
   primary: [59, 130, 246],
@@ -41,7 +34,6 @@ export default class ThemeEditor {
   currentSaturation = signal(100);
   inputName = signal<keyof typeof DEFAULT_COLORS>(STARTING_COLOR);
   rgbStartColor = signal<[number, number, number]>(DEFAULT_COLORS[STARTING_COLOR]);
-
 
   // rgbStartColor = signal<[number, number, number]>([59, 130, 246]); // Primary
   // rgbStartColor = signal<[number, number, number]>([139, 92, 246]); // Accent
@@ -95,7 +87,7 @@ export default class ThemeEditor {
       // console.log('s', _s);
       // colors[`--${inputName}-${i}0`] = `hsl(${h.toFixed(2)}, ${_s.toFixed(2)}%, ${light.toFixed(2)}%)`;
 
-      const { l, c, h } = hsl2oklch([_h, _s, light]);
+      const { l, c, h } = hslToOklch(_h, _s, light);
       colors[`--${inputName}-${i}0`] = `oklch(${l.toFixed(2)} ${c.toFixed(2)} ${h.toFixed(1)})`;
     }
     ('');
@@ -103,7 +95,7 @@ export default class ThemeEditor {
     for (let i = 1; i <= countDark; i++) {
       const dark = start + (clampedRange / countDark) * (countDark - i);
 
-      const { l, c, h } = hsl2oklch([_h, _s, dark]);
+      const { l, c, h } = hslToOklch(_h, _s, dark);
       colors[`--${inputName}-${i + countLight}0`] = `oklch(${l.toFixed(2)} ${c.toFixed(2)} ${h.toFixed(1)})`;
       // colors[`--${inputName}-${i + countLight}0`] = `hsl(${h.toFixed(2)}, ${_s.toFixed(2)}%, ${dark.toFixed(2)}%)`;
     }
@@ -112,7 +104,7 @@ export default class ThemeEditor {
     for (let i = 1; i <= countLight; i++) {
       const darkLight = Math.max(0, Math.min(100, (_l / countLight) * i));
 
-      const { l, c, h } = hsl2oklch([_h, _s, darkLight]);
+      const { l, c, h } = hslToOklch(_h, _s, darkLight);
       colors[`--${inputName}-${i}0-dark`] = `oklch(${l.toFixed(2)} ${c.toFixed(2)} ${h.toFixed(1)})`;
       // colors[`--${inputName}-${i}0-dark`] = `hsl(${h.toFixed(2)}, ${_s.toFixed(2)}%, ${darkLight.toFixed(2)}%)`;
     }
@@ -120,7 +112,7 @@ export default class ThemeEditor {
     // Dark shades (dark theme) (Reversed)
     for (let i = 1; i <= countDark; i++) {
       const darkDark = Math.max(0, Math.min(100, 100 - ((100 - _l) / countDark) * (countDark - i)));
-      const { l, c, h } = hsl2oklch([_h, _s, darkDark]);
+      const { l, c, h } = hslToOklch(_h, _s, darkDark);
       colors[`--${inputName}-${i + countLight}0-dark`] = `oklch(${l.toFixed(2)} ${c.toFixed(2)} ${h.toFixed(1)})`;
       // colors[`--${inputName}-${i + countLight}0-dark`] = `hsl(${_h.toFixed(2)}, ${_s.toFixed(2)}%, ${darkDark.toFixed(2)}%)`;
     }

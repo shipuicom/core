@@ -11,6 +11,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { hslToRgbExact, rgbToHex, rgbaToHex8, rgbToHsl } from '../utilities/color-conversions';
 import { ShipButton } from 'ship-ui';
 import { ShipFormFieldPopover } from '../ship-form-field/ship-form-field-popover';
 import { ShipIcon } from '../ship-icon/ship-icon';
@@ -106,13 +107,13 @@ export class ShipColorPickerInput {
       case 'rgba':
         return `rgba(${r}, ${g}, ${b}, ${a})`;
       case 'hex':
-        return this.rgbToHex(r, g, b);
+        return rgbToHex(r, g, b);
       case 'hex8':
-        return this.rgbaToHex8(r, g, b, a);
+        return rgbaToHex8(r, g, b, a);
       case 'hsl':
-        return this.rgbToHsl(r, g, b).string;
+        return rgbToHsl(r, g, b).string;
       case 'hsla': {
-        const hsl = this.rgbToHsl(r, g, b);
+        const hsl = rgbToHsl(r, g, b);
         return `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${a})`;
       }
       default:
@@ -132,7 +133,7 @@ export class ShipColorPickerInput {
   });
 
   pureHueColor = computed<[number, number, number]>(() => {
-    return this.hslToRgbExact(this.internalHue(), 100, 50);
+    return hslToRgbExact(this.internalHue(), 100, 50);
   });
 
   #inputRef = signal<HTMLInputElement | null>(null);
