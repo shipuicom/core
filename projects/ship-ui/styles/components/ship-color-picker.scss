@@ -7,7 +7,7 @@ $shipColorPicker: true !default;
     position: relative;
     display: block;
     width: p2r(300);
-    height: p2r(300);
+    aspect-ratio: 1 / 1;
 
     canvas {
       background-image:
@@ -26,13 +26,23 @@ $shipColorPicker: true !default;
       overflow: hidden;
     }
 
+    &.rgb {
+      border-radius: p2r(2);
+
+      // canvas {
+      //   border-radius: p2r(2);
+      // }
+    }
+
     &.saturation:not(.vertical),
-    &.hue:not(.vertical) {
+    &.hue:not(.vertical),
+    &.alpha:not(.vertical) {
       height: p2r(20);
-      border-radius: var(--shape-2);
+      aspect-ratio: auto;
+      border-radius: p2r(2);
 
       canvas {
-        border-radius: var(--shape-2);
+        border-radius: p2r(2);
       }
 
       .marker {
@@ -41,12 +51,15 @@ $shipColorPicker: true !default;
     }
 
     &.saturation.vertical,
-    &.hue.vertical {
+    &.hue.vertical,
+    &.alpha.vertical {
       width: p2r(20);
-      border-radius: var(--shape-2);
+      height: p2r(300);
+      aspect-ratio: auto;
+      border-radius: p2r(2);
 
       canvas {
-        border-radius: var(--shape-2);
+        border-radius: p2r(2);
       }
 
       .marker {
@@ -55,9 +68,8 @@ $shipColorPicker: true !default;
     }
 
     canvas {
-      width: calc(100% + 1px);
-      height: calc(100% + 1px);
-      transform: translate(-1px, -1px);
+      width: 100%;
+      height: 100%;
 
       border: 2px solid var(--base-1);
       outline: 1px solid var(--base-4);
@@ -73,6 +85,60 @@ $shipColorPicker: true !default;
       pointer-events: none;
       transform: translate(-50%, -50%);
       box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  sh-color-picker-input {
+    [popoverContent] {
+      padding: p2r(12);
+      width: p2r(280);
+      display: flex;
+      flex-direction: column;
+      gap: p2r(8);
+    }
+
+    .input-container {
+      flex: 1 0;
+      display: flex;
+      align-items: center;
+      gap: p2r(8);
+      padding-right: p2r(8);
+
+      input {
+        margin-right: 0;
+        min-width: p2r(175);
+      }
+    }
+
+    .color-indicator {
+      position: relative;
+      width: p2r(20);
+      height: p2r(20);
+      border-radius: var(--shape-1);
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+
+      background-color: #fff;
+      background-image:
+        linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%);
+      background-size: 8px 8px;
+      background-position:
+        0 0,
+        0 4px,
+        4px -4px,
+        -4px 0px;
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--indicator-color);
+      }
+    }
+
+    sh-color-picker {
+      width: 100%;
     }
   }
 }

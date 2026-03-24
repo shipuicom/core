@@ -1,4 +1,4 @@
-<sh-button-group [(value)]="renderingType">
+<sh-button-group [(value)]="renderingType" class="type-b">
   <button value="hsl">
     <sh-icon>circle</sh-icon>
     HSL Wheel
@@ -19,6 +19,10 @@
     <sh-icon>circle</sh-icon>
     Saturation
   </button>
+  <button value="alpha">
+    <sh-icon>circle</sh-icon>
+    Alpha
+  </button>
 </sh-button-group>
 
 @if (renderingType() === 'hsl') {
@@ -32,14 +36,10 @@
 </sh-range-slider>
  -->
 
-  <sh-color-picker renderingType="hue" (currentColor)="selectedHue.set($event.hue)"></sh-color-picker>
+  <sh-color-picker renderingType="hue" (currentColor)="selectedHue.set($event.hue)" />
 }
 
-@if (renderingType() === 'hue') {
-  <sh-toggle [(checked)]="direction" color="primary" variant="raised">Direction</sh-toggle>
-}
-
-@if (renderingType() === 'saturation') {
+@if (renderingType() === 'hue' || renderingType() === 'saturation' || renderingType() === 'alpha') {
   <sh-toggle [(checked)]="direction" color="primary" variant="raised">Direction</sh-toggle>
 }
 
@@ -48,17 +48,43 @@
   [showDarkColors]="showDarkColors()"
   [direction]="direction() ? 'vertical' : 'horizontal'"
   [hue]="selectedHue()"
-  (currentColor)="currentColor.set($event)"></sh-color-picker>
+  (currentColor)="currentColor.set($event)" />
 
 <div class="colors">
   <div class="swatch" [style.background]="currentColor()?.hex"></div>
 
   <div class="color-text">
     <p>RGB: {{ currentColor()?.rgb }}</p>
+    <p>RGBA: {{ currentColor()?.rgba }}</p>
     <p>HEX: {{ currentColor()?.hex }}</p>
+    <p>HEX8: {{ currentColor()?.hex8 }}</p>
     <p>HSL: {{ currentColor()?.hsl }}</p>
+    <p>HSLA: {{ currentColor()?.hsla }}</p>
     <p>Hue: {{ currentColor()?.hue }}</p>
     <p>Saturation: {{ currentColor()?.saturation }}</p>
+    <p>Alpha: {{ currentColor()?.alpha }}</p>
   </div>
 </div>
 <!-- <pre>{{ currentColor() | json }}</pre> -->
+
+<div class="example-element">
+  <h3>Color Picker Input Demo</h3>
+  <sh-toggle [(checked)]="showAlpha" color="primary" variant="raised">Enable Alpha</sh-toggle>
+  <sh-button-group [(value)]="inputRenderType" class="type-b">
+    <button value="hsl">HSL</button>
+    <button value="rgb">
+      <sh-icon>circle</sh-icon>
+      RGB
+    </button>
+    <button value="hex">
+      <sh-icon>circle</sh-icon>
+      Hex
+    </button>
+  </sh-button-group>
+
+  <sh-color-picker-input [format]="computedRenderType()" [renderingType]="inputRenderType() === 'hsl' ? 'hsl' : 'rgb'">
+    <label>Pick a color</label>
+    <input type="text" [value]="inputValue()" (input)="inputValue.set($any($event.target).value)" />
+  </sh-color-picker-input>
+  <p>Input Value: {{ inputValue() }}</p>
+</div>

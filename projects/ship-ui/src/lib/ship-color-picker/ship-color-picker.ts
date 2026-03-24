@@ -1,3 +1,4 @@
+import { isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -10,7 +11,9 @@ import {
   input,
   model,
   output,
+  PLATFORM_ID,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 
@@ -18,10 +21,6 @@ type R = number;
 type G = number;
 type B = number;
 type A = number;
-
-// TODOS
-// - Add a color picker input
-// - Add alpha support
 
 @Component({
   selector: 'sh-color-picker',
@@ -42,9 +41,10 @@ type A = number;
 })
 export class ShipColorPicker {
   #document = inject(DOCUMENT);
+  #platformId = inject(PLATFORM_ID);
 
   readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('colorCanvas');
-  private canvasData = signal<{
+  #canvasData = signal<{
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
     centerX: number;
@@ -53,71 +53,193 @@ export class ShipColorPicker {
   } | null>(null);
 
   showDarkColors = input(false);
-  renderingType = input<'hsl' | 'grid' | 'hue' | 'rgb' | 'saturation'>('hsl');
+  renderingType = input<'hsl' | 'grid' | 'hue' | 'rgb' | 'saturation' | 'alpha'>('hsl');
   gridSize = input(20);
-  hue = input(0);
+  hue = model(0);
   direction = input<'horizontal' | 'vertical'>('horizontal');
-  selectedColor = model<[R, G, B]>([255, 255, 255]);
-  currentColor = output<{ rgb: string; hex: string; hsl: string; hue: number; saturation: number }>();
+  selectedColor = model<[R, G, B, A?]>([255, 255, 255, 1]);
+  alpha = model(1);
+  currentColor = output<{
+    rgb: string;
+    rgba: string;
+    hex: string;
+    hex8: string;
+    hsl: string;
+    hsla: string;
+    hue: number;
+    saturation: number;
+    alpha: number;
+  }>();
 
   centerLightness = computed(() => (this.showDarkColors() ? 200 : 100));
   isDragging = signal(false);
   markerPosition = signal({ x: '50%', y: '50%' });
   _pos = { x: '0', y: '0' };
   _markerPosition = effect(() => (this._pos = this.markerPosition()));
+  #skipMarkerUpdate = false;
 
-  selectedColorRgb = computed(() => `rgb(${this.selectedColor().join(',')})`);
-  selectedColorHex = computed(() => this.rgbToHex(...this.selectedColor()));
-  selectedColorHsl = computed(() => this.rgbToHsl(...this.selectedColor()));
-
-  selectedColorEffect = effect(() => {
-    const selectedColor = this.selectedColor();
-    const hsl = this.rgbToHsl(...selectedColor);
-    const hex = this.rgbToHex(...selectedColor);
-
-    this.updateMarkerFromColor(selectedColor);
-
-    this.currentColor.emit({
-      rgb: `rgb(${selectedColor.join(',')})`,
-      hex: hex,
-      hsl: hsl,
-      hue: hsl.match(/\d+/g)!.map(Number)[0],
-      saturation: hsl.match(/\d+/g)!.map(Number)[1],
-    });
+  selectedColorRgb = computed(() => {
+    const c = this.selectedColor();
+    return c[3] !== undefined ? `rgba(${c[0]},${c[1]},${c[2]},${c[3]})` : `rgb(${c[0]},${c[1]},${c[2]})`;
   });
+  selectedColorHex = computed(() => this.rgbToHex(...(this.selectedColor() as [number, number, number])));
+  selectedColorHsl = computed(() => this.rgbToHsl(...(this.selectedColor() as [number, number, number])).string);
+
+  alphaEffect = effect(
+    () => {
+      const a = this.alpha();
+      const current = untracked(() => this.selectedColor());
+
+      if (current[3] !== a) {
+        this.#skipMarkerUpdate = false;
+        this.selectedColor.set([current[0], current[1], current[2], a]);
+      }
+    },
+    { allowSignalWrites: true }
+  );
+
+  _prevColorStr = '';
+  selectedColorEffect = effect(
+    () => {
+      const selectedColor = this.selectedColor();
+      const r = selectedColor[0];
+      const g = selectedColor[1];
+      const b = selectedColor[2];
+      const a = selectedColor[3] ?? 1;
+
+      untracked(() => {
+        if (this.alpha() !== a) {
+          this.alpha.set(a);
+        }
+      });
+
+      const str = `${r},${g},${b},${a}`;
+      if (this._prevColorStr === str && !this.#skipMarkerUpdate) {
+        // We still want to clear skipMarkerUpdate if it was set
+        // wait, actually if skipMarkerUpdate is true, it means we JUST dragged. 
+        // In that case we do want to emit currentColor. 
+      }
+
+      const hsl = this.rgbToHsl(r, g, b);
+      const hex = this.rgbToHex(r, g, b);
+
+      if (this.#skipMarkerUpdate) {
+        this.#skipMarkerUpdate = false;
+        this._prevColorStr = str;
+      } else {
+        if (this._prevColorStr !== str) {
+           this.updateMarkerFromColor(selectedColor);
+           this._prevColorStr = str;
+        } else {
+           // Color is structurally identical and not from a drag event, skip marker jump
+        }
+      }
+
+      this.currentColor.emit({
+        rgb: `rgb(${r}, ${g}, ${b})`,
+        rgba: `rgba(${r}, ${g}, ${b}, ${a})`,
+        hex: hex,
+        hex8: this.rgbaToHex8(r, g, b, a),
+        hsl: hsl.string,
+        hsla: `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${a})`,
+        hue: hsl.h,
+        saturation: hsl.s,
+        alpha: a,
+      });
+    },
+    { allowSignalWrites: true }
+  );
+
+  private alphaColorRedrawEffect = effect(() => {
+    const color = this.selectedColor();
+    if (this.renderingType() === 'alpha' && this.#canvasData()) {
+      untracked(() => this.drawAlpha());
+    }
+  });
+
+  private rgbaToHex8(r: number, g: number, b: number, a: number): string {
+    const alphaHex = Math.round(a * 255)
+      .toString(16)
+      .padStart(2, '0');
+    return this.rgbToHex(r, g, b) + alphaHex;
+  }
 
   @HostListener('window:resize', [])
   onResize() {
     this.setCanvasSize();
   }
 
+  private previousRenderingType: string | null = null;
+
   private renderingTypeEffect = effect(() => {
     const currentRenderingType = this.renderingType();
+    this.hue();
+    this.showDarkColors();
+    this.gridSize();
+    this.direction();
 
-    if (this.canvasData()) {
-      this.drawColorPicker();
+    if (this.#canvasData()) {
+      untracked(() => this.drawColorPicker());
 
-      if (currentRenderingType === 'hsl') {
-        this.adjustMarkerPosition();
-
-        queueMicrotask(() => this.updateMarkerFromColor(this.selectedColor()));
+      if (this.previousRenderingType !== currentRenderingType) {
+        if (currentRenderingType === 'hsl') {
+          this.adjustMarkerPosition();
+          queueMicrotask(() => this.updateMarkerFromColor(this.selectedColor()));
+        } else {
+          this.updateMarkerFromColor(this.selectedColor());
+        }
+        this.previousRenderingType = currentRenderingType;
       } else {
-        this.updateMarkerFromColor(this.selectedColor());
+        const pos = untracked(() => this.markerPosition());
+        const { canvas, ctx } = untracked(() => this.#canvasData())!;
+        let x = (parseFloat(pos.x.replace('%', '')) / 100) * Math.max(1, canvas.width - 1);
+        let y = (parseFloat(pos.y.replace('%', '')) / 100) * Math.max(1, canvas.height - 1);
+        x = Math.max(0, Math.min(canvas.width - 1, Math.round(x)));
+        y = Math.max(0, Math.min(canvas.height - 1, Math.round(y)));
+
+        const color = untracked(() => this.getColorAtPosition(x, y));
+
+        if (this.renderingType() !== 'alpha') {
+          color[3] = untracked(() => this.selectedColor()[3] ?? 1);
+        }
+
+        this.#skipMarkerUpdate = true;
+        this.selectedColor.set(color as any);
       }
     }
   });
 
-  initColor: [R, G, B] | null = null;
+  #resizeObserver =
+    typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver((entries) => {
+          for (const entry of entries) {
+            if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+              this.setCanvasSize();
+            }
+          }
+        })
+      : null;
+
+  initColor: [R, G, B, A?] | null = null;
   ngAfterViewInit() {
     this.initColor = this.selectedColor();
+
+    const canvas = this.canvasRef()?.nativeElement;
+    if (canvas?.parentElement) {
+      this.#resizeObserver?.observe(canvas.parentElement);
+    }
 
     this.setCanvasSize();
     this.initCanvasEvents();
   }
 
-  private updateMarkerFromColor(rgb: [R, G, B]) {
-    const [r, g, b] = rgb;
-    const coords = this.findPositionByColor(r, g, b);
+  ngOnDestroy() {
+    this.#resizeObserver?.disconnect();
+  }
+
+  private updateMarkerFromColor(rgba: [R, G, B, A?]) {
+    const [r, g, b, a] = rgba;
+    const coords = this.findPositionByColor(r, g, b, a);
 
     if (coords === null) return;
 
@@ -134,11 +256,32 @@ export class ShipColorPicker {
     this.updateColorAndMarker(mockEvent as any, false, true);
   }
 
-  private findPositionByColor(r: number, g: number, b: number): { x: number; y: number } | null {
-    const canvasData = this.canvasData();
+  private findPositionByColor(r: number, g: number, b: number, a?: number): { x: number; y: number } | null {
+    const canvasData = this.#canvasData();
     if (!canvasData || !canvasData.canvas) return null;
 
     const { canvas, ctx } = canvasData;
+    if (canvas.width === 0 || canvas.height === 0) return null;
+
+    if (this.renderingType() === 'alpha') {
+      const aVal = a ?? 1;
+      if (this.direction() === 'horizontal') {
+        return { x: Math.round(aVal * (canvas.width - 1)), y: 0 };
+      } else {
+        return { x: 0, y: Math.round(aVal * (canvas.height - 1)) };
+      }
+    }
+
+    if (this.renderingType() === 'hue') {
+      const hsl = this.rgbToHsl(r, g, b);
+      const ratio = hsl.h / 360;
+      if (this.direction() === 'horizontal') {
+        return { x: Math.round(ratio * (canvas.width - 1)), y: Math.round((canvas.height - 1) / 2) };
+      } else {
+        return { x: Math.round((canvas.width - 1) / 2), y: Math.round(ratio * (canvas.height - 1)) };
+      }
+    }
+
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
 
     let bestMatch = { x: 0, y: 0, distance: Infinity };
@@ -162,7 +305,7 @@ export class ShipColorPicker {
   }
 
   private adjustMarkerPosition() {
-    const { canvas, centerX, centerY, radius } = this.canvasData()!;
+    const { canvas, centerX, centerY, radius } = this.#canvasData()!;
     let { x, y } = this._pos;
 
     let markerX = (parseFloat(x.replace('%', '')) / 100) * canvas.width;
@@ -182,7 +325,9 @@ export class ShipColorPicker {
   }
 
   private initCanvasEvents() {
-    const { canvas } = this.canvasData()!;
+    const data = this.#canvasData();
+    if (!data) return;
+    const { canvas } = data;
 
     canvas.addEventListener('mousedown', (event) => {
       this.isDragging.set(true);
@@ -211,6 +356,8 @@ export class ShipColorPicker {
   }
 
   private setCanvasSize() {
+    if (!isPlatformBrowser(this.#platformId)) return;
+
     const canvas = this.canvasRef()?.nativeElement;
 
     if (canvas) {
@@ -223,7 +370,7 @@ export class ShipColorPicker {
       canvas.width = parentWidth;
       canvas.height = parentWidth;
 
-      this.canvasData.set({
+      this.#canvasData.set({
         canvas,
         ctx,
         centerX: canvas.width / 2,
@@ -235,8 +382,33 @@ export class ShipColorPicker {
     }
   }
 
+  private getColorAtPosition(mouseX: number, mouseY: number): [R, G, B, A?] {
+    const { canvas, ctx } = this.#canvasData()!;
+    const w = Math.max(1, canvas.width - 1);
+    const h = Math.max(1, canvas.height - 1);
+    const xRatio = mouseX / w;
+    const yRatio = mouseY / h;
+
+    if (this.renderingType() === 'rgb') {
+      return this.hsvToRgbExact(this.hue(), xRatio * 100, (1 - yRatio) * 100);
+    } else if (this.renderingType() === 'saturation') {
+      const ratio = this.direction() === 'horizontal' ? xRatio : yRatio;
+      return this.hslToRgbExact(this.hue(), ratio * 100, 50);
+    } else if (this.renderingType() === 'hue') {
+      const ratio = this.direction() === 'horizontal' ? xRatio : yRatio;
+      return this.hslToRgbExact(ratio * 360, 100, 50);
+    } else if (this.renderingType() === 'alpha') {
+      const ratio = this.direction() === 'horizontal' ? xRatio : yRatio;
+      const current = this.selectedColor();
+      return [current[0], current[1], current[2], parseFloat(ratio.toFixed(2))];
+    } else {
+      const pixelData = ctx.getImageData(mouseX, mouseY, 1, 1).data;
+      return [pixelData[0], pixelData[1], pixelData[2]];
+    }
+  }
+
   private updateColorAndMarker(event: MouseEvent | Touch, outsideCanvas = false, onlyMarker = false) {
-    const { canvas, ctx } = this.canvasData()!;
+    const { canvas, ctx } = this.#canvasData()!;
 
     let mouseX = event instanceof MouseEvent ? event.offsetX : event.clientX;
     let mouseY = event instanceof MouseEvent ? event.offsetY : event.clientY;
@@ -264,15 +436,17 @@ export class ShipColorPicker {
     mouseX = Math.max(0, Math.min(canvas.width - 1, Math.round(mouseX)));
     mouseY = Math.max(0, Math.min(canvas.height - 1, Math.round(mouseY)));
 
-    const pixelData = ctx.getImageData(mouseX, mouseY, 1, 1).data;
-    const [r, g, b] = pixelData;
-
     if (!onlyMarker) {
-      this.selectedColor.set([r, g, b]);
+      const newColor = this.getColorAtPosition(mouseX, mouseY);
+      if (this.renderingType() !== 'alpha') {
+        newColor[3] = this.selectedColor()[3] ?? 1;
+      }
+      this.#skipMarkerUpdate = true;
+      this.selectedColor.set(newColor as any);
     }
 
-    const xPercent = ((mouseX / canvas.width) * 100).toFixed(2) + '%';
-    const yPercent = ((mouseY / canvas.height) * 100).toFixed(2) + '%';
+    const xPercent = ((mouseX / Math.max(1, canvas.width - 1)) * 100).toFixed(2) + '%';
+    const yPercent = ((mouseY / Math.max(1, canvas.height - 1)) * 100).toFixed(2) + '%';
 
     this.markerPosition.set({ x: xPercent, y: yPercent });
   }
@@ -288,6 +462,9 @@ export class ShipColorPicker {
       case 'hue':
         this.drawHue();
         break;
+      case 'alpha':
+        this.drawAlpha();
+        break;
       case 'rgb':
         this.drawRgb();
         break;
@@ -297,38 +474,65 @@ export class ShipColorPicker {
     }
   }
 
+  private drawAlpha() {
+    const { canvas, ctx } = this.#canvasData()!;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const w = Math.max(1, canvas.width - 1);
+    const h = Math.max(1, canvas.height - 1);
+
+    const gradient = ctx.createLinearGradient(
+      0,
+      0,
+      this.direction() === 'horizontal' ? w : 0,
+      this.direction() === 'horizontal' ? 0 : h
+    );
+
+    const [r, g, b] = this.selectedColor();
+
+    gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0)`);
+    gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 1)`);
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
   private drawRgb() {
-    const { canvas, ctx } = this.canvasData()!;
+    const { canvas, ctx } = this.#canvasData()!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-    gradient.addColorStop(0, 'white');
+    const w = Math.max(1, canvas.width - 1);
+    const h = Math.max(1, canvas.height - 1);
+
+    const gradient = ctx.createLinearGradient(0, 0, w, 0);
+    gradient.addColorStop(0, '#ffffff');
     gradient.addColorStop(1, `hsl(${this.hue()}, 100%, 50%)`);
 
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const gradient2 = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    const gradient2 = ctx.createLinearGradient(0, 0, 0, h);
     gradient2.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    gradient2.addColorStop(1, 'black');
+    gradient2.addColorStop(1, '#000000');
 
     ctx.fillStyle = gradient2;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
   private drawSaturation() {
-    const { canvas, ctx } = this.canvasData()!;
+    const { canvas, ctx } = this.#canvasData()!;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const w = Math.max(1, canvas.width - 1);
+    const h = Math.max(1, canvas.height - 1);
 
     if (this.direction() === 'horizontal') {
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+      const gradient = ctx.createLinearGradient(0, 0, w, 0);
       gradient.addColorStop(0, `hsl(${this.hue()}, 0%, 50%)`);
       gradient.addColorStop(1, `hsl(${this.hue()}, 100%, 50%)`);
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     } else {
-      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      const gradient = ctx.createLinearGradient(0, 0, 0, h);
       gradient.addColorStop(0, `hsl(${this.hue()}, 0%, 50%)`);
       gradient.addColorStop(1, `hsl(${this.hue()}, 100%, 50%)`);
       ctx.fillStyle = gradient;
@@ -337,14 +541,16 @@ export class ShipColorPicker {
   }
 
   private drawHue() {
-    const { canvas, ctx } = this.canvasData()!;
+    const { canvas, ctx } = this.#canvasData()!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const w = Math.max(1, canvas.width - 1);
+    const h = Math.max(1, canvas.height - 1);
 
     const gradient = ctx.createLinearGradient(
       0,
       0,
-      this.direction() === 'horizontal' ? canvas.width : 0,
-      this.direction() === 'horizontal' ? 0 : canvas.height
+      this.direction() === 'horizontal' ? w : 0,
+      this.direction() === 'horizontal' ? 0 : h
     );
 
     for (let i = 0; i <= 360; i += 10) {
@@ -356,7 +562,7 @@ export class ShipColorPicker {
   }
 
   private drawColorWheel() {
-    const { canvas, ctx, centerX, centerY, radius } = this.canvasData()!;
+    const { canvas, ctx, centerX, centerY, radius } = this.#canvasData()!;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -375,7 +581,7 @@ export class ShipColorPicker {
   }
 
   private drawGrid() {
-    const { canvas, ctx } = this.canvasData()!;
+    const { canvas, ctx } = this.#canvasData()!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const gridSize = this.gridSize();
@@ -404,7 +610,7 @@ export class ShipColorPicker {
     return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
   }
 
-  private rgbToHsl(r: number, g: number, b: number): string {
+  private rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: number; string: string } {
     r /= 255;
     g /= 255;
     b /= 255;
@@ -434,6 +640,61 @@ export class ShipColorPicker {
       h /= 6;
     }
 
-    return `hsl(${Math.floor(h * 360)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
+    const hDeg = Math.floor(h * 360);
+    const sPct = Math.round(s * 100);
+    const lPct = Math.round(l * 100);
+
+    return {
+      h: hDeg,
+      s: sPct,
+      l: lPct,
+      string: `hsl(${hDeg}, ${sPct}%, ${lPct}%)`,
+    };
+  }
+
+  private hslToRgbExact(h: number, s: number, l: number): [number, number, number] {
+    s /= 100;
+    l /= 100;
+    const k = (n: number) => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    return [Math.round(255 * f(0)), Math.round(255 * f(8)), Math.round(255 * f(4))];
+  }
+
+  private hsvToRgbExact(h: number, s: number, v: number): [number, number, number] {
+    const sNorm = s / 100;
+    const vNorm = v / 100;
+    const c = vNorm * sNorm;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = vNorm - c;
+    let r = 0,
+      g = 0,
+      b = 0;
+    if (h >= 0 && h < 60) {
+      r = c;
+      g = x;
+      b = 0;
+    } else if (h >= 60 && h < 120) {
+      r = x;
+      g = c;
+      b = 0;
+    } else if (h >= 120 && h < 180) {
+      r = 0;
+      g = c;
+      b = x;
+    } else if (h >= 180 && h < 240) {
+      r = 0;
+      g = x;
+      b = c;
+    } else if (h >= 240 && h < 300) {
+      r = x;
+      g = 0;
+      b = c;
+    } else if (h >= 300 && h < 360) {
+      r = c;
+      g = 0;
+      b = x;
+    }
+    return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
   }
 }

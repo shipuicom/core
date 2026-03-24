@@ -29,3 +29,9 @@
     width: 100%;
   }
 }
+
+.example-element {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(12);
+}
