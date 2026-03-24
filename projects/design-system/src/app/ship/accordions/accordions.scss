@@ -12,6 +12,13 @@ h3 {
   font: var(--title-30);
 }
 
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: p2r(20);
+}
+
 .example {
   display: flex;
   flex-direction: column;
