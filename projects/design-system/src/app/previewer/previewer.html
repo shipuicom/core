@@ -1,9 +1,9 @@
-<sh-card class="type-c">
+<sh-card variant="type-c">
   <sh-tabs class="primary" [(value)]="view">
-    <h3 class="title" style="display: flex; gap: 8px; align-items: center; margin: 0;">
+    <h3 class="title" style="display: flex; gap: 8px; align-items: center; margin: 0">
       {{ title() }}
       @if (configName()) {
-        <app-config-indicator [componentName]="configName()!" style="margin-top: 12px;" />
+        <app-config-indicator [componentName]="configName()!" style="margin-top: 12px" />
       }
     </h3>
 
@@ -43,7 +43,7 @@
     </div>
   }
 
-  <div class="example-wrap">
+  <div class="example-wrap" [class.no-space]="noSpace()">
     <ng-content />
   </div>
 </sh-card>

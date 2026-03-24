@@ -8,6 +8,85 @@
   </ng-container>
 </sh-alert>
 
+<app-property-viewer>
+  <section>
+    <h4>Rendering Type</h4>
+    <p>
+      The visual layout of the color picker can be controlled using the
+      <code>renderingType</code>
+      input. Valid options are:
+      <b>hsl</b>
+      ,
+      <b>grid</b>
+      ,
+      <b>hue</b>
+      ,
+      <b>rgb</b>
+      ,
+      <b>saturation</b>
+      , and
+      <b>alpha</b>
+      .
+    </p>
+  </section>
+
+  <section>
+    <h4>Format</h4>
+    <p>
+      For the
+      <code>sh-color-picker-input</code>
+      component, the string format of the selected color can be controlled using the
+      <code>format</code>
+      input. Valid options are:
+      <b>rgb</b>
+      ,
+      <b>rgba</b>
+      ,
+      <b>hex</b>
+      ,
+      <b>hex8</b>
+      ,
+      <b>hsl</b>
+      , and
+      <b>hsla</b>
+      .
+    </p>
+  </section>
+
+  <section>
+    <h4>Direction</h4>
+    <p>
+      The
+      <code>direction</code>
+      input controls the layout axis for linear renderers like
+      <b>hue</b>
+      ,
+      <b>alpha</b>
+      , and
+      <b>saturation</b>
+      grids. Valid options are:
+      <b>horizontal</b>
+      and
+      <b>vertical</b>
+      .
+    </p>
+  </section>
+
+  <section>
+    <h4>
+      Eye Dropper
+      <sh-chip size="xsmall">Only in natively supporting browsers</sh-chip>
+    </h4>
+    <p>
+      The
+      <code>sh-color-picker-input</code>
+      component includes an eye dropper button to pick a color from the screen natively. It can be toggled using the
+      <code>showEyeDropper</code>
+      input.
+    </p>
+  </section>
+</app-property-viewer>
+
 <div class="content">
   <h3>Variations</h3>
 

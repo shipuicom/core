@@ -43,6 +43,10 @@ $shipChipShadow: false !default;
       &.small {
         padding: p2r(0 6);
       }
+
+      &.xsmall {
+        padding: p2r(0 4);
+      }
     }
 
     sh-icon {
@@ -69,6 +73,21 @@ $shipChipShadow: false !default;
 
       sh-icon {
         font-size: p2r(12);
+      }
+    }
+
+    &.xsmall {
+      --chip-h: #{p2r(20)};
+
+      font: var(--paragraph-40B);
+      padding: p2r(0 6);
+
+      div {
+        gap: p2r(2);
+      }
+
+      sh-icon {
+        font-size: p2r(10);
       }
     }
 

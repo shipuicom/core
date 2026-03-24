@@ -10,6 +10,7 @@ export function shipComponentClasses(
     sharp?: Signal<any>;
     dynamic?: Signal<any>;
     readonly?: Signal<any>;
+    alwaysShow?: Signal<any>;
   }
 ) {
   const config = inject(SHIP_CONFIG, { optional: true });
@@ -57,6 +58,9 @@ export function shipComponentClasses(
     // Resolve readonly (Input > Component Config > false)
     const readonly = (inputs.readonly?.() ?? componentConfig?.readonly) || false;
 
+    // Resolve alwaysShow (Input > Component Config > false)
+    const alwaysShow = (inputs.alwaysShow?.() ?? componentConfig?.alwaysShow) || false;
+
     const classList: string[] = [];
 
     if (color) classList.push(color);
@@ -72,6 +76,7 @@ export function shipComponentClasses(
     if (sharp) classList.push('sharp');
     if (dynamic) classList.push('dynamic');
     if (readonly) classList.push('readonly');
+    if (alwaysShow) classList.push('always-show');
 
     return classList.join(' ');
   });

@@ -10,6 +10,8 @@ import {
   model,
   signal,
 } from '@angular/core';
+import { shipComponentClasses } from '../utilities/ship-component';
+import { ShipColor, ShipSize, ShipVariant } from '../utilities/ship-types';
 
 @Component({
   selector: 'sh-range-slider',
@@ -40,6 +42,10 @@ import {
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.sh-range-slider]': 'true',
+    '[class]': 'hostClasses()',
+  },
 })
 export class ShipRangeSlider {
   #selfRef = inject(ElementRef<HTMLElement>);
@@ -54,6 +60,20 @@ export class ShipRangeSlider {
     min: 0,
     max: 100,
     step: 1,
+  });
+
+  readonly color = input<ShipColor | null>(null);
+  readonly variant = input<ShipVariant | null>(null);
+  readonly size = input<ShipSize | null>(null);
+  readonly sharp = input<boolean | undefined>(undefined);
+  readonly alwaysShow = input<boolean | undefined>(undefined);
+
+  hostClasses = shipComponentClasses('rangeSlider', {
+    color: this.color,
+    variant: this.variant,
+    size: this.size,
+    sharp: this.sharp,
+    alwaysShow: this.alwaysShow,
   });
 
   valuePercentage = computed(() => {

@@ -4,8 +4,11 @@
   <section>
     <h4>Usage</h4>
     <p>
-      ShipAccordion seamlessly wraps the native <code>&lt;details&gt;</code> HTML element. 
-      Use <code>allowMultiple</code> to control open exclusivity natively, or allow multi-expand.
+      ShipAccordion seamlessly wraps the native
+      <code>&lt;details&gt;</code>
+      HTML element. Use
+      <code>allowMultiple</code>
+      to control open exclusivity natively, or allow multi-expand.
     </p>
   </section>
 </app-property-viewer>
@@ -13,5 +16,17 @@
 <div class="sandbox-example">
   <app-previewer path="/accordions/examples/sandbox-accordion/sandbox-accordion" title="Sandbox" class="no-space">
     <app-sandbox-accordion />
+  </app-previewer>
+</div>
+
+<h3>Variations</h3>
+
+<div class="content">
+  <app-previewer path="/accordions/examples/base-accordion/base-accordion" title="Default">
+    <app-base-accordion class="example" />
+  </app-previewer>
+
+  <app-previewer [noSpace]="true" path="/accordions/examples/type-b-accordion/type-b-accordion" title="Type B">
+    <app-type-b-accordion class="example-full-width" />
   </app-previewer>
 </div>

@@ -21,3 +21,10 @@ h3 {
   max-width: p2r(640);
   align-self: center;
 }
+
+.example-full-width {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: p2r(32);
+}

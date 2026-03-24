@@ -1,7 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ShipAccordion, ShipButton, ShipFormField, ShipIcon, ShipSelect, ShipThemeToggle, ShipToggle } from 'ship-ui';
+import {
+  ShipAccordion,
+  ShipButton,
+  ShipFormField,
+  ShipIcon,
+  ShipRangeSlider,
+  ShipSelect,
+  ShipThemeToggle,
+  ShipToggle,
+} from 'ship-ui';
 import { AppConfigService } from '../core/services/app-config.service';
 
 export interface EditorComponentControl {
@@ -64,8 +73,6 @@ const buttonSizeOptions = [
   { value: 'small', label: 'Small' },
 ];
 
-
-
 const colorOptions = [
   { value: '', label: 'Default' },
   { value: 'primary', label: 'Primary' },
@@ -79,7 +86,17 @@ const colorOptions = [
 @Component({
   selector: 'app-config-editor',
   standalone: true,
-  imports: [FormsModule, ShipFormField, ShipSelect, ShipToggle, ShipButton, ShipIcon, ShipThemeToggle, ShipAccordion],
+  imports: [
+    FormsModule,
+    ShipFormField,
+    ShipSelect,
+    ShipToggle,
+    ShipButton,
+    ShipIcon,
+    ShipThemeToggle,
+    ShipAccordion,
+    ShipRangeSlider,
+  ],
   templateUrl: './config-editor.html',
   styleUrl: './config-editor.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -88,6 +105,26 @@ export class ConfigEditor {
   configService = inject(AppConfigService);
   router = inject(Router);
 
+  userMainAccordionState = signal<string | null>('components');
+
+  openMainAccordion = computed(() => {
+    const query = this.searchQuery().trim();
+    if (!query) {
+      return this.userMainAccordionState();
+    }
+    const opens: string[] = [];
+    if (this.showGlobalSettings()) opens.push('global');
+    if (this.filteredEditorComponents().length > 0) opens.push('components');
+    if (this.filteredEditorFormFields().length > 0) opens.push('form-fields');
+    return opens.join(',');
+  });
+
+  onMainAccordionChange(val: string | null) {
+    if (!this.searchQuery().trim()) {
+      this.userMainAccordionState.set(val);
+    }
+  }
+
   openAccordion = signal<string | null>(null);
   searchQuery = signal('');
 
@@ -95,6 +132,12 @@ export class ConfigEditor {
     const query = this.searchQuery().toLowerCase().trim();
     if (!query) return this.editorComponents;
     return this.editorComponents.filter((comp) => comp.name.toLowerCase().includes(query));
+  });
+
+  showGlobalSettings = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return true;
+    return 'global settings font size'.includes(query);
   });
 
   filteredEditorFormFields = computed(() => {
@@ -121,6 +164,14 @@ export class ConfigEditor {
     this.isEditorOpen.set(!this.isEditorOpen());
   }
 
+  get globalFontSize() {
+    return this.config.fontSize || 16;
+  }
+
+  updateGlobalFontSize(size: number) {
+    this.configService.updateConfig({ fontSize: size });
+  }
+
   exportConfig() {
     const configJson = JSON.stringify(this.config, null, 2);
     console.log('ShipUI Config exported:\\n', configJson);
@@ -137,7 +188,7 @@ export class ConfigEditor {
       route: '/accordions',
       configKey: 'accordion',
       controls: [
-        // { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
+        { type: 'select', key: 'variant', label: 'Variant', options: tableVariantOptions },
         { type: 'select', key: 'size', label: 'Size', options: sizeOptions },
       ],
     },
@@ -183,7 +234,7 @@ export class ConfigEditor {
       controls: [
         { type: 'select', key: 'color', label: 'Color', options: colorOptions },
         { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
-        { type: 'select', key: 'size', label: 'Size', options: sizeOptions },
+        { type: 'select', key: 'size', label: 'Size', options: buttonSizeOptions },
         { type: 'toggle', key: 'sharp', label: 'Sharp' },
       ],
     },
@@ -294,6 +345,17 @@ export class ConfigEditor {
       ],
     },
     {
+      name: 'Range Slider',
+      route: '/range-sliders',
+      configKey: 'rangeSlider',
+      controls: [
+        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
+        { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
+        { type: 'toggle', key: 'sharp', label: 'Sharp' },
+        { type: 'toggle', key: 'alwaysShow', label: 'Always Show Indicator' },
+      ],
+    },
+    {
       name: 'Select',
       route: '/selects',
       configKey: 'select',
@@ -333,6 +395,31 @@ export class ConfigEditor {
 
   updateGlobalSidenavType(type: any) {
     this.configService.updateConfig({ sidenavType: type });
+  }
+
+  isGlobalSettingsAltered = computed(() => {
+    const size = this.config.fontSize;
+    return size !== undefined && size !== 16;
+  });
+
+  isComponentsAltered = computed(() => {
+    return this.editorComponents.some((comp) => this.isAltered(comp));
+  });
+
+  isFormFieldsAltered = computed(() => {
+    return this.editorFormFields.some((comp) => this.isAltered(comp));
+  });
+
+  resetGlobalSettings() {
+    this.configService.updateConfig({ fontSize: undefined });
+  }
+
+  resetComponentsConfig() {
+    this.editorComponents.forEach((comp) => this.resetComponentConfig(comp));
+  }
+
+  resetFormFieldsConfig() {
+    this.editorFormFields.forEach((comp) => this.resetComponentConfig(comp));
   }
 
   updateAlertVariant(variant: any) {

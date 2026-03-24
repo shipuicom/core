@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
 import { ShipCard, ShipIcon, ShipTabs } from 'ship-ui';
-import { HighlightFile } from './highlight-file/highlight-file';
 import { ConfigIndicatorComponent } from '../core/components/config-indicator/config-indicator';
+import { HighlightFile } from './highlight-file/highlight-file';
 
 @Component({
   selector: 'app-previewer',
@@ -14,6 +14,7 @@ export class Previewer {
   path = input.required<string>();
 
   title = input<string>('');
+  noSpace = input<boolean>(false);
   configName = input<keyof import('ship-ui').ShipConfig | null>(null);
   view = signal('');
 

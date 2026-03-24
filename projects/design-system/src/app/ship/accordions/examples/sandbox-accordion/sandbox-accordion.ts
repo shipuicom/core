@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipAccordion, ShipSelect, ShipToggle } from 'ship-ui';
+import { ShipAccordion, ShipButton, ShipFormField, ShipSelect, ShipToggle } from 'ship-ui';
 
 @Component({
   selector: 'app-sandbox-accordion',
-  imports: [FormsModule, ShipAccordion, ShipToggle, ShipSelect],
+  imports: [FormsModule, ShipAccordion, ShipToggle, ShipSelect, ShipFormField, ShipButton],
   templateUrl: './sandbox-accordion.html',
   styleUrl: './sandbox-accordion.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -12,7 +12,12 @@ import { ShipAccordion, ShipSelect, ShipToggle } from 'ship-ui';
 export class SandboxAccordion {
   openPanels = signal<string>('panel1');
   allowMultiple = signal<boolean>(false);
-  variantType = signal<'base' | 'outlined' | 'flat' | null>('base');
+  variantType = signal<string | null>(null);
+
+  availableVariants = [
+    { value: '', label: 'Default' },
+    { value: 'type-b', label: 'Type B' },
+  ];
 
   availablePanels = ['panel1', 'panel2', 'panel3'];
   selectedPanelsArray = signal<string[]>(['panel1']);

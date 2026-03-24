@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
+import { BaseCardComponent } from './examples/base-card/base-card';
 import { CardSandbox } from './examples/card-sandbox/card-sandbox';
 import { ToggleCardDisallowedExampleComponent } from './examples/toggle-card-disallowed/toggle-card-disallowed';
 import { ToggleCardExampleComponent } from './examples/toggle-card/toggle-card';
@@ -14,6 +15,7 @@ import { TypeCCardComponent } from './examples/type-c-card/type-c-card';
     CardSandbox,
     PropertyViewer,
     Previewer,
+    BaseCardComponent,
     TypeACardComponent,
     TypeBCardComponent,
     TypeCCardComponent,

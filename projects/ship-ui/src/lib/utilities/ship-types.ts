@@ -1,5 +1,5 @@
 export type ShipColor = 'primary' | 'accent' | 'warn' | 'error' | 'success' | (string & {});
-export type ShipSize = 'small' | (string & {});
+export type ShipSize = 'small' | 'xsmall' | (string & {});
 export type ShipButtonSize = 'small' | 'xsmall' | (string & {});
 export type ShipIconSize = 'small' | 'large' | (string & {});
 

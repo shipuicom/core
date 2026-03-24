@@ -14,7 +14,13 @@ export interface ShipChipConfig extends ShipComponentConfig {
   dynamic?: boolean;
 }
 
+export interface ShipRangeSliderConfig extends ShipComponentConfig {
+  sharp?: boolean;
+  alwaysShow?: boolean;
+}
+
 export interface ShipConfig {
+  fontSize?: number;
   button?: ShipComponentConfig;
   chip?: ShipChipConfig;
   alert?: ShipComponentConfig;
@@ -34,6 +40,7 @@ export interface ShipConfig {
   tabs?: ShipComponentConfig;
   'event-card'?: ShipComponentConfig;
   datepicker?: ShipComponentConfig;
+  rangeSlider?: ShipRangeSliderConfig;
 
   // Existing properties for backward compatibility
   alertVariant?: '' | 'simple' | 'outlined' | 'flat' | 'raised';

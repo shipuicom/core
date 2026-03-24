@@ -14,6 +14,7 @@ $shipAccordion: true !default;
     border: 1px solid var(--acc-bc);
     border-radius: var(--acc-s);
     overflow: hidden;
+    background: var(--base-1);
 
     &:empty {
       display: none;
@@ -24,8 +25,25 @@ $shipAccordion: true !default;
       --acc-f: var(--paragraph-40);
     }
 
+    &.type-b {
+      border-radius: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      overflow: auto;
+    }
+
     details {
       width: 100%;
+
+      &.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+
+        summary {
+          cursor: not-allowed;
+        }
+      }
 
       // Hide standard browser marker
       & > summary {
@@ -60,8 +78,12 @@ $shipAccordion: true !default;
         }
       }
 
+      &:only-child summary {
+        border-bottom: 0;
+      }
+
       &[open] {
-        summary {
+        > summary {
           border-bottom: 1px solid var(--acc-bc);
 
           sh-icon {

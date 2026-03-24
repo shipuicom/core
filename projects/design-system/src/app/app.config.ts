@@ -1,4 +1,4 @@
-import { ApplicationConfig, inject, provideZonelessChangeDetection } from '@angular/core';
+import { ApplicationConfig, DOCUMENT, inject, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 
 import { provideHttpClient, withFetch } from '@angular/common/http';
@@ -23,6 +23,7 @@ export const appConfig: ApplicationConfig = {
       provide: SHIP_CONFIG,
       useFactory: () => {
         const localStorage = inject(LOCALSTORAGE);
+        const document = inject(DOCUMENT);
         const service = inject(AppConfigService);
         return service.reactiveConfig;
       },

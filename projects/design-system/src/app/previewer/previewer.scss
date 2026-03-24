@@ -37,6 +37,10 @@ sh-tabs {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
+  &.no-space {
+    padding: 0;
+  }
 }
 
 .description {

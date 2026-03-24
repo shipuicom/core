@@ -19,7 +19,7 @@
 
   <sh-button-group [(value)]="variation">
     <button value="base">Default</button>
-    <button value="thick">Thick</button>
+    <button value="simple">Simple</button>
     <button value="outlined">Outlined</button>
     <button value="flat">Flat</button>
     <button value="raised">Raised</button>
@@ -51,9 +51,10 @@
 <div class="sandbox-example">
   <sh-range-slider
     [unit]="unit()"
-    [class]="color() + ' ' + variation()"
-    [class.sharp]="sharp()"
-    [class.always-show]="alwaysShow()">
+    [color]="color()"
+    [variant]="variation()"
+    [sharp]="sharp()"
+    [alwaysShow]="alwaysShow()">
     <input
       type="range"
       [min]="min()"

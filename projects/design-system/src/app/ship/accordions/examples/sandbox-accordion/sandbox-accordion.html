@@ -11,7 +11,19 @@
         [options]="availablePanels"
         [(selectedOptions)]="selectedPanelsArray">
         <label>Open Panels</label>
-        <!-- Hidden input since select needs an element natively -->
+        <input type="text" style="display: none" />
+      </sh-select>
+
+      <sh-select
+        class="raised primary"
+        color="primary"
+        variant="raised"
+        [options]="availableVariants"
+        label="label"
+        value="value"
+        [isClearable]="false"
+        [(ngModel)]="variantType">
+        <label>Variant</label>
         <input type="text" style="display: none" />
       </sh-select>
     </div>
@@ -30,15 +42,15 @@
 
     <details value="panel2">
       <summary>Advanced Settings</summary>
-      <div style="display: flex; flex-direction: column; gap: 0.5rem">
+      <sh-form-field>
         <label>Settings A</label>
         <input type="text" value="Configuration" />
-      </div>
+      </sh-form-field>
     </details>
 
     <details value="panel3">
       <summary>Danger Zone</summary>
-      <button class="sh-button error flat">Delete Account</button>
+      <button shButton color="error" variant="flat" size="small">Delete Account</button>
     </details>
   </sh-accordion>
 </div>

@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { contentProjectionSignal } from '../utilities/content-projection-signal';
 import { shipComponentClasses } from '../utilities/ship-component';
+import { ShipVariant } from '../utilities/ship-types';
 
 @Component({
   selector: 'sh-accordion',
@@ -27,7 +28,7 @@ export class ShipAccordion {
   readonly name = input<string>(`sh-accordion-${Math.random().toString(36).substring(2, 9)}`);
   readonly value = model<string | null>(null);
   readonly allowMultiple = input<boolean>(false);
-  readonly variant = input<'base' | 'outlined' | 'flat' | null>(null);
+  readonly variant = input<ShipVariant | null>(null);
   readonly size = input<string | null>(null);
 
   hostClasses = shipComponentClasses('accordion', {
