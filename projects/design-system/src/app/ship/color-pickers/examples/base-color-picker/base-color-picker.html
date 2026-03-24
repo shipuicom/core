@@ -84,7 +84,7 @@
 
   <sh-color-picker-input [format]="computedRenderType()" [renderingType]="inputRenderType() === 'hsl' ? 'hsl' : 'rgb'">
     <label>Pick a color</label>
-    <input type="text" [value]="inputValue()" (input)="inputValue.set($any($event.target).value)" />
+    <input type="text" [(ngModel)]="inputValue" />
   </sh-color-picker-input>
   <p>Input Value: {{ inputValue() }}</p>
 </div>

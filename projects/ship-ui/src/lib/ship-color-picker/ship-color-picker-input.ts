@@ -33,7 +33,7 @@ import { ShipColorPicker } from './ship-color-picker';
 
         <div class="color-indicator" [style.--indicator-color]="formattedColorString()"></div>
 
-        @if (isEyeDropperSupported) {
+        @if (isEyeDropperSupported && showEyeDropper()) {
           <button size="xsmall" tabindex="-1" variant="outlined" shButton (click)="openEyeDropper($event)">
             <sh-icon>eyedropper</sh-icon>
           </button>
@@ -86,6 +86,7 @@ export class ShipColorPickerInput {
   currentClass = classMutationSignal();
 
   isEyeDropperSupported = typeof window !== 'undefined' && 'EyeDropper' in window;
+  showEyeDropper = input<boolean>(true);
 
   internalHue = signal(0);
   internalAlpha = signal(1);

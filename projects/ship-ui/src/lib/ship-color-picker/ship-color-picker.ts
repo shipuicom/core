@@ -163,29 +163,34 @@ export class ShipColorPicker {
     this.setCanvasSize();
   }
 
-  private previousRenderingType: string | null = null;
+  private previousLayoutHash = '';
+  private previousHue: number | null = null;
+
+  private getLayoutHash() {
+    return `${this.renderingType()}-${this.direction()}-${this.gridSize()}-${this.showDarkColors()}`;
+  }
 
   private renderingTypeEffect = effect(() => {
-    const currentRenderingType = this.renderingType();
-    this.hue();
-    this.showDarkColors();
-    this.gridSize();
-    this.direction();
+    const currentHue = this.hue();
+    const layoutHash = this.getLayoutHash();
 
-    if (this.#canvasData()) {
+    const canvasData = untracked(() => this.#canvasData());
+
+    if (canvasData) {
       untracked(() => this.drawColorPicker());
 
-      if (this.previousRenderingType !== currentRenderingType) {
-        if (currentRenderingType === 'hsl') {
+      if (this.previousLayoutHash !== layoutHash) {
+        if (this.renderingType() === 'hsl') {
           this.adjustMarkerPosition();
-          queueMicrotask(() => this.updateMarkerFromColor(this.selectedColor()));
+          queueMicrotask(() => this.updateMarkerFromColor(untracked(() => this.selectedColor())));
         } else {
-          this.updateMarkerFromColor(this.selectedColor());
+          this.updateMarkerFromColor(untracked(() => this.selectedColor()));
         }
-        this.previousRenderingType = currentRenderingType;
-      } else {
+        this.previousLayoutHash = layoutHash;
+        this.previousHue = currentHue;
+      } else if (this.previousHue !== currentHue) {
         const pos = untracked(() => this.markerPosition());
-        const { canvas, ctx } = untracked(() => this.#canvasData())!;
+        const { canvas, ctx } = canvasData;
         let x = (parseFloat(pos.x.replace('%', '')) / 100) * Math.max(1, canvas.width - 1);
         let y = (parseFloat(pos.y.replace('%', '')) / 100) * Math.max(1, canvas.height - 1);
         x = Math.max(0, Math.min(canvas.width - 1, Math.round(x)));
@@ -199,6 +204,7 @@ export class ShipColorPicker {
 
         this.#skipMarkerUpdate = true;
         this.selectedColor.set(color as any);
+        this.previousHue = currentHue;
       }
     }
   });
@@ -260,9 +266,9 @@ export class ShipColorPicker {
     if (this.renderingType() === 'alpha') {
       const aVal = a ?? 1;
       if (this.direction() === 'horizontal') {
-        return { x: Math.round(aVal * (canvas.width - 1)), y: 0 };
+        return { x: Math.round(aVal * (canvas.width - 1)), y: Math.round((canvas.height - 1) / 2) };
       } else {
-        return { x: 0, y: Math.round(aVal * (canvas.height - 1)) };
+        return { x: Math.round((canvas.width - 1) / 2), y: Math.round(aVal * (canvas.height - 1)) };
       }
     }
 
@@ -274,6 +280,39 @@ export class ShipColorPicker {
       } else {
         return { x: Math.round((canvas.width - 1) / 2), y: Math.round(ratio * (canvas.height - 1)) };
       }
+    }
+
+    if (this.renderingType() === 'rgb') {
+      const hsv = this.rgbToHsv(r, g, b);
+      return { 
+        x: Math.round((hsv.s / 100) * (canvas.width - 1)), 
+        y: Math.round((1 - hsv.v / 100) * (canvas.height - 1)) 
+      };
+    }
+
+    if (this.renderingType() === 'saturation') {
+      const hsl = this.rgbToHsl(r, g, b);
+      const ratio = hsl.s / 100;
+      if (this.direction() === 'horizontal') {
+        return { x: Math.round(ratio * (canvas.width - 1)), y: Math.round((canvas.height - 1) / 2) };
+      } else {
+        return { x: Math.round((canvas.width - 1) / 2), y: Math.round(ratio * (canvas.height - 1)) };
+      }
+    }
+
+    if (this.renderingType() === 'hsl') {
+      const { centerX, centerY, radius } = canvasData;
+      const hsl = this.rgbToHsl(r, g, b);
+      const centerL = this.centerLightness();
+      let distance = 0;
+      if (centerL > 0) {
+        distance = ((100 - hsl.l) * radius) / ((50 * centerL) / 100);
+      }
+      const angle = (hsl.h / 360) * 2 * Math.PI - Math.PI;
+      return {
+        x: Math.round(centerX + distance * Math.cos(angle)),
+        y: Math.round(centerY + distance * Math.sin(angle))
+      };
     }
 
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
@@ -373,6 +412,12 @@ export class ShipColorPicker {
       });
 
       this.drawColorPicker();
+
+      setTimeout(() => {
+        if (!this.isDragging()) {
+          this.updateMarkerFromColor(untracked(() => this.selectedColor()));
+        }
+      });
     }
   }
 
@@ -598,6 +643,26 @@ export class ShipColorPicker {
         ctx.fillRect(x, y, cellSize, cellSize);
       }
     }
+  }
+
+  private rgbToHsv(r: number, g: number, b: number): { h: number; s: number; v: number } {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const d = max - min;
+    const v = max;
+    const s = max === 0 ? 0 : d / max;
+    let h = 0;
+    if (max !== min) {
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+    return { h: h * 360, s: s * 100, v: v * 100 };
   }
 
   private rgbToHex(r: number, g: number, b: number): string {
