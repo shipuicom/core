@@ -58,8 +58,9 @@ sh-list {
     }
   }
 
+  .cross,
   .burger {
     position: absolute;
-    inset: auto;
+    margin: auto;
   }
 }

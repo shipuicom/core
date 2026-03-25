@@ -5,6 +5,7 @@ $shipButtonShadow: false !default;
 @if $shipButton == true {
   [shButton] {
     --btn-h: #{p2r(40)};
+    --btn-mw: #{p2r(40)};
     --btn-f: var(--paragraph-20);
     --btn-a-opacity: 0.05;
 
@@ -21,7 +22,7 @@ $shipButtonShadow: false !default;
     position: relative;
     padding: p2r(0 12);
     transition: color 80ms linear;
-    min-width: auto;
+    min-width: var(--btn-mw);
     cursor: pointer;
     outline: none;
     line-height: inherit;
@@ -78,6 +79,7 @@ $shipButtonShadow: false !default;
 
     &.small {
       --btn-h: #{p2r(32)};
+      --btn-mw: #{p2r(32)};
       --btn-f: var(--paragraph-30);
 
       padding: p2r(0 8);
@@ -98,6 +100,7 @@ $shipButtonShadow: false !default;
 
     &.xsmall {
       --btn-h: #{p2r(24)};
+      --btn-mw: #{p2r(24)};
       --btn-f: var(--paragraph-40);
 
       padding: p2r(0 8);
