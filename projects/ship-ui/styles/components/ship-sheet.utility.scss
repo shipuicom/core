@@ -14,7 +14,8 @@ $shipSheet: true !default;
 
     border-radius: var(--sheet-s);
     background: var(--sheet-bg);
-    border: 1px solid var(--sheet-bc);
+    border: var(--border-10);
+    border-color: var(--sheet-bc);
     color: var(--sheet-c);
 
     &.sharp {

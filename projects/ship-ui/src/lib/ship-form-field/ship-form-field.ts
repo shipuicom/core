@@ -8,7 +8,7 @@ import {
   input,
 } from '@angular/core';
 import { shipComponentClasses } from '../utilities/ship-component';
-import { ShipColor, ShipSheetVariant, ShipSize } from '../utilities/ship-types';
+import { ShipColor, ShipFormFieldVariant, ShipSize } from '../utilities/ship-types';
 
 @Component({
   selector: 'sh-form-field',
@@ -52,7 +52,7 @@ export class ShipFormField {
   #selfRef = inject(ElementRef);
 
   color = input<ShipColor | null>(null);
-  variant = input<ShipSheetVariant | null>(null);
+  variant = input<ShipFormFieldVariant | null>(null);
   size = input<ShipSize | null>(null);
   readonly = input<boolean>(false);
 

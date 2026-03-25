@@ -9,5 +9,6 @@ export type ShipTypeVariant = 'type-a' | 'type-b' | 'type-c' | 'type-d' | (strin
 export type ShipTableVariant = 'type-a' | 'type-b' | (string & {});
 export type ShipCardVariant = 'type-a' | 'type-b' | 'type-c' | (string & {});
 export type ShipButtonGroupVariant = 'type-a' | 'type-b' | (string & {});
+export type ShipFormFieldVariant = 'base' | 'horizontal' | (string & {});
 
 export type ShipVariant = ShipSheetVariant | ShipTypeVariant;

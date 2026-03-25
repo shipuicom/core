@@ -11,6 +11,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { ShipColor, ShipFormFieldVariant, ShipSize } from '../utilities/ship-types';
 import { hslToRgbExact, rgbToHex, rgbaToHex8, rgbToHsl } from '../utilities/color-conversions';
 import { ShipButton } from 'ship-ui';
 import { ShipFormFieldPopover } from '../ship-form-field/ship-form-field-popover';
@@ -23,7 +24,15 @@ import { ShipColorPicker } from './ship-color-picker';
   selector: 'sh-color-picker-input',
   imports: [ShipFormFieldPopover, ShipColorPicker, ShipIcon, ShipButton],
   template: `
-    <sh-form-field-popover (closed)="close()" [(isOpen)]="isOpen" [class]="currentClass()">
+    <sh-form-field-popover 
+      (closed)="close()" 
+      [(isOpen)]="isOpen" 
+      [class]="currentClass()"
+      [variant]="variant()"
+      [size]="size()"
+      [color]="color()"
+      [readonly]="readonly()"
+    >
       <ng-content select="label" ngProjectAs="label" />
 
       <ng-content select="[prefix]" ngProjectAs="[prefix]" />
@@ -81,6 +90,12 @@ export class ShipColorPickerInput {
 
   renderingType = input<'hsl' | 'grid' | 'hue' | 'rgb' | 'saturation' | 'alpha'>('hsl');
   format = input<'rgb' | 'rgba' | 'hex' | 'hex8' | 'hsl' | 'hsla'>('rgb');
+  
+  color = input<ShipColor | null>(null);
+  variant = input<ShipFormFieldVariant | null>(null);
+  size = input<ShipSize | null>(null);
+  readonly = input<boolean>(false);
+
   closed = output<string>();
 
   isOpen = model<boolean>(false);
@@ -222,6 +237,7 @@ export class ShipColorPickerInput {
 
   private parseAndSetColor(colorStr: string) {
     if (!colorStr) return;
+    if (colorStr === untracked(() => this.formattedColorString())) return;
 
     const div = this.#document.createElement('div');
     div.style.color = colorStr;

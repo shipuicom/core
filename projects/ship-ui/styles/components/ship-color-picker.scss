@@ -72,7 +72,7 @@ $shipColorPicker: true !default;
       height: 100%;
 
       border: 2px solid var(--base-1);
-      outline: 1px solid var(--base-4);
+      outline: var(--border-10);
     }
 
     .marker {
@@ -89,6 +89,12 @@ $shipColorPicker: true !default;
   }
 
   sh-color-picker-input {
+    display: flex;
+
+    sh-popover {
+      width: 100%;
+    }
+
     [popoverContent] {
       padding: p2r(12);
       width: p2r(280);
@@ -115,7 +121,7 @@ $shipColorPicker: true !default;
       width: p2r(24);
       height: p2r(24);
       border-radius: var(--shape-2);
-      border: 1px solid var(--base-4);
+      border: var(--border-10);
       overflow: hidden;
 
       background-color: #fff;

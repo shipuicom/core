@@ -32,25 +32,25 @@ $useApexcharts: true !default;
     .apexcharts-menu {
       background-color: var(--base-1);
       color: var(--base-12);
-      border: 1px solid var(--base-4);
+      border: var(--border-10);
     }
 
     .apexcharts-tooltip.apexcharts-theme-light {
       background-color: var(--base-1);
-      border: 1px solid var(--base-4);
+      border: var(--border-10);
       box-shadow: var(--base-2);
       color: var(--base-8);
 
       .apexcharts-tooltip-title {
         background-color: var(--base-2);
-        border-bottom: 1px solid var(--base-4);
+        border-bottom: var(--border-10);
       }
     }
 
     .apexcharts-xaxistooltip,
     .apexcharts-yaxistooltip {
       background-color: var(--base-1);
-      border: 1px solid var(--base-4);
+      border: var(--border-10);
       box-shadow: var(--base-2);
       color: var(--base-8);
     }

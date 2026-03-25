@@ -130,7 +130,7 @@
 .ai-section {
   position: relative;
   background: var(--base-2);
-  border: 1px solid var(--base-4);
+  border: var(--border-10);
   border-radius: p2r(32);
   padding: p2r(64);
   display: grid;
@@ -194,7 +194,7 @@
         width: p2r(40);
         height: p2r(40);
         background: var(--base-3);
-        border: 1px solid var(--base-4);
+        border: var(--border-10);
         border-radius: p2r(10);
         display: flex;
         align-items: center;
@@ -254,7 +254,7 @@
       transform: perspective(1000px) rotateY(15deg) rotateX(10deg);
       box-shadow: var(--box-shadow-20);
       z-index: 1;
-      border: 1px solid var(--base-4);
+      border: var(--border-10);
 
       @media (max-width: 480px) {
         width: 100%;
@@ -305,7 +305,7 @@
       z-index: 3;
       transform: translateY(0);
       animation: float 4s ease-in-out infinite;
-      border: 1px solid var(--base-4);
+      border: var(--border-10);
       background: var(--base-1);
 
       @media (max-width: 480px) {
@@ -342,7 +342,7 @@
           display: flex;
           padding: 0.5rem 0;
           align-items: flex-start;
-          border-top: 1px solid var(--base-4);
+          border-top: var(--border-10);
         }
       }
     }
@@ -427,7 +427,7 @@
 
   .tab-content {
     background: var(--base-2);
-    border: 1px solid var(--base-4);
+    border: var(--border-10);
     border-radius: p2r(16);
     padding: p2r(32);
 

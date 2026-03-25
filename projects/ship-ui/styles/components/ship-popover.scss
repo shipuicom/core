@@ -74,7 +74,7 @@ $shipPopover: true !default;
       overflow: auto;
       z-index: 0;
       background-color: var(--base-1);
-      border: 1px solid var(--base-4);
+      border: var(--border-10);
       border-radius: var(--shape-2);
       font: var(--paragraph-30);
       color: var(--base-8);

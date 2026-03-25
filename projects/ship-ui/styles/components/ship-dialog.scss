@@ -10,7 +10,7 @@ $shipDialog: true !default;
     --dialog-s: var(--shape-2);
     --dialog-inner-s: var(--shape-2);
 
-    border: 1px solid var(--base-4);
+    border: var(--border-10);
     background: transparent;
     border-radius: var(--dialog-s);
     box-shadow: var(--box-shadow-40);
@@ -32,7 +32,7 @@ $shipDialog: true !default;
 
       background: var(--base-3);
       padding: p2r(8);
-      outline: 1px solid var(--base-4);
+      outline: var(--border-10);
       outline-offset: -1px;
       overflow: hidden;
 
@@ -116,7 +116,7 @@ $shipDialog: true !default;
 
       &.sticky {
         background-color: var(--dialog-bg);
-        border-bottom: 1px solid var(--base-4);
+        border-bottom: var(--border-10);
         box-shadow: var(--box-shadow-35);
         position: sticky;
         top: 0;
@@ -141,7 +141,7 @@ $shipDialog: true !default;
 
       &.sticky {
         background-color: var(--dialog-bg);
-        border-top: 1px solid var(--base-4);
+        border-top: var(--border-10);
         box-shadow: var(--box-shadow-35);
         position: sticky;
         bottom: 0;

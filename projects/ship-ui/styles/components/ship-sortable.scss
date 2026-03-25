@@ -32,7 +32,7 @@ $shipSortable: true !default;
       &.active {
         z-index: 1;
         background-color: var(--base-6);
-        border: 1px solid var(--base-8);
+        border: var(--border-20);
         opacity: 0.5;
       }
     }

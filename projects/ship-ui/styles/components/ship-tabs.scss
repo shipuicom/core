@@ -14,7 +14,7 @@ $shipTabs: true !default;
 
     display: flex;
     gap: p2r(16);
-    border-bottom: 1px solid var(--base-4);
+    border-bottom: var(--border-10);
     position: relative;
 
     button,

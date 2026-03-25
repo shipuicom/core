@@ -72,7 +72,7 @@ $shipProgressBar: true !default;
     }
 
     &.outlined {
-      --pb-b: 1px solid var(--base-4);
+      --pb-b: var(--border-10);
       --pb-bg: var(--base-1);
 
       &:after {

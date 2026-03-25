@@ -105,7 +105,8 @@ $shipRadio: true !default;
     &.flat {
       &:not(:has(input:checked)):not(.active) .radio {
         background: transparent;
-        border: 1px solid var(--radio-bc);
+        border: var(--border-10);
+        border-color: var(--radio-bc);
       }
     }
   }

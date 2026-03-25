@@ -20,7 +20,7 @@ header {
   justify-content: space-between;
   padding: p2r(20);
   gap: p2r(12);
-  border-bottom: 1px solid var(--base-4);
+  border-bottom: var(--border-10);
 }
 
 .actions {

@@ -24,7 +24,7 @@ import { ShipPopover } from '../ship-popover/ship-popover';
 import { ShipSpinner } from '../ship-spinner/ship-spinner.component';
 import { generateUniqueId } from '../utilities/random-id';
 import { shipComponentClasses } from '../utilities/ship-component';
-import { ShipColor, ShipSheetVariant, ShipSize } from '../utilities/ship-types';
+import { ShipColor, ShipFormFieldVariant, ShipSize } from '../utilities/ship-types';
 
 // TODO build in live validation response for free text validation
 
@@ -202,9 +202,9 @@ export class ShipSelect {
   value = input<string>();
   label = input<string>();
   asFreeText = input(false);
-  
+
   color = input<ShipColor | null>(null);
-  variant = input<ShipSheetVariant | null>(null);
+  variant = input<ShipFormFieldVariant | null>(null);
   size = input<ShipSize | null>(null);
 
   optionTitle = input<string | null>(null);

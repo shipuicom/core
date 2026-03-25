@@ -31,7 +31,7 @@
   padding: p2r(20);
   background-color: var(--base-2);
   border-radius: var(--shape-3);
-  border: 1px solid var(--base-4);
+  border: var(--border-10);
   color-scheme: light;
   &.flip {
     color-scheme: dark;
@@ -43,4 +43,3 @@
     border-radius: var(--shape-2);
   }
 }
-

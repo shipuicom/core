@@ -28,7 +28,7 @@ sh-tabs {
   overflow: auto;
   width: 100%;
   display: block;
-  border-bottom: 1px solid var(--base-4);
+  border-bottom: var(--border-10);
 }
 
 .example-wrap {
@@ -46,7 +46,7 @@ sh-tabs {
 .description {
   padding: p2r(20);
   background-color: var(--base-2);
-  border-bottom: 1px solid var(--base-4);
+  border-bottom: var(--border-10);
 
   &:empty {
     display: none;

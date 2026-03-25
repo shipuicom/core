@@ -82,7 +82,8 @@ $shipCheckbox: true !default;
     &.flat {
       &:not(:has(input:checked)):not(.active) .box {
         background: transparent;
-        border: 1px solid var(--box-bc);
+        border: var(--border-10);
+        border-color: var(--box-bc);
       }
     }
 

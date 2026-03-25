@@ -11,7 +11,7 @@ $shipToggleCard: true !default;
 
     &.type-a {
       background-color: transparent;
-      border: 1px solid var(--base-4);
+      border: var(--border-10);
     }
 
     &.active {

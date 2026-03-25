@@ -37,7 +37,7 @@ $shipBlueprint: true !default;
     .midpoint-div {
       position: absolute;
       background-color: var(--base-2);
-      border: 1px solid var(--base-4);
+      border: var(--border-10);
       padding: p2r(8);
       gap: p2r(8);
       border-radius: var(--shape-2);
@@ -138,7 +138,7 @@ $shipBlueprint: true !default;
         align-items: center;
         justify-content: space-between;
         background-color: var(--base-2);
-        border-bottom: 1px solid var(--base-4);
+        border-bottom: var(--border-10);
         cursor: grab;
         user-select: none;
 
@@ -194,7 +194,7 @@ $shipBlueprint: true !default;
       height: p2r(12);
       background-color: var(--bp-stroke-c);
       border-radius: 50%;
-      border: 1px solid var(--base-8);
+      border: var(--border-20);
       cursor: pointer;
       position: relative;
     }

@@ -162,7 +162,7 @@ $shipTable: true !default;
       grid-auto-flow: column;
       grid-auto-columns: max-content;
       padding: p2r(8);
-      border: 1px solid var(--base-4);
+      border: var(--border-10);
       border-width: p2r(1 0);
       opacity: 1;
 

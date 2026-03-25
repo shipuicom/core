@@ -12,7 +12,7 @@
   display: flex;
   flex-direction: column;
   gap: p2r(8);
-  border-bottom: 1px solid var(--base-4);
+  border-bottom: var(--border-10);
   padding: p2r(20);
   background-color: var(--base-2);
 }
@@ -38,6 +38,6 @@ header {
   padding: p2r(20);
 
   sh-sidenav {
-    border: 1px solid var(--base-4);
+    border: var(--border-10);
   }
 }

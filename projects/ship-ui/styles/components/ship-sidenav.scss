@@ -36,7 +36,7 @@ $shipSidenav: true !default;
       overflow-y: auto;
       -webkit-overflow-scrolling: auto;
       background-color: var(--base-1);
-      border: 1px solid var(--base-4);
+      border: var(--border-10);
       border-radius: var(--shape-3);
       height: calc(100vh - 2rem);
       box-shadow: var(--box-shadow-35);
@@ -49,7 +49,7 @@ $shipSidenav: true !default;
       align-items: center;
       justify-content: space-between;
       padding: p2r(0 16);
-      border-bottom: 1px solid var(--base-4);
+      border-bottom: var(--border-10);
       z-index: 10000;
       position: relative;
     }
@@ -173,7 +173,7 @@ $shipSidenav: true !default;
       &.open .main-wrap {
         transform: translateX(var(--sidenav-width));
         box-shadow: var(--box-shadow-10);
-        border-left: 1px solid var(--base-4);
+        border-left: var(--border-10);
       }
 
       .closed-topbar {

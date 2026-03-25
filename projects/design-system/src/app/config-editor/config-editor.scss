@@ -43,6 +43,12 @@
     margin: 0;
     font-size: p2r(20);
   }
+
+  .header-actions {
+    display: flex;
+    gap: p2r(8);
+    align-items: center;
+  }
 }
 
 .subtitle {
@@ -57,7 +63,7 @@
 }
 
 .group-title {
-  padding: p2r(16) p2r(20) p2r(8);
+  padding: p2r(16 20 8);
   margin: 0;
   font-size: p2r(12);
   font-weight: 600;
@@ -72,11 +78,17 @@ sh-accordion summary {
   gap: 8px;
 }
 
+.outer-accordion {
+  > details > summary {
+    font: var(--paragraph-30B);
+  }
+}
+
 .scroll-content {
   flex: 1;
   overflow-y: auto;
   padding: 0;
-  border-top: 1px solid var(--base-4);
+  border-top: var(--border-10);
 }
 
 .content {
@@ -85,14 +97,54 @@ sh-accordion summary {
   gap: p2r(8);
 }
 
+.theme-selector {
+  padding: p2r(16);
+  background: var(--base-1);
+}
+
+.theme-colors-section {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(16);
+  margin-top: p2r(16);
+}
+
+.theme-color-controls {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(8);
+}
+
+.theme-color-label {
+  text-transform: capitalize;
+}
+
+.theme-distribution-slider {
+  margin-bottom: p2r(24);
+  display: block;
+}
+
+.theme-color-patches {
+  display: flex;
+  box-shadow: var(--box-shadow-20);
+  height: p2r(16);
+  border-radius: var(--shape-1);
+  overflow: hidden;
+  margin-top: -#{p2r(16)};
+}
+
+.theme-color-patch {
+  flex: 1;
+}
+
 .preview {
   margin-top: p2r(24);
   padding-top: p2r(16);
-  border-top: 1px dashed var(--mono-6);
+  border-top: 1px dashed var(--base-6);
 
   .preview-label {
     font-size: p2r(12);
-    color: var(--mono-10);
+    color: var(--base-10);
     margin-bottom: p2r(16);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -101,8 +153,8 @@ sh-accordion summary {
 
 .footer {
   padding: p2r(24);
-  border-top: 1px solid var(--base-4);
-  background-color: var(--base-2);
+  border-top: var(--border-10);
+  background-color: var(--base-1);
   display: flex;
   gap: p2r(8);
 

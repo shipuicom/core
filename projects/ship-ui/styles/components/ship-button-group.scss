@@ -14,11 +14,13 @@ $shipButtonGroup: true !default;
     --btng-f: var(--paragraph-30);
 
     display: inline-flex;
-    border: 1px solid var(--btng-bc);
+    border: var(--border-10);
+    border-color: var(--btng-bc);
     border-radius: var(--btng-s);
     height: var(--btng-h);
     background: var(--btng-bg);
     overflow: hidden;
+    position: relative;
 
     &.small {
       --btng-h: #{p2r(32)};
@@ -140,20 +142,20 @@ $shipButtonGroup: true !default;
         transition:
           left 0.175s ease-out,
           right 0.175s ease-out;
-        border-radius: var(--btng-s-a);
+        // border-radius: var(--btng-s-a);
       }
 
-      &:not(.type-b):has(button:first-child.active) {
-        &:after {
-          --btng-s-a: #{p2r(4 0 0 4)};
-        }
-      }
+      // &:not(.type-b):has(button:first-child.active) {
+      //   &:after {
+      //     --btng-s-a: var(--btng-s) 0 0 var(--btng-s);
+      //   }
+      // }
 
-      &:not(.type-b):has(button:last-child.active) {
-        &:after {
-          --btng-s-a: #{p2r(0 4 4 0)};
-        }
-      }
+      // &:not(.type-b):has(button:last-child.active) {
+      //   &:after {
+      //     --btng-s-a: 0 var(--btng-s) var(--btng-s) 0;
+      //   }
+      // }
     }
   }
 }

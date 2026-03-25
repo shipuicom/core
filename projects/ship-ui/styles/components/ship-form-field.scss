@@ -174,7 +174,8 @@ $shipFormFieldShadow: false !default;
     .input-wrap {
       display: flex;
       align-items: center;
-      border: 1px solid var(--ff-bc);
+      border: var(--border-10);
+      border-color: var(--ff-bc);
       border-radius: var(--ff-s);
       background: var(--ff-bg);
       box-shadow: var(--ff-bs);

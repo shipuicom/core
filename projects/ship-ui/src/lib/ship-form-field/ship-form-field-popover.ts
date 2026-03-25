@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, model, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, input, model, output } from '@angular/core';
 import { ShipPopover } from '../ship-popover/ship-popover';
+import { shipComponentClasses } from '../utilities/ship-component';
+import { ShipColor, ShipFormFieldVariant, ShipSize } from '../utilities/ship-types';
 
 @Component({
   selector: 'sh-form-field-popover',
@@ -44,12 +46,27 @@ import { ShipPopover } from '../ship-popover/ship-popover';
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class]': 'hostClasses()',
+  },
 })
 export class ShipFormFieldPopover {
   #selfRef = inject(ElementRef);
 
   isOpen = model<boolean>(false);
   closed = output<void>();
+
+  color = input<ShipColor | null>(null);
+  variant = input<ShipFormFieldVariant | null>(null);
+  size = input<ShipSize | null>(null);
+  readonly = input<boolean>(false);
+
+  hostClasses = shipComponentClasses('formField', {
+    color: this.color,
+    variant: this.variant,
+    size: this.size,
+    readonly: this.readonly,
+  });
 
   @HostListener('click')
   onClick() {

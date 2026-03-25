@@ -10,6 +10,9 @@ import {
   ShipSelect,
   ShipThemeToggle,
   ShipToggle,
+  ShipColorPickerInput,
+  ShipCard,
+  defaultThemeColors,
 } from 'ship-ui';
 import { AppConfigService } from '../core/services/app-config.service';
 
@@ -83,6 +86,7 @@ const colorOptions = [
   { value: 'info', label: 'Info' },
 ];
 
+
 @Component({
   selector: 'app-config-editor',
   standalone: true,
@@ -96,6 +100,8 @@ const colorOptions = [
     ShipThemeToggle,
     ShipAccordion,
     ShipRangeSlider,
+    ShipColorPickerInput,
+    ShipCard,
   ],
   templateUrl: './config-editor.html',
   styleUrl: './config-editor.scss',
@@ -170,6 +176,46 @@ export class ConfigEditor {
 
   updateGlobalFontSize(size: number) {
     this.configService.updateConfig({ fontSize: size });
+  }
+
+  get globalBorderRadius() {
+    return this.config.borderRadius ?? 1;
+  }
+
+  updateGlobalBorderRadius(radius: number) {
+    this.configService.updateConfig({ borderRadius: radius });
+  }
+
+  get globalBorderWidth() {
+    return this.config.borderWidth ?? 1;
+  }
+
+  updateGlobalBorderWidth(width: number) {
+    this.configService.updateConfig({ borderWidth: width });
+  }
+
+  get themeColors() {
+    return this.config.colors || {};
+  }
+
+  getThemeColor(colorName: string) {
+    return this.themeColors[colorName as keyof typeof this.themeColors] || defaultThemeColors[colorName] || '';
+  }
+
+  updateThemeColor(colorName: string, hsl: string) {
+    this.configService.updateConfig({
+      colors: { ...this.themeColors, [colorName]: hsl }
+    });
+  }
+
+  getThemeDistribution(colorName: string) {
+    return this.config.distribution?.[colorName as keyof typeof this.config.distribution] ?? 1;
+  }
+
+  updateThemeDistribution(colorName: string, val: number) {
+    this.configService.updateConfig({
+      distribution: { ...(this.config.distribution || {}), [colorName]: val }
+    });
   }
 
   exportConfig() {
@@ -398,8 +444,23 @@ export class ConfigEditor {
   }
 
   isGlobalSettingsAltered = computed(() => {
-    const size = this.config.fontSize;
-    return size !== undefined && size !== 16;
+    const { fontSize, borderRadius, borderWidth, distribution, colors } = this.config;
+    
+    const hasCustomDistribution = distribution !== undefined && 
+      Object.keys(distribution).length > 0 && 
+      Object.values(distribution).some(val => Number(val) !== 1);
+      
+    const hasCustomColors = colors !== undefined && 
+      Object.keys(colors).length > 0 && 
+      Object.entries(colors).some(([colorName, val]) => 
+        val?.replace(/\s/g, '') !== defaultThemeColors[colorName]?.replace(/\s/g, '')
+      );
+
+    return (fontSize !== undefined && Number(fontSize) !== 16) || 
+           (borderRadius !== undefined && Number(borderRadius) !== 1) || 
+           (borderWidth !== undefined && Number(borderWidth) !== 1) || 
+           hasCustomDistribution || 
+           hasCustomColors;
   });
 
   isComponentsAltered = computed(() => {
@@ -411,7 +472,7 @@ export class ConfigEditor {
   });
 
   resetGlobalSettings() {
-    this.configService.updateConfig({ fontSize: undefined });
+    this.configService.updateConfig({ fontSize: undefined, borderRadius: undefined, borderWidth: undefined, distribution: undefined, colors: undefined });
   }
 
   resetComponentsConfig() {
