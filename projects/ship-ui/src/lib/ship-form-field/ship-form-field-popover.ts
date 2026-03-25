@@ -12,6 +12,7 @@ import { ShipColor, ShipFormFieldVariant, ShipSize } from '../utilities/ship-typ
     <sh-popover
       [(isOpen)]="isOpen"
       (closed)="close()"
+      [asSheetOnMobile]="true"
       [options]="{
         closeOnButton: false,
         closeOnEsc: true,

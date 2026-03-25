@@ -93,6 +93,44 @@ $shipPopover: true !default;
           --right-center, --left-center, --right-span-top, --left-span-top;
       }
     }
+
+    @include breakpoint(-milli) {
+      &.as-sheet {
+        .popover {
+          z-index: 9999;
+
+          .overlay {
+            background-color: var(--overlay, rgba(0, 0, 0, 0.5));
+          }
+        }
+
+        .popover-content {
+          @supports (anchor-name: --anchor) {
+            position-area: none;
+            position-try-fallbacks: none;
+            inset: auto;
+          }
+
+          position: fixed;
+          top: auto;
+          bottom: 0;
+          left: p2r(8);
+          right: p2r(8);
+          width: calc(100% - #{p2r(16)});
+          max-width: unset;
+          height: auto;
+          max-height: calc(100vh - #{p2r(80)});
+          border-bottom-left-radius: 0;
+          border-bottom-right-radius: 0;
+          margin: 0;
+          transform: translateY(0);
+          display: flex;
+          align-items: center;
+          padding: p2r(16);
+          justify-content: center;
+        }
+      }
+    }
   }
 
   .full-popover sh-popover .popover-content,

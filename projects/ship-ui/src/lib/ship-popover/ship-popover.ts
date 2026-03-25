@@ -55,6 +55,7 @@ const DEFAULT_OPTIONS: ShipPopoverOptions = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class.multi-layer]': 'asMultiLayer()',
+    '[class.as-sheet]': 'asSheetOnMobile()',
   },
 })
 export class ShipPopover {
@@ -63,6 +64,7 @@ export class ShipPopover {
     typeof CSS !== 'undefined' && CSS.supports('position-anchor', '--abc') && CSS.supports('anchor-name', '--abc');
 
   asMultiLayer = input<boolean>(false);
+  asSheetOnMobile = input<boolean>(false);
   disableOpenByClick = input<boolean>(false);
   isOpen = model<boolean>(false);
 
@@ -82,6 +84,8 @@ export class ShipPopover {
   menuStyle = signal<any>(null);
 
   openAbort: AbortController | null = null;
+  #originalOverflow: string | null = null;
+
   openEffect = effect(() => {
     const open = this.isOpen();
 
@@ -120,7 +124,14 @@ export class ShipPopover {
 
         popoverEl.showPopover();
 
-        if (!this.SUPPORTS_ANCHOR) {
+        const isMobileSheet = this.asSheetOnMobile() && window.innerWidth <= 768;
+        if (isMobileSheet) {
+          this.#originalOverflow = this.#document.body.style.overflow;
+          this.#document.body.style.overflow = 'hidden';
+          this.menuStyle.set(null); // Clear any leftover inline styles
+        }
+
+        if (!this.SUPPORTS_ANCHOR && !isMobileSheet) {
           setTimeout(() => {
             const scrollableParent = this.#findScrollableParent(popoverEl);
 
@@ -139,6 +150,11 @@ export class ShipPopover {
         popoverEl.hidePopover();
         this.openAbort?.abort();
         this.openAbort = null;
+        
+        if (this.asSheetOnMobile() && this.#originalOverflow !== null) {
+          this.#document.body.style.overflow = this.#originalOverflow;
+          this.#originalOverflow = null;
+        }
       }
     });
   });
