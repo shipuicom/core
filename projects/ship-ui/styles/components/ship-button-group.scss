@@ -37,7 +37,7 @@ $shipButtonGroup: true !default;
       border: 0;
 
       button {
-        border-radius: p2r(6);
+        border-radius: calc((var(--btng-s) / 3) * 2);
         border: 0;
 
         &:focus-visible {
@@ -61,6 +61,10 @@ $shipButtonGroup: true !default;
             --btng-item-bg: var(--base-1);
           }
         }
+      }
+
+      &:after {
+        border-radius: calc((var(--btng-s) / 3) * 2);
       }
     }
 

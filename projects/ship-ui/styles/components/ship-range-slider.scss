@@ -150,6 +150,7 @@ $shipRangeSlider: true !default;
       position: absolute;
       top: p2r(-30);
       height: p2r(24);
+      min-width: p2r(24);
       border-radius: var(--shape-2);
       left: 50%;
       margin: auto;
@@ -160,19 +161,18 @@ $shipRangeSlider: true !default;
       white-space: nowrap;
       opacity: 0;
       transition: opacity 125ms linear;
-      // transition-delay: 1s;
       user-select: none;
       pointer-events: none;
 
       &:after {
         content: '';
-        border-top: p2r(6) solid var(--rs-thumb-arrow);
-        border-left: p2r(6) solid transparent;
-        border-right: p2r(6) solid transparent;
+        border-top: p2r(5) solid var(--rs-thumb-arrow);
+        border-left: p2r(5) solid transparent;
+        border-right: p2r(5) solid transparent;
         position: absolute;
-        top: 100%;
+        top: calc(100% - 1px);
         left: 50%;
-        margin-left: p2r(-6);
+        margin-left: p2r(-5);
       }
     }
 
