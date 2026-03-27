@@ -856,7 +856,7 @@ export class ShipSelect {
     const inputEl = this.inputRefEl();
     const inputValue = this.inputValue();
 
-    if (!inputEl) return;
+    if (!inputEl || inputEl.value === inputValue) return;
 
     inputEl.value = inputValue;
     inputEl.dispatchEvent(new Event('input'));

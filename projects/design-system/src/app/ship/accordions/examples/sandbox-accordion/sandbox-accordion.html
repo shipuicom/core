@@ -8,10 +8,9 @@
         color="primary"
         variant="raised"
         [selectMultiple]="allowMultiple()"
-        [options]="availablePanels"
-        [(selectedOptions)]="selectedPanelsArray">
+        [options]="availablePanels">
         <label>Open Panels</label>
-        <input type="text" style="display: none" />
+        <input type="text" [(ngModel)]="selectedPanelsArray" style="display: none" />
       </sh-select>
 
       <sh-select
@@ -21,10 +20,9 @@
         [options]="availableVariants"
         label="label"
         value="value"
-        [isClearable]="false"
-        [(ngModel)]="variantType">
+        [isClearable]="false">
         <label>Variant</label>
-        <input type="text" style="display: none" />
+        <input type="text" [(ngModel)]="variantType" style="display: none" />
       </sh-select>
     </div>
   </header>
