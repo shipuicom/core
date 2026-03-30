@@ -26,7 +26,8 @@ jobs:
       - name: Setup Zig
         uses: mlugg/setup-zig@v1
         with:
-          version: 0.15.2
+          version: 0.15.0
+          mirror: 'https://pkg.machengine.org/zig'
 
       - name: Install Dependencies
         run: bun install --frozen-lockfile
