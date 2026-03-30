@@ -42,7 +42,7 @@ export class ShipAlertContainer {
   });
 
   #scrollToBottom() {
-    if (this.scroller() && this.scroller().nativeElement) {
+    if (this.scroller() && this.scroller().nativeElement && typeof this.scroller().nativeElement.scrollTo === 'function') {
       this.scroller().nativeElement.scrollTo(0, this.scroller().nativeElement.scrollHeight);
     }
   }

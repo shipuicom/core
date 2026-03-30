@@ -254,16 +254,16 @@ export class ShipSelect {
   optionsWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('optionsWrap');
   inputRefInput = signal<ElementRef<HTMLInputElement> | null>(null);
   #inputObserver =
-    typeof MutationObserver !== 'undefined' &&
-    new MutationObserver((mutations) => {
-      for (var mutation of mutations) {
-        if (mutation && (mutation.target.nodeName === 'INPUT' || mutation.target.nodeName === 'TEXTAREA')) {
-          this.inputRefInput.set(new ElementRef(mutation.target as HTMLInputElement));
-
-          (this.#inputObserver as MutationObserver).disconnect();
-        }
-      }
-    });
+    typeof MutationObserver !== 'undefined'
+      ? new MutationObserver((mutations) => {
+          for (var mutation of mutations) {
+            if (mutation && (mutation.target.nodeName === 'INPUT' || mutation.target.nodeName === 'TEXTAREA')) {
+              this.inputRefInput.set(new ElementRef(mutation.target as HTMLInputElement));
+              (this.#inputObserver as MutationObserver).disconnect();
+            }
+          }
+        })
+      : undefined;
 
   inputValue = signal<string>('');
 

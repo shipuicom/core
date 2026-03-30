@@ -22,14 +22,15 @@ export function watchHostClass(className: string): WritableSignal<boolean> {
 
   const hasClass = signal(false);
   const observer =
-    typeof MutationObserver !== 'undefined' &&
-    new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-          hasClass.set(elementRef.nativeElement.classList.contains(className));
-        }
-      });
-    });
+    typeof MutationObserver !== 'undefined'
+      ? new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+              hasClass.set(elementRef.nativeElement.classList.contains(className));
+            }
+          });
+        })
+      : undefined;
 
   runInInjectionContext(elementRef.nativeElement, () => {
     if (observer) {

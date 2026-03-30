@@ -23,14 +23,23 @@ pub fn main() !void {
     defer arena.deinit();
     const alloc = arena.allocator();
 
-    const args = try std.process.argsAlloc(alloc);
-    if (args.len < 4) {
+    var arg_it = try std.process.argsWithAllocator(alloc);
+    defer arg_it.deinit();
+
+    _ = arg_it.skip(); // skip executable name
+
+    const target_dir = arg_it.next() orelse {
         std.debug.print("Usage: scanner <target_dir> <shipui_dir> <consumer_dir>\n", .{});
         std.process.exit(1);
-    }
-    const target_dir = args[1];
-    const shipui_dir = args[2];
-    const consumer_dir = args[3];
+    };
+    const shipui_dir = arg_it.next() orelse {
+        std.debug.print("Usage: scanner <target_dir> <shipui_dir> <consumer_dir>\n", .{});
+        std.process.exit(1);
+    };
+    const consumer_dir = arg_it.next() orelse {
+        std.debug.print("Usage: scanner <target_dir> <shipui_dir> <consumer_dir>\n", .{});
+        std.process.exit(1);
+    };
 
     var unique_icons = std.StringHashMap(void).init(alloc);
 

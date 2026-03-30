@@ -1,3 +1,4 @@
+import { isPlatformBrowser } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
@@ -5,6 +6,8 @@ import {
   computed,
   effect,
   ElementRef,
+  inject,
+  PLATFORM_ID,
   input,
   signal,
   viewChild,
@@ -35,15 +38,19 @@ export class HighlightFile {
   fileResource = httpResource.text(() => `/assets/examples${this.path()}.${this.lang()}`);
   codeRef = viewChild.required<ElementRef<HTMLElement>>('codeRef');
 
+  platformId = inject(PLATFORM_ID);
+
   resourceEffect = effect(() => {
     const fileContent = this.fileResource.value();
-
     const codeElement = this.codeRef().nativeElement;
 
     if (fileContent && codeElement) {
-      queueMicrotask(() => {
-        hljs.highlightElement(codeElement);
-      });
+      // Prevent hljs library from accessing undocumented missing DOM nodes on the server
+      if (isPlatformBrowser(this.platformId)) {
+        queueMicrotask(() => {
+          hljs.highlightElement(codeElement);
+        });
+      }
     } else {
       console.warn('Could not find <code> element within app-highlight-file for highlighting.');
     }

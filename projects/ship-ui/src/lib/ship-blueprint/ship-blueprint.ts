@@ -298,8 +298,10 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     if (isPlatformBrowser(this.#platformId)) {
       const canvas = this.canvasRef.nativeElement;
       this.#ctx = canvas.getContext('2d')!;
-      this.#resizeObserver = new ResizeObserver(() => this.updateCanvasSize());
-      this.#resizeObserver.observe(this.#selfRef.nativeElement);
+      if (typeof ResizeObserver !== 'undefined') {
+        this.#resizeObserver = new ResizeObserver(() => this.updateCanvasSize());
+        this.#resizeObserver.observe(this.#selfRef.nativeElement);
+      }
       this.updateCanvasSize();
 
       if (this.autoLayout()) {

@@ -94,6 +94,7 @@ export class ShipVirtualScroll {
   }
 
   #setupHostResizeObserver() {
+    if (typeof ResizeObserver === 'undefined') return;
     this.#hostResizeObserver = new ResizeObserver((entries) => {
       const hostElement = entries[0];
       if (hostElement) {
@@ -106,6 +107,7 @@ export class ShipVirtualScroll {
   }
 
   #setupResizeObserver() {
+    if (typeof ResizeObserver === 'undefined') return;
     this.#resizeObserver = new ResizeObserver((entries) => {
       const newHeights = [...this.itemHeights()];
 

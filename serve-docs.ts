@@ -23,6 +23,7 @@ function getMimeType(filePath: string): string {
     '.svg': 'image/svg+xml',
     '.ico': 'image/x-icon',
   };
+
   return mimeTypes[extension] || 'application/octet-stream';
 }
 

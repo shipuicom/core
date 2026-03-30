@@ -15,10 +15,12 @@ export class ScrolledTooltip implements AfterViewInit {
     const el = this.#selfRef.nativeElement;
 
     setTimeout(() => {
-      el?.scrollTo({
-        top: el.scrollHeight,
-        behavior: 'smooth',
-      });
+      if (typeof el?.scrollTo === 'function') {
+        el.scrollTo({
+          top: el.scrollHeight,
+          behavior: 'smooth',
+        });
+      }
     }, 250);
   }
 }

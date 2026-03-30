@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, ElementRef, input, signal, viewChild } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, PLATFORM_ID, input, signal, viewChild } from '@angular/core';
 import hljs from 'highlight.js';
 import scss from 'highlight.js/lib/languages/scss';
 import shell from 'highlight.js/lib/languages/shell';
@@ -34,7 +35,11 @@ export class Highlight {
     hljs.registerLanguage('shell', shell);
   }
 
+  platformId = inject(PLATFORM_ID);
+
   ngAfterViewInit() {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     const codeElement = this.codeRef().nativeElement;
 
     if (codeElement) {

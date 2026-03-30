@@ -247,24 +247,25 @@ export class ShipSortable {
   }
 
   #dragableObserver =
-    typeof MutationObserver !== 'undefined' &&
-    new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === 'childList') {
-          const draggableElements = Array.from(
-            this.#selfEl.nativeElement.querySelectorAll('[draggable]:not(.sortable-placeholder):not(.sortable-ghost)')
-          ) as HTMLElement[];
-          this.dragables.set(draggableElements);
+    typeof MutationObserver !== 'undefined'
+      ? new MutationObserver((mutations) => {
+          for (const mutation of mutations) {
+            if (mutation.type === 'childList') {
+              const draggableElements = Array.from(
+                this.#selfEl.nativeElement.querySelectorAll('[draggable]:not(.sortable-placeholder):not(.sortable-ghost)')
+              ) as HTMLElement[];
+              this.dragables.set(draggableElements);
 
-          if (this.isDropping) {
-            // The drop is complete and Angular has updated the DOM.
-            // Now we can safely reset the styles and the flag.
-            this.#resetStyles();
-            this.isDropping = false;
+              if (this.isDropping) {
+                // The drop is complete and Angular has updated the DOM.
+                // Now we can safely reset the styles and the flag.
+                this.#resetStyles();
+                this.isDropping = false;
+              }
+            }
           }
-        }
-      }
-    });
+        })
+      : undefined;
 
   ngOnDestroy() {
     (this.#dragableObserver as MutationObserver)?.disconnect();

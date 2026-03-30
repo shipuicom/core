@@ -1,36 +1,25 @@
-FROM node:24-bullseye-slim as base
-
-# Create app directory
+FROM oven/bun:canary-alpine AS base
 WORKDIR /app
 
-RUN apt-get update && \
-  apt-get install -y curl unzip && \
-  rm -rf /var/lib/apt/lists/*
+# Install latest 0.15.x Zig and Node.js natively overriding older Alpine defaults via edge repository injections
+RUN apk add --no-cache zig nodejs --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 
-RUN npm install -g @angular/cli@latest
-# RUN npm install -g bun@canary
-RUN curl -fsSL https://bun.sh/install | bash
-ENV PATH="/root/.bun/bin:${PATH}"
+# Install dependencies into temp directory
+FROM base AS install
+RUN mkdir -p /temp/dev
+COPY package.json bun.lock /temp/dev/
+RUN cd /temp/dev && bun install --frozen-lockfile
 
-RUN bun --version
-RUN ng version
-
-# Copy lock files
-COPY package.json package-lock.json bun.lock ./
+# Copy node_modules from temp directory and copy source files
+FROM base AS prerelease
+COPY --from=install /temp/dev/node_modules node_modules
+COPY . .
 
 # Define the build-time variable with a default value
 ARG BUILD_ENV=dev
-
-# Set the build-time variable as an environment variable
 ENV BUILD_ENV=${BUILD_ENV}
 
-# Install app dependencies
-RUN bun i
-
-# Bundle app source
-COPY . /app
-
-# Use the environment variable to conditionally run the build command
+# Run the Angular compilation normally (avoiding --bun flag since Angular SSR relies on Node-specific memory streams)
 RUN if [ "$BUILD_ENV" = "prod" ]; then \
   bun run build:docs; \
   else \
@@ -40,7 +29,7 @@ RUN if [ "$BUILD_ENV" = "prod" ]; then \
 FROM nginx:alpine
 
 # Copy the built static files from the builder stage
-COPY --from=base /app/dist/design-system/browser /usr/share/nginx/html
+COPY --from=prerelease /app/dist/design-system/browser /usr/share/nginx/html
 
 # Optional: Copy a custom Nginx configuration if needed
 COPY nginx.conf /etc/nginx/conf.d/default.conf
