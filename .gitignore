@@ -48,6 +48,8 @@ Thumbs.db
 /projects/design-system/public/ship.css
 /projects/design-system/public/sh.woff2
 /projects/design-system/public/sh-*.woff2
+/projects/ship-ui/bin/ship-fg-scanner
+/projects/ship-ui/bin/ship-fg.mjs
 /projects/ship-ui/assets/mcp/components.json
 /projects/ship-ui/snippets/ship-ui.code-snippets
 /mcp-server/components.json
