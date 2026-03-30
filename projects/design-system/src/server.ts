@@ -1,79 +1,64 @@
-import { AngularAppEngine } from '@angular/ssr';
-import { getRequestListener, serve } from '@hono/node-server';
-import { serveStatic } from '@hono/node-server/serve-static';
-import { Hono } from 'hono';
+import {
+  AngularNodeAppEngine,
+  createNodeRequestHandler,
+  isMainModule,
+  writeResponseToNodeResponse,
+} from '@angular/ssr/node';
+import express from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 
-const app = new Hono();
-const angularApp = new AngularAppEngine();
+const app = express();
+const angularApp = new AngularNodeAppEngine();
 
 /**
- * Example Hono Rest API endpoints can be defined here.
- * app.get('/api/**', (c) => c.json({ data: 'hello' }));
+ * Example Express Rest API endpoints can be defined here.
+ * Uncomment and define endpoints as necessary.
+ *
+ * Example:
+ * ```ts
+ * app.get('/api/**', (req, res) => {
+ *   // Handle API request
+ * });
+ * ```
  */
 
 /**
  * Serve static files from /browser
- * Explicitly rewrites asset routing dynamically preventing 404s when paths misalign during runtime.
  */
-app.use('/*', async (c, next) => {
-  const staticUrl = new URL(c.req.url).pathname;
-  // Let Angular handle SSR if it's a page navigation
-  if (!staticUrl.includes('.')) return next();
-  
-  const serveMiddleware = serveStatic({
-    root: browserDistFolder,
-    // Hono serveStatic resolves relative to CWD if root is relative, but we provide absolute path.
-    // However, depending on hono version, absolute paths in 'root' might just be supported.
-    // To be safe we remove the path prefix.
-    rewriteRequestPath: (p) => p
-  });
-  return serveMiddleware(c, next);
-});
+app.use(
+  express.static(browserDistFolder, {
+    maxAge: '1y',
+    index: false,
+    redirect: false,
+  })
+);
 
 /**
  * Handle all other requests by rendering the Angular application.
  */
-app.get('/*', async (c) => {
-  const res = await angularApp.handle(c.req.raw);
-  if (res) {
-    return res;
-  }
-  return c.notFound();
+app.use((req, res, next) => {
+  angularApp
+    .handle(req)
+    .then((response) => (response ? writeResponseToNodeResponse(response, res) : next()))
+    .catch(next);
 });
 
 /**
  * Start the server if this module is the main entry point.
+ * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
  */
-const isMainModule = import.meta.url.startsWith('file:') && process.argv[1] === fileURLToPath(import.meta.url);
-if (isMainModule) {
-  const port = Number(process.env['PORT']) || 4000;
-  
-  // @ts-ignore
-  if (typeof Bun !== 'undefined') {
-    // Execute via Bun's native V8 HTTP engine natively
-    // @ts-ignore
-    Bun.serve({
-      port,
-      fetch: app.fetch,
-    });
-    console.log(`Bun (Hono) server listening on http://localhost:${port}`);
-  } else {
-    // Execute gracefully falling back down to Node for classic runtime support
-    serve({
-      fetch: app.fetch,
-      port,
-    }, (info) => {
-      console.log(`Node (Hono) server listening on http://localhost:${info.port}`);
-    });
-  }
+if (isMainModule(import.meta.url)) {
+  const port = process.env['PORT'] || 4000;
+  app.listen(port, () => {
+    console.log(`Node Express server listening on http://localhost:${port}`);
+  });
 }
 
 /**
  * The request handler used by the Angular CLI (dev-server and during build).
  */
-export const reqHandler = getRequestListener(app.fetch);
+export const reqHandler = createNodeRequestHandler(app);

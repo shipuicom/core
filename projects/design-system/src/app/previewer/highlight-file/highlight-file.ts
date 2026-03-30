@@ -7,8 +7,8 @@ import {
   effect,
   ElementRef,
   inject,
-  PLATFORM_ID,
   input,
+  PLATFORM_ID,
   signal,
   viewChild,
 } from '@angular/core';
@@ -31,6 +31,8 @@ const langMap = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HighlightFile {
+  #platformId = inject(PLATFORM_ID);
+
   lang = input.required<'ts' | 'html' | 'scss'>();
   langClass = computed(() => `language-${langMap[this.lang()]}`);
   path = input.required<string>();
@@ -38,23 +40,20 @@ export class HighlightFile {
   fileResource = httpResource.text(() => `/assets/examples${this.path()}.${this.lang()}`);
   codeRef = viewChild.required<ElementRef<HTMLElement>>('codeRef');
 
-  platformId = inject(PLATFORM_ID);
+  resourceEffect =
+    isPlatformBrowser(this.#platformId) &&
+    effect(() => {
+      const fileContent = this.fileResource.value();
+      const codeElement = this.codeRef().nativeElement;
 
-  resourceEffect = effect(() => {
-    const fileContent = this.fileResource.value();
-    const codeElement = this.codeRef().nativeElement;
-
-    if (fileContent && codeElement) {
-      // Prevent hljs library from accessing undocumented missing DOM nodes on the server
-      if (isPlatformBrowser(this.platformId)) {
+      if (fileContent && codeElement) {
         queueMicrotask(() => {
           hljs.highlightElement(codeElement);
         });
+      } else {
+        console.warn('Could not find <code> element within app-highlight-file for highlighting.');
       }
-    } else {
-      console.warn('Could not find <code> element within app-highlight-file for highlighting.');
-    }
-  });
+    });
 
   ngOnInit() {
     hljs.registerLanguage('typescript', typescript);

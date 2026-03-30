@@ -1,5 +1,15 @@
 import { isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, PLATFORM_ID, input, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  input,
+  PLATFORM_ID,
+  signal,
+  viewChild,
+} from '@angular/core';
 import hljs from 'highlight.js';
 import scss from 'highlight.js/lib/languages/scss';
 import shell from 'highlight.js/lib/languages/shell';
@@ -22,6 +32,8 @@ const langMap = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Highlight {
+  #platformId = inject(PLATFORM_ID);
+
   lang = input.required<'ts' | 'html' | 'scss' | 'shell'>();
   content = input.required<string>();
   langClass = computed(() => `language-${langMap[this.lang()]}`);
@@ -35,10 +47,8 @@ export class Highlight {
     hljs.registerLanguage('shell', shell);
   }
 
-  platformId = inject(PLATFORM_ID);
-
   ngAfterViewInit() {
-    if (!isPlatformBrowser(this.platformId)) return;
+    if (!isPlatformBrowser(this.#platformId)) return;
 
     const codeElement = this.codeRef().nativeElement;
 
