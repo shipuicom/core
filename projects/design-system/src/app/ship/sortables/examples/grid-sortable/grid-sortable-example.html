@@ -1,0 +1,7 @@
+<div class="grid-container" shSortable (afterDrop)="reorder($event)">
+  @for (item of items(); track item) {
+    <div class="grid-item" draggable="true">
+      {{ item }}
+    </div>
+  }
+</div>

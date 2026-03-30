@@ -1,0 +1,31 @@
+.grid-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  max-width: 600px;
+  padding: 16px;
+  background: var(--base-1);
+}
+
+.grid-item {
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--base-2);
+  border: 1px solid var(--base-3);
+  border-radius: var(--border-radius);
+  cursor: grab;
+  user-select: none;
+  font-weight: 500;
+  color: var(--base-content);
+
+  &:hover {
+    background: var(--base-3);
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}

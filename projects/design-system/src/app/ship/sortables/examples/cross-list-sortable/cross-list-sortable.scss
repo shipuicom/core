@@ -1,0 +1,43 @@
+.board {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 16px;
+  background: var(--base-1);
+}
+
+.column {
+  flex: 1;
+  min-width: 250px;
+  background: var(--base-2);
+  padding: 16px;
+  border-radius: var(--border-radius);
+
+  h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 16px;
+    color: var(--base-content);
+  }
+}
+
+.sortable-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 100px; /* Important for empty lists */
+}
+
+.kanban-item {
+  padding: 12px;
+  background: var(--base-1);
+  border: 1px solid var(--base-3);
+  border-radius: var(--border-radius);
+  cursor: grab;
+  user-select: none;
+  color: var(--base-content);
+
+  &:active {
+    cursor: grabbing;
+  }
+}

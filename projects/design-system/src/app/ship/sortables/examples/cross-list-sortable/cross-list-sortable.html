@@ -1,0 +1,55 @@
+<div class="board">
+  <sh-card class="column">
+    <h3>To Do</h3>
+    <div
+      shSortable
+      sortableGroup="kanban"
+      [sortableData]="todoList()"
+      (afterDrop)="reorderTodo($event)"
+      (crossDrop)="crossDropTodo($event)"
+      class="sortable-list"
+    >
+      @for (item of todoList(); track item; let i = $index) {
+        <div class="kanban-item" draggable="true">
+          {{ item }}
+        </div>
+      }
+    </div>
+  </sh-card>
+
+  <sh-card class="column">
+    <h3>In Progress</h3>
+    <div
+      shSortable
+      sortableGroup="kanban"
+      [sortableData]="inProgressList()"
+      (afterDrop)="reorderInProgress($event)"
+      (crossDrop)="crossDropInProgress($event)"
+      class="sortable-list"
+    >
+      @for (item of inProgressList(); track item; let i = $index) {
+        <div class="kanban-item" draggable="true">
+          {{ item }}
+        </div>
+      }
+    </div>
+  </sh-card>
+
+  <sh-card class="column">
+    <h3>Done</h3>
+    <div
+      shSortable
+      sortableGroup="kanban"
+      [sortableData]="doneList()"
+      (afterDrop)="reorderDone($event)"
+      (crossDrop)="crossDropDone($event)"
+      class="sortable-list"
+    >
+      @for (item of doneList(); track item; let i = $index) {
+        <div class="kanban-item" draggable="true">
+          {{ item }}
+        </div>
+      }
+    </div>
+  </sh-card>
+</div>
