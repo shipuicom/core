@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
 import { BaseSortable } from './examples/base-sortable/base-sortable';
+import { CrossListSortable } from './examples/cross-list-sortable/cross-list-sortable';
+import { GridSortableExample } from './examples/grid-sortable/grid-sortable-example';
 
 const CONTENT_EXAMPLE = [
   {
@@ -41,7 +43,7 @@ const CONTENT_EXAMPLE = [
 
 @Component({
   selector: 'app-sortables',
-  imports: [BaseSortable, PropertyViewer, Previewer],
+  imports: [BaseSortable, CrossListSortable, GridSortableExample, PropertyViewer, Previewer],
   templateUrl: './sortables.html',
   styleUrl: './sortables.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
