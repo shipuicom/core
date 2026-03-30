@@ -1,142 +1,71 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 
-import { Glob } from 'bun';
+import { spawnSync } from 'child_process';
 import { FSWatcher, watch } from 'fs';
-import path, { join, resolve } from 'path';
+import { readFile, writeFile } from 'fs/promises';
+import { dirname, join, resolve } from 'path';
+import { fileURLToPath } from 'url';
+import { gzipSync } from 'zlib';
 
-import subsetFont from 'subset-font';
+const _dirname = dirname(fileURLToPath(import.meta.url));
 
-import { formatFileSize, getUnicodeObject, InputArguments, SupportedFontTypes } from './utilities';
+import subsetFont from './subset';
+
+import { formatFileSize, InputArguments, SupportedFontTypes } from './utilities';
+
+const CWD_PATH = process.cwd();
+const PHOSPHOR_SRC_PATH = resolve(CWD_PATH, 'node_modules', '@phosphor-icons', 'web', 'src');
 
 let writtenCssSize = 0;
 let compressedCssSize = 0;
+let watchers: FSWatcher[] = [];
 
 const run = async (
   PROJECT_SRC: string,
-  LIB_ICONS: string[],
   PROJECT_PUBLIC: string,
-  GLYPH_MAP: Record<string, [string, string]>,
   TARGET_FONT_TYPE: SupportedFontTypes,
   values: InputArguments
 ) => {
   const startTime = performance.now();
+  const actualDir = _dirname;
+  const scannerPath = resolve(actualDir, './ship-fg-scanner');
+  const shipUiDir = resolve(actualDir, '../');
 
-  const glob = new Glob('**/*.html');
-  const tsGlob = new Glob('**/*.ts');
-  const regex = /<sh-icon[^>]*>\s*((?!{{.*?}})[^<]*?)\s*<\/sh-icon>/g;
-  const regex2 = /shicon:([^']+)/g;
-  const iconsFound = new Set<string>(LIB_ICONS);
-  const missingIcons = new Set<string>();
+  let groupedIcons: { [key: string]: [string, string][] } = {};
+  let missingIconsArray: string[] = [];
 
-  for await (const file of glob.scan(`${PROJECT_SRC}`)) {
-    const fileText = await Bun.file(`${PROJECT_SRC}/${file}`).text();
-    const matches = Array.from((fileText as any).matchAll(regex), (m: string) => m[1]);
-
-    if (matches?.length) {
-      for (let index = 0; index < matches.length; index++) {
-        const match = matches[index];
-
-        if (match) iconsFound.add(match);
-      }
+  try {
+    const proc = spawnSync(scannerPath, [PROJECT_SRC, shipUiDir, CWD_PATH]);
+    if (proc.error || proc.status !== 0) {
+      console.error('Error running scanner:', proc.stderr?.toString() || proc.error);
+      throw new Error('Native scanner failed');
     }
+
+    const parsed = JSON.parse(proc.stdout?.toString() || '{}');
+    groupedIcons = parsed;
+    missingIconsArray = parsed.missing || [];
+  } catch (err) {
+    console.error('Failed to run high-performance zig scanner:', err);
+    throw err;
   }
-
-  for await (const file of tsGlob.scan(`${PROJECT_SRC}`)) {
-    const fileText = await Bun.file(`${PROJECT_SRC}/${file}`).text();
-    const matches = Array.from((fileText as any).matchAll(regex2), (m: string) => m[1]);
-
-    if (matches?.length) {
-      for (let index = 0; index < matches.length; index++) {
-        const match = matches[index];
-
-        if (match) iconsFound.add(match);
-      }
-    }
-  }
-
-  const groupedIcons = Array.from(iconsFound).reduce(
-    (acc, icon) => {
-      const bold = icon.endsWith('-bold');
-      const thin = icon.endsWith('-thin');
-      const light = icon.endsWith('-light');
-      const fill = icon.endsWith('-fill');
-      const duotone = icon.endsWith('-duotone');
-      const regular = !bold && !thin && !light && !fill && !duotone;
-      const glyph = GLYPH_MAP[icon];
-
-      if (!glyph) {
-        missingIcons.add(icon);
-        return acc;
-      }
-
-      if (bold) {
-        acc['bold'].push([icon, '']);
-        acc['bold'].push(glyph);
-      }
-      if (thin) {
-        acc['thin'].push([icon, '']);
-        acc['thin'].push(glyph);
-      }
-      if (light) {
-        acc['light'].push([icon, '']);
-        acc['light'].push(glyph);
-      }
-      if (fill) {
-        acc['fill'].push([icon, '']);
-        acc['fill'].push(glyph);
-      }
-      if (regular) {
-        acc['regular'].push([icon, '']);
-        acc['regular'].push(glyph);
-      }
-      if (duotone) {
-        acc['duotone'].push([icon, '']);
-        acc['duotone'].push(glyph);
-      }
-
-      return acc;
-    },
-    {
-      bold: [],
-      thin: [],
-      light: [],
-      fill: [],
-      regular: [],
-      duotone: [],
-      text: [],
-    } as {
-      [key: string]: [string, string][];
-    }
-  );
-
-  const missingIconsArray = Array.from(missingIcons);
 
   if (missingIconsArray.length) {
-    console.log('Following icons does not exist in font: \n ', Array.from(missingIcons));
+    console.log('Following icons does not exist in font: \n ', missingIconsArray);
   }
 
   writeCssFile(PROJECT_PUBLIC, values, groupedIcons, TARGET_FONT_TYPE);
 
   const fontTypes = ['bold', 'thin', 'light', 'fill', 'regular'].filter((x) => groupedIcons[x].length > 0);
-  const targetFormat = (TARGET_FONT_TYPE as SupportedFontTypes) === 'ttf' ? 'truetype' : TARGET_FONT_TYPE;
   const fonts = fontTypes.map(async (fontType) => {
     const glyphs = uniqueString(groupedIcons[fontType].map((icon) => icon[0]).join(''));
-    const fontFileName = `Phosphor${fontType === 'regular' ? '' : '-' + capitalize(fontType)}.${TARGET_FONT_TYPE}`;
-    const fullPath = path.resolve(
-      process.cwd(),
-      'node_modules',
-      '@phosphor-icons',
-      'web',
-      'src',
+    const fullPath = join(
+      PHOSPHOR_SRC_PATH,
       fontType,
-      fontFileName
+      `Phosphor${fontType === 'regular' ? '' : '-' + capitalize(fontType)}.ttf`
     );
-
-    const arrayBuffer = await Bun.file(fullPath).arrayBuffer();
-    const subsetBuffer = await subsetFont(Buffer.from(arrayBuffer), glyphs, {
-      targetFormat,
-      noLayoutClosure: true,
-    } as any);
+    const fileBuffer = await readFile(fullPath);
+    const arrayBuffer = fileBuffer.buffer.slice(fileBuffer.byteOffset, fileBuffer.byteOffset + fileBuffer.byteLength);
+    const subsetBuffer = await subsetFont(Buffer.from(arrayBuffer), glyphs);
 
     return subsetBuffer;
   });
@@ -148,12 +77,11 @@ const run = async (
   for (let i = 0; i < _fonts.length; i++) {
     const subsetBuffer = _fonts[i];
     const fontType = fontTypes[i];
-    const fontWrites = await Bun.write(
-      `${PROJECT_PUBLIC}/sh${fontType === 'regular' ? '' : '-' + fontType}.${TARGET_FONT_TYPE}`,
-      subsetBuffer
-    );
+    const fontPath = `${PROJECT_PUBLIC}/sh${fontType === 'regular' ? '' : '-' + fontType}.${TARGET_FONT_TYPE}`;
+    await writeFile(fontPath, subsetBuffer);
+    const fontWrites = subsetBuffer.byteLength;
 
-    const compressedFont = Bun.gzipSync(subsetBuffer);
+    const compressedFont = gzipSync(subsetBuffer);
     const iconsOnGroup = groupedIcons[fontType].filter((icon) => icon[1] === '').map((icon) => icon[0]);
 
     totalFontSize += fontWrites;
@@ -249,8 +177,9 @@ sh-icon {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }`;
-  const cssWrites = await Bun.write(`${PROJECT_PUBLIC}/ship.css`, cssFileContent);
-  const compressedCss = Bun.gzipSync(cssFileContent);
+  await writeFile(`${PROJECT_PUBLIC}/ship.css`, cssFileContent);
+  const cssWrites = Buffer.byteLength(cssFileContent);
+  const compressedCss = gzipSync(cssFileContent);
 
   writtenCssSize = cssWrites;
   compressedCssSize = compressedCss.length;
@@ -274,7 +203,7 @@ const textMateSnippet = async (GLYPH_MAP: Record<string, [string, string]>) => {
   }
   `;
 
-  await Bun.write('./.vscode/html.code-snippets', iconsSnippetContent);
+  await writeFile('./.vscode/html.code-snippets', iconsSnippetContent);
 };
 
 function capitalize(str: string) {
@@ -283,46 +212,25 @@ function capitalize(str: string) {
 
 export const main = async (values: InputArguments) => {
   const TARGET_FONT_TYPE: SupportedFontTypes = 'woff2' as SupportedFontTypes;
-  const packageJsonPath = resolve(import.meta.dir, '../../package.json');
-  const packageJson = await Bun.file(packageJsonPath).json();
+  const actualDir = _dirname;
+  const packageJsonPath = resolve(actualDir, '../package.json');
   const PROJECT_SRC = values.src;
   const PROJECT_PUBLIC = values.out;
-  const fontVariants = ['bold', 'thin', 'light', 'fill', 'regular'];
 
-  const GLYPH_MAPS = await Promise.all(
-    fontVariants.map(async (fontVariant) => {
-      const selectionJsonFullPath = path.resolve(
-        process.cwd(),
-        'node_modules',
-        '@phosphor-icons',
-        'web',
-        'src',
-        fontVariant,
-        'selection.json'
-      );
-
-      const selectionJson = await Bun.file(selectionJsonFullPath).json();
-      const unicodeObj = getUnicodeObject(selectionJson.icons, fontVariant === 'duotone');
-
-      return unicodeObj;
-    })
-  );
-
-  const GLYPH_MAP = GLYPH_MAPS.reduce(
-    (acc, curr) => {
-      return {
-        ...acc,
-        ...curr,
-      };
+  const selectionJsonPath = resolve(PHOSPHOR_SRC_PATH, 'regular', 'selection.json');
+  const selectionData = await readFile(selectionJsonPath, 'utf8');
+  const GLYPH_MAP = JSON.parse(selectionData).icons.reduce(
+    (acc: Record<string, [string, string]>, iconWrapper: any) => {
+      const name = iconWrapper.properties.name;
+      acc[name] = [name, ''];
+      return acc;
     },
     {} as Record<string, [string, string]>
   );
 
-  let LIB_ICONS = packageJson.libraryIcons as string[];
-
   try {
     await textMateSnippet(GLYPH_MAP);
-    await run(PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
+    await run(PROJECT_SRC, PROJECT_PUBLIC, TARGET_FONT_TYPE, values);
   } catch (error) {
     console.error('An error occurred during the initial run:', error);
     if (!values.watch && !values.watchLib) {
@@ -335,52 +243,62 @@ export const main = async (values: InputArguments) => {
   }
 
   console.log('\nWatching for file changes. Press Cmd+C to stop.');
-  let watchers: FSWatcher[] = [];
-
-  function killWatchers() {
-    console.log(`\n✅ The icon font generation watch process has been stopped.`);
-
-    for (let index = 0; index < watchers.length; index++) {
-      const watcher = watchers[index];
-      watcher.close();
-      watcher.removeAllListeners();
-    }
-
-    process.exit(0);
-  }
 
   process.on('SIGINT', killWatchers);
   process.on('SIGTERM', killWatchers);
   process.on('SIGBREAK', killWatchers);
 
+  const debouncedRun = debounce(async (triggerName: string | null) => {
+    console.log(`Change detected (${triggerName}), regenerating...`);
+    try {
+      await run(PROJECT_SRC, PROJECT_PUBLIC, TARGET_FONT_TYPE, values);
+    } catch (error) {
+      console.error('Error during watched run:', error);
+    }
+  }, 50);
+
   if (values.watch) {
     const excludeFolders = ['node_modules', '.git', '.vscode', 'bin', 'assets'].concat([PROJECT_PUBLIC]);
-    const watcher = watch(PROJECT_SRC, { recursive: true }, async (_, filename) => {
-      if (filename && !excludeFolders.some((folder) => resolve(join(PROJECT_SRC, filename)).includes(folder))) {
-        console.log(`Change detected in ${filename}, regenerating...`);
-        try {
-          await run(PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
-        } catch (error) {
-          console.error('Error during watched run:', error);
+    watchers.push(
+      watch(PROJECT_SRC, { recursive: true }, (_, filename) => {
+        if (filename && !excludeFolders.some((folder) => resolve(join(PROJECT_SRC, filename)).includes(folder))) {
+          debouncedRun(filename);
         }
-      }
-    });
-
-    watchers.push(watcher);
+      })
+    );
   }
 
   if (values.watchLib) {
-    const watcher = watch(packageJsonPath, {}, async (_, filename) => {
-      console.log(`Change detected in package.json, regenerating...`);
-      try {
-        const packageJson = await Bun.file(packageJsonPath).json();
-        LIB_ICONS = packageJson.libraryIcons as string[];
-        await run(PROJECT_SRC, LIB_ICONS, PROJECT_PUBLIC, GLYPH_MAP, TARGET_FONT_TYPE, values);
-      } catch (error) {
-        console.error('Error during package.json watched run:', error);
-      }
-    });
-
-    watchers.push(watcher);
+    watchers.push(
+      watch(packageJsonPath, {}, (_, filename) => {
+        debouncedRun(filename || 'package.json');
+      })
+    );
   }
 };
+
+function debounce<T extends (...args: any[]) => void>(func: T, wait: number): T {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  return ((...args: any[]) => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  }) as T;
+}
+
+function killWatchers() {
+  console.log(`\n✅ The icon font generation watch process has been stopped.`);
+
+  for (let index = 0; index < watchers.length; index++) {
+    try {
+      const watcher = watchers[index];
+      watcher.close();
+      if (typeof watcher.removeAllListeners === 'function') {
+        watcher.removeAllListeners();
+      }
+    } catch (e) {
+      // Ignore native watcher cleanup errors
+    }
+  }
+
+  process.exit(0);
+}

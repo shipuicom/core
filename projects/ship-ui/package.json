@@ -1,7 +1,7 @@
 {
   "name": "@ship-ui/core",
   "license": "MIT",
-  "version": "0.18.13",
+  "version": "0.19.0",
   "peerDependencies": {
     "@angular/common": ">=20",
     "@angular/core": ">=20",
@@ -23,13 +23,12 @@
     }
   ],
   "dependencies": {
-    "subset-font": "^2.3.0",
     "@phosphor-icons/web": "^2.1.1",
-    "glob": "13.0.2",
-    "tslib": "^2.3.0"
+    "harfbuzzjs": "^0.10.1",
+    "wawoff2": "^2.0.1"
   },
   "bin": {
-    "ship-fg": "./bin/ship-fg-node",
+    "ship-fg": "./bin/ship-fg.mjs",
     "ship-mcp": "./bin/mcp/index.js"
   },
   "libraryIcons": [

@@ -25,6 +25,7 @@
       "node_modules/ngxtension"
     ],
     "paths": {
+      "@angular/*": ["./node_modules/@angular/*"],
       "ship-ui": ["./projects/ship-ui/src/public-api.ts"]
     }
   },

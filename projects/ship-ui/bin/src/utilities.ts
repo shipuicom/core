@@ -1,16 +1,16 @@
-export function createNameCodeObject(jsonData: Item[]): Record<string, string> {
-  const nameCodeObject: Record<string, string> = {};
+// export function createNameCodeObject(jsonData: Item[]): Record<string, string> {
+//   const nameCodeObject: Record<string, string> = {};
 
-  for (let i = 0; i < jsonData.length; i++) {
-    const item = jsonData[i];
-    const hexCode = item.properties.code.toString(16); // Convert decimal to hex
-    const codePoint = parseInt(hexCode, 16); // Parse hex to integer code point
-    const glyph = String.fromCodePoint(codePoint); // Create the glyph
-    nameCodeObject[item.properties.ligatures] = glyph;
-  }
+//   for (let i = 0; i < jsonData.length; i++) {
+//     const item = jsonData[i];
+//     const hexCode = item.properties.code.toString(16); // Convert decimal to hex
+//     const codePoint = parseInt(hexCode, 16); // Parse hex to integer code point
+//     const glyph = String.fromCodePoint(codePoint); // Create the glyph
+//     nameCodeObject[item.properties.ligatures] = glyph;
+//   }
 
-  return nameCodeObject;
-}
+//   return nameCodeObject;
+// }
 
 export const getUnicodeObject = (jsonData: Item[], isDuotone = false): Record<string, [string, string]> => {
   const nameCodeObject: Record<string, [string, string]> = {};
@@ -32,17 +32,17 @@ export const getUnicodeObject = (jsonData: Item[], isDuotone = false): Record<st
   return nameCodeObject;
 };
 
-export const createCodepointObject = (jsonData: Item[]): Record<string, number> => {
-  const nameCodeObject: Record<string, number> = {};
+// export const createCodepointObject = (jsonData: Item[]): Record<string, number> => {
+//   const nameCodeObject: Record<string, number> = {};
 
-  for (let i = 0; i < jsonData.length; i++) {
-    const item = jsonData[i];
+//   for (let i = 0; i < jsonData.length; i++) {
+//     const item = jsonData[i];
 
-    nameCodeObject[item.properties.ligatures] = item.properties.code;
-  }
+//     nameCodeObject[item.properties.ligatures] = item.properties.code;
+//   }
 
-  return nameCodeObject;
-};
+//   return nameCodeObject;
+// };
 
 export function formatFileSize(bytes: number, dm = 2) {
   if (bytes == 0) return '0 Bytes';

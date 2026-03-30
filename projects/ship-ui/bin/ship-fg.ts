@@ -1,10 +1,9 @@
 #!/usr/bin/env bun
 
 import { parseArgs } from 'util';
-import { main } from './src/sparkle-fg';
+import { main } from './src/ship-fg';
 
 const { values } = parseArgs({
-  args: Bun.argv,
   options: {
     src: {
       type: 'string',

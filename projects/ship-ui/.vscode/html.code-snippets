@@ -1,0 +1,16 @@
+
+  {
+    "Phosphor icons": {
+      "prefix": ["shicon:"],
+      "scope": "javascript,typescript,html",
+      "body": "${1|dummy|}",
+      "description": "Add a phosphor icon"
+    },
+    "Ship sh-icon": {
+      "prefix": ["sh-icon"],
+      "scope": "html",
+      "body": "<sh-icon>${1|dummy|}</sh-icon>",
+      "description": "Add a ship phosphor icon"
+    }
+  }
+  

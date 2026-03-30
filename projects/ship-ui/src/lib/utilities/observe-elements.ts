@@ -6,11 +6,11 @@ import {
   ElementRef,
   inject,
   Injector,
+  isSignal,
   PLATFORM_ID,
   Signal,
   signal,
 } from '@angular/core';
-import { SIGNAL } from '@angular/core/primitives/signals';
 
 export function observeFirstChild<T extends HTMLElement>(
   parentEl: ElementRef<HTMLElement>,
@@ -96,7 +96,7 @@ export function observeChildren<T extends HTMLElement>(
   effectOnSignal = effect(
     () => {
       const el =
-        typeof parentEl === 'function' && !!parentEl[SIGNAL] ? parentEl() : (parentEl as ElementRef<HTMLElement>);
+        typeof parentEl === 'function' && isSignal(parentEl) ? parentEl() : (parentEl as ElementRef<HTMLElement>);
       const tags = typeof elementTags === 'function' ? elementTags() : elementTags;
 
       if (el && tags?.length > 0) {

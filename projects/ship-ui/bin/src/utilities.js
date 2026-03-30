@@ -1,16 +1,16 @@
-export function createNameCodeObject(jsonData) {
-  const nameCodeObject = {};
+// export function createNameCodeObject(jsonData) {
+//   const nameCodeObject = {};
 
-  for (let i = 0; i < jsonData.length; i++) {
-    const item = jsonData[i];
-    const hexCode = item.properties.code.toString(16);
-    const codePoint = parseInt(hexCode, 16);
-    const glyph = String.fromCodePoint(codePoint);
-    nameCodeObject[item.properties.ligatures] = glyph;
-  }
+//   for (let i = 0; i < jsonData.length; i++) {
+//     const item = jsonData[i];
+//     const hexCode = item.properties.code.toString(16);
+//     const codePoint = parseInt(hexCode, 16);
+//     const glyph = String.fromCodePoint(codePoint);
+//     nameCodeObject[item.properties.ligatures] = glyph;
+//   }
 
-  return nameCodeObject;
-}
+//   return nameCodeObject;
+// }
 
 export const getUnicodeObject = (jsonData, isDuotone) => {
   const nameCodeObject = {};
@@ -32,17 +32,17 @@ export const getUnicodeObject = (jsonData, isDuotone) => {
   return nameCodeObject;
 };
 
-export const createCodepointObject = (jsonData) => {
-  const nameCodeObject = {};
+// export const createCodepointObject = (jsonData) => {
+//   const nameCodeObject = {};
 
-  for (let i = 0; i < jsonData.length; i++) {
-    const item = jsonData[i];
+//   for (let i = 0; i < jsonData.length; i++) {
+//     const item = jsonData[i];
 
-    nameCodeObject[item.properties.ligatures] = item.properties.code;
-  }
+//     nameCodeObject[item.properties.ligatures] = item.properties.code;
+//   }
 
-  return nameCodeObject;
-};
+//   return nameCodeObject;
+// };
 
 export function formatFileSize(bytes, dm = 2) {
   if (bytes == 0) return '0 Bytes';
