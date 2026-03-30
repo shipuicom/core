@@ -24,9 +24,9 @@ jobs:
           bun-version: latest
 
       - name: Setup Zig
-        uses: goto-bus-stop/setup-zig@v2
+        uses: mlugg/setup-zig@v1
         with:
-          version: master
+          version: 0.15.2
 
       - name: Install Dependencies
         run: bun install --frozen-lockfile
