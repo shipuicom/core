@@ -1,0 +1,42 @@
+sh-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--base-1);
+  border: 1px solid var(--base-3);
+  border-radius: var(--shape-1);
+  user-select: none;
+}
+
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--base-content-disabled);
+  cursor: grab;
+  padding: 4px;
+  border-radius: var(--shape-1);
+  transition: background 150ms ease, color 150ms ease;
+
+  &:hover {
+    background: var(--base-2);
+    color: var(--base-content);
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.content {
+  flex-grow: 1;
+  font-size: 14px;
+  color: var(--base-content);
+}
