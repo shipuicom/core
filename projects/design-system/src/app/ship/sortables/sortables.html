@@ -15,10 +15,18 @@
     <h4>Event Handling</h4>
     <p>
       Listen to the
-      <code>afterDrop</code>
-      event to update your data source when an item is moved:
-      <code>(afterDrop)="reorder($event)"</code>
-      .
+      <code>sortDrop</code>
+      event to update your data source when an item is moved.
+      For complex implementations, skip events and use the <code>SortableManager</code> (see below).
+    </p>
+  </section>
+  <section>
+    <h4>Sortable Manager (Recommended)</h4>
+    <p>
+      Vastly simplify drag-and-drop state by passing a unified manager to the <code>shSortable</code> input.
+      Pass a dictionary of signals to <code>createSortableManager()</code>, and bind it using <code>[shSortable]="manager" sortableGroup="listId"</code>.
+      For single lists, simply use <code>[shSortable]="manager"</code>.
+      You can even provide an <code>onBeforeDrop</code> hook to await an API request (Promise or RxJS Observable) before accepting the drop automatically!
     </p>
   </section>
   <section>

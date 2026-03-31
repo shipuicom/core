@@ -1,4 +1,4 @@
-<div class="grid-container" shSortable (afterDrop)="reorder($event)">
+<div class="grid-container" [shSortable]="manager">
   @for (item of items(); track item) {
     <div class="grid-item" draggable="true">
       {{ item }}

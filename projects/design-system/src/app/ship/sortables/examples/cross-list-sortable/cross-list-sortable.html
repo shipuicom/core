@@ -2,11 +2,8 @@
   <sh-card class="column">
     <h3>To Do</h3>
     <div
-      shSortable
-      sortableGroup="kanban"
-      [sortableData]="todoList()"
-      (afterDrop)="reorderTodo($event)"
-      (crossDrop)="crossDropTodo($event)"
+      [shSortable]="manager"
+      sortableGroup="todo"
       class="sortable-list"
     >
       @for (item of todoList(); track item; let i = $index) {
@@ -20,11 +17,8 @@
   <sh-card class="column">
     <h3>In Progress</h3>
     <div
-      shSortable
-      sortableGroup="kanban"
-      [sortableData]="inProgressList()"
-      (afterDrop)="reorderInProgress($event)"
-      (crossDrop)="crossDropInProgress($event)"
+      [shSortable]="manager"
+      sortableGroup="inProgress"
       class="sortable-list"
     >
       @for (item of inProgressList(); track item; let i = $index) {
@@ -38,11 +32,8 @@
   <sh-card class="column">
     <h3>Done</h3>
     <div
-      shSortable
-      sortableGroup="kanban"
-      [sortableData]="doneList()"
-      (afterDrop)="reorderDone($event)"
-      (crossDrop)="crossDropDone($event)"
+      [shSortable]="manager"
+      sortableGroup="done"
       class="sortable-list"
     >
       @for (item of doneList(); track item; let i = $index) {

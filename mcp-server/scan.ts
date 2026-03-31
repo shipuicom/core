@@ -306,7 +306,6 @@ function scanComponents() {
             let scssFileName = selector.replace(/^\[?sh-?/, 'ship-').replace(/\]$/, '') + '.scss';
             if (selector === '[shButton]') scssFileName = 'ship-button.scss';
             else if (selector === '[shSortable]') scssFileName = 'ship-sortable.scss';
-            else if (selector === '[shGridSortable]') scssFileName = 'ship-sortable.scss';
             else if (selector === '[shDragDrop]') scssFileName = 'ship-file-upload.scss';
             else if (selector === '[shResize]') scssFileName = 'ship-table.scss';
             else if (selector === '[shSort]') scssFileName = 'ship-table.scss';

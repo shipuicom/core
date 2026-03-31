@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { AfterDropResponse, moveIndex, ShipSortable } from 'ship-ui';
+import { createSortableManager, ShipSortable } from 'ship-ui';
 
 @Component({
   selector: 'app-grid-sortable-example',
@@ -12,7 +12,6 @@ import { AfterDropResponse, moveIndex, ShipSortable } from 'ship-ui';
 export class GridSortableExample {
   items = signal(Array.from({ length: 12 }, (_, i) => `Item ${i + 1}`));
 
-  reorder(event: AfterDropResponse) {
-    this.items.update((arr) => moveIndex(arr, event));
-  }
+
+  manager = createSortableManager(this.items);
 }

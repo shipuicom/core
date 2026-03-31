@@ -3,11 +3,13 @@
 $shipSortable: true !default;
 
 @if $shipSortable == true {
+  [sortableGroup],
   [shSortable] {
     position: relative;
 
     &.dragging {
-      [draggable] {
+      [draggable],
+      .sortable-ghost {
         transition: transform 40ms linear;
       }
     }
@@ -24,27 +26,15 @@ $shipSortable: true !default;
       }
     }
 
-    .sortable-placeholder {
-      position: absolute;
-      top: 0;
-      z-index: 1;
+    .sortable-ghost {
+      opacity: 0.5;
+      z-index: 10;
+    }
 
-      &.active {
-        z-index: 1;
-        background-color: var(--base-6);
-        border: var(--border-20);
-        opacity: 0.5;
+    &.item-dragged-out {
+      .sortable-ghost {
+        display: none;
       }
-    }
-
-    .sortable-ghost,
-    .sortable-ghost.active {
-      opacity: 1;
-    }
-
-    .sortable-dragged-el.active,
-    .sortable-dragged-el {
-      opacity: 0;
     }
 
     [sort-handle] {

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { AfterDropResponse, moveIndex, ShipCheckbox, ShipList, ShipSortable } from 'ship-ui';
+import { createSortableManager, ShipCheckbox, ShipList, ShipSortable } from 'ship-ui';
 
 const TODOS = [
   {
@@ -48,6 +48,7 @@ type Todo = (typeof TODOS)[0];
 })
 export class BaseSortable {
   todos = signal(TODOS);
+  manager = createSortableManager(this.todos);
 
   toggleTodo(index: number) {
     this.todos.update((todos) => {
@@ -55,9 +56,5 @@ export class BaseSortable {
 
       return todos;
     });
-  }
-
-  reorderTodo(event: AfterDropResponse) {
-    this.todos.update((arr) => moveIndex<Todo>(arr, event));
   }
 }

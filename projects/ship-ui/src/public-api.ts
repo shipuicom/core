@@ -34,7 +34,6 @@ export * from './lib/ship-radio/ship-radio';
 export * from './lib/ship-range-slider/ship-range-slider';
 export * from './lib/ship-select/ship-select';
 export * from './lib/ship-sidenav/ship-sidenav';
-export * from './lib/ship-sortable/grid-sortable';
 export * from './lib/ship-sortable/ship-sortable';
 export * from './lib/ship-spinner/ship-spinner.component';
 export * from './lib/ship-stepper/ship-stepper';
@@ -55,6 +54,6 @@ export * from './lib/directives/ship-prevent-wheel.directive';
 export * from './lib/directives/ship-tooltip.directive';
 
 // Global config
+export * from './lib/utilities/color-conversions';
 export * from './lib/utilities/ship-config';
 export * from './lib/utilities/ship-types';
-export * from './lib/utilities/color-conversions';
