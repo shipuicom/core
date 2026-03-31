@@ -3,13 +3,13 @@
 $shipSortable: true !default;
 
 @if $shipSortable == true {
-  [sortableGroup],
-  [shSortable] {
+  .sh-sortable {
     position: relative;
 
     &.dragging {
       [draggable],
       .sortable-ghost {
+        cursor: grabbing;
         transition: transform 40ms linear;
       }
     }

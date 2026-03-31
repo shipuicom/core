@@ -115,6 +115,9 @@ export function createSortableManager<T>(
 @Directive({
   selector: '[shSortable]',
   standalone: true,
+  host: {
+    class: 'sh-sortable',
+  },
 })
 export class ShipSortable implements OnInit, OnDestroy {
   #document = inject(DOCUMENT);
@@ -423,6 +426,10 @@ export class ShipSortable implements OnInit, OnDestroy {
   drop() {
     if (!ShipSortable.activeSource) return;
 
+    // Immediately kill drag transitions before any signal updates
+    this.#renderer.removeClass(ShipSortable.activeSource.#selfEl.nativeElement, 'dragging');
+    this.#renderer.removeClass(this.#selfEl.nativeElement, 'dragging');
+
     if (ShipSortable.activeSource === this) {
       // Internal Drop
       if (this.dragStartIndex() !== -1 && this.dragToIndex() !== -1 && this.dragStartIndex() !== this.dragToIndex()) {
@@ -470,9 +477,11 @@ export class ShipSortable implements OnInit, OnDestroy {
 
   dragEnd() {
     if (ShipSortable.activeSource) {
+      ShipSortable.activeSource.#renderer.removeClass(ShipSortable.activeSource.#selfEl.nativeElement, 'dragging');
       ShipSortable.activeSource.#cleanupDragState();
     }
     if (ShipSortable.activeTarget && ShipSortable.activeTarget !== ShipSortable.activeSource) {
+      ShipSortable.activeTarget.#renderer.removeClass(ShipSortable.activeTarget.#selfEl.nativeElement, 'dragging');
       ShipSortable.activeTarget.#cleanupDragState();
     }
 
@@ -482,6 +491,9 @@ export class ShipSortable implements OnInit, OnDestroy {
   }
 
   #cleanupDragState() {
+    this.#renderer.removeClass(this.#selfEl.nativeElement, 'dragging');
+    this.#renderer.removeClass(this.#selfEl.nativeElement, 'item-dragged-out');
+
     const crossSpacer = this.#crossSpacerEl();
 
     if (crossSpacer) {
@@ -494,8 +506,6 @@ export class ShipSortable implements OnInit, OnDestroy {
     this.dragStartIndex.set(-1);
     this.dragToIndex.set(-1);
     this.isCrossTarget = false;
-    this.#renderer.removeClass(this.#selfEl.nativeElement, 'dragging');
-    this.#renderer.removeClass(this.#selfEl.nativeElement, 'item-dragged-out');
   }
 
   #resetStyles() {
