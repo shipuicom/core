@@ -260,7 +260,7 @@ export class ShipSortable implements OnInit, OnDestroy {
 
       const dragOffsetX = Math.max(0, e.clientX - rect.left);
       const dragOffsetY = Math.max(0, e.clientY - rect.top);
-      
+
       e.dataTransfer.setDragImage(draggedElement, dragOffsetX, dragOffsetY);
 
       const draggedElementIndex = this.getIndexOfElement(draggedElement);
@@ -306,7 +306,7 @@ export class ShipSortable implements OnInit, OnDestroy {
         const sourceElement = ShipSortable.activeDraggedElement!;
         const tempElement = sourceElement.cloneNode(true) as HTMLElement;
         this.#renderer.setStyle(tempElement, 'transform', '');
-        
+
         // Ensure it doesn't have the original ghost state yet to measure flow without its potential transition scaling
         this.#renderer.removeClass(tempElement, 'sortable-ghost');
         this.#selfEl.nativeElement.appendChild(tempElement);
@@ -318,7 +318,7 @@ export class ShipSortable implements OnInit, OnDestroy {
 
         const containerRect = this.#selfEl.nativeElement.getBoundingClientRect();
         const container = this.#selfEl.nativeElement;
-        
+
         const positions = currentElements.map((el) => {
           const rect = el.getBoundingClientRect();
           return {
@@ -522,9 +522,7 @@ export class ShipSortable implements OnInit, OnDestroy {
           for (const mutation of mutations) {
             if (mutation.type === 'childList') {
               const draggableElements = Array.from(
-                this.#selfEl.nativeElement.querySelectorAll(
-                  '[draggable]:not(.sortable-spacer)'
-                )
+                this.#selfEl.nativeElement.querySelectorAll('[draggable]:not(.sortable-spacer)')
               ) as HTMLElement[];
               this.dragables.set(draggableElements);
 

@@ -63,6 +63,8 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [x] Bug on table headers with sticky rows - sticky rows hide table headers but should add to the table headers
 - [x] Create a accordion component
 - [x] Add another button group variant
+- [x] Grid drag and drop sortables
+- [x] Multi list drag and drop sortables
 - [ ] Apply the new sheet utility to radio buttons
 
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
@@ -87,8 +89,6 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [ ] Add a A11y service to streamline accessibility, maybe be able to swap config based on page or on a method
 - [ ] Add a A11y VIM mode
 - [ ] Custom scrollbar component that have the native apple feel with overscrolling where scroll thumb becomes smaller and you can over scroll a div
-- [ ] Grid drag and drop sortables
-- [ ] Multi list drag and drop sortables
 
 ### New components after v1 release
 
