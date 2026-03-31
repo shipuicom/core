@@ -1,13 +1,9 @@
 <div class="board">
   <sh-card class="column">
     <h3>To Do</h3>
-    <div
-      [shSortable]="manager"
-      sortableGroup="todo"
-      class="sortable-list"
-    >
+    <div [shSortable]="manager" sortableGroup="todo" class="sortable-list">
       @for (item of todoList(); track item; let i = $index) {
-        <div class="kanban-item" draggable="true">
+        <div class="item" draggable="true">
           {{ item }}
         </div>
       }
@@ -16,13 +12,9 @@
 
   <sh-card class="column">
     <h3>In Progress</h3>
-    <div
-      [shSortable]="manager"
-      sortableGroup="inProgress"
-      class="sortable-list"
-    >
+    <div [shSortable]="manager" sortableGroup="inProgress" class="sortable-list">
       @for (item of inProgressList(); track item; let i = $index) {
-        <div class="kanban-item" draggable="true">
+        <div class="item" draggable="true">
           {{ item }}
         </div>
       }
@@ -31,13 +23,9 @@
 
   <sh-card class="column">
     <h3>Done</h3>
-    <div
-      [shSortable]="manager"
-      sortableGroup="done"
-      class="sortable-list"
-    >
+    <div [shSortable]="manager" sortableGroup="done" class="sortable-list">
       @for (item of doneList(); track item; let i = $index) {
-        <div class="kanban-item" draggable="true">
+        <div class="item" draggable="true">
           {{ item }}
         </div>
       }

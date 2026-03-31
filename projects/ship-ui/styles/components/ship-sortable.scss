@@ -20,6 +20,7 @@ $shipSortable: true !default;
       transition: none;
       z-index: 2;
       background: var(--base-1);
+      user-select: none;
 
       &:not(:has([sort-handle])) {
         cursor: grab;

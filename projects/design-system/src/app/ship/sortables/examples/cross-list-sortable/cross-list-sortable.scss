@@ -28,16 +28,9 @@
   min-height: 50px; /* Important for empty lists */
 }
 
-.kanban-item {
+.item {
   padding: 12px;
   background: var(--base-1);
   border: 1px solid var(--base-3);
   border-radius: var(--shape-1);
-  cursor: grab;
-  user-select: none;
-  color: var(--base-content);
-
-  &:active {
-    cursor: grabbing;
-  }
 }

@@ -1,4 +1,4 @@
-import { Directive, ElementRef, HostListener, effect, inject, model } from '@angular/core';
+import { Directive, ElementRef, HostListener, effect, inject, model, input, booleanAttribute } from '@angular/core';
 import { contentProjectionSignal } from './content-projection-signal';
 
 @Directive()
@@ -8,6 +8,7 @@ export abstract class ShipSelectionGroup<T = any> {
   protected items: import('@angular/core').Signal<HTMLElement[]>;
 
   readonly value = model<T | null>(null);
+  readonly closable = input<boolean, boolean | string>(false, { transform: booleanAttribute });
 
   constructor(
     protected readonly itemSelector: string,
@@ -45,7 +46,11 @@ export abstract class ShipSelectionGroup<T = any> {
     if (item && this.hostElement.contains(item)) {
       if (item.hasAttribute('value')) {
         const value = item.getAttribute('value') as unknown as T;
-        this.value.set(value);
+        if (this.closable() && String(this.value()) === String(value)) {
+          this.value.set(null);
+        } else {
+          this.value.set(value);
+        }
       }
     }
   }

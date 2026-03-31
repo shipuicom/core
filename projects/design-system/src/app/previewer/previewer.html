@@ -1,5 +1,5 @@
 <sh-card variant="type-c">
-  <sh-tabs class="primary" [(value)]="view">
+  <sh-tabs class="primary" [(value)]="view" [closable]="true">
     <h3 class="title" style="display: flex; gap: 8px; align-items: center; margin: 0">
       {{ title() }}
       @if (configName()) {

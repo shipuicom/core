@@ -1,0 +1,41 @@
+.mixed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.item {
+  border-radius: var(--radius-m);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  cursor: grab;
+  user-select: none;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &.small {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  &.medium {
+    padding: 16px;
+    font-size: 16px;
+  }
+
+  &.large {
+    padding: 24px;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  &.extra-large {
+    padding: 32px;
+    font-size: 18px;
+    line-height: 1.6;
+  }
+}

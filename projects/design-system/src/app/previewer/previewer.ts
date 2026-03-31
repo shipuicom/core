@@ -17,12 +17,4 @@ export class Previewer {
   noSpace = input<boolean>(false);
   configName = input<keyof import('ship-ui').ShipConfig | null>(null);
   view = signal('');
-
-  toggleView(newView: string) {
-    if (newView === this.view()) {
-      this.view.set('');
-    } else {
-      this.view.set(newView);
-    }
-  }
 }

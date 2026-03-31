@@ -1,0 +1,7 @@
+<div class="mixed-list" [shSortable]="manager">
+  @for (item of items(); track item.id) {
+    <div class="item" [draggable]="true" [class]="item.size">
+      {{ item.text }}
+    </div>
+  }
+</div>
