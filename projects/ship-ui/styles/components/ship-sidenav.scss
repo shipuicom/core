@@ -29,13 +29,13 @@ $shipSidenav: true !default;
       height: 100%;
       overflow: auto;
       padding: p2r(16 16 16 0);
+      background-color: var(--base-1);
     }
 
     main {
       overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: auto;
-      background-color: var(--base-1);
       border: var(--border-10);
       border-radius: var(--shape-3);
       height: calc(100vh - 2rem);

@@ -21,7 +21,7 @@ $shipSortable: true !default;
       z-index: 2;
       background: var(--base-1);
 
-      &:has(:not([sort-handle])) {
+      &:not(:has([sort-handle])) {
         cursor: grab;
       }
     }
