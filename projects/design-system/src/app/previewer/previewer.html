@@ -1,6 +1,18 @@
 <sh-card variant="type-c">
   <sh-tabs class="primary" [(value)]="view" [closable]="true">
     <h3 class="title" style="display: flex; gap: 8px; align-items: center; margin: 0">
+      <a
+        class="anchor-link"
+        [class.copied]="isCopied()"
+        [href]="'#' + anchorId()"
+        (click)="copyLink($event)"
+        title="Copy link">
+        @if (isCopied()) {
+          <sh-icon>check</sh-icon>
+        } @else {
+          <sh-icon>hash</sh-icon>
+        }
+      </a>
       {{ title() }}
       @if (configName()) {
         <app-config-indicator [componentName]="configName()!" style="margin-top: 12px" />

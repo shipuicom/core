@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { ShipColor, ShipFormFieldVariant, ShipSize } from '../utilities/ship-types';
 import { hslToRgbExact, rgbToHex, rgbaToHex8, rgbToHsl } from '../utilities/color-conversions';
-import { ShipButton } from 'ship-ui';
+import { ShipButton } from '../ship-button/ship-button';
 import { ShipFormFieldPopover } from '../ship-form-field/ship-form-field-popover';
 import { ShipIcon } from '../ship-icon/ship-icon';
 import { classMutationSignal } from '../utilities/class-mutation-signal';

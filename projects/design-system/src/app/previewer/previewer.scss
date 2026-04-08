@@ -21,6 +21,25 @@ sh-tabs {
 .title {
   flex: 1 0;
   font: var(--paragraph-20B);
+
+  .anchor-link {
+    color: inherit;
+    opacity: 0.3;
+    transition: all 0.2s;
+    display: inline-flex;
+    text-decoration: none;
+    
+    &:hover,
+    &:focus {
+      opacity: 1;
+      color: var(--primary-8);
+    }
+    
+    &.copied {
+      opacity: 1;
+      color: var(--success-8);
+    }
+  }
 }
 
 .content {
