@@ -1,7 +1,7 @@
 {
   "name": "@ship-ui/core",
   "license": "MIT",
-  "version": "0.19.2",
+  "version": "0.19.3",
   "peerDependencies": {
     "@angular/common": ">=20",
     "@angular/core": ">=20",
@@ -29,6 +29,7 @@
   },
   "bin": {
     "ship-fg": "./bin/ship-fg.mjs",
+    "ship-fg-ts": "./bin/ship-fg.ts",
     "ship-mcp": "./bin/mcp/index.js"
   },
   "libraryIcons": [

@@ -27,6 +27,7 @@ interface ComponentData {
   selector: string;
   path: string;
   description?: string;
+  keywords?: string[];
   inputs: { name: string; type: string; description?: string; defaultValue?: string; options?: string[] }[];
   outputs: { name: string; type: string; description?: string }[];
   methods: { name: string; parameters: string; returnType: string; description?: string }[];
@@ -329,6 +330,7 @@ function scanComponents() {
             // Try to find examples and description
             const examples: ComponentData['examples'] = [];
             let description = '';
+            let keywords: string[] = [];
 
             const lastDir = dir.split(path.sep).pop();
             const searchTerms = [
@@ -372,6 +374,12 @@ function scanComponents() {
                     .join('\n')
                     .replace(/\n{3,}/g, '\n\n')
                     .trim();
+                }
+
+                // Parse keywords from HTML comment like <!-- @keywords: textarea, input -->
+                const keywordsMatch = docContent.match(/<!--\s*@keywords:?\s*(.*?)\s*-->/i);
+                if (keywordsMatch && keywordsMatch[1]) {
+                  keywords = keywordsMatch[1].split(',').map(k => k.trim()).filter(Boolean);
                 }
               }
 
@@ -443,6 +451,7 @@ function scanComponents() {
               selector,
               path: path.relative(path.join(process.cwd(), '..'), filePath),
               description,
+              keywords,
               inputs: uniqueInputs,
               outputs: uniqueOutputs,
               methods: uniqueMethods,

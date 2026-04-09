@@ -2,7 +2,7 @@
 
 import { spawnSync } from 'child_process';
 import { FSWatcher, watch } from 'fs';
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, writeFile, readdir } from 'fs/promises';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { gzipSync } from 'zlib';
@@ -15,6 +15,107 @@ import { formatFileSize, InputArguments, SupportedFontTypes } from './utilities'
 
 const CWD_PATH = process.cwd();
 const PHOSPHOR_SRC_PATH = resolve(CWD_PATH, 'node_modules', '@phosphor-icons', 'web', 'src');
+
+const jsScannerFallback = async (PROJECT_SRC: string, shipUiDir: string, CWD_PATH: string) => {
+  const uniqueIcons = new Set<string>();
+
+  const isValidIcon = (s: string) => /^[a-z0-9-]+$/.test(s);
+
+  try {
+    const pkgPath = resolve(shipUiDir, 'package.json');
+    const pkgData = JSON.parse(await readFile(pkgPath, 'utf8'));
+    if (pkgData.libraryIcons) {
+      pkgData.libraryIcons.forEach((i: string) => uniqueIcons.add(i));
+    }
+  } catch (e) {}
+
+  async function scanDir(dir: string) {
+    const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+    for (const entry of entries) {
+      if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue;
+      const fullPath = resolve(dir, entry.name);
+      if (entry.isDirectory()) {
+        await scanDir(fullPath);
+      } else if (entry.name.endsWith('.html') || entry.name.endsWith('.ts')) {
+        const contents = await readFile(fullPath, 'utf8');
+
+        const htmlStartMatches = contents.matchAll(/<sh-icon[^>]*icon=['"]([^'"]+)['"][^>]*>/g);
+        for (const m of htmlStartMatches) {
+          const icon = m[1].trim();
+          if (isValidIcon(icon)) uniqueIcons.add(icon);
+        }
+        const htmlContentMatches = contents.matchAll(/<sh-icon[^>]*>([^<]+)<\/sh-icon>/g);
+        for (const m of htmlContentMatches) {
+          const icon = m[1].trim();
+          if (isValidIcon(icon)) uniqueIcons.add(icon);
+        }
+
+        const tsMatches = contents.matchAll(/shicon:([^'"]+)['"]/g);
+        for (const m of tsMatches) {
+          const icon = m[1].trim();
+          if (isValidIcon(icon)) uniqueIcons.add(icon);
+        }
+      }
+    }
+  }
+  await scanDir(PROJECT_SRC);
+
+  const variants = ['bold', 'thin', 'light', 'fill', 'regular', 'duotone'];
+  const glyphMaps = new Map<string, [string, string]>();
+
+  for (const variant of variants) {
+    try {
+      const selPath = resolve(CWD_PATH, 'node_modules', '@phosphor-icons', 'web', 'src', variant, 'selection.json');
+      const parsed = JSON.parse(await readFile(selPath, 'utf8'));
+      const isDuotone = variant === 'duotone';
+
+      for (const icon of parsed.icons || []) {
+        const hexCode = icon.properties.code.toString(16);
+        const unicodeStr = `U+${hexCode}`;
+        const glyph = String.fromCodePoint(icon.properties.code);
+
+        let glyphName = isDuotone ? icon.properties.name : icon.properties.ligatures;
+        if (glyphName) glyphMaps.set(glyphName, [glyph, unicodeStr]);
+      }
+    } catch (e) {}
+  }
+
+  const grouped = {
+    bold: [] as [string, string][],
+    thin: [] as [string, string][],
+    light: [] as [string, string][],
+    fill: [] as [string, string][],
+    regular: [] as [string, string][],
+    duotone: [] as [string, string][],
+    text: [] as [string, string][],
+    missing: [] as string[],
+  };
+
+  for (const icon of uniqueIcons) {
+    const isBold = icon.endsWith('-bold');
+    const isThin = icon.endsWith('-thin');
+    const isLight = icon.endsWith('-light');
+    const isFill = icon.endsWith('-fill');
+    const isDuotone = icon.endsWith('-duotone');
+    const isRegular = !isBold && !isThin && !isLight && !isFill && !isDuotone;
+
+    const mapEntry = glyphMaps.get(icon);
+    if (mapEntry) {
+      const tuple1: [string, string] = [icon, ''];
+      const tuple2 = mapEntry; // [glyph, unicodeStr]
+      if (isBold) grouped.bold.push(tuple1, tuple2);
+      else if (isThin) grouped.thin.push(tuple1, tuple2);
+      else if (isLight) grouped.light.push(tuple1, tuple2);
+      else if (isFill) grouped.fill.push(tuple1, tuple2);
+      else if (isDuotone) grouped.duotone.push(tuple1, tuple2);
+      else grouped.regular.push(tuple1, tuple2);
+    } else {
+      grouped.missing.push(icon);
+    }
+  }
+
+  return grouped;
+};
 
 let writtenCssSize = 0;
 let compressedCssSize = 0;
@@ -37,16 +138,21 @@ const run = async (
   try {
     const proc = spawnSync(scannerPath, [PROJECT_SRC, shipUiDir, CWD_PATH]);
     if (proc.error || proc.status !== 0) {
-      console.error('Error running scanner:', proc.stderr?.toString() || proc.error);
       throw new Error('Native scanner failed');
     }
 
-    const parsed = JSON.parse(proc.stdout?.toString() || '{}');
-    groupedIcons = parsed;
-    missingIconsArray = parsed.missing || [];
+    const { missing, ...rest } = JSON.parse(proc.stdout?.toString() || '{}');
+    groupedIcons = rest;
+    missingIconsArray = missing || [];
   } catch (err) {
-    console.error('Failed to run high-performance zig scanner:', err);
-    throw err;
+    try {
+      const { missing, ...rest } = await jsScannerFallback(PROJECT_SRC, shipUiDir, CWD_PATH);
+      groupedIcons = rest;
+      missingIconsArray = missing || [];
+    } catch (fallbackErr) {
+      console.error('Failed to run high-performance zig scanner and the javascript fallback failed:', fallbackErr);
+      throw err;
+    }
   }
 
   if (missingIconsArray.length) {

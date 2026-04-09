@@ -10,10 +10,9 @@
 
 div {
   padding: 0.5rem 1rem;
-  border: 1px solid var(--sh-border-color);
-  border-radius: var(--sh-border-radius);
+  border: var(--border-10);
+  border-radius: var(--shape-2);
   cursor: pointer;
-  background: var(--sh-surface-color);
 }
 
 .scrolled-content {
