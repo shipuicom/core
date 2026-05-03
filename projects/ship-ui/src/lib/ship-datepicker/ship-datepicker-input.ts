@@ -2,6 +2,8 @@ import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  HostListener,
   computed,
   contentChild,
   effect,
@@ -10,8 +12,9 @@ import {
   model,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
-import { NgModel } from '@angular/forms';
+import { NgControl } from '@angular/forms';
 import { ShipFormFieldPopover } from '../ship-form-field/ship-form-field-popover';
 import { ShipIcon } from '../ship-icon/ship-icon';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
@@ -44,7 +47,7 @@ import { ShipDatepicker } from './ship-datepicker';
 
       <div popoverContent>
         @if (this.isOpen()) {
-          <sh-datepicker [date]="internalDate()" (dateChange)="onDateChange($event)" [class]="currentClass()" />
+          <sh-datepicker [date]="internalDate()" (dateChange)="onDateChange($event)" (tabbedOut)="isOpen.set(false)" [class]="currentClass()" />
         }
       </div>
     </sh-form-field-popover>
@@ -56,7 +59,8 @@ import { ShipDatepicker } from './ship-datepicker';
 export class ShipDatepickerInput {
   // #INIT_DATE = this.#getUTCDate(new Date());
 
-  ngModels = contentChild<NgModel>(NgModel);
+  #selfRef = inject(ElementRef);
+  ngControl = contentChild(NgControl);
   #datePipe = inject(DatePipe);
   #inputRef = signal<HTMLInputElement | null>(null);
 
@@ -77,15 +81,43 @@ export class ShipDatepickerInput {
   isOpen = model<boolean>(false);
   currentClass = classMutationSignal();
   #inputObserver = contentProjectionSignal<HTMLInputElement>('#input-wrap input');
+  datepicker = viewChild(ShipDatepicker);
+
+  #isOpenEffect = effect(() => {
+    if (this.isOpen()) {
+      setTimeout(() => {
+        this.datepicker()?.focusActiveDate();
+      }, 50);
+    }
+  });
+
+  @HostListener('focusout', ['$event'])
+  onFocusOut(event: FocusEvent) {
+    setTimeout(() => {
+      const activeElement = document.activeElement as HTMLElement | null;
+      if (
+        activeElement &&
+        activeElement !== document.body &&
+        !this.#selfRef.nativeElement.contains(activeElement)
+      ) {
+        this.isOpen.set(false);
+      }
+    });
+  }
 
   onDateChange(date: Date | null) {
     this.internalDate.set(date);
 
-    const input = this.#inputRef();
+    const control = this.ngControl()?.control;
 
-    if (input) {
-      input.value = date ? date.toString() : '';
-      input.dispatchEvent(new Event('input'));
+    if (control) {
+      control.setValue(date);
+    } else {
+      const input = this.#inputRef();
+      if (input) {
+        input.value = date ? date.toString() : '';
+        input.dispatchEvent(new Event('input'));
+      }
     }
   }
 
@@ -105,12 +137,34 @@ export class ShipDatepickerInput {
     this.#createCustomInputEventListener(input);
 
     input.addEventListener('inputValueChanged', (event: any) => {
-      this.internalDate.set(event.detail.value ? new Date(event.detail.value) : null);
+      const val = event.detail.value;
+      if (!val) {
+        this.internalDate.set(null);
+        return;
+      }
+      
+      let newD = new Date(val);
+      
+      if (isNaN(newD.getTime())) {
+        // If it's a time-only string like "14:30" or "14:30:00"
+        if (typeof val === 'string' && /^(\d{2}):(\d{2})/.test(val)) {
+          const match = val.match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+          if (match) {
+            const current = this.internalDate() || new Date();
+            newD = new Date(current);
+            newD.setHours(parseInt(match[1], 10), parseInt(match[2], 10), match[3] ? parseInt(match[3], 10) : 0, 0);
+          }
+        }
+      }
+      
+      if (!isNaN(newD.getTime())) {
+        this.internalDate.set(newD);
+      }
     });
 
     input.addEventListener('focus', () => {
       this.isOpen.set(true);
-      input.blur();
+      // Removed input.blur() so users can actually type or use Shift+Tab to navigate backward
     });
 
     this.#inputRef.set(input);

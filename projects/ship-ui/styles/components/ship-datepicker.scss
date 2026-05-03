@@ -11,6 +11,13 @@ $shipDatepicker: true !default;
           display: grid;
           grid-template-columns: 1fr auto auto;
           align-items: center;
+
+          &.active-start input:first-of-type {
+            color: var(--primary-8);
+          }
+          &.active-end input:last-of-type {
+            color: var(--primary-8);
+          }
         }
 
         [suffix] {
@@ -21,6 +28,16 @@ $shipDatepicker: true !default;
       .masked-value {
         font: var(--paragraph-30B);
         color: var(--base-8);
+        display: flex;
+        gap: p2r(4);
+
+        &.active-start .start-val {
+          color: var(--primary-8);
+        }
+
+        &.active-end .end-val {
+          color: var(--primary-8);
+        }
 
         + input + input,
         + input {
@@ -103,10 +120,12 @@ $shipDatepicker: true !default;
 
     &.as-range {
       section {
-        .days > div {
+        .days > div,
+        .days > button {
           &.sel {
             background: var(--dp-sel-bg);
             opacity: 0.5;
+            border-radius: 0;
           }
 
           &.month-start,
@@ -129,7 +148,8 @@ $shipDatepicker: true !default;
         }
       }
 
-      .month .days > div.out-of-scope {
+      .month .days > div.out-of-scope,
+      .month .days > button.out-of-scope {
         opacity: 0;
         pointer-events: none;
       }
@@ -194,7 +214,13 @@ $shipDatepicker: true !default;
           z-index: 0;
         }
 
-        > div {
+        > div,
+        > button {
+          appearance: none;
+          background: transparent;
+          border: none;
+          padding: 0;
+          margin: 0;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -205,6 +231,12 @@ $shipDatepicker: true !default;
           color: var(--dp-day-c);
           font: var(--dp-day-f);
           user-select: none;
+          border-radius: var(--dp-sel-s);
+
+          &:focus-visible {
+            outline: 2px solid var(--primary-10, #005fcc);
+            outline-offset: -2px;
+          }
 
           &.sel {
             color: var(--dp-sel-c);

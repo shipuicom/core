@@ -23,7 +23,7 @@ export class ShipButtonGroup extends ShipSelectionGroup<string> {
   size = input<ShipSize | null>(null);
 
   constructor() {
-    super('button', 'active');
+    super('button', 'active', { hostRole: 'group' });
   }
 
   hostClasses = shipComponentClasses('buttonGroup', {

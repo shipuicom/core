@@ -19,7 +19,7 @@
       </sh-button-group>
     </div>
 
-    @if (size() === 'inherit') {
+    @if (size() === '') {
       <div class="row">
         <sh-range-slider>
           <input type="range" [min]="10" [max]="64" [step]="2" [(ngModel)]="sizeValue" />

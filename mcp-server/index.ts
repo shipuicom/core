@@ -25,6 +25,7 @@ interface ComponentData {
   selector: string;
   path: string;
   description?: string;
+  keywords?: string[];
   inputs: { name: string; type: string; description?: string; defaultValue?: string; options?: string[] }[];
   outputs: { name: string; type: string; description?: string }[];
   methods: { name: string; parameters: string; returnType: string; description?: string }[];
@@ -131,16 +132,25 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   if (name === 'search_components') {
     const { query } = args as { query: string };
-    const results = components.filter(
-      (c) =>
-        c.name.toLowerCase().includes(query.toLowerCase()) || c.selector.toLowerCase().includes(query.toLowerCase())
-    );
+    const results = components.filter((c) => {
+      const q = query.toLowerCase();
+      return (
+        c.name.toLowerCase().includes(q) ||
+        c.selector.toLowerCase().includes(q) ||
+        c.keywords?.some((k) => k.toLowerCase().includes(q))
+      );
+    });
     return {
       content: [
         {
           type: 'text',
           text: JSON.stringify(
-            results.map((c) => ({ name: c.name, selector: c.selector, description: c.description?.split('\n')[0] })),
+            results.map((c) => ({
+              name: c.name,
+              selector: c.selector,
+              description: c.description?.split('\n')[0],
+              keywords: c.keywords,
+            })),
             null,
             2
           ),
@@ -223,6 +233,9 @@ Here are the component details:
 
 Description:
 ${component.description || 'No description available'}
+
+Keywords:
+${component.keywords?.join(', ') || 'None'}
 
 Inputs:
 ${component.inputs

@@ -22,7 +22,7 @@ export class ShipTabs extends ShipSelectionGroup<string> {
   variant = input<ShipSheetVariant | null>(null);
   
   constructor() {
-    super('[value], [tab], button, a', 'active');
+    super('[value], [tab], button, a', 'active', { hostRole: 'tablist', itemRole: 'tab' });
   }
 
   hostClasses = shipComponentClasses('tabs', {

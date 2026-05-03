@@ -3,24 +3,12 @@
   <header>
     <div class="row">
       <sh-toggle [(checked)]="allowMultiple" class="primary raised">Allow Multiple Open</sh-toggle>
-      <sh-select
-        class="raised primary"
-        color="primary"
-        variant="raised"
-        [selectMultiple]="allowMultiple()"
-        [options]="availablePanels">
+      <sh-select color="primary" [selectMultiple]="allowMultiple()" [options]="availablePanels">
         <label>Open Panels</label>
         <input type="text" [(ngModel)]="selectedPanelsArray" style="display: none" />
       </sh-select>
 
-      <sh-select
-        class="raised primary"
-        color="primary"
-        variant="raised"
-        [options]="availableVariants"
-        label="label"
-        value="value"
-        [isClearable]="false">
+      <sh-select color="primary" [options]="availableVariants" label="label" value="value" [isClearable]="false">
         <label>Variant</label>
         <input type="text" [(ngModel)]="variantType" style="display: none" />
       </sh-select>

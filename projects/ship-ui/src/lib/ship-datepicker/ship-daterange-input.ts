@@ -6,12 +6,15 @@ import {
   contentChildren,
   effect,
   ElementRef,
+  HostListener,
   inject,
   input,
   model,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
+import { contentProjectionSignal } from '../utilities/content-projection-signal';
 import { ShipFormFieldPopover } from '../ship-form-field/ship-form-field-popover';
 import { ShipIcon } from '../ship-icon/ship-icon';
 import { ShipDatepicker } from './ship-datepicker';
@@ -27,9 +30,13 @@ import { ShipDatepicker } from './ship-datepicker';
       <ng-content select="[prefix]" ngProjectAs="[prefix]" />
       <ng-content select="[textPrefix]" ngProjectAs="[textPrefix]" />
 
-      <div class="input" ngProjectAs="input" #inputWrap>
+      <div class="input" ngProjectAs="input" #inputWrap [class.active-start]="isOpen() && activeInput() === 'start'" [class.active-end]="isOpen() && activeInput() === 'end'">
         @if (this.masking()) {
-          <div class="masked-value">{{ _maskedStartDate() ?? 'N/A' }} - {{ _maskedEndDate() ?? 'N/A' }}</div>
+          <div class="masked-value" [class.active-start]="isOpen() && activeInput() === 'start'" [class.active-end]="isOpen() && activeInput() === 'end'">
+            <span class="start-val">{{ _maskedStartDate() ?? 'N/A' }}</span>
+            <span class="separator">-</span>
+            <span class="end-val">{{ _maskedEndDate() ?? 'N/A' }}</span>
+          </div>
         }
         <ng-content select="input" />
       </div>
@@ -43,9 +50,11 @@ import { ShipDatepicker } from './ship-datepicker';
           <sh-datepicker
             [date]="startDate()"
             [endDate]="endDate()"
+            [activeRangeSelection]="activeInput()"
             [class]="classes"
             (dateChange)="onStartDateChange($event)"
             (endDateChange)="onEndDateChange($event)"
+            (tabbedOut)="isOpen.set(false)"
             [monthsToShow]="monthsToShow()"
             [asRange]="true" />
         }
@@ -57,8 +66,10 @@ import { ShipDatepicker } from './ship-datepicker';
 export class ShipDaterangeInput {
   #selfRef = inject(ElementRef);
 
-  startDateInputs = contentChildren<ElementRef<HTMLInputElement>>('startDate');
-  endDateInputs = contentChildren<ElementRef<HTMLInputElement>>('endDate');
+  #inputObserver = contentProjectionSignal('input', {
+    childList: true,
+    subtree: true,
+  });
 
   #datePipe = inject(DatePipe);
   monthsToShow = input<number>(1);
@@ -67,7 +78,17 @@ export class ShipDaterangeInput {
 
   startDate = signal<Date | null>(null);
   endDate = signal<Date | null>(null);
+  activeInput = signal<'start' | 'end'>('start');
   isOpen = model<boolean>(false);
+  datepicker = viewChild(ShipDatepicker);
+
+  #isOpenEffect = effect(() => {
+    if (this.isOpen()) {
+      setTimeout(() => {
+        this.datepicker()?.focusActiveDate();
+      }, 50);
+    }
+  });
 
   get classes() {
     return `${this.#selfRef.nativeElement.classList.value}`;
@@ -89,25 +110,33 @@ export class ShipDaterangeInput {
 
   constructor() {
     effect(() => {
-      // Setup start date inputs
-      this.startDateInputs().forEach((input) => {
-        this.setupInput(input, true);
-      });
+      const inputs = this.#inputObserver() as HTMLInputElement[];
+      if (inputs.length === 0) return;
 
-      // Setup end date inputs
-      this.endDateInputs().forEach((input) => {
-        this.setupInput(input, false);
-      });
+      if (inputs[0]) this.setupInput(inputs[0], true);
+      if (inputs[1]) this.setupInput(inputs[1], false);
     });
   }
 
-  private setupInput(input: ElementRef<HTMLInputElement>, isStart: boolean) {
-    const element = input.nativeElement;
+  private setupInput(element: HTMLInputElement, isStart: boolean) {
+    if ((element as any)._hasCustomFocusEvent) return;
+    (element as any)._hasCustomFocusEvent = true;
+
     element.autocomplete = 'off';
+    
+    // Set tabindex -1 on the second input to prevent users from having to Shift+Tab 
+    // multiple times to exit the component when masking is enabled.
+    if (!isStart) {
+      element.tabIndex = -1;
+    }
 
     element.addEventListener('focus', () => {
+      this.activeInput.set(isStart ? 'start' : 'end');
+      if ((element as any)._ignoreNextFocus) {
+        (element as any)._ignoreNextFocus = false;
+        return;
+      }
       this.isOpen.set(true);
-      element.blur();
     });
 
     // Handle initial value
@@ -127,28 +156,53 @@ export class ShipDaterangeInput {
     }
   }
 
+  @HostListener('focusout', ['$event'])
+  onFocusOut(event: FocusEvent) {
+    setTimeout(() => {
+      const activeElement = document.activeElement as HTMLElement | null;
+      if (
+        activeElement &&
+        activeElement !== document.body &&
+        !this.#selfRef.nativeElement.contains(activeElement)
+      ) {
+        this.isOpen.set(false);
+      }
+    });
+  }
+
   onStartDateChange(date: Date | null) {
     this.startDate.set(date);
-    this.updateInputValue(this.startDateInputs() as ElementRef<HTMLInputElement>[], date);
+    const inputs = this.#inputObserver() as HTMLInputElement[];
+    if (inputs[0]) this.updateInputValue([inputs[0]], date);
+    
+    // Automatically switch to end date selection
+    this.activeInput.set('end');
   }
 
   onEndDateChange(date: Date | null) {
     this.endDate.set(date);
-    this.updateInputValue(this.endDateInputs() as ElementRef<HTMLInputElement>[], date);
+    const inputs = this.#inputObserver() as HTMLInputElement[];
+    if (inputs[1]) this.updateInputValue([inputs[1]], date);
 
     if (this.startDate() && date) {
       this.isOpen.set(false);
+      
+      const inputs = this.#inputObserver() as HTMLInputElement[];
+      if (inputs[0] && document.activeElement !== inputs[0]) {
+        (inputs[0] as any)._ignoreNextFocus = true;
+        inputs[0].focus();
+      }
     }
   }
 
-  private updateInputValue(inputs: ElementRef<HTMLInputElement>[], date: Date | null) {
+  private updateInputValue(inputs: HTMLInputElement[], date: Date | null) {
     inputs.forEach((input) => {
       if (this.masking()) {
-        input.nativeElement.value = this.#datePipe.transform(date, this.masking()) ?? '';
+        input.value = this.#datePipe.transform(date, this.masking()) ?? '';
       } else {
-        input.nativeElement.value = date ? date.toUTCString() : '';
+        input.value = date ? date.toUTCString() : '';
       }
-      this.dispatchInputEvent(input.nativeElement);
+      this.dispatchInputEvent(input);
     });
   }
 

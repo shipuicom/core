@@ -45,7 +45,7 @@ type ValidateFreeText = (value: string) => boolean;
     @let _selOptionTemplate = _selectedOptionTemplate || _optionTemplate || _inlineTemplate;
     @let _listOptionTemplate = _optionTemplate || _inlineTemplate;
     @let _asChips = !asText() && selectMultiple();
-    @let _showSearchText = isOpen() && hasSearch() && (_asChips || inputValue().length > -1);
+    @let _showSearchText = isOpen() && hasSearch() && (_asChips || inputValue().length > 0);
 
     <sh-popover
       #formFieldWrapper
@@ -72,7 +72,7 @@ type ValidateFreeText = (value: string) => boolean;
         <div class="input" [class.show-search-text]="_showSearchText" ngProjectAs="input">
           <div class="selected-value" [class.is-selected]="_inputState === 'selected'">
             @if (asFreeText() && inputValue().length > 0 && !isOpen()) {
-              {{ inputValue() }}
+              {{ spacedSelectedOptions() }}
             } @else if (_selectedOptions.length > 0) {
               @for (selectedOption of _selectedOptions; track $index) {
                 @if (selectedOption) {
@@ -132,7 +132,7 @@ type ValidateFreeText = (value: string) => boolean;
         }
       </sh-form-field>
 
-      <div class="ship-options" #optionsWrap id="optionsWrapId" role="listbox">
+      <div class="ship-options" #optionsWrap [id]="'optionsWrapId-' + componentId" role="listbox">
         @if (asFreeText()) {
           @let freeTextOption = computedFreeTextOption();
           @let freeTextOptionValue = getValue(freeTextOption);
@@ -145,7 +145,8 @@ type ValidateFreeText = (value: string) => boolean;
             <li
               (click)="toggleOptionByIndex(-1)"
               class="option"
-              [id]="this.getLabelAsSlug(freeTextOption)"
+              role="option"
+              [id]="this.getOptionId(-1)"
               [attr.aria-selected]="isSelected(-1)"
               [class.selected]="isSelected(-1)"
               [class.focused]="-1 === focusedOptionIndex()">
@@ -172,7 +173,8 @@ type ValidateFreeText = (value: string) => boolean;
           <li
             (click)="toggleOptionByIndex($index)"
             class="option"
-            [id]="this.getLabelAsSlug(option)"
+            role="option"
+            [id]="this.getOptionId($index)"
             [attr.aria-selected]="isSelected($index)"
             [class.selected]="isSelected($index)"
             [class.focused]="$index === focusedOptionIndex()">
@@ -236,6 +238,13 @@ export class ShipSelect {
   selectedOptions = model<unknown[]>([]);
   cleared = output<void>();
   onAddNewFreeTextOption = output<string>();
+
+  spacedSelectedOptions = computed(() => {
+    const selectedOptions = this.selectedOptions();
+    const valueKey = this.value();
+
+    return selectedOptions.map((option) => (valueKey ? this.#getProperty(option, valueKey) : option)).join(', ');
+  });
 
   computedFreeTextOption = computed(() => {
     const inputValue = this.inputValue();
@@ -378,7 +387,7 @@ export class ShipSelect {
     return score;
   }
 
-  #componentId = generateUniqueId();
+  componentId = generateUniqueId();
   inputRefEl = computed(() => {
     const inputRefInput = this.inputRefInput();
 
@@ -395,9 +404,10 @@ export class ShipSelect {
 
     input.autocomplete = 'off';
     input.setAttribute('role', 'combobox');
-    input.setAttribute('id', `combobox-${this.#componentId}`);
+    input.setAttribute('id', `combobox-${this.componentId}`);
     input.setAttribute('aria-haspopup', 'listbox');
-    input.setAttribute('aria-owns', 'optionsWrapId');
+    input.setAttribute('aria-owns', `optionsWrapId-${this.componentId}`);
+    input.setAttribute('aria-controls', `optionsWrapId-${this.componentId}`);
 
     this.#createCustomInputEventListener(input);
 
@@ -438,10 +448,10 @@ export class ShipSelect {
 
     if (!input) return;
 
-    const focusedId = this.getLabelAsSlug(this.filteredOptions()[this.focusedOptionIndex()]);
+    const index = this.focusedOptionIndex();
 
-    if (focusedId) {
-      input.setAttribute('aria-activedescendant', focusedId);
+    if (index >= 0 || (index === -1 && this.asFreeText())) {
+      input.setAttribute('aria-activedescendant', this.getOptionId(index));
     } else {
       input.removeAttribute('aria-activedescendant');
     }
@@ -682,12 +692,8 @@ export class ShipSelect {
     return this.#getProperty(option, label);
   }
 
-  getLabelAsSlug(option: unknown) {
-    const label = this.getLabel(option);
-
-    if (!label || typeof label !== 'string') return '';
-
-    return label.replaceAll(' ', '-');
+  getOptionId(index: number) {
+    return `opt-${this.componentId}-${index}`;
   }
 
   toggleOptionByIndex(optionIndex: number, event?: MouseEvent, enterKey = false) {
@@ -821,7 +827,7 @@ export class ShipSelect {
     const prevInputValue = this.prevInputValue();
     const prevSelectedOptions = this.#previousSelectedOptions();
 
-    if (this.asFreeText()) {
+    if (this.asFreeText() && !this.selectMultiple()) {
       this.updateInputElValue();
       return;
     }

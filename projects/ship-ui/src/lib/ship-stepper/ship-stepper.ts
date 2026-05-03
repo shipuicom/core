@@ -18,7 +18,7 @@ export class ShipStepper extends ShipSelectionGroup<string> {
   color = input<ShipColor | null>(null);
 
   constructor() {
-    super('[value], [step], [routerLinkActive], button, a', 'active');
+    super('[value], [step], [routerLinkActive], button, a', 'active', { hostRole: 'tablist', itemRole: 'tab' });
 
     effect(() => {
       this.items().forEach((item) => {

@@ -88,10 +88,9 @@ export class ShipPopover {
 
   openEffect = effect(() => {
     const open = this.isOpen();
+    const popoverEl = this.popoverRef()?.nativeElement;
 
     queueMicrotask(() => {
-      const popoverEl = this.popoverRef()?.nativeElement;
-
       if (!popoverEl) {
         this.openAbort?.abort();
         this.openAbort = null;

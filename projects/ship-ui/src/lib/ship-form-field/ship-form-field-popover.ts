@@ -17,7 +17,7 @@ import { ShipColor, ShipFormFieldVariant, ShipSize } from '../utilities/ship-typ
         closeOnButton: false,
         closeOnEsc: true,
       }">
-      <div trigger class="input-wrap">
+      <div trigger class="input-wrap" [class.is-open]="isOpen()">
         <div class="prefix">
           <ng-content select="[prefix]"></ng-content>
           <ng-content select="[textPrefix]"></ng-content>
@@ -69,14 +69,17 @@ export class ShipFormFieldPopover {
     readonly: this.readonly,
   });
 
-  @HostListener('click')
-  onClick() {
-    if (this.#selfRef.nativeElement.querySelector('input')) {
-      this.#selfRef.nativeElement.querySelector('input').focus();
-    }
-
-    if (this.#selfRef.nativeElement.querySelector('textarea')) {
-      this.#selfRef.nativeElement.querySelector('textarea').focus();
+  @HostListener('click', ['$event'])
+  onClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (target.closest('.input-wrap')) {
+      if (this.#selfRef.nativeElement.querySelector('input')) {
+        this.#selfRef.nativeElement.querySelector('input').focus();
+      }
+  
+      if (this.#selfRef.nativeElement.querySelector('textarea')) {
+        this.#selfRef.nativeElement.querySelector('textarea').focus();
+      }
     }
   }
 

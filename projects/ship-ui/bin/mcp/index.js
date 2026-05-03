@@ -13663,13 +13663,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
   if (name === "search_components") {
     const { query } = args;
-    const results = components.filter((c) => c.name.toLowerCase().includes(query.toLowerCase()) || c.selector.toLowerCase().includes(query.toLowerCase()));
+    const results = components.filter((c) => {
+      const q = query.toLowerCase();
+      return c.name.toLowerCase().includes(q) || c.selector.toLowerCase().includes(q) || c.keywords?.some((k) => k.toLowerCase().includes(q));
+    });
     return {
       content: [
         {
           type: "text",
-          text: JSON.stringify(results.map((c) => ({ name: c.name, selector: c.selector, description: c.description?.split(`
-`)[0] })), null, 2)
+          text: JSON.stringify(results.map((c) => ({
+            name: c.name,
+            selector: c.selector,
+            description: c.description?.split(`
+`)[0],
+            keywords: c.keywords
+          })), null, 2)
         }
       ]
     };
@@ -13738,6 +13746,9 @@ Here are the component details:
 
 Description:
 ${component.description || "No description available"}
+
+Keywords:
+${component.keywords?.join(", ") || "None"}
 
 Inputs:
 ${component.inputs.map((i) => `- ${i.name} (${i.type})${i.defaultValue ? ` (default: ${i.defaultValue})` : ""}${i.options ? ` [options: ${i.options.join(", ")}]` : ""}${i.description ? `: ${i.description}` : ""}`).join(`

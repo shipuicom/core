@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipButtonGroup, ShipCheckbox, ShipFormField } from 'ship-ui';
+import { ShipButtonGroup, ShipCheckbox, ShipFormField, ShipFormFieldVariant } from 'ship-ui';
 
 @Component({
   selector: 'app-form-field-sandbox',
@@ -24,6 +24,6 @@ export class FormFieldSandbox {
   showError = signal<boolean>(false);
   disabled = signal<boolean>(false);
   inputType = signal<'text' | 'number' | 'textarea'>('text');
-  size = signal<string>(''); // '', 'small', 'autosize', etc.
+  variant = signal<ShipFormFieldVariant>(''); // '', 'small', 'autosize', etc.
   value = signal<string>('');
 }

@@ -6,7 +6,6 @@ import { BaseSortable } from './examples/base-sortable/base-sortable';
 import { CrossListSortable } from './examples/cross-list-sortable/cross-list-sortable';
 import { GridSortableExample } from './examples/grid-sortable/grid-sortable-example';
 import { HandleSortable } from './examples/handle-sortable/handle-sortable';
-import { MixedSizeSortable } from './examples/mixed-size-sortable/mixed-size-sortable';
 
 const CONTENT_EXAMPLE = [
   {
@@ -46,7 +45,7 @@ const CONTENT_EXAMPLE = [
 
 @Component({
   selector: 'app-sortables',
-  imports: [BaseSortable, CrossListSortable, GridSortableExample, HandleSortable, MixedSizeSortable, PropertyViewer, Previewer, Highlight],
+  imports: [BaseSortable, CrossListSortable, GridSortableExample, HandleSortable, PropertyViewer, Previewer, Highlight],
   templateUrl: './sortables.html',
   styleUrl: './sortables.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

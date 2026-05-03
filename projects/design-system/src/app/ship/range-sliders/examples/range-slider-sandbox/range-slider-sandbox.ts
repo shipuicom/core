@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipButtonGroup, ShipFormField, ShipRangeSlider, ShipToggle } from 'ship-ui';
+import { ShipButtonGroup, ShipFormField, ShipRangeSlider, ShipRangeSliderVariant, ShipToggle } from 'ship-ui';
 
 @Component({
   selector: 'app-range-slider-sandbox',
@@ -21,5 +21,5 @@ export class RangeSliderSandbox {
   sharp = signal(false);
   unit = signal('%');
   color = signal<'primary' | 'accent' | 'warn' | 'success' | 'error'>('primary');
-  variation = signal<'base' | 'thick' | 'outlined' | 'flat' | 'raised'>('base');
+  variation = signal<ShipRangeSliderVariant | null>(null);
 }

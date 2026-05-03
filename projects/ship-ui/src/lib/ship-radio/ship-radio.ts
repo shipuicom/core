@@ -35,6 +35,9 @@ import { ShipColor, ShipSheetVariant } from '../utilities/ship-types';
   host: {
     '[class]': 'hostClasses()',
     '[attr.disabled]': 'disabled() ? "" : null',
+    '[attr.role]': 'noInternalInput() ? "radio" : null',
+    '[attr.aria-checked]': 'noInternalInput() ? checked() : null',
+    '[attr.tabindex]': 'noInternalInput() ? (disabled() ? "-1" : "0") : null',
   },
 })
 export class ShipRadio {
@@ -68,6 +71,7 @@ export class ShipRadio {
   });
 
   @HostListener('keydown.enter', ['$event'])
+  @HostListener('keydown.space', ['$event'])
   protected onEnter(event: Event) {
     const inputEl = this.internalInput()?.nativeElement;
     if (inputEl && getComputedStyle(inputEl).display !== 'none') {

@@ -11,28 +11,27 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { ShipColor, ShipFormFieldVariant, ShipSize } from '../utilities/ship-types';
-import { hslToRgbExact, rgbToHex, rgbaToHex8, rgbToHsl } from '../utilities/color-conversions';
 import { ShipButton } from '../ship-button/ship-button';
 import { ShipFormFieldPopover } from '../ship-form-field/ship-form-field-popover';
 import { ShipIcon } from '../ship-icon/ship-icon';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
+import { hslToRgbExact, rgbaToHex8, rgbToHex, rgbToHsl } from '../utilities/color-conversions';
 import { contentProjectionSignal } from '../utilities/content-projection-signal';
+import { ShipColor, ShipFormFieldVariant, ShipSize } from '../utilities/ship-types';
 import { ShipColorPicker } from './ship-color-picker';
 
 @Component({
   selector: 'sh-color-picker-input',
   imports: [ShipFormFieldPopover, ShipColorPicker, ShipIcon, ShipButton],
   template: `
-    <sh-form-field-popover 
-      (closed)="close()" 
-      [(isOpen)]="isOpen" 
+    <sh-form-field-popover
+      (closed)="close()"
+      [(isOpen)]="isOpen"
       [class]="currentClass()"
       [variant]="variant()"
       [size]="size()"
       [color]="color()"
-      [readonly]="readonly()"
-    >
+      [readonly]="readonly()">
       <ng-content select="label" ngProjectAs="label" />
 
       <ng-content select="[prefix]" ngProjectAs="[prefix]" />
@@ -90,7 +89,7 @@ export class ShipColorPickerInput {
 
   renderingType = input<'hsl' | 'grid' | 'hue' | 'rgb' | 'saturation' | 'alpha'>('hsl');
   format = input<'rgb' | 'rgba' | 'hex' | 'hex8' | 'hsl' | 'hsla'>('rgb');
-  
+
   color = input<ShipColor | null>(null);
   variant = input<ShipFormFieldVariant | null>(null);
   size = input<ShipSize | null>(null);

@@ -28,9 +28,6 @@
           <a href="https://github.com/shipuicom/core" target="_blank" rel="noopener noreferrer">
             <sh-icon>github-logo-bold</sh-icon>
           </a>
-          <button shButton size="small" (click)="toggleEditor()">
-            <sh-icon>gear</sh-icon>
-          </button>
         </div>
       </header>
     }
@@ -54,7 +51,7 @@
 
       <h3 title>Theme</h3>
 
-      <button action>
+      <button action (click)="toggleEditor()">
         <sh-icon class="sh-primary">paint-roller</sh-icon>
         Theme Editor (WIP)
       </button>

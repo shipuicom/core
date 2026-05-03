@@ -13,7 +13,7 @@ const SHEET_FILE = path.join(rootPath, 'projects/ship-ui/styles/components/ship-
 // Default outputs to the library project so they get bundled
 const DEFAULT_OUTPUT = path.join(rootPath, 'projects/ship-ui/assets/mcp/components.json');
 const LOCAL_OUTPUT = path.join(__dirname, 'components.json');
-const DEFAULT_SNIPPETS = path.join(rootPath, 'projects/ship-ui/snippets/ship-ui.code-snippets');
+const DEFAULT_SNIPPETS = path.join(rootPath, '.vscode/ship-ui-components.code-snippets');
 
 const OUTPUT_FILE = process.argv[2] ? path.resolve(process.argv[2]) : DEFAULT_OUTPUT;
 const SNIPPETS_FILE = process.argv[3] ? path.resolve(process.argv[3]) : DEFAULT_SNIPPETS;
@@ -62,17 +62,35 @@ function parseTypes() {
   const types: Record<string, string[]> = {};
   if (fs.existsSync(TYPES_FILE)) {
     const content = fs.readFileSync(TYPES_FILE, 'utf-8');
+    
+    // Parse `as const` arrays
+    const arrayMap: Record<string, string[]> = {};
+    const arrayMatches = content.matchAll(/export const (__SHIP_[A-Z_]+)\s*=\s*\[([\s\S]*?)\]\s*as\s*const;/g);
+    for (const match of arrayMatches) {
+        if (match[1] && match[2]) {
+            arrayMap[match[1]] = match[2].split(',').map(v => v.trim().replace(/['"]/g, '')).filter(v => v !== '');
+        }
+    }
+    
     const typeMatches = content.matchAll(/export type (\w+) = ([\s\S]*?);/g);
     for (const match of typeMatches) {
       const name = match[1];
       const definition = match[2];
       if (name && definition) {
-        const values = definition
-          .split('|')
-          .map((v) => v.trim())
-          .filter((v: string) => v.startsWith("'") || v.startsWith('"'))
-          .map((v: string) => v.replace(/['"]/g, ''));
-        types[name] = values;
+        const typeofMatch = definition.match(/typeof (__SHIP_[A-Z_]+)\[number\]/);
+        if (typeofMatch && typeofMatch[1] && arrayMap[typeofMatch[1]]) {
+            types[name] = arrayMap[typeofMatch[1]];
+        } else {
+            const values = definition
+              .split('|')
+              .map((v) => v.trim())
+              .filter((v: string) => v.startsWith("'") || v.startsWith('"'))
+              .map((v: string) => v.replace(/['"]/g, ''));
+            
+            if (values.length > 0) {
+              types[name] = values;
+            }
+        }
       }
     }
   }
@@ -431,7 +449,7 @@ function scanComponents() {
               const attrs = commonInputs
                 .map((i, idx) => {
                   if (i.options && i.options.length > 0) {
-                    return `[${i.name}]="\${${idx + 1}|${i.options.join(',')}|}"`;
+                    return `${i.name}="\${${idx + 1}|${i.options.join(',')}|}"`;
                   }
                   return `[${i.name}]="\${${idx + 1}:${i.defaultValue || "''"}}"`;
                 })

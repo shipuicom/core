@@ -2,7 +2,7 @@
 
 import { spawnSync } from 'child_process';
 import { FSWatcher, watch } from 'fs';
-import { readFile, writeFile, readdir } from 'fs/promises';
+import { readFile, writeFile, readdir, mkdir } from 'fs/promises';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { gzipSync } from 'zlib';
@@ -309,7 +309,13 @@ const textMateSnippet = async (GLYPH_MAP: Record<string, [string, string]>) => {
   }
   `;
 
-  await writeFile('./.vscode/html.code-snippets', iconsSnippetContent);
+  try {
+    await mkdir('./.vscode', { recursive: true });
+    await writeFile('./.vscode/html.code-snippets', iconsSnippetContent);
+  } catch (error) {
+    // Gracefully ignore snippet generation failures (e.g. in read-only CI environments)
+    console.warn('⚠️ Could not generate VS Code snippets:', error);
+  }
 };
 
 function capitalize(str: string) {

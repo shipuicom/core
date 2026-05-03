@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipButtonGroup, ShipIcon, ShipRangeSlider } from 'ship-ui';
+import { ShipButtonGroup, ShipColor, ShipIcon, ShipIconSize, ShipRangeSlider } from 'ship-ui';
 
 @Component({
   selector: 'app-sandbox-icon',
@@ -10,7 +10,7 @@ import { ShipButtonGroup, ShipIcon, ShipRangeSlider } from 'ship-ui';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SandboxIcon {
-  size = signal<string>('');
+  size = signal<ShipIconSize>('');
   sizeValue = signal<number>(10);
-  colorClass = signal<string>('');
+  colorClass = signal<ShipColor>('');
 }

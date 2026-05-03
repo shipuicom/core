@@ -1,35 +1,21 @@
 <div class="controls">
   <div class="row">
-    <sh-checkbox color="primary" variant="raised" [(checked)]="showLabel">
-      Label
-    </sh-checkbox>
-    <sh-checkbox color="primary" variant="raised" [(checked)]="showPrefix">
-      Prefix
-    </sh-checkbox>
-    <sh-checkbox color="primary" variant="raised" [(checked)]="showSuffix">
-      Suffix
-    </sh-checkbox>
-    <sh-checkbox color="primary" variant="raised" [(checked)]="showHint">
-      Hint
-    </sh-checkbox>
-    <sh-checkbox color="primary" variant="raised" [(checked)]="showError">
-      Error
-    </sh-checkbox>
-    <sh-checkbox color="primary" variant="raised" [(checked)]="disabled">
-      Disabled
-    </sh-checkbox>
+    <sh-checkbox color="primary" variant="raised" [(checked)]="showLabel">Label</sh-checkbox>
+    <sh-checkbox color="primary" variant="raised" [(checked)]="showPrefix">Prefix</sh-checkbox>
+    <sh-checkbox color="primary" variant="raised" [(checked)]="showSuffix">Suffix</sh-checkbox>
+    <sh-checkbox color="primary" variant="raised" [(checked)]="showHint">Hint</sh-checkbox>
+    <sh-checkbox color="primary" variant="raised" [(checked)]="showError">Error</sh-checkbox>
+    <sh-checkbox color="primary" variant="raised" [(checked)]="disabled">Disabled</sh-checkbox>
   </div>
 
   <div class="row">
     <sh-button-group class="small" [(value)]="inputType">
       <button type="button" value="text">Text</button>
       <button type="button" value="number">Number</button>
-      <button type="button" value="textarea">
-        Textarea
-      </button>
+      <button type="button" value="textarea">Textarea</button>
     </sh-button-group>
 
-    <sh-button-group class="small" [(value)]="size">
+    <sh-button-group class="small" [(value)]="variant">
       <button type="button" value="">Default</button>
       <button type="button" value="small">Small</button>
       <button type="button" value="autosize">Autosize</button>
@@ -57,7 +43,7 @@
 </div>
 
 <div class="sandbox">
-  <sh-form-field [variant]="size()">
+  <sh-form-field [variant]="variant()">
     @if (showLabel()) {
       <label>{{ label() }}</label>
     }

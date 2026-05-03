@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipAccordion, ShipButton, ShipFormField, ShipSelect, ShipToggle } from 'ship-ui';
+import { ShipAccordion, ShipButton, ShipFormField, ShipSelect, ShipToggle, ShipVariant } from 'ship-ui';
 
 @Component({
   selector: 'app-sandbox-accordion',
@@ -12,7 +12,7 @@ import { ShipAccordion, ShipButton, ShipFormField, ShipSelect, ShipToggle } from
 export class SandboxAccordion {
   openPanels = signal<string>('panel1');
   allowMultiple = signal<boolean>(false);
-  variantType = signal<string | null>(null);
+  variantType = signal<ShipVariant | null>(null);
 
   availableVariants = [
     { value: '', label: 'Default' },

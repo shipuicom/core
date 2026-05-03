@@ -6,18 +6,21 @@ import {
   ElementRef,
   input,
   model,
+  output,
   signal,
   viewChild,
+  inject,
 } from '@angular/core';
 import { ShipIcon } from '../ship-icon/ship-icon';
 import { classMutationSignal } from '../utilities/class-mutation-signal';
+import { HostListener } from '@angular/core';
 
 @Component({
   selector: 'sh-datepicker',
   imports: [ShipIcon],
   template: `
     <header>
-      <button (click)="previousMonth()"><sh-icon>caret-left</sh-icon></button>
+      <button tabindex="-1" (click)="previousMonth()"><sh-icon>caret-left</sh-icon></button>
       <div class="title">
         {{ getMonthName(currentDate()!) }}
         @if (monthsToShow() > 1) {
@@ -25,7 +28,7 @@ import { classMutationSignal } from '../utilities/class-mutation-signal';
         }
         {{ getFullYear(currentDate()!) }}
       </div>
-      <button (click)="nextMonth()"><sh-icon>caret-right</sh-icon></button>
+      <button tabindex="-1" (click)="nextMonth()"><sh-icon>caret-right</sh-icon></button>
     </header>
 
     <section class="months-container">
@@ -39,13 +42,18 @@ import { classMutationSignal } from '../utilities/class-mutation-signal';
 
           <div class="days" #daysRef>
             @for (calDate of getMonthDates(monthOffset); track $index) {
-              <div
+              <button
+                type="button"
                 #elementRef
                 [class.out-of-scope]="!isCurrentMonth(calDate, monthOffset)"
                 [class]="isDateSelected(calDate)"
+                [attr.aria-label]="getAriaLabel(calDate)"
+                [attr.tabindex]="getTabIndex(calDate)"
+                [attr.aria-selected]="isDateSelectedBool(calDate)"
+                (keydown)="onKeydown($event, calDate)"
                 (click)="setDate(calDate, elementRef)">
                 {{ calDate.getDate() }}
-              </div>
+              </button>
             }
 
             @if (!asRange()) {
@@ -71,8 +79,10 @@ export class ShipDatepicker {
   date = model<Date | null>(null);
   endDate = model<Date | null>(null);
   asRange = input<boolean>(false);
+  activeRangeSelection = input<'start' | 'end' | null>(null);
   monthsToShow = input<number>(1);
   disabled = input<boolean>(false);
+  tabbedOut = output<void>();
 
   startOfWeek = input<number>(1);
   weekdayLabels = input<string[]>(['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']);
@@ -130,7 +140,9 @@ export class ShipDatepicker {
 
   #setDateAsCurrent() {
     const newDate = this.date();
-    if (newDate) this.currentDate.set(newDate);
+    if (newDate && !isNaN(newDate.getTime())) {
+      this.currentDate.set(newDate);
+    }
     this.#findSelectedAndCalc();
   }
 
@@ -142,7 +154,7 @@ export class ShipDatepicker {
         return this.selectedDateStylePosition.update((x) => (x ? { ...x, opacity: '0' } : null));
       }
 
-      this.setSelectedDateStylePosition(selectedElement as HTMLDivElement);
+      this.setSelectedDateStylePosition(selectedElement as HTMLElement);
     });
   }
 
@@ -196,12 +208,23 @@ export class ShipDatepicker {
     this.#findSelectedAndCalc();
   }
 
-  setDate(newDate: Date, selectedElement: HTMLDivElement) {
-    const createDateWithExistingTime = (newDate: Date, existingDate: Date | null) => {
-      const hours = existingDate?.getHours() ?? 0;
-      const minutes = existingDate?.getMinutes() ?? 0;
-      const seconds = existingDate?.getSeconds() ?? 0;
-      const milliseconds = existingDate?.getMilliseconds() ?? 0;
+  setDate(newDate: Date, selectedElement: HTMLElement) {
+    this.focusedDate.set(newDate);
+
+    const createDateWithExistingTime = (newDate: Date, existingDate: any | null) => {
+      let hours = 0, minutes = 0, seconds = 0, milliseconds = 0;
+      
+      if (existingDate) {
+        if (typeof existingDate === 'string' || typeof existingDate === 'number') {
+          existingDate = new Date(existingDate);
+        }
+        if (existingDate instanceof Date && !isNaN(existingDate.getTime())) {
+          hours = existingDate.getHours();
+          minutes = existingDate.getMinutes();
+          seconds = existingDate.getSeconds();
+          milliseconds = existingDate.getMilliseconds();
+        }
+      }
 
       return new Date(
         newDate.getFullYear(),
@@ -220,20 +243,41 @@ export class ShipDatepicker {
     } else {
       const startDate = this.date();
       const endDate = this.endDate();
-      const utcDate = createDateWithExistingTime(newDate, null);
+      const selectionMode = this.activeRangeSelection();
 
-      if (!startDate) {
+      if (selectionMode === 'start') {
+        const utcDate = createDateWithExistingTime(newDate, startDate);
         this.date.set(utcDate);
-      } else if (!endDate) {
-        if (utcDate < startDate) {
-          this.date.set(utcDate);
+        if (endDate && utcDate > endDate) {
+          this.endDate.set(null);
+        }
+      } else if (selectionMode === 'end') {
+        if (!startDate || newDate < startDate) {
+          const newStart = createDateWithExistingTime(newDate, startDate);
+          this.date.set(newStart);
           this.endDate.set(null);
         } else {
+          const utcDate = createDateWithExistingTime(newDate, endDate);
           this.endDate.set(utcDate);
         }
       } else {
-        this.date.set(utcDate);
-        this.endDate.set(null);
+        if (!startDate) {
+          const utcDate = createDateWithExistingTime(newDate, startDate);
+          this.date.set(utcDate);
+        } else if (!endDate) {
+          if (newDate < startDate) {
+            const newStart = createDateWithExistingTime(newDate, startDate);
+            this.date.set(newStart);
+            this.endDate.set(null);
+          } else {
+            const utcDate = createDateWithExistingTime(newDate, endDate);
+            this.endDate.set(utcDate);
+          }
+        } else {
+          const utcDate = createDateWithExistingTime(newDate, startDate);
+          this.date.set(utcDate);
+          this.endDate.set(null);
+        }
       }
     }
 
@@ -243,10 +287,13 @@ export class ShipDatepicker {
   }
 
   isDateSelected(date: Date): string | null {
-    const startDate = this.date();
-    const endDate = this.endDate();
+    let startDate: any = this.date();
+    let endDate: any = this.endDate();
 
-    if (startDate === null) return null;
+    if (typeof startDate === 'string' || typeof startDate === 'number') startDate = new Date(startDate);
+    if (typeof endDate === 'string' || typeof endDate === 'number') endDate = new Date(endDate);
+
+    if (!startDate || !(startDate instanceof Date) || isNaN(startDate.getTime())) return null;
 
     const startOfDay = (date: Date) => {
       return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
@@ -317,7 +364,7 @@ export class ShipDatepicker {
     return classes.join(' ') || null;
   }
 
-  setSelectedDateStylePosition(selectedElement: HTMLDivElement) {
+  setSelectedDateStylePosition(selectedElement: HTMLElement) {
     this.selectedDateStylePosition.set({
       transform: `translate(${selectedElement.offsetLeft}px, ${selectedElement.offsetTop}px)`,
       opacity: '1',
@@ -336,5 +383,127 @@ export class ShipDatepicker {
   isCurrentMonth(date: Date, monthOffset: number): boolean {
     const offsetDate = this.getOffsetDate(monthOffset);
     return date.getMonth() === offsetDate.getMonth();
+  }
+
+  focusedDate = signal<Date | null>(null);
+  #selfRef = inject(ElementRef);
+
+  isSameDay(d1: Date | null | undefined, d2: Date | null | undefined): boolean {
+    if (!d1 || !d2) return false;
+    return d1.getFullYear() === d2.getFullYear() &&
+           d1.getMonth() === d2.getMonth() &&
+           d1.getDate() === d2.getDate();
+  }
+
+  getAriaLabel(date: Date): string {
+    return date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  getTabIndex(date: Date): number {
+    const focused = this.focusedDate();
+    const selected = this.date();
+    const today = new Date();
+
+    if (focused) {
+      return this.isSameDay(date, focused) ? 0 : -1;
+    }
+    if (selected) {
+      return this.isSameDay(date, selected) ? 0 : -1;
+    }
+    return this.isSameDay(date, today) ? 0 : -1;
+  }
+
+  isDateSelectedBool(date: Date): boolean {
+    const classes = this.isDateSelected(date);
+    return classes ? classes.includes('sel') : false;
+  }
+
+  onKeydown(event: KeyboardEvent, date: Date) {
+    let newDate = new Date(date);
+    let handled = false;
+
+    switch (event.key) {
+      case 'ArrowRight':
+        newDate.setDate(date.getDate() + 1);
+        handled = true;
+        break;
+      case 'ArrowLeft':
+        newDate.setDate(date.getDate() - 1);
+        handled = true;
+        break;
+      case 'ArrowDown':
+        newDate.setDate(date.getDate() + 7);
+        handled = true;
+        break;
+      case 'ArrowUp':
+        newDate.setDate(date.getDate() - 7);
+        handled = true;
+        break;
+      case 'PageDown':
+        newDate.setMonth(date.getMonth() + 1);
+        handled = true;
+        break;
+      case 'PageUp':
+        newDate.setMonth(date.getMonth() - 1);
+        handled = true;
+        break;
+      // Space and Enter are natively handled by the button's click event
+    }
+
+    if (handled) {
+      event.preventDefault();
+      this.ensureDateVisible(newDate);
+      this.focusedDate.set(newDate);
+      
+      setTimeout(() => {
+        const buttons = this.#selfRef.nativeElement.querySelectorAll('button');
+        if (buttons) {
+          const targetAria = this.getAriaLabel(newDate);
+          for (let i = 0; i < buttons.length; i++) {
+             if (buttons[i].getAttribute('aria-label') === targetAria) {
+               buttons[i].focus();
+               break;
+             }
+          }
+        }
+      });
+    }
+  }
+
+  ensureDateVisible(date: Date) {
+    const start = this.currentDate();
+    const end = this.getLastVisibleMonth();
+    
+    if (date < new Date(start.getFullYear(), start.getMonth(), 1)) {
+      this.currentDate.set(new Date(date.getFullYear(), date.getMonth(), 1));
+      this.#findSelectedAndCalc();
+    } else if (date > new Date(end.getFullYear(), end.getMonth() + 1, 0)) {
+      const newStart = new Date(date);
+      newStart.setMonth(newStart.getMonth() - this.monthsToShow() + 1);
+      newStart.setDate(1);
+      this.currentDate.set(newStart);
+      this.#findSelectedAndCalc();
+    }
+  }
+
+  focusActiveDate() {
+    setTimeout(() => {
+      const activeBtn = this.#selfRef.nativeElement.querySelector('button[tabindex="0"]') as HTMLButtonElement;
+      if (activeBtn) activeBtn.focus();
+    }, 50);
+  }
+
+  @HostListener('focusout', ['$event'])
+  onFocusOut(event: FocusEvent) {
+    setTimeout(() => {
+      const activeElement = document.activeElement as HTMLElement | null;
+      if (
+        activeElement &&
+        activeElement !== document.body &&
+        !this.#selfRef.nativeElement.contains(activeElement)
+      ) {
+        this.tabbedOut.emit();
+      }
+    });
   }
 }

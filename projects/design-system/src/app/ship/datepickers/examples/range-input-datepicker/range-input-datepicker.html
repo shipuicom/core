@@ -4,5 +4,5 @@
   <input type="text" [formControl]="endDate" placeholder="End date" />
   <sh-icon suffix>calendar</sh-icon>
 </sh-daterange-input>
-<p>Start: {{ startDate.value | date: 'mediumDate' }}</p>
-<p>End: {{ endDate.value | date: 'mediumDate' }}</p>
+<p>Start: {{ startDate.value || null | date: 'mediumDate' }}</p>
+<p>End: {{ endDate.value || null | date: 'mediumDate' }}</p>
