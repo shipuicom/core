@@ -31,7 +31,14 @@ This will re-scan the `projects/ship-ui` and `projects/design-system` directorie
 
 - **Resources**: Browse components via `ship-ui://components/sh-button`.
 - **Tools**:
-  - `search_components`: Find components by name.
-  - `get_component_details`: Get full documentation and examples.
+  - `search_components`: Find components by name or selector.
+  - `get_component_details`: Get full documentation, css variables, inputs/outputs, and examples.
+  - `get_setup_instructions`: Get step-by-step setup and installation instructions for an Angular 19+ project.
+  - `get_design_tokens`: Get a comprehensive guide on ShipUI design tokens (Radix 1-12 colors, typography, shapes, and utility classes).
+  - `get_css_variable_abbreviations`: Get the complete cheatsheet for minified CSS variables and abbreviations used in ShipUI components (e.g. `btn-c-h`).
+  - `get_icon_guide`: Get setup and usage instructions for Phosphor Icons CLI font subsetting (`ship-fg`).
 - **Prompts**:
   - `use_component`: Get a starting template for a specific component.
+  - `setup_project`: Tailored interactive step-by-step setup guides for different project types.
+  - `customize_theme`: Generate custom CSS theme overrides using Radix 1-12 scales.
+  - `implement_layout`: Guidance and templates to build structured layouts using `sh-sheet` and CSS grids.

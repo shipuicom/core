@@ -31,6 +31,7 @@ $shipCard: true !default;
       background-color: var(--card-bg);
       inset: 0;
       z-index: -2;
+      border-radius: inherit;
     }
 
     &:after {

@@ -1,0 +1,42 @@
+{
+  "name": "ship-ui-intellisense",
+  "displayName": "ShipUI Intellisense",
+  "description": "Rich auto-completion and auto-imports for ShipUI Angular components",
+  "version": "1.0.0",
+  "publisher": "ship-ui",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/ship-ui.git"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Snippets",
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onLanguage:html"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "ship-ui.autoImport",
+        "title": "ShipUI: Auto Import Component"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "bun run build",
+    "compile": "tsc -noEmit && esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
+    "build": "bun run compile",
+    "watch": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --watch"
+  },
+  "devDependencies": {
+    "@types/node": "18.x",
+    "@types/vscode": "^1.80.0",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.0.0"
+  }
+}
