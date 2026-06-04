@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   Directive,
   effect,
   ElementRef,
@@ -257,11 +258,30 @@ export class ShipTable {
   tbody = viewChild<ElementRef<HTMLTableSectionElement>>('tbody');
   columns = observeChildren<HTMLTableColElement>(this.thead, ['tr:first-child th']);
 
-  stickyHeaderHeight = computed(() => {
-    const _ = this.hostClasses();
-    const height = this.thead()?.nativeElement?.clientHeight;
+  stickyHeaderHeight = signal<number>(0);
 
-    return height ?? 0;
+  #destroyRef = inject(DestroyRef);
+  #resizeObserver: ResizeObserver | null = null;
+
+  theadEffect = effect(() => {
+    const head = this.thead()?.nativeElement;
+    
+    if (this.#resizeObserver) {
+      this.#resizeObserver.disconnect();
+      this.#resizeObserver = null;
+    }
+
+    if (head && typeof ResizeObserver !== 'undefined') {
+      this.#resizeObserver = new ResizeObserver((entries) => {
+        const height = head.clientHeight;
+        this.stickyHeaderHeight.set(height);
+      });
+      this.#resizeObserver.observe(head);
+    }
+  });
+
+  #cleanup = this.#destroyRef.onDestroy(() => {
+    this.#resizeObserver?.disconnect();
   });
 
   bodyEffect = effect(() => {

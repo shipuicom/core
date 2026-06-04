@@ -284,6 +284,20 @@ $shipTable: true !default;
         cursor: pointer;
         user-select: none;
 
+        sh-icon {
+          opacity: 0.35;
+          transition: opacity 125ms ease-in-out;
+        }
+
+        &:hover sh-icon {
+          opacity: 0.7;
+        }
+
+        &.sort-asc sh-icon,
+        &.sort-desc sh-icon {
+          opacity: 1;
+        }
+
         &:not(:has(sh-icon)) {
           &:after {
             content: '';

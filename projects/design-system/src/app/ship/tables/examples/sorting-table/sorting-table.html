@@ -8,9 +8,10 @@
 
         @if (sortByColumn() === col) {
           <sh-icon>caret-up</sh-icon>
-        }
-        @if (sortByColumn() === `-${col}`) {
+        } @else if (sortByColumn() === `-${col}`) {
           <sh-icon>caret-down</sh-icon>
+        } @else {
+          <sh-icon>arrows-down-up</sh-icon>
         }
       </th>
     }
