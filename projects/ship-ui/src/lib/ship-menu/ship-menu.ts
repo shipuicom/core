@@ -49,6 +49,10 @@ import { generateUniqueId } from '../utilities/random-id';
         @if (openIndicator()) {
           <sh-icon class="open-indicator">caret-down</sh-icon>
         }
+
+        @if (isSubmenu()) {
+          <sh-icon class="submenu-indicator">caret-right</sh-icon>
+        }
       </div>
 
       <div class="form-field-wrap">
@@ -87,6 +91,8 @@ import { generateUniqueId } from '../utilities/random-id';
 export class ShipMenu {
   #document = inject(DOCUMENT);
   #renderer = inject(Renderer2);
+  parentMenu = inject(ShipMenu, { optional: true, skipSelf: true });
+  isSubmenu = computed(() => this.parentMenu !== null);
   asMultiLayer = input<boolean>(false);
   openIndicator = input(false);
   disabled = input<boolean>(false);
@@ -117,7 +123,14 @@ export class ShipMenu {
   });
 
   options = observeChildren<HTMLButtonElement>(this.optionsRef, this.customOptionElementSelectors);
-  optionsEl = computed(() => this.options.signal().filter((x) => !x.disabled));
+  optionsEl = computed(() => {
+    const optionsContainer = this.optionsRef()?.nativeElement;
+    if (!optionsContainer) return [];
+    return this.options.signal().filter((x) => {
+      if (x.disabled) return false;
+      return x.closest('.options') === optionsContainer;
+    });
+  });
   inputValue = createFormInputSignal(this.inputRef);
 
   readonly optionsId = generateUniqueId();
@@ -140,6 +153,13 @@ export class ShipMenu {
       this.#document.documentElement.addEventListener('keydown', this.keyDownEventListener, {
         signal: this.abortController.signal,
       });
+    } else {
+      const inputEl = this.inputRef()?.nativeElement;
+      if (inputEl) {
+        inputEl.addEventListener('keydown', this.keyDownEventListener, {
+          signal: this.abortController.signal,
+        });
+      }
     }
 
     const inputEl = this.inputRef()?.nativeElement;
@@ -147,10 +167,6 @@ export class ShipMenu {
     if (!inputEl) return;
 
     queueMicrotask(() => inputEl.focus());
-
-    inputEl.addEventListener('keydown', this.keyDownEventListener, {
-      signal: this.abortController.signal,
-    });
 
     if (!this.closeOnClick()) {
       const optionRef = this.optionsRef()?.nativeElement;
@@ -188,6 +204,28 @@ export class ShipMenu {
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       this.activeOptionIndex.set(this.prevActiveIndex(activeOptionIndex));
+    } else if (e.key === 'ArrowRight') {
+      if (activeOptionIndex > -1) {
+        const el = this.activeElements()[activeOptionIndex as number];
+        const parent = el.parentElement;
+
+        // For nested menu's
+        if (parent?.hasAttribute('trigger')) {
+          e.preventDefault();
+          const event = new CustomEvent('ship-menu-open', {
+            bubbles: true,
+            cancelable: true,
+            detail: { keyboard: true },
+          });
+
+          el.dispatchEvent(event);
+        }
+      }
+    } else if (e.key === 'ArrowLeft') {
+      if (this.isSubmenu()) {
+        e.preventDefault();
+        this.close('closed');
+      }
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (activeOptionIndex > -1) {
@@ -199,6 +237,7 @@ export class ShipMenu {
           const event = new CustomEvent('ship-menu-open', {
             bubbles: true,
             cancelable: true,
+            detail: { keyboard: true },
           });
 
           el.dispatchEvent(event);
@@ -243,7 +282,10 @@ export class ShipMenu {
   inputValueEffect = effect(() => {
     const searchable = this.searchable();
 
-    if (!searchable) return;
+    if (!searchable) {
+      this.activeElements.set(this.optionsEl());
+      return;
+    }
 
     const inputValue = (this.inputValue() ?? '').toLowerCase();
 
@@ -330,6 +372,13 @@ export class ShipMenu {
     event.preventDefault();
     event.stopPropagation();
     this.open();
+
+    const customEvent = event as CustomEvent;
+    if (customEvent.detail?.keyboard) {
+      setTimeout(() => {
+        this.activeOptionIndex.set(0);
+      }, 50);
+    }
   }
 
   #calculateMatchScore(option: string, input: string): number {
@@ -458,6 +507,13 @@ export class ShipMenu {
 
       this.isOpen.set(false);
       this.closed.emit(action === 'active');
+
+      if (this.isSubmenu()) {
+        const parentInput = this.parentMenu?.inputRef()?.nativeElement;
+        if (parentInput) {
+          queueMicrotask(() => parentInput.focus());
+        }
+      }
     }
   }
 

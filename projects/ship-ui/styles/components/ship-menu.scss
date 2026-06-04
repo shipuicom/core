@@ -84,6 +84,30 @@ $shipMenu: true !default;
       }
     }
 
+    [trigger]:has(sh-icon.submenu-indicator) {
+      position: relative;
+
+      > :first-child {
+        padding-right: p2r(32) !important;
+      }
+
+      .submenu-indicator {
+        position: absolute;
+        right: p2r(16);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--base-8);
+        font-size: p2r(16);
+        font-weight: inherit;
+        pointer-events: none;
+        transition: transform 75ms ease-in-out;
+      }
+
+      &.is-open .submenu-indicator {
+        transform: translateY(-50%) rotate(90deg);
+      }
+    }
+
     sh-popover {
       flex: 1 0;
 
