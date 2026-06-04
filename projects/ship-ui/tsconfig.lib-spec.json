@@ -2,8 +2,20 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "../../out-tsc/spec",
-    "types": ["vitest/globals", "node"]
+    "types": ["vitest/globals", "node"],
+    "typeRoots": [
+      "../../node_modules/@types",
+      "../../node_modules"
+    ]
   },
   "include": ["src/**/*.spec.ts", "src/**/*.d.ts"],
-  "exclude": ["node_modules/@types/bun"]
+  "exclude": ["node_modules/@types/bun"],
+  "angularCompilerOptions": {
+    "extendedDiagnostics": {
+      "checks": {
+        "nullishCoalescingNotNullable": "suppress",
+        "optionalChainNotNullable": "suppress"
+      }
+    }
+  }
 }

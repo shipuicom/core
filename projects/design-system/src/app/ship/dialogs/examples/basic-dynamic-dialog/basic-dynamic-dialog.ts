@@ -6,6 +6,7 @@ import { ShipButton, ShipDialogService } from 'ship-ui';
   standalone: true,
   imports: [ShipButton],
   templateUrl: './basic-dynamic-dialog.html',
+
   styleUrl: './basic-dynamic-dialog.scss',
 })
 export class BasicDynamicDialog {
@@ -24,6 +25,7 @@ export class BasicDynamicDialog {
 @Component({
   selector: 'simple-dialog-content',
   standalone: true,
+
   template: `
     <div style="padding: 2rem;">Hello from a basic dialog!</div>
   `,

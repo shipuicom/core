@@ -5,6 +5,7 @@ import { ShipButton, ShipIcon, ShipMenu } from 'ship-ui';
   selector: 'sh-icon-suffix-menu',
   templateUrl: './icon-suffix-menu.html',
   styleUrls: ['./icon-suffix-menu.scss'],
+
   imports: [ShipMenu, ShipIcon, ShipButton],
 })
 export class IconSuffixMenu {

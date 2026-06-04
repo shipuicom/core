@@ -5,6 +5,7 @@ import { ShipButton, ShipMenu } from 'ship-ui';
   selector: 'base-menu-example',
   templateUrl: './base-menu-example.html',
   styleUrls: ['./base-menu-example.scss'],
+
   imports: [ShipMenu, ShipButton],
 })
 export class BaseMenuExample {

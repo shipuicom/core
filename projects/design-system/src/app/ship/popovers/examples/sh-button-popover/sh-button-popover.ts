@@ -6,6 +6,7 @@ import { ShipButton, ShipPopover } from 'ship-ui';
   standalone: true,
   imports: [ShipPopover, ShipButton],
   templateUrl: './sh-button-popover.html',
+
   styleUrl: './sh-button-popover.scss',
 })
 export class ShButtonPopover {}

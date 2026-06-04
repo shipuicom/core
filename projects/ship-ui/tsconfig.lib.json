@@ -9,5 +9,13 @@
     "inlineSources": true,
     "types": []
   },
-  "exclude": ["**/*.spec.ts", "node_modules/@types/bun"]
+  "exclude": ["**/*.spec.ts", "node_modules/@types/bun"],
+  "angularCompilerOptions": {
+    "extendedDiagnostics": {
+      "checks": {
+        "nullishCoalescingNotNullable": "suppress",
+        "optionalChainNotNullable": "suppress"
+      }
+    }
+  }
 }

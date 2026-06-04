@@ -6,6 +6,7 @@ import { ShipButton, ShipDialogService } from 'ship-ui';
   standalone: true,
   imports: [ShipButton],
   templateUrl: './header-footer-dialog.html',
+
   styleUrl: './header-footer-dialog.scss',
 })
 export class HeaderFooterDialog {
@@ -25,6 +26,7 @@ export class HeaderFooterDialog {
   standalone: true,
   imports: [ShipButton],
   templateUrl: './header-footer-dialog-content.html',
+
   styleUrl: './header-footer-dialog-content.scss',
 })
 class HeaderFooterDialogContent {

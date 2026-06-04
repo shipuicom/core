@@ -6,6 +6,7 @@ import { ShipButton, ShipDialogService } from 'ship-ui';
   standalone: true,
   imports: [ShipButton],
   templateUrl: './data-passing-dialog.html',
+
   styleUrl: './data-passing-dialog.scss',
 })
 export class DataPassingDialog {
@@ -39,6 +40,7 @@ export class DataPassingDialog {
   standalone: true,
   imports: [ShipButton],
   templateUrl: './data-dialog-content.html',
+
   styleUrl: './data-dialog-content.scss',
 })
 class DataDialogContent {

@@ -4,6 +4,7 @@ import { createInputSignal } from './create-input-signal';
 
 @Component({
   selector: 'app-child',
+
   template: `
     <ng-content />
   `,
@@ -22,6 +23,7 @@ class ChildComponentExample {
 @Component({
   selector: 'app-parent',
   imports: [FormsModule, ChildComponentExample],
+
   template: `
     <app-child>
       <input type="text" #myTextInput [(ngModel)]="exampleModel" />
@@ -58,6 +60,7 @@ class ParentComponentExample {
       <p>typeof number input value: {{ typeof numberInputSignal() }}</p>
     </div>
   `,
+
   styles: [
     `
       :host {
@@ -125,6 +128,7 @@ export class ChildComponent {
       <button (click)="toggleTextInput()">Toggle Text Input</button>
     </app-child>
   `,
+
   styles: [
     `
       [number-wrap] {

@@ -6,6 +6,7 @@ import { ShipButton, ShipDialogService } from 'ship-ui';
   standalone: true,
   imports: [ShipButton],
   templateUrl: './template-dialog.html',
+
   styleUrl: './template-dialog.scss',
 })
 export class TemplateDialog {

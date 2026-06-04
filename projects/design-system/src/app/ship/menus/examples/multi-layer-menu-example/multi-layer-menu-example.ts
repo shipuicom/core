@@ -6,6 +6,7 @@ import { ShipButton, ShipMenu } from 'ship-ui';
   templateUrl: './multi-layer-menu-example.html',
   styleUrls: ['./multi-layer-menu-example.scss'],
   imports: [ShipMenu, ShipButton],
+
   standalone: true,
 })
 export class MultiLayerMenuExample {

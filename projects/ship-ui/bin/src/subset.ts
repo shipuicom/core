@@ -1,5 +1,6 @@
 import { readFile } from 'fs/promises';
 import { createRequire } from 'module';
+import { dirname, resolve } from 'path';
 
 const require = createRequire(import.meta.url);
 
@@ -11,7 +12,8 @@ let harfbuzzInst: { harfbuzzJsWasm: any; heapu8: Uint8Array } | null = null;
 async function loadAndInitializeHarfbuzz() {
   if (harfbuzzInst) return harfbuzzInst;
 
-  const wasmPath = require.resolve('harfbuzzjs/hb-subset.wasm');
+  const mainEntry = require.resolve('harfbuzzjs');
+  const wasmPath = resolve(dirname(mainEntry), 'harfbuzz-subset.wasm');
   const wasmBuffer = await readFile(wasmPath);
   const { instance } = await WebAssembly.instantiate(wasmBuffer);
   const harfbuzzJsWasm = instance.exports as any;

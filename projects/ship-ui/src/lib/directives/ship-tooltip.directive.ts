@@ -35,6 +35,7 @@ type Timeout = ReturnType<typeof setTimeout>;
       }
     </div>
   `,
+
   host: {
     role: 'tooltip',
     '[attr.popover]': '"manual"',

@@ -7,6 +7,7 @@ import { ShipButton, ShipMenu } from 'ship-ui';
   templateUrl: './search-menu-example.html',
   styleUrls: ['./search-menu-example.scss'],
   imports: [FormsModule, ShipMenu, ShipButton],
+
   standalone: true,
 })
 export class SearchMenuExample {

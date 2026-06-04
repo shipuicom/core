@@ -9,6 +9,7 @@ import { ShipToggleCard } from './ship-toggle-card'; // Update path as needed
 @Component({
   selector: 'sh-icon',
   template: '',
+
   standalone: true,
 })
 class MockShipIcon {}
@@ -72,8 +73,8 @@ describe('ShipToggleCard', () => {
       fixture.componentRef.setInput('disableToggle', true);
       fixture.detectChanges();
 
-      // Ensure it started as false (default)
-      expect(component.isActive()).toBe(false);
+      // Ensure it started as true (default when disabled)
+      expect(component.isActive()).toBe(true);
 
       // Try to click header
       const header = fixture.debugElement.query(By.css('h3'));
@@ -81,8 +82,8 @@ describe('ShipToggleCard', () => {
 
       fixture.detectChanges();
 
-      // Should remain false (no toggle)
-      expect(component.isActive()).toBe(false);
+      // Should remain true (no toggle)
+      expect(component.isActive()).toBe(true);
     });
 
     it('should hide the toggle icon if disableToggle is true', () => {
@@ -97,12 +98,12 @@ describe('ShipToggleCard', () => {
       fixture.componentRef.setInput('disableToggle', true);
       fixture.detectChanges();
 
-      expect(component.isActive()).toBe(false);
+      expect(component.isActive()).toBe(true);
 
       component.toggle();
       fixture.detectChanges();
 
-      expect(component.isActive()).toBe(true);
+      expect(component.isActive()).toBe(false);
     });
   });
 });

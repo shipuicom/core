@@ -29,7 +29,7 @@ import { ShipCardVariant, ShipColor } from '../utilities/ship-types';
 })
 export class ShipToggleCard {
   disableToggle = input(false);
-  isActive = model<boolean>();
+  isActive = model<boolean>(false);
 
   #disabledEffect = effect(() => {
     if (this.disableToggle()) {

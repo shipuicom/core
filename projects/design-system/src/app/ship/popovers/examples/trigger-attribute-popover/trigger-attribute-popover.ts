@@ -6,6 +6,7 @@ import { ShipPopover } from 'ship-ui';
   standalone: true,
   imports: [ShipPopover],
   templateUrl: './trigger-attribute-popover.html',
+
   styleUrl: './trigger-attribute-popover.scss',
 })
 export class TriggerAttributePopover {}

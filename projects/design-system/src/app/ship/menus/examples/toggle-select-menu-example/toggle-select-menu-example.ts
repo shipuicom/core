@@ -6,6 +6,7 @@ import { ShipButton, ShipCheckbox, ShipMenu } from 'ship-ui';
   templateUrl: './toggle-select-menu-example.html',
   styleUrls: ['./toggle-select-menu-example.scss'],
   imports: [ShipMenu, ShipButton, ShipCheckbox],
+
   standalone: true,
 })
 export class ToggleSelectMenuExample {
