@@ -1,6 +1,5 @@
 @use '../showcase' as *;
 :host {
-  @extend %showcase-host;
   height: 100vh;
 }
 

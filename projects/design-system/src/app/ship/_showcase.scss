@@ -4,7 +4,22 @@
 %showcase-host {
   display: flex;
   flex-direction: column;
-  gap: p2r(20);
+  gap: p2r(24);
   padding: p2r(40);
-  width: calc(100% - var(--sh-sidenav));
+
+  @include breakpoint(-kilo) {
+    gap: p2r(16);
+    padding: p2r(24);
+  }
+
+  @include breakpoint(-milli) {
+    gap: p2r(12);
+    padding: p2r(16);
+    width: 100%;
+  }
+
+  @include breakpoint(-nano) {
+    gap: p2r(8);
+    padding: p2r(12);
+  }
 }
