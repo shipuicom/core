@@ -52,6 +52,6 @@ jobs:
         working-directory: ./dist/ship-ui
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
-          npm publish --access public
+          bun publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }} # Your NPM token from secrets
