@@ -1,0 +1,10 @@
+@forward 'helpers';
+@use 'helpers' as *;
+
+%showcase-host {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(20);
+  padding: p2r(40);
+  width: calc(100% - var(--sh-sidenav));
+}

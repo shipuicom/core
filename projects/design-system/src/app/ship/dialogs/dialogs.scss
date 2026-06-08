@@ -1,11 +1,6 @@
-@use '../../../../../ship-ui/styles/helpers.scss' as *;
-
+@use '../showcase' as *;
 :host {
-  display: flex;
-  flex-direction: column;
-  gap: p2r(20);
-  padding: p2r(40);
-  width: calc(100% - var(--sh-sidenav));
+  @extend %showcase-host;
 }
 
 h1 {

@@ -1,10 +1,6 @@
-@use 'helpers' as *;
-
+@use '../showcase' as *;
 :host {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 40px;
+  @extend %showcase-host;
 }
 
 .example {

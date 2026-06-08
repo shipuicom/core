@@ -1,6 +1,6 @@
-@use '../../../../../ship-ui/styles/helpers.scss' as *;
-
+@use '../showcase' as *;
 :host {
+  @extend %showcase-host;
   @include wrapper();
 }
 
