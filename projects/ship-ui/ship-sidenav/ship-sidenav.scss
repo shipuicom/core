@@ -151,6 +151,7 @@ $shipSidenav: true !default;
         flex-direction: column;
         transform: translateX(0);
         transition: transform 200ms linear;
+        overflow: hidden;
       }
 
       &.is-dragging {
@@ -187,7 +188,9 @@ $shipSidenav: true !default;
       main {
         border: 0;
         box-shadow: none;
-        flex: 1 0;
+        flex: 1;
+        height: auto;
+        min-height: 0;
         border-radius: 0;
       }
     }

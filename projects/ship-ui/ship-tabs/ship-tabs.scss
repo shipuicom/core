@@ -16,6 +16,13 @@ $shipTabs: true !default;
     gap: p2r(16);
     border-bottom: var(--border-10);
     position: relative;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
+    scrollbar-width: none; /* Firefox */
+    &::-webkit-scrollbar {
+      display: none; /* Safari and Chrome */
+    }
 
     button,
     [tab],
@@ -32,6 +39,8 @@ $shipTabs: true !default;
       color: var(--tabs-c);
       cursor: pointer;
       position: relative;
+      flex-shrink: 0;
+      white-space: nowrap;
 
       transition: transform 125ms linear;
       transform: scale(1);
