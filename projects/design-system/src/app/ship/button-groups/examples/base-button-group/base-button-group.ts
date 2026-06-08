@@ -11,12 +11,8 @@ import { ShipIcon } from '@ship-ui/core/ship-icon';
 })
 export class BaseButtonGroup {
   small = input<boolean>(false);
-  activeIndex = signal<number | null>(0);
+  activeIndex = signal<string | null>('0');
   selected = signal<string | null>('one');
 
-  items = signal(new Array(5).fill(0));
-
-  updateActiveIndex(newIndex: number) {
-    this.activeIndex.set(newIndex === this.activeIndex() ? null : newIndex);
-  }
+  items = signal(new Array(5).fill('0'));
 }
