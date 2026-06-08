@@ -18,6 +18,7 @@ $shipIcon: true !default;
     overflow: hidden;
     display: inline-block;
     color: var(--icon-c);
+    transition: color 150ms ease-out;
 
     &.primary {
       --icon-c: var(--primary-8);
@@ -37,6 +38,10 @@ $shipIcon: true !default;
 
     &.success {
       --icon-c: var(--success-8);
+    }
+
+    &.unfocused {
+      --icon-c: var(--base-8);
     }
 
     &.large {

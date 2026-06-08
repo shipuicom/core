@@ -28,6 +28,10 @@ export interface ShipRangeSliderConfig extends ShipComponentConfig {
   alwaysShow?: boolean;
 }
 
+export interface ShipIconConfig extends ShipComponentConfig {
+  disableUnfocus?: boolean;
+}
+
 export interface ShipConfigColors {
   primary?: string;
   accent?: string;
@@ -64,7 +68,7 @@ export interface ShipConfig {
   radio?: ShipComponentConfig;
   toggle?: ShipComponentConfig;
   formField?: ShipComponentConfig;
-  icon?: ShipComponentConfig;
+  icon?: ShipIconConfig;
   stepper?: ShipComponentConfig;
   select?: ShipComponentConfig;
   accordion?: ShipComponentConfig;
