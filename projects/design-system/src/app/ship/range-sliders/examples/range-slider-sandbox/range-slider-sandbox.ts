@@ -1,6 +1,10 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipButtonGroup, ShipFormField, ShipRangeSlider, ShipRangeSliderVariant, ShipToggle } from 'ship-ui';
+import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
+import { ShipFormField } from '@ship-ui/core/ship-form-field';
+import { ShipRangeSlider } from '@ship-ui/core/ship-range-slider';
+import { ShipRangeSliderVariant } from '@ship-ui/core';
+import { ShipToggle } from '@ship-ui/core/ship-toggle';
 
 @Component({
   selector: 'app-range-slider-sandbox',

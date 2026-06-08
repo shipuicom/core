@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipIcon, ShipSelect } from 'ship-ui';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipSelect } from '@ship-ui/core/ship-select';
 
 @Component({
   selector: 'app-base-select',

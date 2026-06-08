@@ -1,19 +1,17 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import {
-  ShipAccordion,
-  ShipButton,
-  ShipFormField,
-  ShipIcon,
-  ShipRangeSlider,
-  ShipSelect,
-  ShipThemeToggle,
-  ShipToggle,
-  ShipColorPickerInput,
-  ShipCard,
-  defaultThemeColors,
-} from 'ship-ui';
+import { ShipAccordion } from '@ship-ui/core/ship-accordion';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipFormField } from '@ship-ui/core/ship-form-field';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipRangeSlider } from '@ship-ui/core/ship-range-slider';
+import { ShipSelect } from '@ship-ui/core/ship-select';
+import { ShipThemeToggle } from '@ship-ui/core/ship-theme-toggle';
+import { ShipToggle } from '@ship-ui/core/ship-toggle';
+import { ShipColorPickerInput } from '@ship-ui/core/ship-color-picker';
+import { ShipCard } from '@ship-ui/core/ship-card';
+import { defaultThemeColors } from '@ship-ui/core';
 import { AppConfigService } from '../core/services/app-config.service';
 
 export interface EditorComponentControl {

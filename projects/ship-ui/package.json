@@ -1,7 +1,7 @@
 {
   "name": "@ship-ui/core",
   "license": "MIT",
-  "version": "0.20.0",
+  "version": "0.21.0",
   "peerDependencies": {
     "@angular/common": ">=20",
     "@angular/core": ">=20",
@@ -58,11 +58,15 @@
   ],
   "exports": {
     ".": {
-      "sass": "./styles/*",
+      "sass": "./styles/index.scss",
       "assets": [
         "./assets/**/*"
       ],
       "snippets": "./snippets/ship-ui.code-snippets"
+    },
+    "./styles/*": {
+      "sass": "./styles/*",
+      "default": "./styles/*"
     }
   },
   "sideEffects": false

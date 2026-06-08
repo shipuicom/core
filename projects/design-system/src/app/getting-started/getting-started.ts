@@ -1,6 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ShipButton, ShipCard, ShipChip, ShipDivider, ShipIcon, ShipList, ShipTabs } from 'ship-ui';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipCard } from '@ship-ui/core/ship-card';
+import { ShipChip } from '@ship-ui/core/ship-chip';
+import { ShipDivider } from '@ship-ui/core/ship-divider';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipList } from '@ship-ui/core/ship-list';
+import { ShipTabs } from '@ship-ui/core/ship-tabs';
 import { WINDOW } from '../core/providers/window';
 import { Highlight } from '../previewer/highlight/highlight';
 
@@ -38,10 +44,34 @@ export default class GettingStarted {
   ..
 }`;
 
-  COMPONENT_PREVIEW = `<button shButton color="primary">
-  <sh-icon>pen</sh-icon> 
-  Edit
-</button>`;
+  COMPONENT_PREVIEW = `import { Component } from '@angular/core';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+
+@Component({
+  selector: 'button-example',
+  imports: [ShipButton, ShipIcon],
+  template: \`
+    <button shButton color="primary">
+      <sh-icon>pen</sh-icon>
+      Edit
+    </button>
+  \`
+})
+export class ButtonExample {}`;
+
+  IMPORT_EXAMPLE = `import { Component } from '@angular/core';
+// Import each component from its secondary entry point
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+
+@Component({
+  selector: 'app-example',
+  standalone: true,
+  imports: [ShipButton, ShipIcon],
+  template: \`<button shButton><sh-icon>pen</sh-icon> Edit</button>\`
+})
+export class ExampleComponent {}`;
 
   CURSOR_CONFIG = `Name: ShipUI
 Type: command

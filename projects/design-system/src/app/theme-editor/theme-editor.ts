@@ -1,6 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { hslToOklch, ShipButton, ShipColorPicker, ShipMenu, ShipRadio } from 'ship-ui';
+import { hslToOklch } from '@ship-ui/core';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipColorPicker } from '@ship-ui/core/ship-color-picker';
+import { ShipMenu } from '@ship-ui/core/ship-menu';
+import { ShipRadio } from '@ship-ui/core/ship-radio';
 
 const DEFAULT_COLORS: { [key: string]: [number, number, number] } = {
   primary: [59, 130, 246],

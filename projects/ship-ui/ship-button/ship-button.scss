@@ -1,0 +1,137 @@
+@use 'helpers' as *;
+$shipButton: true !default;
+$shipButtonShadow: false !default;
+
+@if $shipButton == true {
+  [shButton] {
+    --btn-h: #{p2r(40)};
+    --btn-mw: #{p2r(40)};
+    --btn-f: var(--paragraph-20);
+    --btn-a-opacity: 0.05;
+
+    --btn-bs: var(--ship-button-shadow, none);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: p2r(11);
+    position: relative;
+    padding: p2r(0 12);
+    transition: color 80ms linear;
+    min-width: var(--btn-mw);
+    cursor: pointer;
+    outline: none;
+    line-height: inherit;
+    user-select: none;
+    appearance: none;
+    overflow: visible;
+    vertical-align: middle;
+    text-decoration: none;
+    height: var(--btn-h);
+    box-shadow: var(--btn-bs);
+    font: var(--btn-f);
+
+    transition: transform 250ms ease-in;
+    transform: scale(1);
+
+    &:before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(#000 30%, rgba(0, 0, 0, 0));
+      opacity: 0;
+      transition: opacity 175ms linear;
+    }
+
+    &:active {
+      transform: scale(0.98);
+
+      &:before {
+        opacity: var(--btn-a-opacity);
+      }
+    }
+
+    &.raised,
+    &.flat {
+      --btn-a-opacity: 0.1;
+    }
+
+    sh-icon {
+      rotate: var(--btn-ir);
+      transition: rotate 125ms ease-in-out;
+    }
+
+    sh-icon:first-child {
+      margin-left: p2r(-3);
+    }
+
+    sh-icon:last-child {
+      margin-right: p2r(-3);
+    }
+
+    &.rotated-icon sh-icon {
+      --btn-ir: 180deg;
+    }
+
+    &.small {
+      --btn-h: #{p2r(32)};
+      --btn-mw: #{p2r(32)};
+      --btn-f: var(--paragraph-30);
+
+      padding: p2r(0 8);
+      gap: p2r(5);
+
+      sh-icon {
+        font-size: p2r(16);
+      }
+
+      sh-icon:first-child {
+        margin-left: p2r(-1);
+      }
+
+      sh-icon:last-child {
+        margin-right: p2r(-1);
+      }
+    }
+
+    &.xsmall {
+      --btn-h: #{p2r(24)};
+      --btn-mw: #{p2r(24)};
+      --btn-f: var(--paragraph-40);
+
+      padding: p2r(0 8);
+      gap: p2r(4);
+
+      sh-icon {
+        font-size: p2r(12);
+      }
+
+      sh-icon:first-child {
+        margin-left: p2r(-3);
+      }
+
+      sh-icon:last-child {
+        margin-right: p2r(-3);
+      }
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    &[readonly],
+    &.readonly {
+      pointer-events: none;
+      user-select: none;
+    }
+
+    &[disabled],
+    &[readonly] {
+      &:active {
+        transform: scale(1);
+      }
+    }
+  }
+}

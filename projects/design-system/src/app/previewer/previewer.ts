@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
-import { ShipCard, ShipIcon, ShipTabs } from 'ship-ui';
+import { ShipCard } from '@ship-ui/core/ship-card';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipTabs } from '@ship-ui/core/ship-tabs';
 import { ConfigIndicatorComponent } from '../core/components/config-indicator/config-indicator';
 import { HighlightFile } from './highlight-file/highlight-file';
 

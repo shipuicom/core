@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ShipAlert } from 'ship-ui';
+import { ShipAlert } from '@ship-ui/core/ship-alert';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
 import { CustomSteppersComponent } from './examples/custom-stepper/custom-steppers';

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipToggleCard } from 'ship-ui';
+import { ShipToggleCard } from '@ship-ui/core/ship-toggle-card';
 
 @Component({
   selector: 'app-toggle-card-disallowed-example',

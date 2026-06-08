@@ -4,6 +4,9 @@ A modern signal based and zoneless compatable UI library for Angular visit our w
 
 Docs can be found at [docs.shipui.com](https://docs.shipui.com)
 
+> [!IMPORTANT]
+> **Upgrading to v0.21.0?** ShipUI now uses a modular secondary entry point architecture for maximum tree-shaking and HMR performance. Please read our [Migration Guide](MIGRATION.md) for instructions on updating your imports.
+
 ## Base setup
 
 To start using ShipUI make sure you're using angular 19 or newer.

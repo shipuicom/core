@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { ShipStepper } from 'ship-ui';
+import { ShipStepper } from '@ship-ui/core/ship-stepper';
 
 @Component({
   selector: 'app-router-steppers',

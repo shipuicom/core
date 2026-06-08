@@ -15,7 +15,8 @@ import scss from 'highlight.js/lib/languages/scss';
 import shell from 'highlight.js/lib/languages/shell';
 import typescript from 'highlight.js/lib/languages/typescript';
 import xml from 'highlight.js/lib/languages/xml';
-import { ShipButton, ShipIcon } from 'ship-ui';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
 
 const langMap = {
   ts: 'typescript',

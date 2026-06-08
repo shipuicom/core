@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { ShipAlertService } from 'ship-ui';
+import { ShipAlertService } from '@ship-ui/core/ship-alert';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
 import { AlertsSandbox } from './examples/alerts-sandbox';

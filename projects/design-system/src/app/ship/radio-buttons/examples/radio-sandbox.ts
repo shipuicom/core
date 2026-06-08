@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, effect, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { disabled, form, FormField } from '@angular/forms/signals';
-import { ShipButtonGroup, ShipRadio, ShipToggle } from 'ship-ui';
+import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
+import { ShipRadio } from '@ship-ui/core/ship-radio';
+import { ShipToggle } from '@ship-ui/core/ship-toggle';
 
 @Component({
   selector: 'app-radio-sandbox',

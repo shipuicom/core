@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipCheckbox } from 'ship-ui';
+import { ShipCheckbox } from '@ship-ui/core/ship-checkbox';
 
 @Component({
   selector: 'app-flat-checkbox',

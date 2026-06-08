@@ -1,5 +1,8 @@
 import { ChangeDetectionStrategy, Component, signal, viewChild } from '@angular/core';
-import { Coordinates, ShipBlueprint, ShipButton, ShipIcon, ShipToggle, TEST_NODES } from 'ship-ui';
+import { Coordinates, ShipBlueprint, TEST_NODES } from '@ship-ui/core/ship-blueprint';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipToggle } from '@ship-ui/core/ship-toggle';
 
 @Component({
   selector: 'app-blueprints',

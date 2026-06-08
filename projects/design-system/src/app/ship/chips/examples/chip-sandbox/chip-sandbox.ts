@@ -1,5 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { ShipButtonGroup, ShipChip, ShipColorPicker, ShipIcon, ShipToggle } from 'ship-ui';
+import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
+import { ShipChip } from '@ship-ui/core/ship-chip';
+import { ShipColorPicker } from '@ship-ui/core/ship-color-picker';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipToggle } from '@ship-ui/core/ship-toggle';
 
 @Component({
   selector: 'app-chip-sandbox',

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipIcon } from 'ship-ui';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
 
 @Component({
   selector: 'app-sheets',

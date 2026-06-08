@@ -1,0 +1,404 @@
+@use 'helpers' as *;
+
+$shipFormField: true !default;
+$shipDatepicker: true !default;
+$shipFormFieldShadow: false !default;
+
+%smallFormField {
+  --ff-space: #{p2r(7 10)};
+  --ff-input-space: #{p2r(6 10)};
+  --ff-f: var(--paragraph-40B);
+
+  line-height: p2r(16);
+
+  .prefix,
+  .suffix {
+    line-height: p2r(16);
+
+    > sh-icon {
+      font-size: p2r(16);
+    }
+  }
+}
+
+@if $shipFormField == true {
+  sh-form-field-popover,
+  sh-form-field {
+    --ff-s: var(--shape-2);
+    --ff-bc: var(--base-4);
+    --ff-boxfix-bg: var(--base-2);
+    --ff-suffix-bg: transparent;
+    --ff-ic: var(--base-11);
+    --ff-bg: var(--base-1);
+    --ff-f: var(--paragraph-30B);
+    --ff-spinner-size: #{p2r(20)};
+    --ff-spinner-thickness: #{p2r(2)};
+    --ff-space: #{p2r(9 12)};
+    --ff-input-space: #{p2r(10 12)};
+    --ff-mw: auto;
+
+    --ff-bs: var(--ship-form-field-shadow, none);
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+    width: 100%;
+
+    transition: transform 125ms linear;
+    transform: scale(1);
+
+    &:has(input[type='time']) {
+      --ff-input-space: #{p2r(9 12)};
+    }
+
+    &:active {
+      .input-wrap {
+        --ff-bs: 0 0 6px 0 var(--base-4);
+      }
+    }
+
+    &[readonly],
+    &.readonly,
+    &[disabled],
+    &.disabled,
+    &:has(input[disabled]),
+    &:has(textarea[disabled]) {
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.5;
+
+      &:active {
+        transform: scale(1);
+      }
+    }
+
+    &.small {
+      @extend %smallFormField;
+    }
+
+    &.auto-width {
+      width: initial;
+
+      .input-wrap,
+      input {
+        width: initial;
+      }
+    }
+
+    &.center {
+      .input-wrap input[type='number'],
+      .input-wrap input {
+        text-align: center;
+      }
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      padding-bottom: p2r(4);
+      gap: p2r(4);
+
+      sh-icon {
+        font-size: p2r(16);
+      }
+    }
+
+    .suffix,
+    .prefix {
+      display: none;
+      align-items: center;
+      gap: p2r(4);
+      padding: var(--ff-space);
+      padding-right: 0;
+      transition: background-color 125ms linear;
+      background-color: inherit;
+      line-height: p2r(20);
+
+      &:has([boxPrefix]) {
+        padding: var(--ff-space);
+        background-color: var(--ff-boxfix-bg);
+      }
+
+      &:has([boxSuffix]) {
+        padding: var(--ff-space);
+        background-color: var(--ff-boxfix-bg);
+      }
+
+      [boxPrefix],
+      [boxSuffix] {
+        --ff-ic: var(--base-8);
+
+        display: flex;
+        align-items: center;
+        gap: p2r(4);
+      }
+
+      &:not(:empty) {
+        display: flex;
+      }
+    }
+
+    .suffix {
+      padding: var(--ff-space);
+      background-color: var(--ff-suffix-bg);
+
+      &:has([textsuffix]) {
+        padding-left: 0;
+      }
+    }
+
+    &:has(input.ng-touched.ng-invalid) {
+      --ff-ic: var(--error-8);
+      --ff-bc: var(--error-8);
+      --ff-boxfix-bg: var(--error-2);
+    }
+
+    &.autosize {
+      width: min-content;
+
+      .input-wrap {
+        height: auto;
+
+        textarea,
+        input {
+          field-sizing: content;
+        }
+      }
+    }
+
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      border: var(--border-10);
+      border-color: var(--ff-bc);
+      border-radius: var(--ff-s);
+      background: var(--ff-bg);
+      box-shadow: var(--ff-bs);
+      overflow: hidden;
+      transition:
+        border-color 125ms linear,
+        box-shadow 95ms linear;
+      min-width: var(--ff-mw);
+      width: 100%;
+
+      &.is-open,
+      &:has(textarea:focus-visible),
+      &:has(input:focus-visible) {
+        outline: 2px solid var(--primary-8);
+        outline-offset: 2px;
+      }
+
+      sh-popover,
+      .input {
+        flex: 1 0;
+        margin: var(--ff-space);
+      }
+
+      textarea {
+        resize: none;
+        margin: p2r(8 0);
+        color: var(--base-8);
+        field-sizing: content;
+      }
+
+      &:has(textarea) {
+        height: auto;
+        min-width: 100%;
+        max-width: 100%;
+      }
+
+      sh-icon {
+        color: var(--ff-ic);
+        transition: color 125ms linear;
+
+        &.primary {
+          --ff-ic: var(--primary-8);
+        }
+
+        &.accent {
+          --ff-ic: var(--accent-8);
+        }
+
+        &.warn {
+          --ff-ic: var(--warn-8);
+        }
+
+        &.error {
+          --ff-ic: var(--error-8);
+        }
+
+        &.success {
+          --ff-ic: var(--success-8);
+        }
+      }
+
+      sh-chip sh-icon {
+        color: var(--chip-ic);
+      }
+
+      sh-spinner {
+        --spinner-size: var(--ff-spinner-size);
+        --spinner-thickness: var(--ff-spinner-thickness);
+      }
+
+      textarea,
+      input {
+        appearance: none;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        font: var(--paragraph-30B);
+        flex: 1 0;
+        color: var(--base-8);
+        margin: var(--ff-input-space);
+        width: 100%;
+
+        &::placeholder {
+          color: var(--base-6);
+        }
+
+        &:focus {
+          outline: none;
+        }
+
+        &[type='number'] {
+          appearance: textfield;
+          text-align: right;
+
+          &::-webkit-outer-spin-button,
+          &::-webkit-inner-spin-button {
+            display: none;
+          }
+
+          &:has(+ .suffix:not(:empty)) {
+            margin-right: 0;
+          }
+        }
+
+        &[type='time'] {
+          appearance: textfield;
+          text-align: center;
+          line-height: p2r(16);
+
+          &::-webkit-calendar-picker-indicator {
+            appearance: none;
+            display: none;
+          }
+        }
+      }
+    }
+
+    .helpers {
+      height: p2r(20);
+      display: flex;
+      align-items: center;
+      gap: p2r(4);
+      padding-top: p2r(4);
+      width: 100%;
+
+      [hint] {
+        color: var(--base-9);
+
+        &[suffix] {
+          text-align: right;
+          width: 100%;
+        }
+      }
+
+      &:has(.error-wrap:not(:empty)) .hint {
+        display: none;
+      }
+    }
+
+    // &:not(:has(input.ng-touched.ng-invalid)) {
+    //   &:has(.hint:empty) .helpers {
+    //     height: 0;
+    //     padding-top: 0;
+    //   }
+    // }
+
+    &:has(.error-wrap:empty + .hint:empty) .helpers {
+      height: 0;
+      padding-top: 0;
+    }
+
+    &:has(input.ng-touched.ng-invalid) .helpers .hint {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .error-wrap {
+      color: var(--error-8);
+      opacity: 1;
+      transition: opacity 125ms linear;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+    }
+
+    .hint {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      color: var(--base-8);
+      opacity: 1;
+      transition:
+        visibility 125ms linear,
+        opacity 125ms linear;
+      visibility: visible;
+
+      &:empty {
+        opacity: 0;
+      }
+    }
+
+    &.error {
+      --ff-ic: var(--error-8);
+    }
+
+    &.warning {
+      --ff-ic: var(--warn-8);
+    }
+
+    &.success {
+      --ff-ic: var(--success-8);
+    }
+
+    &.horizontal {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 0 p2r(16);
+
+      label {
+        padding-bottom: 0;
+        margin-bottom: 0;
+        grid-column: 1;
+      }
+
+      .input-wrap {
+        grid-column: 2;
+      }
+
+      .helpers {
+        grid-column: 2;
+      }
+    }
+  }
+}
+
+@if $shipDatepicker == true {
+  sh-daterange-input,
+  sh-datepicker-input {
+    &.small {
+      sh-form-field-popover,
+      sh-form-field {
+        @extend %smallFormField;
+      }
+    }
+  }
+}

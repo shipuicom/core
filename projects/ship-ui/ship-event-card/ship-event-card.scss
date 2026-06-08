@@ -1,0 +1,51 @@
+@use 'helpers' as *;
+
+$shipEventCard: true !default;
+
+@if $shipEventCard == true {
+  sh-event-card {
+    display: flex;
+    gap: p2r(8);
+    width: 100%;
+    padding: p2r(16);
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: p2r(4);
+      flex: 1;
+
+      > * {
+        color: var(--sheet-c);
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font: var(--paragraph-20B);
+      }
+    }
+
+    .actions [actions],
+    .actions {
+      display: flex;
+      gap: p2r(8);
+      align-items: center;
+
+      [shButton] {
+        --btn-bs: none;
+      }
+    }
+
+    &:before {
+      content: '';
+      display: block;
+      border-radius: p2r(3);
+      width: p2r(6);
+      background: var(--sheet-ic);
+    }
+  }
+}

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { ShipRangeSlider } from 'ship-ui';
+import { ShipRangeSlider } from '@ship-ui/core/ship-range-slider';
 
 @Component({
   selector: 'app-reactive-range-slider',

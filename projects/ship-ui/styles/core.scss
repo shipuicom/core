@@ -1,0 +1,43 @@
+$useInterTight: true !default;
+$useApexcharts: false !default;
+
+@use './core/fonts/inter-tight' with (
+  $useInterTight: $useInterTight
+);
+
+@use './core/apexcharts/apexcharts' with (
+  $useApexcharts: $useApexcharts
+);
+
+@use './core/core';
+
+$shipSheet: true !default;
+$shipFormFieldShadow: false !default;
+$shipButtonShadow: false !default;
+$shipChipShadow: false !default;
+
+@use './components/ship-sheet.utility.scss' with (
+  $shipSheet: $shipSheet
+);
+
+$form-field-shadow-val: none;
+@if $shipFormFieldShadow != false {
+  $form-field-shadow-val: var(--box-shadow-10);
+}
+
+$button-shadow-val: none;
+@if $shipButtonShadow != false {
+  $button-shadow-val: var(--box-shadow-10);
+}
+
+$chip-shadow-val: none;
+@if $shipChipShadow != false {
+  $chip-shadow-val: var(--box-shadow-10);
+}
+
+:root {
+  --ship-form-field-shadow: #{$form-field-shadow-val};
+  --ship-button-shadow: #{$button-shadow-val};
+  --ship-chip-shadow: #{$chip-shadow-val};
+}
+

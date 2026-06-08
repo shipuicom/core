@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipButton, ShipIcon } from 'ship-ui';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
 import { SandboxIcon } from './examples/sandbox-icon/sandbox-icon';

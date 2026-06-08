@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipRangeSlider } from 'ship-ui';
+import { ShipRangeSlider } from '@ship-ui/core/ship-range-slider';
 
 @Component({
   selector: 'app-always-show-indicator-range-slider',

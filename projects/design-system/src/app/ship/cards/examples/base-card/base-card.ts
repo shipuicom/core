@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipButton, ShipCard } from 'ship-ui';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipCard } from '@ship-ui/core/ship-card';
 
 @Component({
   selector: 'app-base-card',

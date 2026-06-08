@@ -1,0 +1,528 @@
+import { ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, ElementRef, HostListener, inject, input, model, output, Renderer2, signal, viewChild, ViewEncapsulation } from '@angular/core';
+import { ShipFormField } from '@ship-ui/core/ship-form-field';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipPopover } from '@ship-ui/core/ship-popover';
+import { createFormInputSignal } from '@ship-ui/core';
+import { observeChildren } from '@ship-ui/core';
+import { generateUniqueId } from '@ship-ui/core';
+
+@Component({
+  selector: 'sh-menu',
+  styleUrl: './ship-menu.scss',
+  encapsulation: ViewEncapsulation.None,
+  imports: [ShipPopover, ShipFormField, ShipIcon],
+  template: `
+    <sh-popover
+      #formFieldWrapper
+      [(isOpen)]="isOpen"
+      [disableOpenByClick]="true"
+      (closed)="close('fromPopover')"
+      [asMultiLayer]="asMultiLayer()"
+      [options]="{
+        closeOnButton: false,
+        closeOnEsc: true,
+      }">
+      <div
+        trigger
+        [class.is-open]="isOpen()"
+        (click)="toggleIsOpen($event)"
+        role="combobox"
+        [attr.aria-expanded]="isOpen()"
+        aria-haspopup="listbox"
+        [attr.aria-controls]="optionsId"
+        [attr.aria-activedescendant]="activeOptionId()">
+        <ng-content />
+
+        @if (openIndicator()) {
+          <sh-icon class="open-indicator">caret-down</sh-icon>
+        }
+
+        @if (isSubmenu()) {
+          <sh-icon class="submenu-indicator">caret-right</sh-icon>
+        }
+      </div>
+
+      <div class="form-field-wrap">
+        <sh-form-field class="small stretch" [class.hidden]="searchable() === false">
+          <input
+            type="text"
+            #inputRef
+            placeholder="Search"
+            role="combobox"
+            [attr.aria-expanded]="isOpen()"
+            [attr.aria-controls]="optionsId"
+            [attr.aria-activedescendant]="activeOptionId()"
+            aria-autocomplete="list" />
+        </sh-form-field>
+      </div>
+
+      <div
+        class="options"
+        #optionsRef
+        (click)="close('active')"
+        [class.searching]="searchable() && inputValue() !== ''"
+        role="listbox"
+        [id]="optionsId"
+        [attr.aria-activedescendant]="activeOptionId()">
+        <ng-content select="[menu]" />
+      </div>
+    </sh-popover>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.disabled]': 'disabled()',
+    '[class.has-search]': 'searchable()',
+    '[class.multi-layer]': 'asMultiLayer()',
+  },
+})
+export class ShipMenu {
+  #document = inject(DOCUMENT);
+  #renderer = inject(Renderer2);
+  parentMenu = inject(ShipMenu, { optional: true, skipSelf: true });
+  isSubmenu = computed(() => this.parentMenu !== null);
+  asMultiLayer = input<boolean>(false);
+  openIndicator = input(false);
+  disabled = input<boolean>(false);
+  customOptionElementSelectors = input<string[]>(['button']);
+  keepClickedOptionActive = input<boolean>(false);
+  closeOnClick = input<boolean>(true);
+  isOpen = model<boolean>(false);
+  closed = output<boolean>();
+
+  searchable = input<boolean>(false);
+  activeOptionIndex = signal<number>(-1);
+  inputRef = viewChild<ElementRef<HTMLInputElement>>('inputRef');
+  optionsRef = viewChild<ElementRef<HTMLDivElement>>('optionsRef');
+
+  private static openMenus: ShipMenu[] = [];
+
+  openMenusEffect = effect((onCleanup) => {
+    if (this.isOpen()) {
+      ShipMenu.openMenus.push(this);
+    }
+
+    onCleanup(() => {
+      const index = ShipMenu.openMenus.indexOf(this);
+      if (index > -1) {
+        ShipMenu.openMenus.splice(index, 1);
+      }
+    });
+  });
+
+  options = observeChildren<HTMLButtonElement>(this.optionsRef, this.customOptionElementSelectors);
+  optionsEl = computed(() => {
+    const optionsContainer = this.optionsRef()?.nativeElement;
+    if (!optionsContainer) return [];
+    return this.options.signal().filter((x) => {
+      if (x.disabled) return false;
+      return x.closest('.options') === optionsContainer;
+    });
+  });
+  inputValue = createFormInputSignal(this.inputRef);
+
+  readonly optionsId = generateUniqueId();
+  activeOptionId = signal<string | undefined>(undefined);
+
+  abortController: AbortController | null = null;
+  optionsEffect = effect(() => {
+    if (this.abortController !== null) {
+      this.abortController.abort();
+      this.abortController = null;
+    }
+
+    if (!this.isOpen()) return;
+
+    this.abortController = new AbortController();
+
+    const searchable = this.searchable();
+
+    if (!searchable) {
+      this.#document.documentElement.addEventListener('keydown', this.keyDownEventListener, {
+        signal: this.abortController.signal,
+      });
+    } else {
+      const inputEl = this.inputRef()?.nativeElement;
+      if (inputEl) {
+        inputEl.addEventListener('keydown', this.keyDownEventListener, {
+          signal: this.abortController.signal,
+        });
+      }
+    }
+
+    const inputEl = this.inputRef()?.nativeElement;
+
+    if (!inputEl) return;
+
+    queueMicrotask(() => inputEl.focus());
+
+    if (!this.closeOnClick()) {
+      const optionRef = this.optionsRef()?.nativeElement;
+
+      optionRef?.addEventListener('click', (e: MouseEvent) => {
+        const optionEl = e.target as HTMLButtonElement;
+
+        let optionElements = this.activeElements();
+
+        if (!optionElements.length) {
+          const newOptionElements = this.optionsEl();
+          this.activeElements.set(newOptionElements);
+          optionElements = newOptionElements;
+        }
+
+        const clickedOptionIndex = optionElements.findIndex((x) => x === optionEl);
+
+        if (clickedOptionIndex > -1) {
+          this.activeOptionIndex.set(clickedOptionIndex);
+          inputEl.focus();
+        }
+      });
+    }
+  });
+
+  keyDownEventListener = (e: KeyboardEvent) => {
+    // Only handle events if this is the most recently opened menu
+    if (ShipMenu.openMenus.at(-1) !== this) return;
+
+    const activeOptionIndex = this.activeOptionIndex();
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      this.activeOptionIndex.set(this.nextActiveIndex(activeOptionIndex));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      this.activeOptionIndex.set(this.prevActiveIndex(activeOptionIndex));
+    } else if (e.key === 'ArrowRight') {
+      if (activeOptionIndex > -1) {
+        const el = this.activeElements()[activeOptionIndex as number];
+        const parent = el.parentElement;
+
+        // For nested menu's
+        if (parent?.hasAttribute('trigger')) {
+          e.preventDefault();
+          const event = new CustomEvent('ship-menu-open', {
+            bubbles: true,
+            cancelable: true,
+            detail: { keyboard: true },
+          });
+
+          el.dispatchEvent(event);
+        }
+      }
+    } else if (e.key === 'ArrowLeft') {
+      if (this.isSubmenu()) {
+        e.preventDefault();
+        this.close('closed');
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (activeOptionIndex > -1) {
+        const el = this.activeElements()[activeOptionIndex as number];
+        const parent = el.parentElement;
+
+        // For nested menu's
+        if (parent?.hasAttribute('trigger')) {
+          const event = new CustomEvent('ship-menu-open', {
+            bubbles: true,
+            cancelable: true,
+            detail: { keyboard: true },
+          });
+
+          el.dispatchEvent(event);
+        } else {
+          el.click();
+          if (!el.querySelector('sh-checkbox')) {
+            queueMicrotask(() => this.close('active'));
+          }
+        }
+      }
+    } else if (e.key === 'Tab') {
+      let optionElements = this.activeElements();
+      if (!optionElements.length) {
+        const newOptionElements = this.optionsEl();
+        this.activeElements.set(newOptionElements);
+        optionElements = newOptionElements;
+      }
+
+      if (e.shiftKey) {
+        if (activeOptionIndex <= 0) {
+          e.preventDefault();
+          this.close('closed');
+        } else {
+          e.preventDefault();
+          this.activeOptionIndex.set(this.prevActiveIndex(activeOptionIndex));
+        }
+      } else {
+        if (activeOptionIndex >= optionElements.length - 1) {
+          e.preventDefault();
+          this.close('closed');
+        } else {
+          e.preventDefault();
+          this.activeOptionIndex.set(this.nextActiveIndex(activeOptionIndex));
+        }
+      }
+    }
+  };
+
+  _lastElementList: HTMLButtonElement[] = [];
+  activeElements = signal<HTMLButtonElement[]>([]);
+  lastInputValue = '';
+  inputValueEffect = effect(() => {
+    const searchable = this.searchable();
+
+    if (!searchable) {
+      this.activeElements.set(this.optionsEl());
+      return;
+    }
+
+    const inputValue = (this.inputValue() ?? '').toLowerCase();
+
+    this.#resetActiveOption();
+
+    if (!inputValue || inputValue === '') {
+      const allOptions = this.optionsEl();
+
+      this.activeElements.set(allOptions);
+      this._lastElementList = allOptions;
+
+      for (let i = 0; i < allOptions.length; i++) {
+        this.#renderer.removeStyle(allOptions[i], 'order');
+        if (!allOptions[i].id) {
+          allOptions[i].id = `${this.optionsId}-option-${i}`;
+        }
+        allOptions[i].setAttribute('role', 'option');
+      }
+
+      return;
+    }
+
+    if (!inputValue || inputValue === '') return;
+
+    let optionElements =
+      this._lastElementList.length && inputValue.length > this.lastInputValue.length
+        ? this._lastElementList
+        : this.optionsEl();
+
+    this.lastInputValue = inputValue;
+
+    for (let i = 0; i < optionElements.length; i++) {
+      const el = optionElements[i];
+      const textContent = el.textContent?.toLowerCase() || '';
+      const score = this.#calculateMatchScore(textContent, inputValue);
+
+      (el.value as any) = score;
+    }
+
+    optionElements = optionElements
+      .filter((x) => (x.value as any) > 0)
+      .sort((a, b) => (b.value as any) - (a.value as any));
+
+    for (let i = 0; i < optionElements.length; i++) {
+      this.#renderer.setStyle(optionElements[i], 'order', i);
+    }
+
+    this.activeElements.set(optionElements);
+    this._lastElementList = optionElements;
+
+    // Assign IDs to options for ARIA support
+    for (let i = 0; i < optionElements.length; i++) {
+      if (!optionElements[i].id) {
+        optionElements[i].id = `${this.optionsId}-option-${i}`;
+      }
+      optionElements[i].setAttribute('role', 'option');
+    }
+  });
+
+  toggleIsOpen(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (this.disabled()) return;
+
+    if (this.isOpen()) {
+      this.close('fromPopover');
+    } else {
+      this.open();
+    }
+  }
+
+  open() {
+    if (this.disabled()) return;
+    this.isOpen.set(true);
+
+    if (this.searchable()) {
+      setTimeout(() => this.inputRef()?.nativeElement.focus());
+    }
+  }
+
+  @HostListener('ship-menu-open', ['$event'])
+  onShipMenuOpen(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.open();
+
+    const customEvent = event as CustomEvent;
+    if (customEvent.detail?.keyboard) {
+      setTimeout(() => {
+        this.activeOptionIndex.set(0);
+      }, 50);
+    }
+  }
+
+  #calculateMatchScore(option: string, input: string): number {
+    if (!input) return 0;
+
+    let score = 0;
+    let lastIndex = -1;
+    let matchCount = 0;
+    let inSequence = true;
+
+    for (let i = 0; i < input.length; i++) {
+      const char = input[i];
+      if (option.length > lastIndex + 1 && option[lastIndex + 1] === char) {
+        score += i === 0 ? 100 : 150;
+        lastIndex++;
+        matchCount++;
+      } else {
+        const charIndex = option.indexOf(char, lastIndex + 1);
+
+        if (i > 0) {
+          inSequence = false;
+        }
+
+        if (charIndex === -1) {
+          return 0;
+        }
+
+        score += 100;
+
+        lastIndex = charIndex;
+        matchCount++;
+      }
+    }
+
+    if (inSequence && input.length === matchCount) {
+      score += 1000;
+    }
+
+    score += matchCount * 20;
+
+    return score;
+  }
+
+  activeOptionIndexEffect = effect(() => {
+    const optionElements = this.activeElements();
+    const activeOptionIndex = this.activeOptionIndex();
+
+    for (let index = 0; index < optionElements.length; index++) {
+      optionElements[index].classList.remove('active');
+      optionElements[index].removeAttribute('aria-selected');
+    }
+
+    if (activeOptionIndex > -1) {
+      const activeOption = optionElements[activeOptionIndex];
+      activeOption.scrollIntoView({ block: 'center' });
+      activeOption.classList.add('active');
+      activeOption.setAttribute('aria-selected', 'true');
+      this.activeOptionId.set(activeOption.id);
+    } else {
+      this.activeOptionId.set(undefined);
+    }
+  });
+
+  nextActiveIndex(activeIndex: number): number {
+    let optionElements = this.activeElements();
+
+    if (!optionElements.length) {
+      const newOptionElements = this.optionsEl();
+      this.activeElements.set(newOptionElements);
+      optionElements = newOptionElements;
+    }
+
+    if (activeIndex === -1) {
+      return 0;
+    }
+
+    if (activeIndex === optionElements.length - 1) {
+      return 0;
+    }
+
+    const nextIndex = activeIndex + 1;
+
+    if (optionElements[nextIndex].disabled) {
+      return this.nextActiveIndex(nextIndex);
+    }
+
+    return nextIndex;
+  }
+
+  prevActiveIndex(activeIndex: number): number {
+    let optionElements = this.activeElements();
+
+    if (!optionElements.length) {
+      const newOptionElements = this.optionsEl();
+      this.activeElements.set(newOptionElements);
+      optionElements = newOptionElements;
+    }
+
+    if (activeIndex === 0) {
+      return optionElements.length - 1;
+    }
+
+    if (activeIndex === -1) {
+      return optionElements.length - 1;
+    }
+
+    const prevIndex = activeIndex - 1;
+
+    if (optionElements[prevIndex].disabled) {
+      return this.prevActiveIndex(prevIndex);
+    }
+
+    return prevIndex;
+  }
+
+  close(action: 'fromPopover' | 'closed' | 'active' = 'closed', event?: MouseEvent) {
+    this.inputValue.set('');
+
+    const inputEl = this.inputRef()?.nativeElement;
+    if (inputEl) {
+      inputEl.value = '';
+    }
+
+    if (this.closeOnClick()) {
+      (!this.keepClickedOptionActive() || action === 'closed') && this.#resetActiveOption();
+
+      this.isOpen.set(false);
+      this.closed.emit(action === 'active');
+
+      if (this.isSubmenu()) {
+        const parentInput = this.parentMenu?.inputRef()?.nativeElement;
+        if (parentInput) {
+          queueMicrotask(() => parentInput.focus());
+        }
+      }
+    }
+  }
+
+  #resetActiveOption() {
+    this.activeOptionIndex.set(-1);
+
+    const optionElements = this.optionsEl();
+
+    for (let index = 0; index < optionElements.length; index++) {
+      optionElements[index].classList.remove('active');
+      optionElements[index].removeAttribute('aria-selected');
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+    }
+    const index = ShipMenu.openMenus.indexOf(this);
+    if (index > -1) {
+      ShipMenu.openMenus.splice(index, 1);
+    }
+  }
+}

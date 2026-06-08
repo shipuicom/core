@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipRadio } from 'ship-ui';
+import { ShipRadio } from '@ship-ui/core/ship-radio';
 
 @Component({
   selector: 'app-flat-radio',

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipDivider } from 'ship-ui';
+import { ShipDivider } from '@ship-ui/core/ship-divider';
 
 @Component({
   selector: 'app-text-divider',

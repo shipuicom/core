@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipSelect } from 'ship-ui';
+import { ShipSelect } from '@ship-ui/core/ship-select';
 
 @Component({
   selector: 'app-option-template-select',

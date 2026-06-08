@@ -1,6 +1,6 @@
 import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipIcon } from 'ship-ui';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
 
 @Component({
   selector: 'app-typography',

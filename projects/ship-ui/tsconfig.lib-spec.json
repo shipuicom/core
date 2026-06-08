@@ -8,7 +8,7 @@
       "../../node_modules"
     ]
   },
-  "include": ["src/**/*.spec.ts", "src/**/*.d.ts"],
+  "include": ["**/*.spec.ts", "**/*.d.ts"],
   "exclude": ["node_modules/@types/bun"],
   "angularCompilerOptions": {
     "extendedDiagnostics": {

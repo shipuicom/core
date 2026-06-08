@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipStepper } from 'ship-ui';
+import { ShipStepper } from '@ship-ui/core/ship-stepper';
 
 @Component({
   selector: 'app-custom-steppers',

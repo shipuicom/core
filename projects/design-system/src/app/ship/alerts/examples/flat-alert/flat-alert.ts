@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipAlert } from 'ship-ui';
+import { ShipAlert } from '@ship-ui/core/ship-alert';
 
 @Component({
   selector: 'app-flat-alert',

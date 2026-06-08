@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { ShipButton, ShipIcon, ShipList, ShipSidenav } from 'ship-ui';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipList } from '@ship-ui/core/ship-list';
+import { ShipSidenav } from '@ship-ui/core/ship-sidenav';
 import { AppConfigService } from '../core/services/app-config.service';
 import { LayoutState } from './layout.state';
 import { Logo } from './logo/logo';

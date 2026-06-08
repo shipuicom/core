@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipDatepicker } from 'ship-ui';
+import { ShipDatepicker } from '@ship-ui/core/ship-datepicker';
 
 @Component({
   selector: 'app-range-datepicker',

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ShipFormFieldExperimental } from 'ship-ui';
+import { ShipFormFieldExperimental } from '@ship-ui/core/sh-form-field-experimental';
 
 @Component({
   selector: 'app-experimental-form-field',

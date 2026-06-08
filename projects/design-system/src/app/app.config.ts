@@ -2,7 +2,7 @@ import { ApplicationConfig, DOCUMENT, inject, provideZonelessChangeDetection } f
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 
 import { provideHttpClient, withFetch } from '@angular/common/http';
-import { SHIP_CONFIG } from 'ship-ui';
+import { SHIP_CONFIG } from '@ship-ui/core';
 import { environment } from '../environments/environment';
 import { ENVIRONMENT_TOKEN } from '../environments/environment-token';
 import { routes } from './app.routes';

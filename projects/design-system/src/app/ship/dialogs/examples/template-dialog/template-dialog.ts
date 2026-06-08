@@ -1,5 +1,6 @@
 import { Component, inject, input, TemplateRef } from '@angular/core';
-import { ShipButton, ShipDialogService } from 'ship-ui';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipDialogService } from '@ship-ui/core/ship-dialog';
 
 @Component({
   selector: 'template-dialog',

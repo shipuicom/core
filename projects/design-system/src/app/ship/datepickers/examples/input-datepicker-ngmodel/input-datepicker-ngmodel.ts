@@ -1,7 +1,9 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipDatepickerInput, ShipFormField, ShipIcon } from 'ship-ui';
+import { ShipDatepickerInput } from '@ship-ui/core/ship-datepicker';
+import { ShipFormField } from '@ship-ui/core/ship-form-field';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
 
 @Component({
   selector: 'app-input-datepicker-ngmodel',

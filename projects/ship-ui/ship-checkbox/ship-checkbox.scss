@@ -1,0 +1,116 @@
+@use 'helpers' as *;
+
+$shipCheckbox: true !default;
+
+@if $shipCheckbox == true {
+  sh-checkbox {
+    .sh-sheet {
+      --box-bw: #{p2r(1)};
+      --box-bc: var(--sheet-bc);
+      --sheet-s: var(--shape-1);
+    }
+
+    display: flex;
+    align-items: center;
+    gap: p2r(8);
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    border: 0;
+
+    &:focus-visible > .box,
+    &:has(input:focus-visible) > .box {
+      outline: 2px solid var(--primary-8);
+      outline-offset: 2px;
+    }
+
+    > input.internal-input,
+    .label > input {
+      appearance: none;
+      position: absolute;
+      inset: 0;
+      cursor: pointer;
+      z-index: 0;
+      margin: 0;
+
+      &:focus,
+      &:focus-visible {
+        outline: none;
+      }
+    }
+
+    &:has(.label > input) > input.internal-input {
+      display: none;
+    }
+
+    .label {
+      &:empty {
+        display: none;
+      }
+    }
+
+    &:has(input[disabled]),
+    &[disabled]:not([disabled='false']) {
+      opacity: 0.5;
+      pointer-events: none;
+      user-select: none;
+      cursor: initial;
+    }
+
+    .box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: p2r(20);
+      height: p2r(20);
+      cursor: pointer;
+      position: relative;
+      border: var(--box-bw) solid var(--box-bc);
+
+      sh-icon {
+        opacity: 0;
+        font-weight: bold;
+        transition: opacity 75ms linear;
+
+        &.indeterminate-indicator {
+          display: none;
+        }
+      }
+    }
+
+    &.raised,
+    &.flat {
+      &:not(:has(input:checked)):not(.active) .box {
+        background: transparent;
+        border: var(--border-10);
+        border-color: var(--box-bc);
+      }
+    }
+
+    &.indeterminate {
+      .box sh-icon {
+        &.indeterminate-indicator {
+          display: block;
+        }
+
+        &.default-indicator {
+          display: none;
+        }
+      }
+    }
+
+    &:has(input:checked),
+    &.indeterminate,
+    &.active {
+      .box sh-icon {
+        opacity: 1;
+      }
+    }
+
+    &:hover {
+      .box sh-icon {
+        opacity: 0.5;
+      }
+    }
+  }
+}

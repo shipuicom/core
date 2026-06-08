@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { ShipButtonGroup, ShipStepper } from 'ship-ui';
+import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
+import { ShipStepper } from '@ship-ui/core/ship-stepper';
 
 @Component({
   selector: 'app-stepper-sandbox',

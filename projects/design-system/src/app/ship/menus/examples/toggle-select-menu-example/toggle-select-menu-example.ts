@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
-import { ShipButton, ShipCheckbox, ShipMenu } from 'ship-ui';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipCheckbox } from '@ship-ui/core/ship-checkbox';
+import { ShipMenu } from '@ship-ui/core/ship-menu';
 
 @Component({
   selector: 'sh-toggle-select-menu-example',

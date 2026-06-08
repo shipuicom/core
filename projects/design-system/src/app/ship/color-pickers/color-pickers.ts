@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipAlert, ShipChip } from 'ship-ui';
+import { ShipAlert } from '@ship-ui/core/ship-alert';
+import { ShipChip } from '@ship-ui/core/ship-chip';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
 import { BaseColorPicker } from './examples/base-color-picker/base-color-picker';

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { AppConfigService } from '../../services/app-config.service';
-import { ShipConfig, ShipIcon } from 'ship-ui';
+import { ShipConfig } from '@ship-ui/core';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
 
 @Component({
   selector: 'app-config-indicator',

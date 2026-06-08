@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipButton, ShipSidenav } from 'ship-ui';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipSidenav } from '@ship-ui/core/ship-sidenav';
 
 @Component({
   selector: 'app-overlay-sidenav',

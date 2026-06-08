@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipFileUpload } from 'ship-ui';
+import { ShipFileUpload } from '@ship-ui/core/ship-file-upload';
 
 @Component({
   selector: 'app-base-file-upload',

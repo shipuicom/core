@@ -1,7 +1,8 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { ShipDaterangeInput, ShipIcon } from 'ship-ui';
+import { ShipDaterangeInput } from '@ship-ui/core/ship-datepicker';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
 
 @Component({
   selector: 'app-range-input-datepicker',

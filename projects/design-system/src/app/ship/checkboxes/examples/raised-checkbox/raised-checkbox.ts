@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ShipCheckbox } from 'ship-ui';
+import { ShipCheckbox } from '@ship-ui/core/ship-checkbox';
 
 @Component({
   selector: 'app-raised-checkbox',

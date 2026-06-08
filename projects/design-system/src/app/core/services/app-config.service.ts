@@ -1,5 +1,5 @@
 import { DOCUMENT, Injectable, effect, inject, signal } from '@angular/core';
-import { ShipConfig, defaultThemeColors } from 'ship-ui';
+import { ShipConfig, defaultThemeColors } from '@ship-ui/core';
 import { LOCALSTORAGE } from './localstorage.token';
 
 @Injectable({ providedIn: 'root' })

@@ -1,0 +1,45 @@
+@use 'helpers' as *;
+
+$shipSortable: true !default;
+
+@if $shipSortable == true {
+  .sh-sortable {
+    position: relative;
+
+    &.dragging {
+      [draggable],
+      .sortable-ghost {
+        cursor: grabbing;
+        transition: transform 40ms linear;
+      }
+    }
+
+    [draggable] {
+      height: auto;
+      transform: translate(0);
+      transition: none;
+      z-index: 2;
+      background: var(--base-1);
+      user-select: none;
+
+      &:not(:has([sort-handle])) {
+        cursor: grab;
+      }
+    }
+
+    .sortable-ghost {
+      opacity: 0.5;
+      z-index: 10;
+    }
+
+    &.item-dragged-out {
+      .sortable-ghost {
+        display: none;
+      }
+    }
+
+    [sort-handle] {
+      cursor: grab;
+    }
+  }
+}

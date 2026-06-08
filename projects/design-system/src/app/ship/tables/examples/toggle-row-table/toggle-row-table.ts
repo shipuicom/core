@@ -1,5 +1,8 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { ShipButton, ShipIcon, ShipTable, ShipTableVariant } from 'ship-ui';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipTable } from '@ship-ui/core/ship-table';
+import { ShipTableVariant } from '@ship-ui/core';
 
 const ELEMENT_DATA = [
   { position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },

@@ -42,7 +42,7 @@
     "ship-ui": {
       "projectType": "library",
       "root": "projects/ship-ui",
-      "sourceRoot": "projects/ship-ui/src",
+      "sourceRoot": "projects/ship-ui",
       "prefix": "lib",
       "architect": {
         "build": {

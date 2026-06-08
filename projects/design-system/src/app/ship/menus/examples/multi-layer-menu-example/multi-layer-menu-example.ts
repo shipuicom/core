@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { ShipButton, ShipMenu } from 'ship-ui';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipMenu } from '@ship-ui/core/ship-menu';
 
 @Component({
   selector: 'sh-multi-layer-menu-example',

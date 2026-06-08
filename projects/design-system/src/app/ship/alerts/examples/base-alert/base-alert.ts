@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipAlert, ShipButton } from 'ship-ui';
+import { ShipAlert } from '@ship-ui/core/ship-alert';
+import { ShipButton } from '@ship-ui/core/ship-button';
 
 @Component({
   selector: 'app-base-alert',

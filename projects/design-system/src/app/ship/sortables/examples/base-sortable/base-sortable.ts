@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { createSortableManager, ShipCheckbox, ShipList, ShipSortable } from 'ship-ui';
+import { createSortableManager, ShipSortable } from '@ship-ui/core/ship-sortable';
+import { ShipCheckbox } from '@ship-ui/core/ship-checkbox';
+import { ShipList } from '@ship-ui/core/ship-list';
 
 const TODOS = [
   {

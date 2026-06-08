@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { createSortableManager, ShipList, ShipSortable } from 'ship-ui';
+import { createSortableManager, ShipSortable } from '@ship-ui/core/ship-sortable';
+import { ShipList } from '@ship-ui/core/ship-list';
 
 @Component({
   selector: 'app-handle-sortable',

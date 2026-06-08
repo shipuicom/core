@@ -1,0 +1,125 @@
+@use 'helpers' as *;
+
+$shipTabs: true !default;
+
+@if $shipTabs == true {
+  sh-tabs {
+    --tabs-bc: var(--base-4);
+    --tabs-bg: var(--base-1);
+    --tabs-c: var(--base-12);
+    --tabs-c-hover: var(--base-8);
+    --tabs-c-active: var(--base-12);
+    --tabs-f: var(--paragraph-30);
+    --tabs-sel-bg: var(--base-12);
+
+    display: flex;
+    gap: p2r(16);
+    border-bottom: var(--border-10);
+    position: relative;
+
+    button,
+    [tab],
+    [value] {
+      display: flex;
+      align-items: center;
+      gap: p2r(8);
+      height: p2r(48);
+      font: var(--tabs-f);
+      background: var(--tabs-bg);
+      border-radius: 0;
+      appearance: none;
+      border: 0;
+      color: var(--tabs-c);
+      cursor: pointer;
+      position: relative;
+
+      transition: transform 125ms linear;
+      transform: scale(1);
+
+      &:focus-visible {
+        outline: 2px solid var(--primary-8);
+        outline-offset: -2px;
+        border-radius: var(--shape-1);
+      }
+
+      &:active {
+        transform: scale(0.98);
+      }
+
+      &:hover {
+        color: var(--tabs-c-hover);
+      }
+
+      &.active {
+        color: var(--tabs-c-active);
+
+        @supports (anchor-name: --anchor) {
+          position: relative;
+          anchor-name: var(--tabs-id);
+        }
+
+        @supports not (anchor-name: --anchor) {
+          &::after {
+            display: block;
+          }
+        }
+      }
+
+      &:after {
+        content: '';
+        display: none;
+        width: 100%;
+        height: p2r(2);
+        background: var(--tabs-sel-bg);
+        position: absolute;
+        left: 0;
+        bottom: 0;
+
+        @supports (anchor-name: --anchor) {
+          display: none;
+        }
+      }
+    }
+
+    @supports (anchor-name: --anchor) {
+      &:after {
+        content: '';
+        background: var(--tabs-sel-bg);
+        pointer-events: none;
+        position: absolute;
+        z-index: 10;
+        height: p2r(2);
+        bottom: anchor(bottom);
+        left: anchor(left);
+        right: anchor(right);
+        position-anchor: var(--tabs-id);
+        transition: all 0.175s ease-out;
+      }
+    }
+
+    &.primary {
+      --tabs-sel-bg: var(--primary-8);
+      --tabs-c-active: var(--primary-8);
+    }
+
+    &.accent {
+      --tabs-sel-bg: var(--accent-8);
+      --tabs-c-active: var(--accent-8);
+    }
+
+    &.warn {
+      --tabs-sel-bg: var(--warn-8);
+      --tabs-c-active: var(--warn-8);
+    }
+
+    &.error {
+      --tabs-sel-bg: var(--error-8);
+      --tabs-c-active: var(--error-8);
+    }
+
+    &.success {
+      --tabs-sel-bg: var(--success-8);
+      --tabs-c-active: var(--success-8);
+    }
+  }
+}

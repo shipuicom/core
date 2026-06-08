@@ -1,7 +1,10 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipButtonGroup, ShipDatepicker, ShipRangeSlider, ShipToggle } from 'ship-ui';
+import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
+import { ShipDatepicker } from '@ship-ui/core/ship-datepicker';
+import { ShipRangeSlider } from '@ship-ui/core/ship-range-slider';
+import { ShipToggle } from '@ship-ui/core/ship-toggle';
 
 @Component({
   selector: 'app-range-datepicker-sandbox',

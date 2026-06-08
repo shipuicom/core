@@ -1,6 +1,11 @@
 import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipAccordion, ShipButton, ShipFormField, ShipSelect, ShipToggle, ShipVariant } from 'ship-ui';
+import { ShipAccordion } from '@ship-ui/core/ship-accordion';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipFormField } from '@ship-ui/core/ship-form-field';
+import { ShipSelect } from '@ship-ui/core/ship-select';
+import { ShipToggle } from '@ship-ui/core/ship-toggle';
+import { ShipVariant } from '@ship-ui/core';
 
 @Component({
   selector: 'app-sandbox-accordion',

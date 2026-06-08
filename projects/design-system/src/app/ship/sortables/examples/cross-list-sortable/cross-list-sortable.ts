@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { createSortableManager, ShipCard, ShipSortable } from 'ship-ui';
+import { createSortableManager, ShipSortable } from '@ship-ui/core/ship-sortable';
+import { ShipCard } from '@ship-ui/core/ship-card';
 
 @Component({
   selector: 'app-cross-list-sortable',

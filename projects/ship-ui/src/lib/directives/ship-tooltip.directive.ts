@@ -17,6 +17,7 @@ import {
   TemplateRef,
   untracked,
   ViewContainerRef,
+  ViewEncapsulation,
 } from '@angular/core';
 import { generateUniqueId } from '../utilities/random-id';
 
@@ -25,6 +26,8 @@ type Timeout = ReturnType<typeof setTimeout>;
 @Component({
   selector: 'ship-tooltip-wrapper',
   standalone: true,
+  styleUrl: './ship-tooltip.scss',
+  encapsulation: ViewEncapsulation.None,
   imports: [NgTemplateOutlet],
   template: `
     <div class="tooltip-content">

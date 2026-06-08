@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipVirtualScroll } from 'ship-ui';
+import { ShipVirtualScroll } from '@ship-ui/core/ship-virtual-scroll';
 
 type ExampleItem = {
   id: number;

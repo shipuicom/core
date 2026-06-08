@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipButton, ShipEventCard } from 'ship-ui';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipEventCard } from '@ship-ui/core/ship-event-card';
 
 @Component({
   selector: 'app-flat-event-card',

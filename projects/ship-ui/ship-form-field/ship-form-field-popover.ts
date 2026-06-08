@@ -1,0 +1,122 @@
+import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, input, model, output, ViewEncapsulation } from '@angular/core';
+import { ShipPopover } from '@ship-ui/core/ship-popover';
+import { shipComponentClasses } from '@ship-ui/core';
+import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
+
+@Component({
+  selector: 'sh-form-field-popover',
+  styleUrl: './ship-form-field.scss',
+  encapsulation: ViewEncapsulation.None,
+  imports: [ShipPopover],
+  template: `
+    <ng-content select="label"></ng-content>
+
+    <sh-popover
+      [(isOpen)]="isOpen"
+      (closed)="close()"
+      [asSheetOnMobile]="true"
+      [options]="{
+        closeOnButton: false,
+        closeOnEsc: true,
+      }">
+      <div trigger class="input-wrap" [class.is-open]="isOpen()">
+        <div class="prefix">
+          <ng-content select="[prefix]"></ng-content>
+          <ng-content select="[textPrefix]"></ng-content>
+        </div>
+
+        <div class="prefix-space"></div>
+
+        <ng-content select="input"></ng-content>
+
+        <ng-content select="textarea"></ng-content>
+
+        <ng-content select="[textSuffix]"></ng-content>
+        <div class="suffix-space"></div>
+        <ng-content select="[suffix]"></ng-content>
+      </div>
+      <ng-content select="[popoverContent]"></ng-content>
+    </sh-popover>
+
+    <div class="helpers">
+      <div class="error-wrap">
+        <ng-content select="[error]"></ng-content>
+      </div>
+
+      <div class="hint">
+        <ng-content select="[hint]"></ng-content>
+      </div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class]': 'hostClasses()',
+  },
+})
+export class ShipFormFieldPopover {
+  #selfRef = inject(ElementRef);
+
+  isOpen = model<boolean>(false);
+  closed = output<void>();
+
+  color = input<ShipColor | null>(null);
+  variant = input<ShipFormFieldVariant | null>(null);
+  size = input<ShipSize | null>(null);
+  readonly = input<boolean>(false);
+
+  hostClasses = shipComponentClasses('formField', {
+    color: this.color,
+    variant: this.variant,
+    size: this.size,
+    readonly: this.readonly,
+  });
+
+  @HostListener('click', ['$event'])
+  onClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (target.closest('.input-wrap')) {
+      if (this.#selfRef.nativeElement.querySelector('input')) {
+        this.#selfRef.nativeElement.querySelector('input').focus();
+      }
+  
+      if (this.#selfRef.nativeElement.querySelector('textarea')) {
+        this.#selfRef.nativeElement.querySelector('textarea').focus();
+      }
+    }
+  }
+
+  close() {
+    this.closed.emit();
+  }
+
+  ngOnInit() {
+    const supportFieldSizing = typeof CSS !== 'undefined' && CSS.supports('field-sizing', 'content');
+    const text = this.#selfRef.nativeElement.querySelector('textarea');
+
+    if (!supportFieldSizing && text !== null) {
+      const text = this.#selfRef.nativeElement.querySelector('textarea');
+
+      function resize() {
+        text.style.height = 'auto';
+        text.style.height = text.scrollHeight + 'px';
+      }
+
+      /* 0-timeout to get the already changed text */
+      function delayedResize() {
+        setTimeout(resize, 0);
+      }
+
+      if (text) {
+        text.addEventListener('change', resize);
+        text.addEventListener('cut', delayedResize);
+        text.addEventListener('paste', delayedResize);
+        text.addEventListener('drop', delayedResize);
+        text.addEventListener('keydown', delayedResize);
+
+        text.focus();
+        text.select();
+        resize();
+      }
+    }
+  }
+}

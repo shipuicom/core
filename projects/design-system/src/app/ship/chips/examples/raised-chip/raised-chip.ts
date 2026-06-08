@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipChip, ShipIcon } from 'ship-ui';
+import { ShipChip } from '@ship-ui/core/ship-chip';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
 
 @Component({
   selector: 'app-raised-chip',

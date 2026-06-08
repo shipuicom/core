@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { ShipAccordion } from 'ship-ui';
+import { ShipAccordion } from '@ship-ui/core/ship-accordion';
 
 @Component({
   selector: 'app-type-b-accordion',

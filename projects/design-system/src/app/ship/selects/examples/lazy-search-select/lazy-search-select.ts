@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/c
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { delay, map, of } from 'rxjs';
-import { ShipSelect } from 'ship-ui';
+import { ShipSelect } from '@ship-ui/core/ship-select';
 
 const DEFAULT_OPTIONS = [
   { value: 'pizza', label: 'Pizza' },

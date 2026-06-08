@@ -1,6 +1,8 @@
 import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { ShipFormField, ShipIcon, ShipInputMask } from 'ship-ui';
+import { ShipFormField } from '@ship-ui/core/ship-form-field';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipInputMask } from '@ship-ui/core';
 
 @Component({
   selector: 'app-base-input-mask',

@@ -1,0 +1,113 @@
+@use 'helpers' as *;
+
+$shipRadio: true !default;
+
+@if $shipRadio == true {
+  .sh-radio,
+  sh-radio {
+    --radiod-c: var(--base-8);
+    --radiod-o: 0;
+    --radio-bc: var(--base-4);
+
+    display: flex;
+    align-items: center;
+    gap: p2r(8);
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+
+    &:focus-visible > .radio,
+    &:has(input:focus-visible) > .radio {
+      outline: 2px solid var(--primary-8);
+      outline-offset: 2px;
+    }
+
+    > input {
+      appearance: none;
+      position: absolute;
+      inset: 0;
+      cursor: pointer;
+
+      &:focus,
+      &:focus-visible {
+        outline: none;
+      }
+    }
+
+    &:has(> input:not(.internal-input)) > input.internal-input {
+      display: none;
+    }
+
+    &:has(input[disabled]),
+    &[disabled]:not([disabled='false']) {
+      opacity: 0.5;
+      pointer-events: none;
+      user-select: none;
+      cursor: initial;
+    }
+
+    &:has(input:checked),
+    &.active {
+      --radiod-o: 1;
+    }
+
+    .radio {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: p2r(20);
+      height: p2r(20);
+      cursor: pointer;
+      position: relative;
+      border-radius: 50%;
+
+      &:after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        width: p2r(6);
+        height: p2r(6);
+        background-color: var(--radiod-c);
+        opacity: var(--radiod-o);
+        transition: opacity 125ms linear;
+      }
+    }
+
+    &.primary {
+      --radiod-c: var(--primary-8);
+    }
+
+    &.accent {
+      --radiod-c: var(--accent-8);
+    }
+
+    &.warn {
+      --radiod-c: var(--warn-8);
+    }
+
+    &.error {
+      --radiod-c: var(--error-8);
+    }
+
+    &.success {
+      --radiod-c: var(--success-8);
+    }
+
+    &.flat,
+    &.raised {
+      --radiod-c: #fff;
+    }
+
+    &.raised,
+    &.flat {
+      &:not(:has(input:checked)):not(.active) .radio {
+        background: transparent;
+        border: var(--border-10);
+        border-color: var(--radio-bc);
+      }
+    }
+  }
+}

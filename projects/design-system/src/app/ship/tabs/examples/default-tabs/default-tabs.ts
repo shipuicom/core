@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipIcon, ShipTabs } from 'ship-ui';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipTabs } from '@ship-ui/core/ship-tabs';
 import Tab from '../../tab/tab';
 
 @Component({

@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipButtonGroup, ShipCheckbox, ShipFormField, ShipFormFieldVariant } from 'ship-ui';
+import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
+import { ShipCheckbox } from '@ship-ui/core/ship-checkbox';
+import { ShipFormField } from '@ship-ui/core/ship-form-field';
+import { ShipFormFieldVariant } from '@ship-ui/core';
 
 @Component({
   selector: 'app-form-field-sandbox',

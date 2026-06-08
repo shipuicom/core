@@ -1,0 +1,152 @@
+@use 'helpers' as *;
+
+$shipDialog: true !default;
+
+@if $shipDialog == true {
+  dialog[shDialog] {
+    --dialog-p: #{p2r(16)};
+    --dialog-g: #{p2r(8)};
+    --dialog-bg: var(--base-1);
+    --dialog-s: var(--shape-2);
+    --dialog-inner-s: var(--shape-2);
+
+    border: var(--border-10);
+    background: transparent;
+    border-radius: var(--dialog-s);
+    box-shadow: var(--box-shadow-40);
+    color: var(--base-8);
+    font: var(--paragraph-30);
+    padding: 0;
+    margin: auto;
+    z-index: 0;
+    display: flex;
+    flex-direction: column;
+
+    &:focus-visible {
+      outline: none;
+    }
+
+    &.type-b {
+      --dialog-s: #{p2r(26)};
+      --dialog-inner-s: #{p2r(20)};
+
+      background: var(--base-3);
+      padding: p2r(8);
+      outline: var(--border-10);
+      outline-offset: -1px;
+      overflow: hidden;
+
+      &::backdrop {
+        background: rgb(from var(--base-1) r g b / 30%);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+
+      > .content {
+        border: 1px solid rgb(from var(--base-4) r g b / 70%);
+      }
+    }
+
+    > .content {
+      position: relative;
+      border-radius: var(--dialog-inner-s);
+      background-color: var(--dialog-bg);
+      z-index: 2;
+      max-width: initial;
+      overflow: auto;
+    }
+
+    .closeable-overlay {
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      z-index: 1;
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    .dialog-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .dialog-backdrop {
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      z-index: 1;
+    }
+
+    [header],
+    [content],
+    [footer] {
+      width: 100%;
+    }
+
+    [header] {
+      display: grid;
+      grid-template-areas:
+        'title actions'
+        'description actions';
+      grid-template-columns: 1fr min-content;
+      padding: var(--dialog-p);
+      gap: var(--dialog-g);
+
+      h1,
+      h2,
+      h3,
+      h4,
+      [title] {
+        grid-area: title;
+        font: var(--title-20);
+      }
+
+      p,
+      [description] {
+        grid-area: description;
+        font: var(--paragraph-30);
+      }
+
+      button,
+      [actions] {
+        grid-area: actions;
+      }
+
+      &.sticky {
+        background-color: var(--dialog-bg);
+        border-bottom: var(--border-10);
+        box-shadow: var(--box-shadow-35);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+    }
+
+    [content] {
+      padding: 0 var(--dialog-p);
+
+      &:not(:has(~ [footer])) {
+        padding-bottom: var(--dialog-p);
+      }
+    }
+
+    [footer] {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: var(--dialog-p);
+      gap: var(--dialog-g);
+
+      &.sticky {
+        background-color: var(--dialog-bg);
+        border-top: var(--border-10);
+        box-shadow: var(--box-shadow-35);
+        position: sticky;
+        bottom: 0;
+        z-index: 100;
+      }
+    }
+  }
+}

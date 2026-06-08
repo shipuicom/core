@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipButtonGroup, ShipColor, ShipIcon, ShipIconSize, ShipRangeSlider } from 'ship-ui';
+import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
+import { ShipColor, ShipIconSize } from '@ship-ui/core';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipRangeSlider } from '@ship-ui/core/ship-range-slider';
 
 @Component({
   selector: 'app-sandbox-icon',
