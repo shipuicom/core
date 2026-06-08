@@ -17,4 +17,8 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: p2r(40);
+
+  @include breakpoint(-kilo) {
+    grid-template-columns: 1fr;
+  }
 }
