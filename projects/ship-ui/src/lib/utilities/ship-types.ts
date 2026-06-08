@@ -22,7 +22,7 @@ export type ShipTableVariant = (typeof __SHIP_TABLE_VARIANTS)[number];
 export const __SHIP_CARD_VARIANTS = ['type-a', 'type-b', 'type-c', ''] as const;
 export type ShipCardVariant = (typeof __SHIP_CARD_VARIANTS)[number];
 
-export const __SHIP_BUTTON_GROUP_VARIANTS = ['type-a', 'type-b', ''] as const;
+export const __SHIP_BUTTON_GROUP_VARIANTS = [''] as const;
 export type ShipButtonGroupVariant = (typeof __SHIP_BUTTON_GROUP_VARIANTS)[number];
 
 export const __SHIP_FORM_FIELD_VARIANTS = ['base', 'horizontal', 'auto-width', 'autosize', ''] as const;

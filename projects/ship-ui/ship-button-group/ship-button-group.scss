@@ -3,69 +3,31 @@ $shipButtonGroup: true !default;
 
 @if $shipButtonGroup == true {
   sh-button-group {
-    --btng-bg: var(--base-1);
-    --btng-item-bg: var(--base-3);
+    // Default styling (previously type-b)
+    --btng-bg: var(--base-3);
+    --btng-item-bg: var(--base-1);
     --btng-c: var(--base-12);
     --btng-ic: var(--base-12);
     --btng-bc: var(--base-4);
     --btng-h: #{p2r(40)};
     --btng-p: #{p2r(0 12)};
     --btng-s: var(--shape-2);
+    --btng-s-a: var(--shape-2);
     --btng-f: var(--paragraph-30);
 
     display: inline-flex;
-    border: var(--border-10);
-    border-color: var(--btng-bc);
-    border-radius: var(--btng-s);
     height: var(--btng-h);
     background: var(--btng-bg);
     overflow: hidden;
     position: relative;
+    padding: p2r(3);
+    gap: p2r(4);
+    border: 0;
+    border-radius: var(--btng-s);
 
     &.small {
       --btng-h: #{p2r(32)};
       --btng-p: #{p2r(0 8)};
-    }
-
-    &.type-b {
-      --btng-bg: var(--base-3);
-      --btng-item-bg: var(--base-1);
-      --btng-s-a: var(--shape-2);
-
-      padding: p2r(3);
-      gap: p2r(4);
-      border: 0;
-
-      button {
-        border-radius: calc((var(--btng-s) / 3) * 2);
-        border: 0;
-
-        &:focus-visible {
-          outline-offset: -2px;
-        }
-
-        @supports not (anchor-name: --anchor) {
-          --btng-item-bg: var(--base-3);
-        }
-
-        &:hover {
-          --btng-bg: var(--base-2);
-        }
-
-        &:hover,
-        &.active {
-          --btng-bg: var(--base-1);
-          box-shadow: var(--box-shadow-10);
-
-          @supports not (anchor-name: --anchor) {
-            --btng-item-bg: var(--base-1);
-          }
-        }
-      }
-
-      &:after {
-        border-radius: calc((var(--btng-s) / 3) * 2);
-      }
     }
 
     button {
@@ -83,14 +45,13 @@ $shipButtonGroup: true !default;
       outline: none;
       line-height: inherit;
       user-select: none;
-      appearance: none;
       overflow: visible;
       vertical-align: middle;
       white-space: nowrap;
       background: transparent;
       color: var(--btng-c);
       font: var(--btng-f);
-      border-left: 1px solid var(--btng-bc);
+      border-radius: calc((var(--btng-s) / 3) * 2);
       transition:
         color 80ms linear,
         transform 125ms linear;
@@ -98,27 +59,33 @@ $shipButtonGroup: true !default;
 
       &:focus-visible {
         outline: 2px solid var(--primary-8);
-        outline-offset: -4px;
+        outline-offset: -2px;
       }
 
       &:active {
         transform: scale(0.96);
       }
 
-      &:first-child {
-        border-left: 0;
+      &:hover {
+        --btng-bg: var(--base-2);
+      }
+
+      &:hover,
+      &.active {
+        --btng-bg: var(--base-1);
+        box-shadow: var(--box-shadow-10);
       }
 
       @supports not (anchor-name: --anchor) {
-        --btng-item-bg: var(--base-1);
+        --btng-item-bg: var(--base-3);
         background: var(--btng-item-bg);
 
         &:hover,
         &.active {
           --btng-c: var(--base-12);
           --btng-ic: var(--base-12);
-          --btng-bg: var(--base-3);
-          --btng-item-bg: var(--base-3);
+          --btng-bg: var(--base-1);
+          --btng-item-bg: var(--base-1);
         }
       }
 
@@ -146,20 +113,9 @@ $shipButtonGroup: true !default;
         transition:
           left 0.175s ease-out,
           right 0.175s ease-out;
-        // border-radius: var(--btng-s-a);
+        border-radius: calc((var(--btng-s) / 3) * 2);
       }
-
-      // &:not(.type-b):has(button:first-child.active) {
-      //   &:after {
-      //     --btng-s-a: var(--btng-s) 0 0 var(--btng-s);
-      //   }
-      // }
-
-      // &:not(.type-b):has(button:last-child.active) {
-      //   &:after {
-      //     --btng-s-a: 0 var(--btng-s) var(--btng-s) 0;
-      //   }
-      // }
     }
+
   }
 }

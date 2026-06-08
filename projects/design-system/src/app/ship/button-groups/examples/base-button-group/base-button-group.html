@@ -1,13 +1,13 @@
-<sh-button-group [class.small]="small()" [class]="type()">
+<sh-button-group [class.small]="small()">
   @for (item of items(); track $index; let idx = $index) {
-    <button [class.active]="activeIndex() === idx" (click)="updateActiveIndex(idx)">
+    <button [class.active]="activeIndex() === idx" (click)="updateActiveIndex(idx)" [value]="idx">
       <sh-icon>circle</sh-icon>
-      Hello
+      Hello {{ idx }}
     </button>
   }
 </sh-button-group>
 
-<sh-button-group [class.small]="small()" [class]="type()" [(value)]="selected">
+<sh-button-group [class.small]="small()" [(value)]="selected">
   <button value="one">One</button>
   <button value="two">Two</button>
   <button value="three">Three</button>

@@ -3,19 +3,6 @@
 
 <app-property-viewer>
   <section>
-    <h4>Variants</h4>
-    <p>
-      Button groups support different layouts via the
-      <code>variant</code>
-      attribute. Valid options:
-      <b>default</b>
-      and
-      <b>type-b</b>
-      .
-    </p>
-  </section>
-
-  <section>
     <h4>Sizes</h4>
     <p>
       Use the
@@ -39,15 +26,11 @@
 <div>
   <sh-toggle [(checked)]="small">Small</sh-toggle>
 
-  <sh-button-group [(value)]="type">
-    <button value="">Base (default)</button>
-    <button value="type-b">Type B</button>
-  </sh-button-group>
 </div>
 
 <app-previewer
   path="/button-groups/examples/base-button-group/base-button-group"
   title="Default"
   configName="buttonGroup">
-  <app-base-button-group class="example" [small]="small()" [type]="type()" />
+  <app-base-button-group class="example" [small]="small()" />
 </app-previewer>

@@ -11,7 +11,6 @@ import { ShipIcon } from '@ship-ui/core/ship-icon';
 })
 export class BaseButtonGroup {
   small = input<boolean>(false);
-  type = input<'' | 'type-b'>('');
   activeIndex = signal<number | null>(0);
   selected = signal<string | null>('one');
 

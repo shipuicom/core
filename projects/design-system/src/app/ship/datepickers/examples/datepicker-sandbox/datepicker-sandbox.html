@@ -2,7 +2,7 @@
   <sh-toggle class="raised primary" [(checked)]="disabled">Disabled</sh-toggle>
   <sh-toggle class="raised primary" [(checked)]="sharp">Sharp</sh-toggle>
 
-  <sh-button-group class="type-b" [(value)]="colors">
+  <sh-button-group [(value)]="colors">
     <button value="">Default</button>
     <button value="primary">Primary</button>
     <button value="accent">Accent</button>
@@ -11,7 +11,7 @@
     <button value="success">Success</button>
   </sh-button-group>
 
-  <sh-button-group class="type-b" [(value)]="startOfWeek">
+  <sh-button-group [(value)]="startOfWeek">
     <button value="1">Monday</button>
     <button value="2">Tuesday</button>
     <button value="3">Wednesday</button>
