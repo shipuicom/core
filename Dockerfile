@@ -1,8 +1,17 @@
 FROM oven/bun:canary-alpine AS base
 WORKDIR /app
 
-# Install latest 0.15.x Zig and Node.js natively overriding older Alpine defaults via edge repository injections
-RUN apk add --no-cache zig nodejs --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+# 1. Install Node.js from edge, plus dependencies needed to fetch/unpack Zig
+RUN apk add --no-cache nodejs wget tar xz \
+    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+
+# 2. Download and install the exact Zig 0.15.0 binary for Alpine (musl)
+# Note: Based on your previous logs, your build architecture is aarch64 (ARM64).
+RUN wget https://ziglang.org/download/0.15.0/zig-linux-aarch64-0.15.0.tar.xz \
+    && tar -xf zig-linux-aarch64-0.15.0.tar.xz \
+    && mv zig-linux-aarch64-0.15.0/zig /usr/local/bin/zig \
+    && mv zig-linux-aarch64-0.15.0/lib /usr/local/lib/zig \
+    && rm -rf zig-linux-aarch64-0.15.0*
 
 # Install dependencies into temp directory
 FROM base AS install
@@ -19,7 +28,7 @@ COPY . .
 ARG BUILD_ENV=dev
 ENV BUILD_ENV=${BUILD_ENV}
 
-# Run the Angular compilation normally (avoiding --bun flag since Angular SSR relies on Node-specific memory streams)
+# Run the Angular compilation normally
 RUN if [ "$BUILD_ENV" = "prod" ]; then \
   bun run build:docs; \
   else \
