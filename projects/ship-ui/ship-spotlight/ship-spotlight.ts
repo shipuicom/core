@@ -33,11 +33,12 @@ export interface ShipSpotlightServiceOptions {
   shortcut?: string;
   customFilter?: boolean;
   searchQuery?: string;
+  dialogClass?: string;
 }
 
 export interface ShipSpotlightConfig {
   defaultItems?: ShipSpotlightItem[];
-  enableShortcuts?: boolean;
+  enableGlobalEventListener?: boolean;
 }
 
 export const SHIP_SPOTLIGHT_CONFIG = new InjectionToken<ShipSpotlightConfig>('SHIP_SPOTLIGHT_CONFIG');

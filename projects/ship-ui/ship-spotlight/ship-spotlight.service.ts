@@ -49,7 +49,7 @@ export class ShipSpotlightService {
   hasOverwriteItems = computed(() => this.#registries().some((r) => r.overwrite));
 
   constructor() {
-    if (this.#config?.enableShortcuts !== false) {
+    if (this.#config?.enableGlobalEventListener !== false) {
       this.enableGlobalShortcuts();
     }
   }
@@ -137,9 +137,11 @@ export class ShipSpotlightService {
       items: options?.items ?? this.#aggregatedItems(),
     };
 
+    const dialogClass = options?.dialogClass ?? 'type-c';
+
     const dialogRef = this.#dialogService.open(ShipSpotlight, {
       data: finalOptions,
-      class: 'spotlight-dialog',
+      class: `spotlight-dialog ${dialogClass}`,
       closeOnOutsideClick: true,
       closeOnEsc: true,
       width: '600px',

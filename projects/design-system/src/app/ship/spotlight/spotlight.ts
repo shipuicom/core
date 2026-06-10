@@ -29,7 +29,7 @@ import { provideShipSpotlight } from '@ship-ui/core/ship-spotlight';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideShipSpotlight({
-      enableShortcuts: true,
+      enableGlobalEventListener: true,
       defaultItems: [
         { id: '1', label: 'Dashboard', icon: 'house' },
         { id: '2', label: 'Settings', icon: 'gear' }

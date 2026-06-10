@@ -31,8 +31,25 @@
         <h4>Global Setup & Shortcuts</h4>
         <p>
           The <code>ShipSpotlightService</code> provides a way to integrate the spotlight seamlessly into your application.
-          Use <code>registerGlobalShortcut()</code> to bind the <code>Cmd + K</code> (macOS) or <code>Ctrl + K</code> (Windows/Linux) 
-          shortcut globally, and inject the service to handle spotlight operations.
+          By default, a global window event listener is registered for the <code>Cmd + K</code> (macOS) or <code>Ctrl + K</code> (Windows/Linux) 
+          shortcut keys to automatically open the spotlight search overlay.
+        </p>
+        <p>
+          You can customize this behavior using the <code>enableGlobalEventListener</code> config option when registering the service:
+        </p>
+        <ul>
+          <li>
+            <strong><code>enableGlobalEventListener</code> (default: <code>true</code>):</strong>
+            Controls whether the spotlight service registers the global <code>Cmd + K</code> / <code>Ctrl + K</code> keyboard listener to open the spotlight dialog.
+            Set this to <code>false</code> if you prefer to manually control how/when the spotlight dialog is opened, or to avoid attaching global window event listeners.
+          </li>
+        </ul>
+        <p>
+          <strong>Global Listener vs. Item Shortcuts:</strong>
+          <br />
+          The global listener (controlled by <code>enableGlobalEventListener</code>) listens on the window object to <em>open</em> the spotlight dialog modal.
+          In contrast, individual item shortcuts (the <code>shortcut</code> key inside a <code>ShipSpotlightItem</code>) only operate <em>while the spotlight dialog is already open</em>,
+          allowing users to trigger a specific option from the list (e.g., press <code>alt+t</code> to select a theme option).
         </p>
       </section>
 
