@@ -96,6 +96,12 @@ $shipButtonGroup: true !default;
           anchor-name: var(--btng-id);
         }
       }
+
+      &[disabled] {
+        opacity: 0.5;
+        pointer-events: none;
+        cursor: not-allowed;
+      }
     }
 
     @supports (anchor-name: --anchor) {
