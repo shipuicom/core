@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
 import { shipComponentClasses } from '@ship-ui/core';
 import { ShipButtonSize, ShipColor, ShipSheetVariant } from '@ship-ui/core';
 
@@ -12,6 +12,7 @@ import { ShipButtonSize, ShipColor, ShipSheetVariant } from '@ship-ui/core';
   host: {
     class: 'sh-sheet-h',
     '[class]': 'hostClasses()',
+    '[class.no-bg]': 'noBg()',
   },
 })
 export class ShipButton {
@@ -19,6 +20,7 @@ export class ShipButton {
   variant = input<ShipSheetVariant | null>(null);
   size = input<ShipButtonSize | null>(null);
   readonly = input<boolean>(false);
+  noBg = input<boolean, boolean | string>(false, { transform: booleanAttribute });
 
   hostClasses = shipComponentClasses('button', {
     color: this.color,

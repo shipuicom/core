@@ -115,6 +115,15 @@ $shipButtonShadow: false !default;
       }
     }
 
+    &.no-bg {
+      --sheet-bg: transparent;
+      background: transparent;
+
+      &.simple {
+        --sheet-bc: transparent;
+      }
+    }
+
     &[disabled] {
       opacity: 0.5;
       pointer-events: none;

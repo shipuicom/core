@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
 import { shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipSheetVariant, ShipSize } from '@ship-ui/core';
 
@@ -13,6 +13,7 @@ import { ShipColor, ShipSheetVariant, ShipSize } from '@ship-ui/core';
   host: {
     class: 'sh-sheet',
     '[class]': 'hostClasses()',
+    '[class.no-bg]': 'noBg()',
   },
 })
 export class ShipChip {
@@ -23,6 +24,7 @@ export class ShipChip {
   sharp = input<boolean | undefined>(undefined);
   dynamic = input<boolean | undefined>(undefined);
   readonly = input<boolean>(false);
+  noBg = input<boolean, boolean | string>(false, { transform: booleanAttribute });
 
   hostClasses = shipComponentClasses('chip', {
     color: this.color,

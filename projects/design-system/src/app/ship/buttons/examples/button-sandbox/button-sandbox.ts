@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, signal } from '@angular/core';
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
@@ -17,9 +17,21 @@ export class ButtonSandbox {
   isLoading = signal<boolean>(false);
   isDisabled = signal<boolean>(false);
   isReadonly = signal<boolean>(false);
+  isNoBg = signal<boolean>(false);
 
   sizeClass = signal<'' | 'small' | 'xsmall'>('');
   colorClass = signal<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
   variationClass = signal<'' | 'simple' | 'outlined' | 'flat' | 'raised'>('raised');
   exampleClass = computed(() => this.colorClass() + ' ' + this.variationClass() + ' ' + this.sizeClass());
+
+  constructor() {
+    effect(() => {
+      if (this.isNoBg()) {
+        const variant = this.variationClass();
+        if (variant === 'flat' || variant === 'raised') {
+          this.variationClass.set('outlined');
+        }
+      }
+    });
+  }
 }

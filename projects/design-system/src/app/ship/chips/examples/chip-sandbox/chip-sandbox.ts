@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, signal } from '@angular/core';
 import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
 import { ShipChip } from '@ship-ui/core/ship-chip';
 import { ShipColorPicker } from '@ship-ui/core/ship-color-picker';
@@ -16,6 +16,7 @@ export class ChipSandbox {
   isSmall = signal<boolean>(false);
   isSharp = signal<boolean>(false);
   isDynamic = signal<boolean>(false);
+  isNoBg = signal<boolean>(false);
   hasIcon = signal<boolean>(true);
   hasSuffixIcon = signal<boolean>(true);
   hasText = signal<boolean>(true);
@@ -28,15 +29,14 @@ export class ChipSandbox {
   selectedColor = signal<[number, number, number]>([60, 131, 246]);
   currentColor = signal<{ rgb: string; hex: string; hsl: string; hue: number; saturation: number } | null>(null);
 
-  // colorEffect = effect(() => {
-  //   if (this.isDynamic()) {
-  //     this.currentColor.set({
-  //       rgb: 'rgb(132,156,255)',
-  //       hex: '#849cff',
-  //       hsl: 'hsl(228, 100%, 76%)',
-  //       hue: 228,
-  //       saturation: 100,
-  //     });
-  //   }
-  // });
+  constructor() {
+    effect(() => {
+      if (this.isNoBg()) {
+        const variant = this.variationClass();
+        if (variant === 'flat' || variant === 'raised') {
+          this.variationClass.set('outlined');
+        }
+      }
+    });
+  }
 }

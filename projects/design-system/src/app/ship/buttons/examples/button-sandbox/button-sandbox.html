@@ -14,6 +14,7 @@
       <sh-toggle [(checked)]="isLoading" color="primary" variant="raised">Loading</sh-toggle>
       <sh-toggle [(checked)]="isDisabled" color="primary" variant="raised">Disabled</sh-toggle>
       <sh-toggle [(checked)]="isReadonly" color="primary" variant="raised">Readonly</sh-toggle>
+      <sh-toggle [(checked)]="isNoBg" color="primary" variant="raised">No BG</sh-toggle>
     </div>
 
     <div class="row">
@@ -30,8 +31,8 @@
         <button value="">Default</button>
         <button value="simple">Simple</button>
         <button value="outlined">Outlined</button>
-        <button value="flat">Flat</button>
-        <button value="raised">Raised</button>
+        <button value="flat" [disabled]="isNoBg()">Flat</button>
+        <button value="raised" [disabled]="isNoBg()">Raised</button>
       </sh-button-group>
     </div>
   </header>
@@ -46,7 +47,8 @@
     [class.loading]="isLoading()"
     [class.rotated-icon]="isRotated()"
     [disabled]="isDisabled()"
-    [attr.readonly]="isReadonly() ? true : null">
+    [attr.readonly]="isReadonly() ? true : null"
+    [noBg]="isNoBg()">
     <sh-icon>caret-down</sh-icon>
   </button>
 
@@ -58,7 +60,8 @@
     [class.loading]="isLoading()"
     [class.rotated-icon]="isRotated()"
     [disabled]="isDisabled()"
-    [attr.readonly]="isReadonly() ? true : null">
+    [attr.readonly]="isReadonly() ? true : null"
+    [noBg]="isNoBg()">
     <sh-icon>caret-down</sh-icon>
     Default
     <sh-icon>caret-down</sh-icon>
@@ -72,7 +75,8 @@
     [class.loading]="isLoading()"
     [class.rotated-icon]="isRotated()"
     [disabled]="isDisabled()"
-    [attr.readonly]="isReadonly() ? true : null">
+    [attr.readonly]="isReadonly() ? true : null"
+    [noBg]="isNoBg()">
     <sh-icon>caret-down</sh-icon>
     Primary
   </button>
@@ -85,7 +89,8 @@
     [class.loading]="isLoading()"
     [class.rotated-icon]="isRotated()"
     [disabled]="isDisabled()"
-    [attr.readonly]="isReadonly() ? true : null">
+    [attr.readonly]="isReadonly() ? true : null"
+    [noBg]="isNoBg()">
     Primary
     <sh-icon>caret-down</sh-icon>
   </button>

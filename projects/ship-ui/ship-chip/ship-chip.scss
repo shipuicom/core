@@ -87,6 +87,21 @@ $shipChipShadow: false !default;
       }
     }
 
+    &.no-bg {
+      --sheet-bg: transparent;
+      background: transparent;
+
+      &.simple,
+      &.simple.primary,
+      &.simple.accent,
+      &.simple.warn,
+      &.simple.error,
+      &.simple.success {
+        --sheet-bc: transparent;
+        border-color: transparent;
+      }
+    }
+
     &[disabled] {
       opacity: 0.5;
     }
