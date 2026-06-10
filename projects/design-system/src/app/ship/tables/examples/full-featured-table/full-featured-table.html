@@ -1,0 +1,182 @@
+<sh-table [data]="displayedUsers()" [loading]="isLoading()" [(sortByColumn)]="sortByColumn" [variant]="variant()">
+  <sh-form-field actionbar size="small">
+    <sh-icon prefix>magnifying-glass</sh-icon>
+    <input
+      type="text"
+      [ngModel]="searchQuery()"
+      (ngModelChange)="searchQuery.set($event)"
+      placeholder="Filter by name, email, role or status..."
+      class="search-input" />
+  </sh-form-field>
+
+  <button shButton actionbar align-right class="small primary" (click)="toggleLoading()">
+    <sh-icon>spinner</sh-icon>
+    Simulate API Load
+  </button>
+
+  @if (selectedUserIds().size > 0) {
+    <button shButton actionbar align-right class="small error raised" (click)="deleteSelected()">
+      <sh-icon>trash</sh-icon>
+      Delete Selected ({{ selectedUserIds().size }})
+    </button>
+  }
+
+  <button shButton actionbar align-right class="small flat" (click)="resetData()">
+    <sh-icon>arrows-counter-clockwise</sh-icon>
+    Reset Table
+  </button>
+
+  <tr thead>
+    <div shStickyColumns>
+      <th size="min-content">
+        <sh-checkbox
+          [checked]="isAllSelected()"
+          [class.indeterminate]="isSomeSelected()"
+          (checkedChange)="toggleSelectAll($event)"></sh-checkbox>
+      </th>
+    </div>
+    <th shSort="id" shResize size="80px" class="sortable-header">
+      ID
+      @if (sortByColumn() === 'id') {
+        <sh-icon>caret-up</sh-icon>
+      } @else if (sortByColumn() === '-id') {
+        <sh-icon>caret-down</sh-icon>
+      } @else {
+        <sh-icon>arrows-down-up</sh-icon>
+      }
+    </th>
+    <th shSort="name" shResize class="sortable-header">
+      User Name
+      @if (sortByColumn() === 'name') {
+        <sh-icon>caret-up</sh-icon>
+      } @else if (sortByColumn() === '-name') {
+        <sh-icon>caret-down</sh-icon>
+      } @else {
+        <sh-icon>arrows-down-up</sh-icon>
+      }
+    </th>
+    <th shSort="email" shResize class="sortable-header">
+      Email Address
+      @if (sortByColumn() === 'email') {
+        <sh-icon>caret-up</sh-icon>
+      } @else if (sortByColumn() === '-email') {
+        <sh-icon>caret-down</sh-icon>
+      } @else {
+        <sh-icon>arrows-down-up</sh-icon>
+      }
+    </th>
+    <th shSort="role" shResize class="sortable-header">
+      Role
+      @if (sortByColumn() === 'role') {
+        <sh-icon>caret-up</sh-icon>
+      } @else if (sortByColumn() === '-role') {
+        <sh-icon>caret-down</sh-icon>
+      } @else {
+        <sh-icon>arrows-down-up</sh-icon>
+      }
+    </th>
+    <th shSort="status" shResize class="sortable-header">
+      Status
+      @if (sortByColumn() === 'status') {
+        <sh-icon>caret-up</sh-icon>
+      } @else if (sortByColumn() === '-status') {
+        <sh-icon>caret-down</sh-icon>
+      } @else {
+        <sh-icon>arrows-down-up</sh-icon>
+      }
+    </th>
+    <th shSort="lastActive" shResize class="sortable-header">
+      Last Active
+      @if (sortByColumn() === 'lastActive') {
+        <sh-icon>caret-up</sh-icon>
+      } @else if (sortByColumn() === '-lastActive') {
+        <sh-icon>caret-down</sh-icon>
+      } @else {
+        <sh-icon>arrows-down-up</sh-icon>
+      }
+    </th>
+    <div shStickyColumns="end">
+      <th size="min-content">Actions</th>
+    </div>
+  </tr>
+
+  @for (user of displayedUsers(); track user.id) {
+    <tr
+      [class.selected]="selectedUserIds().has(user.id)"
+      (click)="toggleExpandUser(user.id, $event)"
+      class="clickable-row">
+      <div shStickyColumns (click)="$event.stopPropagation()">
+        <td>
+          <sh-checkbox
+            [checked]="selectedUserIds().has(user.id)"
+            (checkedChange)="toggleSelectUser(user.id, $event)"></sh-checkbox>
+        </td>
+      </div>
+      <td>{{ user.id }}</td>
+      <td class="user-cell">
+        <button shButton class="small text primary expand-btn">
+          <sh-icon>{{ expandedUserIds().has(user.id) ? 'caret-up' : 'caret-down' }}</sh-icon>
+        </button>
+        <span class="user-name">{{ user.name }}</span>
+      </td>
+      <td>{{ user.email }}</td>
+      <td>{{ user.role }}</td>
+      <td>
+        @if (user.status === 'active') {
+          <sh-chip class="success text-only small">Active</sh-chip>
+        } @else if (user.status === 'pending') {
+          <sh-chip class="warn text-only small">Pending</sh-chip>
+        } @else {
+          <sh-chip class="flat text-only small">Inactive</sh-chip>
+        }
+      </td>
+      <td>{{ user.lastActive | date: 'MMM d, h:mm a' }}</td>
+      <div shStickyColumns="end" (click)="$event.stopPropagation()">
+        <td class="actions-cell">
+          <button
+            shButton
+            class="small text primary"
+            (click)="editUser(user, $event)"
+            [shTooltip]="'Edit ' + user.name">
+            <sh-icon>pencil</sh-icon>
+          </button>
+          <button
+            shButton
+            class="small text error"
+            (click)="deleteUser(user.id, $event)"
+            [shTooltip]="'Delete ' + user.name">
+            <sh-icon>trash</sh-icon>
+          </button>
+        </td>
+      </div>
+    </tr>
+
+    @if (expandedUserIds().has(user.id)) {
+      <tr class="expanded-row-wrapper" (click)="$event.stopPropagation()">
+        <td class="span-all expanded-row-cell">
+          <div class="expanded-content">
+            <div class="user-bio-section">
+              <h5 class="expanded-title">Biography</h5>
+              <p class="expanded-text">{{ user.bio }}</p>
+            </div>
+            <div class="user-meta-section">
+              <div class="meta-item">
+                <span class="meta-label">Location</span>
+                <span class="meta-value">{{ user.location }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Member Since</span>
+                <span class="meta-value">{{ user.joined }}</span>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    }
+  }
+
+  <div table-no-rows class="no-rows-container">
+    <sh-icon class="no-rows-icon">info</sh-icon>
+    <p class="no-rows-text">No users found matching your filters.</p>
+  </div>
+</sh-table>

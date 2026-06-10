@@ -13,7 +13,7 @@ $shipTable: true !default;
 @if $shipTable == true {
   sh-table {
     --table-bc: var(--base-4);
-    --table-th-bg: var(--base-1);
+    --table-th-bg: var(--base-2);
     --table-tr-bg: var(--base-1);
     --table-td-bg: var(--base-1);
     --table-th-c: var(--base-8);
@@ -44,22 +44,6 @@ $shipTable: true !default;
           }
         }
       }
-
-      &.scrolled-x.can-scroll-x {
-        [shStickyColumns=''],
-        th.sticky,
-        td.sticky {
-          border-right-width: p2r(1);
-        }
-      }
-
-      &:not(.scrolled-x-end).can-scroll-x {
-        [shStickyColumns='end'],
-        th.sticky-end,
-        td.sticky-end {
-          border-left-width: p2r(1);
-        }
-      }
     }
 
     &.type-b {
@@ -69,8 +53,7 @@ $shipTable: true !default;
       --table-td-mh: #{p2r(56)};
       --table-th-bw: #{p2r(1 0 1 1)};
       --table-td-bw: #{p2r(0 0 1 1)};
-      --table-th-bg: var(--base-2);
-      --table-sticky-bw: #{p2r(2)};
+      --table-sticky-bw: #{p2r(1)};
 
       th {
         &:first-child {
@@ -86,31 +69,34 @@ $shipTable: true !default;
         }
       }
 
-      [shStickyColumns='end'] {
-        border-left-width: p2r(2);
-      }
-
-      &.scrolled-x {
-        [shStickyColumns=''] {
-          border-right-width: p2r(2);
-        }
-      }
-
-      &.scrolled-x-end {
-        [shStickyColumns='end'] {
-          border-left-width: p2r(1);
-        }
-      }
-
       td,
       th {
         &.sticky {
           border-left-width: 0;
-          border-right-width: p2r(1);
+          border-right: var(--table-sticky-bw) solid var(--table-bc);
         }
-        &.sticky + * {
-          border-left-width: 0;
+      }
+
+      [shStickyColumns] {
+        th,
+        td {
+          border-right: var(--table-sticky-bw) solid var(--table-bc);
         }
+      }
+
+      th.sticky-end,
+      td.sticky-end,
+      [shStickyColumns='end'] th,
+      [shStickyColumns='end'] td {
+        border-left: var(--table-sticky-bw) solid var(--table-bc);
+        border-right: 0;
+      }
+
+      .sticky + th,
+      .sticky + td,
+      [shStickyColumns] + th,
+      [shStickyColumns] + td {
+        border-left-width: 0;
       }
 
       tr:hover td {
@@ -119,6 +105,10 @@ $shipTable: true !default;
 
       div[table-header] tr:first-child th {
         border-bottom: 0;
+      }
+
+      tbody tr:last-child td {
+        border-bottom-width: 0;
       }
 
       .actionbar {
@@ -130,8 +120,10 @@ $shipTable: true !default;
     width: 100%;
     display: grid;
     overflow: auto;
+    overscroll-behavior-x: none;
     grid-template-columns: var(--table-columns);
     position: relative;
+    container-type: inline-size;
 
     &.resizing {
       user-select: none;
@@ -154,37 +146,47 @@ $shipTable: true !default;
     }
 
     .actionbar {
-      display: grid;
-      grid-column: 1 / -1;
-      align-items: start;
+      display: flex;
+      align-items: center;
       gap: p2r(8);
-      grid-template-rows: 1fr;
-      grid-auto-flow: column;
-      grid-auto-columns: max-content;
+      grid-column: 1 / -1;
+      position: sticky;
+      left: 0;
+      z-index: 10;
+      background-color: var(--base-1);
+      width: 100cqw;
+      box-sizing: border-box;
       padding: p2r(8);
       border: var(--border-10);
       border-width: p2r(1 0);
       opacity: 1;
 
       transition:
-        grid-template-rows 300ms ease-out,
         padding 300ms ease-out,
         border-width 300ms ease-out,
         opacity 300ms ease-out;
 
       overflow: hidden;
 
-      &:empty {
-        grid-template-rows: 0fr;
-        padding-top: 0;
-        padding-bottom: 0;
-        border-width: 0;
-        opacity: 0;
-        pointer-events: none;
+      &:empty,
+      &:not(:has(> :not(.actionbar-right))):has(> .actionbar-right:empty) {
+        display: none;
       }
 
       & > * {
         min-height: 0;
+      }
+
+      .actionbar-right {
+        display: flex;
+        align-items: center;
+        gap: p2r(8);
+        margin-left: auto;
+        flex-shrink: 0;
+
+        &:empty {
+          display: none;
+        }
       }
     }
 
@@ -399,7 +401,7 @@ $shipTable: true !default;
     th {
       &.sticky,
       &.sticky-end {
-        background: var(--table-th-bg);
+        background: var(--base-1);
         padding: var(--table-th-p);
         z-index: 101;
 
@@ -418,23 +420,15 @@ $shipTable: true !default;
       border: 0;
       border-color: var(--table-bc);
       border-style: solid;
+
+      th {
+        background-color: var(--base-1);
+      }
     }
 
     [shStickyColumns='end'] {
       left: auto;
       right: 0;
-    }
-
-    thead {
-      > [shStickyColumns] {
-        border-width: var(--table-th-bw);
-      }
-    }
-
-    tbody {
-      > [shStickyColumns] {
-        border-width: var(--table-td-bw);
-      }
     }
 
     .span-all {
@@ -443,6 +437,10 @@ $shipTable: true !default;
       align-items: flex-start;
       padding: 0;
       border-left-width: 0;
+      position: sticky;
+      left: 0;
+      width: 100cqw;
+      box-sizing: border-box;
     }
 
     .no-rows {

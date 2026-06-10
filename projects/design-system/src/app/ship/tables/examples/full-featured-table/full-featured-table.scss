@@ -1,0 +1,141 @@
+@use 'helpers' as *;
+
+:host {
+  display: block;
+  width: 100%;
+
+  .clickable-row {
+    cursor: pointer;
+    transition: background-color 150ms ease;
+
+    &:hover {
+      td {
+        background-color: var(--base-2);
+      }
+    }
+
+    &.selected {
+      td {
+        background-color: var(--primary-1);
+      }
+
+      &:hover {
+        td {
+          background-color: var(--primary-2);
+        }
+      }
+    }
+  }
+
+  .user-cell {
+    display: flex;
+    align-items: center;
+    gap: p2r(6);
+
+    .expand-btn {
+      margin-left: p2r(-6);
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: var(--base-12);
+    }
+  }
+
+  .sortable-header {
+    sh-icon {
+      font-size: p2r(14);
+      margin-left: p2r(4);
+    }
+  }
+
+  .expanded-row-wrapper {
+    background-color: var(--base-2);
+  }
+
+  .expanded-row-cell {
+    background-color: var(--base-2) !important;
+    padding: p2r(16 24) !important;
+    border-bottom: p2r(1) solid var(--base-4);
+  }
+
+  .expanded-content {
+    display: flex;
+    gap: p2r(40);
+    width: 100%;
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: p2r(20);
+    }
+
+    .user-bio-section {
+      flex: 1;
+
+      .expanded-title {
+        margin: 0 0 p2r(8);
+        font-size: p2r(11);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: p2r(0.5);
+        color: var(--base-7);
+      }
+
+      .expanded-text {
+        margin: 0;
+        font: var(--paragraph-30);
+        color: var(--base-10);
+        white-space: normal;
+        line-height: 1.5;
+      }
+    }
+
+    .user-meta-section {
+      display: flex;
+      gap: p2r(32);
+      min-width: p2r(300);
+
+      .meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: p2r(4);
+
+        .meta-label {
+          font-size: p2r(10);
+          font-weight: 600;
+          color: var(--base-6);
+          text-transform: uppercase;
+          letter-spacing: p2r(0.5);
+        }
+
+        .meta-value {
+          font-size: p2r(13);
+          font-weight: 500;
+          color: var(--base-11);
+        }
+      }
+    }
+  }
+
+  .no-rows-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: p2r(48 24);
+    text-align: center;
+    gap: p2r(12);
+    width: 100%;
+
+    .no-rows-icon {
+      font-size: p2r(32);
+      color: var(--base-5);
+    }
+
+    .no-rows-text {
+      margin: 0;
+      font: var(--paragraph-30);
+      color: var(--base-8);
+    }
+  }
+}

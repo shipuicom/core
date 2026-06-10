@@ -8,6 +8,7 @@ import { MultiTableHeader } from './examples/multi-table-header/multi-table-head
 import { ResizingTable } from './examples/resizing-table/resizing-table';
 import { SortingTable } from './examples/sorting-table/sorting-table';
 import { ToggleRowTable } from './examples/toggle-row-table/toggle-row-table';
+import { FullFeaturedTable } from './examples/full-featured-table/full-featured-table';
 
 export interface PeriodicElement {
   name: string;
@@ -51,6 +52,7 @@ type Column = Columns[number];
     MultiTableHeader,
     ToggleRowTable,
     SortingTable,
+    FullFeaturedTable,
     ShipButtonGroup,
   ],
   templateUrl: './tables.html',

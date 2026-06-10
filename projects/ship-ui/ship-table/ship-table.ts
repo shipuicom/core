@@ -147,7 +147,7 @@ export class ShipSort {
   selector: '[shStickyColumns]',
 
   host: {
-    '[class.sticky]': 'shStickyColumns() === "start"',
+    '[class.sticky]': 'shStickyColumns() === "start" || shStickyColumns() === ""',
     '[class.sticky-end]': 'shStickyColumns() === "end"',
   },
 })
@@ -188,7 +188,10 @@ type ScrollState = -1 | 0 | 1;
   imports: [ShipProgressBar],
   template: `
     <div class="actionbar">
-      <ng-content select="[actionbar]" />
+      <ng-content select="[actionbar]:not([align-right])" />
+      <div class="actionbar-right">
+        <ng-content select="[actionbar][align-right]" />
+      </div>
     </div>
 
     @if (loading()) {
