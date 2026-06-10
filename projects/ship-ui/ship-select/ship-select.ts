@@ -32,7 +32,7 @@ type ValidateFreeText = (value: string) => boolean;
     @let _selOptionTemplate = _selectedOptionTemplate || _optionTemplate || _inlineTemplate;
     @let _listOptionTemplate = _optionTemplate || _inlineTemplate;
     @let _asChips = !asText() && selectMultiple();
-    @let _showSearchText = isOpen() && hasSearch() && (_asChips || inputValue().length > 0);
+    @let _showSearchText = isOpen() && hasSearch();
 
     <sh-popover
       #formFieldWrapper
@@ -477,6 +477,14 @@ export class ShipSelect {
             this.toggleOptionByIndex(this.focusedOptionIndex(), undefined, true);
           }
 
+          if (e.key === ' ' || e.key === 'Spacebar') {
+            if (!this.hasSearch()) {
+              e.preventDefault();
+
+              this.toggleOptionByIndex(this.focusedOptionIndex(), undefined, true);
+            }
+          }
+
           if (e.key === 'ArrowDown') {
             e.preventDefault();
 
@@ -531,6 +539,19 @@ export class ShipSelect {
       this.setSelectedOptionsFromValue(input.value);
       this.setInputValueFromOptions(this.selectedOptions());
     });
+  });
+
+  inputReadonlyEffect = effect(() => {
+    const input = this.inputRefEl();
+
+    if (!input) return;
+
+    const isReadOnly = this.readonly() || !this.hasSearch();
+    if (isReadOnly) {
+      input.setAttribute('readonly', 'true');
+    } else {
+      input.removeAttribute('readonly');
+    }
   });
 
   selectedLabels = computed(() => {
