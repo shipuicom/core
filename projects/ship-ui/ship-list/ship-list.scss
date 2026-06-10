@@ -32,6 +32,71 @@ $shipList: true !default;
       --list-item-active-b: 1px solid var(--primary-8);
     }
 
+    &.type-b {
+      --list-p: #{p2r(0)};
+      --list-item-p: #{p2r(10 12)};
+      --list-item-gap: #{p2r(12)};
+      --list-s: var(--shape-2);
+
+      > [action],
+      > [item] {
+        color: var(--base-10);
+        
+        &.active,
+        &.selected {
+          background: rgb(from var(--base-3) r g b / 90%);
+          color: var(--base-12);
+
+          sh-icon:first-child {
+            color: var(--primary-8);
+          }
+          
+          .description {
+            color: var(--base-9);
+          }
+        }
+
+        sh-icon:first-child {
+          font-size: p2r(18);
+          color: var(--base-7);
+          transition: color 150ms ease;
+        }
+
+        .text-group {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+        }
+
+        .label {
+          font: var(--paragraph-30B);
+        }
+
+        .description {
+          font: var(--paragraph-40);
+          color: var(--base-7);
+          transition: color 150ms ease;
+        }
+
+        .shortcut {
+          display: flex;
+          gap: p2r(4);
+
+          kbd {
+            font-family: inherit;
+            background: rgb(from var(--base-3) r g b / 80%);
+            border: 1px solid rgb(from var(--base-4) r g b / 60%);
+            color: var(--base-8);
+            border-radius: var(--shape-1);
+            padding: p2r(2) p2r(6);
+            font-size: p2r(11);
+            line-height: 1;
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+          }
+        }
+      }
+    }
+
     &:empty {
       padding: 0;
     }
