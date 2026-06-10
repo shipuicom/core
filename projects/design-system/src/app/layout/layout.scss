@@ -39,6 +39,35 @@ header {
   }
 }
 
+.search-wrapper {
+  padding: p2r(0 0 12);
+}
+
+.search-trigger {
+  display: flex !important;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  font-weight: normal;
+
+  [shButton] {
+    width: 100%;
+  }
+
+  .search-left {
+    display: flex;
+    align-items: center;
+    gap: p2r(8);
+    flex: 1 0;
+  }
+
+  sh-kbd {
+    font-size: p2r(10);
+    opacity: 0.8;
+  }
+}
+
 sh-list {
   @include overflowScrolling();
 

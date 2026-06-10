@@ -9,6 +9,9 @@
       <app-logo />
 
       <div class="actions">
+        <button shButton variant="flat" size="small" (click)="openSearch()">
+          <sh-icon>magnifying-glass</sh-icon>
+        </button>
         <a href="https://github.com/shipuicom/core" target="_blank" rel="noopener noreferrer">
           <sh-icon>github-logo-bold</sh-icon>
         </a>
@@ -33,6 +36,16 @@
     }
 
     <sh-list class="base-1">
+      <div class="search-wrapper">
+        <button shButton variant="outlined" size="small" class="search-trigger" (click)="openSearch()">
+          <div class="search-left">
+            <sh-icon>magnifying-glass</sh-icon>
+            <span>Search...</span>
+          </div>
+          <sh-kbd>{{ isMac ? '⌘K' : 'Ctrl+K' }}</sh-kbd>
+        </button>
+      </div>
+
       <h3 title>Guide</h3>
 
       <button action routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
