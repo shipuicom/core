@@ -5,13 +5,12 @@ WORKDIR /app
 RUN apk add --no-cache nodejs wget tar xz \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
 
-# 2. Download and install the exact Zig 0.15.0 binary for Alpine (musl)
-# Note: Based on your previous logs, your build architecture is aarch64 (ARM64).
+# 2. Download and install the exact Zig 0.15.2 binary for Alpine (musl)
 RUN wget https://ziglang.org/download/0.15.2/zig-aarch64-linux-0.15.2.tar.xz \
-    && tar -xf zig-linux-aarch64-0.15.2.tar.xz \
-    && mv zig-linux-aarch64-0.15.2/zig /usr/local/bin/zig \
-    && mv zig-linux-aarch64-0.15.2/lib /usr/local/lib/zig \
-    && rm -rf zig-linux-aarch64-0.15.2*
+    && tar -xf zig-aarch64-linux-0.15.2.tar.xz \
+    && mv zig-aarch64-linux-0.15.2/zig /usr/local/bin/zig \
+    && mv zig-aarch64-linux-0.15.2/lib /usr/local/lib/zig \
+    && rm -rf zig-aarch64-linux-0.15.2*
 
 # Install dependencies into temp directory
 FROM base AS install
