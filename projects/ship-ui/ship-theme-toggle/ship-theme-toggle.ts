@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from '@angular/core';
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipButtonSize, ShipColor, ShipSheetVariant } from '@ship-ui/core';
 import { ShipThemeOption, ShipThemeState } from './ship-theme-state';
 
 @Component({
@@ -9,7 +10,13 @@ import { ShipThemeOption, ShipThemeState } from './ship-theme-state';
   encapsulation: ViewEncapsulation.None,
   imports: [ShipIcon, ShipButton],
   template: `
-    <button shButton size="small" (click)="toggleTheme()">
+    <button
+      shButton
+      [color]="color()"
+      [variant]="variant()"
+      [size]="size()"
+      (click)="toggleTheme()"
+    >
       @if (theme() === 'dark') {
         <sh-icon>moon-bold</sh-icon>
       } @else if (theme() === 'light') {
@@ -24,6 +31,10 @@ import { ShipThemeOption, ShipThemeState } from './ship-theme-state';
 })
 export class ShipThemeToggle {
   #themeState = inject(ShipThemeState);
+
+  color = input<ShipColor | null>(null);
+  variant = input<ShipSheetVariant | null>(null);
+  size = input<ShipButtonSize | null>('small');
 
   theme = this.#themeState.theme;
 
