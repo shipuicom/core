@@ -1,0 +1,120 @@
+@use 'helpers' as *;
+
+$shipSpotlight: true !default;
+
+@if $shipSpotlight == true {
+  sh-spotlight {
+    display: block;
+    width: 100%;
+
+    .sh-spotlight-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .sh-spotlight-search-bar {
+      display: flex;
+      align-items: center;
+      padding: p2r(16);
+      border-bottom: 1px solid rgb(from var(--base-4) r g b / 30%);
+      gap: p2r(12);
+    }
+
+    .sh-spotlight-search-icon {
+      font-size: p2r(20);
+      color: var(--base-8);
+    }
+
+    .sh-spotlight-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font: var(--paragraph-20);
+      color: var(--base-12);
+
+      &::placeholder {
+        color: var(--base-7);
+      }
+    }
+
+    .sh-spotlight-clear-btn {
+      background: transparent;
+      border: none;
+      padding: p2r(4);
+      cursor: pointer;
+      color: var(--base-7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--shape-1);
+
+      &:hover {
+        background: var(--base-3);
+        color: var(--base-10);
+      }
+
+      sh-icon {
+        font-size: p2r(14);
+      }
+    }
+
+    .sh-spotlight-results {
+      max-height: p2r(350);
+      padding: p2r(8);
+      display: flex;
+      flex-direction: column;
+      gap: p2r(8);
+      outline: none;
+      @include overflowScrolling;
+    }
+
+    .sh-spotlight-category-title {
+      font: var(--paragraph-40B);
+      color: var(--base-7);
+      padding: p2r(8) p2r(12) p2r(4) p2r(12);
+      text-transform: uppercase;
+      letter-spacing: p2r(1);
+    }
+
+
+
+    .sh-spotlight-no-results {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: p2r(40) p2r(20);
+      color: var(--base-7);
+      gap: p2r(12);
+    }
+
+    .sh-spotlight-no-results-icon {
+      font-size: p2r(32);
+      color: var(--base-6);
+    }
+
+    .sh-spotlight-no-results-text {
+      font: var(--paragraph-30);
+    }
+
+    .sh-spotlight-footer {
+      display: flex;
+      align-items: center;
+      padding: p2r(12) p2r(16);
+      background: rgb(from var(--base-1) r g b / 90%);
+      border-top: 1px solid rgb(from var(--base-4) r g b / 30%);
+      gap: p2r(16);
+      font-size: p2r(11);
+      color: var(--base-7);
+
+      .sh-spotlight-footer-tip {
+        display: flex;
+        align-items: center;
+        gap: p2r(4);
+      }
+    }
+  }
+}

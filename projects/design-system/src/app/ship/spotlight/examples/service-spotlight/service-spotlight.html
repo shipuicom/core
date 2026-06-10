@@ -1,0 +1,35 @@
+<sh-card variant="type-c">
+  <div>
+    <button shButton (click)="openSpotlight()">Open Manual Spotlight</button>
+    <span class="hint-text">
+      Or press
+      <sh-kbd meta>K</sh-kbd>
+      to trigger globally
+    </span>
+  </div>
+
+  <div class="toggle-group">
+    <sh-toggle [checked]="isShortcutsEnabled()" (checkedChange)="onShortcutsToggle($event)">
+      Global Keyboard Shortcuts
+    </sh-toggle>
+    <span class="hint-text">When active, Cmd+K opens the global spotlight search.</span>
+  </div>
+
+  <div class="toggle-group">
+    <sh-toggle [checked]="isContextualActive()" (checkedChange)="onContextualToggle($event)">
+      Register Contextual Items (Overwrite)
+    </sh-toggle>
+
+    <span class="hint-text">When active, Cmd+K will only show contextual items.</span>
+  </div>
+
+  @if (selectedItem()) {
+    <div class="selected-item">
+      Selected Item:
+      <strong>{{ selectedItem()?.label }}</strong>
+      (ID:
+      <code>{{ selectedItem()?.id }}</code>
+      )
+    </div>
+  }
+</sh-card>

@@ -1,0 +1,29 @@
+@use 'helpers' as *;
+
+$shipKbd: true !default;
+
+@if $shipKbd == true {
+  :host {
+    display: inline-flex;
+    align-items: center;
+    font-family: inherit;
+    background: rgb(from var(--base-2) r g b / 80%);
+    border: 1px solid rgb(from var(--base-4) r g b / 60%);
+    padding: p2r(1) p2r(4);
+    border-radius: var(--shape-1);
+    font-weight: bold;
+    color: var(--base-11);
+    gap: p2r(2);
+    font-size: 0.9em;
+
+    .separator {
+      color: var(--base-8);
+      font-weight: normal;
+      margin: 0 p2r(2);
+    }
+
+    .content {
+      text-transform: uppercase;
+    }
+  }
+}

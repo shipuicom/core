@@ -1,0 +1,24 @@
+<sh-card variant="type-c">
+  <div>
+    <button shButton (click)="openSpotlight()">Open Declarative Spotlight</button>
+    <span class="hint-text">
+      Or press
+      <sh-kbd meta>K</sh-kbd>
+      to trigger globally
+    </span>
+  </div>
+
+  @if (selectedItem()) {
+    <div class="selected-item">
+      Selected Item:
+      <strong>{{ selectedItem()?.label }}</strong>
+      (ID:
+      <code>{{ selectedItem()?.id }}</code>
+      )
+    </div>
+  }
+</sh-card>
+
+<sh-dialog [(isOpen)]="isOpen" [options]="{ class: 'spotlight-dialog', width: '600px', maxWidth: '90vw' }">
+  <sh-spotlight [items]="items" (itemSelected)="onItemSelected($event)" (closed)="onClosed()" />
+</sh-dialog>

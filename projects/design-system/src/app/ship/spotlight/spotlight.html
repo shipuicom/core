@@ -1,0 +1,72 @@
+<h1>Spotlight Search</h1>
+<!-- @keywords: spotlight, command palette, global search, kbd, shortcut, command, navigation -->
+
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="styling">Styling</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
+
+@let _activeTab = activeTab();
+
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <p>A premium keyboard-navigable command palette and spotlight search utility component.</p>
+    <app-highlight lang="ts" [content]="overviewCodeExample" />
+    <app-previewer path="/spotlight/examples/service-spotlight/service-spotlight" title="Basic Usecase">
+      <service-spotlight-example class="example" />
+    </app-previewer>
+  } @else if (_activeTab === 'api') {
+    <app-property-viewer>
+      <section>
+        <h4>Customization</h4>
+        <p>
+          The <code>ShipSpotlight</code> component is hosted within a dialog and accepts custom search <code>items</code>.
+          Support for custom placeholder text, fuzzy matched categories, and custom filtering for remote API integrations is included.
+        </p>
+      </section>
+
+      <section>
+        <h4>Global Setup & Shortcuts</h4>
+        <p>
+          The <code>ShipSpotlightService</code> provides a way to integrate the spotlight seamlessly into your application.
+          Use <code>registerGlobalShortcut()</code> to bind the <code>Cmd + K</code> (macOS) or <code>Ctrl + K</code> (Windows/Linux) 
+          shortcut globally, and inject the service to handle spotlight operations.
+        </p>
+      </section>
+
+      <section>
+        <h4>Registering Items</h4>
+        <p>
+          Items can be registered globally or contextually using <code>registerItems()</code> from the <code>ShipSpotlightService</code>. 
+          Registered items are aggregated and displayed automatically when the spotlight opens.
+          The method returns a cleanup function to easily unregister items when a context or component is destroyed.
+        </p>
+        <p>
+          <strong>Shortcuts:</strong> Each <code>ShipSpotlightItem</code> can be configured with an optional <code>shortcut</code> (e.g., <code>"meta+e"</code>).
+          <br />
+          <em>Warning:</em> Do not use reserved browser hotkeys (such as <code>Cmd+N</code>, <code>Cmd+T</code>, <code>Cmd+W</code>). Browsers actively block the prevention of these actions, meaning the browser's default behavior will execute regardless of your application configuration. The component will throw an error if you attempt to register a reserved hotkey.
+        </p>
+      </section>
+
+      <section>
+        <h4>Handling Selections</h4>
+        <p>
+          Listen to the <code>globalItemSelected</code> signal on the <code>ShipSpotlightService</code> to handle actions when an item is selected from the globally-opened spotlight instance.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'styling') {
+    <p>Use the following CSS variables or classes to customize the spotlight styling.</p>
+    <app-highlight lang="scss" [content]="codeStylingExample" />
+  } @else if (_activeTab === 'examples') {
+    <div class="content">
+      <h3>Alternative Examples</h3>
+
+      <app-previewer path="/spotlight/examples/basic-spotlight/basic-spotlight" title="Declarative Spotlight Component">
+        <basic-spotlight-example class="example" />
+      </app-previewer>
+    </div>
+  }
+</div>

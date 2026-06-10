@@ -102,6 +102,10 @@ export const routes: Routes = [
         loadComponent: () => import('./ship/dialogs/dialogs'),
       },
       {
+        path: 'spotlight',
+        loadComponent: () => import('./ship/spotlight/spotlight'),
+      },
+      {
         path: 'popovers',
         loadComponent: () => import('./ship/popovers/popovers'),
       },
@@ -198,6 +202,10 @@ export const routes: Routes = [
       {
         path: 'virtual-scrolls',
         loadComponent: () => import('./ship/virtual-scrolls/virtual-scrolls'),
+      },
+      {
+        path: 'kbds',
+        loadComponent: () => import('./ship/kbds/kbds'),
       },
     ],
   },
