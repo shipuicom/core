@@ -47,6 +47,14 @@ $shipDialog: true !default;
       }
     }
 
+    &.type-c {
+      &::backdrop {
+        background: rgb(from var(--base-1) r g b / 30%);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+    }
+
     > .content {
       position: relative;
       border-radius: var(--dialog-inner-s);

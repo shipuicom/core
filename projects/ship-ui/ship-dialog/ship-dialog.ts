@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, Element
 import { SHIP_CONFIG } from '@ship-ui/core';
 
 export type ShipDialogOptions = {
-  class?: 'default' | 'type-b' | string;
+  class?: 'default' | 'type-b' | 'type-c' | string;
   width?: string;
   maxWidth?: string;
   height?: string;
