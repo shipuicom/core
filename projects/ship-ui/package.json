@@ -1,7 +1,7 @@
 {
   "name": "@ship-ui/core",
   "license": "MIT",
-  "version": "0.22.8",
+  "version": "0.22.9",
   "peerDependencies": {
     "@angular/common": ">=20",
     "@angular/core": ">=20",
@@ -46,6 +46,7 @@
     "info",
     "moon-bold",
     "sun-bold",
+    "circle-half-tilt-bold",
     "list",
     "trash",
     "tree-structure",
