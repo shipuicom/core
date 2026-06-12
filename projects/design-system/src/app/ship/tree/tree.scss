@@ -1,0 +1,17 @@
+@use '../showcase' as *;
+
+:host {
+  @extend %showcase-host;
+}
+
+.example-list {
+  max-width: 100%;
+}
+
+.tab-content {
+  p {
+    color: var(--base-11);
+    font: var(--paragraph-20, 14px sans-serif);
+    margin: 0 0 16px 0;
+  }
+}

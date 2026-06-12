@@ -1,0 +1,197 @@
+<h1>Tree</h1>
+<!-- @keywords: tree, treeview, folder explorer, file browser, file manager, flat tree, nodes, hierarchy, folder structure, nested, expandable, collapsible, drag-and-drop, sortable tree, sidebar, directory, navigation, project structure, explorer panel, file tree -->
+
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="styling">Styling</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
+
+@let _activeTab = activeTab();
+
+<div class="tab-content" style="margin-top: 24px">
+  @if (_activeTab === 'overview') {
+    <p>
+      The
+      <code>&lt;sh-tree&gt;</code>
+      component renders a flat list of nodes hierarchically. It handles caret folding, vertical indent guide lines, node
+      selection, and node icon states automatically.
+    </p>
+
+    <h3>Basic Usage</h3>
+    <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px">
+      <div>
+        <h4>HTML</h4>
+        <app-highlight lang="html" [content]="basicCodeHtml" />
+      </div>
+      <div>
+        <h4>TypeScript</h4>
+        <app-highlight lang="ts" [content]="basicCodeTypescript" />
+      </div>
+    </div>
+
+    <app-previewer path="/tree/examples/basic-tree/basic-tree" title="Default Tree Explorer">
+      <app-basic-tree class="example" />
+    </app-previewer>
+  } @else if (_activeTab === 'api') {
+    <app-property-viewer>
+      <section>
+        <h4>Inputs</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>[(items)]</code></td>
+              <td><code>any[]</code></td>
+              <td><code>[]</code></td>
+              <td>Two-way model of flat nodes representing the tree structure.</td>
+            </tr>
+            <tr>
+              <td><code>[sortableManager]</code></td>
+              <td><code>TreeSortableManager</code></td>
+              <td><code>null</code></td>
+              <td>Optional manager to enable drag-and-drop tree reordering.</td>
+            </tr>
+            <tr>
+              <td><code>[(selectedId)]</code></td>
+              <td><code>string | null</code></td>
+              <td><code>null</code></td>
+              <td>Two-way model of the currently selected node's ID.</td>
+            </tr>
+            <tr>
+              <td><code>[getId]</code></td>
+              <td><code>(item) => string</code></td>
+              <td><code>(item) => item.id</code></td>
+              <td>Function mapping a node to its unique ID.</td>
+            </tr>
+            <tr>
+              <td><code>[getName]</code></td>
+              <td><code>(item) => string</code></td>
+              <td><code>(item) => item.name</code></td>
+              <td>Function mapping a node to its display name.</td>
+            </tr>
+            <tr>
+              <td><code>[getParentId]</code></td>
+              <td><code>(item) => string | null</code></td>
+              <td><code>(item) => item.parentId</code></td>
+              <td>Function mapping a node to its parent ID.</td>
+            </tr>
+            <tr>
+              <td><code>[isFolder]</code></td>
+              <td><code>(item) => boolean</code></td>
+              <td><code>(item) => item.type === 'dir'</code></td>
+              <td>Function mapping a node to its folder/dir check.</td>
+            </tr>
+            <tr>
+              <td><code>[getIsOpen]</code></td>
+              <td><code>(item) => boolean</code></td>
+              <td><code>(item) => item.isOpen</code></td>
+              <td>Function mapping a node to its folder open state.</td>
+            </tr>
+            <tr>
+              <td><code>[getIcon]</code></td>
+              <td><code>(item) => string | null</code></td>
+              <td><code>() => null</code></td>
+              <td>Function returning a custom icon name for a node.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h4>Projected Elements</h4>
+        <p>You can configure default folder and file icons by projecting <code>&lt;sh-icon&gt;</code> elements with specific attributes:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Element</th>
+              <th>Attribute</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>&lt;sh-icon openIcon&gt;</code></td>
+              <td><code>openIcon</code></td>
+              <td>Icon name to display for open folder/dir nodes (e.g. <code>folder-open</code>).</td>
+            </tr>
+            <tr>
+              <td><code>&lt;sh-icon closedIcon&gt;</code></td>
+              <td><code>closedIcon</code></td>
+              <td>Icon name to display for closed folder/dir nodes (e.g. <code>folder</code>).</td>
+            </tr>
+            <tr>
+              <td><code>&lt;sh-icon itemIcon&gt;</code></td>
+              <td><code>itemIcon</code></td>
+              <td>Icon name to display for file/item nodes (e.g. <code>file-text</code>).</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h4>Outputs</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>nodeClick</code></td>
+              <td><code>EventEmitter&lt;any&gt;</code></td>
+              <td>Emits when a node is clicked (except on folder caret toggles).</td>
+            </tr>
+            <tr>
+              <td><code>nodeToggle</code></td>
+              <td>
+                <code>EventEmitter&lt;{{ '{' }} node: any, isOpen: boolean {{ '}' }}&gt;</code>
+              </td>
+              <td>Emits when a folder caret toggle is clicked.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'styling') {
+    <p>Customize the look and feel of the Tree component using CSS variables:</p>
+    <app-highlight lang="scss" [content]="stylingCode" />
+  } @else if (_activeTab === 'examples') {
+    <div class="example-list" style="display: flex; flex-direction: column; gap: 32px">
+      <app-previewer path="/tree/examples/sortable-tree/sortable-tree" title="Interactive Sortable Tree">
+        <p style="margin-bottom: 16px">
+          Integrate the tree component with
+          <code>createTreeSortableManager</code>
+          to enable premium, VSCode-style interactive drag-and-drop.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px">
+          <app-highlight lang="html" [content]="sortableCodeHtml" />
+          <app-highlight lang="ts" [content]="sortableCodeTypescript" />
+        </div>
+        <app-sortable-tree-example class="example" />
+      </app-previewer>
+
+      <app-previewer path="/tree/examples/template-tree/template-tree" title="Custom Node Template & Actions">
+        <p style="margin-bottom: 16px">
+          Define a custom node layout inside the
+          <code>#nodeTemplate</code>
+          child element. This example maps custom property keys, resolves custom icons, displays status badges, and
+          supports deleting elements.
+        </p>
+        <app-highlight lang="html" [content]="templateCodeHtml" />
+        <app-template-tree-example class="example" />
+      </app-previewer>
+    </div>
+  }
+</div>

@@ -1,0 +1,47 @@
+@use 'helpers' as *;
+
+.sortable-demo {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: p2r(16);
+  align-items: start;
+}
+
+.tree-wrapper {
+  width: 100%;
+}
+
+.state-panel {
+  background: var(--base-2);
+  border: 1px solid var(--base-3);
+  border-radius: var(--shape-2, #{p2r(8)});
+  overflow: hidden;
+  box-shadow: var(--box-shadow-10);
+}
+
+.state-header {
+  display: flex;
+  align-items: center;
+  gap: p2r(6);
+  padding: p2r(8 12);
+  border-bottom: 1px solid var(--base-3);
+  font: var(--paragraph-20B);
+  color: var(--base-9);
+
+  sh-icon {
+    color: var(--base-7);
+  }
+}
+
+.state-json {
+  margin: 0;
+  padding: p2r(12);
+  font-family: var(--font-mono, monospace);
+  font-size: p2r(12);
+  line-height: 1.5;
+  color: var(--base-10);
+  overflow: auto;
+  max-height: p2r(460);
+  white-space: pre;
+  tab-size: 2;
+}

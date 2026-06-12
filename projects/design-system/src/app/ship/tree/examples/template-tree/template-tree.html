@@ -1,0 +1,42 @@
+<div class="tree-wrapper">
+  <sh-tree [(items)]="nodes" [getName]="getName" [isFolder]="isFolderNode">
+    <!-- Custom Directory Template -->
+    <ng-template #dirTemplate let-node>
+      <sh-tree-node>
+        @if (node.isOpen) {
+          <sh-icon size="small">folder-open</sh-icon>
+        } @else {
+          <sh-icon size="small">folder</sh-icon>
+        }
+        {{ node.label }}
+
+        <sh-tree-node-actions>
+          <button class="delete-btn" (click)="deleteNode(node, $event)" type="button">
+            <sh-icon size="small">trash</sh-icon>
+          </button>
+        </sh-tree-node-actions>
+      </sh-tree-node>
+    </ng-template>
+
+    <!-- Custom File/Item Template -->
+    <ng-template #nodeTemplate let-node>
+      <sh-tree-node>
+        @if (node.label.endsWith('.log')) {
+          <sh-icon size="small">scroll</sh-icon>
+        } @else if (node.label.endsWith('.yml')) {
+          <sh-icon size="small">file-code</sh-icon>
+        } @else {
+          <sh-icon size="small">file</sh-icon>
+        }
+
+        {{ node.label }}
+
+        <sh-tree-node-actions>
+          <button class="delete-btn" (click)="deleteNode(node, $event)" type="button">
+            <sh-icon size="small">trash</sh-icon>
+          </button>
+        </sh-tree-node-actions>
+      </sh-tree-node>
+    </ng-template>
+  </sh-tree>
+</div>
