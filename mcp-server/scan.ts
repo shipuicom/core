@@ -4,6 +4,7 @@ import path from 'path';
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const rootPath = path.join(__dirname, '..');
 const LIB_PATH = path.join(rootPath, 'projects/ship-ui/src/lib');
+const COMPONENTS_PATH = path.join(rootPath, 'projects/ship-ui');
 const STYLES_PATH = path.join(rootPath, 'projects/ship-ui/styles/components');
 const EXAMPLES_PATH = path.join(rootPath, 'projects/design-system/src/app/ship');
 const TYPES_FILE = path.join(rootPath, 'projects/ship-ui/src/lib/utilities/ship-types.ts');
@@ -345,6 +346,23 @@ function scanComponents() {
               }
             }
 
+            // Also check for SCSS files in the same directory as the component
+            const componentDir = path.dirname(filePath);
+            const componentScssFiles = fs.readdirSync(componentDir).filter((f: string) => f.endsWith('.scss'));
+            for (const scssFile of componentScssFiles) {
+              const localScssPath = path.join(componentDir, scssFile);
+              const localScssContent = fs.readFileSync(localScssPath, 'utf-8');
+              const localVarMatches = localScssContent.matchAll(/(--[\w-]+):\s*([^;!]+)/g);
+              for (const match of localVarMatches) {
+                if (match[1] && !cssVariables.some((v) => v.name === match[1])) {
+                  cssVariables.push({
+                    name: match[1],
+                    defaultValue: match[2]?.trim(),
+                  });
+                }
+              }
+            }
+
             // Try to find examples and description
             const examples: ComponentData['examples'] = [];
             let description = '';
@@ -483,6 +501,15 @@ function scanComponents() {
   }
 
   traverse(LIB_PATH);
+
+  // Traverse secondary entry point directories (ship-tree, ship-button, etc.)
+  const shipUiEntries = fs.readdirSync(COMPONENTS_PATH);
+  for (const entry of shipUiEntries) {
+    const entryPath = path.join(COMPONENTS_PATH, entry);
+    if (fs.statSync(entryPath).isDirectory() && entry.startsWith('ship-')) {
+      traverse(entryPath);
+    }
+  }
 
   // Add global variables as a virtual component
   const globalVariables = getGlobalVariables();
