@@ -5,12 +5,7 @@ import { ShipKbd } from '@ship-ui/core/ship-kbd';
   selector: 'basic-kbd-example',
   standalone: true,
   imports: [ShipKbd],
-  template: `
-    <div style="display: flex; gap: 1rem; align-items: center;">
-      <sh-kbd meta>K</sh-kbd>
-      <sh-kbd shift alt>P</sh-kbd>
-      <sh-kbd enter></sh-kbd>
-    </div>
-  `
+  templateUrl: './basic-kbd.html',
+  styleUrl: './basic-kbd.scss',
 })
 export class BasicKbd {}
