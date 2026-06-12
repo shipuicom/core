@@ -15,15 +15,19 @@ $shipSortable: true !default;
     }
 
     [draggable] {
-      height: auto;
       transform: translate(0);
       transition: none;
       z-index: 2;
-      background: var(--base-1);
       user-select: none;
+    }
 
-      &:not(:has([sort-handle])) {
-        cursor: grab;
+    &:not(.sh-sortable-tree) {
+      [draggable] {
+        background: var(--base-1);
+
+        &:not(:has([sort-handle])) {
+          cursor: grab;
+        }
       }
     }
 
@@ -40,6 +44,75 @@ $shipSortable: true !default;
 
     [sort-handle] {
       cursor: grab;
+    }
+
+    &.sh-sortable-tree {
+      [draggable] {
+        transform: none !important;
+        transition: none !important;
+      }
+
+      .drop-inside {
+        background: var(--primary-3) !important;
+        outline: 2px solid var(--primary-8) !important;
+        outline-offset: -2px;
+        border-radius: var(--shape-1, 4px);
+
+        .node-icon,
+        sh-tree-node .sh-tree-node-left sh-icon {
+          color: var(--primary-8) !important;
+        }
+      }
+
+      .drop-before {
+        position: relative;
+        z-index: 20;
+        &::before {
+          content: '';
+          position: absolute;
+          top: -2px;
+          left: calc(var(--tree-padding-left, 12px) + var(--tree-depth, 0) * var(--tree-indent-step, 12px));
+          right: var(--tree-padding-right, 6px);
+          height: 6px;
+          background-image:
+            radial-gradient(circle at 3px 3px, var(--primary-8) 3px, transparent 3px),
+            linear-gradient(to right, var(--primary-8), var(--primary-8));
+          background-repeat: no-repeat, no-repeat;
+          background-position:
+            left center,
+            6px center;
+          background-size:
+            6px 6px,
+            100% 2px;
+          z-index: 10;
+          pointer-events: none;
+        }
+      }
+
+      .drop-after {
+        position: relative;
+        z-index: 20;
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: -2px;
+          left: calc(var(--tree-padding-left, 12px) + var(--tree-depth, 0) * var(--tree-indent-step, 12px));
+          right: var(--tree-padding-right, 6px);
+          height: 6px;
+          background-image:
+            radial-gradient(circle at 3px 3px, var(--primary-8) 3px, transparent 3px),
+            linear-gradient(to right, var(--primary-8), var(--primary-8));
+          background-repeat: no-repeat, no-repeat;
+          background-position:
+            left center,
+            6px center;
+          background-size:
+            6px 6px,
+            100% 2px;
+          z-index: 10;
+          pointer-events: none;
+        }
+      }
     }
   }
 }

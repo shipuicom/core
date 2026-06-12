@@ -1,4 +1,5 @@
 import {
+  computed,
   Directive,
   DOCUMENT,
   effect,
@@ -6,6 +7,7 @@ import {
   HostListener,
   inject,
   input,
+  model,
   OnDestroy,
   OnInit,
   output,
@@ -32,6 +34,12 @@ export type ShipDropEvent = {
   container: ShipSortable;
   previousIndex: number;
   currentIndex: number;
+};
+
+export type ShipTreeDropEvent = {
+  previousIndex: number;
+  currentIndex: number;
+  position: 'before' | 'after' | 'inside';
 };
 
 export interface SortableManagerConfig {
@@ -117,6 +125,7 @@ export function createSortableManager<T>(
   standalone: true,
   host: {
     class: 'sh-sortable',
+    '[class.sh-sortable-tree]': "sortingMode() === 'tree'",
   },
 })
 export class ShipSortable implements OnInit, OnDestroy {
@@ -127,13 +136,18 @@ export class ShipSortable implements OnInit, OnDestroy {
 
   shSortable = input<any>();
   sortableGroup = input<string>();
+  sortingMode = input<'list' | 'grid' | 'tree'>('list');
+  treeItems = model<any[]>([]);
 
   sortDrop = output<ShipDropEvent>();
   afterDrop = output<AfterDropResponse>();
   crossDrop = output<CrossDropResponse>();
+  treeDrop = output<ShipTreeDropEvent>();
 
   dragStartIndex = signal<number>(-1);
   dragToIndex = signal<number>(-1);
+  treeHoverIndex = signal<number>(-1);
+  treeHoverPosition = signal<'before' | 'after' | 'inside' | null>(null);
   initialPositions = signal<{ x: number; y: number; width: number; height: number }[]>([]);
   dragables = signal<HTMLElement[]>([]);
 
@@ -146,6 +160,9 @@ export class ShipSortable implements OnInit, OnDestroy {
   isCrossTarget = false;
 
   draggingEffect = effect(() => {
+    if (this.sortingMode() === 'tree') {
+      return;
+    }
     const currentDragPosIndex = this.dragToIndex();
     const startIndex = this.dragStartIndex();
     const dragables = this.dragables();
@@ -261,7 +278,23 @@ export class ShipSortable implements OnInit, OnDestroy {
       const dragOffsetX = Math.max(0, e.clientX - rect.left);
       const dragOffsetY = Math.max(0, e.clientY - rect.top);
 
-      e.dataTransfer.setDragImage(draggedElement, dragOffsetX, dragOffsetY);
+      if (this.sortingMode() === 'tree') {
+        const clone = draggedElement.cloneNode(true) as HTMLElement;
+        clone.querySelector('.node-icon')?.remove();
+        clone.querySelector('.caret-container')?.remove();
+        clone.style.opacity = '0.8';
+        clone.style.width = `${rect.width}px`;
+        clone.style.position = 'absolute';
+        clone.style.top = '-9999px';
+        clone.style.left = '-9999px';
+        this.#document.body.appendChild(clone);
+
+        e.dataTransfer.setDragImage(clone, -12, -30);
+
+        setTimeout(() => this.#document.body.removeChild(clone), 0);
+      } else {
+        e.dataTransfer.setDragImage(draggedElement, dragOffsetX, dragOffsetY);
+      }
 
       const draggedElementIndex = this.getIndexOfElement(draggedElement);
       this.dragStartIndex.set(draggedElementIndex);
@@ -374,6 +407,57 @@ export class ShipSortable implements OnInit, OnDestroy {
 
     if (ShipSortable.activeTarget !== this) return;
 
+    if (this.sortingMode() === 'tree') {
+      const targetElement = e.target as HTMLElement;
+      const hoveredDraggable = targetElement.closest('[draggable]') as HTMLElement;
+
+      if (hoveredDraggable && this.#selfEl.nativeElement.contains(hoveredDraggable)) {
+        const targetIdx = this.getIndexOfElement(hoveredDraggable);
+        if (targetIdx !== -1) {
+          const rect = hoveredDraggable.getBoundingClientRect();
+          const relativeY = (e.clientY - rect.top) / rect.height;
+          const isFolder =
+            hoveredDraggable.hasAttribute('sortable-folder') ||
+            hoveredDraggable.getAttribute('sortable-folder') === 'true' ||
+            hoveredDraggable.hasAttribute('sortable-dir') ||
+            hoveredDraggable.getAttribute('sortable-dir') === 'true';
+
+          let position: 'before' | 'after' | 'inside';
+          if (isFolder) {
+            if (relativeY < 0.25) {
+              position = 'before';
+            } else if (relativeY > 0.75) {
+              position = 'after';
+            } else {
+              position = 'inside';
+            }
+          } else {
+            if (relativeY < 0.5) {
+              position = 'before';
+            } else {
+              position = 'after';
+            }
+          }
+
+          if (this.treeHoverIndex() !== targetIdx || this.treeHoverPosition() !== position) {
+            this.#clearTreeHoverClasses();
+            this.treeHoverIndex.set(targetIdx);
+            this.treeHoverPosition.set(position);
+            this.#renderer.addClass(hoveredDraggable, `drop-${position}`);
+          }
+
+          if (this.dragToIndex() !== targetIdx) {
+            this.dragToIndex.set(targetIdx);
+          }
+        }
+      } else {
+        this.#clearTreeHoverClasses();
+        this.treeHoverIndex.set(-1);
+        this.treeHoverPosition.set(null);
+      }
+      return;
+    }
+
     const container = this.#selfEl.nativeElement;
     const containerRect = container.getBoundingClientRect();
 
@@ -403,6 +487,15 @@ export class ShipSortable implements OnInit, OnDestroy {
     }
   }
 
+  #clearTreeHoverClasses() {
+    const dragables = this.dragables();
+    for (const el of dragables) {
+      this.#renderer.removeClass(el, 'drop-before');
+      this.#renderer.removeClass(el, 'drop-after');
+      this.#renderer.removeClass(el, 'drop-inside');
+    }
+  }
+
   getVisualIndexOfElement(i: number): number {
     const startIndex = this.dragStartIndex();
     const currentDragPosIndex = this.dragToIndex();
@@ -429,6 +522,38 @@ export class ShipSortable implements OnInit, OnDestroy {
     // Immediately kill drag transitions before any signal updates
     this.#renderer.removeClass(ShipSortable.activeSource.#selfEl.nativeElement, 'dragging');
     this.#renderer.removeClass(this.#selfEl.nativeElement, 'dragging');
+
+    if (this.sortingMode() === 'tree') {
+      this.isDropping = true;
+      if (ShipSortable.activeSource !== this) {
+        ShipSortable.activeSource.isDropping = true;
+      }
+
+      const prevIdx = ShipSortable.activeSource.dragStartIndex();
+      const currIdx = this.dragToIndex();
+      const pos = this.treeHoverPosition();
+
+      if (prevIdx !== -1 && currIdx !== -1 && pos) {
+        const event: ShipTreeDropEvent = {
+          previousIndex: prevIdx,
+          currentIndex: currIdx,
+          position: pos,
+        };
+
+        const manager = this.shSortable();
+        if (manager && typeof manager.drop === 'function') {
+          manager.drop(event, this.treeItems());
+        } else {
+          this.treeDrop.emit(event);
+        }
+      }
+
+      this.#cleanupDragState();
+      if (ShipSortable.activeSource !== this) {
+        ShipSortable.activeSource.#cleanupDragState();
+      }
+      return;
+    }
 
     if (ShipSortable.activeSource === this) {
       // Internal Drop
@@ -502,9 +627,12 @@ export class ShipSortable implements OnInit, OnDestroy {
     }
 
     this.#resetStyles();
+    this.#clearTreeHoverClasses();
 
     this.dragStartIndex.set(-1);
     this.dragToIndex.set(-1);
+    this.treeHoverIndex.set(-1);
+    this.treeHoverPosition.set(null);
     this.isCrossTarget = false;
   }
 
@@ -513,6 +641,9 @@ export class ShipSortable implements OnInit, OnDestroy {
     for (const el of dragables) {
       this.#renderer.setStyle(el, 'transform', '');
       this.#renderer.removeClass(el, 'sortable-ghost');
+      this.#renderer.removeClass(el, 'drop-before');
+      this.#renderer.removeClass(el, 'drop-after');
+      this.#renderer.removeClass(el, 'drop-inside');
     }
   }
 
@@ -577,4 +708,140 @@ export function transferArrayItem<T = any>(
   if (item) {
     targetArray.splice(targetIndex, 0, item);
   }
+}
+
+export interface TreeSortableManagerConfig<T> {
+  getId?: (item: T) => string;
+  getParentId?: (item: T) => string | null;
+  setParentId?: (item: T, parentId: string | null) => void;
+  getDepth?: (item: T) => number;
+  setDepth?: (item: T, depth: number) => void;
+  isFolder?: (item: T) => boolean;
+  isOpen?: (item: T) => boolean;
+  setIsOpen?: (item: T, isOpen: boolean) => void;
+}
+
+export function createTreeSortableManager<T>(nodesSignal: WritableSignal<T[]>, config?: TreeSortableManagerConfig<T>) {
+  const getId = config?.getId || ((item: any) => item.id);
+  const getParentId = config?.getParentId || ((item: any) => item.parentId);
+  const setParentId = config?.setParentId || ((item: any, pid: string | null) => (item.parentId = pid));
+  const isFolder = config?.isFolder || ((item: any) => item.type === 'dir');
+  const getIsOpen = config?.isOpen || ((item: any) => !!item.isOpen);
+  const setIsOpen =
+    config?.setIsOpen ||
+    ((item: any, open: boolean) => {
+      item.isOpen = open;
+    });
+
+  const isDescendant = (parentId: string, childId: string, list: T[]): boolean => {
+    let current = list.find((n) => getId(n) === childId);
+    while (current && getParentId(current) !== null) {
+      if (getParentId(current) === parentId) {
+        return true;
+      }
+      const pid = getParentId(current);
+      current = list.find((n) => getId(n) === pid);
+    }
+    return false;
+  };
+
+  const getSubtree = (rootId: string, list: T[]): T[] => {
+    const queue = [rootId];
+    const rootItem = list.find((n) => getId(n) === rootId);
+    if (!rootItem) return [];
+
+    let index = 0;
+    while (index < queue.length) {
+      const parentId = queue[index++];
+      const children = list.filter((n) => getParentId(n) === parentId);
+      for (const child of children) {
+        const cid = getId(child);
+        if (!queue.includes(cid)) {
+          queue.push(cid);
+        }
+      }
+    }
+
+    return list.filter((n) => queue.includes(getId(n)));
+  };
+
+  const visibleNodes = computed(() => {
+    const list = nodesSignal();
+    const visible: T[] = [];
+
+    const isNodeVisible = (node: T): boolean => {
+      let currentParentId = getParentId(node);
+      while (currentParentId !== null && currentParentId !== undefined) {
+        const parent = list.find((n) => getId(n) === currentParentId);
+        if (!parent || !getIsOpen(parent)) {
+          return false;
+        }
+        currentParentId = getParentId(parent);
+      }
+      return true;
+    };
+
+    for (const node of list) {
+      const parentId = getParentId(node);
+      if (parentId === null || parentId === undefined || isNodeVisible(node)) {
+        visible.push(node);
+      }
+    }
+    return visible;
+  });
+
+  return {
+    visibleNodes,
+    drop(event: ShipTreeDropEvent, visibleNodesList: T[]) {
+      const draggedItem = visibleNodesList[event.previousIndex];
+      const targetItem = visibleNodesList[event.currentIndex];
+
+      if (!draggedItem || !targetItem || getId(draggedItem) === getId(targetItem)) return;
+
+      nodesSignal.update((allNodes) => {
+        // Prevent dropping inside itself or its descendants
+        if (isDescendant(getId(draggedItem), getId(targetItem), allNodes)) {
+          return allNodes;
+        }
+
+        const draggedSubtree = getSubtree(getId(draggedItem), allNodes);
+        const draggedIds = new Set(draggedSubtree.map((n) => getId(n)));
+
+        const filteredNodes = allNodes.filter((n) => !draggedIds.has(getId(n)));
+        const targetIdxInFiltered = filteredNodes.findIndex((n) => getId(n) === getId(targetItem));
+        if (targetIdxInFiltered === -1) return allNodes;
+
+        let newParentId: string | null = null;
+
+        if (event.position === 'inside') {
+          newParentId = getId(targetItem);
+
+          const targetInMain = filteredNodes.find((n) => getId(n) === getId(targetItem));
+          if (targetInMain) setIsOpen(targetInMain, true);
+        } else {
+          newParentId = getParentId(targetItem);
+        }
+
+        const updatedDraggedSubtree = draggedSubtree.map((node) => {
+          const updatedNode = { ...node };
+          if (getId(updatedNode) === getId(draggedItem)) {
+            setParentId(updatedNode, newParentId);
+          }
+          return updatedNode;
+        });
+
+        if (event.position === 'before') {
+          filteredNodes.splice(targetIdxInFiltered, 0, ...updatedDraggedSubtree);
+        } else if (event.position === 'after') {
+          const targetSubtree = getSubtree(getId(targetItem), filteredNodes);
+          const insertAt = targetIdxInFiltered + targetSubtree.length;
+          filteredNodes.splice(insertAt, 0, ...updatedDraggedSubtree);
+        } else if (event.position === 'inside') {
+          filteredNodes.splice(targetIdxInFiltered + 1, 0, ...updatedDraggedSubtree);
+        }
+
+        return filteredNodes;
+      });
+    },
+  };
 }
