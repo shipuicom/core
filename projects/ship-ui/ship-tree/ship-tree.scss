@@ -1,0 +1,272 @@
+@use 'helpers' as *;
+@use '../ship-sortable/ship-sortable.scss';
+
+$shipTree: true !default;
+
+@if $shipTree == true {
+  sh-tree {
+    --tree-bg: var(--base-2);
+    --tree-bc: var(--base-3);
+    --tree-color: var(--base-12);
+    --tree-hover-bg: var(--base-3);
+    --tree-active-bg: var(--base-4);
+    --tree-selected-bg: var(--base-4);
+    --tree-guide-color: var(--base-4);
+    --tree-caret-color: var(--base-9);
+    --tree-caret-hover-color: var(--base-12);
+    --tree-icon-color: var(--base-9);
+    --tree-icon-folder-color: var(--primary-8);
+    --tree-indent-step: #{p2r(12)};
+    --tree-padding-left: #{p2r(12)};
+    --tree-padding-right: #{p2r(6)};
+
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: var(--tree-bg);
+    border: 1px solid var(--tree-bc);
+    border-radius: var(--shape-2, #{p2r(8)});
+    overflow: hidden;
+    font-family: var(--font-family, sans-serif);
+    box-shadow: var(--box-shadow-10);
+
+    .sh-tree-container {
+      flex: 1;
+      padding: p2r(8) 0;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .sh-tree-node {
+      display: flex;
+      align-items: center;
+      height: 32px;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      color: var(--tree-color);
+      font: var(--paragraph-20, 14px sans-serif);
+      gap: 6px;
+      transition: background 120ms ease;
+      padding-left: calc(var(--tree-padding-left) + var(--tree-depth, 0) * var(--tree-indent-step));
+      padding-right: var(--tree-padding-right);
+      background: var(--tree-bg);
+
+      &:hover {
+        background: var(--tree-hover-bg);
+      }
+
+      &.is-selected {
+        background: var(--tree-selected-bg);
+      }
+
+      &.sortable-ghost {
+        opacity: 0.4;
+        background: var(--tree-active-bg);
+      }
+
+      .indent-guide {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        border-left: 1px solid var(--tree-guide-color);
+        opacity: 0.5;
+        left: calc(
+          var(--tree-padding-left) + (var(--tree-indent-step) / 2) + var(--guide-index, 0) * var(--tree-indent-step)
+        );
+      }
+
+      .caret-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: var(--tree-indent-step);
+        height: 16px;
+        z-index: 2;
+
+        &:has(+ .node-icon) {
+          position: absolute;
+          opacity: 0;
+          z-index: 3;
+          width: var(--tree-indent-step);
+        }
+
+        .caret-btn {
+          background: none;
+          border: none;
+          padding: 0;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--tree-caret-color);
+          border-radius: var(--shape-1, 4px);
+          width: 100%;
+          height: 100%;
+          position: relative;
+          transition:
+            background 150ms ease,
+            color 150ms ease;
+
+          &::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            z-index: 1;
+          }
+
+          &:hover {
+            color: var(--tree-caret-hover-color);
+          }
+        }
+      }
+
+      .node-icon {
+        color: var(--tree-icon-color);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: var(--tree-indent-step);
+
+        &.folder {
+          color: var(--tree-icon-folder-color);
+        }
+
+        &:has(~ .node-content sh-tree-node sh-icon) {
+          display: none;
+        }
+      }
+
+      &.is-folder {
+        sh-tree-node .sh-tree-node-left sh-icon {
+          color: var(--tree-icon-folder-color);
+        }
+      }
+
+      &:not(.is-folder) {
+        sh-tree-node .sh-tree-node-left sh-icon {
+          color: var(--tree-icon-color);
+        }
+      }
+
+      .node-content {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+      }
+
+      .node-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    sh-tree-node {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: p2r(8);
+      justify-content: space-between;
+      min-width: 0;
+
+      .sh-tree-node-left {
+        display: flex;
+        align-items: center;
+        gap: p2r(4);
+        padding-left: p2r(4);
+        overflow: hidden;
+        min-width: 0;
+        flex: 1;
+
+        sh-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: var(--tree-indent-step);
+        }
+      }
+
+      .sh-tree-node-label {
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+
+        span {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      .sh-tree-node-actions,
+      sh-tree-node-actions {
+        display: flex;
+        align-items: center;
+        gap: p2r(8);
+      }
+
+      .status-badge {
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: var(--shape-1, 4px);
+        text-transform: uppercase;
+        font-weight: 600;
+
+        &.success {
+          background: var(--success-3, #e6f4ea);
+          color: var(--success-8, #137333);
+        }
+        &.warning {
+          background: var(--warning-3, #fef7e0);
+          color: var(--warning-8, #b06000);
+        }
+        &.error {
+          background: var(--error-3, #fce8e6);
+          color: var(--error-8, #c5221f);
+        }
+      }
+
+      .delete-btn {
+        background: none;
+        border: none;
+        padding: 2px;
+        cursor: pointer;
+        color: var(--base-9);
+        border-radius: var(--shape-1, 4px);
+        display: flex;
+        opacity: 0;
+        transition: opacity 150ms ease;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+          background: var(--base-4);
+          color: var(--error-8, #c5221f);
+        }
+      }
+    }
+
+    .sh-tree-node:hover .delete-btn {
+      opacity: 1;
+    }
+
+    .empty-state {
+      padding: 32px;
+      text-align: center;
+      color: var(--tree-caret-color);
+      font: var(--paragraph-20, 14px sans-serif);
+    }
+  }
+}

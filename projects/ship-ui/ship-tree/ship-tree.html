@@ -1,0 +1,126 @@
+@if (sortableManager()) {
+  <div
+    class="sh-tree-container"
+    [shSortable]="sortableManager()"
+    [treeItems]="visibleNodes()"
+    sortingMode="tree"
+  >
+    @for (node of visibleNodes(); track getId()(node)) {
+      <div
+        class="sh-tree-node"
+        [class.is-folder]="isFolder()(node)"
+        [class.is-expanded]="getIsOpen()(node)"
+        [class.is-selected]="selectedId() === getId()(node)"
+        draggable="true"
+        [attr.sortable-dir]="isFolder()(node) ? 'true' : null"
+        [style.--tree-depth]="getNodeDepth(node)"
+        (click)="handleNodeClick(node, $event)"
+      >
+        <!-- Indent guides -->
+        @for (i of getDepthArray(getNodeDepth(node)); track i) {
+          <div class="indent-guide" [style.--guide-index]="i"></div>
+        }
+
+        <!-- Folder Caret -->
+        @if (isFolder()(node) && !dirTemplate()) {
+          <span class="caret-container">
+            <button class="caret-btn" (click)="toggleNode(node, $event)" type="button">
+              @if (getIsOpen()(node)) {
+                <sh-icon size="small">caret-down</sh-icon>
+              } @else {
+                <sh-icon size="small">caret-right</sh-icon>
+              }
+            </button>
+          </span>
+        }
+
+        <!-- Node Icon -->
+        @if (getNodeIcon(node)) {
+          @if (getNodeIcon(node) === 'file') {
+            <sh-icon class="node-icon" [class.folder]="isFolder()(node)" size="small">file</sh-icon>
+          } @else if (getNodeIcon(node) === 'folder') {
+            <sh-icon class="node-icon" [class.folder]="isFolder()(node)" size="small">folder</sh-icon>
+          } @else if (getNodeIcon(node) === 'folder-open') {
+            <sh-icon class="node-icon" [class.folder]="isFolder()(node)" size="small">folder-open</sh-icon>
+          } @else {
+            <sh-icon class="node-icon" [class.folder]="isFolder()(node)" size="small">
+              {{ getNodeIcon(node) }}
+            </sh-icon>
+          }
+        }
+
+        <!-- Node Content -->
+        <div class="node-content">
+          <ng-container *ngTemplateOutlet="isFolder()(node) && dirTemplate() ? dirTemplate() : (nodeTemplate() || defaultTemplate); context: { $implicit: node }"></ng-container>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-state">
+        <ng-content select="[emptyState]">
+          No items in tree
+        </ng-content>
+      </div>
+    }
+  </div>
+} @else {
+  <div class="sh-tree-container">
+    @for (node of visibleNodes(); track getId()(node)) {
+      <div
+        class="sh-tree-node"
+        [class.is-folder]="isFolder()(node)"
+        [class.is-expanded]="getIsOpen()(node)"
+        [class.is-selected]="selectedId() === getId()(node)"
+        [style.--tree-depth]="getNodeDepth(node)"
+        (click)="handleNodeClick(node, $event)"
+      >
+        <!-- Indent guides -->
+        @for (i of getDepthArray(getNodeDepth(node)); track i) {
+          <div class="indent-guide" [style.--guide-index]="i"></div>
+        }
+
+        <!-- Folder Caret -->
+        @if (isFolder()(node) && !dirTemplate()) {
+          <span class="caret-container">
+            <button class="caret-btn" (click)="toggleNode(node, $event)" type="button">
+              @if (getIsOpen()(node)) {
+                <sh-icon size="small">caret-down</sh-icon>
+              } @else {
+                <sh-icon size="small">caret-right</sh-icon>
+              }
+            </button>
+          </span>
+        }
+
+        <!-- Node Icon -->
+        @if (getNodeIcon(node)) {
+          @if (getNodeIcon(node) === 'file') {
+            <sh-icon class="node-icon" [class.folder]="isFolder()(node)" size="small">file</sh-icon>
+          } @else if (getNodeIcon(node) === 'folder') {
+            <sh-icon class="node-icon" [class.folder]="isFolder()(node)" size="small">folder</sh-icon>
+          } @else if (getNodeIcon(node) === 'folder-open') {
+            <sh-icon class="node-icon" [class.folder]="isFolder()(node)" size="small">folder-open</sh-icon>
+          } @else {
+            <sh-icon class="node-icon" [class.folder]="isFolder()(node)" size="small">
+              {{ getNodeIcon(node) }}
+            </sh-icon>
+          }
+        }
+
+        <!-- Node Content -->
+        <div class="node-content">
+          <ng-container *ngTemplateOutlet="isFolder()(node) && dirTemplate() ? dirTemplate() : (nodeTemplate() || defaultTemplate); context: { $implicit: node }"></ng-container>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-state">
+        <ng-content select="[emptyState]">
+          No items in tree
+        </ng-content>
+      </div>
+    }
+  </div>
+}
+
+<ng-template #defaultTemplate let-node>
+  <span class="node-name">{{ getName()(node) }}</span>
+</ng-template>
