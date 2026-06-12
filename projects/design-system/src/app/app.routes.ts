@@ -114,6 +114,10 @@ export const routes: Routes = [
         loadComponent: () => import('./ship/tooltips/tooltips'),
       },
       {
+        path: 'tree',
+        loadComponent: () => import('./ship/tree/tree'),
+      },
+      {
         path: 'tables',
         loadComponent: () => import('./ship/tables/tables'),
       },

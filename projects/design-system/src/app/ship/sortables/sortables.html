@@ -1,77 +1,114 @@
 <h1>Sortable</h1>
 <!-- @keywords: sortable, drag and drop, list, ordering, dnd, draggable, cross list -->
 
-<app-property-viewer>
-  <section>
-    <h4>Enable Sorting</h4>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="styling">Styling</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
+
+@let _activeTab = activeTab();
+
+<div class="tab-content" style="margin-top: 24px">
+  @if (_activeTab === 'overview') {
     <p>
       Apply the
       <code>shSortable</code>
-      directive to a
-      <code>sh-list</code>
-      or any container element to enable drag-and-drop reordering.
+      directive to a list, grid, or tree container to enable interactive drag-and-drop reordering.
     </p>
-  </section>
-  <section>
-    <h4>Event Handling</h4>
-    <p>
-      Listen to the
-      <code>sortDrop</code>
-      event to update your data source when an item is moved. For complex implementations, skip events and use the
-      <code>SortableManager</code>
-      (see below).
-    </p>
-  </section>
-  <section>
-    <h4>Sortable Manager (Recommended)</h4>
-    <p>
-      Vastly simplify drag-and-drop state by passing a unified manager to the
-      <code>shSortable</code>
-      input. Pass a dictionary of signals to
-      <code>createSortableManager()</code>
-      , and bind it using
-      <code>[shSortable]="manager" sortableGroup="listId"</code>
-      . For single lists, simply use
-      <code>[shSortable]="manager"</code>
-      . You can even provide an
-      <code>onBeforeDrop</code>
-      hook to await an API request (Promise or RxJS Observable) before accepting the drop automatically!
-    </p>
-  </section>
-  <section>
-    <h4>Handles</h4>
-    <p>
-      Add the
-      <code>sort-handle</code>
-      attribute to a specific element within a sortable item to limit dragging to that specific area.
-    </p>
-  </section>
-</app-property-viewer>
 
-<h3>Basic Usage</h3>
-<app-highlight lang="html" [content]="exampleCode" />
+    <h3>Basic Usage</h3>
+    <app-highlight lang="html" [content]="exampleCode" />
 
-<app-previewer path="/sortables/examples/base-sortable/base-sortable" title="Default">
-  <app-base-sortable class="example" />
-</app-previewer>
+    <app-previewer path="/sortables/examples/base-sortable/base-sortable" title="Default">
+      <app-base-sortable class="example" />
+    </app-previewer>
+  } @else if (_activeTab === 'api') {
+    <app-property-viewer>
+      <section>
+        <h4>Enable Sorting</h4>
+        <p>
+          Apply the
+          <code>shSortable</code>
+          directive to any container element to enable drag-and-drop reordering.
+        </p>
+      </section>
 
-<app-previewer path="/sortables/examples/grid-sortable/grid-sortable-example" title="Grid Layout sorting">
-  <app-grid-sortable-example class="example" />
-</app-previewer>
+      <section>
+        <h4>Event Handling</h4>
+        <p>
+          Listen to the
+          <code>sortDrop</code>
+          event to update your data source when an item is moved. For tree structures, listen to the
+          <code>treeDrop</code>
+          event.
+        </p>
+      </section>
 
-<app-previewer path="/sortables/examples/handle-sortable/handle-sortable" title="Drag Handles">
-  <app-handle-sortable class="example" />
-</app-previewer>
+      <section>
+        <h4>Sortable Manager (Recommended)</h4>
+        <p>
+          Vastly simplify drag-and-drop state by passing a manager to the
+          <code>shSortable</code>
+          input. Use
+          <code>createSortableManager()</code>
+          for simple and cross-list configurations, or
+          <code>createTreeSortableManager()</code>
+          for hierarchical trees.
+        </p>
+      </section>
 
-<h3>Cross List Usage</h3>
+      <section>
+        <h4>Tree View Drag & Drop</h4>
+        <p>
+          Enable VSCode-explorer-style tree drag-and-drop by setting
+          <code>sortingMode="tree"</code>
+          and binding
+          <code>[treeItems]</code>
+          to the visible items list. Target folders must include the
+          <code>sortable-folder="true"</code>
+          attribute to accept drop-inside actions.
+        </p>
+      </section>
 
-<app-highlight lang="ts" [content]="crossListCodeTypescript" />
-<app-highlight lang="html" [content]="crossListCode" />
+      <section>
+        <h4>Drag Handles</h4>
+        <p>
+          Add the
+          <code>sort-handle</code>
+          attribute to a specific element within a sortable item to limit dragging to that specific region.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'styling') {
+    <p>Use the following CSS classes to customize the appearance of the tree sorting drop indicators.</p>
+    <app-highlight lang="scss" [content]="codeStylingExample" />
+  } @else if (_activeTab === 'examples') {
+    <div class="example-list" style="display: flex; flex-direction: column; gap: 32px">
+      <app-previewer path="/sortables/examples/base-sortable/base-sortable" title="Default">
+        <app-base-sortable class="example" />
+      </app-previewer>
 
-<app-previewer path="/sortables/examples/cross-list-sortable/cross-list-sortable" title="Multi-List Drag and Drop">
-  <app-cross-list-sortable class="example" />
-</app-previewer>
+      <app-previewer
+        path="/sortables/examples/cross-list-sortable/cross-list-sortable"
+        title="Multi-List Drag and Drop">
+        <app-cross-list-sortable class="example" />
+      </app-previewer>
 
-<!-- <app-previewer path="/sortables/examples/mixed-size-sortable/mixed-size-sortable" title="Mixed Size Elements">
-  <app-mixed-size-sortable class="example" />
-</app-previewer> -->
+      <app-previewer path="/sortables/examples/grid-sortable/grid-sortable-example" title="Grid Layout sorting">
+        <app-grid-sortable-example class="example" />
+      </app-previewer>
+
+      <app-previewer path="/sortables/examples/handle-sortable/handle-sortable" title="Drag Handles">
+        <app-handle-sortable class="example" />
+      </app-previewer>
+
+      <app-previewer
+        path="/tree/examples/sortable-tree/sortable-tree"
+        title="Tree View Drag and Drop (VSCode Explorer Style)">
+        <app-sortable-tree-example class="example" />
+      </app-previewer>
+    </div>
+  }
+</div>

@@ -13,3 +13,10 @@ h3 {
   flex-direction: column;
   gap: p2r(20);
 }
+
+.tab-content {
+  margin-top: p2r(24);
+  display: flex;
+  flex-direction: column;
+  gap: p2r(24);
+}

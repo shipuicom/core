@@ -1,0 +1,47 @@
+<div class="tree-explorer">
+  <div class="explorer-header">
+    <span>WORKSPACE EXPLORER</span>
+  </div>
+  
+  <div 
+    class="tree-container"
+    [shSortable]="manager"
+    [treeItems]="manager.visibleNodes()"
+    sortingMode="tree"
+  >
+    @for (node of manager.visibleNodes(); track node.id; let idx = $index) {
+      <div 
+        class="tree-node"
+        [class.is-folder]="node.type === 'dir'"
+        [class.is-expanded]="node.isOpen"
+        draggable="true"
+        [attr.sortable-dir]="node.type === 'dir' ? 'true' : null"
+        [style.padding-left.px]="16 + getNodeDepth(node) * 16"
+      >
+        <!-- Indent guides -->
+        @for (i of getDepthArray(getNodeDepth(node)); track i) {
+          <div class="indent-guide" [style.left.px]="22 + i * 16"></div>
+        }
+
+        <!-- Folder Caret -->
+        <span class="caret-container">
+          @if (node.type === 'dir') {
+            <button class="caret-btn" (click)="toggleFolder(node, $event)" type="button">
+              <sh-icon size="small">{{ node.isOpen ? 'caret-down' : 'caret-right' }}</sh-icon>
+            </button>
+          }
+        </span>
+
+        <!-- Node Icon -->
+        <sh-icon class="node-icon" size="small">
+          {{ node.type === 'dir' ? (node.isOpen ? 'folder-open' : 'folder') : 'file-text' }}
+        </sh-icon>
+
+        <!-- Node Name -->
+        <span class="node-name">{{ node.name }}</span>
+      </div>
+    } @empty {
+      <div class="empty-state">No files in workspace</div>
+    }
+  </div>
+</div>
