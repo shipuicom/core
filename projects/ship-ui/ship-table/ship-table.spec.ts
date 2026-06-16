@@ -333,14 +333,17 @@ describe('ShipTable Configuration-Based Columns', () => {
     // 1. Mouse down on the resizer
     resizer.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
     fixture.detectChanges();
+    expect(header.classList.contains('resizing')).toBe(true);
 
     // 2. Mouse move on document to simulate resizing/dragging
     document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
     fixture.detectChanges();
+    expect(header.classList.contains('resizing')).toBe(true);
 
     // 3. Mouse up on document to release resizer
     document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
     fixture.detectChanges();
+    expect(header.classList.contains('resizing')).toBe(false);
 
     // The click event is dispatched on the header (or bubbles up) when mouse is released
     header.click();

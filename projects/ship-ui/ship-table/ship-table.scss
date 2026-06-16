@@ -275,7 +275,8 @@ $shipTable: true !default;
       gap: var(--table-th-g);
       z-index: auto;
 
-      &:hover {
+      &:hover,
+      &.resizing {
         z-index: 120;
       }
 
@@ -353,6 +354,14 @@ $shipTable: true !default;
         }
 
         &:hover:after {
+          width: p2r(4);
+          right: p2r(4);
+          background-color: var(--primary-8);
+        }
+      }
+
+      &.resizing {
+        .sh-resizer:after {
           width: p2r(4);
           right: p2r(4);
           background-color: var(--primary-8);

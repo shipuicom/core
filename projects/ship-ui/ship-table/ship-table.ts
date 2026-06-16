@@ -45,6 +45,9 @@ export interface ShipTableColumn<T = any> {
 @Directive({
   selector: '[shResize]',
   standalone: true,
+  host: {
+    '[class.resizing]': 'resizingClass()',
+  },
 })
 export class ShipResize {
   #el = inject(ElementRef) as ElementRef<HTMLTableCellElement>;
@@ -54,6 +57,8 @@ export class ShipResize {
   resizable = input<boolean>(true);
   minWidth = input<number>(50);
   maxWidth = input<number | null>(null);
+
+  resizingClass = signal(false);
 
   #startX!: number;
   #startWidth!: number;
@@ -85,6 +90,7 @@ export class ShipResize {
   onMouseUp(event: MouseEvent) {
     if (this.#resizing) {
       this.#resizing = false;
+      this.resizingClass.set(false);
 
       if (this.#animationFrameRequest !== null) {
         cancelAnimationFrame(this.#animationFrameRequest);
@@ -111,6 +117,7 @@ export class ShipResize {
 
     this.#table.resizing.set(true);
     this.#resizing = true;
+    this.resizingClass.set(true);
     this.#startX = event.pageX;
     this.#startWidth = this.#el.nativeElement.offsetWidth;
   }
