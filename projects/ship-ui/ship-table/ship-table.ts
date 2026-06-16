@@ -1,8 +1,29 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, Directive, effect, ElementRef, HostListener, inject, input, model, output, Renderer2, signal, viewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, contentChild, DestroyRef, Directive, effect, ElementRef, HostListener, inject, input, model, output, Renderer2, signal, TemplateRef, viewChild, ViewEncapsulation } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { ShipProgressBar } from '@ship-ui/core/ship-progress-bar';
 import { observeChildren } from '@ship-ui/core';
 import { shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipTableVariant } from '@ship-ui/core';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipChip } from '@ship-ui/core/ship-chip';
+
+export interface ShipTableColumn<T = any> {
+  id: string;
+  header: string;
+  accessorKey?: keyof T | string;
+  type?: 'string' | 'number' | 'date' | 'boolean' | 'badge' | (string & {});
+  sortable?: boolean;
+  resizable?: boolean;
+  minWidth?: number;
+  maxWidth?: number;
+  size?: string;
+  sticky?: 'start' | 'end' | null;
+  cell?: (row: T) => any;
+  cellTemplate?: TemplateRef<any> | null;
+  format?: (value: any, row: T) => any;
+  sortPredicate?: (a: T, b: T) => number;
+  rowHeader?: boolean;
+}
 
 @Directive({
   selector: '[shResize]',
@@ -106,15 +127,20 @@ export class ShipResize {
   selector: '[shSort]',
   standalone: true,
   host: {
-    class: 'sortable',
-    '(mousedown)': 'toggleSort()',
+    'role': 'columnheader',
+    '[class.sortable]': '!!shSort()',
+    '[attr.tabindex]': 'shSort() ? "0" : null',
+    '(click)': 'shSort() ? toggleSort() : null',
+    '(keydown.enter)': 'shSort() ? toggleSort() : null',
+    '(keydown.space)': 'shSort() ? toggleSort($event) : null',
+    '[attr.aria-sort]': 'shSort() ? ariaSort() : null',
     '[class.sort-asc]': 'sortAsc()',
     '[class.sort-desc]': 'sortDesc()',
   },
 })
 export class ShipSort {
   #table = inject(ShipTable);
-  shSort = input<string>();
+  shSort = input<string | undefined>();
 
   sortAsc = computed(() => {
     const currentSort = this.#table.sortByColumn();
@@ -134,7 +160,16 @@ export class ShipSort {
     return currentSort === `-${thisColumn}`;
   });
 
-  toggleSort() {
+  ariaSort = computed(() => {
+    if (this.sortAsc()) return 'ascending';
+    if (this.sortDesc()) return 'descending';
+    return 'none';
+  });
+
+  toggleSort(event?: Event) {
+    if (event) {
+      event.preventDefault();
+    }
     const sortCol = this.shSort();
 
     if (!sortCol) return;
@@ -198,14 +233,18 @@ type ScrollState = -1 | 0 | 1;
       <sh-progress-bar class="indeterminate primary" />
     }
 
-    <thead #thead>
-      <ng-content select="th" />
-      <ng-content select="[thead]" />
-    </thead>
+    <ng-content select="sh-table-content" />
 
-    <tbody #tbody>
-      <ng-content />
-    </tbody>
+    @if (!content()) {
+      <thead #theadLocal role="rowgroup">
+        <ng-content select="th" />
+        <ng-content select="[thead]" />
+      </thead>
+
+      <tbody #tbodyLocal role="rowgroup">
+        <ng-content />
+      </tbody>
+    }
 
     @if (!loading()) {
       <div class="no-rows">
@@ -215,6 +254,10 @@ type ScrollState = -1 | 0 | 1;
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
+    'role': 'table',
+    '[attr.aria-busy]': 'loading()',
+    '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-labelledby]': 'ariaLabelledby()',
     '[class]': 'hostClasses()',
     '[style.grid-template-columns]': 'columnSizes()',
     '[class.resizing]': 'resizing()',
@@ -238,13 +281,21 @@ export class ShipTable {
   color = input<ShipColor | null>(null);
   variant = input<ShipTableVariant | null>(null);
 
+  ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+  ariaLabelledby = input<string | null>(null, { alias: 'aria-labelledby' });
+
   hostClasses = shipComponentClasses('table', {
     color: this.color,
     variant: this.variant,
   });
 
-  thead = viewChild<ElementRef<HTMLTableSectionElement>>('thead');
-  tbody = viewChild<ElementRef<HTMLTableSectionElement>>('tbody');
+  content = contentChild(ShipTableContent);
+
+  theadLocal = viewChild<ElementRef<HTMLTableSectionElement>>('theadLocal');
+  tbodyLocal = viewChild<ElementRef<HTMLTableSectionElement>>('tbodyLocal');
+
+  thead = computed(() => this.content()?.thead() || this.theadLocal());
+  tbody = computed(() => this.content()?.tbody() || this.tbodyLocal());
   columns = observeChildren<HTMLTableColElement>(this.thead, ['tr:first-child th']);
 
   stickyHeaderHeight = signal<number>(0);
@@ -361,21 +412,42 @@ export class ShipTable {
     const isDescending = sortByColumn.startsWith('-');
 
     const sortedData = this.data().sort((a: any, b: any) => {
+      const colConfig = this.content()?.columns()?.find((c) => c.id === column);
+
+      if (colConfig?.sortPredicate) {
+        const predicateResult = colConfig.sortPredicate(a, b);
+        return isDescending ? -predicateResult : predicateResult;
+      }
+
       const valueA = a[column] as any;
       const valueB = b[column] as any;
 
       let comparison = 0;
 
-      if (typeof valueA === 'number' && typeof valueB === 'number') {
-        comparison = valueA - valueB;
-      }
-
-      if (valueA instanceof Date && valueB instanceof Date) {
-        comparison = valueA.getTime() - valueB.getTime();
-      }
-
-      if (typeof valueA === 'string' && typeof valueB === 'string') {
-        comparison = valueA.localeCompare(valueB, undefined, { sensitivity: 'base' });
+      if (colConfig?.type === 'date') {
+        const dateA = valueA ? new Date(valueA).getTime() : 0;
+        const dateB = valueB ? new Date(valueB).getTime() : 0;
+        comparison = dateA - dateB;
+      } else if (colConfig?.type === 'number') {
+        const numA = Number(valueA) || 0;
+        const numB = Number(valueB) || 0;
+        comparison = numA - numB;
+      } else if (colConfig?.type === 'boolean') {
+        const boolA = valueA ? 1 : 0;
+        const boolB = valueB ? 1 : 0;
+        comparison = boolA - boolB;
+      } else if (colConfig?.type === 'string' || colConfig?.type === 'badge') {
+        const strA = (valueA ?? '').toString();
+        const strB = (valueB ?? '').toString();
+        comparison = strA.localeCompare(strB, undefined, { sensitivity: 'base' });
+      } else {
+        if (typeof valueA === 'number' && typeof valueB === 'number') {
+          comparison = valueA - valueB;
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+          comparison = valueA.getTime() - valueB.getTime();
+        } else if (typeof valueA === 'string' && typeof valueB === 'string') {
+          comparison = valueA.localeCompare(valueB, undefined, { sensitivity: 'base' });
+        }
       }
 
       return isDescending ? -comparison : comparison;
@@ -427,5 +499,130 @@ export class ShipTable {
 
     this.scrollYState.set(nextYState);
     this.canScrollY.set(canScrollY);
+  }
+}
+
+@Component({
+  selector: 'sh-table-content',
+  standalone: true,
+  imports: [NgTemplateOutlet, ShipSort, ShipResize, ShipIcon, ShipChip],
+  host: {
+    'style': 'display: contents',
+  },
+  template: `
+    <thead #thead role="rowgroup">
+      <tr role="row">
+        @for (col of columns(); track col.id) {
+          @if (col.resizable) {
+            <th role="columnheader"
+                [id]="col.id"
+                [attr.aria-label]="col.header"
+                [shSort]="col.sortable ? col.id : undefined"
+                shResize
+                [minWidth]="col.minWidth ?? 50"
+                [maxWidth]="col.maxWidth ?? null"
+                [attr.size]="col.size || null"
+                [class.sticky]="col.sticky === 'start'"
+                [class.sticky-end]="col.sticky === 'end'">
+              {{ col.header }}
+              @if (col.sortable) {
+                @if (sortByColumn() === col.id) {
+                  <sh-icon>caret-up</sh-icon>
+                } @else if (sortByColumn() === '-' + col.id) {
+                  <sh-icon>caret-down</sh-icon>
+                } @else {
+                  <sh-icon>arrows-down-up</sh-icon>
+                }
+              }
+            </th>
+          } @else {
+            <th role="columnheader"
+                [id]="col.id"
+                [attr.aria-label]="col.header"
+                [shSort]="col.sortable ? col.id : undefined"
+                [attr.size]="col.size || null"
+                [class.sticky]="col.sticky === 'start'"
+                [class.sticky-end]="col.sticky === 'end'">
+              {{ col.header }}
+              @if (col.sortable) {
+                @if (sortByColumn() === col.id) {
+                  <sh-icon>caret-up</sh-icon>
+                } @else if (sortByColumn() === '-' + col.id) {
+                  <sh-icon>caret-down</sh-icon>
+                } @else {
+                  <sh-icon>arrows-down-up</sh-icon>
+                }
+              }
+            </th>
+          }
+        }
+      </tr>
+    </thead>
+
+    <tbody #tbody role="rowgroup">
+      @for (row of data(); track $index) {
+        @let rowIndex = $index;
+        <tr role="row">
+          @for (col of columns(); track col.id) {
+            <td [class.sticky]="col.sticky === 'start'"
+                [class.sticky-end]="col.sticky === 'end'"
+                [id]="col.id + '-' + rowIndex"
+                [attr.aria-labelledby]="col.id + ' ' + col.id + '-' + rowIndex"
+                [attr.role]="col.rowHeader ? 'rowheader' : 'cell'">
+              @if (col.cellTemplate) {
+                <ng-container [ngTemplateOutlet]="col.cellTemplate" [ngTemplateOutletContext]="{ $implicit: row, column: col }" />
+              } @else if (col.cell) {
+                {{ col.cell(row) }}
+              } @else if (col.format) {
+                {{ col.format(getValue(row, col), row) }}
+              } @else {
+                @switch (col.type) {
+                  @case ('date') {
+                    {{ formatDate(getValue(row, col)) }}
+                  }
+                  @case ('boolean') {
+                    @if (getValue(row, col)) {
+                      <sh-icon class="text-success">check</sh-icon>
+                    } @else {
+                      <sh-icon class="text-muted">x</sh-icon>
+                    }
+                  }
+                  @case ('badge') {
+                    <sh-chip>{{ getValue(row, col) }}</sh-chip>
+                  }
+                  @default {
+                    {{ getValue(row, col) }}
+                  }
+                }
+              }
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  `
+})
+export class ShipTableContent {
+  #table = inject(ShipTable);
+
+  columns = input<ShipTableColumn[]>([]);
+  data = input<any[]>([]);
+
+  sortByColumn = this.#table.sortByColumn;
+
+  thead = viewChild<ElementRef<HTMLTableSectionElement>>('thead');
+  tbody = viewChild<ElementRef<HTMLTableSectionElement>>('tbody');
+
+  getValue(row: any, col: ShipTableColumn): any {
+    if (!row) return '';
+    const key = col.accessorKey || col.id;
+    return row[key];
+  }
+
+  formatDate(value: any): string {
+    if (!value) return '';
+    const date = new Date(value);
+    if (isNaN(date.getTime())) return String(value);
+    return date.toLocaleDateString();
   }
 }
