@@ -319,6 +319,48 @@ describe('ShipTable Configuration-Based Columns', () => {
     expect(ageResizer).toBeFalsy();
   });
 
+  it('should not trigger sorting when releasing the resizer after resizing', () => {
+    vi.useFakeTimers();
+    hostComponent.columns.set([
+      { id: 'name', header: 'Name', resizable: true, sortable: true },
+    ]);
+    fixture.detectChanges();
+
+    const header = fixture.nativeElement.querySelector('thead th');
+    const resizer = header.querySelector('.sh-resizer');
+    expect(resizer).toBeTruthy();
+
+    // 1. Mouse down on the resizer
+    resizer.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    fixture.detectChanges();
+
+    // 2. Mouse move on document to simulate resizing/dragging
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+    fixture.detectChanges();
+
+    // 3. Mouse up on document to release resizer
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    fixture.detectChanges();
+
+    // The click event is dispatched on the header (or bubbles up) when mouse is released
+    header.click();
+    fixture.detectChanges();
+
+    // The sort should NOT be triggered
+    expect(hostComponent.sortByColumn()).toBeNull();
+
+    // 4. Advance time past 50ms
+    vi.advanceTimersByTime(50);
+    fixture.detectChanges();
+
+    // Now click should trigger sorting
+    header.click();
+    fixture.detectChanges();
+    expect(hostComponent.sortByColumn()).toBe('name');
+
+    vi.useRealTimers();
+  });
+
   it('should support default formatting for date, boolean, and badge types', () => {
     hostComponent.dataSource.set([
       { name: 'Alice', joined: new Date('2026-01-10T00:00:00'), active: true, status: 'active' },

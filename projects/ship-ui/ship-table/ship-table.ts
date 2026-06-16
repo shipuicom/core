@@ -1,11 +1,28 @@
-import { ChangeDetectionStrategy, Component, computed, contentChild, DestroyRef, Directive, effect, ElementRef, HostListener, inject, input, model, output, Renderer2, signal, TemplateRef, viewChild, ViewEncapsulation } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { ShipProgressBar } from '@ship-ui/core/ship-progress-bar';
-import { observeChildren } from '@ship-ui/core';
-import { shipComponentClasses } from '@ship-ui/core';
-import { ShipColor, ShipTableVariant } from '@ship-ui/core';
-import { ShipIcon } from '@ship-ui/core/ship-icon';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  contentChild,
+  DestroyRef,
+  Directive,
+  effect,
+  ElementRef,
+  HostListener,
+  inject,
+  input,
+  model,
+  output,
+  Renderer2,
+  signal,
+  TemplateRef,
+  viewChild,
+  ViewEncapsulation,
+} from '@angular/core';
+import { observeChildren, ShipColor, shipComponentClasses, ShipTableVariant } from '@ship-ui/core';
 import { ShipChip } from '@ship-ui/core/ship-chip';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipProgressBar } from '@ship-ui/core/ship-progress-bar';
 
 export interface ShipTableColumn<T = any> {
   id: string;
@@ -68,12 +85,16 @@ export class ShipResize {
   onMouseUp(event: MouseEvent) {
     if (this.#resizing) {
       this.#resizing = false;
-      this.#table.resizing.set(false);
 
       if (this.#animationFrameRequest !== null) {
         cancelAnimationFrame(this.#animationFrameRequest);
         this.#animationFrameRequest = null;
       }
+
+      // Delay resetting the table's resizing state to block sorting clicks immediately after resizing
+      setTimeout(() => {
+        this.#table.resizing.set(false);
+      }, 50);
     }
   }
 
@@ -127,7 +148,7 @@ export class ShipResize {
   selector: '[shSort]',
   standalone: true,
   host: {
-    'role': 'columnheader',
+    role: 'columnheader',
     '[class.sortable]': '!!shSort()',
     '[attr.tabindex]': 'shSort() ? "0" : null',
     '(click)': 'shSort() ? toggleSort() : null',
@@ -169,6 +190,9 @@ export class ShipSort {
   toggleSort(event?: Event) {
     if (event) {
       event.preventDefault();
+    }
+    if (this.#table.resizing()) {
+      return;
     }
     const sortCol = this.shSort();
 
@@ -254,7 +278,7 @@ type ScrollState = -1 | 0 | 1;
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    'role': 'table',
+    role: 'table',
     '[attr.aria-busy]': 'loading()',
     '[attr.aria-label]': 'ariaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledby()',
@@ -305,7 +329,7 @@ export class ShipTable {
 
   theadEffect = effect(() => {
     const head = this.thead()?.nativeElement;
-    
+
     if (this.#resizeObserver) {
       this.#resizeObserver.disconnect();
       this.#resizeObserver = null;
@@ -412,7 +436,9 @@ export class ShipTable {
     const isDescending = sortByColumn.startsWith('-');
 
     const sortedData = this.data().sort((a: any, b: any) => {
-      const colConfig = this.content()?.columns()?.find((c) => c.id === column);
+      const colConfig = this.content()
+        ?.columns()
+        ?.find((c) => c.id === column);
 
       if (colConfig?.sortPredicate) {
         const predicateResult = colConfig.sortPredicate(a, b);
@@ -507,23 +533,24 @@ export class ShipTable {
   standalone: true,
   imports: [NgTemplateOutlet, ShipSort, ShipResize, ShipIcon, ShipChip],
   host: {
-    'style': 'display: contents',
+    style: 'display: contents',
   },
   template: `
     <thead #thead role="rowgroup">
       <tr role="row">
         @for (col of columns(); track col.id) {
           @if (col.resizable) {
-            <th role="columnheader"
-                [id]="col.id"
-                [attr.aria-label]="col.header"
-                [shSort]="col.sortable ? col.id : undefined"
-                shResize
-                [minWidth]="col.minWidth ?? 50"
-                [maxWidth]="col.maxWidth ?? null"
-                [attr.size]="col.size || null"
-                [class.sticky]="col.sticky === 'start'"
-                [class.sticky-end]="col.sticky === 'end'">
+            <th
+              role="columnheader"
+              [id]="col.id"
+              [attr.aria-label]="col.header"
+              [shSort]="col.sortable ? col.id : undefined"
+              shResize
+              [minWidth]="col.minWidth ?? 50"
+              [maxWidth]="col.maxWidth ?? null"
+              [attr.size]="col.size || null"
+              [class.sticky]="col.sticky === 'start'"
+              [class.sticky-end]="col.sticky === 'end'">
               {{ col.header }}
               @if (col.sortable) {
                 @if (sortByColumn() === col.id) {
@@ -536,13 +563,14 @@ export class ShipTable {
               }
             </th>
           } @else {
-            <th role="columnheader"
-                [id]="col.id"
-                [attr.aria-label]="col.header"
-                [shSort]="col.sortable ? col.id : undefined"
-                [attr.size]="col.size || null"
-                [class.sticky]="col.sticky === 'start'"
-                [class.sticky-end]="col.sticky === 'end'">
+            <th
+              role="columnheader"
+              [id]="col.id"
+              [attr.aria-label]="col.header"
+              [shSort]="col.sortable ? col.id : undefined"
+              [attr.size]="col.size || null"
+              [class.sticky]="col.sticky === 'start'"
+              [class.sticky-end]="col.sticky === 'end'">
               {{ col.header }}
               @if (col.sortable) {
                 @if (sortByColumn() === col.id) {
@@ -564,13 +592,16 @@ export class ShipTable {
         @let rowIndex = $index;
         <tr role="row">
           @for (col of columns(); track col.id) {
-            <td [class.sticky]="col.sticky === 'start'"
-                [class.sticky-end]="col.sticky === 'end'"
-                [id]="col.id + '-' + rowIndex"
-                [attr.aria-labelledby]="col.id + ' ' + col.id + '-' + rowIndex"
-                [attr.role]="col.rowHeader ? 'rowheader' : 'cell'">
+            <td
+              [class.sticky]="col.sticky === 'start'"
+              [class.sticky-end]="col.sticky === 'end'"
+              [id]="col.id + '-' + rowIndex"
+              [attr.aria-labelledby]="col.id + ' ' + col.id + '-' + rowIndex"
+              [attr.role]="col.rowHeader ? 'rowheader' : 'cell'">
               @if (col.cellTemplate) {
-                <ng-container [ngTemplateOutlet]="col.cellTemplate" [ngTemplateOutletContext]="{ $implicit: row, column: col }" />
+                <ng-container
+                  [ngTemplateOutlet]="col.cellTemplate"
+                  [ngTemplateOutletContext]="{ $implicit: row, column: col }" />
               } @else if (col.cell) {
                 {{ col.cell(row) }}
               } @else if (col.format) {
@@ -600,7 +631,7 @@ export class ShipTable {
         </tr>
       }
     </tbody>
-  `
+  `,
 })
 export class ShipTableContent {
   #table = inject(ShipTable);
