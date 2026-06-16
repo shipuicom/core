@@ -275,6 +275,10 @@ $shipTable: true !default;
       gap: var(--table-th-g);
       z-index: 100;
 
+      &:hover {
+        z-index: 120;
+      }
+
       &:has(.sh-resizer) {
         position: relative;
       }
@@ -331,17 +335,21 @@ $shipTable: true !default;
         top: 0;
         right: p2r(-6);
         cursor: col-resize;
-        z-index: 10;
+        z-index: 110;
 
         &:after {
           content: '';
           position: absolute;
-          top: 0;
-          bottom: 0;
+          top: p2r(4);
+          bottom: p2r(4);
+          border-radius: p2r(2);
           right: p2r(5);
           width: p2r(2);
           background-color: var(--base-4);
-          transition: width 150ms ease, background-color 150ms ease, right 150ms ease;
+          transition:
+            width 150ms ease,
+            background-color 150ms ease,
+            right 150ms ease;
         }
 
         &:hover:after {
