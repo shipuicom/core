@@ -273,7 +273,7 @@ $shipTable: true !default;
       border-width: var(--table-th-bw);
       background: var(--table-th-bg);
       gap: var(--table-th-g);
-      z-index: 100;
+      z-index: auto;
 
       &:hover {
         z-index: 120;
