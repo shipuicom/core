@@ -325,34 +325,29 @@ $shipTable: true !default;
       }
 
       .sh-resizer {
-        width: 10px;
+        width: p2r(12);
         height: 100%;
         position: absolute;
         top: 0;
-        right: 0;
+        right: p2r(-6);
         cursor: col-resize;
+        z-index: 10;
 
-        &:before,
         &:after {
           content: '';
           position: absolute;
-          top: 50%;
-          transform: translateY(-50%);
-          height: p2r(12);
-          right: p2r(3);
-          width: p2r(1);
+          top: 0;
+          bottom: 0;
+          right: p2r(5);
+          width: p2r(2);
           background-color: var(--base-4);
+          transition: width 150ms ease, background-color 150ms ease, right 150ms ease;
         }
 
-        &:hover {
-          &:before,
-          &:after {
-            background-color: var(--primary-8);
-          }
-        }
-
-        &:before {
-          left: p2r(3);
+        &:hover:after {
+          width: p2r(4);
+          right: p2r(4);
+          background-color: var(--primary-8);
         }
       }
     }
