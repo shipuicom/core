@@ -11,6 +11,14 @@ h3 {
   font: var(--paragraph-10);
 }
 
+sh-tabs {
+  margin-bottom: p2r(24);
+}
+
+.controls {
+  margin-bottom: p2r(24);
+}
+
 .example {
   display: flex;
   flex-wrap: wrap;

@@ -1,0 +1,22 @@
+@use 'helpers' as *;
+
+:host {
+  display: block;
+  width: 100%;
+
+  .user-cell {
+    display: flex;
+    flex-direction: column;
+    gap: p2r(2);
+
+    .user-name {
+      font-weight: 500;
+      color: var(--base-12);
+    }
+
+    .user-email {
+      font-size: p2r(11);
+      color: var(--base-7);
+    }
+  }
+}

@@ -1,0 +1,35 @@
+<sh-table
+  [loading]="isLoading()"
+  [data]="users()"
+  (dataChange)="users.set($event)"
+  [variant]="variant()"
+  aria-label="User Management Configuration Table">
+  <button shButton actionbar class="small primary" (click)="toggleLoading()">
+    <sh-icon>spinner</sh-icon>
+    Toggle Loading
+  </button>
+  <button shButton actionbar class="small flat" (click)="resetData()">
+    <sh-icon>arrow-counter-clockwise</sh-icon>
+    Reset Data
+  </button>
+
+  <sh-table-content [columns]="columns()" [data]="users()" />
+
+  <!-- Custom User Column Template -->
+  <ng-template #nameTemplate let-row>
+    <div class="user-cell">
+      <span class="user-name">{{ row.name }}</span>
+      <span class="user-email">{{ row.email }}</span>
+    </div>
+  </ng-template>
+
+  <!-- Custom Actions Column Template -->
+  <ng-template #actionsTemplate let-row>
+    <button shButton class="small text primary" (click)="editUser(row)" title="Edit user">
+      <sh-icon>pencil-simple</sh-icon>
+    </button>
+    <button shButton class="small text error" (click)="deleteUser(row.id)" title="Delete user">
+      <sh-icon>trash</sh-icon>
+    </button>
+  </ng-template>
+</sh-table>

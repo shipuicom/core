@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
+import { ShipTabs } from '@ship-ui/core/ship-tabs';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
+import { Highlight } from '../../previewer/highlight/highlight';
 import { BaseTable } from './examples/base-table/base-table';
 import { MultiStickyTable } from './examples/multi-sticky-table/multi-sticky-table';
 import { MultiTableHeader } from './examples/multi-table-header/multi-table-header';
@@ -9,6 +11,7 @@ import { ResizingTable } from './examples/resizing-table/resizing-table';
 import { SortingTable } from './examples/sorting-table/sorting-table';
 import { ToggleRowTable } from './examples/toggle-row-table/toggle-row-table';
 import { FullFeaturedTable } from './examples/full-featured-table/full-featured-table';
+import { ConfigTable } from './examples/config-table/config-table';
 
 export interface PeriodicElement {
   name: string;
@@ -46,6 +49,7 @@ type Column = Columns[number];
   imports: [
     PropertyViewer,
     Previewer,
+    Highlight,
     MultiStickyTable,
     BaseTable,
     ResizingTable,
@@ -54,12 +58,35 @@ type Column = Columns[number];
     SortingTable,
     FullFeaturedTable,
     ShipButtonGroup,
+    ShipTabs,
+    ConfigTable,
   ],
   templateUrl: './tables.html',
   styleUrl: './tables.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class Tables {
+  activeTab = signal<'markup' | 'config'>('markup');
+
+  configTableHtml = `<sh-table [data]="data()">
+  <sh-table-content [columns]="columns" [data]="data()" />
+</sh-table>`;
+
+  configTableTs = `import { ShipTable, ShipTableColumn, ShipTableContent } from '@ship-ui/core/ship-table';
+
+// 1. Define column configurations
+columns: ShipTableColumn[] = [
+  { id: 'id', header: 'ID', type: 'number' },
+  { id: 'name', header: 'Name', type: 'string' },
+  { id: 'joined', header: 'Joined Date', type: 'date' }
+];
+
+// 2. Supply row data signal
+data = signal([
+  { id: 1, name: 'Alice', joined: '2026-01-10T10:00:00' },
+  { id: 2, name: 'Bob', joined: '2026-05-15T14:30:00' }
+]);`;
+
   type = signal<'type-a' | 'type-b'>('type-a');
   displayedColumns = signal<Columns>(COLUMNS);
   withStickyColumns = computed(() => (this.displayedColumns() as any).concat(['hi', 'end']));

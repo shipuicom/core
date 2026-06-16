@@ -1,76 +1,10 @@
 <h1>Table</h1>
 <!-- @keywords: table, grid, data, rows, columns, sort, pagination -->
 
-<app-property-viewer>
-  <section>
-    <h4>Data & Loading</h4>
-    <p>
-      Provide data via
-      <code>[data]</code>
-      and toggle a loading state using the
-      <code>loading</code>
-      attribute.
-    </p>
-  </section>
-
-  <section>
-    <h4>Sorting</h4>
-    <p>
-      Enable sorting by applying
-      <code>shSort</code>
-      to header cells. Track the active column with
-      <code>sortByColumn</code>
-      (two-way bindable).
-    </p>
-  </section>
-
-  <section>
-    <h4>Resizing</h4>
-    <p>
-      Apply the
-      <code>shResize</code>
-      directive to header cells to allow column width adjustment. Available inputs:
-      <code>resizable</code>
-      ,
-      <code>minWidth</code>
-      , and
-      <code>maxWidth</code>
-      .
-    </p>
-  </section>
-
-  <section>
-    <h4>Sticky Columns</h4>
-    <p>
-      Use the
-      <code>shStickyColumns</code>
-      attribute (
-      <b>start</b>
-      or
-      <b>end</b>
-      ) or apply
-      <code>.sticky</code>
-      /
-      <code>.sticky-end</code>
-      classes to header cells to pin columns.
-    </p>
-  </section>
-
-  <section>
-    <h4>Column Sizing</h4>
-    <p>
-      Use the
-      <code>size</code>
-      attribute on
-      <code>&lt;th&gt;</code>
-      elements to set initial or fixed widths (e.g.,
-      <code>size="1fr"</code>
-      ,
-      <code>size="200px"</code>
-      ).
-    </p>
-  </section>
-</app-property-viewer>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="markup">Markup-based</button>
+  <button value="config">Configuration-based</button>
+</sh-tabs>
 
 <div class="controls">
   <sh-button-group [(value)]="type">
@@ -79,33 +13,178 @@
   </sh-button-group>
 </div>
 
-<app-previewer
-  class="no-space"
-  path="/tables/examples/full-featured-table/full-featured-table"
-  title="Full Featured Table">
-  <full-featured-table class="example" [variant]="type()" />
-</app-previewer>
+@let _activeTab = activeTab();
 
-<app-previewer path="/tables/examples/base-table/base-table" title="Basic Table">
-  <base-table class="example" [variant]="type()" />
-</app-previewer>
+@if (_activeTab === 'markup') {
+  <app-property-viewer>
+    <section>
+      <h4>Data & Loading</h4>
+      <p>
+        Provide data via
+        <code>[data]</code>
+        and toggle a loading state using the
+        <code>loading</code>
+        attribute.
+      </p>
+    </section>
 
-<app-previewer path="/tables/examples/toggle-row-table/toggle-row-table" title="Toggle Row Table">
-  <toggle-row-table class="example" [variant]="type()" />
-</app-previewer>
+    <section>
+      <h4>Sorting</h4>
+      <p>
+        Enable sorting by applying
+        <code>shSort</code>
+        to header cells. Track the active column with
+        <code>sortByColumn</code>
+        (two-way bindable).
+      </p>
+    </section>
 
-<app-previewer path="/tables/examples/multi-sticky-table/multi-sticky-table" title="Multi Sticky Columns">
-  <multi-sticky-table class="example" [variant]="type()" />
-</app-previewer>
+    <section>
+      <h4>Resizing</h4>
+      <p>
+        Apply the
+        <code>shResize</code>
+        directive to header cells to allow column width adjustment. Available inputs:
+        <code>resizable</code>
+        ,
+        <code>minWidth</code>
+        , and
+        <code>maxWidth</code>
+        .
+      </p>
+    </section>
 
-<app-previewer path="/tables/examples/resizing-table/resizing-table" title="Resizing Table">
-  <resizing-table class="example" [variant]="type()" />
-</app-previewer>
+    <section>
+      <h4>Sticky Columns</h4>
+      <p>
+        Use the
+        <code>shStickyColumns</code>
+        attribute (
+        <b>start</b>
+        or
+        <b>end</b>
+        ) or apply
+        <code>.sticky</code>
+        /
+        <code>.sticky-end</code>
+        classes to header cells to pin columns.
+      </p>
+    </section>
 
-<app-previewer path="/tables/examples/multi-table-header/multi-table-header" title="Multi Table Header">
-  <multi-table-header class="example" [variant]="type()" />
-</app-previewer>
+    <section>
+      <h4>Column Sizing</h4>
+      <p>
+        Use the
+        <code>size</code>
+        attribute on
+        <code>&lt;th&gt;</code>
+        elements to set initial or fixed widths (e.g.,
+        <code>size="1fr"</code>
+        ,
+        <code>size="200px"</code>
+        ).
+      </p>
+    </section>
+  </app-property-viewer>
 
-<app-previewer path="/tables/examples/sorting-table/sorting-table" title="Sorting Table">
-  <sorting-table class="example" [variant]="type()" />
-</app-previewer>
+  <app-previewer
+    class="no-space"
+    path="/tables/examples/full-featured-table/full-featured-table"
+    title="Full Featured Table">
+    <full-featured-table class="example" [variant]="type()" />
+  </app-previewer>
+
+  <app-previewer path="/tables/examples/base-table/base-table" title="Basic Table">
+    <base-table class="example" [variant]="type()" />
+  </app-previewer>
+
+  <app-previewer path="/tables/examples/toggle-row-table/toggle-row-table" title="Toggle Row Table">
+    <toggle-row-table class="example" [variant]="type()" />
+  </app-previewer>
+
+  <app-previewer path="/tables/examples/multi-sticky-table/multi-sticky-table" title="Multi Sticky Columns">
+    <multi-sticky-table class="example" [variant]="type()" />
+  </app-previewer>
+
+  <app-previewer path="/tables/examples/resizing-table/resizing-table" title="Resizing Table">
+    <resizing-table class="example" [variant]="type()" />
+  </app-previewer>
+
+  <app-previewer path="/tables/examples/multi-table-header/multi-table-header" title="Multi Table Header">
+    <multi-table-header class="example" [variant]="type()" />
+  </app-previewer>
+
+  <app-previewer path="/tables/examples/sorting-table/sorting-table" title="Sorting Table">
+    <sorting-table class="example" [variant]="type()" />
+  </app-previewer>
+} @else if (_activeTab === 'config') {
+  <app-property-viewer>
+    <section>
+      <h4>Table Content Component</h4>
+      <p>
+        Project the
+        <code>&lt;sh-table-content&gt;</code>
+        component inside
+        <code>&lt;sh-table&gt;</code>
+        to automatically generate columns, headers, and cell rows based on a configuration schema.
+      </p>
+    </section>
+
+    <section>
+      <h4>Column Config Types</h4>
+      <p>
+        Define column schemas using
+        <code>ShipTableColumn</code>
+        objects. Set the
+        <code>type</code>
+        field to enable out-of-the-box sorting and formatting for:
+        <code>'string'</code>, <code>'number'</code>, <code>'date'</code>, <code>'boolean'</code>, and <code>'badge'</code>.
+      </p>
+    </section>
+
+    <section>
+      <h4>Formatting & Rendering</h4>
+      <p>
+        Customize cell rendering dynamically. Provide a
+        <code>cell</code>
+        function for inline string values, a
+        <code>format</code>
+        function for formatting value keys, or a
+        <code>TemplateRef</code>
+        via
+        <code>cellTemplate</code>
+        for complete HTML markup override.
+      </p>
+    </section>
+
+    <section>
+      <h4>Features & Stickiness</h4>
+      <p>
+        Support features like Sorting and Resizing directly via configuration attributes:
+        <code>sortable</code>, <code>resizable</code>, <code>minWidth</code>, <code>maxWidth</code>, and <code>sticky: 'start' | 'end'</code>.
+      </p>
+    </section>
+
+    <section>
+      <h4>Accessibility (WCAG)</h4>
+      <p>
+        Support screen reader navigation and labeling. Bind an accessible name to the table container with
+        <code>[aria-label]</code> or <code>[aria-labelledby]</code>. Identify columns uniquely by setting
+        <code>rowHeader: true</code> in the column configuration, which renders cell rows using the semantic
+        <code>role="rowheader"</code> instead of <code>role="cell"</code>.
+      </p>
+    </section>
+  </app-property-viewer>
+
+  <h3>Basic Usage</h3>
+  <app-highlight lang="html" [content]="configTableHtml" />
+  <app-highlight lang="ts" [content]="configTableTs" />
+
+  <app-previewer
+    class="no-space"
+    path="/tables/examples/config-table/config-table"
+    title="Configuration-based Table">
+    <config-table class="example" [variant]="type()" />
+  </app-previewer>
+}
+
