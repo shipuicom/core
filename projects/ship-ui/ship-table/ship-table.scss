@@ -341,11 +341,11 @@ $shipTable: true !default;
         &:after {
           content: '';
           position: absolute;
-          top: p2r(4);
-          bottom: p2r(4);
+          top: p2r(5);
+          bottom: p2r(5);
           border-radius: p2r(2);
           right: p2r(5);
-          width: p2r(2);
+          width: p2r(3);
           background-color: var(--base-4);
           transition:
             width 150ms ease,
@@ -354,16 +354,16 @@ $shipTable: true !default;
         }
 
         &:hover:after {
-          width: p2r(4);
-          right: p2r(4);
+          width: p2r(5);
+          right: p2r(3);
           background-color: var(--primary-8);
         }
       }
 
       &.resizing {
         .sh-resizer:after {
-          width: p2r(4);
-          right: p2r(4);
+          width: p2r(5);
+          right: p2r(3);
           background-color: var(--primary-8);
         }
       }
