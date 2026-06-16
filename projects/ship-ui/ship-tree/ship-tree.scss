@@ -40,13 +40,13 @@ $shipTree: true !default;
     .sh-tree-node {
       display: flex;
       align-items: center;
-      height: 32px;
+      height: p2r(32);
       position: relative;
       cursor: pointer;
       user-select: none;
       color: var(--tree-color);
       font: var(--paragraph-20, 14px sans-serif);
-      gap: 6px;
+      gap: p2r(6);
       transition: background 120ms ease;
       padding-left: calc(var(--tree-padding-left) + var(--tree-depth, 0) * var(--tree-indent-step));
       padding-right: var(--tree-padding-right);
@@ -82,7 +82,7 @@ $shipTree: true !default;
         align-items: center;
         justify-content: center;
         width: var(--tree-indent-step);
-        height: 16px;
+        height: p2r(16);
         z-index: 2;
 
         &:has(+ .node-icon) {
@@ -115,8 +115,8 @@ $shipTree: true !default;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 24px;
-            height: 24px;
+            width: p2r(24);
+            height: p2r(24);
             z-index: 1;
           }
 
@@ -218,8 +218,8 @@ $shipTree: true !default;
       }
 
       .status-badge {
-        font-size: 10px;
-        padding: 2px 6px;
+        font-size: p2r(10);
+        padding: p2r(2 6);
         border-radius: var(--shape-1, 4px);
         text-transform: uppercase;
         font-weight: 600;
@@ -241,7 +241,7 @@ $shipTree: true !default;
       .delete-btn {
         background: none;
         border: none;
-        padding: 2px;
+        padding: p2r(2);
         cursor: pointer;
         color: var(--base-9);
         border-radius: var(--shape-1, 4px);
@@ -263,7 +263,7 @@ $shipTree: true !default;
     }
 
     .empty-state {
-      padding: 32px;
+      padding: p2r(32);
       text-align: center;
       color: var(--tree-caret-color);
       font: var(--paragraph-20, 14px sans-serif);

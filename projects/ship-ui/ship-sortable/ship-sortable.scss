@@ -50,12 +50,29 @@ $shipSortable: true !default;
       [draggable] {
         transform: none !important;
         transition: none !important;
+        z-index: auto;
+      }
+
+      .sortable-ghost {
+        z-index: 0 !important;
+
+        // Suppress indicators on the ghost — pseudo-elements inherit its
+        // opacity and sit below adjacent nodes, causing visual artifacts.
+        &.drop-before::before,
+        &.drop-after::after {
+          display: none !important;
+        }
+
+        &.drop-inside {
+          outline: none !important;
+          background: inherit !important;
+        }
       }
 
       .drop-inside {
         background: var(--primary-3) !important;
         outline: 2px solid var(--primary-8) !important;
-        outline-offset: -2px;
+        outline-offset: p2r(-2);
         border-radius: var(--shape-1, 4px);
 
         .node-icon,
@@ -70,10 +87,10 @@ $shipSortable: true !default;
         &::before {
           content: '';
           position: absolute;
-          top: -2px;
-          left: calc(var(--tree-padding-left, 12px) + var(--tree-depth, 0) * var(--tree-indent-step, 12px));
+          top: p2r(-3);
+          left: calc(var(--tree-padding-left, 12px) + var(--tree-depth, 0) * var(--tree-indent-step, 12px) + #{p2r(6)});
           right: var(--tree-padding-right, 6px);
-          height: 6px;
+          height: p2r(6);
           background-image:
             radial-gradient(circle at 3px 3px, var(--primary-8) 3px, transparent 3px),
             linear-gradient(to right, var(--primary-8), var(--primary-8));
@@ -95,10 +112,10 @@ $shipSortable: true !default;
         &::after {
           content: '';
           position: absolute;
-          bottom: -2px;
-          left: calc(var(--tree-padding-left, 12px) + var(--tree-depth, 0) * var(--tree-indent-step, 12px));
+          bottom: p2r(-3);
+          left: calc(var(--tree-padding-left, 12px) + var(--tree-depth, 0) * var(--tree-indent-step, 12px) + #{p2r(6)});
           right: var(--tree-padding-right, 6px);
-          height: 6px;
+          height: p2r(6);
           background-image:
             radial-gradient(circle at 3px 3px, var(--primary-8) 3px, transparent 3px),
             linear-gradient(to right, var(--primary-8), var(--primary-8));
