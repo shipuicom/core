@@ -18,28 +18,19 @@ const PackageJson = struct {
     libraryIcons: ?[][]const u8 = null,
 };
 
-pub fn main() !void {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const alloc = arena.allocator();
+pub fn main(init: std.process.Init) !void {
+    const alloc = init.arena.allocator();
 
-    var arg_it = try std.process.argsWithAllocator(alloc);
-    defer arg_it.deinit();
+    const args = try init.minimal.args.toSlice(alloc);
 
-    _ = arg_it.skip(); // skip executable name
-
-    const target_dir = arg_it.next() orelse {
+    if (args.len < 4) {
         std.debug.print("Usage: scanner <target_dir> <shipui_dir> <consumer_dir>\n", .{});
         std.process.exit(1);
-    };
-    const shipui_dir = arg_it.next() orelse {
-        std.debug.print("Usage: scanner <target_dir> <shipui_dir> <consumer_dir>\n", .{});
-        std.process.exit(1);
-    };
-    const consumer_dir = arg_it.next() orelse {
-        std.debug.print("Usage: scanner <target_dir> <shipui_dir> <consumer_dir>\n", .{});
-        std.process.exit(1);
-    };
+    }
+
+    const target_dir = args[1];
+    const shipui_dir = args[2];
+    const consumer_dir = args[3];
 
     var unique_icons = std.StringHashMap(void).init(alloc);
 

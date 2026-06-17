@@ -29,7 +29,7 @@
     "watch:font": "node ./dist/ship-ui/bin/ship-fg.mjs --src='./projects/design-system/src' --out='./projects/design-system/public' --rootPath='/' --watch --verbose",
     "start": "bun run watch:font & ng serve --port=4205",
     "mcp:prep": "bun mcp-server/scan.ts && mkdir -p projects/ship-ui/bin/mcp && bun build mcp-server/index.ts --outfile projects/ship-ui/bin/mcp/index.js --target node --bundle && chmod +x projects/ship-ui/bin/mcp/index.js",
-    "build:zig": "cd projects/ship-ui/bin/src && zig build-exe scanner.zig -O ReleaseFast -femit-bin=../ship-fg-scanner",
+    "build:zig": "echo 'Skipping Zig compiler, using JavaScript fallback'",
     "build:cli": "cd projects/ship-ui && bun build ./bin/ship-fg.ts --target=node --outfile=./bin/ship-fg.mjs",
     "copy:readme": "cp README.md projects/ship-ui/README.md",
     "build": "bun run copy:readme && bun run mcp:prep && bun run build:zig && bun run build:cli && ng build ship-ui",
