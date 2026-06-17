@@ -211,6 +211,10 @@ export const routes: Routes = [
         path: 'kbds',
         loadComponent: () => import('./ship/kbds/kbds'),
       },
+      {
+        path: 'editors',
+        loadComponent: () => import('./ship/editors/editors'),
+      },
     ],
   },
 ];

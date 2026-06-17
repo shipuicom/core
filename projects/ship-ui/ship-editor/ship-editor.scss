@@ -1,0 +1,734 @@
+@use 'helpers' as *;
+
+$shipEditor: true !default;
+
+@if $shipEditor == true {
+  sh-editor {
+    --editor-bg: var(--base-1);
+    --editor-code-bg: var(--base-2);
+    --editor-border-color: var(--base-4);
+    --editor-toolbar-bg: rgb(from var(--base-1) r g b / 70%);
+    --editor-toolbar-border: var(--base-4);
+    --editor-btn-hover: var(--base-3);
+    --editor-btn-active-bg: var(--primary-3);
+    --editor-btn-active-c: var(--primary-11);
+    --editor-footer-bg: var(--base-2);
+    --editor-p: #{p2r(16)} #{p2r(20)};
+    --editor-min-h: #{p2r(220)};
+    --editor-border-focus: var(--primary-8);
+    --editor-shadow-focus: 0 0 0 3px var(--primary-3);
+
+    display: block;
+    width: 100%;
+    margin-bottom: #{p2r(16)};
+
+    .sh-editor-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--editor-bg);
+      border: var(--border-10);
+      border-color: var(--editor-border-color);
+      border-radius: var(--shape-3);
+      box-shadow: var(--box-shadow-10);
+      overflow: hidden;
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+
+    // Focused state
+    &.sh-editor-focused .sh-editor-container {
+      border-color: var(--editor-border-focus);
+      box-shadow: var(--editor-shadow-focus);
+    }
+
+    // Readonly state
+    &.sh-editor-readonly {
+      .sh-editor-content {
+        cursor: not-allowed;
+      }
+    }
+
+    // Sticky Toolbar
+    .sh-editor-toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: #{p2r(4)};
+      padding: #{p2r(6)} #{p2r(8)};
+      background-color: var(--editor-toolbar-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--editor-toolbar-border);
+      border-top-left-radius: calc(var(--shape-3) - 1px);
+      border-top-right-radius: calc(var(--shape-3) - 1px);
+    }
+
+    // Toolbar Button Groups
+    .sh-editor-toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: #{p2r(2)};
+      padding-right: #{p2r(6)};
+      border-right: 1px solid var(--editor-toolbar-border);
+
+      &:last-child,
+      &.view-toggle {
+        border-right: none;
+      }
+    }
+
+    // Toolbar Buttons
+    .sh-editor-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: #{p2r(28)};
+      height: #{p2r(28)};
+      padding: 0;
+      background: transparent;
+      border: none;
+      border-radius: var(--shape-1);
+      color: var(--base-11);
+      cursor: pointer;
+      font-size: #{p2r(16)};
+      transition: all 0.15s ease;
+
+      &:hover:not(:disabled) {
+        background-color: var(--editor-btn-hover);
+        color: var(--base-12);
+      }
+
+      &:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+
+      &.active {
+        background-color: var(--editor-btn-active-bg);
+        color: var(--editor-btn-active-c);
+        font-weight: bold;
+      }
+
+      i {
+        font-style: normal;
+        line-height: 1;
+      }
+    }
+
+    // Editor Body & Content
+    .sh-editor-body {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-height: var(--editor-min-h);
+    }
+
+    .sh-editor-content {
+      flex: 1 1 auto;
+      padding: var(--editor-p);
+      min-height: var(--editor-min-h);
+      outline: none;
+      color: var(--base-12);
+      font: var(--paragraph-20);
+      line-height: 1.6;
+      word-break: break-word;
+
+      // Typography Styles Inside Editor
+      p {
+        margin-top: 0;
+        margin-bottom: #{p2r(12)};
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      h1,
+      h2,
+      h3 {
+        color: var(--base-12);
+        font-weight: 700;
+        margin-top: #{p2r(16)};
+        margin-bottom: #{p2r(8)};
+        line-height: 1.3;
+      }
+
+      h1 {
+        font: var(--title-30B);
+      }
+      h2 {
+        font: var(--title-20B);
+      }
+      h3 {
+        font: var(--title-10B);
+      }
+
+      blockquote {
+        margin: #{p2r(16)} 0;
+        padding: #{p2r(8)} #{p2r(16)};
+        border-left: 4px solid var(--primary-8);
+        background-color: var(--base-2);
+        color: var(--base-11);
+        border-radius: 0 var(--shape-2) var(--shape-2) 0;
+        font-style: italic;
+      }
+
+      pre {
+        background-color: var(--editor-code-bg);
+        border-radius: var(--shape-2);
+        padding: #{p2r(12)} #{p2r(16)};
+        margin: #{p2r(16)} 0;
+        overflow-x: auto;
+
+        code {
+          font: var(--code-20);
+          background: transparent;
+          padding: 0;
+          border-radius: 0;
+        }
+      }
+
+      code {
+        font: var(--code-20);
+        background-color: var(--base-2);
+        padding: #{p2r(2)} #{p2r(6)};
+        border-radius: var(--shape-1);
+        color: var(--primary-11);
+      }
+
+      ul,
+      ol {
+        margin-top: 0;
+        margin-bottom: #{p2r(16)};
+        padding-left: #{p2r(24)};
+      }
+
+      li {
+        margin-bottom: #{p2r(4)};
+      }
+
+      hr {
+        border: none;
+        border-top: 1px solid var(--editor-border-color);
+        margin: #{p2r(24)} 0;
+      }
+
+      img {
+        height: auto;
+        max-width: 100%;
+        transition: all 0.2s ease;
+        border: var(--border-10);
+        border-color: var(--base-3);
+        cursor: pointer;
+
+        &:hover {
+          outline: 2px solid var(--primary-7);
+        }
+
+        &:focus {
+          outline: 2px solid var(--primary-8);
+        }
+
+        &.sh-editor-img-content {
+          display: block;
+          margin: #{p2r(16)} auto;
+          box-sizing: border-box;
+          border-radius: var(--shape-2);
+
+          &.sh-editor-img-size-small {
+            width: #{p2r(240)};
+            max-width: 100% !important;
+          }
+          &.sh-editor-img-size-medium {
+            width: #{p2r(480)};
+            max-width: 100% !important;
+          }
+          &.sh-editor-img-size-large {
+            width: calc(100% - #{p2r(48)});
+            max-width: 100% !important;
+          }
+          &:not([class*="sh-editor-img-size-"]) {
+            width: calc(100% - #{p2r(48)});
+            max-width: 100% !important;
+          }
+        }
+
+        &.sh-editor-img-theater {
+          display: block;
+          width: calc(100% + #{p2r(40)});
+          max-width: none !important;
+          margin: #{p2r(16)} #{p2r(-20)};
+          padding: 0;
+          border-radius: 0;
+          border-left: none;
+          border-right: none;
+        }
+
+        &.sh-editor-img-float {
+          float: left;
+          margin: #{p2r(8)} #{p2r(16)} #{p2r(8)} 0;
+          border-radius: var(--shape-2);
+
+          &.sh-editor-img-size-auto {
+            width: auto;
+            max-width: 100% !important;
+          }
+          &.sh-editor-img-size-small {
+            width: #{p2r(240)};
+            max-width: 100% !important;
+          }
+          &.sh-editor-img-size-medium {
+            width: #{p2r(480)};
+            max-width: 100% !important;
+          }
+          &.sh-editor-img-size-large {
+            width: 100%;
+            max-width: 100% !important;
+          }
+          &:not([class*="sh-editor-img-size-"]) {
+            width: auto;
+            max-width: 100% !important;
+          }
+        }
+
+        &.sh-editor-img-custom, &.sh-editor-img-auto {
+          display: inline-block;
+          margin: #{p2r(12)} 0;
+          border-radius: var(--shape-2);
+
+          &.sh-editor-img-size-auto {
+            width: auto;
+            max-width: 100% !important;
+          }
+          &.sh-editor-img-size-small {
+            width: #{p2r(240)};
+            max-width: 100% !important;
+          }
+          &.sh-editor-img-size-medium {
+            width: #{p2r(480)};
+            max-width: 100% !important;
+          }
+          &.sh-editor-img-size-large {
+            width: 100%;
+            max-width: 100% !important;
+          }
+          &:not([class*="sh-editor-img-size-"]) {
+            width: auto;
+            max-width: 100% !important;
+          }
+        }
+      }
+
+      a {
+        color: var(--primary-9);
+        text-decoration: underline;
+        cursor: pointer;
+
+        &:hover {
+          color: var(--primary-11);
+        }
+      }
+
+      // Placeholder implementation
+      &:empty:before {
+        content: attr(placeholder);
+        color: var(--base-8);
+        font-style: italic;
+        pointer-events: none;
+        display: block;
+      }
+
+      p {
+        position: relative;
+      }
+
+      &.has-slash-commands p.sh-editor-active-block:empty::before,
+      &.has-slash-commands p.sh-editor-active-block:has(> br:only-child)::before {
+        content: "Type '/' for commands...";
+        position: absolute;
+        left: 0;
+        top: 0;
+        pointer-events: none;
+        color: var(--base-6);
+        font-style: normal;
+        font-weight: normal;
+        opacity: 0.6;
+      }
+    }
+
+    // Code Editor / Source View
+    .sh-editor-code {
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: var(--editor-min-h);
+      padding: var(--editor-p);
+      background-color: var(--editor-code-bg);
+      color: var(--base-12);
+      font: var(--code-20);
+      border: none;
+      resize: vertical;
+      outline: none;
+      font-family: monospace;
+      line-height: 1.5;
+    }
+
+    // Footer / Word Counters
+    .sh-editor-footer {
+      display: flex;
+      align-items: center;
+      padding: #{p2r(6)} #{p2r(12)};
+      background-color: var(--editor-footer-bg);
+      border-top: 1px solid var(--editor-border-color);
+      font: var(--paragraph-10);
+      color: var(--base-8);
+      border-bottom-left-radius: calc(var(--shape-3) - 1px);
+      border-bottom-right-radius: calc(var(--shape-3) - 1px);
+    }
+
+    // Modals
+    .sh-editor-modal {
+      position: absolute;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: #{p2r(16)};
+    }
+
+    .sh-editor-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background-color: rgb(from var(--base-1) r g b / 40%);
+      backdrop-filter: blur(4px);
+    }
+
+    .sh-editor-modal-content {
+      position: relative;
+      z-index: 101;
+      width: 100%;
+      max-width: #{p2r(360)};
+      padding: #{p2r(20)};
+      background-color: var(--base-1);
+      border: var(--border-10);
+      border-color: var(--base-4);
+      border-radius: var(--shape-3);
+      box-shadow: var(--box-shadow-40);
+
+      h4 {
+        margin-top: 0;
+        margin-bottom: #{p2r(12)};
+        font: var(--title-10B);
+        color: var(--base-12);
+      }
+    }
+
+    .sh-editor-input {
+      width: 100%;
+      padding: #{p2r(8)} #{p2r(12)};
+      background-color: var(--base-2);
+      border: var(--border-10);
+      border-color: var(--base-4);
+      border-radius: var(--shape-2);
+      color: var(--base-12);
+      font: var(--paragraph-20);
+      outline: none;
+      margin-bottom: #{p2r(16)};
+      transition: border-color 0.15s ease;
+
+      &:focus {
+        border-color: var(--primary-8);
+      }
+    }
+
+    .sh-editor-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: #{p2r(8)};
+    }
+
+    .sh-editor-modal-btn {
+      padding: #{p2r(6)} #{p2r(12)};
+      border-radius: var(--shape-2);
+      font: var(--paragraph-20);
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+
+      &.cancel {
+        background-color: transparent;
+        color: var(--base-11);
+        &:hover {
+          background-color: var(--base-3);
+        }
+      }
+
+      &.confirm {
+        background-color: var(--primary-9);
+        color: var(--primary-1);
+        &:hover {
+          background-color: var(--primary-10);
+        }
+      }
+    }
+
+    // Image Layout Options Floating Toolbar
+    .sh-editor-img-toolbar {
+      position: absolute;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: #{p2r(4)};
+      padding: #{p2r(4)} #{p2r(6)};
+      background-color: rgb(from var(--base-1) r g b / 85%);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: var(--border-10);
+      border-color: var(--base-4);
+      border-radius: var(--shape-2);
+      box-shadow: var(--box-shadow-20);
+      pointer-events: auto;
+      transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
+    }
+
+    .sh-editor-img-toolbar-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: #{p2r(4)} #{p2r(8)};
+      background: transparent;
+      border: none;
+      border-radius: var(--shape-1);
+      color: var(--base-11);
+      cursor: pointer;
+      font: var(--paragraph-10);
+      font-weight: 500;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background-color: var(--editor-btn-hover);
+        color: var(--base-12);
+      }
+
+      &.active {
+        background-color: var(--editor-btn-active-bg);
+        color: var(--editor-btn-active-c);
+      }
+
+      &.danger {
+        color: var(--error-9);
+        &:hover {
+          background-color: var(--error-3);
+          color: var(--error-11);
+        }
+      }
+    }
+
+    .sh-editor-img-toolbar-divider {
+      width: 1px;
+      height: #{p2r(16)};
+      background-color: var(--editor-toolbar-border);
+      margin: 0 #{p2r(2)};
+    }
+
+    .sh-editor-upload-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: #{p2r(8)};
+      width: 100%;
+      padding: #{p2r(10)} #{p2r(16)};
+      background-color: var(--base-2);
+      border: 1px dashed var(--editor-border-color);
+      border-radius: var(--shape-2);
+      color: var(--base-11);
+      font: var(--paragraph-20);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-bottom: #{p2r(12)};
+
+      &:hover {
+        background-color: var(--base-3);
+        border-color: var(--primary-7);
+        color: var(--base-12);
+      }
+
+      sh-icon {
+        font-size: #{p2r(18)};
+      }
+    }
+
+    .sh-editor-modal-divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      color: var(--base-8);
+      font: var(--paragraph-10);
+      margin-bottom: #{p2r(12)};
+      width: 100%;
+
+      &::before,
+      &::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid var(--editor-border-color);
+      }
+
+      &:not(:empty)::before {
+        margin-right: #{p2r(8)};
+      }
+
+      &:not(:empty)::after {
+        margin-left: #{p2r(8)};
+      }
+    }
+
+    // Text Style Dropdown
+    .sh-editor-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .sh-editor-dropdown-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: #{p2r(6)};
+      height: #{p2r(28)};
+      padding: 0 #{p2r(8)};
+      background: transparent;
+      border: none;
+      border-radius: var(--shape-1);
+      color: var(--base-11);
+      cursor: pointer;
+      font: var(--paragraph-20);
+      font-weight: 600;
+      transition: all 0.15s ease;
+      outline: none;
+
+      &:hover {
+        background-color: var(--editor-btn-hover);
+        color: var(--base-12);
+      }
+
+      &:focus {
+        outline: 2px solid var(--primary-8);
+      }
+    }
+
+    .sh-editor-dropdown-label {
+      white-space: nowrap;
+    }
+
+    // Slash commands floating menu using sh-menu container
+    // .sh-editor-slash-menu-container {
+    //   position: absolute;
+    //   width: 0;
+    //   height: 0;
+
+    //   .sh-editor-slash-anchor {
+    //     position: absolute;
+    //     width: 1px;
+    //     height: 1px;
+    //     pointer-events: none;
+    //     background: transparent;
+    //   }
+
+    //   // Customize the popover content structure of this menu
+    //   sh-popover {
+    //     position: absolute;
+
+    //     .popover-content {
+    //       width: #{p2r(280)} !important;
+    //       max-height: #{p2r(320)} !important;
+    //       padding: #{p2r(4)} !important;
+    //       border-radius: var(--shape-3) !important;
+    //       box-shadow: var(--box-shadow-30) !important;
+    //       display: flex;
+    //       flex-direction: column;
+    //       gap: #{p2r(2)};
+
+    //       // Glassmorphic styling matching user preferred color scheme
+    //       @media (prefers-color-scheme: dark) {
+    //         background: rgba(30, 30, 30, 0.75) !important;
+    //         backdrop-filter: blur(16px) !important;
+    //         -webkit-backdrop-filter: blur(16px) !important;
+    //         border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    //       }
+    //       @media (prefers-color-scheme: light) {
+    //         background: rgba(255, 255, 255, 0.75) !important;
+    //         backdrop-filter: blur(16px) !important;
+    //         -webkit-backdrop-filter: blur(16px) !important;
+    //         border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    //       }
+    //     }
+    //   }
+    // }
+
+    .sh-editor-slash-item {
+      display: flex;
+      align-items: center;
+      gap: #{p2r(10)};
+      width: 100%;
+      padding: #{p2r(6)} #{p2r(10)};
+      background: transparent;
+      border: none;
+      border-radius: var(--shape-2);
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.1s ease;
+      outline: none;
+
+      &.active,
+      &:hover {
+        background-color: var(--editor-btn-hover);
+
+        .sh-editor-slash-item-icon {
+          background-color: var(--editor-btn-active-bg);
+          color: var(--editor-btn-active-c);
+        }
+      }
+
+      .sh-editor-slash-item-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: #{p2r(28)};
+        height: #{p2r(28)};
+        border-radius: var(--shape-1);
+        background-color: var(--base-3);
+        color: var(--base-11);
+        font-size: #{p2r(16)};
+        transition: all 0.15s ease;
+        flex-shrink: 0;
+      }
+
+      .sh-editor-slash-item-content {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .sh-editor-slash-item-label {
+        font: var(--paragraph-20);
+        font-weight: 600;
+        color: var(--base-12);
+        line-height: 1.2;
+      }
+
+      .sh-editor-slash-item-desc {
+        font: var(--paragraph-10);
+        color: var(--base-8);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: #{p2r(2)};
+      }
+    }
+  }
+}

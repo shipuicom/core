@@ -1,0 +1,22 @@
+@use '../showcase' as *;
+
+:host {
+  @extend %showcase-host;
+}
+
+h3 {
+  margin: p2r(24) 0 p2r(8) 0;
+  font: var(--title-20B);
+}
+
+.language-typescript {
+  display: block;
+  padding: p2r(16);
+  background-color: var(--base-2);
+  border-radius: var(--shape-2);
+  border: var(--border-10);
+  border-color: var(--base-4);
+  font: var(--code-20);
+  color: var(--primary-12);
+  overflow-x: auto;
+}

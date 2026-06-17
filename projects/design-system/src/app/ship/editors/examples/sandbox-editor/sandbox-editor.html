@@ -1,0 +1,99 @@
+<div class="sandbox-container">
+  <div class="sandbox-sidebar">
+    <sh-card class="type-b control-card">
+      <h3>Options</h3>
+
+      <div class="control-group">
+        <label class="control-label">Storage Format</label>
+        <sh-button-group size="small" [value]="selectedFormat()" (valueChange)="onFormatChange($event)">
+          <button value="html">HTML</button>
+          <button value="markdown">Markdown</button>
+          <button value="json">JSON</button>
+        </sh-button-group>
+      </div>
+
+      <div class="control-group inline">
+        <label for="readonly-toggle" class="control-label">Read-Only</label>
+        <sh-toggle id="readonly-toggle" [(checked)]="isReadonly"></sh-toggle>
+      </div>
+
+      <div class="control-group inline">
+        <label for="toolbar-toggle" class="control-label">Show Toolbar</label>
+        <sh-toggle id="toolbar-toggle" [(checked)]="showToolbar"></sh-toggle>
+      </div>
+
+      <div class="control-group inline">
+        <label for="image-upload-toggle" class="control-label">Image Upload</label>
+        <sh-toggle id="image-upload-toggle" [(checked)]="imageUploadEnabled"></sh-toggle>
+      </div>
+
+      @if (showToolbar()) {
+        <div class="control-group-section-title">Toolbar Groups</div>
+
+        <div class="control-group inline">
+          <label for="formats-toggle" class="control-label">Formats</label>
+          <sh-toggle id="formats-toggle" [(checked)]="showFormats"></sh-toggle>
+        </div>
+
+        <div class="control-group inline">
+          <label for="blocks-toggle" class="control-label">Blocks/Headings</label>
+          <sh-toggle id="blocks-toggle" [(checked)]="showBlocks"></sh-toggle>
+        </div>
+
+        <div class="control-group inline">
+          <label for="lists-toggle" class="control-label">Lists</label>
+          <sh-toggle id="lists-toggle" [(checked)]="showLists"></sh-toggle>
+        </div>
+
+        <div class="control-group inline">
+          <label for="align-toggle" class="control-label">Alignments</label>
+          <sh-toggle id="align-toggle" [(checked)]="showAlignments"></sh-toggle>
+        </div>
+
+        <div class="control-group inline">
+          <label for="insert-toggle" class="control-label">Insertions</label>
+          <sh-toggle id="insert-toggle" [(checked)]="showInsertions"></sh-toggle>
+        </div>
+
+        <div class="control-group inline">
+          <label for="history-toggle" class="control-label">History/Code</label>
+          <sh-toggle id="history-toggle" [(checked)]="showHistory"></sh-toggle>
+        </div>
+      }
+    </sh-card>
+  </div>
+
+  <div class="sandbox-editor-wrapper">
+    <sh-editor
+      [(value)]="editorValue"
+      [format]="selectedFormat()"
+      [readonly]="isReadonly()"
+      [toolbar]="showToolbar()"
+      [showFormats]="showFormats()"
+      [showBlocks]="showBlocks()"
+      [showLists]="showLists()"
+      [showAlignments]="showAlignments()"
+      [showInsertions]="showInsertions()"
+      [showHistory]="showHistory()"
+      [customCommands]="customEditorCommands()"
+      [imageUploadEnabled]="imageUploadEnabled()"
+      placeholder="Start writing your premium content here...">
+      <!-- Projected custom toolbar action -->
+      <button type="button" class="sh-editor-btn" (click)="customAction()" shTooltip="Projected Action (Star)">
+        <sh-icon>star</sh-icon>
+      </button>
+    </sh-editor>
+
+    <sh-card class="type-b output-card">
+      <div class="output-header">
+        <h3>Database Output</h3>
+        <button shButton variant="outlined" size="small" (click)="copyToClipboard()">
+          <sh-icon>copy</sh-icon>
+          Copy
+        </button>
+      </div>
+      <p class="output-desc">This is exactly what would be saved in your database:</p>
+      <pre class="serialized-preview"><code>{{ serializedOutput() }}</code></pre>
+    </sh-card>
+  </div>
+</div>

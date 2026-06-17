@@ -1,0 +1,415 @@
+<div class="sh-editor-container">
+  <!-- Editor Toolbar -->
+  @if (toolbar() && !readonly()) {
+    <div
+      class="sh-editor-toolbar"
+      role="toolbar"
+      aria-label="Rich Text Editor Formatting Toolbar"
+      (keydown)="onToolbarKeyDown($event)"
+      (focusin)="onToolbarFocusIn($event)">
+      <!-- Text formatting group -->
+      @if (showFormats()) {
+        <div class="sh-editor-toolbar-group" role="group" aria-label="Text formatting">
+          <button
+            type="button"
+            class="sh-editor-btn"
+            [class.active]="isBold()"
+            [attr.aria-pressed]="isBold()"
+            (click)="formatText('bold')"
+            shTooltip="Bold">
+            <sh-icon>text-b</sh-icon>
+          </button>
+          <button
+            type="button"
+            class="sh-editor-btn"
+            [class.active]="isItalic()"
+            [attr.aria-pressed]="isItalic()"
+            (click)="formatText('italic')"
+            shTooltip="Italic">
+            <sh-icon>text-italic</sh-icon>
+          </button>
+          <button
+            type="button"
+            class="sh-editor-btn"
+            [class.active]="isUnderline()"
+            [attr.aria-pressed]="isUnderline()"
+            (click)="formatText('underline')"
+            shTooltip="Underline">
+            <sh-icon>text-underline</sh-icon>
+          </button>
+          <button
+            type="button"
+            class="sh-editor-btn"
+            [class.active]="isStrike()"
+            [attr.aria-pressed]="isStrike()"
+            (click)="formatText('strikeThrough')"
+            shTooltip="Strikethrough">
+            <sh-icon>text-strikethrough</sh-icon>
+          </button>
+          <button type="button" class="sh-editor-btn" (click)="formatText('removeFormat')" shTooltip="Clear Formatting">
+            <sh-icon>eraser</sh-icon>
+          </button>
+        </div>
+      }
+
+      <!-- Headings & Block types Dropdown -->
+      @if (showBlocks()) {
+        <div class="sh-editor-toolbar-group" role="group" aria-label="Text styles">
+          <sh-menu [(isOpen)]="showBlockMenu" [openIndicator]="true" class="sh-editor-dropdown">
+            <button trigger class="sh-editor-dropdown-trigger" aria-label="Text Style" shTooltip="Text Style">
+              <span class="sh-editor-dropdown-label">{{ getBlockLabel() }}</span>
+            </button>
+            <div menu>
+              <button (click)="selectBlockType('p')" [class.active]="activeBlock() === 'p'">
+                <sh-icon>paragraph</sh-icon>
+                <span>Normal text</span>
+              </button>
+              <button (click)="selectBlockType('h1')" [class.active]="activeBlock() === 'h1'">
+                <sh-icon>text-h-one</sh-icon>
+                <span>Heading 1</span>
+              </button>
+              <button (click)="selectBlockType('h2')" [class.active]="activeBlock() === 'h2'">
+                <sh-icon>text-h-two</sh-icon>
+                <span>Heading 2</span>
+              </button>
+              <button (click)="selectBlockType('h3')" [class.active]="activeBlock() === 'h3'">
+                <sh-icon>text-h-three</sh-icon>
+                <span>Heading 3</span>
+              </button>
+              <button (click)="selectBlockType('blockquote')" [class.active]="activeBlock() === 'blockquote'">
+                <sh-icon>quotes</sh-icon>
+                <span>Quote</span>
+              </button>
+              <button (click)="selectBlockType('pre')" [class.active]="activeBlock() === 'pre'">
+                <sh-icon>code</sh-icon>
+
+                <span>Code Block</span>
+              </button>
+            </div>
+          </sh-menu>
+        </div>
+      }
+
+      <!-- Lists -->
+      @if (showLists()) {
+        <div class="sh-editor-toolbar-group" role="group" aria-label="Lists">
+          <button
+            type="button"
+            class="sh-editor-btn"
+            [class.active]="activeBlock() === 'ul' || activeBlock() === 'li'"
+            [attr.aria-pressed]="activeBlock() === 'ul' || activeBlock() === 'li'"
+            (click)="formatText('insertUnorderedList')"
+            shTooltip="Bullet List">
+            <sh-icon>list-bullets</sh-icon>
+          </button>
+          <button
+            type="button"
+            class="sh-editor-btn"
+            [class.active]="activeBlock() === 'ol'"
+            [attr.aria-pressed]="activeBlock() === 'ol'"
+            (click)="formatText('insertOrderedList')"
+            shTooltip="Numbered List">
+            <sh-icon>list-numbers</sh-icon>
+          </button>
+        </div>
+      }
+
+      <!-- Alignments -->
+      @if (showAlignments()) {
+        <div class="sh-editor-toolbar-group" role="group" aria-label="Text alignment">
+          <button
+            type="button"
+            class="sh-editor-btn"
+            [class.active]="align() === 'left'"
+            [attr.aria-pressed]="align() === 'left'"
+            (click)="formatText('justifyLeft')"
+            shTooltip="Align Left">
+            <sh-icon>text-align-left</sh-icon>
+          </button>
+          <button
+            type="button"
+            class="sh-editor-btn"
+            [class.active]="align() === 'center'"
+            [attr.aria-pressed]="align() === 'center'"
+            (click)="formatText('justifyCenter')"
+            shTooltip="Align Center">
+            <sh-icon>text-align-center</sh-icon>
+          </button>
+          <button
+            type="button"
+            class="sh-editor-btn"
+            [class.active]="align() === 'right'"
+            [attr.aria-pressed]="align() === 'right'"
+            (click)="formatText('justifyRight')"
+            shTooltip="Align Right">
+            <sh-icon>text-align-right</sh-icon>
+          </button>
+        </div>
+      }
+
+      <!-- Links, images and lines -->
+      @if (showInsertions()) {
+        <div class="sh-editor-toolbar-group" role="group" aria-label="Insert elements">
+          <button type="button" class="sh-editor-btn" (click)="openLinkModal()" shTooltip="Insert Link">
+            <sh-icon>link</sh-icon>
+          </button>
+          <button type="button" class="sh-editor-btn" (click)="openImageModal()" shTooltip="Insert Image">
+            <sh-icon>image</sh-icon>
+          </button>
+          <button
+            type="button"
+            class="sh-editor-btn"
+            (click)="formatText('insertHorizontalRule')"
+            shTooltip="Horizontal Line">
+            <sh-icon>minus</sh-icon>
+          </button>
+        </div>
+      }
+
+      <!-- Configured custom commands group -->
+      @if (customCommands().length > 0) {
+        <div class="sh-editor-toolbar-group" role="group" aria-label="Custom actions">
+          @for (cmd of customCommands(); track cmd.id) {
+            <button type="button" class="sh-editor-btn" (click)="executeCommand(cmd)" [shTooltip]="cmd.label">
+              <sh-icon>{{ cmd.icon }}</sh-icon>
+            </button>
+          }
+        </div>
+      }
+
+      <!-- Custom projected buttons -->
+      <div class="sh-editor-toolbar-group sh-editor-toolbar-extra" role="group" aria-label="Extra actions">
+        <ng-content />
+      </div>
+
+      <div class="spacer"></div>
+
+      <!-- Undo, Redo and Source View -->
+      @if (showHistory()) {
+        <div class="sh-editor-toolbar-group" role="group" aria-label="History and view">
+          <button
+            type="button"
+            class="sh-editor-btn"
+            [disabled]="!canUndo()"
+            (click)="formatText('undo')"
+            shTooltip="Undo">
+            <sh-icon>arrow-u-up-left</sh-icon>
+          </button>
+          <button
+            type="button"
+            class="sh-editor-btn"
+            [disabled]="!canRedo()"
+            (click)="formatText('redo')"
+            shTooltip="Redo">
+            <sh-icon>arrow-u-up-right</sh-icon>
+          </button>
+          <button
+            type="button"
+            class="sh-editor-btn view-toggle"
+            [class.active]="viewMode() === 'code'"
+            [attr.aria-pressed]="viewMode() === 'code'"
+            (click)="toggleViewMode()"
+            shTooltip="Toggle Code View">
+            @if (viewMode() === 'design') {
+              <sh-icon>terminal</sh-icon>
+            } @else {
+              <sh-icon>article</sh-icon>
+            }
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Simple Dialogs for Link and Image Inputs -->
+  @if (showLinkModal()) {
+    <div class="sh-editor-modal">
+      <div class="sh-editor-modal-backdrop" (click)="showLinkModal.set(false)"></div>
+      <div class="sh-editor-modal-content">
+        <h4>Insert Link</h4>
+        <input
+          #linkInput
+          type="text"
+          placeholder="https://example.com"
+          class="sh-editor-input"
+          (keyup.enter)="applyLink(linkInput.value)"
+          autofocus />
+        <div class="sh-editor-modal-actions">
+          <button type="button" class="sh-editor-modal-btn cancel" (click)="showLinkModal.set(false)">Cancel</button>
+          <button type="button" class="sh-editor-modal-btn confirm" (click)="applyLink(linkInput.value)">Insert</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showImageModal()) {
+    <div class="sh-editor-modal">
+      <div class="sh-editor-modal-backdrop" (click)="showImageModal.set(false)"></div>
+      <div class="sh-editor-modal-content">
+        <h4>Insert Image</h4>
+
+        @if (imageUploadEnabled()) {
+          <input #fileInput type="file" accept="image/*" style="display: none" (change)="onFileSelected($event)" />
+          <button #uploadBtn type="button" class="sh-editor-upload-btn" (click)="fileInput.click()">
+            <sh-icon>upload-simple</sh-icon>
+            Choose local file...
+          </button>
+
+          <div class="sh-editor-modal-divider"><span>or insert from URL</span></div>
+        }
+
+        <input
+          #imageInput
+          type="text"
+          placeholder="https://example.com/image.jpg"
+          class="sh-editor-input"
+          (keyup.enter)="applyImage(imageInput.value)" />
+        <div class="sh-editor-modal-actions">
+          <button type="button" class="sh-editor-modal-btn cancel" (click)="showImageModal.set(false)">Cancel</button>
+          <button type="button" class="sh-editor-modal-btn confirm" (click)="applyImage(imageInput.value)">
+            Insert
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Image layout options floating toolbar -->
+  @if (selectedImage() && !readonly()) {
+    <div class="sh-editor-img-toolbar" [style.top.px]="imgToolbarTop()" [style.left.px]="imgToolbarLeft()">
+      <button
+        type="button"
+        class="sh-editor-img-toolbar-btn"
+        [class.active]="imgMode() === 'content'"
+        (click)="setImageMode('content')">
+        Content
+      </button>
+      <button
+        type="button"
+        class="sh-editor-img-toolbar-btn"
+        [class.active]="imgMode() === 'theater'"
+        (click)="setImageMode('theater')">
+        Theater
+      </button>
+      <button
+        type="button"
+        class="sh-editor-img-toolbar-btn"
+        [class.active]="imgMode() === 'float'"
+        (click)="setImageMode('float')">
+        Float
+      </button>
+      <button
+        type="button"
+        class="sh-editor-img-toolbar-btn"
+        [class.active]="imgMode() === 'custom'"
+        (click)="setImageMode('custom')">
+        Custom
+      </button>
+
+      @if (imgMode() === 'float' || imgMode() === 'custom') {
+        <div class="sh-editor-img-toolbar-divider"></div>
+
+        <button
+          type="button"
+          class="sh-editor-img-toolbar-btn"
+          [class.active]="imgSize() === 'auto'"
+          (click)="setImageSize('auto')">
+          Auto
+        </button>
+        <button
+          type="button"
+          class="sh-editor-img-toolbar-btn"
+          [class.active]="imgSize() === 'small'"
+          (click)="setImageSize('small')">
+          Small
+        </button>
+        <button
+          type="button"
+          class="sh-editor-img-toolbar-btn"
+          [class.active]="imgSize() === 'medium'"
+          (click)="setImageSize('medium')">
+          Medium
+        </button>
+        <button
+          type="button"
+          class="sh-editor-img-toolbar-btn"
+          [class.active]="imgSize() === 'large'"
+          (click)="setImageSize('large')">
+          Large
+        </button>
+      }
+
+      <div class="sh-editor-img-toolbar-divider"></div>
+
+      <button type="button" class="sh-editor-img-toolbar-btn danger" (click)="deleteImage()" shTooltip="Delete Image">
+        <sh-icon>trash</sh-icon>
+      </button>
+    </div>
+  }
+
+  <!-- Slash Commands floating menu using design system sh-menu component -->
+  @if (filteredCommands().length > 0 && !readonly()) {
+    <sh-menu
+      #slashMenu
+      [(isOpen)]="showSlashMenu"
+      [searchable]="false"
+      [openIndicator]="false"
+      class="sh-editor-slash-menu-container"
+      [style.top.px]="slashMenuTop()"
+      [style.left.px]="slashMenuLeft()">
+      <div trigger class="sh-editor-slash-anchor"></div>
+      <div menu>
+        @for (cmd of filteredCommands(); track cmd.id; let idx = $index) {
+          <button
+            type="button"
+            class="sh-editor-slash-item"
+            [class.active]="idx === slashMenu.activeOptionIndex()"
+            [attr.aria-selected]="idx === slashMenu.activeOptionIndex() ? 'true' : 'false'"
+            (click)="executeCommand(cmd)"
+            (mouseenter)="slashMenu.activeOptionIndex.set(idx)">
+            <div class="sh-editor-slash-item-icon">
+              <sh-icon>{{ cmd.icon }}</sh-icon>
+            </div>
+            <div class="sh-editor-slash-item-content">
+              <div class="sh-editor-slash-item-label">{{ cmd.label }}</div>
+              @if (cmd.description) {
+                <div class="sh-editor-slash-item-desc">{{ cmd.description }}</div>
+              }
+            </div>
+          </button>
+        }
+      </div>
+    </sh-menu>
+  }
+
+  <!-- Body / Editor Surface -->
+  <div class="sh-editor-body">
+    @if (viewMode() === 'design') {
+      <div
+        #editorRef
+        class="sh-editor-content"
+        [class.has-slash-commands]="hasSlashCommands()"
+        [attr.contenteditable]="readonly() ? 'false' : 'true'"
+        [attr.placeholder]="placeholder()"
+        (input)="onDOMInput()"
+        (blur)="onDOMBlur()"
+        (focus)="isFocused.set(true)"></div>
+    } @else {
+      <textarea
+        #codeEditorRef
+        class="sh-editor-code"
+        [attr.readonly]="readonly() ? '' : null"
+        [value]="rawCodeValue()"
+        (input)="onCodeInput($event)"
+        (blur)="onCodeBlur($event)"
+        (focus)="isFocused.set(true)"></textarea>
+    }
+  </div>
+
+  <!-- Footer / Status Bar -->
+  <div class="sh-editor-footer">
+    <div class="word-count">{{ wordCount() }} words, {{ charCount() }} characters</div>
+    <div class="spacer"></div>
+    <div class="storage-format">Storage: {{ format().toUpperCase() }}</div>
+  </div>
+</div>

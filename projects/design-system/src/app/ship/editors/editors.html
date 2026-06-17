@@ -1,0 +1,58 @@
+<h1>WYSIWYG Editor</h1>
+<!-- @keywords: editor, wysiwyg, richtext, html, markdown, json, input, form -->
+
+<app-property-viewer>
+  <section>
+    <h4>Usage</h4>
+    <p>
+      ShipEditor is a premium, config-driven WYSIWYG rich text editor. It allows typing in design view, editing raw source code, and can serialize to <code>html</code>, <code>markdown</code>, or <code>json</code> configuration dynamically.
+    </p>
+  </section>
+  <section>
+    <h4>Features</h4>
+    <ul>
+      <li>Three output formats: HTML strings, Markdown text, and custom structured block/mark JSON.</li>
+      <li>ControlValueAccessor integration for Reactive and Template-driven forms.</li>
+      <li>Monospace code-view for editing source code directly.</li>
+      <li>Dynamic toolbar selection tracking.</li>
+      <li>Word and character count reporting in the status footer.</li>
+    </ul>
+  </section>
+</app-property-viewer>
+
+<div class="sandbox-example">
+  <app-previewer path="/editors/examples/sandbox-editor/sandbox-editor" title="Interactive Editor Sandbox" class="no-space">
+    <app-sandbox-editor />
+  </app-previewer>
+</div>
+
+<h3>Block/Mark JSON Config Schema</h3>
+<p>
+  When utilizing <code>[format]="'json'"</code>, the value is stored as a structured array of block nodes, containing inline node spans and marks (formatting styles).
+</p>
+<pre><code class="language-typescript">
+export interface ShipEditorMark &#123;
+  type: 'bold' | 'italic' | 'underline' | 'strike' | 'link' | 'code';
+  attrs?: &#123; href?: string; target?: string &#125;;
+&#125;
+
+export interface ShipEditorInlineNode &#123;
+  type: 'text';
+  text: string;
+  marks?: ShipEditorMark[];
+&#125;
+
+export interface ShipEditorBlock &#123;
+  type: 'paragraph' | 'heading' | 'bullet-list' | 'ordered-list' | 'list-item' | 'code-block' | 'quote' | 'image' | 'hr';
+  attrs?: &#123;
+    level?: number;
+    src?: string;
+    alt?: string;
+    language?: string;
+    align?: 'left' | 'center' | 'right';
+  &#125;;
+  content?: ShipEditorInlineNode[] | ShipEditorBlock[];
+&#125;
+
+export type ShipEditorDocument = ShipEditorBlock[];
+</code></pre>
