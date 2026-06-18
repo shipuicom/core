@@ -1,3 +1,4 @@
+import { describe, beforeEach, it, expect } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ShipIcon } from './ship-icon';
 import { SHIP_CONFIG } from '@ship-ui/core';

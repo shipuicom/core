@@ -1,4 +1,5 @@
-import { Component, ViewChild } from '@angular/core';
+import { describe, beforeAll, beforeEach, it, expect } from 'vitest';
+import { Component, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ShipMenu } from './ship-menu';
 
@@ -18,7 +19,7 @@ import { ShipMenu } from './ship-menu';
   imports: [ShipMenu],
 })
 class TestComponent {
-  @ViewChild(ShipMenu) shipMenu!: ShipMenu;
+  shipMenu = viewChild.required(ShipMenu);
   isOpen = false;
   searchable = false;
 }
@@ -48,11 +49,11 @@ describe('ShipMenu Keyboard Navigation', () => {
   });
 
   it('should create menu component', () => {
-    expect(hostComponent.shipMenu).toBeTruthy();
+    expect(hostComponent.shipMenu()).toBeTruthy();
   });
 
   it('should navigate down by exactly one option at a time on ArrowDown when non-searchable', async () => {
-    const menu = hostComponent.shipMenu;
+    const menu = hostComponent.shipMenu();
 
     // Open the menu
     menu.open();
@@ -96,7 +97,7 @@ describe('ShipMenu Keyboard Navigation', () => {
     hostComponent.searchable = true;
     fixture.detectChanges();
 
-    const menu = hostComponent.shipMenu;
+    const menu = hostComponent.shipMenu();
 
     // Open the menu
     menu.open();
