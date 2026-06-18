@@ -1,4 +1,5 @@
-import { Component, signal, TemplateRef, ViewChild } from '@angular/core';
+import { describe, beforeEach, it, expect, vi } from 'vitest';
+import { Component, signal, TemplateRef, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ShipSort, ShipTable, ShipTableColumn, ShipTableContent } from './ship-table';
 
@@ -22,7 +23,7 @@ import { ShipSort, ShipTable, ShipTableColumn, ShipTableContent } from './ship-t
   imports: [ShipTable, ShipSort],
 })
 class TestTableComponent {
-  @ViewChild(ShipTable) shipTable!: ShipTable;
+  shipTable = viewChild(ShipTable);
 
   dataSource = signal([
     { name: 'Alice', age: 30 },
@@ -52,8 +53,8 @@ class TestTableComponent {
   imports: [ShipTable, ShipTableContent],
 })
 class TestConfigTableComponent {
-  @ViewChild(ShipTable) shipTable!: ShipTable;
-  @ViewChild('customTemplate', { static: true }) customTemplate!: TemplateRef<any>;
+  shipTable = viewChild(ShipTable);
+  customTemplate = viewChild.required<TemplateRef<any>>('customTemplate');
 
   dataSource = signal<any[]>([
     { name: 'Alice', age: 30 },
@@ -229,7 +230,7 @@ describe('ShipTable Configuration-Based Columns', () => {
   });
 
   it('should support custom cellTemplate (TemplateRef)', () => {
-    hostComponent.columns.set([{ id: 'name', header: 'Name', cellTemplate: hostComponent.customTemplate }]);
+    hostComponent.columns.set([{ id: 'name', header: 'Name', cellTemplate: hostComponent.customTemplate() }]);
     fixture.detectChanges();
 
     const cells = fixture.nativeElement.querySelectorAll('tbody td');
@@ -463,5 +464,125 @@ describe('ShipTable Configuration-Based Columns', () => {
     expect(cells[1].textContent?.trim()).toBe('active');
     expect(cells[3].textContent?.trim()).toBe('archived');
     expect(cells[5].textContent?.trim()).toBe('pending');
+  });
+
+  it('should not mutate the original data source array when sorting', () => {
+    const originalData = [
+      { name: 'Charlie', age: 35 },
+      { name: 'Alice', age: 30 },
+      { name: 'Bob', age: 25 },
+    ];
+    // Set data
+    hostComponent.dataSource.set(originalData);
+    hostComponent.columns.set([
+      { id: 'name', header: 'Name', sortable: true },
+    ]);
+    fixture.detectChanges();
+
+    // Trigger sorting
+    const nameHeader = fixture.nativeElement.querySelector('thead th:nth-child(1)');
+    nameHeader.click();
+    fixture.detectChanges();
+
+    // Verify emitted/sorted data is sorted
+    expect(hostComponent.dataSource()).toEqual([
+      { name: 'Alice', age: 30 },
+      { name: 'Bob', age: 25 },
+      { name: 'Charlie', age: 35 },
+    ]);
+
+    // Verify originalData array was NOT mutated/sorted in-place
+    expect(originalData).toEqual([
+      { name: 'Charlie', age: 35 },
+      { name: 'Alice', age: 30 },
+      { name: 'Bob', age: 25 },
+    ]);
+  });
+
+  it('should support nested dot-notation paths for accessorKey', () => {
+    hostComponent.dataSource.set([
+      { name: 'Alice', details: { address: { city: 'New York' } } },
+      { name: 'Bob', details: { address: undefined } },
+      { name: 'Charlie', details: null },
+      { name: 'Dave' },
+    ]);
+    hostComponent.columns.set([
+      { id: 'city', header: 'City', accessorKey: 'details.address.city' },
+    ]);
+    fixture.detectChanges();
+
+    const cells = fixture.nativeElement.querySelectorAll('tbody td');
+    expect(cells[0].textContent?.trim()).toBe('New York');
+    expect(cells[1].textContent?.trim()).toBe('');
+    expect(cells[2].textContent?.trim()).toBe('');
+    expect(cells[3].textContent?.trim()).toBe('');
+  });
+
+  it('should support sorting by a nested dot-notation accessorKey', () => {
+    hostComponent.dataSource.set([
+      { name: 'Alice', details: { address: { city: 'Paris' } } },
+      { name: 'Charlie', details: { address: { city: 'London' } } },
+      { name: 'Bob', details: { address: { city: 'Berlin' } } },
+    ]);
+    hostComponent.columns.set([
+      { id: 'city', header: 'City', accessorKey: 'details.address.city', sortable: true },
+    ]);
+    fixture.detectChanges();
+
+    const cityHeader = fixture.nativeElement.querySelector('thead th:nth-child(1)');
+
+    // Sort Ascending: Berlin, London, Paris
+    cityHeader.click();
+    fixture.detectChanges();
+
+    expect(hostComponent.dataSource()).toEqual([
+      { name: 'Bob', details: { address: { city: 'Berlin' } } },
+      { name: 'Charlie', details: { address: { city: 'London' } } },
+      { name: 'Alice', details: { address: { city: 'Paris' } } },
+    ]);
+
+    // Sort Descending: Paris, London, Berlin
+    cityHeader.click();
+    fixture.detectChanges();
+
+    expect(hostComponent.dataSource()).toEqual([
+      { name: 'Alice', details: { address: { city: 'Paris' } } },
+      { name: 'Charlie', details: { address: { city: 'London' } } },
+      { name: 'Bob', details: { address: { city: 'Berlin' } } },
+    ]);
+  });
+
+  it('should always sort null or undefined values to the bottom', () => {
+    hostComponent.dataSource.set([
+      { name: 'Charlie', age: 35 },
+      { name: 'Alice', age: null },
+      { name: 'Bob', age: 25 },
+    ]);
+    hostComponent.columns.set([
+      { id: 'age', header: 'Age', sortable: true, type: 'number' },
+    ]);
+    fixture.detectChanges();
+
+    const ageHeader = fixture.nativeElement.querySelector('thead th:nth-child(1)');
+
+    // Sort Ascending: Bob (25), Charlie (35), Alice (null)
+    ageHeader.click();
+    fixture.detectChanges();
+
+    expect(hostComponent.dataSource()).toEqual([
+      { name: 'Bob', age: 25 },
+      { name: 'Charlie', age: 35 },
+      { name: 'Alice', age: null },
+    ]);
+
+    // Sort Descending: Charlie (35), Bob (25), Alice (null)
+    ageHeader.click();
+    fixture.detectChanges();
+
+    expect(hostComponent.dataSource()).toEqual([
+      { name: 'Charlie', age: 35 },
+      { name: 'Bob', age: 25 },
+      { name: 'Alice', age: null },
+    ]);
   });
 });

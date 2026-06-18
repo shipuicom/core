@@ -4,7 +4,6 @@ import {
   Component,
   computed,
   contentChild,
-  DestroyRef,
   Directive,
   effect,
   ElementRef,
@@ -331,28 +330,17 @@ export class ShipTable {
 
   stickyHeaderHeight = signal<number>(0);
 
-  #destroyRef = inject(DestroyRef);
-  #resizeObserver: ResizeObserver | null = null;
-
-  theadEffect = effect(() => {
+  theadEffect = effect((onCleanup) => {
     const head = this.thead()?.nativeElement;
 
-    if (this.#resizeObserver) {
-      this.#resizeObserver.disconnect();
-      this.#resizeObserver = null;
-    }
-
     if (head && typeof ResizeObserver !== 'undefined') {
-      this.#resizeObserver = new ResizeObserver((entries) => {
+      const observer = new ResizeObserver((entries) => {
         const height = head.clientHeight;
         this.stickyHeaderHeight.set(height);
       });
-      this.#resizeObserver.observe(head);
+      observer.observe(head);
+      onCleanup(() => observer.disconnect());
     }
-  });
-
-  #cleanup = this.#destroyRef.onDestroy(() => {
-    this.#resizeObserver?.disconnect();
   });
 
   bodyEffect = effect(() => {
@@ -442,7 +430,8 @@ export class ShipTable {
     const column = sortByColumn.startsWith('-') ? sortByColumn.slice(1) : sortByColumn;
     const isDescending = sortByColumn.startsWith('-');
 
-    const sortedData = this.data().sort((a: any, b: any) => {
+    const currentData = this.data();
+    const sortedData = [...currentData].sort((a: any, b: any) => {
       const colConfig = this.content()
         ?.columns()
         ?.find((c) => c.id === column);
@@ -452,27 +441,30 @@ export class ShipTable {
         return isDescending ? -predicateResult : predicateResult;
       }
 
-      const valueA = a[column] as any;
-      const valueB = b[column] as any;
+      const valueA = colConfig ? this.content()?.getValue(a, colConfig) : a[column];
+      const valueB = colConfig ? this.content()?.getValue(b, colConfig) : b[column];
+
+      const aNull = valueA === null || valueA === undefined;
+      const bNull = valueB === null || valueB === undefined;
+
+      if (aNull && bNull) return 0;
+      if (aNull) return 1;
+      if (bNull) return -1;
 
       let comparison = 0;
 
       if (colConfig?.type === 'date') {
-        const dateA = valueA ? new Date(valueA).getTime() : 0;
-        const dateB = valueB ? new Date(valueB).getTime() : 0;
-        comparison = dateA - dateB;
+        const dateA = new Date(valueA).getTime();
+        const dateB = new Date(valueB).getTime();
+        comparison = isNaN(dateA) || isNaN(dateB) ? 0 : dateA - dateB;
       } else if (colConfig?.type === 'number') {
-        const numA = Number(valueA) || 0;
-        const numB = Number(valueB) || 0;
-        comparison = numA - numB;
+        comparison = Number(valueA) - Number(valueB);
       } else if (colConfig?.type === 'boolean') {
         const boolA = valueA ? 1 : 0;
         const boolB = valueB ? 1 : 0;
         comparison = boolA - boolB;
       } else if (colConfig?.type === 'string' || colConfig?.type === 'badge') {
-        const strA = (valueA ?? '').toString();
-        const strB = (valueB ?? '').toString();
-        comparison = strA.localeCompare(strB, undefined, { sensitivity: 'base' });
+        comparison = valueA.toString().localeCompare(valueB.toString(), undefined, { sensitivity: 'base' });
       } else {
         if (typeof valueA === 'number' && typeof valueB === 'number') {
           comparison = valueA - valueB;
@@ -486,7 +478,19 @@ export class ShipTable {
       return isDescending ? -comparison : comparison;
     });
 
-    this.dataChange.emit(sortedData);
+    let changed = sortedData.length !== currentData.length;
+    if (!changed) {
+      for (let i = 0; i < sortedData.length; i++) {
+        if (sortedData[i] !== currentData[i]) {
+          changed = true;
+          break;
+        }
+      }
+    }
+
+    if (changed) {
+      this.dataChange.emit(sortedData);
+    }
   });
 
   toggleSort(column: string) {
@@ -546,50 +550,29 @@ export class ShipTable {
     <thead #thead role="rowgroup">
       <tr role="row">
         @for (col of columns(); track col.id) {
-          @if (col.resizable) {
-            <th
-              role="columnheader"
-              [id]="col.id"
-              [attr.aria-label]="col.header"
-              [shSort]="col.sortable ? col.id : undefined"
-              shResize
-              [minWidth]="col.minWidth ?? 50"
-              [maxWidth]="col.maxWidth ?? null"
-              [attr.size]="col.size || null"
-              [class.sticky]="col.sticky === 'start'"
-              [class.sticky-end]="col.sticky === 'end'">
-              {{ col.header }}
-              @if (col.sortable) {
-                @if (sortByColumn() === col.id) {
-                  <sh-icon>caret-up</sh-icon>
-                } @else if (sortByColumn() === '-' + col.id) {
-                  <sh-icon>caret-down</sh-icon>
-                } @else {
-                  <sh-icon>arrows-down-up</sh-icon>
-                }
+          <th
+            role="columnheader"
+            [id]="col.id"
+            [attr.aria-label]="col.header"
+            [shSort]="col.sortable ? col.id : undefined"
+            shResize
+            [resizable]="!!col.resizable"
+            [minWidth]="col.minWidth ?? 50"
+            [maxWidth]="col.maxWidth ?? null"
+            [attr.size]="col.size || null"
+            [class.sticky]="col.sticky === 'start'"
+            [class.sticky-end]="col.sticky === 'end'">
+            {{ col.header }}
+            @if (col.sortable) {
+              @if (sortByColumn() === col.id) {
+                <sh-icon>caret-up</sh-icon>
+              } @else if (sortByColumn() === '-' + col.id) {
+                <sh-icon>caret-down</sh-icon>
+              } @else {
+                <sh-icon>arrows-down-up</sh-icon>
               }
-            </th>
-          } @else {
-            <th
-              role="columnheader"
-              [id]="col.id"
-              [attr.aria-label]="col.header"
-              [shSort]="col.sortable ? col.id : undefined"
-              [attr.size]="col.size || null"
-              [class.sticky]="col.sticky === 'start'"
-              [class.sticky-end]="col.sticky === 'end'">
-              {{ col.header }}
-              @if (col.sortable) {
-                @if (sortByColumn() === col.id) {
-                  <sh-icon>caret-up</sh-icon>
-                } @else if (sortByColumn() === '-' + col.id) {
-                  <sh-icon>caret-down</sh-icon>
-                } @else {
-                  <sh-icon>arrows-down-up</sh-icon>
-                }
-              }
-            </th>
-          }
+            }
+          </th>
         }
       </tr>
     </thead>
@@ -654,7 +637,10 @@ export class ShipTableContent {
   getValue(row: any, col: ShipTableColumn): any {
     if (!row) return '';
     const key = col.accessorKey || col.id;
-    return row[key];
+    if (typeof key === 'string' && key.includes('.')) {
+      return key.split('.').reduce((acc, part) => acc?.[part], row);
+    }
+    return row[key as any];
   }
 
   formatDate(value: any): string {
