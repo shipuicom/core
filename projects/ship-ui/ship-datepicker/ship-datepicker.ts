@@ -11,7 +11,7 @@ import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings'
   imports: [ShipIcon],
   template: `
     <header>
-      <button tabindex="-1" (click)="previousMonth()"><sh-icon>caret-left</sh-icon></button>
+      <button tabindex="-1" (click)="previousMonth()" [attr.aria-keyshortcuts]="prevMonthShortcut()"><sh-icon>caret-left</sh-icon></button>
       <div class="title">
         {{ getMonthName(currentDate()!) }}
         @if (monthsToShow() > 1) {
@@ -19,7 +19,7 @@ import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings'
         }
         {{ getFullYear(currentDate()!) }}
       </div>
-      <button tabindex="-1" (click)="nextMonth()"><sh-icon>caret-right</sh-icon></button>
+      <button tabindex="-1" (click)="nextMonth()" [attr.aria-keyshortcuts]="nextMonthShortcut()"><sh-icon>caret-right</sh-icon></button>
     </header>
 
     <section class="months-container">
@@ -82,6 +82,18 @@ export class ShipDatepicker {
   currentDate = signal<Date>(this.date() ?? this.#INIT_DATE);
 
   #keybindings = inject(ShipA11yKeybindingsService);
+
+  prevMonthShortcut = computed(() => {
+    const action = 'datepicker.prev-month';
+    const shortcut = this.#keybindings.getShortcut(action);
+    return shortcut ? (this.#keybindings.getDisplayShortcut(action) || shortcut) : null;
+  });
+
+  nextMonthShortcut = computed(() => {
+    const action = 'datepicker.next-month';
+    const shortcut = this.#keybindings.getShortcut(action);
+    return shortcut ? (this.#keybindings.getDisplayShortcut(action) || shortcut) : null;
+  });
 
   monthOffsets = computed(() => {
     return Array.from({ length: this.monthsToShow() }, (_, i) => i);
