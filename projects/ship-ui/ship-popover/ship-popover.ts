@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, ElementRef, inject, input, model, output, signal, viewChild, ViewEncapsulation } from '@angular/core';
 import { generateUniqueId } from '@ship-ui/core';
+import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 
 export type ShipPopoverOptions = {
   width?: string;
@@ -49,6 +50,7 @@ const DEFAULT_OPTIONS: ShipPopoverOptions = {
 })
 export class ShipPopover {
   #document = inject(DOCUMENT);
+  #keybindings = inject(ShipA11yKeybindingsService);
   SUPPORTS_ANCHOR =
     typeof CSS !== 'undefined' && CSS.supports('position-anchor', '--abc') && CSS.supports('anchor-name', '--abc');
 
@@ -95,12 +97,12 @@ export class ShipPopover {
         this.#document.addEventListener(
           'keydown',
           (e) => {
-            if (e.key === 'Escape' && !this.defaultOptionMerge().closeOnEsc) {
-              e.preventDefault();
-            }
-
-            if (e.key === 'Escape' && this.defaultOptionMerge().closeOnEsc) {
-              this.isOpen.set(false);
+            if (this.#keybindings.matches(e, 'popover.close')) {
+              if (!this.defaultOptionMerge().closeOnEsc) {
+                e.preventDefault();
+              } else {
+                this.isOpen.set(false);
+              }
             }
           },
           {

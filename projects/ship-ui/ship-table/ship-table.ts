@@ -19,6 +19,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { observeChildren, ShipColor, shipComponentClasses, ShipTableVariant } from '@ship-ui/core';
+import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { ShipChip } from '@ship-ui/core/ship-chip';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipProgressBar } from '@ship-ui/core/ship-progress-bar';
@@ -158,8 +159,6 @@ export class ShipResize {
     '[class.sortable]': '!!shSort()',
     '[attr.tabindex]': 'shSort() ? "0" : null',
     '(click)': 'shSort() ? toggleSort() : null',
-    '(keydown.enter)': 'shSort() ? toggleSort() : null',
-    '(keydown.space)': 'shSort() ? toggleSort($event) : null',
     '[attr.aria-sort]': 'shSort() ? ariaSort() : null',
     '[class.sort-asc]': 'sortAsc()',
     '[class.sort-desc]': 'sortDesc()',
@@ -167,7 +166,15 @@ export class ShipResize {
 })
 export class ShipSort {
   #table = inject(ShipTable);
+  #keybindings = inject(ShipA11yKeybindingsService);
   shSort = input<string | undefined>();
+
+  @HostListener('keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (this.shSort() && this.#keybindings.matches(event, 'table.sort')) {
+      this.toggleSort(event);
+    }
+  }
 
   sortAsc = computed(() => {
     const currentSort = this.#table.sortByColumn();

@@ -4,18 +4,20 @@ import {
   computed,
   effect,
   ElementRef,
+  inject,
+  InjectionToken,
   input,
   model,
   output,
+  Provider,
   signal,
   viewChild,
   ViewEncapsulation,
-  InjectionToken,
-  Provider,
 } from '@angular/core';
+import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
-import { ShipList } from '@ship-ui/core/ship-list';
 import { ShipKbd } from '@ship-ui/core/ship-kbd';
+import { ShipList } from '@ship-ui/core/ship-list';
 
 export interface ShipSpotlightItem {
   id: string;
@@ -106,9 +108,24 @@ export function provideShipSpotlight(config: ShipSpotlightConfig): Provider {
                             [ctrl]="key === 'ctrl' || key === 'control'"
                             [enter]="key === 'enter' || key === 'return'"
                             [escape]="key === 'escape' || key === 'esc'"
-                            [backspace]="key === 'backspace'"
-                          >
-                            @if (!['meta', 'cmd', 'command', 'shift', 'alt', 'option', 'ctrl', 'control', 'enter', 'return', 'escape', 'esc', 'backspace'].includes(key)) {
+                            [backspace]="key === 'backspace'">
+                            @if (
+                              ![
+                                'meta',
+                                'cmd',
+                                'command',
+                                'shift',
+                                'alt',
+                                'option',
+                                'ctrl',
+                                'control',
+                                'enter',
+                                'return',
+                                'escape',
+                                'esc',
+                                'backspace',
+                              ].includes(key)
+                            ) {
                               {{ key }}
                             }
                           </sh-kbd>
@@ -130,7 +147,8 @@ export function provideShipSpotlight(config: ShipSpotlightConfig): Provider {
 
       <div class="sh-spotlight-footer">
         <span class="sh-spotlight-footer-tip">
-          <sh-kbd>↓</sh-kbd> <sh-kbd>↑</sh-kbd>
+          <sh-kbd>↓</sh-kbd>
+          <sh-kbd>↑</sh-kbd>
           to navigate
         </span>
         <span class="sh-spotlight-footer-tip">
@@ -147,6 +165,34 @@ export function provideShipSpotlight(config: ShipSpotlightConfig): Provider {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShipSpotlight {
+  #keybindings = inject(ShipA11yKeybindingsService);
+
+  constructor() {
+    // Sync initial search query if provided in dialog data
+    effect(() => {
+      const initialQuery = this.data()?.searchQuery;
+      if (initialQuery !== undefined) {
+        this.searchQuery.set(initialQuery);
+      }
+    });
+
+    // Auto-focus input when the view is initialized
+    effect(() => {
+      const inputEl = this.inputRef()?.nativeElement;
+      if (inputEl && typeof inputEl.focus === 'function') {
+        setTimeout(() => inputEl.focus(), 50);
+      }
+    });
+
+    // Scroll active item into view
+    effect(() => {
+      const index = this.activeOptionIndex();
+      if (index > -1) {
+        queueMicrotask(() => this.scrollToActiveItem());
+      }
+    });
+  }
+
   inputRef = viewChild<ElementRef<HTMLInputElement>>('inputRef');
   resultsRef = viewChild<ElementRef<HTMLDivElement>>('resultsRef');
 
@@ -209,32 +255,6 @@ export class ShipSpotlight {
     return groups;
   });
 
-  constructor() {
-    // Sync initial search query if provided in dialog data
-    effect(() => {
-      const initialQuery = this.data()?.searchQuery;
-      if (initialQuery !== undefined) {
-        this.searchQuery.set(initialQuery);
-      }
-    });
-
-    // Auto-focus input when the view is initialized
-    effect(() => {
-      const inputEl = this.inputRef()?.nativeElement;
-      if (inputEl && typeof inputEl.focus === 'function') {
-        setTimeout(() => inputEl.focus(), 50);
-      }
-    });
-
-    // Scroll active item into view
-    effect(() => {
-      const index = this.activeOptionIndex();
-      if (index > -1) {
-        queueMicrotask(() => this.scrollToActiveItem());
-      }
-    });
-  }
-
   validateItemsEffect = effect(() => {
     const items = this.mergedItems();
     for (const item of items) {
@@ -278,11 +298,11 @@ export class ShipSpotlight {
     const flat = this.flatFilteredItems();
     if (flat.length === 0) return;
 
-    if (event.key === 'ArrowDown') {
+    if (this.#keybindings.matches(event, 'spotlight.next')) {
       event.preventDefault();
       const nextIdx = (this.activeOptionIndex() + 1) % flat.length;
       this.activeOptionIndex.set(nextIdx);
-    } else if (event.key === 'ArrowUp') {
+    } else if (this.#keybindings.matches(event, 'spotlight.prev')) {
       event.preventDefault();
       const prevIdx = (this.activeOptionIndex() - 1 + flat.length) % flat.length;
       this.activeOptionIndex.set(prevIdx);
@@ -332,17 +352,33 @@ export class ShipSpotlight {
       .join('+');
 
     const reserved = [
-      'meta+n', 'ctrl+n',
-      'meta+t', 'ctrl+t',
-      'meta+w', 'ctrl+w',
-      'meta+q', 'ctrl+q',
-      'meta+r', 'ctrl+r',
-      'meta+l', 'ctrl+l',
-      'meta+shift+n', 'ctrl+shift+n',
-      'meta+shift+t', 'ctrl+shift+t',
-      'meta+shift+w', 'ctrl+shift+w',
-      'cmd+n', 'cmd+t', 'cmd+w', 'cmd+q', 'cmd+r', 'cmd+l',
-      'cmd+shift+n', 'cmd+shift+t', 'cmd+shift+w',
+      'meta+n',
+      'ctrl+n',
+      'meta+t',
+      'ctrl+t',
+      'meta+w',
+      'ctrl+w',
+      'meta+q',
+      'ctrl+q',
+      'meta+r',
+      'ctrl+r',
+      'meta+l',
+      'ctrl+l',
+      'meta+shift+n',
+      'ctrl+shift+n',
+      'meta+shift+t',
+      'ctrl+shift+t',
+      'meta+shift+w',
+      'ctrl+shift+w',
+      'cmd+n',
+      'cmd+t',
+      'cmd+w',
+      'cmd+q',
+      'cmd+r',
+      'cmd+l',
+      'cmd+shift+n',
+      'cmd+shift+t',
+      'cmd+shift+w',
     ];
 
     if (reserved.includes(normalized)) {
@@ -367,7 +403,7 @@ export class ShipSpotlight {
     if (event.shiftKey !== needsShift) return false;
 
     const mainKeys = keys.filter(
-      (k) => !['meta', 'cmd', 'command', 'ctrl', 'control', 'alt', 'option', 'shift'].includes(k),
+      (k) => !['meta', 'cmd', 'command', 'ctrl', 'control', 'alt', 'option', 'shift'].includes(k)
     );
 
     if (mainKeys.length === 1) {

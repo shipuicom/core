@@ -15,6 +15,10 @@ export type ShipProgressBarMode = 'determinate' | 'indeterminate';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': 'hostClasses()',
+    'role': 'progressbar',
+    'aria-valuemin': '0',
+    'aria-valuemax': '100',
+    '[attr.aria-valuenow]': 'value() !== undefined ? value() : null',
   },
 })
 export class ShipProgressBar {

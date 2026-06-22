@@ -1,9 +1,11 @@
 import { Directive, ElementRef, HostListener, effect, inject, model, input, booleanAttribute } from '@angular/core';
 import { contentProjectionSignal } from './content-projection-signal';
+import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 
 @Directive()
 export abstract class ShipSelectionGroup<T = any> {
   protected readonly hostElement = inject(ElementRef<HTMLElement>).nativeElement;
+  readonly #keybindings = inject(ShipA11yKeybindingsService);
 
   protected items: import('@angular/core').Signal<HTMLElement[]>;
 
@@ -14,7 +16,11 @@ export abstract class ShipSelectionGroup<T = any> {
   constructor(
     protected readonly itemSelector: string,
     protected readonly activeClass: string,
-    protected readonly options?: { hostRole?: string; itemRole?: string }
+    protected readonly options?: {
+      hostRole?: string;
+      itemRole?: string;
+      activeAttribute?: 'aria-selected' | 'aria-pressed' | 'aria-checked';
+    }
   ) {
     if (this.options?.hostRole) {
       this.hostElement.setAttribute('role', this.options.hostRole);
@@ -30,6 +36,10 @@ export abstract class ShipSelectionGroup<T = any> {
       const selectedValue = this.value();
       const activeClass = this.activeClass;
       const items = this.items();
+      const activeAttr = this.options?.activeAttribute || 
+        (this.options?.itemRole === 'tab' || this.options?.itemRole === 'option' ? 'aria-selected' : 
+         this.options?.itemRole === 'radio' ? 'aria-checked' : 
+         'aria-pressed');
       
       let hasSelection = false;
       items.forEach((item) => {
@@ -46,18 +56,27 @@ export abstract class ShipSelectionGroup<T = any> {
         }
 
         const itemValue = item.getAttribute('value');
-        // If the item doesn't have a value attribute, it's not participate in the selection
-        if (itemValue === null && !item.hasAttribute('value')) return;
+        const hasValueAttr = itemValue !== null || item.hasAttribute('value');
         
-        // Exact match or handle empty string matching properly
-        if (itemValue === String(selectedValue) || (itemValue === '' && (selectedValue === null || selectedValue === ''))) {
-          item.classList.add(activeClass);
-          item.setAttribute('aria-selected', 'true');
+        let isSelected = false;
+        if (hasValueAttr) {
+          isSelected = itemValue === String(selectedValue) || (itemValue === '' && (selectedValue === null || selectedValue === ''));
+        } else {
+          isSelected = item.classList.contains(activeClass);
+        }
+        
+        if (isSelected) {
+          if (hasValueAttr) {
+            item.classList.add(activeClass);
+          }
+          item.setAttribute(activeAttr, 'true');
           item.setAttribute('tabindex', '0');
         } else {
-          item.classList.remove(activeClass);
-          item.setAttribute('aria-selected', 'false');
-          if (hasSelection) {
+          if (hasValueAttr) {
+            item.classList.remove(activeClass);
+          }
+          item.setAttribute(activeAttr, 'false');
+          if (hasSelection || !hasValueAttr) {
             item.setAttribute('tabindex', '-1');
           } else {
             item.removeAttribute('tabindex');
@@ -88,11 +107,12 @@ export abstract class ShipSelectionGroup<T = any> {
   protected onKeyDown(event: KeyboardEvent) {
     const targetEl = event.target as HTMLElement;
 
-    if (event.key === 'Enter' || event.key === ' ') {
+    if (this.#keybindings.matches(event, 'selection-group.select')) {
       const item = targetEl?.closest?.(this.itemSelector) as HTMLElement;
       if (item && this.hostElement.contains(item) && item.hasAttribute('value')) {
         // Only prevent default for space to avoid scrolling, let enter naturally click if it's a link/button
-        if (event.key === ' ') event.preventDefault();
+        const isSpace = event.key === ' ' || event.key === 'Spacebar';
+        if (isSpace) event.preventDefault();
         
         const value = item.getAttribute('value') as unknown as T;
         if (this.closable() && String(this.value()) === String(value)) {
@@ -115,17 +135,12 @@ export abstract class ShipSelectionGroup<T = any> {
 
     let nextIndex = activeIndex;
 
-    switch (event.key) {
-      case 'ArrowRight':
-      case 'ArrowDown':
-        nextIndex = activeIndex >= items.length - 1 ? 0 : activeIndex + 1;
-        break;
-      case 'ArrowLeft':
-      case 'ArrowUp':
-        nextIndex = activeIndex <= 0 ? items.length - 1 : activeIndex - 1;
-        break;
-      default:
-        return; // Let other keys propagate natively
+    if (this.#keybindings.matches(event, 'selection-group.next')) {
+      nextIndex = activeIndex >= items.length - 1 ? 0 : activeIndex + 1;
+    } else if (this.#keybindings.matches(event, 'selection-group.prev')) {
+      nextIndex = activeIndex <= 0 ? items.length - 1 : activeIndex - 1;
+    } else {
+      return; // Let other keys propagate natively
     }
 
     event.preventDefault();

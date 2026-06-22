@@ -204,6 +204,10 @@ export const routes: Routes = [
         loadComponent: () => import('./ship/input-mask/input-mask'),
       },
       {
+        path: 'a11y-keybindings',
+        loadComponent: () => import('./ship/a11y-keybindings/a11y-keybindings'),
+      },
+      {
         path: 'virtual-scrolls',
         loadComponent: () => import('./ship/virtual-scrolls/virtual-scrolls'),
       },

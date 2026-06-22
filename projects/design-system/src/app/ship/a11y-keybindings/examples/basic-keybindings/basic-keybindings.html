@@ -1,0 +1,44 @@
+<div class="example-wrapper">
+  <div class="card-grid">
+    <div class="card">
+      <h3>Local Trigger</h3>
+      <p class="description">
+        Only triggers when the button itself is focused.
+      </p>
+      <div class="shortcut-info">
+        Shortcut: <code class="kbd-badge">{{ service.getDisplayShortcut('example.increment-local') }}</code>
+      </div>
+      <button 
+        shButton 
+        [shA11yKeybinding]="'example.increment-local'" 
+        mode="local" 
+        (triggered)="incrementLocal()">
+        Local Increment ({{ localCounter() }})
+      </button>
+    </div>
+
+    <div class="card">
+      <h3>Global Trigger</h3>
+      <p class="description">
+        Triggers from anywhere on the page (ignored when focused in inputs).
+      </p>
+      <div class="shortcut-info">
+        Shortcut: <code class="kbd-badge">{{ service.getDisplayShortcut('example.increment-global') }}</code>
+      </div>
+      <button 
+        shButton 
+        variant="flat"
+        [shA11yKeybinding]="'example.increment-global'" 
+        mode="global" 
+        (triggered)="incrementGlobal()">
+        Global Increment ({{ globalCounter() }})
+      </button>
+    </div>
+  </div>
+
+  <div class="controls-panel">
+    <button shButton variant="outlined" size="small" (click)="changeShortcut()">
+      Swap Local Shortcut to: {{ service.getShortcut('example.increment-local') === 'enter' ? 'Space' : 'Enter' }}
+    </button>
+  </div>
+</div>

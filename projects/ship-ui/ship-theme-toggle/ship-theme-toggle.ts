@@ -10,7 +10,7 @@ import { ShipThemeOption, ShipThemeState } from './ship-theme-state';
   encapsulation: ViewEncapsulation.None,
   imports: [ShipIcon, ShipButton],
   template: `
-    <button shButton [color]="color()" [variant]="variant()" [size]="size()" (click)="toggleTheme()">
+    <button shButton aria-label="Toggle theme" [color]="color()" [variant]="variant()" [size]="size()" (click)="toggleTheme()">
       @if (theme() === 'dark') {
         <sh-icon>moon-bold</sh-icon>
       } @else if (theme() === 'light') {

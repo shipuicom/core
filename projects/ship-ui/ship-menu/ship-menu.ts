@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, ElementRef, HostListener, inject, input, model, output, Renderer2, signal, viewChild, ViewEncapsulation } from '@angular/core';
 import { ShipFormField } from '@ship-ui/core/ship-form-field';
+import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipPopover } from '@ship-ui/core/ship-popover';
 import { createFormInputSignal } from '@ship-ui/core';
@@ -78,6 +79,8 @@ import { generateUniqueId } from '@ship-ui/core';
 export class ShipMenu {
   #document = inject(DOCUMENT);
   #renderer = inject(Renderer2);
+  #keybindings = inject(ShipA11yKeybindingsService);
+
   parentMenu = inject(ShipMenu, { optional: true, skipSelf: true });
   isSubmenu = computed(() => this.parentMenu !== null);
   asMultiLayer = input<boolean>(false);
@@ -185,13 +188,13 @@ export class ShipMenu {
 
     const activeOptionIndex = this.activeOptionIndex();
 
-    if (e.key === 'ArrowDown') {
+    if (this.#keybindings.matches(e, 'menu.next')) {
       e.preventDefault();
       this.activeOptionIndex.set(this.nextActiveIndex(activeOptionIndex));
-    } else if (e.key === 'ArrowUp') {
+    } else if (this.#keybindings.matches(e, 'menu.prev')) {
       e.preventDefault();
       this.activeOptionIndex.set(this.prevActiveIndex(activeOptionIndex));
-    } else if (e.key === 'ArrowRight') {
+    } else if (this.#keybindings.matches(e, 'menu.open-submenu')) {
       if (activeOptionIndex > -1) {
         const el = this.activeElements()[activeOptionIndex as number];
         const parent = el.parentElement;
@@ -208,12 +211,12 @@ export class ShipMenu {
           el.dispatchEvent(event);
         }
       }
-    } else if (e.key === 'ArrowLeft') {
+    } else if (this.#keybindings.matches(e, 'menu.close-submenu')) {
       if (this.isSubmenu()) {
         e.preventDefault();
         this.close('closed');
       }
-    } else if (e.key === 'Enter') {
+    } else if (this.#keybindings.matches(e, 'menu.select')) {
       e.preventDefault();
       if (activeOptionIndex > -1) {
         const el = this.activeElements()[activeOptionIndex as number];

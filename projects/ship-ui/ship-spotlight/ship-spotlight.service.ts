@@ -1,5 +1,6 @@
 import { computed, DOCUMENT, inject, Injectable, OutputEmitterRef, signal, DestroyRef } from '@angular/core';
 import { ShipDialogService } from '@ship-ui/core/ship-dialog';
+import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { ShipSpotlight, ShipSpotlightItem, ShipSpotlightServiceOptions, SHIP_SPOTLIGHT_CONFIG } from './ship-spotlight';
 
 export interface ShipSpotlightInstance {
@@ -21,6 +22,7 @@ export class ShipSpotlightService {
   #document = inject(DOCUMENT);
   #dialogService = inject(ShipDialogService);
   #config = inject(SHIP_SPOTLIGHT_CONFIG, { optional: true });
+  #keybindings = inject(ShipA11yKeybindingsService);
 
   #nextId = 0;
   #registries = signal<SpotlightItemRegistryEntry[]>([]);
@@ -107,7 +109,7 @@ export class ShipSpotlightService {
     this.#isShortcutsEnabled.set(true);
 
     this.#globalShortcutListener = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      if (this.#keybindings.matches(event, 'spotlight.open')) {
         event.preventDefault();
 
         const instance = this.open(this.#globalShortcutOptions || undefined);

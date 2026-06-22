@@ -391,6 +391,8 @@
         [class.has-slash-commands]="hasSlashCommands()"
         [attr.contenteditable]="readonly() ? 'false' : 'true'"
         [attr.placeholder]="placeholder()"
+        role="textbox"
+        aria-multiline="true"
         (input)="onDOMInput()"
         (blur)="onDOMBlur()"
         (focus)="isFocused.set(true)"></div>

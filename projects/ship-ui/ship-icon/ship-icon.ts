@@ -17,7 +17,7 @@ const iconTypes = ['bold', 'thin', 'light', 'fill', 'duotone'];
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': 'customHostClasses()',
-    '[attr.aria-hidden]': '"true"',
+    'aria-hidden': 'true',
   },
 })
 export class ShipIcon implements AfterContentInit {

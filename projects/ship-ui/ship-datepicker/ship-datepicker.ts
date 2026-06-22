@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, input
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { classMutationSignal } from '@ship-ui/core';
 import { HostListener } from '@angular/core';
+import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 
 @Component({
   selector: 'sh-datepicker',
@@ -79,6 +80,8 @@ export class ShipDatepicker {
 
   daysRef = viewChild<ElementRef<HTMLDivElement>>('daysRef');
   currentDate = signal<Date>(this.date() ?? this.#INIT_DATE);
+
+  #keybindings = inject(ShipA11yKeybindingsService);
 
   monthOffsets = computed(() => {
     return Array.from({ length: this.monthsToShow() }, (_, i) => i);
@@ -412,32 +415,36 @@ export class ShipDatepicker {
     let newDate = new Date(date);
     let handled = false;
 
-    switch (event.key) {
-      case 'ArrowRight':
-        newDate.setDate(date.getDate() + 1);
-        handled = true;
-        break;
-      case 'ArrowLeft':
-        newDate.setDate(date.getDate() - 1);
-        handled = true;
-        break;
-      case 'ArrowDown':
-        newDate.setDate(date.getDate() + 7);
-        handled = true;
-        break;
-      case 'ArrowUp':
-        newDate.setDate(date.getDate() - 7);
-        handled = true;
-        break;
-      case 'PageDown':
-        newDate.setMonth(date.getMonth() + 1);
-        handled = true;
-        break;
-      case 'PageUp':
-        newDate.setMonth(date.getMonth() - 1);
-        handled = true;
-        break;
-      // Space and Enter are natively handled by the button's click event
+    if (this.#keybindings.matches(event, 'datepicker.prev-month')) {
+      newDate.setMonth(date.getMonth() - 1);
+      handled = true;
+    } else if (this.#keybindings.matches(event, 'datepicker.next-month')) {
+      newDate.setMonth(date.getMonth() + 1);
+      handled = true;
+    } else if (this.#keybindings.matches(event, 'datepicker.prev-year')) {
+      newDate.setFullYear(date.getFullYear() - 1);
+      handled = true;
+    } else if (this.#keybindings.matches(event, 'datepicker.next-year')) {
+      newDate.setFullYear(date.getFullYear() + 1);
+      handled = true;
+    } else if (this.#keybindings.matches(event, 'datepicker.month-start')) {
+      newDate = new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0);
+      handled = true;
+    } else if (this.#keybindings.matches(event, 'datepicker.month-end')) {
+      newDate = new Date(date.getFullYear(), date.getMonth() + 1, 0, 0, 0, 0, 0);
+      handled = true;
+    } else if (this.#keybindings.matches(event, 'datepicker.day-next')) {
+      newDate.setDate(date.getDate() + 1);
+      handled = true;
+    } else if (this.#keybindings.matches(event, 'datepicker.day-prev')) {
+      newDate.setDate(date.getDate() - 1);
+      handled = true;
+    } else if (this.#keybindings.matches(event, 'datepicker.week-next')) {
+      newDate.setDate(date.getDate() + 7);
+      handled = true;
+    } else if (this.#keybindings.matches(event, 'datepicker.week-prev')) {
+      newDate.setDate(date.getDate() - 7);
+      handled = true;
     }
 
     if (handled) {
@@ -449,11 +456,17 @@ export class ShipDatepicker {
         const buttons = this.#selfRef.nativeElement.querySelectorAll('button');
         if (buttons) {
           const targetAria = this.getAriaLabel(newDate);
+          let bestMatch: HTMLButtonElement | null = null;
           for (let i = 0; i < buttons.length; i++) {
              if (buttons[i].getAttribute('aria-label') === targetAria) {
-               buttons[i].focus();
-               break;
+               bestMatch = buttons[i];
+               if (!buttons[i].classList.contains('out-of-scope')) {
+                 break;
+               }
              }
+          }
+          if (bestMatch) {
+            bestMatch.focus();
           }
         }
       });

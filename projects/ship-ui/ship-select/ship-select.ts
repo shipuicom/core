@@ -1,6 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, contentChild, effect, ElementRef, inject, input, model, output, signal, TemplateRef, untracked, viewChild, ViewEncapsulation } from '@angular/core';
 import { ShipCheckbox } from '@ship-ui/core/ship-checkbox';
+import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { ShipChip } from '@ship-ui/core/ship-chip';
 import { ShipDivider } from '@ship-ui/core/ship-divider';
 import { ShipFormField } from '@ship-ui/core/ship-form-field';
@@ -187,6 +188,7 @@ type ValidateFreeText = (value: string) => boolean;
 })
 export class ShipSelect {
   #selfRef = inject<ElementRef<HTMLElement>>(ElementRef<HTMLElement>);
+  #keybindings = inject(ShipA11yKeybindingsService);
 
   value = input<string>();
   label = input<string>();
@@ -465,35 +467,27 @@ export class ShipSelect {
       (input as HTMLInputElement).addEventListener(
         'keydown',
         (e: KeyboardEvent) => {
-          if (e.key === 'Escape' || e.key === 'Tab') {
+          if (this.#keybindings.matches(e, 'select.close') || e.key === 'Tab') {
             e.preventDefault();
 
             this.close();
           }
 
-          if (e.key === 'Enter') {
-            e.preventDefault();
-
-            this.toggleOptionByIndex(this.focusedOptionIndex(), undefined, true);
-          }
-
-          if (e.key === ' ' || e.key === 'Spacebar') {
-            if (!this.hasSearch()) {
+          if (this.#keybindings.matches(e, 'select.select')) {
+            const isSpace = e.key === ' ' || e.key === 'Spacebar';
+            if (!isSpace || !this.hasSearch()) {
               e.preventDefault();
-
               this.toggleOptionByIndex(this.focusedOptionIndex(), undefined, true);
             }
           }
 
-          if (e.key === 'ArrowDown') {
+          if (this.#keybindings.matches(e, 'select.next')) {
             e.preventDefault();
 
             const newIndex = (this.focusedOptionIndex() as number) + 1;
 
             this.focusedOptionIndex.set(newIndex > this.filteredOptions().length - 1 ? baseIndex : newIndex);
-          }
-
-          if (e.key === 'ArrowUp') {
+          } else if (this.#keybindings.matches(e, 'select.prev')) {
             e.preventDefault();
 
             const newIndex = (this.focusedOptionIndex() as number) - 1;

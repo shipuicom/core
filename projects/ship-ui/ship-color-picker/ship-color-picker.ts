@@ -24,6 +24,8 @@ type A = number;
   host: {
     '[class]': 'renderingType()',
     '[class.vertical]': '(renderingType() === "hue" || renderingType() === "saturation") && direction() === "vertical"',
+    'role': 'slider',
+    'tabindex': '0',
   },
 })
 export class ShipColorPicker {

@@ -9,5 +9,8 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/
     <ng-content />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    'role': 'list',
+  },
 })
 export class ShipList {}

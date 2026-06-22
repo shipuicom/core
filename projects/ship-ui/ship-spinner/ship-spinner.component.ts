@@ -11,6 +11,8 @@ import { ShipColor } from '@ship-ui/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': 'hostClasses()',
+    'role': 'status',
+    'aria-busy': 'true',
   },
 })
 export class ShipSpinner {

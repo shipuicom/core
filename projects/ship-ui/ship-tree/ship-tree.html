@@ -4,6 +4,7 @@
     [shSortable]="sortableManager()"
     [treeItems]="visibleNodes()"
     sortingMode="tree"
+    role="tree"
   >
     @for (node of visibleNodes(); track getId()(node)) {
       <div
@@ -15,6 +16,8 @@
         [attr.sortable-dir]="isFolder()(node) ? 'true' : null"
         [style.--tree-depth]="getNodeDepth(node)"
         (click)="handleNodeClick(node, $event)"
+        role="treeitem"
+        [attr.aria-expanded]="isFolder()(node) ? getIsOpen()(node) : null"
       >
         <!-- Indent guides -->
         @for (i of getDepthArray(getNodeDepth(node)); track i) {
@@ -63,7 +66,7 @@
     }
   </div>
 } @else {
-  <div class="sh-tree-container">
+  <div class="sh-tree-container" role="tree">
     @for (node of visibleNodes(); track getId()(node)) {
       <div
         class="sh-tree-node"
@@ -72,6 +75,8 @@
         [class.is-selected]="selectedId() === getId()(node)"
         [style.--tree-depth]="getNodeDepth(node)"
         (click)="handleNodeClick(node, $event)"
+        role="treeitem"
+        [attr.aria-expanded]="isFolder()(node) ? getIsOpen()(node) : null"
       >
         <!-- Indent guides -->
         @for (i of getDepthArray(getNodeDepth(node)); track i) {

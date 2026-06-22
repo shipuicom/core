@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { classMutationSignal } from '@ship-ui/core';
 import { contentProjectionSignal } from '@ship-ui/core';
 import { shipComponentClasses } from '@ship-ui/core';
@@ -41,6 +42,7 @@ import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
 })
 export class ShipCheckbox {
   private readonly _elementRef = inject(ElementRef);
+  #keybindings = inject(ShipA11yKeybindingsService);
 
   internalInput = viewChild<ElementRef<HTMLInputElement>>('internalInput');
   projectedInputs = contentProjectionSignal<HTMLInputElement>('input:not(.internal-input)', {
@@ -69,15 +71,16 @@ export class ShipCheckbox {
     readonly: this.readonly,
   });
 
-  @HostListener('keydown.enter', ['$event'])
-  @HostListener('keydown.space', ['$event'])
-  protected onEnter(event: Event) {
-    const inputEl = this.internalInput()?.nativeElement;
-    if (inputEl && getComputedStyle(inputEl).display !== 'none') {
-      inputEl.click();
-    } else {
-      this._elementRef.nativeElement.click();
+  @HostListener('keydown', ['$event'])
+  protected onKeyDown(event: KeyboardEvent) {
+    if (this.#keybindings.matches(event, 'checkbox.toggle')) {
+      const inputEl = this.internalInput()?.nativeElement;
+      if (inputEl && getComputedStyle(inputEl).display !== 'none') {
+        inputEl.click();
+      } else {
+        this._elementRef.nativeElement.click();
+      }
+      event.preventDefault();
     }
-    event.preventDefault();
   }
 }

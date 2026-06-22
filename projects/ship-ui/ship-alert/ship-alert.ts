@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, inject, input, ViewEncapsulation } from '@angular/core';
+import { ShipColor, shipComponentClasses, ShipSheetVariant } from '@ship-ui/core';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
-import { shipComponentClasses } from '@ship-ui/core';
-import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
 import { ShipAlertService } from './ship-alert.service';
 
 export type ShipAlertType = 'error' | 'success' | 'warn' | 'primary' | 'accent' | 'question';
@@ -60,6 +59,7 @@ export type ShipAlertType = 'error' | 'success' | 'warn' | 'primary' | 'accent' 
   host: {
     class: 'sh-sheet',
     '[class]': 'hostClasses()',
+    '[attr.role]': 'color() === "warn" || color() === "error" ? "alert" : "status"',
   },
 })
 export class ShipAlert {

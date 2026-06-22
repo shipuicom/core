@@ -3,6 +3,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DOCUMENT, 
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipCard } from '@ship-ui/core/ship-card';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { classMutationSignal } from '@ship-ui/core';
 import { layoutNodes } from './autolayout';
 import { findDuplicateNodeIDs, findDuplicatePortIDs } from './validatePorts';
@@ -172,6 +173,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
   #document = inject(DOCUMENT);
   #platformId = inject(PLATFORM_ID);
   #selfRef = inject(ElementRef<HTMLElement>);
+  #keybindings = inject(ShipA11yKeybindingsService);
   #currentClass = classMutationSignal();
   #htmlClass = classMutationSignal(this.#document.documentElement);
 
@@ -331,11 +333,13 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     }
   }
 
-  @HostListener('document:keydown.escape', []) onEscape() {
-    if (this.draggingConnection()) {
-      this.cancelPortDrag();
-    } else if (this.isLocked()) {
-      this.closeMidpointDiv();
+  @HostListener('document:keydown', ['$event']) onDocumentKeyDown(event: KeyboardEvent) {
+    if (this.#keybindings.matches(event, 'blueprint.cancel')) {
+      if (this.draggingConnection()) {
+        this.cancelPortDrag();
+      } else if (this.isLocked()) {
+        this.closeMidpointDiv();
+      }
     }
   }
 

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
 import { classMutationSignal } from '@ship-ui/core';
+import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { contentProjectionSignal } from '@ship-ui/core';
 import { shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
@@ -35,6 +36,7 @@ import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
 })
 export class ShipRadio {
   private readonly _elementRef = inject(ElementRef);
+  #keybindings = inject(ShipA11yKeybindingsService);
 
   internalInput = viewChild<ElementRef<HTMLInputElement>>('internalInput');
   projectedInputs = contentProjectionSignal<HTMLInputElement>('input:not(.internal-input)', {
@@ -63,15 +65,16 @@ export class ShipRadio {
     readonly: this.readonly,
   });
 
-  @HostListener('keydown.enter', ['$event'])
-  @HostListener('keydown.space', ['$event'])
-  protected onEnter(event: Event) {
-    const inputEl = this.internalInput()?.nativeElement;
-    if (inputEl && getComputedStyle(inputEl).display !== 'none') {
-      inputEl.click();
-    } else {
-      this._elementRef.nativeElement.click();
+  @HostListener('keydown', ['$event'])
+  protected onKeyDown(event: KeyboardEvent) {
+    if (this.#keybindings.matches(event, 'radio.select')) {
+      const inputEl = this.internalInput()?.nativeElement;
+      if (inputEl && getComputedStyle(inputEl).display !== 'none') {
+        inputEl.click();
+      } else {
+        this._elementRef.nativeElement.click();
+      }
+      event.preventDefault();
     }
-    event.preventDefault();
   }
 }

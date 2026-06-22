@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, ElementRef, inject, input, model, output, viewChild, ViewEncapsulation } from '@angular/core';
 import { SHIP_CONFIG } from '@ship-ui/core';
+import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 
 export type ShipDialogOptions = {
   class?: 'default' | 'type-b' | 'type-c' | string;
@@ -55,6 +56,7 @@ const DEFAULT_OPTIONS: ShipDialogOptions = {
 export class ShipDialog {
   #document = inject(DOCUMENT);
   #shConfig = inject(SHIP_CONFIG, { optional: true });
+  #keybindings = inject(ShipA11yKeybindingsService);
   dialogRef = viewChild<ElementRef<HTMLDialogElement>>('dialogRef');
   isOpen = model<boolean>(false);
   options = input<Partial<ShipDialogOptions>>();
@@ -93,12 +95,12 @@ export class ShipDialog {
       this.#document.addEventListener(
         'keydown',
         (e) => {
-          if (e.key === 'Escape' && !this.defaultOptionMerge().closeOnEsc) {
-            e.preventDefault();
-          }
-
-          if (e.key === 'Escape' && this.defaultOptionMerge().closeOnEsc) {
-            this.isOpen.set(false);
+          if (this.#keybindings.matches(e, 'dialog.close')) {
+            if (!this.defaultOptionMerge().closeOnEsc) {
+              e.preventDefault();
+            } else {
+              this.isOpen.set(false);
+            }
           }
         },
         {

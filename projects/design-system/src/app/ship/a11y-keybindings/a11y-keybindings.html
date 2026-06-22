@@ -1,0 +1,43 @@
+<h1>A11y Keybindings</h1>
+<!-- @keywords: accessibility, keybindings, hotkeys, shortcuts, keyboard, global, local, cmd, ctrl, modifiers, focus -->
+
+<app-property-viewer>
+  <section>
+    <h4>Overview & Accessibility</h4>
+    <p>
+      The A11y Keybindings engine provides a unified system for handling keyboard shortcuts. The
+      <code>[shA11yKeybinding]</code> directive dynamically sets standard <code>aria-keyshortcuts</code> attributes
+      on host elements to announce active hotkeys to assistive technologies.
+    </p>
+  </section>
+
+  <section>
+    <h4>Provider Overrides</h4>
+    <p>
+      Default shortcuts registered by components can be overridden globally at the application level.
+      Provide the <code>SHIP_A11Y_KEYBINDINGS_OVERRIDE</code> injection token with a mapping object:
+      <code>&#123; provide: SHIP_A11Y_KEYBINDINGS_OVERRIDE, useValue: &#123; 'action.name': 'ctrl+s' &#125; &#125;</code>.
+    </p>
+  </section>
+
+  <section>
+    <h4>OS Adaptive Keys (Command vs Control)</h4>
+    <p>
+      We support the <code>ctrlOrCmd</code> modifier keyword in shortcuts. It maps dynamically at runtime:
+      resolves to <code>Command (⌘)</code> on macOS and <code>Control (Ctrl)</code> on Windows/Linux. Display formats are also customized for each OS (e.g. <code>⌘⇧K</code> vs <code>Ctrl+Shift+K</code>).
+    </p>
+  </section>
+
+  <section>
+    <h4>Collisions & Input Handling</h4>
+    <p>
+      When in <code>mode="global"</code>, the directive automatically ignores keypresses that originate
+      from input boxes, selects, textareas, or content-editables (unless modifier keys like Ctrl, Cmd, or Alt are pressed),
+      ensuring keyboard shortcuts do not interfere with typing.
+    </p>
+  </section>
+</app-property-viewer>
+
+<app-previewer path="/a11y-keybindings/examples/basic-keybindings/basic-keybindings" title="Interactive Showcase">
+  <app-basic-keybindings class="example" />
+</app-previewer>

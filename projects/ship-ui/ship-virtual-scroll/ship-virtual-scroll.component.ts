@@ -6,7 +6,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, effect
   encapsulation: ViewEncapsulation.None,
   imports: [],
   template: `
-    <div class="viewport" #viewport (scroll)="onScroll()">
+    <div class="viewport" #viewport tabindex="0" role="region" aria-label="Virtualized list" (scroll)="onScroll()">
       <div class="total-height" [style.height]="totalHeight() + 'px'"></div>
       <div class="items-container" [style.transform]="'translateY(' + translateY() + 'px)'">
         <ng-content />

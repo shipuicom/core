@@ -64,6 +64,7 @@ export class ShipAccordion {
         if (summary && !summary.querySelector('sh-icon')) {
           const icon = document.createElement('sh-icon');
           icon.textContent = 'caret-down';
+          icon.setAttribute('aria-hidden', 'true');
           summary.appendChild(icon);
         }
 

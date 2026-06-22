@@ -24,6 +24,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ShipColor, shipComponentClasses, ShipTooltip } from '@ship-ui/core';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipMenu } from '@ship-ui/core/ship-menu';
+import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 
 export interface ShipEditorCommand {
   id: string;
@@ -114,6 +115,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
   #platformId = inject(PLATFORM_ID);
   #isBrowser = isPlatformBrowser(this.#platformId);
   #elementRef = inject(ElementRef);
+  #keybindings = inject(ShipA11yKeybindingsService);
 
   get #doc(): Document & ShipEditorHtmlDocument {
     return this.#document as unknown as Document & ShipEditorHtmlDocument;
@@ -1832,7 +1834,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
 
     const isGroupJump = event.ctrlKey || event.altKey || event.metaKey;
 
-    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+    if (this.#keybindings.matches(event, 'editor-toolbar.next')) {
       event.preventDefault();
       if (isGroupJump) {
         const currentGroup = target.closest('.sh-editor-toolbar-group');
@@ -1859,7 +1861,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
         const nextIndex = (currentIndex + 1) % items.length;
         items[nextIndex].focus();
       }
-    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+    } else if (this.#keybindings.matches(event, 'editor-toolbar.prev')) {
       event.preventDefault();
       if (isGroupJump) {
         const currentGroup = target.closest('.sh-editor-toolbar-group');
@@ -1886,10 +1888,10 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
         const nextIndex = (currentIndex - 1 + items.length) % items.length;
         items[nextIndex].focus();
       }
-    } else if (event.key === 'Home') {
+    } else if (this.#keybindings.matches(event, 'editor-toolbar.home')) {
       event.preventDefault();
       items[0].focus();
-    } else if (event.key === 'End') {
+    } else if (this.#keybindings.matches(event, 'editor-toolbar.end')) {
       event.preventDefault();
       items[items.length - 1].focus();
     }

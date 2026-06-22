@@ -47,7 +47,7 @@ export function watchHostClass(className: string): WritableSignal<boolean> {
       <div class="dropping-surface" (drop)="drop($event)" (dragenter)="dragEnter()" (dragleave)="dragLeave()"></div>
     }
 
-    <div class="sidenav">
+    <div class="sidenav" role="navigation">
       <ng-content select="[sidenav]"></ng-content>
     </div>
 
