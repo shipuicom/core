@@ -113,6 +113,10 @@ export class ShipPopover {
         if (!popoverEl.isConnected) return;
 
         popoverEl.showPopover();
+        const closeShortcut = this.#keybindings.getShortcut('popover.close');
+        if (closeShortcut) {
+          popoverEl.setAttribute('aria-keyshortcuts', this.#keybindings.getDisplayShortcut('popover.close') || closeShortcut);
+        }
 
         const isMobileSheet = this.asSheetOnMobile() && window.innerWidth <= 768;
         if (isMobileSheet) {

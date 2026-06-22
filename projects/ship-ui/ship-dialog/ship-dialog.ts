@@ -81,6 +81,10 @@ export class ShipDialog {
 
     if (this.isOpen()) {
       dialogEl.showModal();
+      const closeShortcut = this.#keybindings.getShortcut('dialog.close');
+      if (closeShortcut) {
+        dialogEl.setAttribute('aria-keyshortcuts', this.#keybindings.getDisplayShortcut('dialog.close') || closeShortcut);
+      }
       dialogEl.addEventListener(
         'close',
         () => {

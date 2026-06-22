@@ -162,12 +162,19 @@ export class ShipResize {
     '[attr.aria-sort]': 'shSort() ? ariaSort() : null',
     '[class.sort-asc]': 'sortAsc()',
     '[class.sort-desc]': 'sortDesc()',
+    '[attr.aria-keyshortcuts]': 'shSort() ? ariaKeyshortcuts() : null',
   },
 })
 export class ShipSort {
   #table = inject(ShipTable);
   #keybindings = inject(ShipA11yKeybindingsService);
   shSort = input<string | undefined>();
+
+  ariaKeyshortcuts = computed(() => {
+    const action = 'table.sort';
+    const shortcut = this.#keybindings.getShortcut(action);
+    return shortcut ? (this.#keybindings.getDisplayShortcut(action) || shortcut) : null;
+  });
 
   @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {

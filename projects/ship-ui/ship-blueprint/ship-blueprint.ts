@@ -161,6 +161,9 @@ type ValidationErrors = {
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[attr.aria-keyshortcuts]': 'ariaKeyshortcuts()',
+  },
 })
 export class ShipBlueprint implements AfterViewInit, OnDestroy {
   readonly #ZOOM_SPEED = 0.01;
@@ -174,6 +177,13 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
   #platformId = inject(PLATFORM_ID);
   #selfRef = inject(ElementRef<HTMLElement>);
   #keybindings = inject(ShipA11yKeybindingsService);
+
+  ariaKeyshortcuts = computed(() => {
+    const action = 'blueprint.cancel';
+    const shortcut = this.#keybindings.getShortcut(action);
+    return shortcut ? (this.#keybindings.getDisplayShortcut(action) || shortcut) : null;
+  });
+
   #currentClass = classMutationSignal();
   #htmlClass = classMutationSignal(this.#document.documentElement);
 

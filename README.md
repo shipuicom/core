@@ -157,22 +157,6 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-### Declaring Shortcuts on Elements (Directives)
-
-ShipUI provides two standalone directives to connect your HTML elements with the `ShipA11yKeybindingsService` and automatically output compliant `aria-keyshortcuts` attributes for screen readers:
-
-1. **`[shA11yKeybinding]`**: Maps an action name, sets the `aria-keyshortcuts` attribute, listens to the keyboard event (globally or locally), and automatically triggers a `.click()` on the host element when matched.
-   ```html
-   <!-- Automatically triggers click/onClose() and sets aria-keyshortcuts when user presses Escape -->
-   <button shA11yKeybinding="dialog.close" mode="local" (triggered)="onClose()">Close Dialog</button>
-   ```
-
-2. **`[shA11yKeyshortcut]`**: Sets the `aria-keyshortcuts` attribute dynamically from the service without setting up any keydown event listeners. Use this on elements/components that already handle key events internally but need to advertise their hotkeys to assistive technologies.
-   ```html
-   <!-- Sets aria-keyshortcuts="Enter, Space" dynamically on the list header -->
-   <th shA11yKeyshortcut="table.sort" (click)="sort()">Sorted Column</th>
-   ```
-
 ### Keybinding Syntax
 * Support multiple key combinations using comma-separated notation (e.g. `'ArrowRight, d'`).
 * Modifier combinations are specified with `+`, such as `'ctrl+shift+k'`.
