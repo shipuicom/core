@@ -55,3 +55,6 @@ Thumbs.db
 /mcp-server/components.json
 /mcp-server/ship-ui.code-snippets
 /projects/ship-ui/README.md
+
+# E2E test results
+/test-results/
