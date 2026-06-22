@@ -77,6 +77,7 @@ export class ConfigTable {
   // Sample data
   users = signal<ConfigUserElement[]>([...INITIAL_USERS]);
   isLoading = signal<boolean>(false);
+  gridMode = signal<boolean>(false);
 
   // Template viewChild references
   nameTemplate = viewChild.required<TemplateRef<any>>('nameTemplate');

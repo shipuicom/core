@@ -9,12 +9,14 @@ import {
   ElementRef,
   HostListener,
   inject,
+  Injector,
   input,
   model,
   output,
   Renderer2,
   signal,
   TemplateRef,
+  untracked,
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -53,6 +55,9 @@ export class ShipResize {
   #el = inject(ElementRef) as ElementRef<HTMLTableCellElement>;
   #renderer = inject(Renderer2);
   #table = inject(ShipTable);
+  #keybindings = inject(ShipA11yKeybindingsService);
+  #injector = inject(Injector);
+  #sort = signal<ShipSort | null>(null);
 
   resizable = input<boolean>(true);
   minWidth = input<number>(50);
@@ -65,17 +70,118 @@ export class ShipResize {
   #resizing = false;
   #animationFrameRequest: number | null = null; // Store request ID
 
+  constructor() {
+    effect(() => {
+      if (this.#sort()) return;
+
+      const hostEl = this.#el.nativeElement;
+      if (this.resizable()) {
+        const parts: string[] = [];
+        const decAction = 'table.column-resize-decrease';
+        const decShortcut = this.#keybindings.getShortcut(decAction);
+        if (decShortcut) {
+          parts.push(this.#keybindings.getDisplayShortcut(decAction) || decShortcut);
+        }
+        const incAction = 'table.column-resize-increase';
+        const incShortcut = this.#keybindings.getShortcut(incAction);
+        if (incShortcut) {
+          parts.push(this.#keybindings.getDisplayShortcut(incAction) || incShortcut);
+        }
+
+        if (parts.length > 0) {
+          this.#renderer.setAttribute(hostEl, 'aria-keyshortcuts', parts.join(', '));
+        } else {
+          this.#renderer.removeAttribute(hostEl, 'aria-keyshortcuts');
+        }
+      } else {
+        this.#renderer.removeAttribute(hostEl, 'aria-keyshortcuts');
+      }
+    });
+  }
+
   ngOnInit() {
     if (!this.#table) {
       console.error('shTableResize directive must be used within a sh-table component.');
       return;
     }
 
+    const hostEl = this.#el.nativeElement;
+
+    // Resolve ShipSort lazily to avoid circular DI instantiation issues
+    this.#sort.set(this.#injector.get(ShipSort, null, { optional: true, self: true }));
+
     if (this.resizable()) {
       const resizer = this.#renderer.createElement('div');
       this.#renderer.addClass(resizer, 'sh-resizer');
-      this.#renderer.appendChild(this.#el.nativeElement, resizer);
+      this.#renderer.appendChild(hostEl, resizer);
       this.#renderer.listen(resizer, 'mousedown', this.#onMouseDown.bind(this));
+
+      if (!hostEl.hasAttribute('role')) {
+        this.#renderer.setAttribute(hostEl, 'role', 'columnheader');
+      }
+
+      if (!this.#sort() && !hostEl.hasAttribute('tabindex')) {
+        this.#renderer.setAttribute(hostEl, 'tabindex', '0');
+      }
+    }
+  }
+
+  @HostListener('keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (!this.resizable()) return;
+
+    const target = event.target as HTMLElement;
+    const host = this.#el.nativeElement;
+    if (
+      target !== host &&
+      (target.tagName === 'BUTTON' ||
+        target.tagName === 'INPUT' ||
+        target.tagName === 'SELECT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.closest('button, input, select, textarea, a') !== null ||
+        target.closest('[role="button"], [role="checkbox"], [role="menuitem"]') !== null)
+    ) {
+      return;
+    }
+
+    if ((event.key === 'ArrowLeft' || event.key === 'ArrowRight') && !event.shiftKey) {
+      if (!this.#sort()) {
+        const parentRow = host.parentElement;
+        if (parentRow) {
+          const headers = Array.from(parentRow.querySelectorAll<HTMLElement>('th')).filter(
+            (el) => el.getAttribute('tabindex') === '0' || el.hasAttribute('shSort') || el.hasAttribute('shResize')
+          );
+          const currentIndex = headers.indexOf(host);
+          if (currentIndex !== -1) {
+            const nextIndex = event.key === 'ArrowRight' ? currentIndex + 1 : currentIndex - 1;
+            if (nextIndex >= 0 && nextIndex < headers.length) {
+              event.preventDefault();
+              headers[nextIndex].focus();
+              return;
+            }
+          }
+        }
+      }
+    }
+
+    const isDecrease = this.#keybindings.matches(event, 'table.column-resize-decrease');
+    const isIncrease = this.#keybindings.matches(event, 'table.column-resize-increase');
+
+    if (isDecrease || isIncrease) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const currentWidth = this.#el.nativeElement.offsetWidth;
+      const step = 10;
+      const targetWidth = isDecrease ? currentWidth - step : currentWidth + step;
+
+      const constrainedWidth = Math.max(
+        this.minWidth(),
+        this.maxWidth() ? Math.min(targetWidth, this.maxWidth() ?? targetWidth) : targetWidth
+      );
+
+      this.#renderer.setAttribute(this.#el.nativeElement, 'size', `${constrainedWidth}px`);
+      this.#table.updateColumnSizes();
     }
   }
 
@@ -157,28 +263,98 @@ export class ShipResize {
   host: {
     role: 'columnheader',
     '[class.sortable]': '!!shSort()',
-    '[attr.tabindex]': 'shSort() ? "0" : null',
-    '(click)': 'shSort() ? toggleSort() : null',
+    '[attr.tabindex]': 'tabIndex()',
+    '(click)': 'shSort() ? toggleSort($event) : null',
     '[attr.aria-sort]': 'shSort() ? ariaSort() : null',
     '[class.sort-asc]': 'sortAsc()',
     '[class.sort-desc]': 'sortDesc()',
-    '[attr.aria-keyshortcuts]': 'shSort() ? ariaKeyshortcuts() : null',
+    '[attr.aria-keyshortcuts]': 'ariaKeyshortcuts()',
   },
 })
 export class ShipSort {
   #table = inject(ShipTable);
   #keybindings = inject(ShipA11yKeybindingsService);
+  #injector = inject(Injector);
+  #el = inject(ElementRef) as ElementRef<HTMLTableCellElement>;
+  #resize = signal<ShipResize | null>(null);
   shSort = input<string | undefined>();
 
+  ngOnInit() {
+    // Resolve ShipResize lazily to avoid circular DI instantiation issues
+    this.#resize.set(this.#injector.get(ShipResize, null, { optional: true, self: true }));
+  }
+
+  tabIndex = computed(() => {
+    const resize = this.#resize();
+    return this.shSort() || (resize && resize.resizable()) ? '0' : null;
+  });
+
   ariaKeyshortcuts = computed(() => {
-    const action = 'table.sort';
-    const shortcut = this.#keybindings.getShortcut(action);
-    return shortcut ? (this.#keybindings.getDisplayShortcut(action) || shortcut) : null;
+    const parts: string[] = [];
+    const resize = this.#resize();
+
+    if (this.shSort()) {
+      const action = 'table.sort';
+      const shortcut = this.#keybindings.getShortcut(action);
+      if (shortcut) {
+        parts.push(this.#keybindings.getDisplayShortcut(action) || shortcut);
+      }
+    }
+
+    if (resize && resize.resizable()) {
+      const decAction = 'table.column-resize-decrease';
+      const decShortcut = this.#keybindings.getShortcut(decAction);
+      if (decShortcut) {
+        parts.push(this.#keybindings.getDisplayShortcut(decAction) || decShortcut);
+      }
+
+      const incAction = 'table.column-resize-increase';
+      const incShortcut = this.#keybindings.getShortcut(incAction);
+      if (incShortcut) {
+        parts.push(this.#keybindings.getDisplayShortcut(incAction) || incShortcut);
+      }
+    }
+
+    return parts.length > 0 ? parts.join(', ') : null;
   });
 
   @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
-    if (this.shSort() && this.#keybindings.matches(event, 'table.sort')) {
+    if (!this.shSort()) return;
+
+    const target = event.target as HTMLElement;
+    const host = this.#el.nativeElement;
+    if (
+      target !== host &&
+      (target.tagName === 'BUTTON' ||
+        target.tagName === 'INPUT' ||
+        target.tagName === 'SELECT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.closest('button, input, select, textarea, a') !== null ||
+        target.closest('[role="button"], [role="checkbox"], [role="menuitem"]') !== null)
+    ) {
+      return;
+    }
+
+    if ((event.key === 'ArrowLeft' || event.key === 'ArrowRight') && !event.shiftKey) {
+      const parentRow = host.parentElement;
+      if (parentRow) {
+        const headers = Array.from(parentRow.querySelectorAll<HTMLElement>('th')).filter(
+          (el) => el.getAttribute('tabindex') === '0' || el.hasAttribute('shSort') || el.hasAttribute('shResize')
+        );
+        const currentIndex = headers.indexOf(host);
+        if (currentIndex !== -1) {
+          const nextIndex = event.key === 'ArrowRight' ? currentIndex + 1 : currentIndex - 1;
+          if (nextIndex >= 0 && nextIndex < headers.length) {
+            event.preventDefault();
+            headers[nextIndex].focus();
+            return;
+          }
+        }
+      }
+    }
+
+    if (this.#keybindings.matches(event, 'table.sort')) {
       this.toggleSort(event);
     }
   }
@@ -209,6 +385,19 @@ export class ShipSort {
 
   toggleSort(event?: Event) {
     if (event) {
+      const target = event.target as HTMLElement;
+      const host = this.#el.nativeElement;
+      if (
+        target !== host &&
+        (target.tagName === 'BUTTON' ||
+          target.tagName === 'INPUT' ||
+          target.tagName === 'SELECT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.closest('button, input, select, textarea, a') !== null ||
+          target.closest('[role="button"], [role="checkbox"], [role="menuitem"]') !== null)
+      ) {
+        return;
+      }
       event.preventDefault();
     }
     if (this.#table.resizing()) {
@@ -298,7 +487,7 @@ type ScrollState = -1 | 0 | 1;
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    role: 'table',
+    '[attr.role]': 'role()',
     '[attr.aria-busy]': 'loading()',
     '[attr.aria-label]': 'ariaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledby()',
@@ -316,6 +505,11 @@ type ScrollState = -1 | 0 | 1;
 })
 export class ShipTable {
   #el = inject(ElementRef);
+  #renderer = inject(Renderer2);
+  #keybindings = inject(ShipA11yKeybindingsService);
+
+  grid = input<boolean>(false);
+  role = computed(() => (this.grid() ? 'grid' : 'table'));
 
   loading = input<boolean>(false);
   data = input<any>([]);
@@ -378,6 +572,67 @@ export class ShipTable {
     });
   });
 
+  gridSetupEffect = effect(() => {
+    const gridActive = this.grid();
+    const dataVal = this.data();
+    const colSignal = this.columns.signal();
+
+    untracked(() => {
+      const host = this.#el.nativeElement;
+      const allCells = host.querySelectorAll('th, td');
+
+      if (gridActive) {
+        if (allCells.length === 0) return;
+
+        let hasZero = false;
+        allCells.forEach((cell: any) => {
+          if (cell.getAttribute('tabindex') === '0') {
+            hasZero = true;
+          }
+        });
+
+        if (!hasZero) {
+          this.#renderer.setAttribute(allCells[0], 'tabindex', '0');
+        }
+
+        allCells.forEach((cell: any) => {
+          if (cell.getAttribute('tabindex') !== '0') {
+            this.#renderer.setAttribute(cell, 'tabindex', '-1');
+          }
+          if (!cell.hasAttribute('role')) {
+            this.#renderer.setAttribute(cell, 'role', cell.tagName === 'TD' ? 'gridcell' : 'columnheader');
+          }
+        });
+
+        const allRows = host.querySelectorAll('tr');
+        allRows.forEach((row: any) => {
+          if (!row.hasAttribute('role')) {
+            this.#renderer.setAttribute(row, 'role', 'row');
+          }
+        });
+      } else {
+        // Clean up
+        allCells.forEach((cell: any) => {
+          const isHeader = cell.tagName === 'TH';
+          if (isHeader) {
+            const isInteractiveHeader =
+              cell.classList.contains('sortable') ||
+              cell.querySelector('.sh-resizer') !== null ||
+              cell.hasAttribute('aria-keyshortcuts');
+            if (isInteractiveHeader) {
+              this.#renderer.setAttribute(cell, 'tabindex', '0');
+            } else {
+              this.#renderer.removeAttribute(cell, 'tabindex');
+            }
+          } else {
+            // Remove tabindex from td (data cells)
+            this.#renderer.removeAttribute(cell, 'tabindex');
+          }
+        });
+      }
+    });
+  });
+
   resizing = signal(false);
   sizeTrigger = signal(true);
   #initialData: any | null = null;
@@ -427,6 +682,173 @@ export class ShipTable {
 
   ngAfterViewInit() {
     queueMicrotask(() => this.#checkScroll());
+  }
+
+  @HostListener('focusin', ['$event'])
+  onFocusIn(event: FocusEvent) {
+    if (!this.grid()) return;
+
+    const target = event.target as HTMLElement;
+    if (!target) return;
+
+    const cell =
+      target.tagName === 'TH' || target.tagName === 'TD' ? target : (target.closest('th, td') as HTMLElement);
+    if (cell) {
+      // Set roles dynamically for cells and rows if not present
+      if (!cell.hasAttribute('role')) {
+        this.#renderer.setAttribute(cell, 'role', cell.tagName === 'TD' ? 'gridcell' : 'columnheader');
+      }
+      const parentRow = cell.parentElement;
+      if (parentRow && !parentRow.hasAttribute('role')) {
+        this.#renderer.setAttribute(parentRow, 'role', 'row');
+      }
+
+      // Set tabindex="0" on focused cell and tabindex="-1" on all other cells
+      this.#renderer.setAttribute(cell, 'tabindex', '0');
+      const allCells = this.#el.nativeElement.querySelectorAll('th, td');
+      allCells.forEach((c: any) => {
+        if (c !== cell) {
+          this.#renderer.setAttribute(c, 'tabindex', '-1');
+        }
+      });
+    }
+  }
+
+  @HostListener('keydown', ['$event'])
+  onGridKeyDown(event: KeyboardEvent) {
+    if (!this.grid()) return;
+
+    if (event.key === 'Tab') {
+      const target = event.target as HTMLElement;
+      const cell =
+        target.tagName === 'TH' || target.tagName === 'TD' ? target : (target.closest('th, td') as HTMLElement);
+      if (!cell) return;
+
+      const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+      const focusableChildren = Array.from(cell.querySelectorAll(focusableSelectors)) as HTMLElement[];
+
+      const row = cell.parentElement as HTMLTableRowElement;
+      if (!row || row.tagName !== 'TR') return;
+
+      const cellsInRow = Array.from(row.querySelectorAll('th, td')) as HTMLElement[];
+      const currentColIndex = cellsInRow.indexOf(cell);
+      if (currentColIndex === -1) return;
+
+      if (!event.shiftKey) {
+        // Forward Tab
+        const isLastChild =
+          focusableChildren.length === 0 || target === focusableChildren[focusableChildren.length - 1];
+        const isCellSelf = target === cell;
+
+        if (isLastChild && !isCellSelf) {
+          // Move to next cell in row
+          if (currentColIndex < cellsInRow.length - 1) {
+            event.preventDefault();
+            this.#focusGridCell(cellsInRow[currentColIndex + 1]);
+          }
+        } else if (isCellSelf && focusableChildren.length === 0) {
+          // Move to next cell in row
+          if (currentColIndex < cellsInRow.length - 1) {
+            event.preventDefault();
+            this.#focusGridCell(cellsInRow[currentColIndex + 1]);
+          }
+        }
+      } else {
+        // Shift + Tab (Backward)
+        const isFirstChild = focusableChildren.length > 0 && target === focusableChildren[0];
+        const isCellSelf = target === cell;
+
+        if (isFirstChild) {
+          event.preventDefault();
+          this.#focusGridCell(cell);
+        } else if (isCellSelf) {
+          if (currentColIndex > 0) {
+            event.preventDefault();
+            const prevCell = cellsInRow[currentColIndex - 1];
+            const prevFocusableChildren = Array.from(prevCell.querySelectorAll(focusableSelectors)) as HTMLElement[];
+            if (prevFocusableChildren.length > 0) {
+              this.#focusGridCell(prevCell);
+              prevFocusableChildren[prevFocusableChildren.length - 1].focus();
+            } else {
+              this.#focusGridCell(prevCell);
+            }
+          }
+        }
+      }
+      return;
+    }
+
+    const isUp = this.#keybindings.matches(event, 'grid.focus-up');
+    const isDown = this.#keybindings.matches(event, 'grid.focus-down');
+    const isLeft = this.#keybindings.matches(event, 'grid.focus-left');
+    const isRight = this.#keybindings.matches(event, 'grid.focus-right');
+    const isFirst = this.#keybindings.matches(event, 'grid.focus-first');
+    const isLast = this.#keybindings.matches(event, 'grid.focus-last');
+
+    if (!isUp && !isDown && !isLeft && !isRight && !isFirst && !isLast) return;
+
+    const target = event.target as HTMLElement;
+    if (target.tagName !== 'TH' && target.tagName !== 'TD') {
+      // Focus is inside a child control, let them operate normally
+      return;
+    }
+
+    const row = target.parentElement as HTMLTableRowElement;
+    if (!row || row.tagName !== 'TR') return;
+
+    const allRows = Array.from(this.#el.nativeElement.querySelectorAll('tr')) as HTMLTableRowElement[];
+    const currentRowIndex = allRows.indexOf(row);
+    if (currentRowIndex === -1) return;
+
+    const cellsInRow = Array.from(row.querySelectorAll('th, td')) as HTMLElement[];
+    const currentColIndex = cellsInRow.indexOf(target);
+    if (currentColIndex === -1) return;
+
+    let targetRowIndex = currentRowIndex;
+    let targetColIndex = currentColIndex;
+
+    if (isUp) {
+      targetRowIndex = currentRowIndex - 1;
+    } else if (isDown) {
+      targetRowIndex = currentRowIndex + 1;
+    } else if (isLeft) {
+      targetColIndex = currentColIndex - 1;
+    } else if (isRight) {
+      targetColIndex = currentColIndex + 1;
+    } else if (isFirst) {
+      targetColIndex = 0;
+    } else if (isLast) {
+      targetColIndex = cellsInRow.length - 1;
+    }
+
+    if (targetRowIndex !== currentRowIndex) {
+      const targetRow = allRows[targetRowIndex];
+      if (targetRow) {
+        const targetCells = Array.from(targetRow.querySelectorAll('th, td')) as HTMLElement[];
+        const targetCell = targetCells[Math.min(currentColIndex, targetCells.length - 1)];
+        if (targetCell) {
+          event.preventDefault();
+          this.#focusGridCell(targetCell);
+        }
+      }
+    } else if (targetColIndex !== currentColIndex) {
+      const targetCell = cellsInRow[targetColIndex];
+      if (targetCell) {
+        event.preventDefault();
+        this.#focusGridCell(targetCell);
+      }
+    }
+  }
+
+  #focusGridCell(cell: HTMLElement) {
+    this.#renderer.setAttribute(cell, 'tabindex', '0');
+    cell.focus();
+    const allCells = this.#el.nativeElement.querySelectorAll('th, td');
+    allCells.forEach((c: any) => {
+      if (c !== cell) {
+        this.#renderer.setAttribute(c, 'tabindex', '-1');
+      }
+    });
   }
 
   e = effect(() => {
@@ -601,7 +1023,7 @@ export class ShipTable {
               [class.sticky-end]="col.sticky === 'end'"
               [id]="col.id + '-' + rowIndex"
               [attr.aria-labelledby]="col.id + ' ' + col.id + '-' + rowIndex"
-              [attr.role]="col.rowHeader ? 'rowheader' : 'cell'">
+              [attr.role]="col.rowHeader ? 'rowheader' : grid() ? 'gridcell' : 'cell'">
               @if (col.cellTemplate) {
                 <ng-container
                   [ngTemplateOutlet]="col.cellTemplate"
@@ -644,6 +1066,7 @@ export class ShipTableContent {
   data = input<any[]>([]);
 
   sortByColumn = this.#table.sortByColumn;
+  grid = this.#table.grid;
 
   thead = viewChild<ElementRef<HTMLTableSectionElement>>('thead');
   tbody = viewChild<ElementRef<HTMLTableSectionElement>>('tbody');

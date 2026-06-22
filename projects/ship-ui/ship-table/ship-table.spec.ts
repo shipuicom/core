@@ -1,6 +1,6 @@
-import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { Component, signal, TemplateRef, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ShipSort, ShipTable, ShipTableColumn, ShipTableContent } from './ship-table';
 
 @Component({
@@ -322,9 +322,7 @@ describe('ShipTable Configuration-Based Columns', () => {
 
   it('should not trigger sorting when releasing the resizer after resizing', () => {
     vi.useFakeTimers();
-    hostComponent.columns.set([
-      { id: 'name', header: 'Name', resizable: true, sortable: true },
-    ]);
+    hostComponent.columns.set([{ id: 'name', header: 'Name', resizable: true, sortable: true }]);
     fixture.detectChanges();
 
     const header = fixture.nativeElement.querySelector('thead th');
@@ -474,9 +472,7 @@ describe('ShipTable Configuration-Based Columns', () => {
     ];
     // Set data
     hostComponent.dataSource.set(originalData);
-    hostComponent.columns.set([
-      { id: 'name', header: 'Name', sortable: true },
-    ]);
+    hostComponent.columns.set([{ id: 'name', header: 'Name', sortable: true }]);
     fixture.detectChanges();
 
     // Trigger sorting
@@ -506,9 +502,7 @@ describe('ShipTable Configuration-Based Columns', () => {
       { name: 'Charlie', details: null },
       { name: 'Dave' },
     ]);
-    hostComponent.columns.set([
-      { id: 'city', header: 'City', accessorKey: 'details.address.city' },
-    ]);
+    hostComponent.columns.set([{ id: 'city', header: 'City', accessorKey: 'details.address.city' }]);
     fixture.detectChanges();
 
     const cells = fixture.nativeElement.querySelectorAll('tbody td');
@@ -524,9 +518,7 @@ describe('ShipTable Configuration-Based Columns', () => {
       { name: 'Charlie', details: { address: { city: 'London' } } },
       { name: 'Bob', details: { address: { city: 'Berlin' } } },
     ]);
-    hostComponent.columns.set([
-      { id: 'city', header: 'City', accessorKey: 'details.address.city', sortable: true },
-    ]);
+    hostComponent.columns.set([{ id: 'city', header: 'City', accessorKey: 'details.address.city', sortable: true }]);
     fixture.detectChanges();
 
     const cityHeader = fixture.nativeElement.querySelector('thead th:nth-child(1)');
@@ -558,9 +550,7 @@ describe('ShipTable Configuration-Based Columns', () => {
       { name: 'Alice', age: null },
       { name: 'Bob', age: 25 },
     ]);
-    hostComponent.columns.set([
-      { id: 'age', header: 'Age', sortable: true, type: 'number' },
-    ]);
+    hostComponent.columns.set([{ id: 'age', header: 'Age', sortable: true, type: 'number' }]);
     fixture.detectChanges();
 
     const ageHeader = fixture.nativeElement.querySelector('thead th:nth-child(1)');
@@ -584,5 +574,452 @@ describe('ShipTable Configuration-Based Columns', () => {
       { name: 'Bob', age: 25 },
       { name: 'Alice', age: null },
     ]);
+  });
+});
+
+describe('ShipTable Keyboard Resizing & Accessibility Shortcuts', () => {
+  let fixture: ComponentFixture<TestConfigTableComponent>;
+  let hostComponent: TestConfigTableComponent;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [TestConfigTableComponent],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(TestConfigTableComponent);
+    hostComponent = fixture.componentInstance;
+  });
+
+  it('should apply tabindex="0" and role="columnheader" to resizable columns even if they are not sortable', () => {
+    hostComponent.columns.set([{ id: 'name', header: 'Name', resizable: true, sortable: false }]);
+    fixture.detectChanges();
+
+    const header = fixture.nativeElement.querySelector('thead th');
+    expect(header.getAttribute('role')).toBe('columnheader');
+    expect(header.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('should merge aria-keyshortcuts when a column is both sortable and resizable', () => {
+    hostComponent.columns.set([{ id: 'name', header: 'Name', resizable: true, sortable: true }]);
+    fixture.detectChanges();
+
+    const header = fixture.nativeElement.querySelector('thead th');
+    const keyshortcuts = header.getAttribute('aria-keyshortcuts');
+    expect(keyshortcuts).toContain('Enter');
+    expect(keyshortcuts).toContain('ArrowLeft');
+    expect(keyshortcuts).toContain('ArrowRight');
+  });
+
+  it('should decrease and increase column size when pressing Shift+ArrowLeft and Shift+ArrowRight', () => {
+    hostComponent.columns.set([{ id: 'name', header: 'Name', resizable: true, minWidth: 50, size: '100px' }]);
+    fixture.detectChanges();
+
+    const header = fixture.nativeElement.querySelector('thead th') as HTMLTableCellElement;
+
+    // Stub offsetWidth to simulate actual layout width dynamically
+    Object.defineProperty(header, 'offsetWidth', {
+      get: () => {
+        const sizeAttr = header.getAttribute('size');
+        return sizeAttr ? parseInt(sizeAttr, 10) : 100;
+      },
+      configurable: true,
+    });
+
+    // Decrease column width
+    const leftEvent = new KeyboardEvent('keydown', {
+      key: 'ArrowLeft',
+      shiftKey: true,
+      bubbles: true,
+    });
+    header.dispatchEvent(leftEvent);
+    fixture.detectChanges();
+
+    expect(header.getAttribute('size')).toBe('90px');
+
+    // Increase column width
+    const rightEvent = new KeyboardEvent('keydown', {
+      key: 'ArrowRight',
+      shiftKey: true,
+      bubbles: true,
+    });
+    header.dispatchEvent(rightEvent);
+    fixture.detectChanges();
+
+    expect(header.getAttribute('size')).toBe('100px');
+  });
+
+  it('should ignore click and keydown events originating from nested interactive controls', () => {
+    hostComponent.columns.set([{ id: 'name', header: 'Name', resizable: true, sortable: true, size: '100px' }]);
+    fixture.detectChanges();
+
+    const header = fixture.nativeElement.querySelector('thead th') as HTMLTableCellElement;
+
+    // Add a button inside the header
+    const btn = document.createElement('button');
+    btn.setAttribute('role', 'button');
+    header.appendChild(btn);
+
+    // Clicking the button should NOT toggle sort
+    btn.click();
+    fixture.detectChanges();
+    expect(hostComponent.sortByColumn()).toBeNull();
+
+    // Pressing Enter on the button should NOT toggle sort
+    const enterEvent = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+    });
+    btn.dispatchEvent(enterEvent);
+    fixture.detectChanges();
+    expect(hostComponent.sortByColumn()).toBeNull();
+
+    // Stub offsetWidth to simulate actual layout width
+    Object.defineProperty(header, 'offsetWidth', { value: 100, configurable: true });
+
+    // Pressing Shift+ArrowLeft on the button should NOT trigger resize
+    const resizeEvent = new KeyboardEvent('keydown', {
+      key: 'ArrowLeft',
+      shiftKey: true,
+      bubbles: true,
+    });
+    btn.dispatchEvent(resizeEvent);
+    fixture.detectChanges();
+    expect(header.getAttribute('size')).toBe('100px'); // should remain 100px (not change to 90px)
+  });
+
+  it('should navigate between headers using ArrowLeft and ArrowRight keys', () => {
+    hostComponent.columns.set([
+      { id: 'col1', header: 'Col1', sortable: true },
+      { id: 'col2', header: 'Col2', sortable: true },
+      { id: 'col3', header: 'Col3', sortable: true },
+    ]);
+    fixture.detectChanges();
+
+    const headers = fixture.nativeElement.querySelectorAll('thead th');
+    expect(headers.length).toBe(3);
+
+    // Focus the first header
+    headers[0].focus();
+    expect(document.activeElement).toBe(headers[0]);
+
+    // Press ArrowRight on first header to focus the second
+    const rightEvent = new KeyboardEvent('keydown', {
+      key: 'ArrowRight',
+      bubbles: true,
+    });
+    const preventRightSpy = vi.spyOn(rightEvent, 'preventDefault');
+    headers[0].dispatchEvent(rightEvent);
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(headers[1]);
+    expect(preventRightSpy).toHaveBeenCalled();
+
+    // Press ArrowLeft on second header to focus back the first
+    const leftEvent = new KeyboardEvent('keydown', {
+      key: 'ArrowLeft',
+      bubbles: true,
+    });
+    const preventLeftSpy = vi.spyOn(leftEvent, 'preventDefault');
+    headers[1].dispatchEvent(leftEvent);
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(headers[0]);
+    expect(preventLeftSpy).toHaveBeenCalled();
+  });
+
+  it('should support grid mode with roving tabindex and 2D arrow key cell navigation', () => {
+    // Setup Table with grid = true
+    @Component({
+      template: `
+        <sh-table [data]="data" [grid]="true">
+          <thead>
+            <tr>
+              <th id="h1">H1</th>
+              <th id="h2">H2</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td id="c00">C00</td>
+              <td id="c01">C01</td>
+            </tr>
+            <tr>
+              <td id="c10">C10</td>
+              <td id="c11">C11</td>
+            </tr>
+          </tbody>
+        </sh-table>
+      `,
+      standalone: true,
+      imports: [ShipTable],
+    })
+    class GridTableComponent {
+      data = [{ id: 1 }, { id: 2 }];
+    }
+
+    const gridFixture = TestBed.createComponent(GridTableComponent);
+    gridFixture.detectChanges();
+
+    const tableEl = gridFixture.nativeElement.querySelector('sh-table');
+    expect(tableEl.getAttribute('role')).toBe('grid');
+
+    const h1 = gridFixture.nativeElement.querySelector('#h1') as HTMLElement;
+    const h2 = gridFixture.nativeElement.querySelector('#h2') as HTMLElement;
+    const c00 = gridFixture.nativeElement.querySelector('#c00') as HTMLElement;
+    const c01 = gridFixture.nativeElement.querySelector('#c01') as HTMLElement;
+    const c10 = gridFixture.nativeElement.querySelector('#c10') as HTMLElement;
+    const c11 = gridFixture.nativeElement.querySelector('#c11') as HTMLElement;
+
+    // Initially, the first cell should have tabindex="0"
+    expect(h1.getAttribute('tabindex')).toBe('0');
+
+    // Focus the first cell
+    h1.focus();
+    expect(document.activeElement).toBe(h1);
+
+    // Press ArrowDown to navigate to C00
+    const downEvent = new KeyboardEvent('keydown', {
+      key: 'ArrowDown',
+      bubbles: true,
+    });
+    h1.dispatchEvent(downEvent);
+    gridFixture.detectChanges();
+
+    expect(document.activeElement).toBe(c00);
+    expect(c00.getAttribute('role')).toBe('gridcell');
+    expect(c00.getAttribute('tabindex')).toBe('0');
+    expect(h1.getAttribute('tabindex')).toBe('-1');
+
+    // Press ArrowRight to navigate to C01
+    const rightEvent = new KeyboardEvent('keydown', {
+      key: 'ArrowRight',
+      bubbles: true,
+    });
+    c00.dispatchEvent(rightEvent);
+    gridFixture.detectChanges();
+
+    expect(document.activeElement).toBe(c01);
+
+    // Press ArrowDown to navigate to C11
+    c01.dispatchEvent(downEvent);
+    gridFixture.detectChanges();
+
+    expect(document.activeElement).toBe(c11);
+
+    // Press ArrowLeft to navigate to C10
+    const leftEvent = new KeyboardEvent('keydown', {
+      key: 'ArrowLeft',
+      bubbles: true,
+    });
+    c11.dispatchEvent(leftEvent);
+    gridFixture.detectChanges();
+
+    expect(document.activeElement).toBe(c10);
+
+    // Press ArrowUp to navigate to C00
+    const upEvent = new KeyboardEvent('keydown', {
+      key: 'ArrowUp',
+      bubbles: true,
+    });
+    c10.dispatchEvent(upEvent);
+    gridFixture.detectChanges();
+
+    expect(document.activeElement).toBe(c00);
+
+    // Press End to navigate to C01 (first row, last cell)
+    const endEvent = new KeyboardEvent('keydown', {
+      key: 'End',
+      bubbles: true,
+    });
+    c00.dispatchEvent(endEvent);
+    gridFixture.detectChanges();
+
+    expect(document.activeElement).toBe(c01);
+
+    // Press Home to navigate to C00 (first row, first cell)
+    const homeEvent = new KeyboardEvent('keydown', {
+      key: 'Home',
+      bubbles: true,
+    });
+    c01.dispatchEvent(homeEvent);
+    gridFixture.detectChanges();
+
+    expect(document.activeElement).toBe(c00);
+
+    // Press 's' to navigate down to C10
+    const sEvent = new KeyboardEvent('keydown', {
+      key: 's',
+      bubbles: true,
+    });
+    c00.dispatchEvent(sEvent);
+    gridFixture.detectChanges();
+    expect(document.activeElement).toBe(c10);
+
+    // Press 'd' to navigate right to C11
+    const dEvent = new KeyboardEvent('keydown', {
+      key: 'd',
+      bubbles: true,
+    });
+    c10.dispatchEvent(dEvent);
+    gridFixture.detectChanges();
+    expect(document.activeElement).toBe(c11);
+
+    // Press 'w' to navigate up to C01
+    const wEvent = new KeyboardEvent('keydown', {
+      key: 'w',
+      bubbles: true,
+    });
+    c11.dispatchEvent(wEvent);
+    gridFixture.detectChanges();
+    expect(document.activeElement).toBe(c01);
+
+    // Press 'a' to navigate left to C00
+    const aEvent = new KeyboardEvent('keydown', {
+      key: 'a',
+      bubbles: true,
+    });
+    c01.dispatchEvent(aEvent);
+    gridFixture.detectChanges();
+    expect(document.activeElement).toBe(c00);
+  });
+
+  it('should support dynamically toggling the grid input', async () => {
+    @Component({
+      template: `
+        <sh-table [data]="data" [grid]="gridActive()">
+          <thead>
+            <tr>
+              <th id="h1" class="sortable">H1</th>
+              <th id="h2">H2</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td id="c00">C00</td>
+              <td id="c01">C01</td>
+            </tr>
+          </tbody>
+        </sh-table>
+      `,
+      standalone: true,
+      imports: [ShipTable],
+    })
+    class ToggleGridTableComponent {
+      data = [{ id: 1 }];
+      gridActive = signal(false);
+    }
+
+    const fixture = TestBed.createComponent(ToggleGridTableComponent);
+    fixture.detectChanges();
+
+    const tableEl = fixture.nativeElement.querySelector('sh-table');
+    expect(tableEl.getAttribute('role')).toBe('table');
+
+    const h1 = fixture.nativeElement.querySelector('#h1') as HTMLElement;
+    const h2 = fixture.nativeElement.querySelector('#h2') as HTMLElement;
+    const c00 = fixture.nativeElement.querySelector('#c00') as HTMLElement;
+
+    // Initially (grid = false): h1 (sortable) has tabindex="0", h2/c00 have no tabindex
+    expect(h1.getAttribute('tabindex')).toBe('0');
+    expect(h2.getAttribute('tabindex')).toBeNull();
+    expect(c00.getAttribute('tabindex')).toBeNull();
+
+    // Toggle grid = true
+    fixture.componentInstance.gridActive.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(tableEl.getAttribute('role')).toBe('grid');
+    // First cell (h1) should have tabindex="0" and others tabindex="-1"
+    expect(h1.getAttribute('tabindex')).toBe('0');
+    expect(h2.getAttribute('tabindex')).toBe('-1');
+    expect(c00.getAttribute('tabindex')).toBe('-1');
+
+    // Toggle grid = false
+    fixture.componentInstance.gridActive.set(false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(tableEl.getAttribute('role')).toBe('table');
+    // Interactive header (h1) should go back to tabindex="0", other cells have tabindex removed
+    expect(h1.getAttribute('tabindex')).toBe('0');
+    expect(h2.getAttribute('tabindex')).toBeNull();
+    expect(c00.getAttribute('tabindex')).toBeNull();
+  });
+
+  it('should support Tab and Shift+Tab navigation in grid mode', async () => {
+    @Component({
+      template: `
+        <sh-table [data]="data" [grid]="true">
+          <thead>
+            <tr>
+              <th id="h1">
+                H1
+                <button id="btn1">Filter</button>
+              </th>
+              <th id="h2">H2</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td id="c00">C00</td>
+              <td id="c01">C01</td>
+            </tr>
+          </tbody>
+        </sh-table>
+      `,
+      standalone: true,
+      imports: [ShipTable],
+    })
+    class TabGridTableComponent {
+      data = [{ id: 1 }];
+    }
+
+    const fixture = TestBed.createComponent(TabGridTableComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const h1 = fixture.nativeElement.querySelector('#h1') as HTMLElement;
+    const btn1 = fixture.nativeElement.querySelector('#btn1') as HTMLElement;
+    const h2 = fixture.nativeElement.querySelector('#h2') as HTMLElement;
+
+    h1.focus();
+    expect(document.activeElement).toBe(h1);
+
+    // Focus interactive child btn1
+    btn1.focus();
+    // Simulate focusin event
+    btn1.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    fixture.detectChanges();
+    expect(document.activeElement).toBe(btn1);
+    expect(h1.getAttribute('tabindex')).toBe('0');
+    expect(h2.getAttribute('tabindex')).toBe('-1');
+
+    // Tab key on the last focusable child (btn1) should move to next cell (h2)
+    const tabEvent = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      bubbles: true,
+    });
+    btn1.dispatchEvent(tabEvent);
+    fixture.detectChanges();
+    expect(document.activeElement).toBe(h2);
+    expect(h2.getAttribute('tabindex')).toBe('0');
+    expect(h1.getAttribute('tabindex')).toBe('-1');
+
+    // Shift+Tab key on h2 (no children) should move to previous cell (h1)
+    // and since h1 has children, it should focus the last child (btn1)
+    const shiftTabEvent = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      shiftKey: true,
+      bubbles: true,
+    });
+    h2.dispatchEvent(shiftTabEvent);
+    fixture.detectChanges();
+    expect(document.activeElement).toBe(btn1);
+
+    // Shift+Tab key on first child (btn1) should move focus to parent cell container (h1)
+    btn1.dispatchEvent(shiftTabEvent);
+    fixture.detectChanges();
+    expect(document.activeElement).toBe(h1);
   });
 });

@@ -275,13 +275,19 @@ $shipTable: true !default;
       gap: var(--table-th-g);
       z-index: auto;
 
+      &:focus-visible {
+        outline: p2r(2) solid var(--primary-8);
+        outline-offset: p2r(-2);
+      }
+
       &:hover,
       &.resizing {
-        z-index: 120;
+        z-index: 10;
       }
 
       &:has(.sh-resizer) {
         position: relative;
+        z-index: 2;
       }
 
       &.sortable {
@@ -336,7 +342,7 @@ $shipTable: true !default;
         top: 0;
         right: p2r(-6);
         cursor: col-resize;
-        z-index: 110;
+        z-index: 5;
 
         &:after {
           content: '';

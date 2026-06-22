@@ -53,6 +53,16 @@ export const DEFAULT_KEYBINDINGS: Record<string, string> = {
 
   // Table
   'table.sort': 'Enter, space',
+  'table.column-resize-decrease': 'Shift+ArrowLeft',
+  'table.column-resize-increase': 'Shift+ArrowRight',
+
+  // Grid Navigation
+  'grid.focus-up': 'ArrowUp, w',
+  'grid.focus-down': 'ArrowDown, s',
+  'grid.focus-left': 'ArrowLeft, a',
+  'grid.focus-right': 'ArrowRight, d',
+  'grid.focus-first': 'Home',
+  'grid.focus-last': 'End',
 
   // Blueprint
   'blueprint.cancel': 'Escape',

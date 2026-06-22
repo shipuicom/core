@@ -3,10 +3,15 @@
   [data]="users()"
   (dataChange)="users.set($event)"
   [variant]="variant()"
+  [grid]="gridMode()"
   aria-label="User Management Configuration Table">
   <button shButton actionbar class="small primary" (click)="toggleLoading()">
     <sh-icon>spinner</sh-icon>
     Toggle Loading
+  </button>
+  <button shButton actionbar class="small outline" [class.primary]="gridMode()" (click)="gridMode.set(!gridMode())">
+    <sh-icon>{{ gridMode() ? 'check-square' : 'square' }}</sh-icon>
+    Interactive Grid: {{ gridMode() ? 'ON' : 'OFF' }}
   </button>
   <button shButton actionbar class="small flat" (click)="resetData()">
     <sh-icon>arrow-counter-clockwise</sh-icon>
