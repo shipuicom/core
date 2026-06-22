@@ -118,6 +118,52 @@ The library includes high-quality TextMate snippets for all components, includin
 To use them in VS Code, you can add a link to the snippets file in your `.vscode/settings.json` or copy the content to your project's snippets. The file is located at:
 `./node_modules/@ship-ui/core/snippets/ship-ui.code-snippets`
 
+## Keyboard Accessibility (A11y)
+
+ShipUI includes a robust global keybindings service `ShipA11yKeybindingsService` that manages default keyboard shortcuts for all interactive components (such as selects, datepickers, menus, tabs, and dialogs) with full support for WASD alternatives and macOS custom formatting.
+
+### Default Keybinding Actions
+* **Datepicker**: Prev/Next Month (`PageUp` / `PageDown`), Prev/Next Year (`Shift+PageUp` / `Shift+PageDown`), Start/End Month (`Home` / `End`), Move focus (`ArrowRight, d`, `ArrowLeft, a`, `ArrowDown, s`, `ArrowUp, w`).
+* **Selection Groups (Tabs, Steppers, Button Groups)**: Navigate (`ArrowRight, ArrowDown, d, s`, `ArrowLeft, ArrowUp, a, w`), Select (`Enter, space`).
+* **Select**: Navigate (`ArrowDown, s`, `ArrowUp, w`), Select (`Enter, space`), Close (`Escape`).
+* **Menu**: Navigate (`ArrowDown, s`, `ArrowUp, w`), Submenus (`ArrowRight, d`, `ArrowLeft, a`), Select (`Enter, space`).
+* **Spotlight**: Navigate (`ArrowDown, s`, `ArrowUp, w`), Open spotlight (`ctrlOrCmd+k`).
+* **Dialogs & Popovers**: Close (`Escape`).
+* **Form Controls (Checkbox, Toggle, Radio)**: Toggle/Select (`Enter, space`).
+* **Table**: Sort column (`Enter, space`).
+* **Blueprint**: Cancel connection drag (`Escape`).
+* **Editor Toolbar**: Navigate items (`ArrowRight, ArrowDown`, `ArrowLeft, ArrowUp`), Jump (`Home`, `End`).
+
+### Overriding Keybindings Globally
+You can customize or override any of these keybindings globally in your application using the `SHIP_A11Y_KEYBINDINGS_OVERRIDE` token in your app configuration:
+
+```typescript
+import { ApplicationConfig } from '@angular/core';
+import { SHIP_A11Y_KEYBINDINGS_OVERRIDE } from '@ship-ui/core/ship-a11y-keybindings';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    {
+      provide: SHIP_A11Y_KEYBINDINGS_OVERRIDE,
+      useValue: {
+        // Change spotlight search shortcut to cmd+p / ctrl+p
+        'spotlight.open': 'ctrlOrCmd+p',
+        // Change datepicker controls to custom mappings
+        'datepicker.day-next': 'ArrowRight, l',
+        'datepicker.day-prev': 'ArrowLeft, h',
+      }
+    }
+  ]
+};
+```
+
+### Keybinding Syntax
+* Support multiple key combinations using comma-separated notation (e.g. `'ArrowRight, d'`).
+* Modifier combinations are specified with `+`, such as `'ctrl+shift+k'`.
+* Use `ctrlOrCmd` to automatically bind to `Command` on macOS and `Control` on Windows/Linux/ChromeOS.
+* Standard keys like `Enter`, `space` (all lowercase), `Escape`, `ArrowUp`, `PageUp`, etc. are fully supported.
+* If a component needs keybinding checking manually, inject `ShipA11yKeybindingsService` and check `this.keybindings.matches(event, 'action.name')`.
+
 ## Follow our progress
 
 We have a [todos](documents/todos.md) file where we try keep track of features/bugs/blockers currently in pipeline etc
