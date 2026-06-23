@@ -68,7 +68,7 @@ export class ShipSpotlightService {
       const destroyRef = inject(DestroyRef);
       destroyRef.onDestroy(cleanup);
     } catch {
-      // Ignore if not called in injection context
+      
     }
 
     return cleanup;

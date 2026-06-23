@@ -24,20 +24,20 @@ import { contentProjectionSignal, shipComponentClasses, ShipVariant } from '@shi
   },
 })
 export class ShipAccordion {
-  private selfElement = inject(ElementRef<HTMLElement>).nativeElement;
+  #selfElement = inject(ElementRef<HTMLElement>).nativeElement;
 
-  readonly name = input<string>(`sh-accordion-${Math.random().toString(36).substring(2, 9)}`);
-  readonly value = model<string | null>(null);
-  readonly allowMultiple = input<boolean>(false);
-  readonly variant = input<ShipVariant | null>(null);
-  readonly size = input<string | null>(null);
+  name = input<string>(`sh-accordion-${Math.random().toString(36).substring(2, 9)}`);
+  value = model<string | null>(null);
+  allowMultiple = input<boolean>(false);
+  variant = input<ShipVariant | null>(null);
+  size = input<string | null>(null);
 
   hostClasses = shipComponentClasses('accordion', {
     variant: this.variant,
     size: this.size,
   });
 
-  protected items = contentProjectionSignal<HTMLDetailsElement>('details', {
+  items = contentProjectionSignal<HTMLDetailsElement>('details', {
     childList: true,
     subtree: true,
     attributes: true,
@@ -45,7 +45,7 @@ export class ShipAccordion {
   });
 
   constructor() {
-    this.selfElement.addEventListener('toggle', this.onToggle.bind(this), true);
+    this.#selfElement.addEventListener('toggle', this.onToggle.bind(this), true);
 
     effect(() => {
       const isMultiple = this.allowMultiple();
@@ -98,7 +98,7 @@ export class ShipAccordion {
   onToggle(event: Event) {
     const target = event.target as HTMLDetailsElement;
     if (target.tagName !== 'DETAILS') return;
-    if (!this.selfElement.contains(target)) return;
+    if (!this.#selfElement.contains(target)) return;
 
     const itemVal = target.getAttribute('value');
     if (!itemVal) return; // Uncontrolled details element

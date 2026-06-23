@@ -46,7 +46,7 @@ export class ShipStepper extends ShipSelectionGroup<string> {
     });
 
     effect(() => {
-      this.items(); // track projected items
+      this.items(); 
       this.updateProgress();
     });
 

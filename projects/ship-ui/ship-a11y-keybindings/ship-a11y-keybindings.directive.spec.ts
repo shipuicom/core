@@ -59,7 +59,7 @@ describe('ShipA11yKeybindingsDirective', () => {
 
     service = TestBed.inject(ShipA11yKeybindingsService);
 
-    // Register actions
+    
     service.registerDefaults({
       'item.select': 'enter',
       'app.search': 'ctrlOrCmd+s',
@@ -124,21 +124,21 @@ describe('ShipA11yKeybindingsDirective', () => {
   });
 
   it('should ignore global events if focus is inside an input unless modifiers are present', () => {
-    // Add another action without modifiers
+    
     service.registerDefaults({
       'item.delete': 'd',
     });
 
-    // Dynamically update bindings in DOM
+    
     const deleteBtn = document.createElement('button');
     deleteBtn.setAttribute('shA11yKeybinding', 'item.delete');
     deleteBtn.setAttribute('mode', 'global');
 
-    // Focus the text input
+    
     const inputEl = component.textInput()?.nativeElement;
     inputEl?.focus();
 
-    // Trigger keydown of 'd' (no modifiers)
+    
     const dEvent = new KeyboardEvent('keydown', {
       key: 'd',
       bubbles: true,
@@ -147,7 +147,7 @@ describe('ShipA11yKeybindingsDirective', () => {
     inputEl?.dispatchEvent(dEvent);
     fixture.detectChanges();
 
-    // The handler should not execute because focus is in the input element
+    
     expect(component.globalTriggerCount).toBe(0);
   });
 });

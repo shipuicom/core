@@ -12,7 +12,7 @@ import { generateUniqueId } from '@ship-ui/core';
 import { shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
 
-// TODO build in live validation response for free text validation
+
 
 type ValidateFreeText = (value: string) => boolean;
 

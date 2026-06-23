@@ -7,6 +7,8 @@ import { createFormInputSignal } from '@ship-ui/core';
 import { observeChildren } from '@ship-ui/core';
 import { generateUniqueId } from '@ship-ui/core';
 
+const openMenus: ShipMenu[] = [];
+
 @Component({
   selector: 'sh-menu',
   styleUrl: './ship-menu.scss',
@@ -97,17 +99,15 @@ export class ShipMenu {
   inputRef = viewChild<ElementRef<HTMLInputElement>>('inputRef');
   optionsRef = viewChild<ElementRef<HTMLDivElement>>('optionsRef');
 
-  private static openMenus: ShipMenu[] = [];
-
   openMenusEffect = effect((onCleanup) => {
     if (this.isOpen()) {
-      ShipMenu.openMenus.push(this);
+      openMenus.push(this);
     }
 
     onCleanup(() => {
-      const index = ShipMenu.openMenus.indexOf(this);
+      const index = openMenus.indexOf(this);
       if (index > -1) {
-        ShipMenu.openMenus.splice(index, 1);
+        openMenus.splice(index, 1);
       }
     });
   });
@@ -123,7 +123,7 @@ export class ShipMenu {
   });
   inputValue = createFormInputSignal(this.inputRef);
 
-  readonly optionsId = generateUniqueId();
+  optionsId = generateUniqueId();
   activeOptionId = signal<string | undefined>(undefined);
 
   abortController: AbortController | null = null;
@@ -183,8 +183,8 @@ export class ShipMenu {
   });
 
   keyDownEventListener = (e: KeyboardEvent) => {
-    // Only handle events if this is the most recently opened menu
-    if (ShipMenu.openMenus.at(-1) !== this) return;
+    
+    if (openMenus.at(-1) !== this) return;
 
     const activeOptionIndex = this.activeOptionIndex();
 
@@ -199,7 +199,7 @@ export class ShipMenu {
         const el = this.activeElements()[activeOptionIndex as number];
         const parent = el.parentElement;
 
-        // For nested menu's
+        
         if (parent?.hasAttribute('trigger')) {
           e.preventDefault();
           const event = new CustomEvent('ship-menu-open', {
@@ -222,7 +222,7 @@ export class ShipMenu {
         const el = this.activeElements()[activeOptionIndex as number];
         const parent = el.parentElement;
 
-        // For nested menu's
+        
         if (parent?.hasAttribute('trigger')) {
           const event = new CustomEvent('ship-menu-open', {
             bubbles: true,
@@ -523,9 +523,9 @@ export class ShipMenu {
       this.abortController.abort();
       this.abortController = null;
     }
-    const index = ShipMenu.openMenus.indexOf(this);
+    const index = openMenus.indexOf(this);
     if (index > -1) {
-      ShipMenu.openMenus.splice(index, 1);
+      openMenus.splice(index, 1);
     }
   }
 }

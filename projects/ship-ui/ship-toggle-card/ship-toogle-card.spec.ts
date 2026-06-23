@@ -3,10 +3,10 @@ import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
-import { ShipToggleCard } from './ship-toggle-card'; // Update path as needed
+import { ShipToggleCard } from './ship-toggle-card'; 
 
-// 1. Create a Mock for the child component (ShipIcon)
-// This prevents the test from depending on the actual Icon implementation
+
+
 @Component({
   selector: 'sh-icon',
   template: '',
@@ -23,7 +23,7 @@ describe('ShipToggleCard', () => {
     await TestBed.configureTestingModule({
       imports: [ShipToggleCard],
     })
-      // 2. Override the component to use the Mock Icon instead of the real one
+      
       .overrideComponent(ShipToggleCard, {
         remove: { imports: [ShipIcon] },
         add: { imports: [MockShipIcon] },
@@ -40,7 +40,7 @@ describe('ShipToggleCard', () => {
 
   describe('Default Behavior', () => {
     it('should default to inactive (false)', () => {
-      fixture.detectChanges(); // Trigger ngOnInit
+      fixture.detectChanges(); 
       expect(component.isActive()).toBe(false);
       expect(fixture.nativeElement.classList).not.toContain('active');
     });
@@ -49,13 +49,13 @@ describe('ShipToggleCard', () => {
       fixture.detectChanges();
       const header = fixture.debugElement.query(By.css('h3'));
 
-      // Click to open
+      
       header.triggerEventHandler('click', null);
       fixture.detectChanges();
       expect(component.isActive()).toBe(true);
       expect(fixture.nativeElement.classList).toContain('active');
 
-      // Click to close
+      
       header.triggerEventHandler('click', null);
       fixture.detectChanges();
       expect(component.isActive()).toBe(false);
@@ -74,16 +74,16 @@ describe('ShipToggleCard', () => {
       fixture.componentRef.setInput('disableToggle', true);
       fixture.detectChanges();
 
-      // Ensure it started as true (default when disabled)
+      
       expect(component.isActive()).toBe(true);
 
-      // Try to click header
+      
       const header = fixture.debugElement.query(By.css('h3'));
       header.triggerEventHandler('click', null);
 
       fixture.detectChanges();
 
-      // Should remain true (no toggle)
+      
       expect(component.isActive()).toBe(true);
     });
 

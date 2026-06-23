@@ -4,7 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ShipPopover } from './ship-popover';
 
-// Mock popover API for environment
+
 if (typeof HTMLElement !== 'undefined') {
   if (!HTMLElement.prototype.showPopover) {
     HTMLElement.prototype.showPopover = function (this: HTMLElement) {

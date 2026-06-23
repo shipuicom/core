@@ -168,7 +168,7 @@ export class ShipSpotlight {
   #keybindings = inject(ShipA11yKeybindingsService);
 
   constructor() {
-    // Sync initial search query if provided in dialog data
+    
     effect(() => {
       const initialQuery = this.data()?.searchQuery;
       if (initialQuery !== undefined) {
@@ -176,7 +176,7 @@ export class ShipSpotlight {
       }
     });
 
-    // Auto-focus input when the view is initialized
+    
     effect(() => {
       const inputEl = this.inputRef()?.nativeElement;
       if (inputEl && typeof inputEl.focus === 'function') {
@@ -184,7 +184,7 @@ export class ShipSpotlight {
       }
     });
 
-    // Scroll active item into view
+    
     effect(() => {
       const index = this.activeOptionIndex();
       if (index > -1) {
@@ -196,10 +196,10 @@ export class ShipSpotlight {
   inputRef = viewChild<ElementRef<HTMLInputElement>>('inputRef');
   resultsRef = viewChild<ElementRef<HTMLDivElement>>('resultsRef');
 
-  // Input config passed from ShipDialogService
+  
   data = input<ShipSpotlightServiceOptions>();
 
-  // Standard inputs (fallback)
+  
   items = input<ShipSpotlightItem[]>([]);
   placeholder = input<string>('Search actions, settings, or pages...');
   customFilter = input<boolean>(false);
@@ -208,14 +208,14 @@ export class ShipSpotlight {
   itemSelected = output<ShipSpotlightItem>();
   closed = output<void>();
 
-  // Merged config properties
+  
   mergedItems = computed(() => this.data()?.items ?? this.items());
   mergedPlaceholder = computed(() => this.data()?.placeholder ?? this.placeholder());
   mergedCustomFilter = computed(() => this.data()?.customFilter ?? this.customFilter());
 
   activeOptionIndex = signal<number>(0);
 
-  // Computes the scored and filtered flat list of items
+  
   flatFilteredItems = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
     const allItems = this.mergedItems();
@@ -236,7 +236,7 @@ export class ShipSpotlight {
     return scored.map((x) => x.item);
   });
 
-  // Groups flat list of items by category and precomputes flat indices
+  
   groupedFilteredItems = computed(() => {
     const flat = this.flatFilteredItems();
     const groups: { category: string; items: { item: ShipSpotlightItem; flatIndex: number }[] }[] = [];
@@ -283,14 +283,14 @@ export class ShipSpotlight {
   }
 
   onKeyDown(event: KeyboardEvent) {
-    // Check if the event matches any item shortcut
+    
     const allItems = this.mergedItems();
     const shortcutMatch = allItems.find((item) => item.shortcut && this.#checkShortcutMatch(event, item.shortcut));
 
     if (shortcutMatch) {
       event.preventDefault();
       event.stopPropagation();
-      // Delay selection to ensure the browser honors preventDefault before the DOM node is potentially destroyed
+      
       setTimeout(() => this.selectItem(shortcutMatch), 10);
       return;
     }

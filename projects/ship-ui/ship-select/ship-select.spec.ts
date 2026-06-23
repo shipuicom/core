@@ -50,17 +50,17 @@ describe('ShipSelect Keyboard Interaction', () => {
   });
 
   it('should prevent default and toggle selection on Space when search is disabled', () => {
-    // Open select dropdown
+    
     selectComponent.open();
     fixture.detectChanges();
 
     expect(selectComponent.isOpen()).toBe(true);
 
-    // Set focused option to the first one (Pizza)
+    
     selectComponent.focusedOptionIndex.set(0);
     fixture.detectChanges();
 
-    // Create space key event
+    
     const inputEl = selectDebugEl.query(By.css('input')).nativeElement;
     const spaceEvent = new KeyboardEvent('keydown', { key: ' ' });
     const preventDefaultSpy = vi.spyOn(spaceEvent, 'preventDefault');

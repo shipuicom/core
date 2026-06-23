@@ -36,7 +36,7 @@ import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
   },
 })
 export class ShipToggle {
-  private readonly _elementRef = inject(ElementRef);
+  #elementRef = inject(ElementRef);
   #keybindings = inject(ShipA11yKeybindingsService);
 
   internalInput = viewChild<ElementRef<HTMLInputElement>>('internalInput');
@@ -52,7 +52,7 @@ export class ShipToggle {
   disabled = input<boolean>(false);
   noInternalInput = input<boolean>(false);
 
-  protected onInternalInputChange(event: Event) {
+  onInternalInputChange(event: Event) {
     if (this.disabled()) return;
 
     const input = event.target as HTMLInputElement;
@@ -66,13 +66,13 @@ export class ShipToggle {
   });
 
   @HostListener('keydown', ['$event'])
-  protected onKeyDown(event: KeyboardEvent) {
+  onKeyDown(event: KeyboardEvent) {
     if (this.#keybindings.matches(event, 'toggle.toggle')) {
       const inputEl = this.internalInput()?.nativeElement;
       if (inputEl && getComputedStyle(inputEl).display !== 'none') {
         inputEl.click();
       } else {
-        this._elementRef.nativeElement.click();
+        this.#elementRef.nativeElement.click();
       }
       event.preventDefault();
     }

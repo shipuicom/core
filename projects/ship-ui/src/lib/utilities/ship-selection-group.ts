@@ -4,24 +4,35 @@ import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings'
 
 @Directive()
 export abstract class ShipSelectionGroup<T = any> {
-  protected readonly hostElement = inject(ElementRef<HTMLElement>).nativeElement;
-  readonly #keybindings = inject(ShipA11yKeybindingsService);
+  hostElement = inject(ElementRef<HTMLElement>).nativeElement;
+  #keybindings = inject(ShipA11yKeybindingsService);
 
-  protected items: import('@angular/core').Signal<HTMLElement[]>;
+  items: import('@angular/core').Signal<HTMLElement[]>;
 
-  readonly value = model<T | null>(null);
-  readonly closable = input<boolean, boolean | string>(false, { transform: booleanAttribute });
-  readonly manualActivation = input<boolean, boolean | string>(false, { transform: booleanAttribute });
+  value = model<T | null>(null);
+  closable = input<boolean, boolean | string>(false, { transform: booleanAttribute });
+  manualActivation = input<boolean, boolean | string>(false, { transform: booleanAttribute });
+
+  itemSelector: string;
+  activeClass: string;
+  options?: {
+    hostRole?: string;
+    itemRole?: string;
+    activeAttribute?: 'aria-selected' | 'aria-pressed' | 'aria-checked';
+  };
 
   constructor(
-    protected readonly itemSelector: string,
-    protected readonly activeClass: string,
-    protected readonly options?: {
+    itemSelector: string,
+    activeClass: string,
+    options?: {
       hostRole?: string;
       itemRole?: string;
       activeAttribute?: 'aria-selected' | 'aria-pressed' | 'aria-checked';
     }
   ) {
+    this.itemSelector = itemSelector;
+    this.activeClass = activeClass;
+    this.options = options;
     if (this.options?.hostRole) {
       this.hostElement.setAttribute('role', this.options.hostRole);
     }
@@ -87,7 +98,7 @@ export abstract class ShipSelectionGroup<T = any> {
   }
 
   @HostListener('click', ['$event.target'])
-  protected onClick(target: EventTarget | null) {
+  onClick(target: EventTarget | null) {
     const targetEl = target as HTMLElement;
     if (!targetEl || !targetEl.closest) return;
     const item = targetEl.closest(this.itemSelector) as HTMLElement;
@@ -104,13 +115,13 @@ export abstract class ShipSelectionGroup<T = any> {
   }
 
   @HostListener('keydown', ['$event'])
-  protected onKeyDown(event: KeyboardEvent) {
+  onKeyDown(event: KeyboardEvent) {
     const targetEl = event.target as HTMLElement;
 
     if (this.#keybindings.matches(event, 'selection-group.select')) {
       const item = targetEl?.closest?.(this.itemSelector) as HTMLElement;
       if (item && this.hostElement.contains(item) && item.hasAttribute('value')) {
-        // Only prevent default for space to avoid scrolling, let enter naturally click if it's a link/button
+        
         const isSpace = event.key === ' ' || event.key === 'Spacebar';
         if (isSpace) event.preventDefault();
         
@@ -140,7 +151,7 @@ export abstract class ShipSelectionGroup<T = any> {
     } else if (this.#keybindings.matches(event, 'selection-group.prev')) {
       nextIndex = activeIndex <= 0 ? items.length - 1 : activeIndex - 1;
     } else {
-      return; // Let other keys propagate natively
+      return; 
     }
 
     event.preventDefault();

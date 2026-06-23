@@ -1,5 +1,5 @@
 import { isPlatformBrowser, JsonPipe } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, ElementRef, HostListener, inject, input, model, OnDestroy, PLATFORM_ID, signal, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, ElementRef, HostListener, inject, input, model, OnDestroy, PLATFORM_ID, signal, viewChild, ViewEncapsulation } from '@angular/core';
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipCard } from '@ship-ui/core/ship-card';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
@@ -8,9 +8,9 @@ import { classMutationSignal } from '@ship-ui/core';
 import { layoutNodes } from './autolayout';
 import { findDuplicateNodeIDs, findDuplicatePortIDs } from './validatePorts';
 
-// TODO - disallow infinite loops
-// TODO - Autolayout should take port order into account
-// TODO - drag and drop new nodes into the canvas (takes an input creatableNodes without coordinates) this are shown in a right side panel and can be dragged into the canvas
+
+
+
 
 type Port = { id: string; name: string };
 
@@ -166,12 +166,12 @@ type ValidationErrors = {
   },
 })
 export class ShipBlueprint implements AfterViewInit, OnDestroy {
-  readonly #ZOOM_SPEED = 0.01;
-  readonly #MAX_ZOOM = 1.5;
-  readonly #MIN_ZOOM = 0.5;
-  readonly #NODE_WIDTH = 180;
-  readonly #NODE_HEADER_HEIGHT = 40;
-  readonly #PORT_ROW_HEIGHT = 28;
+  #ZOOM_SPEED = 0.01;
+  #MAX_ZOOM = 1.5;
+  #MIN_ZOOM = 0.5;
+  #NODE_WIDTH = 180;
+  #NODE_HEADER_HEIGHT = 40;
+  #PORT_ROW_HEIGHT = 28;
 
   #document = inject(DOCUMENT);
   #platformId = inject(PLATFORM_ID);
@@ -225,7 +225,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
   #canvasWidth = signal(0);
   #canvasHeight = signal(0);
 
-  @ViewChild('blueprintCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
+  canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('blueprintCanvas');
   #ctx!: CanvasRenderingContext2D;
   #resizeObserver!: ResizeObserver;
 
@@ -296,7 +296,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     if (isPlatformBrowser(this.#platformId)) {
-      const canvas = this.canvasRef.nativeElement;
+      const canvas = this.canvasRef().nativeElement;
       this.#ctx = canvas.getContext('2d')!;
       if (typeof ResizeObserver !== 'undefined') {
         this.#resizeObserver = new ResizeObserver(() => this.updateCanvasSize());
@@ -393,7 +393,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
   }
 
   updateCanvasSize() {
-    const canvas = this.canvasRef.nativeElement;
+    const canvas = this.canvasRef().nativeElement;
     const rect = this.#selfRef.nativeElement.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
     canvas.width = rect.width * dpr;
@@ -412,7 +412,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     if (!this.#ctx) return;
 
     const ctx = this.#ctx;
-    const { width, height } = this.canvasRef.nativeElement;
+    const { width, height } = this.canvasRef().nativeElement;
     const dpr = window.devicePixelRatio || 1;
     ctx.clearRect(0, 0, width / dpr, height / dpr);
     ctx.save();
@@ -429,7 +429,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
   }
 
   drawGrid(ctx: CanvasRenderingContext2D) {
-    const { width, height } = this.canvasRef.nativeElement;
+    const { width, height } = this.canvasRef().nativeElement;
     const dpr = window.devicePixelRatio || 1;
     const zoom = this.zoomLevel();
     const panX = this.panX();
@@ -996,7 +996,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     return false;
   }
 
-  public getNewNodeCoordinates(panToCoordinates = false): Coordinates {
+  getNewNodeCoordinates(panToCoordinates = false): Coordinates {
     let lowestY = 0;
     if (this.nodes().length > 0) {
       lowestY = this.nodes().reduce((max, node) => Math.max(max, node.coordinates[1]), 0);

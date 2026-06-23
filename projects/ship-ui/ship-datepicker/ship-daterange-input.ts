@@ -101,12 +101,12 @@ export class ShipDaterangeInput {
       const inputs = this.#inputObserver() as HTMLInputElement[];
       if (inputs.length === 0) return;
 
-      if (inputs[0]) this.setupInput(inputs[0], true);
-      if (inputs[1]) this.setupInput(inputs[1], false);
+      if (inputs[0]) this.#setupInput(inputs[0], true);
+      if (inputs[1]) this.#setupInput(inputs[1], false);
     });
   }
 
-  private setupInput(element: HTMLInputElement, isStart: boolean) {
+  #setupInput(element: HTMLInputElement, isStart: boolean) {
     if ((element as any)._hasCustomFocusEvent) return;
     (element as any)._hasCustomFocusEvent = true;
 
@@ -161,7 +161,7 @@ export class ShipDaterangeInput {
   onStartDateChange(date: Date | null) {
     this.startDate.set(date);
     const inputs = this.#inputObserver() as HTMLInputElement[];
-    if (inputs[0]) this.updateInputValue([inputs[0]], date);
+    if (inputs[0]) this.#updateInputValue([inputs[0]], date);
     
     // Automatically switch to end date selection
     this.activeInput.set('end');
@@ -170,7 +170,7 @@ export class ShipDaterangeInput {
   onEndDateChange(date: Date | null) {
     this.endDate.set(date);
     const inputs = this.#inputObserver() as HTMLInputElement[];
-    if (inputs[1]) this.updateInputValue([inputs[1]], date);
+    if (inputs[1]) this.#updateInputValue([inputs[1]], date);
 
     if (this.startDate() && date) {
       this.isOpen.set(false);
@@ -183,18 +183,18 @@ export class ShipDaterangeInput {
     }
   }
 
-  private updateInputValue(inputs: HTMLInputElement[], date: Date | null) {
+  #updateInputValue(inputs: HTMLInputElement[], date: Date | null) {
     inputs.forEach((input) => {
       if (this.masking()) {
         input.value = this.#datePipe.transform(date, this.masking()) ?? '';
       } else {
         input.value = date ? date.toUTCString() : '';
       }
-      this.dispatchInputEvent(input);
+      this.#dispatchInputEvent(input);
     });
   }
 
-  private dispatchInputEvent(input: HTMLInputElement) {
+  #dispatchInputEvent(input: HTMLInputElement) {
     input.dispatchEvent(new Event('input', { bubbles: true }));
     input.dispatchEvent(new Event('change', { bubbles: true }));
   }

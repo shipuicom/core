@@ -71,7 +71,7 @@ export class ShipAlert {
     variant: this.variant,
   });
 
-  _el = inject(ElementRef); // Used by alert container
+  _el = inject(ElementRef); 
   alertService = input<ShipAlertService | null>(null);
   id = input<string | null>(null);
 

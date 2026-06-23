@@ -77,7 +77,7 @@ export interface ShipConfig {
   datepicker?: ShipComponentConfig;
   rangeSlider?: ShipRangeSliderConfig;
 
-  // Existing properties for backward compatibility
+  
   alertVariant?: '' | 'simple' | 'outlined' | 'flat' | 'raised';
   cardType?: '' | 'type-b' | 'type-c';
   dialogType?: 'type-b';

@@ -122,7 +122,7 @@ export class ShipPopover {
         if (isMobileSheet) {
           this.#originalOverflow = this.#document.body.style.overflow;
           this.#document.body.style.overflow = 'hidden';
-          this.menuStyle.set(null); // Clear any leftover inline styles
+          this.menuStyle.set(null); 
         }
 
         if (!this.SUPPORTS_ANCHOR && !isMobileSheet) {
@@ -183,62 +183,62 @@ export class ShipPopover {
     return this.#document.documentElement;
   }
 
-  /**
-   * Position generators that mirror the CSS position-try-fallbacks.
-   * Each returns { left, top } for the popover-content in fixed coordinates.
-   */
+  
 
-  // bottom span-right: below trigger, left edge aligned with trigger left
+
+
+
+  
   #bottomSpanRight(t: DOMRect, _m: DOMRect) {
     return { left: t.left, top: t.bottom + BASE_SPACE };
   }
 
-  // top span-right: above trigger, left edge aligned with trigger left
+  
   #topSpanRight(t: DOMRect, m: DOMRect) {
     return { left: t.left, top: t.top - m.height - BASE_SPACE };
   }
 
-  // bottom span-left: below trigger, right edge aligned with trigger right
+  
   #bottomSpanLeft(t: DOMRect, m: DOMRect) {
     return { left: t.right - m.width, top: t.bottom + BASE_SPACE };
   }
 
-  // top span-left: above trigger, right edge aligned with trigger right
+  
   #topSpanLeft(t: DOMRect, m: DOMRect) {
     return { left: t.right - m.width, top: t.top - m.height - BASE_SPACE };
   }
 
-  // right span-bottom: to the right of trigger, top edge aligned with trigger top
+  
   #rightSpanBottom(t: DOMRect, _m: DOMRect) {
     return { left: t.right + BASE_SPACE, top: t.top };
   }
 
-  // left span-bottom: to the left of trigger, top edge aligned with trigger top
+  
   #leftSpanBottom(t: DOMRect, m: DOMRect) {
     return { left: t.left - m.width - BASE_SPACE, top: t.top };
   }
 
-  // right center: to the right of trigger, vertically centered
+  
   #rightCenter(t: DOMRect, m: DOMRect) {
     return { left: t.right + BASE_SPACE, top: t.top + t.height / 2 - m.height / 2 };
   }
 
-  // left center: to the left of trigger, vertically centered
+  
   #leftCenter(t: DOMRect, m: DOMRect) {
     return { left: t.left - m.width - BASE_SPACE, top: t.top + t.height / 2 - m.height / 2 };
   }
 
-  // right span-top: to the right of trigger, bottom edge aligned with trigger bottom
+  
   #rightSpanTop(t: DOMRect, m: DOMRect) {
     return { left: t.right + BASE_SPACE, top: t.bottom - m.height };
   }
 
-  // left span-top: to the left of trigger, bottom edge aligned with trigger bottom
+  
   #leftSpanTop(t: DOMRect, m: DOMRect) {
     return { left: t.left - m.width - BASE_SPACE, top: t.bottom - m.height };
   }
 
-  /** Check if a position fits entirely within the viewport */
+  
   #fitsInViewport(pos: { left: number; top: number }, m: DOMRect): boolean {
     return (
       pos.left >= 0 &&
@@ -248,7 +248,7 @@ export class ShipPopover {
     );
   }
 
-  /** Clamp a position so the popover stays within the viewport */
+  
   #clampToViewport(pos: { left: number; top: number }, m: DOMRect): { left: number; top: number } {
     return {
       left: Math.max(0, Math.min(pos.left, window.innerWidth - m.width)),
@@ -262,7 +262,7 @@ export class ShipPopover {
 
     if (!triggerRect || !menuRect) return;
 
-    // Mirror the CSS position-try-fallbacks order
+    
     const tryOrderDefault = [
       this.#bottomSpanRight,
       this.#topSpanRight,
@@ -291,7 +291,7 @@ export class ShipPopover {
 
     const tryOrder = this.asMultiLayer() ? tryOrderMultiLayer : tryOrderDefault;
 
-    // Try each position, use the first one that fits
+    
     for (const positionFn of tryOrder) {
       const pos = positionFn.call(this, triggerRect, menuRect);
 
@@ -301,7 +301,7 @@ export class ShipPopover {
       }
     }
 
-    // If nothing fits perfectly, use the first position clamped to viewport
+    
     const fallback = this.#clampToViewport(tryOrder[0].call(this, triggerRect, menuRect), menuRect);
     this.menuStyle.set({ left: fallback.left + 'px', top: fallback.top + 'px' });
   }

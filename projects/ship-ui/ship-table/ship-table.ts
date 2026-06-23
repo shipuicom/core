@@ -68,7 +68,7 @@ export class ShipResize {
   #startX!: number;
   #startWidth!: number;
   #resizing = false;
-  #animationFrameRequest: number | null = null; // Store request ID
+  #animationFrameRequest: number | null = null; 
 
   constructor() {
     effect(() => {
@@ -107,7 +107,7 @@ export class ShipResize {
 
     const hostEl = this.#el.nativeElement;
 
-    // Resolve ShipSort lazily to avoid circular DI instantiation issues
+    
     this.#sort.set(this.#injector.get(ShipSort, null, { optional: true, self: true }));
 
     if (this.resizable()) {

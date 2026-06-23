@@ -1,25 +1,25 @@
-// export function createNameCodeObject(jsonData: Item[]): Record<string, string> {
-//   const nameCodeObject: Record<string, string> = {};
 
-//   for (let i = 0; i < jsonData.length; i++) {
-//     const item = jsonData[i];
-//     const hexCode = item.properties.code.toString(16); // Convert decimal to hex
-//     const codePoint = parseInt(hexCode, 16); // Parse hex to integer code point
-//     const glyph = String.fromCodePoint(codePoint); // Create the glyph
-//     nameCodeObject[item.properties.ligatures] = glyph;
-//   }
 
-//   return nameCodeObject;
-// }
+
+
+
+
+
+
+
+
+
+
+
 
 export const getUnicodeObject = (jsonData: Item[], isDuotone = false): Record<string, [string, string]> => {
   const nameCodeObject: Record<string, [string, string]> = {};
 
   for (let i = 0; i < jsonData.length; i++) {
     const item = jsonData[i];
-    const hexCode = item.properties.code.toString(16); // Convert decimal to hex
-    const codePoint = parseInt(hexCode, 16); // Parse hex to integer code point
-    const glyph = String.fromCodePoint(codePoint); // Create the glyph
+    const hexCode = item.properties.code.toString(16); 
+    const codePoint = parseInt(hexCode, 16); 
+    const glyph = String.fromCodePoint(codePoint); 
     if (glyph === '') {
       console.warn(`Invalid codepoint 0x${hexCode} for ligature ${item.properties.ligatures}`);
       continue;

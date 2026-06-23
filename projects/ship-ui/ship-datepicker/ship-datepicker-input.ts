@@ -45,7 +45,7 @@ import { ShipDatepicker } from './ship-datepicker';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShipDatepickerInput {
-  // #INIT_DATE = this.#getUTCDate(new Date());
+  
 
   #selfRef = inject(ElementRef);
   ngControl = contentChild(NgControl);
@@ -134,7 +134,7 @@ export class ShipDatepickerInput {
       let newD = new Date(val);
       
       if (isNaN(newD.getTime())) {
-        // If it's a time-only string like "14:30" or "14:30:00"
+        
         if (typeof val === 'string' && /^(\d{2}):(\d{2})/.test(val)) {
           const match = val.match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
           if (match) {
@@ -152,7 +152,7 @@ export class ShipDatepickerInput {
 
     input.addEventListener('focus', () => {
       this.isOpen.set(true);
-      // Removed input.blur() so users can actually type or use Shift+Tab to navigate backward
+      
     });
 
     this.#inputRef.set(input);

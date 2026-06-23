@@ -4,7 +4,7 @@ import { dirname, resolve } from 'path';
 
 const require = createRequire(import.meta.url);
 
-// @ts-ignore
+
 import wawoff2 from 'wawoff2';
 
 let harfbuzzInst: { harfbuzzJsWasm: any; heapu8: Uint8Array } | null = null;
@@ -42,18 +42,18 @@ export default async function subsetFont(originalFont: Buffer, text: string): Pr
   const face = harfbuzzJsWasm.hb_face_create(blob, 0);
   harfbuzzJsWasm.hb_blob_destroy(blob);
 
-  // equivalent of --font-features=*
-  const layoutFeatures = harfbuzzJsWasm.hb_subset_input_set(input, 6); // HB_SUBSET_SETS_LAYOUT_FEATURE_TAG
+  
+  const layoutFeatures = harfbuzzJsWasm.hb_subset_input_set(input, 6); 
   harfbuzzJsWasm.hb_set_clear(layoutFeatures);
   harfbuzzJsWasm.hb_set_invert(layoutFeatures);
 
-  // equivalent of noLayoutClosure: true
+  
   harfbuzzJsWasm.hb_subset_input_set_flags(
     input,
     harfbuzzJsWasm.hb_subset_input_get_flags(input) | 0x00000200
   );
 
-  // Add mapped unicode indices
+  
   const inputUnicodes = harfbuzzJsWasm.hb_subset_input_unicode_set(input);
   for (const c of text) {
     const cp = c.codePointAt(0);
@@ -93,7 +93,7 @@ export default async function subsetFont(originalFont: Buffer, text: string): Pr
   harfbuzzJsWasm.hb_face_destroy(face);
   harfbuzzJsWasm.free(fontBuffer);
 
-  // Direct compression from TTF -> WOFF2 internally
+  
   const woff2Buffer = await wawoff2.compress(subsetFontBuffer);
   return Buffer.from(woff2Buffer);
 }

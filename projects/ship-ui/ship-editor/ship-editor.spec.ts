@@ -3,7 +3,7 @@ import { Component, signal, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ShipEditor, ShipEditorDocument } from './ship-editor';
 
-// Polyfills for JSDOM missing features
+
 if (typeof window !== 'undefined') {
   if (!Range.prototype.getBoundingClientRect) {
     Range.prototype.getBoundingClientRect = function () {
@@ -33,7 +33,7 @@ if (typeof window !== 'undefined') {
   }
 }
 
-// Mock selection state
+
 let mockRangeInstance: Range | null = null;
 const mockSelection = {
   rangeCount: 0,
@@ -110,18 +110,18 @@ describe('ShipEditor', () => {
   });
 
   it('should render correct view mode elements', async () => {
-    // Initially design mode
+    
     expect(comp.viewMode()).toBe('design');
     let editorContent = fixture.nativeElement.querySelector('.sh-editor-content');
     expect(editorContent).toBeTruthy();
     expect(editorContent.getAttribute('contenteditable')).toBe('true');
 
-    // Readonly mode
+    
     host.readonly.set(true);
     fixture.detectChanges();
     expect(editorContent.getAttribute('contenteditable')).toBe('false');
 
-    // Switch to code view mode
+    
     comp.viewMode.set('code');
     fixture.detectChanges();
     await fixture.whenStable();
@@ -131,10 +131,10 @@ describe('ShipEditor', () => {
   });
 
   it('should handle ControlValueAccessor changes', async () => {
-    // Write initial value from host
+    
     expect(comp.editorRef()?.nativeElement.innerHTML).toContain('Initial content');
 
-    // Update value from DOM
+    
     comp.editorRef()!.nativeElement.innerHTML = '<p>Updated content</p>';
     comp.editorRef()!.nativeElement.dispatchEvent(new Event('input'));
     fixture.detectChanges();
@@ -160,20 +160,20 @@ describe('ShipEditor', () => {
   });
 
   it('should format HTML to Markdown and Markdown to HTML conversions', async () => {
-    // Setup Markdown format first
+    
     host.format.set('markdown');
     fixture.detectChanges();
     await fixture.whenStable();
 
-    // Set value second to prevent race conditions
+    
     host.value.set('**Bold** and *Italic*');
     fixture.detectChanges();
     await fixture.whenStable();
 
-    // Verify DOM converted markdown to HTML tags
+    
     expect(comp.getHTML()).toContain('<strong>Bold</strong> and <em>Italic</em>');
 
-    // Change value via Markdown setter
+    
     comp.setMarkdown('# Heading 1\n\nSome text');
     fixture.detectChanges();
     await fixture.whenStable();
@@ -184,7 +184,7 @@ describe('ShipEditor', () => {
   });
 
   it('should handle HTML to JSON and JSON to HTML conversions', async () => {
-    // Set format first
+    
     host.format.set('json');
     fixture.detectChanges();
     await fixture.whenStable();
@@ -200,7 +200,7 @@ describe('ShipEditor', () => {
         content: [{ type: 'text', text: 'This is details.' }],
       },
     ];
-    // Set value second
+    
     host.value.set(jsonVal);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -231,7 +231,7 @@ describe('ShipEditor', () => {
   });
 
   it('should trigger slash commands popup menu', () => {
-    // Setup range for slash menu
+    
     const textNode = document.createTextNode('/h');
     comp.editorRef()?.nativeElement.appendChild(textNode);
     
@@ -242,15 +242,15 @@ describe('ShipEditor', () => {
 
     expect(comp.showSlashMenu()).toBe(false);
 
-    // Dispatch keyup event with bubbles: true
+    
     comp.editorRef()?.nativeElement.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'h' }));
     fixture.detectChanges();
 
-    // Verify it detected the slash query
+    
     expect(comp.showSlashMenu()).toBe(true);
     expect(comp.slashSearchQuery()).toBe('h');
     expect(comp.filteredCommands().length).toBeGreaterThan(0);
-    // Heading commands should be filtered
+    
     expect(comp.filteredCommands().some(c => c.id === 'h1')).toBe(true);
   });
 });

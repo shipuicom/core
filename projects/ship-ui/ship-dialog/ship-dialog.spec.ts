@@ -1,12 +1,12 @@
 import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
-import { Component, signal, input, output, ViewChild, TemplateRef } from '@angular/core';
+import { Component, signal, input, output, viewChild, TemplateRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ShipDialog } from './ship-dialog';
 import { ShipDialogService } from './ship-dialog.service';
 import { SHIP_CONFIG } from '@ship-ui/core';
 
-// Mock dialog API for environment
+
 if (typeof HTMLDialogElement !== 'undefined') {
   if (!HTMLDialogElement.prototype.showModal) {
     HTMLDialogElement.prototype.showModal = function (this: HTMLDialogElement) {
@@ -63,7 +63,7 @@ class TestDialogContent {
   standalone: true,
 })
 class TestTemplateHostComponent {
-  @ViewChild('myTemplate', { static: true }) template!: TemplateRef<{ $implicit: string }>;
+  template = viewChild.required<TemplateRef<{ $implicit: string }>>('myTemplate');
 }
 
 describe('ShipDialog Component', () => {
@@ -198,9 +198,9 @@ describe('ShipDialogService', () => {
     expect(dialogRef).toBeTruthy();
     expect(dialogRef!.textContent).toContain('Service Data');
 
-    // Close the component using instance close method
+    
     instance.close('done');
-    // Wait for cleanup microtask
+    
     await new Promise<void>(resolve => queueMicrotask(() => resolve()));
 
     expect(closedSpy).toHaveBeenCalledWith('done');
@@ -209,7 +209,7 @@ describe('ShipDialogService', () => {
   it('should open a template dynamically', async () => {
     const templateHostFixture = TestBed.createComponent(TestTemplateHostComponent);
     templateHostFixture.detectChanges();
-    const template = templateHostFixture.componentInstance.template;
+    const template = templateHostFixture.componentInstance.template();
 
     const closedSpy = vi.fn();
     const instance = service.open(template, {
@@ -222,16 +222,16 @@ describe('ShipDialogService', () => {
 
     expect(instance.component).toBeUndefined();
 
-    // Verify rendered content in DOM
+    
     const dialogRef = document.getElementById('sh-dialog-ref');
     expect(dialogRef).toBeTruthy();
     expect(dialogRef!.textContent).toContain('Template Data');
 
-    // Trigger template close button
+    
     const closeBtn = dialogRef!.querySelector('.close-btn') as HTMLButtonElement;
     expect(closeBtn).toBeTruthy();
     closeBtn.click();
-    // Wait for cleanup microtask
+    
     await new Promise<void>(resolve => queueMicrotask(() => resolve()));
 
     expect(closedSpy).toHaveBeenCalledWith('result');

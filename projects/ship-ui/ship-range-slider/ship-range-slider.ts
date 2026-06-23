@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, HostBinding, inject, input, model, signal, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, model, signal, ViewEncapsulation } from '@angular/core';
 import { shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipSize, ShipRangeSliderVariant } from '@ship-ui/core';
 
@@ -35,10 +35,12 @@ import { ShipColor, ShipSize, ShipRangeSliderVariant } from '@ship-ui/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class.sh-range-slider]': 'true',
+    '[class.has-input]': 'hasInput()',
     '[class]': 'hostClasses()',
   },
 })
 export class ShipRangeSlider {
+  hasInput = signal(false);
   #selfRef = inject(ElementRef<HTMLElement>);
   #observer: MutationObserver | null = null;
   #inputElement: HTMLInputElement | null = null;
@@ -53,11 +55,11 @@ export class ShipRangeSlider {
     step: 1,
   });
 
-  readonly color = input<ShipColor | null>(null);
-  readonly variant = input<ShipRangeSliderVariant | null>(null);
-  readonly size = input<ShipSize | null>(null);
-  readonly sharp = input<boolean | undefined>(undefined);
-  readonly alwaysShow = input<boolean | undefined>(undefined);
+  color = input<ShipColor | null>(null);
+  variant = input<ShipRangeSliderVariant | null>(null);
+  size = input<ShipSize | null>(null);
+  sharp = input<boolean | undefined>(undefined);
+  alwaysShow = input<boolean | undefined>(undefined);
 
   hostClasses = shipComponentClasses('rangeSlider', {
     color: this.color,
@@ -92,15 +94,13 @@ export class ShipRangeSlider {
     }
   });
 
-  @HostBinding('class.has-input')
-  get hasInputElement(): boolean {
-    return !!this.#inputElement;
-  }
+
 
   ngAfterViewInit() {
     this.#inputElement = this.#selfRef.nativeElement.querySelector('input[type="range"]');
 
     if (this.#inputElement) {
+      this.hasInput.set(true);
       this.#createCustomInputEventListener(this.#inputElement);
 
       this.#inputElement.oninput = () => {

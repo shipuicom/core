@@ -135,11 +135,11 @@ export function createInputSignal<T>(
     Object.defineProperty(input, 'value', {
       configurable: true,
       get() {
-        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value'); // Use Object.getPrototypeOf
+        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value'); 
         return descriptor!.get!.call(this);
       },
       set(newVal) {
-        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value'); // Use Object.getPrototypeOf
+        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value'); 
         descriptor!.set!.call(this, newVal);
 
         const inputEvent = new CustomEvent('inputValueChanged', {

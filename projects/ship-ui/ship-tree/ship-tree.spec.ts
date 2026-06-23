@@ -58,8 +58,8 @@ describe('ShipTree', () => {
     fixture.detectChanges();
 
     const nodes = fixture.nativeElement.querySelectorAll('.sh-tree-node');
-    // Root Folder (id 1) and Another Root File (id 3) should be visible.
-    // Child File (id 2) is hidden because its parent is closed.
+    
+    
     expect(nodes.length).toBe(2);
     expect(nodes[0].textContent).toContain('Root Folder');
     expect(nodes[1].textContent).toContain('Another Root File');
@@ -98,11 +98,11 @@ describe('ShipTree', () => {
 
     const host = fixture.componentInstance;
     
-    // Find caret button of Root Folder
+    
     const caretBtn = fixture.nativeElement.querySelector('.caret-btn');
     expect(caretBtn).toBeTruthy();
 
-    // Toggle open
+    
     caretBtn.click();
     fixture.detectChanges();
 
@@ -110,19 +110,19 @@ describe('ShipTree', () => {
     expect(host.toggledState).toBe(true);
     expect(host.items()[0].isOpen).toBe(true);
 
-    // Verify child node is now visible in DOM
+    
     const nodesAfterOpen = fixture.nativeElement.querySelectorAll('.sh-tree-node');
     expect(nodesAfterOpen.length).toBe(3);
     expect(nodesAfterOpen[1].textContent).toContain('Child File');
 
-    // Toggle closed
+    
     caretBtn.click();
     fixture.detectChanges();
 
     expect(host.toggledState).toBe(false);
     expect(host.items()[0].isOpen).toBe(false);
 
-    // Verify child node is hidden again
+    
     const nodesAfterClose = fixture.nativeElement.querySelectorAll('.sh-tree-node');
     expect(nodesAfterClose.length).toBe(2);
   });

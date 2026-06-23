@@ -3,7 +3,7 @@ import { Component, signal, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ShipBlueprint, BlueprintNode } from './ship-blueprint';
 
-// Canvas Mock Context
+
 const mockCtx = {
   save: vi.fn(),
   restore: vi.fn(),
@@ -93,7 +93,7 @@ describe('ShipBlueprint', () => {
 
     comp = host.blueprintComponent();
 
-    // Mock parent container dimensions for node visibility testing
+    
     vi.spyOn(fixture.nativeElement.querySelector('sh-blueprint'), 'getBoundingClientRect').mockReturnValue({
       width: 800,
       height: 600,
@@ -118,11 +118,11 @@ describe('ShipBlueprint', () => {
   it('should detect duplicate nodes or ports validation errors', () => {
     expect(comp.validationErrors()).toBeNull();
 
-    // Disable forceUnique so it computes validation errors
+    
     host.forceUnique.set(false);
     fixture.detectChanges();
 
-    // Set duplicate node IDs far outside viewport to avoid Angular template duplicates track-by rendering crash
+    
     host.nodes.set([
       {
         id: 'dup-1',
@@ -132,7 +132,7 @@ describe('ShipBlueprint', () => {
         connections: [],
       },
       {
-        id: 'dup-1', // duplicate ID
+        id: 'dup-1', 
         coordinates: [10100, 10100],
         inputs: [],
         outputs: [],
@@ -141,7 +141,7 @@ describe('ShipBlueprint', () => {
     ]);
     fixture.detectChanges();
 
-    // Trigger duplicates check
+    
     comp.ngAfterViewInit();
     fixture.detectChanges();
 
@@ -149,10 +149,10 @@ describe('ShipBlueprint', () => {
   });
 
   it('should determine visible nodes based on coordinates and canvas dimensions', () => {
-    // Both nodes coordinates: [100, 100] and [400, 100] are inside the 800x600 viewport.
+    
     expect(comp.visibleNodes().length).toBe(2);
 
-    // Place a node far outside the viewport boundary
+    
     host.nodes.update((nodes) => [
       ...nodes,
       {
@@ -165,7 +165,7 @@ describe('ShipBlueprint', () => {
     ]);
     fixture.detectChanges();
 
-    // The node far outside should be filtered out from visibleNodes
+    
     expect(comp.visibleNodes().length).toBe(2);
     expect(comp.visibleNodes().some((n) => n.id === 'outside-node')).toBe(false);
   });
@@ -176,18 +176,18 @@ describe('ShipBlueprint', () => {
 
     const canvasContainer = fixture.nativeElement.querySelector('.canvas-container');
     
-    // Zoom in using wheel event
+    
     const wheelEvent = new WheelEvent('wheel', { deltaY: -50, clientX: 100, clientY: 100 });
     canvasContainer.dispatchEvent(wheelEvent);
     fixture.detectChanges();
 
     expect(comp.zoomLevel()).toBeGreaterThan(1);
 
-    // Reset panning offsets to 0 for isolated test assertions
+    
     comp.panX.set(0);
     comp.panY.set(0);
 
-    // Pan canvas using mock mouse events with defined coordinates
+    
     const mousedown = createMockMouseEvent('mousedown', 200, 200);
     comp.startPan(mousedown);
 
@@ -205,19 +205,19 @@ describe('ShipBlueprint', () => {
     const startCoords = comp.nodes()[0].coordinates;
     expect(startCoords).toEqual([100, 100]);
 
-    // Start drag on node-1
+    
     comp.startNodeDrag(createMockMouseEvent('mousedown', 150, 150), 'node-1');
     fixture.detectChanges();
 
-    // Drag move (dragging by 100px)
+    
     comp.nodeDrag(createMockMouseEvent('mousemove', 250, 250) as any);
     fixture.detectChanges();
 
-    // End node drag
+    
     comp.endNodeDrag();
     fixture.detectChanges();
 
-    // Node-1 coordinate should have changed (considering 20px grid snaps)
+    
     const finalCoords = comp.nodes()[0].coordinates;
     expect(finalCoords[0]).toBeGreaterThan(100);
     expect(finalCoords[1]).toBeGreaterThan(100);
@@ -226,7 +226,7 @@ describe('ShipBlueprint', () => {
   it('should support port dragging to connect nodes', () => {
     expect(comp.draggingConnection()).toBeNull();
 
-    // Start Port Drag on node-1 output
+    
     const event = new MouseEvent('click');
     comp.startPortDrag(event, 'node-1', 'out-1');
     fixture.detectChanges();
@@ -235,7 +235,7 @@ describe('ShipBlueprint', () => {
     expect(comp.draggingConnection()?.fromNode).toBe('node-1');
     expect(comp.draggingConnection()?.fromPort).toBe('out-1');
 
-    // Drag connection to node-2 input port
+    
     comp.endPortDrag(event, 'node-2', 'in-1');
     fixture.detectChanges();
 

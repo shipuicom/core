@@ -1,9 +1,9 @@
-import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { SHIP_CONFIG, ShipColor, ShipRangeSliderVariant, ShipSize } from '@ship-ui/core';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ShipRangeSlider } from './ship-range-slider';
-import { SHIP_CONFIG, ShipColor, ShipSize, ShipRangeSliderVariant } from '@ship-ui/core';
 
 @Component({
   template: `
@@ -52,7 +52,6 @@ describe('ShipRangeSlider', () => {
     fixture = TestBed.createComponent(TestHostComponent);
     hostComponent = fixture.componentInstance;
 
-    // Append native element to body for MutationObserver to run cleanly in jsdom
     document.body.appendChild(fixture.nativeElement);
 
     fixture.detectChanges();
@@ -91,8 +90,7 @@ describe('ShipRangeSlider', () => {
     await fixture.whenStable();
 
     const inputEl = sliderDebugEl.nativeElement.querySelector('input[type="range"]');
-    
-    // Programmatically setting the property, which triggers the custom setter
+
     inputEl.value = '70';
     fixture.detectChanges();
     await fixture.whenStable();
@@ -108,8 +106,7 @@ describe('ShipRangeSlider', () => {
     inputEl.setAttribute('max', '200');
     inputEl.setAttribute('step', '10');
 
-    // Wait for MutationObserver to trigger
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 50));
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -123,8 +120,7 @@ describe('ShipRangeSlider', () => {
     await fixture.whenStable();
 
     const trackWrap = sliderDebugEl.query(By.css('.track-wrap')).nativeElement;
-    
-    // Mock getBoundingClientRect for trackWrap
+
     vi.spyOn(trackWrap, 'getBoundingClientRect').mockReturnValue({
       left: 100,
       top: 100,
@@ -134,16 +130,13 @@ describe('ShipRangeSlider', () => {
       height: 10,
       x: 100,
       y: 100,
-      toJSON: () => {}
+      toJSON: () => {},
     } as any);
 
-    // Dispatch a click in the exact middle of the track (clientX: 200)
-    // clickX = 200 - 100 = 100.
-    // 100/200 * range(100) + min(0) = 50.
     const clickEvent = new MouseEvent('click', {
       clientX: 200,
       bubbles: true,
-      cancelable: true
+      cancelable: true,
     });
 
     trackWrap.dispatchEvent(clickEvent);

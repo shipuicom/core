@@ -1,4 +1,5 @@
 import {
+  Injectable,
   computed,
   Directive,
   DOCUMENT,
@@ -16,6 +17,16 @@ import {
   WritableSignal,
 } from '@angular/core';
 import { firstValueFrom, isObservable, Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ShipSortableService {
+  activeSource: ShipSortable | null = null;
+  activeDraggedElement: HTMLElement | null = null;
+  activeTarget: ShipSortable | null = null;
+  activeInstances = new Set<ShipSortable>();
+}
 
 export type AfterDropResponse = {
   fromIndex: number;
@@ -43,10 +54,10 @@ export type ShipTreeDropEvent = {
 };
 
 export interface SortableManagerConfig {
-  /**
-   * If provided, this hook is evaluated before the Signals are modified.
-   * Return `true`/`Observable<true>` to accept the drop, or false to reject.
-   */
+  
+
+
+
   onBeforeDrop?: (event: ShipDropEvent) => boolean | Promise<boolean> | Observable<boolean>;
 }
 
@@ -58,7 +69,7 @@ export function createSortableManager<T>(
 
   return {
     async drop(event: ShipDropEvent) {
-      // 1. Await API Authorization (RxJS or Promises)
+      
       if (config?.onBeforeDrop) {
         const result = config.onBeforeDrop(event);
         let accept = false;
@@ -71,14 +82,14 @@ export function createSortableManager<T>(
           accept = result;
         }
 
-        if (!accept) return; // Drop rejected, UI stays exactly as it was
+        if (!accept) return; 
       }
 
-      // 2. Perform UI Signal Update
+      
       const isCrossDrop = event.previousContainer !== event.container;
 
       if (!isCrossDrop) {
-        // Internal Reorder (moveIndex)
+        
         let targetSignal: WritableSignal<T[]>;
         if (isSingle) {
           targetSignal = signals as WritableSignal<T[]>;
@@ -91,7 +102,7 @@ export function createSortableManager<T>(
           targetSignal.update((arr) => moveIndex(arr, event));
         }
       } else {
-        // Cross DropTransfer
+        
         if (isSingle) {
           console.warn('Cross drops require a dictionary of signals in createSortableManager');
           return;
@@ -129,6 +140,8 @@ export function createSortableManager<T>(
   },
 })
 export class ShipSortable implements OnInit, OnDestroy {
+  #sortableService = inject(ShipSortableService);
+
   #document = inject(DOCUMENT);
   #selfEl = inject(ElementRef<HTMLElement>);
   #renderer = inject(Renderer2);
@@ -138,6 +151,9 @@ export class ShipSortable implements OnInit, OnDestroy {
   sortableGroup = input<string>();
   sortingMode = input<'list' | 'grid' | 'tree'>('list');
   treeItems = model<any[]>([]);
+
+  touchEnabled = input<boolean>(false);
+  touchActivation = input<'longpress' | 'handle' | 'none'>('longpress');
 
   sortDrop = output<ShipDropEvent>();
   afterDrop = output<AfterDropResponse>();
@@ -151,13 +167,19 @@ export class ShipSortable implements OnInit, OnDestroy {
   initialPositions = signal<{ x: number; y: number; width: number; height: number }[]>([]);
   dragables = signal<HTMLElement[]>([]);
 
-  static activeSource: ShipSortable | null = null;
-  static activeDraggedElement: HTMLElement | null = null;
-  static activeTarget: ShipSortable | null = null;
 
   abortController: AbortController | null = null;
   isDropping = false;
   isCrossTarget = false;
+
+  touchDragTimer: any = null;
+  touchStartCoordinates: { x: number; y: number } | null = null;
+  isTouchDragging = false;
+  touchGhostEl: HTMLElement | null = null;
+  touchOffset = { x: 0, y: 0 };
+
+  #boundTouchMove = this.onTouchMove.bind(this);
+  #boundTouchEnd = this.onTouchEnd.bind(this);
 
   draggingEffect = effect(() => {
     if (this.sortingMode() === 'tree') {
@@ -227,6 +249,12 @@ export class ShipSortable implements OnInit, OnDestroy {
     for (const el of els) {
       el.addEventListener('dragstart', (e) => this.dragStart(e), { signal: this.abortController.signal });
       el.addEventListener('dragend', () => this.dragEnd(), { signal: this.abortController.signal });
+      if (this.touchEnabled()) {
+        el.addEventListener('touchstart', (e) => this.onTouchStart(e, el), {
+          signal: this.abortController.signal,
+          passive: false,
+        });
+      }
     }
   });
 
@@ -254,9 +282,9 @@ export class ShipSortable implements OnInit, OnDestroy {
 
       e.dataTransfer.effectAllowed = 'move';
 
-      ShipSortable.activeSource = this;
-      ShipSortable.activeDraggedElement = draggedElement;
-      ShipSortable.activeTarget = this;
+      this.#sortableService.activeSource = this;
+      this.#sortableService.activeDraggedElement = draggedElement;
+      this.#sortableService.activeTarget = this;
 
       this.isCrossTarget = false;
 
@@ -308,6 +336,7 @@ export class ShipSortable implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.#sortableService.activeInstances.add(this);
     if (typeof MutationObserver !== 'undefined') {
       (this.#dragableObserver as MutationObserver).observe(this.#selfEl.nativeElement, { childList: true });
     }
@@ -315,20 +344,28 @@ export class ShipSortable implements OnInit, OnDestroy {
 
   @HostListener('dragenter', ['$event'])
   dragEnter(e: DragEvent) {
-    if (!ShipSortable.activeSource || ShipSortable.activeSource === this) return;
+    this.processDragEnter();
+  }
 
-    const sourceGroup = ShipSortable.activeSource.sortableGroup();
+  processDragEnter() {
+    if (!this.#sortableService.activeSource || this.#sortableService.activeSource === this) return;
+
+    const sourceGroup = this.#sortableService.activeSource.sortableGroup();
     const currentGroup = this.sortableGroup();
 
-    const sourceManager = ShipSortable.activeSource.shSortable();
+    const sourceManager = this.#sortableService.activeSource.shSortable();
     const currentManager = this.shSortable();
 
     const isSameGroup = !!(sourceGroup && currentGroup && sourceGroup === currentGroup);
     const isSameManager = !!(sourceManager?.drop && currentManager?.drop && sourceManager === currentManager);
 
     if (isSameGroup || isSameManager) {
-      ShipSortable.activeTarget = this;
-      ShipSortable.activeSource.dragToIndex.set(-1);
+      if (this.#sortableService.activeTarget && this.#sortableService.activeTarget !== this && this.#sortableService.activeTarget !== this.#sortableService.activeSource) {
+        this.#sortableService.activeTarget.processDragLeave(0, 0, null, true);
+      }
+
+      this.#sortableService.activeTarget = this;
+      this.#sortableService.activeSource.dragToIndex.set(-1);
 
       // Setup Target Placeholder if we are just entering
       if (!this.isCrossTarget) {
@@ -336,7 +373,7 @@ export class ShipSortable implements OnInit, OnDestroy {
         this.#renderer.addClass(this.#selfEl.nativeElement, 'dragging');
 
         // Compute cross-target positions by temporarily appending the active ghost to measure layout flow
-        const sourceElement = ShipSortable.activeDraggedElement!;
+        const sourceElement = this.#sortableService.activeDraggedElement!;
         const tempElement = sourceElement.cloneNode(true) as HTMLElement;
         this.#renderer.setStyle(tempElement, 'transform', '');
 
@@ -379,23 +416,29 @@ export class ShipSortable implements OnInit, OnDestroy {
 
   @HostListener('dragleave', ['$event'])
   dragLeave(e: DragEvent) {
-    if (!ShipSortable.activeSource || ShipSortable.activeSource === this) return;
+    this.processDragLeave(e.clientX, e.clientY, e.relatedTarget as Node);
+  }
 
-    if (e.relatedTarget) {
-      if (this.#selfEl.nativeElement.contains(e.relatedTarget as Node)) {
-        return;
+  processDragLeave(clientX: number, clientY: number, relatedTarget: Node | null, force = false) {
+    if (!this.#sortableService.activeSource || this.#sortableService.activeSource === this) return;
+
+    if (!force) {
+      if (relatedTarget) {
+        if (this.#selfEl.nativeElement.contains(relatedTarget)) {
+          return;
+        }
+      } else {
+        const rect = this.#selfEl.nativeElement.getBoundingClientRect();
+        const isOutside =
+          clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom;
+        if (!isOutside) return;
       }
-    } else {
-      const rect = this.#selfEl.nativeElement.getBoundingClientRect();
-      const isOutside =
-        e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom;
-      if (!isOutside) return;
     }
 
     if (this.isCrossTarget) {
       this.#cleanupDragState();
-      if (ShipSortable.activeTarget === this) {
-        ShipSortable.activeTarget = ShipSortable.activeSource;
+      if (this.#sortableService.activeTarget === this) {
+        this.#sortableService.activeTarget = this.#sortableService.activeSource;
       }
     }
   }
@@ -404,18 +447,21 @@ export class ShipSortable implements OnInit, OnDestroy {
   dragOver(e: DragEvent) {
     e.preventDefault();
     e.dataTransfer!.dropEffect = 'move';
+    this.processDragOver(e.clientX, e.clientY, e.target as HTMLElement);
+  }
 
-    if (ShipSortable.activeTarget !== this) return;
+  processDragOver(clientX: number, clientY: number, targetElementUnderTouch?: HTMLElement) {
+    if (this.#sortableService.activeTarget !== this) return;
 
     if (this.sortingMode() === 'tree') {
-      const targetElement = e.target as HTMLElement;
-      const hoveredDraggable = targetElement.closest('[draggable]') as HTMLElement;
+      const targetElement = targetElementUnderTouch || (this.#document.elementFromPoint(clientX, clientY) as HTMLElement);
+      const hoveredDraggable = targetElement?.closest('[draggable]') as HTMLElement;
 
       if (hoveredDraggable && this.#selfEl.nativeElement.contains(hoveredDraggable)) {
         const targetIdx = this.getIndexOfElement(hoveredDraggable);
         if (targetIdx !== -1) {
           const rect = hoveredDraggable.getBoundingClientRect();
-          const relativeY = (e.clientY - rect.top) / rect.height;
+          const relativeY = (clientY - rect.top) / rect.height;
           const isFolder =
             hoveredDraggable.hasAttribute('sortable-folder') ||
             hoveredDraggable.getAttribute('sortable-folder') === 'true' ||
@@ -462,8 +508,8 @@ export class ShipSortable implements OnInit, OnDestroy {
     const containerRect = container.getBoundingClientRect();
 
     // Convert viewport coordinates to container-relative coordinate space
-    const mouseX = e.clientX - containerRect.left - container.clientLeft + container.scrollLeft;
-    const mouseY = e.clientY - containerRect.top - container.clientTop + container.scrollTop;
+    const mouseX = clientX - containerRect.left - container.clientLeft + container.scrollLeft;
+    const mouseY = clientY - containerRect.top - container.clientTop + container.scrollTop;
 
     let closestSlotIndex = -1;
     let minDistance = Infinity;
@@ -485,6 +531,183 @@ export class ShipSortable implements OnInit, OnDestroy {
     if (closestSlotIndex !== -1 && this.dragToIndex() !== closestSlotIndex) {
       this.dragToIndex.set(closestSlotIndex);
     }
+  }
+
+  onTouchStart(e: TouchEvent, el: HTMLElement) {
+    if (!this.touchEnabled() || this.touchActivation() === 'none') {
+      return;
+    }
+
+    const touch = e.touches[0];
+    const targetEl = touch.target as HTMLElement;
+    const isSortingHandle = targetEl.hasAttribute('sort-handle') || targetEl.closest('[sort-handle]') !== null;
+
+    const hasHandle = el.querySelector('[sort-handle]') !== null;
+    if (hasHandle && !isSortingHandle) {
+      return;
+    }
+
+    if (this.touchActivation() === 'handle') {
+      if (!isSortingHandle) {
+        return;
+      }
+      e.preventDefault();
+      this.startTouchDrag(touch, el);
+    } else if (this.touchActivation() === 'longpress') {
+      this.touchStartCoordinates = { x: touch.clientX, y: touch.clientY };
+
+      this.#document.addEventListener('touchmove', this.#boundTouchMove, { passive: false });
+      this.#document.addEventListener('touchend', this.#boundTouchEnd, { passive: false });
+      this.#document.addEventListener('touchcancel', this.#boundTouchEnd, { passive: false });
+
+      this.touchDragTimer = setTimeout(() => {
+        this.startTouchDrag(touch, el);
+      }, 300);
+    }
+  }
+
+  startTouchDrag(touch: Touch, el: HTMLElement) {
+    this.isTouchDragging = true;
+
+    this.#sortableService.activeSource = this;
+    this.#sortableService.activeDraggedElement = el;
+    this.#sortableService.activeTarget = this;
+
+    this.isCrossTarget = false;
+
+    const containerRect = this.#selfEl.nativeElement.getBoundingClientRect();
+    const container = this.#selfEl.nativeElement;
+    const positions = Array.from(this.dragables()).map((item) => {
+      const rect = item.getBoundingClientRect();
+      return {
+        x: rect.left - containerRect.left - container.clientLeft + container.scrollLeft,
+        y: rect.top - containerRect.top - container.clientTop + container.scrollTop,
+        width: rect.width,
+        height: rect.height,
+      };
+    });
+    this.initialPositions.set(positions);
+
+    const rect = el.getBoundingClientRect();
+    this.touchOffset = {
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top,
+    };
+
+    const ghost = el.cloneNode(true) as HTMLElement;
+    ghost.style.position = 'fixed';
+    ghost.style.width = `${rect.width}px`;
+    ghost.style.height = `${rect.height}px`;
+    ghost.style.left = `${rect.left}px`;
+    ghost.style.top = `${rect.top}px`;
+    ghost.style.pointerEvents = 'none';
+    ghost.style.zIndex = '9999';
+    ghost.style.opacity = '0.8';
+    ghost.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+    ghost.style.margin = '0';
+    ghost.style.transform = '';
+    ghost.classList.add('sortable-ghost-touch');
+
+    this.#document.body.appendChild(ghost);
+    this.touchGhostEl = ghost;
+
+    const draggedElementIndex = this.getIndexOfElement(el);
+    this.dragStartIndex.set(draggedElementIndex);
+    this.dragToIndex.set(draggedElementIndex);
+
+    this.#renderer.addClass(el, 'sortable-ghost');
+    this.#renderer.addClass(this.#selfEl.nativeElement, 'dragging');
+
+    if (this.touchActivation() === 'handle') {
+      this.touchStartCoordinates = { x: touch.clientX, y: touch.clientY };
+      this.#document.addEventListener('touchmove', this.#boundTouchMove, { passive: false });
+      this.#document.addEventListener('touchend', this.#boundTouchEnd, { passive: false });
+      this.#document.addEventListener('touchcancel', this.#boundTouchEnd, { passive: false });
+    }
+  }
+
+  onTouchMove(e: TouchEvent) {
+    const touch = e.touches[0];
+    const clientX = touch.clientX;
+    const clientY = touch.clientY;
+
+    if (!this.isTouchDragging) {
+      if (this.touchStartCoordinates) {
+        const dx = clientX - this.touchStartCoordinates.x;
+        const dy = clientY - this.touchStartCoordinates.y;
+        if (Math.hypot(dx, dy) > 8) {
+          this.cancelTouchDrag();
+        }
+      }
+      return;
+    }
+
+    e.preventDefault();
+
+    if (this.touchGhostEl) {
+      const x = clientX - this.touchOffset.x;
+      const y = clientY - this.touchOffset.y;
+      this.touchGhostEl.style.left = `${x}px`;
+      this.touchGhostEl.style.top = `${y}px`;
+    }
+
+    const elementUnderTouch = this.#document.elementFromPoint(clientX, clientY) as HTMLElement;
+    let targetInstance: ShipSortable | null = null;
+    if (elementUnderTouch) {
+      for (const instance of this.#sortableService.activeInstances) {
+        if (instance.#selfEl.nativeElement === elementUnderTouch || instance.#selfEl.nativeElement.contains(elementUnderTouch)) {
+          targetInstance = instance;
+          break;
+        }
+      }
+    }
+
+    if (targetInstance) {
+      if (this.#sortableService.activeTarget !== targetInstance) {
+        if (this.#sortableService.activeTarget) {
+          this.#sortableService.activeTarget.processDragLeave(clientX, clientY, null, true);
+        }
+        this.#sortableService.activeTarget = targetInstance;
+        targetInstance.processDragEnter();
+      }
+      this.#sortableService.activeTarget.processDragOver(clientX, clientY, elementUnderTouch);
+    } else {
+      if (this.#sortableService.activeTarget && this.#sortableService.activeTarget !== this.#sortableService.activeSource) {
+        this.#sortableService.activeTarget.processDragLeave(clientX, clientY, null, true);
+      }
+    }
+  }
+
+  onTouchEnd(e: TouchEvent) {
+    const wasDragging = this.isTouchDragging;
+    this.cancelTouchDrag();
+
+    if (wasDragging) {
+      this.isTouchDragging = false;
+
+      if (this.#sortableService.activeTarget) {
+        this.#sortableService.activeTarget.drop();
+      }
+
+      if (this.touchGhostEl) {
+        this.touchGhostEl.remove();
+        this.touchGhostEl = null;
+      }
+
+      this.dragEnd();
+    }
+  }
+
+  cancelTouchDrag() {
+    if (this.touchDragTimer) {
+      clearTimeout(this.touchDragTimer);
+      this.touchDragTimer = null;
+    }
+    this.touchStartCoordinates = null;
+
+    this.#document.removeEventListener('touchmove', this.#boundTouchMove);
+    this.#document.removeEventListener('touchend', this.#boundTouchEnd);
+    this.#document.removeEventListener('touchcancel', this.#boundTouchEnd);
   }
 
   #clearTreeHoverClasses() {
@@ -517,19 +740,19 @@ export class ShipSortable implements OnInit, OnDestroy {
 
   @HostListener('drop')
   drop() {
-    if (!ShipSortable.activeSource) return;
+    if (!this.#sortableService.activeSource) return;
 
     // Immediately kill drag transitions before any signal updates
-    this.#renderer.removeClass(ShipSortable.activeSource.#selfEl.nativeElement, 'dragging');
+    this.#renderer.removeClass(this.#sortableService.activeSource.#selfEl.nativeElement, 'dragging');
     this.#renderer.removeClass(this.#selfEl.nativeElement, 'dragging');
 
     if (this.sortingMode() === 'tree') {
       this.isDropping = true;
-      if (ShipSortable.activeSource !== this) {
-        ShipSortable.activeSource.isDropping = true;
+      if (this.#sortableService.activeSource !== this) {
+        this.#sortableService.activeSource.isDropping = true;
       }
 
-      const prevIdx = ShipSortable.activeSource.dragStartIndex();
+      const prevIdx = this.#sortableService.activeSource.dragStartIndex();
       const currIdx = this.dragToIndex();
       const pos = this.treeHoverPosition();
 
@@ -549,13 +772,13 @@ export class ShipSortable implements OnInit, OnDestroy {
       }
 
       this.#cleanupDragState();
-      if (ShipSortable.activeSource !== this) {
-        ShipSortable.activeSource.#cleanupDragState();
+      if (this.#sortableService.activeSource !== this) {
+        this.#sortableService.activeSource.#cleanupDragState();
       }
       return;
     }
 
-    if (ShipSortable.activeSource === this) {
+    if (this.#sortableService.activeSource === this) {
       // Internal Drop
       if (this.dragStartIndex() !== -1 && this.dragToIndex() !== -1 && this.dragStartIndex() !== this.dragToIndex()) {
         this.isDropping = true;
@@ -574,15 +797,15 @@ export class ShipSortable implements OnInit, OnDestroy {
           this.afterDrop.emit({ fromIndex: event.previousIndex, toIndex: event.currentIndex });
         }
       }
-    } else if (ShipSortable.activeTarget === this && this.isCrossTarget) {
+    } else if (this.#sortableService.activeTarget === this && this.isCrossTarget) {
       // Cross Drop
       this.isDropping = true;
-      ShipSortable.activeSource.isDropping = true;
+      this.#sortableService.activeSource.isDropping = true;
 
       const event: ShipDropEvent = {
-        previousContainer: ShipSortable.activeSource,
+        previousContainer: this.#sortableService.activeSource,
         container: this,
-        previousIndex: ShipSortable.activeSource.dragStartIndex(),
+        previousIndex: this.#sortableService.activeSource.dragStartIndex(),
         currentIndex: this.dragToIndex(),
       };
 
@@ -591,9 +814,9 @@ export class ShipSortable implements OnInit, OnDestroy {
       } else {
         this.sortDrop.emit(event);
         this.crossDrop.emit({
-          previousContainer: ShipSortable.activeSource,
+          previousContainer: this.#sortableService.activeSource,
           currentContainer: this,
-          previousIndex: ShipSortable.activeSource.dragStartIndex(),
+          previousIndex: this.#sortableService.activeSource.dragStartIndex(),
           currentIndex: this.dragToIndex(),
         });
       }
@@ -601,18 +824,18 @@ export class ShipSortable implements OnInit, OnDestroy {
   }
 
   dragEnd() {
-    if (ShipSortable.activeSource) {
-      ShipSortable.activeSource.#renderer.removeClass(ShipSortable.activeSource.#selfEl.nativeElement, 'dragging');
-      ShipSortable.activeSource.#cleanupDragState();
+    if (this.#sortableService.activeSource) {
+      this.#sortableService.activeSource.#renderer.removeClass(this.#sortableService.activeSource.#selfEl.nativeElement, 'dragging');
+      this.#sortableService.activeSource.#cleanupDragState();
     }
-    if (ShipSortable.activeTarget && ShipSortable.activeTarget !== ShipSortable.activeSource) {
-      ShipSortable.activeTarget.#renderer.removeClass(ShipSortable.activeTarget.#selfEl.nativeElement, 'dragging');
-      ShipSortable.activeTarget.#cleanupDragState();
+    if (this.#sortableService.activeTarget && this.#sortableService.activeTarget !== this.#sortableService.activeSource) {
+      this.#sortableService.activeTarget.#renderer.removeClass(this.#sortableService.activeTarget.#selfEl.nativeElement, 'dragging');
+      this.#sortableService.activeTarget.#cleanupDragState();
     }
 
-    ShipSortable.activeSource = null;
-    ShipSortable.activeTarget = null;
-    ShipSortable.activeDraggedElement = null;
+    this.#sortableService.activeSource = null;
+    this.#sortableService.activeTarget = null;
+    this.#sortableService.activeDraggedElement = null;
   }
 
   #cleanupDragState() {
@@ -661,11 +884,11 @@ export class ShipSortable implements OnInit, OnDestroy {
                 this.isDropping = false;
                 this.#cleanupDragState();
 
-                if (ShipSortable.activeTarget === this) {
-                  ShipSortable.activeTarget = null;
+                if (this.#sortableService.activeTarget === this) {
+                  this.#sortableService.activeTarget = null;
                 }
-                if (ShipSortable.activeSource === this) {
-                  ShipSortable.activeSource = null;
+                if (this.#sortableService.activeSource === this) {
+                  this.#sortableService.activeSource = null;
                 }
               }
             }
@@ -674,6 +897,7 @@ export class ShipSortable implements OnInit, OnDestroy {
       : undefined;
 
   ngOnDestroy() {
+    this.#sortableService.activeInstances.delete(this);
     (this.#dragableObserver as MutationObserver)?.disconnect();
     this.abortController?.abort();
   }

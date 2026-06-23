@@ -350,26 +350,29 @@ $shipTable: true !default;
           top: p2r(5);
           bottom: p2r(5);
           border-radius: p2r(2);
-          right: p2r(5);
+          left: 50%;
+          transform: translateX(-50%);
           width: p2r(3);
           background-color: var(--base-4);
           transition:
             width 150ms ease,
-            background-color 150ms ease,
-            right 150ms ease;
+            background-color 150ms ease;
         }
 
         &:hover:after {
           width: p2r(5);
-          right: p2r(3);
           background-color: var(--primary-8);
+        }
+
+        @media (pointer: coarse) {
+          width: p2r(24);
+          right: p2r(-12);
         }
       }
 
       &.resizing {
         .sh-resizer:after {
           width: p2r(5);
-          right: p2r(3);
           background-color: var(--primary-8);
         }
       }

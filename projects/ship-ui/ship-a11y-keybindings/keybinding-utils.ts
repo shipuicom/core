@@ -7,10 +7,10 @@ export interface ParsedKeybinding {
   code?: string;
 }
 
-/**
- * Parses a keybinding shortcut string shorthand into a structured ParsedKeybinding object.
- * Supporting modifiers: ctrlOrCmd (OS adaptive), ctrl, cmd/meta, alt/option, shift.
- */
+
+
+
+
 export function parseKeybinding(shorthand: string, isMacPlatform: boolean): ParsedKeybinding {
   const parts = shorthand.split('+').map(p => p.trim().toLowerCase());
   
@@ -19,10 +19,10 @@ export function parseKeybinding(shorthand: string, isMacPlatform: boolean): Pars
   let altKey = false;
   let shiftKey = false;
   
-  // The last part is the key/code
+  
   const keyPart = parts[parts.length - 1] || '';
   
-  // Parse any preceding parts as modifier keys
+  
   for (let i = 0; i < parts.length - 1; i++) {
     const modifier = parts[i];
     if (modifier === 'ctrlorcmd') {
@@ -46,9 +46,9 @@ export function parseKeybinding(shorthand: string, isMacPlatform: boolean): Pars
   let code: string | undefined;
   
   if (keyPart.startsWith('key') || keyPart.startsWith('digit')) {
-    code = keyPart; // Matches event.code (case-insensitive)
+    code = keyPart; 
   } else {
-    // Map standard key names to event.key representation
+    
     if (keyPart === 'enter') {
       key = 'enter';
     } else if (keyPart === 'esc' || keyPart === 'escape') {
@@ -78,16 +78,16 @@ export function parseKeybinding(shorthand: string, isMacPlatform: boolean): Pars
     } else if (keyPart === 'pagedown') {
       key = 'pagedown';
     } else {
-      key = keyPart; // Raw key name
+      key = keyPart; 
     }
   }
   
   return { ctrlKey, metaKey, altKey, shiftKey, key, code };
 }
 
-/**
- * Checks if a KeyboardEvent matches a ParsedKeybinding structure.
- */
+
+
+
 export function matchKeybinding(event: KeyboardEvent, parsed: ParsedKeybinding): boolean {
   if (event.ctrlKey !== parsed.ctrlKey) return false;
   if (event.metaKey !== parsed.metaKey) return false;
@@ -107,10 +107,10 @@ export function matchKeybinding(event: KeyboardEvent, parsed: ParsedKeybinding):
   return false;
 }
 
-/**
- * Formats a shorthand shortcut string into an OS-specific user-friendly string for display.
- * E.g. 'ctrlOrCmd+Shift+KeyK' -> '⌘⇧K' on macOS, and 'Ctrl+Shift+K' on Windows/Linux.
- */
+
+
+
+
 export function formatShortcut(shorthand: string, isMacPlatform: boolean): string {
   const parts = shorthand.split('+').map(p => p.trim());
   const formattedParts: string[] = [];
@@ -132,13 +132,13 @@ export function formatShortcut(shorthand: string, isMacPlatform: boolean): strin
         formattedParts.push(isMacPlatform ? '⇧' : 'Shift');
       }
     } else {
-      // Key/code part
+      
       if (lowerPart.startsWith('key')) {
-        formattedParts.push(part.substring(3).toUpperCase()); // E.g. KeyA -> A
+        formattedParts.push(part.substring(3).toUpperCase()); 
       } else if (lowerPart.startsWith('digit')) {
-        formattedParts.push(part.substring(5)); // E.g. Digit1 -> 1
+        formattedParts.push(part.substring(5)); 
       } else {
-        // Capitalize first letter of standard keys
+        
         const capitalized = part.charAt(0).toUpperCase() + part.slice(1);
         formattedParts.push(capitalized);
       }

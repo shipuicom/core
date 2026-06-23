@@ -39,11 +39,11 @@ export class ShipKbd {
   });
 
   hasContent = computed(() => {
-    // If there is any content, it will be projected. We just need to render the separator
-    // if there are modifiers before it. Angular ng-content always renders if projected,
-    // so we assume true if they use the component with innerHTML (which we can't easily check
-    // statically, but we can assume if it's used as a wrapper, there's content).
-    // Actually, we can check if any modifiers exist to prepend. 
+    
+    
+    
+    
+    
     return true; 
   });
 
@@ -59,7 +59,7 @@ export class ShipKbd {
     if (this.escape()) keys.push(mac ? '⎋' : 'Esc');
     if (this.backspace()) keys.push(mac ? '⌫' : 'Backspace');
 
-    // Remove duplicates if they specify both meta and ctrl on windows (which both map to Ctrl)
+    
     return Array.from(new Set(keys));
   });
 }

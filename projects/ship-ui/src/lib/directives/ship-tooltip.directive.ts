@@ -53,7 +53,7 @@ export class ShipTooltipWrapper {
   content = input<string | TemplateRef<any> | null | undefined>();
   close = input<() => void>(() => {});
 
-  protected tooltipContext = {
+  tooltipContext = {
     close: () => this.close()(),
   };
 
@@ -64,7 +64,7 @@ export class ShipTooltipWrapper {
   #renderer = inject(Renderer2);
   #positionAbort: AbortController | null = null;
 
-  readonly SUPPORTS_ANCHOR =
+  SUPPORTS_ANCHOR =
     typeof CSS !== 'undefined' && CSS.supports('position-anchor', '--abc') && CSS.supports('anchor-name', '--abc');
 
   isBelow = signal<boolean>(false);
@@ -86,16 +86,16 @@ export class ShipTooltipWrapper {
           setTimeout(() => {
             const scrollableParent = this.#findScrollableParent(tooltipEl);
 
-            scrollableParent.addEventListener('scroll', () => this.calculateTooltipPosition(), {
+            scrollableParent.addEventListener('scroll', () => this.#calculateTooltipPosition(), {
               signal: this.#positionAbort?.signal,
               passive: true,
             });
-            window?.addEventListener('resize', () => this.calculateTooltipPosition(), {
+            window?.addEventListener('resize', () => this.#calculateTooltipPosition(), {
               signal: this.#positionAbort?.signal,
               passive: true,
             });
 
-            this.calculateTooltipPosition();
+            this.#calculateTooltipPosition();
           });
         }
       });
@@ -107,7 +107,7 @@ export class ShipTooltipWrapper {
             tooltipEl.hidePopover();
           }
         } catch (e) {
-          // Ignore if already hidden or other errors
+          
         }
       }
       this.#positionAbort?.abort();
@@ -138,7 +138,7 @@ export class ShipTooltipWrapper {
     return this.#document.documentElement;
   }
 
-  private calculateTooltipPosition = (): void => {
+  #calculateTooltipPosition = (): void => {
     if (!this.anchorEl()) return;
 
     const hostRect = this.anchorEl().nativeElement.getBoundingClientRect();
@@ -149,7 +149,7 @@ export class ShipTooltipWrapper {
 
     const BASE_SPACE = 8;
 
-    // Position generators
+    
     const topCenter = (t: DOMRect, m: DOMRect) => ({
       left: t.left + t.width / 2 - m.width / 2,
       top: t.top - m.height - BASE_SPACE,
@@ -236,10 +236,10 @@ export class ShipTooltip implements OnDestroy {
   #viewContainerRef = inject(ViewContainerRef);
   #environmentInjector = inject(EnvironmentInjector);
 
-  private debounceTimer: Timeout | null = null;
-  private readonly DEBOUNCE_DELAY = 50;
+  #debounceTimer: Timeout | null = null;
+  #DEBOUNCE_DELAY = 50;
 
-  readonly anchorName = `--${generateUniqueId()}`;
+  anchorName = `--${generateUniqueId()}`;
   isOpen = signal<boolean>(false);
 
   @HostListener('mouseenter', ['$event'])
@@ -247,37 +247,37 @@ export class ShipTooltip implements OnDestroy {
     event.stopPropagation();
 
     if (openRef?.component.anchorName !== this.anchorName) {
-      this.cleanupTooltip();
+      this.#cleanupTooltip();
     } else {
-      this.cancelCleanupTimer();
+      this.#cancelCleanupTimer();
     }
 
-    this.showTooltip();
+    this.#showTooltip();
     // queueMicrotask(() => );
   }
 
   @HostListener('mouseleave', ['$event'])
   onMouseLeave(event: MouseEvent) {
     event.stopPropagation();
-    this.startCleanupTimer();
+    this.#startCleanupTimer();
   }
 
   ngOnDestroy() {
-    this.cancelCleanupTimer();
-    this.cleanupTooltip();
+    this.#cancelCleanupTimer();
+    this.#cleanupTooltip();
   }
 
-  private startCleanupTimer() {
-    this.cancelCleanupTimer();
-    this.debounceTimer = setTimeout(() => {
-      this.cleanupTooltip();
-    }, this.DEBOUNCE_DELAY);
+  #startCleanupTimer() {
+    this.#cancelCleanupTimer();
+    this.#debounceTimer = setTimeout(() => {
+      this.#cleanupTooltip();
+    }, this.#DEBOUNCE_DELAY);
   }
 
-  private cancelCleanupTimer() {
-    if (this.debounceTimer) {
-      clearTimeout(this.debounceTimer);
-      this.debounceTimer = null;
+  #cancelCleanupTimer() {
+    if (this.#debounceTimer) {
+      clearTimeout(this.#debounceTimer);
+      this.#debounceTimer = null;
     }
 
     if (this.destroyTimeout) {
@@ -286,7 +286,7 @@ export class ShipTooltip implements OnDestroy {
     }
   }
 
-  private showTooltip() {
+  #showTooltip() {
     if (openRef?.wrapperComponentRef || !this.shTooltip()) {
       if (openRef?.component === this && openRef?.wrapperComponentRef) {
         openRef.wrapperComponentRef.setInput('content', this.shTooltip());
@@ -305,16 +305,16 @@ export class ShipTooltip implements OnDestroy {
     openRef.wrapperComponentRef.setInput('anchorEl', this.#elementRef);
     openRef.wrapperComponentRef.setInput('isOpen', this.isOpen);
     openRef.wrapperComponentRef.setInput('content', this.shTooltip());
-    openRef.wrapperComponentRef.setInput('close', () => this.cleanupTooltip());
+    openRef.wrapperComponentRef.setInput('close', () => this.#cleanupTooltip());
     openRef.wrapperComponentRef.changeDetectorRef.detectChanges();
     openRef.wrapperComponentRef.location.nativeElement.addEventListener('mouseenter', (event: MouseEvent) => {
       event.stopPropagation();
-      this.cancelCleanupTimer();
+      this.#cancelCleanupTimer();
     });
 
     openRef.wrapperComponentRef.location.nativeElement.addEventListener('mouseleave', (event: MouseEvent) => {
       event.stopPropagation();
-      this.startCleanupTimer();
+      this.#startCleanupTimer();
     });
 
     setTimeout(() => {
@@ -324,9 +324,9 @@ export class ShipTooltip implements OnDestroy {
 
   destroyTimeout: Timeout | null = null;
 
-  private cleanupTooltip(): void {
+  #cleanupTooltip(): void {
     if (openRef?.wrapperComponentRef) {
-      openRef.component.cancelCleanupTimer();
+      openRef.component.#cancelCleanupTimer();
       openRef.component.isOpen.set(false);
       openRef!.wrapperComponentRef.location.nativeElement.hidePopover();
 
@@ -335,7 +335,7 @@ export class ShipTooltip implements OnDestroy {
           openRef?.wrapperComponentRef.destroy();
           openRef = null;
         });
-      }, this.DEBOUNCE_DELAY);
+      }, this.#DEBOUNCE_DELAY);
     }
   }
 }

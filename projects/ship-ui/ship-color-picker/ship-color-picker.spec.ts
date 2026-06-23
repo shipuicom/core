@@ -4,7 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ShipColorPicker } from './ship-color-picker';
 import { ShipColorPickerInput } from './ship-color-picker-input';
 
-// Mock HTMLCanvasElement 2D context
+
 const mockCtx = {
   clearRect: vi.fn(),
   createLinearGradient: vi.fn().mockReturnValue({
@@ -91,7 +91,7 @@ describe('ShipColorPicker & ShipColorPickerInput', () => {
       let emitted: any = null;
       comp.currentColor.subscribe((val) => (emitted = val));
 
-      // Set both alpha and selectedColor to keep them in sync
+      
       comp.alpha.set(0.5);
       comp.selectedColor.set([0, 255, 0, 0.5]);
       fixture.detectChanges();
@@ -140,7 +140,7 @@ describe('ShipColorPicker & ShipColorPickerInput', () => {
 
       const textInput = fixture.nativeElement.querySelector('input');
 
-      // Type '#0000ff' (blue)
+      
       textInput.value = '#0000ff';
       textInput.dispatchEvent(new Event('input'));
       fixture.detectChanges();
@@ -161,14 +161,14 @@ describe('ShipColorPicker & ShipColorPickerInput', () => {
       const host = fixture.componentInstance;
       const textInput = fixture.nativeElement.querySelector('input');
 
-      // Initialize with red
+      
       textInput.value = '#ff0000';
       textInput.dispatchEvent(new Event('input'));
       fixture.detectChanges();
       await fixture.whenStable();
       fixture.detectChanges();
 
-      // Change format to hex
+      
       host.format.set('hex');
       fixture.detectChanges();
       await fixture.whenStable();
@@ -176,7 +176,7 @@ describe('ShipColorPicker & ShipColorPickerInput', () => {
 
       expect(textInput.value).toBe('#ff0000');
 
-      // Change format to hsl
+      
       host.format.set('hsl');
       fixture.detectChanges();
       await fixture.whenStable();

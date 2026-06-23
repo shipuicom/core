@@ -42,7 +42,7 @@ describe('ShipStepper', () => {
     fixture = TestBed.createComponent(TestHostComponent);
     hostComponent = fixture.componentInstance;
 
-    // Append native element to body to ensure MutationObserver functions correctly on descendant changes
+    
     document.body.appendChild(fixture.nativeElement);
 
     fixture.detectChanges();
@@ -64,7 +64,7 @@ describe('ShipStepper', () => {
     const step1 = hostEl.querySelector('#step1');
     const step2 = hostEl.querySelector('#step2');
 
-    // Verify .sh-radio was prepended
+    
     const radio1 = step1.querySelector('.sh-radio');
     const radio2 = step2.querySelector('.sh-radio');
     expect(radio1).toBeTruthy();
@@ -78,16 +78,16 @@ describe('ShipStepper', () => {
     await fixture.whenStable();
 
     const hostEl = stepperDebugEl.nativeElement;
-    // Step 1 active => 0% progress
+    
     expect(hostEl.style.getPropertyValue('--stepper-progress')).toBe('0%');
 
-    // Change value to step 2 => 33% progress (1/3 * 100)
+    
     hostComponent.value.set('step2');
     fixture.detectChanges();
     await fixture.whenStable();
     expect(hostEl.style.getPropertyValue('--stepper-progress')).toBe('33.33333333333333%');
 
-    // Change value to step 3 => 66.66% progress (2/3 * 100)
+    
     hostComponent.value.set('step3');
     fixture.detectChanges();
     await fixture.whenStable();
@@ -101,13 +101,13 @@ describe('ShipStepper', () => {
     const hostEl = stepperDebugEl.nativeElement;
     const extraBtn = hostEl.querySelector('#extra-btn');
 
-    // Spy on updateProgress
+    
     const spy = vi.spyOn(stepperComponent, 'updateProgress');
 
-    // Add active class to extraBtn to trigger MutationObserver
+    
     extraBtn.setAttribute('class', 'active');
 
-    // Wait for MutationObserver to batch and run
+    
     await new Promise(resolve => setTimeout(resolve, 50));
     fixture.detectChanges();
     await fixture.whenStable();

@@ -41,7 +41,7 @@ export interface CaretState {
   endOffset: number;
 }
 
-// JSON document schema types
+
 export interface ShipEditorMark {
   type: 'bold' | 'italic' | 'underline' | 'strike' | 'link' | 'code';
   attrs?: {
@@ -88,7 +88,7 @@ export interface ShipEditorHtmlDocument {
   queryCommandEnabled(commandId: string): boolean;
 }
 
-// Value Accessor Provider
+
 const SHIP_EDITOR_VALUE_ACCESSOR: Provider = {
   provide: NG_VALUE_ACCESSOR,
   useExisting: forwardRef(() => ShipEditor),
@@ -121,14 +121,14 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     return this.#document as unknown as Document & ShipEditorHtmlDocument;
   }
 
-  // Elements
+  
   editorRef = viewChild<ElementRef<HTMLDivElement>>('editorRef');
   codeEditorRef = viewChild<ElementRef<HTMLTextAreaElement>>('codeEditorRef');
   uploadBtn = viewChild<ElementRef<HTMLButtonElement>>('uploadBtn');
   imageInput = viewChild<ElementRef<HTMLInputElement>>('imageInput');
   linkInput = viewChild<ElementRef<HTMLInputElement>>('linkInput');
 
-  // Configuration inputs & model signals
+  
   value = model<string | ShipEditorDocument | null>('');
   format = input<'json' | 'html' | 'markdown'>('html');
   placeholder = input<string>('Type your content here...');
@@ -138,7 +138,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
   variant = input<'base' | 'type-b' | null>('base');
   customCommands = input<ShipEditorCommand[]>([]);
 
-  // Slash commands state signals
+  
   showSlashMenu = signal<boolean>(false);
   slashSearchQuery = signal<string>('');
   slashMenuTop = signal<number>(0);
@@ -253,7 +253,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     );
   });
 
-  // Toolbar group configuration inputs
+  
   showFormats = input<boolean>(true);
   showBlocks = input<boolean>(true);
   showLists = input<boolean>(true);
@@ -261,19 +261,19 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
   showInsertions = input<boolean>(true);
   showHistory = input<boolean>(true);
 
-  // File upload output hook & configuration
+  
   customUpload = input<boolean>(false);
   imageUploadEnabled = input<boolean>(true);
   imageUpload = output<File>();
 
-  // Image layout overlay signals
+  
   #selectedImage = signal<HTMLImageElement | null>(null);
   imgToolbarTop = signal<number>(0);
   imgToolbarLeft = signal<number>(0);
   imgMode = signal<'content' | 'theater' | 'float' | 'custom'>('content');
   imgSize = signal<'auto' | 'small' | 'medium' | 'large'>('auto');
 
-  // Local state signals
+  
   viewMode = signal<'design' | 'code'>('design');
   isFocused = signal<boolean>(false);
   showLinkModal = signal<boolean>(false);
@@ -281,7 +281,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
   rawCodeValue = signal<string>('');
   showBlockMenu = signal<boolean>(false);
 
-  // Toolbar active states
+  
   isBold = signal<boolean>(false);
   isItalic = signal<boolean>(false);
   isUnderline = signal<boolean>(false);
@@ -291,30 +291,30 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
   canUndo = signal<boolean>(false);
   canRedo = signal<boolean>(false);
 
-  // Selection backup for inserting links/images when modal is open
+  
   #savedRange: Range | null = null;
 
-  // Text metrics signals
+  
   charCount = signal<number>(0);
   wordCount = signal<number>(0);
 
-  // Form accessors callbacks
+  
   onChange: (value: ShipEditorValue) => void = () => {};
   onTouched: () => void = () => {};
 
-  // Host CSS classes resolver
+  
   hostClasses = shipComponentClasses('editor', {
     color: this.color,
     variant: this.variant,
     readonly: this.readonly,
   });
 
-  // Track outer changes
+  
   #isWriting = false;
   #lastFormat: 'json' | 'html' | 'markdown' | null = null;
 
   constructor() {
-    // Auto-focus link dialog input when opened
+    
     effect(() => {
       if (this.showLinkModal()) {
         const linkInput = this.linkInput();
@@ -324,7 +324,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
       }
     });
 
-    // Auto-focus image dialog elements when opened based on configuration
+    
     effect(() => {
       if (this.showImageModal()) {
         const uploadBtn = this.uploadBtn();
@@ -342,13 +342,13 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
       }
     });
 
-    // Keep DOM inside editor in sync with value model changes reactively (when written from parent)
+    
     effect(() => {
       const val = this.value();
       const editor = this.editorRef()?.nativeElement;
 
-      // If the DOM element itself has changed (re-created during HMR), we must reset
-      // lastValueWrittenFromDOM to force content initialization onto the new element.
+      
+      
       if (editor && editor !== this.#lastEditorElement) {
         this.#lastEditorElement = editor;
         this.#lastValueWrittenFromDOM = undefined;
@@ -358,7 +358,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
       this.#syncModelToDOM(val);
     });
 
-    // React to format changes by converting the model value to the new format reactively
+    
     effect(() => {
       const fmt = this.format();
       const prev = this.#lastFormat;
@@ -367,7 +367,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
       if (prev !== null && prev !== fmt) {
         const val = this.value();
 
-        // 1. Convert current value in prev format to HTML
+        
         let html = '';
         if (prev === 'html' && typeof val === 'string') {
           html = val;
@@ -377,7 +377,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
           html = this.#jsonToHTML(val);
         }
 
-        // 2. Convert HTML to the new format
+        
         let newValue: ShipEditorValue = '';
         if (fmt === 'html') {
           newValue = html;
@@ -387,7 +387,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
           newValue = this.#htmlToJSON(html);
         }
 
-        // 3. Update the model and DOM
+        
         this.#isWriting = true;
         this.value.set(newValue);
         this.#lastValueWrittenFromDOM = newValue;
@@ -415,7 +415,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
       }
     });
 
-    // Recalculate metrics whenever raw content updates
+    
     effect(() => {
       const val = this.value();
       const fmt = this.format();
@@ -441,7 +441,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
       this.wordCount.set(text === '' ? 0 : text.split(/\s+/).filter((w) => w.length > 0).length);
     });
 
-    // Reinitialize toolbar tabindexes when visibility inputs change
+    
     effect(() => {
       this.showFormats();
       this.showBlocks();
@@ -456,7 +456,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
   }
 
   ngOnInit() {
-    // Empty hook
+    
   }
 
   ngAfterViewInit() {
@@ -470,7 +470,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     }
   }
 
-  // --- CONTROL VALUE ACCESSOR ---
+  
 
   writeValue(obj: ShipEditorValue): void {
     this.#isWriting = true;
@@ -488,10 +488,10 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
   }
 
   setDisabledState(isDisabled: boolean): void {
-    // In Angular forms, this matches readonly
+    
   }
 
-  // --- MODEL TO DOM SYNCING ---
+  
 
   #syncModelToDOM(val: ShipEditorValue) {
     let html = '';
@@ -512,7 +512,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
 
     const isNewValue = val !== this.#lastValueWrittenFromDOM;
 
-    // Set code editor value
+    
     if (this.format() === 'markdown' && typeof val === 'string') {
       this.rawCodeValue.set(val);
     } else if (this.format() === 'json' && Array.isArray(val)) {
@@ -521,11 +521,11 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
       this.rawCodeValue.set(html);
     }
 
-    // Update WYSIWYG editor surface if in design mode
+    
     const editor = this.editorRef()?.nativeElement;
     if (editor) {
       this.#lastValueWrittenFromDOM = val;
-      // Avoid resetting selection if html content is equivalent
+      
       const normalizedHTML = html === '<p><br></p>' ? '' : html;
       const currentNormalized = editor.innerHTML === '<p><br></p>' ? '' : editor.innerHTML;
       if (normalizedHTML !== currentNormalized) {
@@ -544,14 +544,14 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     this.#updateHistoryStates();
   }
 
-  // --- DOM TO MODEL SYNCING ---
+  
 
   #updateValueFromDOM() {
     const editor = this.editorRef()?.nativeElement;
     if (!editor) return;
 
     let html = editor.innerHTML;
-    // Normalize empty editor contents to empty string or basic paragraph
+    
     if (html === '' || html === '<br>' || html === '<p><br></p>') {
       html = '';
     }
@@ -580,13 +580,13 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     this.#isWriting = false;
   }
 
-  // --- COMPONENT HANDLERS ---
+  
 
-  protected onDOMInput() {
+  onDOMInput() {
     this.#ensureImagesFocusable();
     this.#updateValueFromDOM();
 
-    // Debounce history save on typing (500ms) or save immediately on word/sentence boundaries
+    
     const selection = window.getSelection();
     let saveImmediately = false;
     if (selection && selection.rangeCount > 0) {
@@ -613,17 +613,17 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     }
   }
 
-  protected onDOMBlur() {
+  onDOMBlur() {
     this.isFocused.set(false);
     this.onTouched();
   }
 
-  protected onCodeInput(event: Event) {
+  onCodeInput(event: Event) {
     const textarea = event.target as HTMLTextAreaElement;
     this.rawCodeValue.set(textarea.value);
   }
 
-  protected onCodeBlur(event: Event) {
+  onCodeBlur(event: Event) {
     this.isFocused.set(false);
     const textarea = event.target as HTMLTextAreaElement;
     const codeVal = textarea.value;
@@ -643,7 +643,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
         this.value.set(parsed);
         this.onChange(parsed);
       } catch (e) {
-        // invalid JSON, do not update model, let user fix it
+        
       }
     }
 
@@ -651,7 +651,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     this.onTouched();
   }
 
-  // --- SELECTION STATE & COMMANDS ---
+  
 
   formatText(command: string, value: string = '') {
     if (this.readonly()) return;
@@ -842,7 +842,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
         selection.removeAllRanges();
         selection.addRange(newRange);
       } catch (e) {
-        // Fallback
+        
       }
     }
 
@@ -1280,7 +1280,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     this.#updateHistoryStates();
   }
 
-  protected toggleViewMode() {
+  toggleViewMode() {
     const nextMode = this.viewMode() === 'design' ? 'code' : 'design';
     this.viewMode.set(nextMode);
 
@@ -1335,7 +1335,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
   }
 
   @HostListener('document:selectionchange')
-  protected onSelectionChange() {
+  onSelectionChange() {
     if (!this.#isBrowser) return;
     this.#updateHistoryStates();
     if (this.readonly() || this.viewMode() === 'code') return;
@@ -1431,7 +1431,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     this.showLinkModal.set(true);
   }
 
-  protected applyLink(url: string) {
+  applyLink(url: string) {
     this.showLinkModal.set(false);
     if (!url) return;
 
@@ -1457,7 +1457,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     this.showImageModal.set(true);
   }
 
-  protected applyImage(url: string) {
+  applyImage(url: string) {
     this.showImageModal.set(false);
     this.insertImage(url);
   }
@@ -1816,7 +1816,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     this.showBlockMenu.set(false);
   }
 
-  protected onToolbarKeyDown(event: KeyboardEvent) {
+  onToolbarKeyDown(event: KeyboardEvent) {
     if (!this.#isBrowser) return;
     const target = event.target as HTMLElement;
     const toolbarEl = target.closest('.sh-editor-toolbar');
@@ -1897,7 +1897,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     }
   }
 
-  protected onToolbarFocusIn(event: FocusEvent) {
+  onToolbarFocusIn(event: FocusEvent) {
     if (!this.#isBrowser) return;
     const target = event.target as HTMLElement;
     const toolbarEl = target.closest('.sh-editor-toolbar');

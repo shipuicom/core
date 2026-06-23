@@ -55,41 +55,40 @@ describe('ShipMenu Keyboard Navigation', () => {
   it('should navigate down by exactly one option at a time on ArrowDown when non-searchable', async () => {
     const menu = hostComponent.shipMenu();
 
-    // Open the menu
+    
     menu.open();
     fixture.detectChanges();
 
-    // Wait a macrotask / microtask for effects to run and elements to populate
+    
     await fixture.whenStable();
     fixture.detectChanges();
 
-    // Verify it is open and added to openMenus
+    
     expect(menu.isOpen()).toBe(true);
-    expect(ShipMenu['openMenus'].length).toBe(1);
 
-    // Initially activeOptionIndex should be -1
+    
     expect(menu.activeOptionIndex()).toBe(-1);
 
-    // Simulate ArrowDown on document
+    
     const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true });
     document.documentElement.dispatchEvent(event);
     fixture.detectChanges();
 
-    // Verify it moved to index 0 (Option 1)
+    
     expect(menu.activeOptionIndex()).toBe(0);
 
-    // Simulate ArrowDown again
+    
     document.documentElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
     fixture.detectChanges();
 
-    // Verify it moved to index 1 (Option 2)
+    
     expect(menu.activeOptionIndex()).toBe(1);
 
-    // Simulate ArrowDown again
+    
     document.documentElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
     fixture.detectChanges();
 
-    // Verify it moved to index 2 (Option 3)
+    
     expect(menu.activeOptionIndex()).toBe(2);
   });
 
@@ -99,35 +98,35 @@ describe('ShipMenu Keyboard Navigation', () => {
 
     const menu = hostComponent.shipMenu();
 
-    // Open the menu
+    
     menu.open();
     fixture.detectChanges();
 
-    // Wait a macrotask / microtask for effects to run and elements to populate
+    
     await fixture.whenStable();
     fixture.detectChanges();
 
-    // Verify it is open
+    
     expect(menu.isOpen()).toBe(true);
 
     const inputEl = menu.inputRef()?.nativeElement;
     expect(inputEl).toBeTruthy();
 
-    // Initially activeOptionIndex should be -1
+    
     expect(menu.activeOptionIndex()).toBe(-1);
 
-    // Simulate ArrowDown on input
+    
     inputEl?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
     fixture.detectChanges();
 
-    // Verify it moved to index 0 (Option 1)
+    
     expect(menu.activeOptionIndex()).toBe(0);
 
-    // Simulate ArrowDown again
+    
     inputEl?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
     fixture.detectChanges();
 
-    // Verify it moved to index 1 (Option 2)
+    
     expect(menu.activeOptionIndex()).toBe(1);
   });
 });

@@ -31,13 +31,13 @@ describe('Keybinding Utilities', () => {
     });
 
     it('should resolve ctrlOrCmd key dynamically based on OS', () => {
-      // Non-Mac OS (Windows/Linux)
+      
       const parsedWindows = parseKeybinding('ctrlOrCmd+KeyK', false);
       expect(parsedWindows.ctrlKey).toBe(true);
       expect(parsedWindows.metaKey).toBe(false);
       expect(parsedWindows.code).toBe('keyk');
 
-      // Mac OS
+      
       const parsedMac = parseKeybinding('ctrlOrCmd+KeyK', true);
       expect(parsedMac.ctrlKey).toBe(false);
       expect(parsedMac.metaKey).toBe(true);
@@ -59,7 +59,7 @@ describe('Keybinding Utilities', () => {
 
       const unmatchedEvent = {
         ctrlKey: true,
-        shiftKey: false, // mismatch
+        shiftKey: false, 
         metaKey: false,
         altKey: false,
         key: 'k',
@@ -171,7 +171,7 @@ describe('ShipA11yKeybindingsService with SHIP_A11Y_KEYBINDINGS_OVERRIDE', () =>
   it('should apply overrides provided via InjectionToken during construction', () => {
     expect(service.getShortcut('global.help')).toBe('ctrlOrCmd+h');
 
-    // And defaults shouldn't override the injected override
+    
     service.registerDefaults({
       'global.help': 'f1',
     });

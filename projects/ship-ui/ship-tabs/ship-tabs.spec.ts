@@ -142,7 +142,7 @@ describe('ShipTabs & ShipSelectionGroup', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(hostComponent.value()).toBe('tab3'); // Loops back to the last tab
+    expect(hostComponent.value()).toBe('tab3'); 
     expect(document.activeElement?.id).toBe('btn3');
   });
 
@@ -177,11 +177,11 @@ describe('ShipTabs & ShipSelectionGroup', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    // Value should still be tab1, but focus should have moved to btn2
+    
     expect(hostComponent.value()).toBe('tab1');
     expect(document.activeElement?.id).toBe('btn2');
 
-    // Trigger select via Enter key
+    
     const enterEvent = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
     document.activeElement?.dispatchEvent(enterEvent);
     fixture.detectChanges();

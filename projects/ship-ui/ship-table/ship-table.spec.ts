@@ -117,19 +117,19 @@ describe('ShipTable ARIA & Accessibility', () => {
   it('should update aria-sort attribute and sort the data when clicking the header', () => {
     const nameHeader = fixture.nativeElement.querySelector('#col-name');
 
-    // Sort Ascending
+    
     nameHeader.click();
     fixture.detectChanges();
     expect(nameHeader.getAttribute('aria-sort')).toBe('ascending');
     expect(hostComponent.sortByColumn()).toBe('name');
 
-    // Sort Descending
+    
     nameHeader.click();
     fixture.detectChanges();
     expect(nameHeader.getAttribute('aria-sort')).toBe('descending');
     expect(hostComponent.sortByColumn()).toBe('-name');
 
-    // Clear Sort
+    
     nameHeader.click();
     fixture.detectChanges();
     expect(nameHeader.getAttribute('aria-sort')).toBe('none');
@@ -204,13 +204,13 @@ describe('ShipTable Configuration-Based Columns', () => {
 
     const headers = fixture.nativeElement.querySelectorAll('thead th');
 
-    // Sortable column
+    
     expect(headers[0].getAttribute('role')).toBe('columnheader');
     expect(headers[0].getAttribute('tabindex')).toBe('0');
     expect(headers[0].getAttribute('aria-sort')).toBe('none');
     expect(headers[0].classList.contains('sortable')).toBe(true);
 
-    // Non-sortable column
+    
     expect(headers[1].getAttribute('role')).toBe('columnheader');
     expect(headers[1].getAttribute('tabindex')).toBeNull();
     expect(headers[1].getAttribute('aria-sort')).toBeNull();

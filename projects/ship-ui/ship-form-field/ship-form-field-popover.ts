@@ -101,7 +101,7 @@ export class ShipFormFieldPopover {
         text.style.height = text.scrollHeight + 'px';
       }
 
-      /* 0-timeout to get the already changed text */
+      
       function delayedResize() {
         setTimeout(resize, 0);
       }

@@ -32,7 +32,7 @@ export class ShipColorPicker {
   #document = inject(DOCUMENT);
   #platformId = inject(PLATFORM_ID);
 
-  readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('colorCanvas');
+  canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('colorCanvas');
   #canvasData = signal<{
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
@@ -114,7 +114,7 @@ export class ShipColorPicker {
       this._prevColorStr = str;
     } else {
       if (this._prevColorStr !== str) {
-        this.updateMarkerFromColor(selectedColor);
+        this.#updateMarkerFromColor(selectedColor);
         this._prevColorStr = str;
       } else {
         // Color is structurally identical and not from a drag event, skip marker jump
@@ -134,44 +134,44 @@ export class ShipColorPicker {
     });
   });
 
-  private alphaColorRedrawEffect = effect(() => {
+  #alphaColorRedrawEffect = effect(() => {
     const color = this.selectedColor();
     if (this.renderingType() === 'alpha' && this.#canvasData()) {
-      untracked(() => this.drawAlpha());
+      untracked(() => this.#drawAlpha());
     }
   });
 
   @HostListener('window:resize', [])
   onResize() {
-    this.setCanvasSize();
+    this.#setCanvasSize();
   }
 
-  private previousLayoutHash = '';
-  private previousHue: number | null = null;
+  #previousLayoutHash = '';
+  #previousHue: number | null = null;
 
-  private getLayoutHash() {
+  #getLayoutHash() {
     return `${this.renderingType()}-${this.direction()}-${this.gridSize()}-${this.showDarkColors()}`;
   }
 
-  private renderingTypeEffect = effect(() => {
+  #renderingTypeEffect = effect(() => {
     const currentHue = this.hue();
-    const layoutHash = this.getLayoutHash();
+    const layoutHash = this.#getLayoutHash();
 
     const canvasData = untracked(() => this.#canvasData());
 
     if (canvasData) {
-      untracked(() => this.drawColorPicker());
+      untracked(() => this.#drawColorPicker());
 
-      if (this.previousLayoutHash !== layoutHash) {
+      if (this.#previousLayoutHash !== layoutHash) {
         if (this.renderingType() === 'hsl') {
-          this.adjustMarkerPosition();
-          queueMicrotask(() => this.updateMarkerFromColor(untracked(() => this.selectedColor())));
+          this.#adjustMarkerPosition();
+          queueMicrotask(() => this.#updateMarkerFromColor(untracked(() => this.selectedColor())));
         } else {
-          this.updateMarkerFromColor(untracked(() => this.selectedColor()));
+          this.#updateMarkerFromColor(untracked(() => this.selectedColor()));
         }
-        this.previousLayoutHash = layoutHash;
-        this.previousHue = currentHue;
-      } else if (this.previousHue !== currentHue) {
+        this.#previousLayoutHash = layoutHash;
+        this.#previousHue = currentHue;
+      } else if (this.#previousHue !== currentHue) {
         const pos = untracked(() => this.markerPosition());
         const { canvas, ctx } = canvasData;
         let x = (parseFloat(pos.x.replace('%', '')) / 100) * Math.max(1, canvas.width - 1);
@@ -179,7 +179,7 @@ export class ShipColorPicker {
         x = Math.max(0, Math.min(canvas.width - 1, Math.round(x)));
         y = Math.max(0, Math.min(canvas.height - 1, Math.round(y)));
 
-        const color = untracked(() => this.getColorAtPosition(x, y));
+        const color = untracked(() => this.#getColorAtPosition(x, y));
 
         if (this.renderingType() !== 'alpha') {
           color[3] = untracked(() => this.selectedColor()[3] ?? 1);
@@ -187,7 +187,7 @@ export class ShipColorPicker {
 
         this.#skipMarkerUpdate = true;
         this.selectedColor.set(color as any);
-        this.previousHue = currentHue;
+        this.#previousHue = currentHue;
       }
     }
   });
@@ -197,7 +197,7 @@ export class ShipColorPicker {
       ? new ResizeObserver((entries) => {
           for (const entry of entries) {
             if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
-              this.setCanvasSize();
+              this.#setCanvasSize();
             }
           }
         })
@@ -212,17 +212,17 @@ export class ShipColorPicker {
       this.#resizeObserver?.observe(canvas.parentElement);
     }
 
-    this.setCanvasSize();
-    this.initCanvasEvents();
+    this.#setCanvasSize();
+    this.#initCanvasEvents();
   }
 
   ngOnDestroy() {
     this.#resizeObserver?.disconnect();
   }
 
-  private updateMarkerFromColor(rgba: [R, G, B, A?]) {
+  #updateMarkerFromColor(rgba: [R, G, B, A?]) {
     const [r, g, b, a] = rgba;
-    const coords = this.findPositionByColor(r, g, b, a);
+    const coords = this.#findPositionByColor(r, g, b, a);
 
     if (coords === null) return;
 
@@ -236,10 +236,10 @@ export class ShipColorPicker {
       touches: [{ clientX: x, clientY: y }],
     };
 
-    this.updateColorAndMarker(mockEvent as any, false, true);
+    this.#updateColorAndMarker(mockEvent as any, false, true);
   }
 
-  private findPositionByColor(r: number, g: number, b: number, a?: number): { x: number; y: number } | null {
+  #findPositionByColor(r: number, g: number, b: number, a?: number): { x: number; y: number } | null {
     const canvasData = this.#canvasData();
     if (!canvasData || !canvasData.canvas) return null;
 
@@ -320,7 +320,7 @@ export class ShipColorPicker {
     return { x: bestMatch.x, y: bestMatch.y };
   }
 
-  private adjustMarkerPosition() {
+  #adjustMarkerPosition() {
     const { canvas, centerX, centerY, radius } = this.#canvasData()!;
     let { x, y } = this._pos;
 
@@ -340,20 +340,20 @@ export class ShipColorPicker {
     }
   }
 
-  private initCanvasEvents() {
+  #initCanvasEvents() {
     const data = this.#canvasData();
     if (!data) return;
     const { canvas } = data;
 
     canvas.addEventListener('mousedown', (event) => {
       this.isDragging.set(true);
-      this.updateColorAndMarker(event);
+      this.#updateColorAndMarker(event);
     });
 
     this.#document.addEventListener('mousemove', (event) => {
       if (this.isDragging()) {
         event.preventDefault();
-        this.updateColorAndMarker(event, true);
+        this.#updateColorAndMarker(event, true);
       }
     });
 
@@ -363,7 +363,7 @@ export class ShipColorPicker {
     this.#document.addEventListener('touchmove', (event) => {
       if (this.isDragging()) {
         event.preventDefault();
-        this.updateColorAndMarker(event.touches[0], true);
+        this.#updateColorAndMarker(event.touches[0], true);
       }
     });
 
@@ -371,7 +371,7 @@ export class ShipColorPicker {
     this.#document.addEventListener('touchcancel', () => this.isDragging.set(false));
   }
 
-  private setCanvasSize() {
+  #setCanvasSize() {
     if (!isPlatformBrowser(this.#platformId)) return;
 
     const canvas = this.canvasRef()?.nativeElement;
@@ -394,17 +394,17 @@ export class ShipColorPicker {
         radius: Math.min(canvas.width, canvas.height) / 2,
       });
 
-      this.drawColorPicker();
+      this.#drawColorPicker();
 
       setTimeout(() => {
         if (!this.isDragging()) {
-          this.updateMarkerFromColor(untracked(() => this.selectedColor()));
+          this.#updateMarkerFromColor(untracked(() => this.selectedColor()));
         }
       });
     }
   }
 
-  private getColorAtPosition(mouseX: number, mouseY: number): [R, G, B, A?] {
+  #getColorAtPosition(mouseX: number, mouseY: number): [R, G, B, A?] {
     const { canvas, ctx } = this.#canvasData()!;
     const w = Math.max(1, canvas.width - 1);
     const h = Math.max(1, canvas.height - 1);
@@ -429,7 +429,7 @@ export class ShipColorPicker {
     }
   }
 
-  private updateColorAndMarker(event: MouseEvent | Touch, outsideCanvas = false, onlyMarker = false) {
+  #updateColorAndMarker(event: MouseEvent | Touch, outsideCanvas = false, onlyMarker = false) {
     const { canvas, ctx } = this.#canvasData()!;
 
     let mouseX = event instanceof MouseEvent ? event.offsetX : event.clientX;
@@ -459,7 +459,7 @@ export class ShipColorPicker {
     mouseY = Math.max(0, Math.min(canvas.height - 1, Math.round(mouseY)));
 
     if (!onlyMarker) {
-      const newColor = this.getColorAtPosition(mouseX, mouseY);
+      const newColor = this.#getColorAtPosition(mouseX, mouseY);
       if (this.renderingType() !== 'alpha') {
         newColor[3] = this.selectedColor()[3] ?? 1;
       }
@@ -473,30 +473,30 @@ export class ShipColorPicker {
     this.markerPosition.set({ x: xPercent, y: yPercent });
   }
 
-  private drawColorPicker() {
+  #drawColorPicker() {
     switch (this.renderingType()) {
       case 'hsl':
-        this.drawColorWheel();
+        this.#drawColorWheel();
         break;
       case 'grid':
-        this.drawGrid();
+        this.#drawGrid();
         break;
       case 'hue':
-        this.drawHue();
+        this.#drawHue();
         break;
       case 'alpha':
-        this.drawAlpha();
+        this.#drawAlpha();
         break;
       case 'rgb':
-        this.drawRgb();
+        this.#drawRgb();
         break;
       case 'saturation':
-        this.drawSaturation();
+        this.#drawSaturation();
         break;
     }
   }
 
-  private drawAlpha() {
+  #drawAlpha() {
     const { canvas, ctx } = this.#canvasData()!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const w = Math.max(1, canvas.width - 1);
@@ -518,7 +518,7 @@ export class ShipColorPicker {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-  private drawRgb() {
+  #drawRgb() {
     const { canvas, ctx } = this.#canvasData()!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -540,7 +540,7 @@ export class ShipColorPicker {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-  private drawSaturation() {
+  #drawSaturation() {
     const { canvas, ctx } = this.#canvasData()!;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -562,7 +562,7 @@ export class ShipColorPicker {
     }
   }
 
-  private drawHue() {
+  #drawHue() {
     const { canvas, ctx } = this.#canvasData()!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const w = Math.max(1, canvas.width - 1);
@@ -583,7 +583,7 @@ export class ShipColorPicker {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-  private drawColorWheel() {
+  #drawColorWheel() {
     const { canvas, ctx, centerX, centerY, radius } = this.#canvasData()!;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -602,7 +602,7 @@ export class ShipColorPicker {
     }
   }
 
-  private drawGrid() {
+  #drawGrid() {
     const { canvas, ctx } = this.#canvasData()!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -627,5 +627,4 @@ export class ShipColorPicker {
       }
     }
   }
-
 }

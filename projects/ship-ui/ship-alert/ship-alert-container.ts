@@ -17,9 +17,9 @@ export class ShipAlertContainer {
   scroller = viewChild.required<ElementRef<HTMLDivElement>>('scroller');
   alertService = input.required<ShipAlertService>();
 
-  // alertHistory = this.alertService()?.alertHistory;
-  // alertHistoryIsOpen = this.alertService()?.alertHistoryIsOpen;
-  // alertHistoryIsHidden = this.alertService()?.alertHistoryIsHidden;
+  
+  
+  
 
   numberOfOpenAlerts = computed(() => {
     return this.alertService()
@@ -27,7 +27,7 @@ export class ShipAlertContainer {
       .filter((x) => x.isOpen).length;
   });
 
-  readonly #e = effect(() => {
+  #e = effect(() => {
     this.alertService().alertHistory();
     this.alertService().alertHistoryIsOpen();
     this.#scrollToBottom();

@@ -53,7 +53,7 @@ describe('ShipAccordion', () => {
     fixture = TestBed.createComponent(TestHostComponent);
     hostComponent = fixture.componentInstance;
 
-    // Append to body to ensure MutationObserver behaves correctly for subtree changes
+    
     document.body.appendChild(fixture.nativeElement);
 
     fixture.detectChanges();
@@ -75,11 +75,11 @@ describe('ShipAccordion', () => {
     const det1 = hostEl.querySelector('#det1');
     const summary = det1.querySelector('summary');
 
-    // Verify sh-icon was prepended/appended inside summary
+    
     expect(summary.querySelector('sh-icon')).toBeTruthy();
     expect(summary.querySelector('sh-icon').textContent).toBe('caret-down');
 
-    // Verify child elements were wrapped in .content wrapper
+    
     const content = det1.querySelector('.content');
     expect(content).toBeTruthy();
     expect(content.textContent).toContain('Item 1 Body Content');
@@ -116,7 +116,7 @@ describe('ShipAccordion', () => {
     const hostEl = accordionDebugEl.nativeElement;
     const det2 = hostEl.querySelector('#det2') as HTMLDetailsElement;
 
-    // Open details element manually
+    
     det2.open = true;
     det2.dispatchEvent(new Event('toggle'));
     fixture.detectChanges();
@@ -124,7 +124,7 @@ describe('ShipAccordion', () => {
 
     expect(hostComponent.value()).toBe('item2');
 
-    // Close details element manually
+    
     det2.open = false;
     det2.dispatchEvent(new Event('toggle'));
     fixture.detectChanges();
@@ -142,7 +142,7 @@ describe('ShipAccordion', () => {
     const det1 = hostEl.querySelector('#det1') as HTMLDetailsElement;
     const det2 = hostEl.querySelector('#det2') as HTMLDetailsElement;
 
-    // Toggle first details open
+    
     det1.open = true;
     det1.dispatchEvent(new Event('toggle'));
     fixture.detectChanges();
@@ -150,7 +150,7 @@ describe('ShipAccordion', () => {
 
     expect(hostComponent.value()).toBe('item1');
 
-    // Toggle second details open
+    
     det2.open = true;
     det2.dispatchEvent(new Event('toggle'));
     fixture.detectChanges();
@@ -158,7 +158,7 @@ describe('ShipAccordion', () => {
 
     expect(hostComponent.value()).toBe('item1,item2');
 
-    // Toggle first details closed
+    
     det1.open = false;
     det1.dispatchEvent(new Event('toggle'));
     fixture.detectChanges();

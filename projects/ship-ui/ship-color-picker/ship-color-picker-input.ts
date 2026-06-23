@@ -1,11 +1,31 @@
-import { ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, inject, input, model, output, signal, untracked, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DOCUMENT,
+  effect,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+  untracked,
+  ViewEncapsulation,
+} from '@angular/core';
+import {
+  classMutationSignal,
+  contentProjectionSignal,
+  hslToRgbExact,
+  rgbaToHex8,
+  rgbToHex,
+  rgbToHsl,
+  ShipColor,
+  ShipFormFieldVariant,
+  ShipSize,
+} from '@ship-ui/core';
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipFormFieldPopover } from '@ship-ui/core/ship-form-field';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
-import { classMutationSignal } from '@ship-ui/core';
-import { hslToRgbExact, rgbaToHex8, rgbToHex, rgbToHsl } from '@ship-ui/core';
-import { contentProjectionSignal } from '@ship-ui/core';
-import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
 import { ShipColorPicker } from './ship-color-picker';
 
 @Component({
@@ -165,7 +185,7 @@ export class ShipColorPickerInput {
       const eyeDropper = new window.EyeDropper();
       const result = await eyeDropper.open();
       if (result && result.sRGBHex) {
-        this.parseAndSetColor(result.sRGBHex);
+        this.#parseAndSetColor(result.sRGBHex);
 
         // Force the text field to immediately display the new output string according to the active format
         const input = untracked(() => this.#inputRef());
@@ -196,12 +216,12 @@ export class ShipColorPickerInput {
     this.#createCustomInputEventListener(input);
 
     input.addEventListener('inputValueChanged', (event: any) => {
-      this.parseAndSetColor(event.detail.value);
+      this.#parseAndSetColor(event.detail.value);
     });
 
     input.addEventListener('input', (event: Event) => {
       const target = event.target as HTMLInputElement;
-      this.parseAndSetColor(target.value);
+      this.#parseAndSetColor(target.value);
     });
 
     input.addEventListener('blur', () => {
@@ -220,11 +240,11 @@ export class ShipColorPickerInput {
     input.autocomplete = 'off';
 
     if (typeof input.value === 'string' && input.value) {
-      this.parseAndSetColor(input.value);
+      this.#parseAndSetColor(input.value);
     }
   });
 
-  private parseAndSetColor(colorStr: string) {
+  #parseAndSetColor(colorStr: string) {
     if (!colorStr) return;
     if (colorStr === untracked(() => this.formattedColorString())) return;
 
@@ -272,7 +292,7 @@ export class ShipColorPickerInput {
     }
   }
 
-  private hslToRgbExact(h: number, s: number, l: number): [number, number, number] {
+  #hslToRgbExact(h: number, s: number, l: number): [number, number, number] {
     s /= 100;
     l /= 100;
     const k = (n: number) => (n + h / 30) % 12;
@@ -281,18 +301,18 @@ export class ShipColorPickerInput {
     return [Math.round(255 * f(0)), Math.round(255 * f(8)), Math.round(255 * f(4))];
   }
 
-  private rgbToHex(r: number, g: number, b: number): string {
+  #rgbToHex(r: number, g: number, b: number): string {
     return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
   }
 
-  private rgbaToHex8(r: number, g: number, b: number, a: number): string {
+  #rgbaToHex8(r: number, g: number, b: number, a: number): string {
     const alphaHex = Math.round(a * 255)
       .toString(16)
       .padStart(2, '0');
-    return this.rgbToHex(r, g, b) + alphaHex;
+    return this.#rgbToHex(r, g, b) + alphaHex;
   }
 
-  private rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: number; string: string } {
+  #rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: number; string: string } {
     r /= 255;
     g /= 255;
     b /= 255;

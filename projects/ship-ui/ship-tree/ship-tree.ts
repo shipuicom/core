@@ -18,17 +18,17 @@ import { ShipSortable } from '@ship-ui/core/ship-sortable';
 
 @Directive({ selector: 'sh-icon[openIcon]', standalone: true })
 export class ShipTreeOpenIcon {
-  readonly el = inject(ElementRef<HTMLElement>);
+  el = inject(ElementRef<HTMLElement>);
 }
 
 @Directive({ selector: 'sh-icon[closedIcon]', standalone: true })
 export class ShipTreeClosedIcon {
-  readonly el = inject(ElementRef<HTMLElement>);
+  el = inject(ElementRef<HTMLElement>);
 }
 
 @Directive({ selector: 'sh-icon[itemIcon]', standalone: true })
 export class ShipTreeItemIcon {
-  readonly el = inject(ElementRef<HTMLElement>);
+  el = inject(ElementRef<HTMLElement>);
 }
 
 @Component({
@@ -44,45 +44,45 @@ export class ShipTreeItemIcon {
   },
 })
 export class ShipTree {
-  /** The flat list of all tree nodes. */
-  readonly items = model<any[]>([]);
+  
+  items = model<any[]>([]);
 
-  /** Optional Writable/Readable WritableSignal manager created by createTreeSortableManager. */
-  readonly sortableManager = input<any>(null);
+  
+  sortableManager = input<any>(null);
 
-  /** Currently selected node ID. */
-  readonly selectedId = model<string | null>(null);
+  
+  selectedId = model<string | null>(null);
 
-  // Mappings
-  readonly getId = input<(item: any) => string>((item) => item.id);
-  readonly getName = input<(item: any) => string>((item) => item.name);
-  readonly getParentId = input<(item: any) => string | null>((item) => item.parentId);
-  readonly isFolder = input<(item: any) => boolean>((item) => item.type === 'dir');
-  readonly getIsOpen = input<(item: any) => boolean>((item) => !!item.isOpen);
-  readonly setIsOpen = input<(item: any, isOpen: boolean) => void>((item, open) => {
+  
+  getId = input<(item: any) => string>((item) => item.id);
+  getName = input<(item: any) => string>((item) => item.name);
+  getParentId = input<(item: any) => string | null>((item) => item.parentId);
+  isFolder = input<(item: any) => boolean>((item) => item.type === 'dir');
+  getIsOpen = input<(item: any) => boolean>((item) => !!item.isOpen);
+  setIsOpen = input<(item: any, isOpen: boolean) => void>((item, open) => {
     item.isOpen = open;
   });
 
-  /** Function returning a custom icon name for a node. */
-  readonly getIcon = input<(item: any) => string | null>(() => null);
+  
+  getIcon = input<(item: any) => string | null>(() => null);
 
-  // Read projected icons via lightweight directives
-  readonly openIconDir = contentChild(ShipTreeOpenIcon);
-  readonly closedIconDir = contentChild(ShipTreeClosedIcon);
-  readonly itemIconDir = contentChild(ShipTreeItemIcon);
+  
+  openIconDir = contentChild(ShipTreeOpenIcon);
+  closedIconDir = contentChild(ShipTreeClosedIcon);
+  itemIconDir = contentChild(ShipTreeItemIcon);
 
   openIconName = computed(() => this.openIconDir()?.el.nativeElement.textContent?.trim() || null);
   closedIconName = computed(() => this.closedIconDir()?.el.nativeElement.textContent?.trim() || null);
   itemIconName = computed(() => this.itemIconDir()?.el.nativeElement.textContent?.trim() || null);
 
-  // Outputs
-  readonly nodeClick = output<any>();
-  readonly nodeToggle = output<{ node: any; isOpen: boolean }>();
+  
+  nodeClick = output<any>();
+  nodeToggle = output<{ node: any; isOpen: boolean }>();
 
-  readonly nodeTemplate = contentChild<TemplateRef<any>>('nodeTemplate');
-  readonly dirTemplate = contentChild<TemplateRef<any>>('dirTemplate');
+  nodeTemplate = contentChild<TemplateRef<any>>('nodeTemplate');
+  dirTemplate = contentChild<TemplateRef<any>>('dirTemplate');
 
-  /** Filter the full flat array down to only visible nodes (whose parents are all expanded). */
+  
   visibleNodes = computed(() => {
     const manager = this.sortableManager();
     if (manager && typeof manager.visibleNodes === 'function') {
