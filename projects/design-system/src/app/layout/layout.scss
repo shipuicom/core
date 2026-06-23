@@ -5,6 +5,10 @@
   width: 100%;
   display: grid;
   grid-template-columns: p2r(400) 1fr;
+
+  @include breakpoint(-centi) {
+    grid-template-columns: 1fr;
+  }
 }
 
 [sidenav] {

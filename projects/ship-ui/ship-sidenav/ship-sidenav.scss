@@ -171,10 +171,16 @@ $shipSidenav: true !default;
         }
       }
 
-      &.open .main-wrap {
-        transform: translateX(var(--sidenav-width));
-        box-shadow: var(--box-shadow-10);
-        border-left: var(--border-10);
+      &.open {
+        .main-wrap {
+          transform: translateX(var(--sidenav-width));
+          box-shadow: var(--box-shadow-10);
+          border-left: var(--border-10);
+        }
+
+        main {
+          overflow-y: hidden;
+        }
       }
 
       .closed-topbar {
