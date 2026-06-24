@@ -32,10 +32,15 @@ header {
   align-items: center;
   gap: p2r(12);
 
-  a {
+  a,
+  .icon-btn {
     display: inline-flex;
     text-decoration: none;
     color: var(--base-12);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
 
     &:hover {
       color: var(--primary-8);
