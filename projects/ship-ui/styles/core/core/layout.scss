@@ -14,6 +14,11 @@ app-root {
   background-color: var(--base-2);
 }
 
+html.sh-sidenav-open,
+body.sh-sidenav-open {
+  overflow: hidden;
+}
+
 body {
   margin: 0;
   font: var(--paragraph-30);

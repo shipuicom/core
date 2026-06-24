@@ -149,6 +149,21 @@ export class ShipSidenav {
     }
   });
 
+  scrollLockEffect = effect((onCleanup) => {
+    const isOverlay = this.isOverlay();
+    const isOpen = this.isOpen();
+
+    if (isOverlay && isOpen) {
+      this.#document.body.classList.add('sh-sidenav-open');
+      this.#document.documentElement.classList.add('sh-sidenav-open');
+    }
+
+    onCleanup(() => {
+      this.#document.body.classList.remove('sh-sidenav-open');
+      this.#document.documentElement.classList.remove('sh-sidenav-open');
+    });
+  });
+
   drop(e: DragEvent) {
     e.stopPropagation();
     this.#drop(e.clientX - this.#closestParentRect.left);

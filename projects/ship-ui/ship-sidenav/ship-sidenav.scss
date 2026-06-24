@@ -3,6 +3,11 @@
 $shipSidenav: true !default;
 
 @if $shipSidenav == true {
+  html.sh-sidenav-open,
+  body.sh-sidenav-open {
+    overflow: hidden;
+  }
+
   sh-sidenav {
     --sidenav-width: #{p2r(280)};
     --sidenav-wrap-w: 100vw;
@@ -19,6 +24,7 @@ $shipSidenav: true !default;
       overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: auto;
+      overscroll-behavior: contain;
     }
 
     .main-wrap {
