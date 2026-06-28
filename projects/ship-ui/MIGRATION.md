@@ -2,6 +2,9 @@
 
 Starting with version `0.21.0`, ShipUI has transitioned from a single unified bundle import to a **Modular Secondary Entry Points** architecture. This guide walks you through why we made this change and how to update your codebase.
 
+> [!NOTE]
+> **Update (v0.23.0)**: The remaining core directives (`ShipTooltip`, `ShipInputMask`, `ShipFileDragDrop`, and `ShipPreventWheel`) have also been moved to their respective secondary entry points (e.g. `@ship-ui/core/ship-tooltip`). If you are using these directives in your application, you must update their import paths.
+
 ---
 
 ## Why Secondary Entry Points?
@@ -38,13 +41,14 @@ export class MyFeatureComponent {}
 ####  After:
 ```typescript
 import { Component } from '@angular/core';
-// Components import from their respective secondary entry points
+// Components and directives import from their respective secondary entry points
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipCard } from '@ship-ui/core/ship-card';
+import { ShipTooltip } from '@ship-ui/core/ship-tooltip';
 
-// Global directives and utilities continue to import from the primary entry point
-import { ShipTooltip } from '@ship-ui/core';
+// Global utilities continue to import from the primary entry point
+import { shipComponentClasses } from '@ship-ui/core';
 
 @Component({
   selector: 'app-my-feature',

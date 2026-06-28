@@ -19,7 +19,7 @@ import {
   ViewContainerRef,
   ViewEncapsulation,
 } from '@angular/core';
-import { generateUniqueId } from '../utilities/random-id';
+import { generateUniqueId } from '@ship-ui/core';
 
 type Timeout = ReturnType<typeof setTimeout>;
 
@@ -246,14 +246,13 @@ export class ShipTooltip implements OnDestroy {
   onMouseEnter(event: MouseEvent) {
     event.stopPropagation();
 
-    if (openRef?.component.anchorName !== this.anchorName) {
-      this.#cleanupTooltip();
+    if (openRef && openRef.component.anchorName !== this.anchorName) {
+      openRef.component.#cleanupTooltip(true);
     } else {
       this.#cancelCleanupTimer();
     }
 
     this.#showTooltip();
-    // queueMicrotask(() => );
   }
 
   @HostListener('mouseleave', ['$event'])
@@ -264,7 +263,9 @@ export class ShipTooltip implements OnDestroy {
 
   ngOnDestroy() {
     this.#cancelCleanupTimer();
-    this.#cleanupTooltip();
+    if (openRef?.component === this) {
+      this.#cleanupTooltip(true);
+    }
   }
 
   #startCleanupTimer() {
@@ -305,7 +306,7 @@ export class ShipTooltip implements OnDestroy {
     openRef.wrapperComponentRef.setInput('anchorEl', this.#elementRef);
     openRef.wrapperComponentRef.setInput('isOpen', this.isOpen);
     openRef.wrapperComponentRef.setInput('content', this.shTooltip());
-    openRef.wrapperComponentRef.setInput('close', () => this.#cleanupTooltip());
+    openRef.wrapperComponentRef.setInput('close', () => this.#cleanupTooltip(true));
     openRef.wrapperComponentRef.changeDetectorRef.detectChanges();
     openRef.wrapperComponentRef.location.nativeElement.addEventListener('mouseenter', (event: MouseEvent) => {
       event.stopPropagation();
@@ -324,18 +325,36 @@ export class ShipTooltip implements OnDestroy {
 
   destroyTimeout: Timeout | null = null;
 
-  #cleanupTooltip(): void {
+  #cleanupTooltip(immediate = false): void {
     if (openRef?.wrapperComponentRef) {
-      openRef.component.#cancelCleanupTimer();
-      openRef.component.isOpen.set(false);
-      openRef!.wrapperComponentRef.location.nativeElement.hidePopover();
+      if (openRef.component !== this && !immediate) {
+        return;
+      }
 
-      this.destroyTimeout = setTimeout(() => {
-        queueMicrotask(() => {
-          openRef?.wrapperComponentRef.destroy();
+      const refToDestroy = openRef.wrapperComponentRef;
+      const componentToClose = openRef.component;
+
+      componentToClose.#cancelCleanupTimer();
+      componentToClose.isOpen.set(false);
+      try {
+        refToDestroy.location.nativeElement.hidePopover();
+      } catch (e) {}
+
+      if (immediate) {
+        refToDestroy.destroy();
+        if (openRef?.wrapperComponentRef === refToDestroy) {
           openRef = null;
-        });
-      }, this.#DEBOUNCE_DELAY);
+        }
+      } else {
+        componentToClose.destroyTimeout = setTimeout(() => {
+          queueMicrotask(() => {
+            refToDestroy.destroy();
+            if (openRef?.wrapperComponentRef === refToDestroy) {
+              openRef = null;
+            }
+          });
+        }, this.#DEBOUNCE_DELAY);
+      }
     }
   }
 }

@@ -248,6 +248,7 @@ export class ShipSelect {
   });
 
   #previousSelectedOptions = signal<unknown[] | null>(null);
+  #selectFirstAfterLoad = false;
   inlineTemplate = contentChild<TemplateRef<unknown>>(TemplateRef);
   optionsWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('optionsWrap');
   inputRefInput = signal<ElementRef<HTMLInputElement> | null>(null);
@@ -477,7 +478,11 @@ export class ShipSelect {
             const isSpace = e.key === ' ' || e.key === 'Spacebar';
             if (!isSpace || !this.hasSearch()) {
               e.preventDefault();
-              this.toggleOptionByIndex(this.focusedOptionIndex(), undefined, true);
+              if (this.isLoading()) {
+                this.#selectFirstAfterLoad = true;
+              } else {
+                this.toggleOptionByIndex(this.focusedOptionIndex(), undefined, true);
+              }
             }
           }
 
@@ -511,6 +516,20 @@ export class ShipSelect {
         this.openAbortController = null;
       }
     }
+  });
+
+  #selectFirstAfterLoadEffect = effect(() => {
+    const isLoading = this.isLoading();
+    const options = this.filteredOptions();
+
+    untracked(() => {
+      if (!isLoading && this.#selectFirstAfterLoad) {
+        this.#selectFirstAfterLoad = false;
+        if (options.length > 0) {
+          this.toggleOptionByIndex(0, undefined, true);
+        }
+      }
+    });
   });
 
   _inputValue = '';
@@ -793,6 +812,7 @@ export class ShipSelect {
   open() {
     if (this.isOpen()) return;
 
+    this.#selectFirstAfterLoad = false;
     this.isOpen.set(true);
 
     if (this.hasSearch()) {
@@ -824,6 +844,7 @@ export class ShipSelect {
   }
 
   close() {
+    this.#selectFirstAfterLoad = false;
     this.isOpen.set(false);
 
     const prevInputValue = this.prevInputValue();
@@ -851,6 +872,7 @@ export class ShipSelect {
   clear($event?: MouseEvent) {
     $event?.stopPropagation();
 
+    this.#selectFirstAfterLoad = false;
     this.inputValue.set('');
     this.selectedOptions.set([]);
     this.isOpen.set(false);

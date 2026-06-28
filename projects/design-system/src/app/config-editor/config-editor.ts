@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { LayoutState } from '../layout/layout.state';
 import { ShipAccordion } from '@ship-ui/core/ship-accordion';
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipFormField } from '@ship-ui/core/ship-form-field';
@@ -106,8 +108,28 @@ const colorOptions = [
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfigEditor {
+  #document = inject(DOCUMENT);
+  #layoutState = inject(LayoutState);
+
   configService = inject(AppConfigService);
   router = inject(Router);
+
+  constructor() {
+    effect((onCleanup) => {
+      const isOpen = this.isEditorOpen();
+      const isMobile = this.#layoutState.isMobile();
+
+      if (isOpen && isMobile) {
+        this.#document.body.classList.add('sh-config-open');
+        this.#document.documentElement.classList.add('sh-config-open');
+      }
+
+      onCleanup(() => {
+        this.#document.body.classList.remove('sh-config-open');
+        this.#document.documentElement.classList.remove('sh-config-open');
+      });
+    });
+  }
 
   userMainAccordionState = signal<string | null>('components');
 

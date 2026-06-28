@@ -26,6 +26,8 @@
   flex-direction: column;
   transform: translateX(100%);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  overscroll-behavior: none;
 
   &.open {
     transform: translateX(0);
@@ -86,7 +88,10 @@ sh-accordion summary {
 
 .scroll-content {
   flex: 1;
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 0;
   border-top: var(--border-10);
 }

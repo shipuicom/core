@@ -17,9 +17,28 @@ $shipButtonGroup: true !default;
 
     display: inline-flex;
     height: var(--btng-h);
-    background: var(--btng-bg);
-    overflow: hidden;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
     position: relative;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    background-color: var(--btng-bg);
+    background-image:
+      linear-gradient(90deg, var(--btng-bg) 30%, rgba(255, 255, 255, 0)),
+      linear-gradient(-90deg, var(--btng-bg) 30%, rgba(255, 255, 255, 0)),
+      radial-gradient(farthest-side at 0% 50%, rgb(from var(--base-12) r g b / 8%), rgb(from var(--base-12) r g b / 0%)),
+      radial-gradient(farthest-side at 100% 50%, rgb(from var(--base-12) r g b / 8%), rgb(from var(--base-12) r g b / 0%));
+    background-repeat: no-repeat;
+    background-position: left center, right center, left center, right center;
+    background-size: p2r(24) 100%, p2r(24) 100%, p2r(8) 100%, p2r(8) 100%;
+    background-attachment: local, local, scroll, scroll;
     padding: p2r(3);
     gap: p2r(4);
     border: 0;

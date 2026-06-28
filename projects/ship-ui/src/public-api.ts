@@ -3,11 +3,6 @@
 
 
 
-export * from './lib/directives/ship-file-drag-drop.directive';
-export * from './lib/directives/ship-input-mask';
-export * from './lib/directives/ship-prevent-wheel.directive';
-export * from './lib/directives/ship-tooltip.directive';
-
 
 export * from './lib/utilities/class-mutation-signal';
 export * from './lib/utilities/color-conversions';

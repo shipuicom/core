@@ -29,3 +29,10 @@ app-property-viewer {
     color: var(--base-12);
   }
 }
+
+html.sh-config-open,
+body.sh-config-open {
+  overflow: hidden;
+  height: 100%;
+  overscroll-behavior: none;
+}

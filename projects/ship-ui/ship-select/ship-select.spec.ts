@@ -15,7 +15,7 @@ if (typeof HTMLElement !== 'undefined') {
 
 @Component({
   template: `
-    <sh-select [options]="options()" [inlineSearch]="inlineSearch()" [selectMultiple]="true">
+    <sh-select [options]="options()" [inlineSearch]="inlineSearch()" [selectMultiple]="selectMultiple()" [isLoading]="isLoading()" [lazySearch]="lazySearch()">
       <input type="text" />
     </sh-select>
   `,
@@ -28,6 +28,9 @@ class TestHostComponent {
     { value: 'burger', label: 'Burger' },
   ]);
   inlineSearch = signal(false);
+  selectMultiple = signal(true);
+  isLoading = signal(false);
+  lazySearch = signal(false);
 }
 
 describe('ShipSelect Keyboard Interaction', () => {
@@ -100,5 +103,39 @@ describe('ShipSelect Keyboard Interaction', () => {
     fixture.detectChanges();
     const inputEl = selectDebugEl.query(By.css('input')).nativeElement;
     expect(inputEl.hasAttribute('readonly')).toBe(false);
+  });
+
+  it('should select the first loaded option on Enter keypress when lazy search options are loading', async () => {
+    hostComponent.selectMultiple.set(false);
+    hostComponent.lazySearch.set(true);
+    hostComponent.isLoading.set(true);
+    hostComponent.options.set([]);
+    fixture.detectChanges();
+
+    selectComponent.open();
+    fixture.detectChanges();
+
+    expect(selectComponent.isOpen()).toBe(true);
+    expect(selectComponent.isLoading()).toBe(true);
+
+    const inputEl = selectDebugEl.query(By.css('input')).nativeElement;
+    const enterEvent = new KeyboardEvent('keydown', { key: 'Enter' });
+    inputEl.dispatchEvent(enterEvent);
+    fixture.detectChanges();
+
+    expect(selectComponent.selectedOptions().length).toBe(0);
+
+    hostComponent.options.set([
+      { value: 'pizza', label: 'Pizza' },
+      { value: 'burger', label: 'Burger' },
+    ]);
+    hostComponent.isLoading.set(false);
+    fixture.detectChanges();
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(selectComponent.selectedOptions()).toContainEqual({ value: 'pizza', label: 'Pizza' });
+    expect(selectComponent.isOpen()).toBe(false);
   });
 });

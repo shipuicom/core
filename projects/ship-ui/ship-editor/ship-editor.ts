@@ -21,7 +21,8 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { ShipColor, shipComponentClasses, ShipTooltip } from '@ship-ui/core';
+import { ShipColor, shipComponentClasses } from '@ship-ui/core';
+import { ShipTooltip } from '@ship-ui/core/ship-tooltip';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipMenu } from '@ship-ui/core/ship-menu';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';

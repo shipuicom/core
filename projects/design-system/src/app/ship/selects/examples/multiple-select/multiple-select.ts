@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipSelect } from '@ship-ui/core/ship-select';
-import { ShipTooltip } from '@ship-ui/core';
+import { ShipTooltip } from '@ship-ui/core/ship-tooltip';
 
 @Component({
   selector: 'app-multiple-select',
