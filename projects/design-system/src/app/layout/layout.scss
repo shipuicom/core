@@ -102,3 +102,29 @@ sh-list {
     margin: auto;
   }
 }
+
+.sidebar-footer {
+  padding: p2r(12 20);
+  border-top: var(--border-10);
+  background: var(--base-1);
+  display: flex;
+  align-items: center;
+
+  .versions {
+    display: flex;
+    gap: p2r(16);
+    font-size: p2r(11);
+    color: var(--base-10);
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      gap: p2r(4);
+
+      b {
+        color: var(--base-12);
+        font-weight: 600;
+      }
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, VERSION } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
@@ -10,6 +10,7 @@ import { AppConfigService } from '../core/services/app-config.service';
 import { LayoutState } from './layout.state';
 import { Logo } from './logo/logo';
 import { ConfigEditor } from '../config-editor/config-editor';
+import shipUiPackageJson from '../../../../ship-ui/package.json';
 
 @Component({
   selector: 'app-layout',
@@ -41,6 +42,8 @@ export default class Layout {
   configService = inject(AppConfigService);
 
   isMac = typeof navigator !== 'undefined' && navigator.userAgent.toLowerCase().includes('mac');
+  shipVersion = shipUiPackageJson.version;
+  angularVersion = VERSION.full;
 
   constructor() {
     effect(() => {

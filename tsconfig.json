@@ -16,6 +16,7 @@
     "importHelpers": true,
     "target": "ES2022",
     "module": "ES2022",
+    "resolveJsonModule": true,
     "useDefineForClassFields": false,
     "typeRoots": [
       "node_modules/@types",
@@ -24,25 +25,13 @@
       "node_modules/ngxtension"
     ],
     "paths": {
-      "ship-ui": [
-        "./projects/ship-ui/src/public-api.ts"
-      ],
-      "ship-ui/*": [
-        "./projects/ship-ui/*/public-api.ts",
-        "./projects/ship-ui/*"
-      ],
-      "@ship-ui/core": [
-        "./projects/ship-ui/src/public-api.ts"
-      ],
-      "@ship-ui/core/*": [
-        "./projects/ship-ui/*/public-api.ts",
-        "./projects/ship-ui/*"
-      ]
+      "ship-ui": ["./projects/ship-ui/src/public-api.ts"],
+      "ship-ui/*": ["./projects/ship-ui/*/public-api.ts", "./projects/ship-ui/*"],
+      "@ship-ui/core": ["./projects/ship-ui/src/public-api.ts"],
+      "@ship-ui/core/*": ["./projects/ship-ui/*/public-api.ts", "./projects/ship-ui/*"]
     }
   },
-  "exclude": [
-    "dist"
-  ],
+  "exclude": ["dist"],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
