@@ -229,8 +229,8 @@ $shipTree: true !default;
           color: var(--success-8, #137333);
         }
         &.warning {
-          background: var(--warning-3, #fef7e0);
-          color: var(--warning-8, #b06000);
+          background: var(--warn-3, #fef7e0);
+          color: var(--warn-8, #b06000);
         }
         &.error {
           background: var(--error-3, #fce8e6);
