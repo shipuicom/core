@@ -1,7 +1,7 @@
 {
   "name": "@ship-ui/core",
   "license": "MIT",
-  "version": "0.23.1",
+  "version": "0.23.2",
   "peerDependencies": {
     "@angular/common": ">=20",
     "@angular/core": ">=20",
@@ -78,7 +78,11 @@
     "arrow-u-up-left",
     "arrow-u-up-right",
     "terminal",
-    "article"
+    "article",
+    "arrows-out-line-horizontal",
+    "frame-corners",
+    "text-columns",
+    "sliders-horizontal"
   ],
   "exports": {
     ".": {
