@@ -3,7 +3,15 @@ import { ShipColor } from '@ship-ui/core';
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
 import { ShipCard } from '@ship-ui/core/ship-card';
-import { ShipEditor, ShipEditorCommand, ShipEditorValue } from '@ship-ui/core/ship-editor';
+import {
+  ShipEditor,
+  ShipEditorBlock,
+  ShipEditorCommand,
+  ShipEditorRegistry,
+  ShipEditorValue,
+  formatDocRange,
+  splitBlock,
+} from '@ship-ui/core/ship-editor';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipToggle } from '@ship-ui/core/ship-toggle';
 
@@ -16,6 +24,17 @@ import { ShipToggle } from '@ship-ui/core/ship-toggle';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SandboxEditor {
+  constructor() {
+    // Register custom highlight mark extension
+    ShipEditorRegistry.registerMark({
+      type: 'highlight',
+      tagName: 'mark',
+      toHTML: (mark, text) =>
+        `<mark style="background-color: var(--warn-2); color: var(--warn-11); padding: 2px 4px; border-radius: 2px;">${text}</mark>`,
+      parseHTML: (el) => (el.tagName.toLowerCase() === 'mark' ? { type: 'highlight' } : null),
+    });
+  }
+
   // Current format selection
   selectedFormat = signal<'html' | 'markdown' | 'json'>('html');
 
@@ -47,7 +66,9 @@ export class SandboxEditor {
       icon: 'star',
       description: 'Highlight selected text in yellow',
       action: (editor) => {
-        editor.formatText('backColor', '#fff2b2');
+        editor.runTransaction((doc, selection) => {
+          return formatDocRange(doc, selection.start, selection.end, 'highlight', 'toggle');
+        });
       },
     },
     {
@@ -56,10 +77,23 @@ export class SandboxEditor {
       icon: 'terminal',
       description: 'Insert an info callout box',
       action: (editor) => {
-        editor.formatText(
-          'insertHTML',
-          '<div style="background-color: var(--primary-2); border-left: 4px solid var(--primary-9); padding: 12px 16px; margin: 12px 0; border-radius: 4px; color: var(--base-12);"><strong>Info:</strong> Start typing callout contents here...</div>'
-        );
+        editor.runTransaction((doc, selection) => {
+          const { doc: splitDoc } = splitBlock(doc, selection.start);
+          const calloutBlock: ShipEditorBlock = {
+            type: 'quote',
+            attrs: { align: 'left' },
+            content: [{ type: 'text', text: '💡 Info: Start typing callout contents here...' }],
+          };
+          const targetIndex = selection.start.blockIndex + 1;
+          splitDoc.splice(targetIndex, 0, calloutBlock);
+          return {
+            doc: splitDoc,
+            selectionShift: {
+              start: { blockIndex: targetIndex },
+              end: { blockIndex: targetIndex },
+            },
+          };
+        });
       },
     },
   ]);
