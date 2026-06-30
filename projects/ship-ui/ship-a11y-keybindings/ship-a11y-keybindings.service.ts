@@ -60,6 +60,31 @@ export const DEFAULT_KEYBINDINGS: Record<string, string> = {
   'editor-toolbar.prev': 'ArrowLeft, ArrowUp',
   'editor-toolbar.home': 'Home',
   'editor-toolbar.end': 'End',
+  'editor.bold': 'ctrlOrCmd+b',
+  'editor.italic': 'ctrlOrCmd+i',
+  'editor.underline': 'ctrlOrCmd+u',
+  'editor.strike': 'ctrlOrCmd+Shift+x',
+  'editor.code': 'ctrlOrCmd+e',
+  'editor.link': 'ctrlOrCmd+k',
+  'editor.undo': 'ctrlOrCmd+z',
+  'editor.redo': 'ctrlOrCmd+y, ctrlOrCmd+Shift+z',
+
+  // Block-level shortcuts (Google Docs / Word standard)
+  'editor.paragraph': 'ctrlOrCmd+Alt+Digit0',
+  'editor.heading1': 'ctrlOrCmd+Alt+Digit1',
+  'editor.heading2': 'ctrlOrCmd+Alt+Digit2',
+  'editor.heading3': 'ctrlOrCmd+Alt+Digit3',
+  'editor.bulletList': 'ctrlOrCmd+Shift+Digit8',
+  'editor.orderedList': 'ctrlOrCmd+Shift+Digit7',
+  'editor.blockquote': 'ctrlOrCmd+Shift+Digit9',
+  'editor.codeBlock': 'ctrlOrCmd+Shift+c',
+  'editor.horizontalRule': 'ctrlOrCmd+Shift+-',
+  'editor.removeFormat': 'ctrlOrCmd+\\',
+
+  // Text alignment
+  'editor.alignLeft': 'ctrlOrCmd+Shift+l',
+  'editor.alignCenter': 'ctrlOrCmd+Shift+e',
+  'editor.alignRight': 'ctrlOrCmd+Shift+r',
 };
 
 @Injectable({
