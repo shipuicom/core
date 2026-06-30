@@ -1,6 +1,22 @@
 <div class="sh-editor-container">
   <!-- Editor Toolbar -->
   @if (toolbar() && !readonly()) {
+    <!-- Tooltip templates with keyboard shortcuts -->
+    <ng-template #boldTip>Bold <sh-kbd ctrlOrCmd>B</sh-kbd></ng-template>
+    <ng-template #italicTip>Italic <sh-kbd ctrlOrCmd>I</sh-kbd></ng-template>
+    <ng-template #underlineTip>Underline <sh-kbd ctrlOrCmd>U</sh-kbd></ng-template>
+    <ng-template #strikeTip>Strikethrough <sh-kbd ctrlOrCmd shift>X</sh-kbd></ng-template>
+    <ng-template #clearFormatTip>Clear Formatting <sh-kbd ctrlOrCmd>\</sh-kbd></ng-template>
+    <ng-template #bulletListTip>Bullet List <sh-kbd ctrlOrCmd shift>8</sh-kbd></ng-template>
+    <ng-template #orderedListTip>Numbered List <sh-kbd ctrlOrCmd shift>7</sh-kbd></ng-template>
+    <ng-template #alignLeftTip>Align Left <sh-kbd ctrlOrCmd shift>L</sh-kbd></ng-template>
+    <ng-template #alignCenterTip>Align Center <sh-kbd ctrlOrCmd shift>E</sh-kbd></ng-template>
+    <ng-template #alignRightTip>Align Right <sh-kbd ctrlOrCmd shift>R</sh-kbd></ng-template>
+    <ng-template #linkTip>Insert Link <sh-kbd ctrlOrCmd>K</sh-kbd></ng-template>
+    <ng-template #hrTip>Horizontal Line <sh-kbd ctrlOrCmd shift>-</sh-kbd></ng-template>
+    <ng-template #undoTip>Undo <sh-kbd ctrlOrCmd>Z</sh-kbd></ng-template>
+    <ng-template #redoTip>Redo <sh-kbd ctrlOrCmd shift>Z</sh-kbd></ng-template>
+
     <div
       class="sh-editor-toolbar"
       role="toolbar"
@@ -13,40 +29,40 @@
           <button
             type="button"
             class="sh-editor-btn"
-            [class.active]="isBold()"
+            [class.enabled]="isBold()"
             [attr.aria-pressed]="isBold()"
             (click)="formatText('bold')"
-            shTooltip="Bold">
+            [shTooltip]="boldTip">
             <sh-icon>text-b</sh-icon>
           </button>
           <button
             type="button"
             class="sh-editor-btn"
-            [class.active]="isItalic()"
+            [class.enabled]="isItalic()"
             [attr.aria-pressed]="isItalic()"
             (click)="formatText('italic')"
-            shTooltip="Italic">
+            [shTooltip]="italicTip">
             <sh-icon>text-italic</sh-icon>
           </button>
           <button
             type="button"
             class="sh-editor-btn"
-            [class.active]="isUnderline()"
+            [class.enabled]="isUnderline()"
             [attr.aria-pressed]="isUnderline()"
             (click)="formatText('underline')"
-            shTooltip="Underline">
+            [shTooltip]="underlineTip">
             <sh-icon>text-underline</sh-icon>
           </button>
           <button
             type="button"
             class="sh-editor-btn"
-            [class.active]="isStrike()"
+            [class.enabled]="isStrike()"
             [attr.aria-pressed]="isStrike()"
             (click)="formatText('strikeThrough')"
-            shTooltip="Strikethrough">
+            [shTooltip]="strikeTip">
             <sh-icon>text-strikethrough</sh-icon>
           </button>
-          <button type="button" class="sh-editor-btn" (click)="formatText('removeFormat')" shTooltip="Clear Formatting">
+          <button type="button" class="sh-editor-btn" (click)="formatText('removeFormat')" [shTooltip]="clearFormatTip">
             <sh-icon>eraser</sh-icon>
           </button>
         </div>
@@ -60,27 +76,27 @@
               <span class="sh-editor-dropdown-label">{{ getBlockLabel() }}</span>
             </button>
             <div menu>
-              <button (click)="selectBlockType('p')" [class.active]="activeBlock() === 'p'">
+              <button (click)="selectBlockType('p')" [class.enabled]="activeBlock() === 'p'">
                 <sh-icon>paragraph</sh-icon>
                 <span>Normal text</span>
               </button>
-              <button (click)="selectBlockType('h1')" [class.active]="activeBlock() === 'h1'">
+              <button (click)="selectBlockType('h1')" [class.enabled]="activeBlock() === 'h1'">
                 <sh-icon>text-h-one</sh-icon>
                 <span>Heading 1</span>
               </button>
-              <button (click)="selectBlockType('h2')" [class.active]="activeBlock() === 'h2'">
+              <button (click)="selectBlockType('h2')" [class.enabled]="activeBlock() === 'h2'">
                 <sh-icon>text-h-two</sh-icon>
                 <span>Heading 2</span>
               </button>
-              <button (click)="selectBlockType('h3')" [class.active]="activeBlock() === 'h3'">
+              <button (click)="selectBlockType('h3')" [class.enabled]="activeBlock() === 'h3'">
                 <sh-icon>text-h-three</sh-icon>
                 <span>Heading 3</span>
               </button>
-              <button (click)="selectBlockType('blockquote')" [class.active]="activeBlock() === 'blockquote'">
+              <button (click)="selectBlockType('blockquote')" [class.enabled]="activeBlock() === 'blockquote'">
                 <sh-icon>quotes</sh-icon>
                 <span>Quote</span>
               </button>
-              <button (click)="selectBlockType('pre')" [class.active]="activeBlock() === 'pre'">
+              <button (click)="selectBlockType('pre')" [class.enabled]="activeBlock() === 'pre'">
                 <sh-icon>code</sh-icon>
 
                 <span>Code Block</span>
@@ -96,19 +112,19 @@
           <button
             type="button"
             class="sh-editor-btn"
-            [class.active]="activeBlock() === 'ul' || activeBlock() === 'li'"
+            [class.enabled]="activeBlock() === 'ul' || activeBlock() === 'li'"
             [attr.aria-pressed]="activeBlock() === 'ul' || activeBlock() === 'li'"
             (click)="formatText('insertUnorderedList')"
-            shTooltip="Bullet List">
+            [shTooltip]="bulletListTip">
             <sh-icon>list-bullets</sh-icon>
           </button>
           <button
             type="button"
             class="sh-editor-btn"
-            [class.active]="activeBlock() === 'ol'"
+            [class.enabled]="activeBlock() === 'ol'"
             [attr.aria-pressed]="activeBlock() === 'ol'"
             (click)="formatText('insertOrderedList')"
-            shTooltip="Numbered List">
+            [shTooltip]="orderedListTip">
             <sh-icon>list-numbers</sh-icon>
           </button>
         </div>
@@ -120,28 +136,28 @@
           <button
             type="button"
             class="sh-editor-btn"
-            [class.active]="align() === 'left'"
+            [class.enabled]="align() === 'left'"
             [attr.aria-pressed]="align() === 'left'"
             (click)="formatText('justifyLeft')"
-            shTooltip="Align Left">
+            [shTooltip]="alignLeftTip">
             <sh-icon>text-align-left</sh-icon>
           </button>
           <button
             type="button"
             class="sh-editor-btn"
-            [class.active]="align() === 'center'"
+            [class.enabled]="align() === 'center'"
             [attr.aria-pressed]="align() === 'center'"
             (click)="formatText('justifyCenter')"
-            shTooltip="Align Center">
+            [shTooltip]="alignCenterTip">
             <sh-icon>text-align-center</sh-icon>
           </button>
           <button
             type="button"
             class="sh-editor-btn"
-            [class.active]="align() === 'right'"
+            [class.enabled]="align() === 'right'"
             [attr.aria-pressed]="align() === 'right'"
             (click)="formatText('justifyRight')"
-            shTooltip="Align Right">
+            [shTooltip]="alignRightTip">
             <sh-icon>text-align-right</sh-icon>
           </button>
         </div>
@@ -150,7 +166,7 @@
       <!-- Links, images and lines -->
       @if (showInsertions()) {
         <div class="sh-editor-toolbar-group" role="group" aria-label="Insert elements">
-          <button type="button" class="sh-editor-btn" (click)="openLinkModal()" shTooltip="Insert Link">
+          <button type="button" class="sh-editor-btn" (click)="openLinkModal()" [shTooltip]="linkTip">
             <sh-icon>link</sh-icon>
           </button>
           <button type="button" class="sh-editor-btn" (click)="openImageModal()" shTooltip="Insert Image">
@@ -160,7 +176,7 @@
             type="button"
             class="sh-editor-btn"
             (click)="formatText('insertHorizontalRule')"
-            shTooltip="Horizontal Line">
+            [shTooltip]="hrTip">
             <sh-icon>minus</sh-icon>
           </button>
         </div>
@@ -192,7 +208,7 @@
             class="sh-editor-btn"
             [disabled]="!canUndo()"
             (click)="formatText('undo')"
-            shTooltip="Undo">
+            [shTooltip]="undoTip">
             <sh-icon>arrow-u-up-left</sh-icon>
           </button>
           <button
@@ -200,13 +216,13 @@
             class="sh-editor-btn"
             [disabled]="!canRedo()"
             (click)="formatText('redo')"
-            shTooltip="Redo">
+            [shTooltip]="redoTip">
             <sh-icon>arrow-u-up-right</sh-icon>
           </button>
           <button
             type="button"
             class="sh-editor-btn view-toggle"
-            [class.active]="viewMode() === 'code'"
+            [class.enabled]="viewMode() === 'code'"
             [attr.aria-pressed]="viewMode() === 'code'"
             (click)="toggleViewMode()"
             shTooltip="Toggle Code View">
@@ -219,6 +235,89 @@
         </div>
       }
     </div>
+
+    <!-- Image contextual toolbar (shown when an image is selected) -->
+    @if (selectedImage()) {
+      <div class="sh-editor-toolbar sh-editor-img-context-toolbar" role="toolbar" aria-label="Image options">
+        <div class="sh-editor-toolbar-group" role="group" aria-label="Image layout">
+          <span class="sh-editor-img-context-label">Layout</span>
+          <button
+            type="button"
+            class="sh-editor-btn"
+            [class.enabled]="imgMode() === 'content'"
+            (click)="setImageMode('content')"
+            shTooltip="Content width">
+            <sh-icon>arrows-out-line-horizontal</sh-icon>
+          </button>
+          <button
+            type="button"
+            class="sh-editor-btn"
+            [class.enabled]="imgMode() === 'theater'"
+            (click)="setImageMode('theater')"
+            shTooltip="Theater (full width)">
+            <sh-icon>frame-corners</sh-icon>
+          </button>
+          <button
+            type="button"
+            class="sh-editor-btn"
+            [class.enabled]="imgMode() === 'custom'"
+            (click)="setImageMode('custom')"
+            shTooltip="Custom">
+            <sh-icon>sliders-horizontal</sh-icon>
+          </button>
+        </div>
+
+        @if (imgMode() === 'custom') {
+          <div class="sh-editor-toolbar-group" role="group" aria-label="Image size">
+            <span class="sh-editor-img-context-label">Size</span>
+            <button
+              type="button"
+              class="sh-editor-btn"
+              [class.enabled]="imgSize() === 'auto'"
+              (click)="setImageSize('auto')"
+              shTooltip="Auto size">
+              <sh-icon>arrows-out-line-horizontal</sh-icon>
+            </button>
+            <button
+              type="button"
+              class="sh-editor-btn"
+              [class.enabled]="imgSize() === 'small'"
+              (click)="setImageSize('small')"
+              shTooltip="Small">
+              S
+            </button>
+            <button
+              type="button"
+              class="sh-editor-btn"
+              [class.enabled]="imgSize() === 'medium'"
+              (click)="setImageSize('medium')"
+              shTooltip="Medium">
+              M
+            </button>
+            <button
+              type="button"
+              class="sh-editor-btn"
+              [class.enabled]="imgSize() === 'large'"
+              (click)="setImageSize('large')"
+              shTooltip="Large">
+              L
+            </button>
+          </div>
+        }
+
+        <div class="spacer"></div>
+
+        <div class="sh-editor-toolbar-group" role="group" aria-label="Image actions">
+          <button
+            type="button"
+            class="sh-editor-btn danger"
+            (click)="deleteImage()"
+            shTooltip="Delete Image">
+            <sh-icon>trash</sh-icon>
+          </button>
+        </div>
+      </div>
+    }
   }
 
   <!-- Simple Dialogs for Link and Image Inputs -->
@@ -274,78 +373,7 @@
     </div>
   }
 
-  <!-- Image layout options floating toolbar -->
-  @if (selectedImage() && !readonly()) {
-    <div class="sh-editor-img-toolbar" [style.top.px]="imgToolbarTop()" [style.left.px]="imgToolbarLeft()">
-      <button
-        type="button"
-        class="sh-editor-img-toolbar-btn"
-        [class.active]="imgMode() === 'content'"
-        (click)="setImageMode('content')">
-        Content
-      </button>
-      <button
-        type="button"
-        class="sh-editor-img-toolbar-btn"
-        [class.active]="imgMode() === 'theater'"
-        (click)="setImageMode('theater')">
-        Theater
-      </button>
-      <button
-        type="button"
-        class="sh-editor-img-toolbar-btn"
-        [class.active]="imgMode() === 'float'"
-        (click)="setImageMode('float')">
-        Float
-      </button>
-      <button
-        type="button"
-        class="sh-editor-img-toolbar-btn"
-        [class.active]="imgMode() === 'custom'"
-        (click)="setImageMode('custom')">
-        Custom
-      </button>
 
-      @if (imgMode() === 'float' || imgMode() === 'custom') {
-        <div class="sh-editor-img-toolbar-divider"></div>
-
-        <button
-          type="button"
-          class="sh-editor-img-toolbar-btn"
-          [class.active]="imgSize() === 'auto'"
-          (click)="setImageSize('auto')">
-          Auto
-        </button>
-        <button
-          type="button"
-          class="sh-editor-img-toolbar-btn"
-          [class.active]="imgSize() === 'small'"
-          (click)="setImageSize('small')">
-          Small
-        </button>
-        <button
-          type="button"
-          class="sh-editor-img-toolbar-btn"
-          [class.active]="imgSize() === 'medium'"
-          (click)="setImageSize('medium')">
-          Medium
-        </button>
-        <button
-          type="button"
-          class="sh-editor-img-toolbar-btn"
-          [class.active]="imgSize() === 'large'"
-          (click)="setImageSize('large')">
-          Large
-        </button>
-      }
-
-      <div class="sh-editor-img-toolbar-divider"></div>
-
-      <button type="button" class="sh-editor-img-toolbar-btn danger" (click)="deleteImage()" shTooltip="Delete Image">
-        <sh-icon>trash</sh-icon>
-      </button>
-    </div>
-  }
 
   <!-- Slash Commands floating menu using design system sh-menu component -->
   @if (filteredCommands().length > 0 && !readonly()) {
@@ -363,7 +391,7 @@
           <button
             type="button"
             class="sh-editor-slash-item"
-            [class.active]="idx === slashMenu.activeOptionIndex()"
+            [class.enabled]="idx === slashMenu.activeOptionIndex()"
             [attr.aria-selected]="idx === slashMenu.activeOptionIndex() ? 'true' : 'false'"
             (click)="executeCommand(cmd)"
             (mouseenter)="slashMenu.activeOptionIndex.set(idx)">
@@ -393,6 +421,7 @@
         [attr.placeholder]="placeholder()"
         role="textbox"
         aria-multiline="true"
+        (beforeinput)="onBeforeInput($event)"
         (input)="onDOMInput()"
         (blur)="onDOMBlur()"
         (focus)="isFocused.set(true)"></div>

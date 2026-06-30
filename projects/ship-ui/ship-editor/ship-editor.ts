@@ -12,7 +12,6 @@ import {
   input,
   model,
   OnDestroy,
-  OnInit,
   output,
   PLATFORM_ID,
   Provider,
@@ -22,46 +21,64 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ShipColor, shipComponentClasses } from '@ship-ui/core';
-import { ShipTooltip } from '@ship-ui/core/ship-tooltip';
-import { ShipIcon } from '@ship-ui/core/ship-icon';
-import { ShipMenu } from '@ship-ui/core/ship-menu';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipKbd } from '@ship-ui/core/ship-kbd';
+import { ShipMenu } from '@ship-ui/core/ship-menu';
+import { ShipTooltip } from '@ship-ui/core/ship-tooltip';
 
 import {
+  BlockKeydownContext,
   CaretState,
-  escapeHTML,
+  clearDocRangeFormatting,
+  cloneDoc,
+  formatDocRange,
+  getBlockRelativeOffset,
   getJSONText,
-  getNodeByPath,
-  getNodePath,
-  getTextNodesInRange,
+  getLogicalFromBlockRelative,
   htmlToJSON,
   htmlToMarkdown,
-  isNodeWrappedInTag,
+  inlineToHTML,
+  insertText,
   jsonToHTML,
+  LogicalPosition,
+  mapDOMPositionToLogical,
+  mapLogicalToDOMPosition,
   markdownToHTML,
+  mergeBlocks,
+  parseImageClassNames,
+  registerDefaultExtensions,
+  setBlockTypeInDoc,
   ShipEditorBlock,
   ShipEditorCommand,
   ShipEditorDocument,
   ShipEditorInlineNode,
+  ShipEditorInstance,
   ShipEditorMark,
+  ShipEditorMarkExtension,
+  ShipEditorRegistry,
   ShipEditorValue,
+  splitBlock,
+  toggleListInDoc,
 } from './ship-editor-core';
 
 export {
   CaretState,
+  LogicalPosition,
+  mergeBlocks,
+  registerDefaultExtensions,
   ShipEditorBlock,
   ShipEditorCommand,
   ShipEditorDocument,
   ShipEditorInlineNode,
+  ShipEditorInstance,
   ShipEditorMark,
+  ShipEditorMarkExtension,
+  ShipEditorRegistry,
   ShipEditorValue,
+  splitBlock,
 };
 
-export interface ShipEditorHtmlDocument {
-  execCommand(commandId: string, showUI?: boolean, value?: string): boolean;
-  queryCommandState(commandId: string): boolean;
-  queryCommandEnabled(commandId: string): boolean;
-}
 
 
 const SHIP_EDITOR_VALUE_ACCESSOR: Provider = {
@@ -75,7 +92,7 @@ const SHIP_EDITOR_VALUE_ACCESSOR: Provider = {
   standalone: true,
   styleUrl: './ship-editor.scss',
   encapsulation: ViewEncapsulation.None,
-  imports: [ShipTooltip, ShipIcon, ShipMenu],
+  imports: [ShipTooltip, ShipIcon, ShipKbd, ShipMenu],
   providers: [SHIP_EDITOR_VALUE_ACCESSOR],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -85,25 +102,18 @@ const SHIP_EDITOR_VALUE_ACCESSOR: Provider = {
   },
   templateUrl: './ship-editor.html',
 })
-export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, AfterViewInit {
+export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewInit, ShipEditorInstance {
   #document = inject(DOCUMENT);
   #platformId = inject(PLATFORM_ID);
   #isBrowser = isPlatformBrowser(this.#platformId);
-  #elementRef = inject(ElementRef);
   #keybindings = inject(ShipA11yKeybindingsService);
 
-  get #doc(): Document & ShipEditorHtmlDocument {
-    return this.#document as unknown as Document & ShipEditorHtmlDocument;
-  }
-
-  
   editorRef = viewChild<ElementRef<HTMLDivElement>>('editorRef');
   codeEditorRef = viewChild<ElementRef<HTMLTextAreaElement>>('codeEditorRef');
   uploadBtn = viewChild<ElementRef<HTMLButtonElement>>('uploadBtn');
   imageInput = viewChild<ElementRef<HTMLInputElement>>('imageInput');
   linkInput = viewChild<ElementRef<HTMLInputElement>>('linkInput');
 
-  
   value = model<string | ShipEditorDocument | null>('');
   format = input<'json' | 'html' | 'markdown'>('html');
   placeholder = input<string>('Type your content here...');
@@ -113,7 +123,6 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
   variant = input<'base' | 'type-b' | null>('base');
   customCommands = input<ShipEditorCommand[]>([]);
 
-  
   showSlashMenu = signal<boolean>(false);
   slashSearchQuery = signal<string>('');
   slashMenuTop = signal<number>(0);
@@ -121,11 +130,20 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
 
   #lastValueWrittenFromDOM: ShipEditorValue | undefined = undefined;
   #lastEditorElement: HTMLDivElement | null = null;
-  #historyStack: { html: string; caret: CaretState | null }[] = [];
+  #historyStack: {
+    doc: ShipEditorDocument;
+    docVersion: number;
+    selection: {
+      start: LogicalPosition;
+      end: LogicalPosition | null;
+      isCollapsed: boolean;
+    } | null;
+  }[] = [];
   #historyIndex = -1;
   #maxHistorySize = 100;
+  #docVersion = 0;
   #isInternalDOMUpdate = false;
-  #typingTimeout: any;
+  #typingTimeout: ReturnType<typeof setTimeout> | undefined;
 
   defaultCommands = computed<ShipEditorCommand[]>(() => [
     {
@@ -228,7 +246,6 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     );
   });
 
-  
   showFormats = input<boolean>(true);
   showBlocks = input<boolean>(true);
   showLists = input<boolean>(true);
@@ -236,19 +253,17 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
   showInsertions = input<boolean>(true);
   showHistory = input<boolean>(true);
 
-  
   customUpload = input<boolean>(false);
   imageUploadEnabled = input<boolean>(true);
   imageUpload = output<File>();
 
-  
   #selectedImage = signal<HTMLImageElement | null>(null);
-  imgToolbarTop = signal<number>(0);
-  imgToolbarLeft = signal<number>(0);
   imgMode = signal<'content' | 'theater' | 'float' | 'custom'>('content');
   imgSize = signal<'auto' | 'small' | 'medium' | 'large'>('auto');
 
-  
+  /** Tracks the DOM element with an extension-driven activeClassName applied. */
+  #activeBlockEl: HTMLElement | null = null;
+
   viewMode = signal<'design' | 'code'>('design');
   isFocused = signal<boolean>(false);
   showLinkModal = signal<boolean>(false);
@@ -256,7 +271,6 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
   rawCodeValue = signal<string>('');
   showBlockMenu = signal<boolean>(false);
 
-  
   isBold = signal<boolean>(false);
   isItalic = signal<boolean>(false);
   isUnderline = signal<boolean>(false);
@@ -266,42 +280,120 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
   canUndo = signal<boolean>(false);
   canRedo = signal<boolean>(false);
 
-  
   #savedRange: Range | null = null;
 
-  
+  documentState = signal<ShipEditorDocument>([]);
+
+  getBlockInlineHTML(block: any): string {
+    return inlineToHTML((block?.content as ShipEditorInlineNode[]) || []) || '<br>';
+  }
+
+  getCodeText(block: ShipEditorBlock): string {
+    return ((block.content as ShipEditorInlineNode[]) || []).map((node) => node.text || '').join('');
+  }
+
+  getImageClass(block: ShipEditorBlock): string {
+    const mode = block.attrs?.mode || 'content';
+    const size = block.attrs?.size || 'auto';
+    if (mode === 'content' || mode === 'theater') {
+      return `sh-editor-img-${mode}`;
+    }
+    return `sh-editor-img-${mode} sh-editor-img-size-${size}`;
+  }
+
+  #saveAndRestoreSelection(action: () => void) {
+    if (!this.#isBrowser || this.viewMode() === 'code') {
+      action();
+      return;
+    }
+
+    const editor = this.editorRef()?.nativeElement;
+    const selection = window.getSelection();
+    let savedStartPos: LogicalPosition | null = null;
+    let savedEndPos: LogicalPosition | null = null;
+    let isCollapsed = true;
+    let isInside = false;
+
+    if (editor && selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      if (editor.contains(range.commonAncestorContainer)) {
+        isInside = true;
+        isCollapsed = range.collapsed;
+        savedStartPos = mapDOMPositionToLogical(editor, range.startContainer, range.startOffset);
+        if (!isCollapsed) {
+          savedEndPos = mapDOMPositionToLogical(editor, range.endContainer, range.endOffset);
+        }
+      }
+    }
+
+    action();
+
+    if (isInside && savedStartPos && editor && selection) {
+      setTimeout(() => {
+        const startDom = mapLogicalToDOMPosition(editor, savedStartPos!, this.documentState());
+        if (startDom) {
+          try {
+            const newRange = this.#document.createRange();
+            newRange.setStart(startDom.node, startDom.offset);
+            if (!isCollapsed && savedEndPos) {
+              const endDom = mapLogicalToDOMPosition(editor, savedEndPos, this.documentState());
+              if (endDom) {
+                newRange.setEnd(endDom.node, endDom.offset);
+              } else {
+                newRange.collapse(true);
+              }
+            } else {
+              newRange.collapse(true);
+            }
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+          } catch { /* Selection out of bounds after DOM mutation */ }
+        }
+      }, 0);
+    }
+  }
+
   charCount = signal<number>(0);
   wordCount = signal<number>(0);
 
-  
   onChange: (value: ShipEditorValue) => void = () => {};
   onTouched: () => void = () => {};
 
-  
   hostClasses = shipComponentClasses('editor', {
     color: this.color,
     variant: this.variant,
     readonly: this.readonly,
   });
 
-  
   #isWriting = false;
   #lastFormat: 'json' | 'html' | 'markdown' | null = null;
 
-  constructor() {
-    
-    effect(() => {
-      if (this.showLinkModal()) {
-        const linkInput = this.linkInput();
-        if (linkInput) {
-          linkInput.nativeElement.focus();
-        }
-      }
-    });
+  /** Set the document state and increment the version counter for history deduplication. */
+  #setDocumentState(doc: ShipEditorDocument) {
+    this.#docVersion++;
+    this.documentState.set(doc);
+  }
 
-    
-    effect(() => {
-      if (this.showImageModal()) {
+  /** Run a callback while suppressing feedback loops (DOM→model→DOM cycles). */
+  #runWithoutFeedback(fn: () => void) {
+    this.#isWriting = true;
+    try { fn(); }
+    finally { this.#isWriting = false; }
+  }
+
+  #linkModalFocusEffect = effect(() => {
+    if (this.showLinkModal()) {
+      const linkInput = this.linkInput();
+      if (linkInput) {
+        linkInput.nativeElement.focus();
+      }
+    }
+  });
+
+  #imageModalFocusEffect = effect(() => {
+    if (this.showImageModal()) {
+      // Defer focus to next render so Angular has rendered the @if block
+      setTimeout(() => {
         const uploadBtn = this.uploadBtn();
         const imageInput = this.imageInput();
 
@@ -314,56 +406,50 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
             imageInput.nativeElement.focus();
           }
         }
-      }
-    });
+      });
+    }
+  });
 
-    
-    effect(() => {
+  #valueSyncEffect = effect(() => {
+    const val = this.value();
+    const editor = this.editorRef()?.nativeElement;
+
+    if (editor && editor !== this.#lastEditorElement) {
+      this.#lastEditorElement = editor;
+      this.#lastValueWrittenFromDOM = undefined;
+    }
+
+    if (val === this.#lastValueWrittenFromDOM) return;
+    this.#syncModelToDOM(val);
+  });
+
+  #formatSwitchEffect = effect(() => {
+    const fmt = this.format();
+    const prev = this.#lastFormat;
+    this.#lastFormat = fmt;
+
+    if (prev !== null && prev !== fmt) {
       const val = this.value();
-      const editor = this.editorRef()?.nativeElement;
 
-      
-      
-      if (editor && editor !== this.#lastEditorElement) {
-        this.#lastEditorElement = editor;
-        this.#lastValueWrittenFromDOM = undefined;
+      let html = '';
+      if (prev === 'html' && typeof val === 'string') {
+        html = val;
+      } else if (prev === 'markdown' && typeof val === 'string') {
+        html = markdownToHTML(val);
+      } else if (prev === 'json' && Array.isArray(val)) {
+        html = jsonToHTML(val);
       }
 
-      if (val === this.#lastValueWrittenFromDOM) return;
-      this.#syncModelToDOM(val);
-    });
+      let newValue: ShipEditorValue = '';
+      if (fmt === 'html') {
+        newValue = html;
+      } else if (fmt === 'markdown') {
+        newValue = htmlToMarkdown(html, this.#document);
+      } else if (fmt === 'json') {
+        newValue = htmlToJSON(html, this.#document);
+      }
 
-    
-    effect(() => {
-      const fmt = this.format();
-      const prev = this.#lastFormat;
-      this.#lastFormat = fmt;
-
-      if (prev !== null && prev !== fmt) {
-        const val = this.value();
-
-        
-        let html = '';
-        if (prev === 'html' && typeof val === 'string') {
-          html = val;
-        } else if (prev === 'markdown' && typeof val === 'string') {
-          html = markdownToHTML(val);
-        } else if (prev === 'json' && Array.isArray(val)) {
-          html = jsonToHTML(val);
-        }
-
-        
-        let newValue: ShipEditorValue = '';
-        if (fmt === 'html') {
-          newValue = html;
-        } else if (fmt === 'markdown') {
-          newValue = htmlToMarkdown(html, this.#document);
-        } else if (fmt === 'json') {
-          newValue = htmlToJSON(html, this.#document);
-        }
-
-        
-        this.#isWriting = true;
+      this.#runWithoutFeedback(() => {
         this.value.set(newValue);
         this.#lastValueWrittenFromDOM = newValue;
         this.onChange(newValue);
@@ -376,62 +462,36 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
           this.rawCodeValue.set(html);
         }
 
-        const editor = this.editorRef()?.nativeElement;
-        if (editor) {
-          const normalizedHTML = html === '<p><br></p>' ? '' : html;
-          const currentNormalized = editor.innerHTML === '<p><br></p>' ? '' : editor.innerHTML;
-          if (normalizedHTML !== currentNormalized) {
-            editor.innerHTML = html;
-          }
-          this.#ensureImagesFocusable();
-        }
+        const ast = htmlToJSON(html, this.#document);
+        this.#saveAndRestoreSelection(() => {
+          this.#setDocumentState(ast);
+        });
+      });
+    }
+  });
 
-        this.#isWriting = false;
-      }
-    });
+  #wordCountEffect = effect(() => {
+    const doc = this.documentState();
+    const text = getJSONText(doc).replace(/\u00a0/g, ' ').trim();
 
-    
-    effect(() => {
-      const val = this.value();
-      const fmt = this.format();
-      let html = '';
+    this.charCount.set(text.length);
+    this.wordCount.set(text === '' ? 0 : text.split(/\s+/).filter((w) => w.length > 0).length);
+  });
 
-      if (!val) {
-        html = '';
-      } else if (typeof val === 'string') {
-        if (fmt === 'markdown') {
-          html = markdownToHTML(val);
-        } else {
-          html = val;
-        }
-      } else if (Array.isArray(val)) {
-        html = jsonToHTML(val);
-      }
+  #toolbarVisibilityEffect = effect(() => {
+    this.showFormats();
+    this.showBlocks();
+    this.showLists();
+    this.showAlignments();
+    this.showInsertions();
+    this.showHistory();
+    this.toolbar();
+    this.readonly();
+    this.#initializeToolbarTabindexes();
+  });
 
-      const temp = this.#document.createElement('div');
-      temp.innerHTML = html;
-      const text = (temp.textContent || '').replace(/\u00a0/g, ' ').trim();
-
-      this.charCount.set(text.length);
-      this.wordCount.set(text === '' ? 0 : text.split(/\s+/).filter((w) => w.length > 0).length);
-    });
-
-    
-    effect(() => {
-      this.showFormats();
-      this.showBlocks();
-      this.showLists();
-      this.showAlignments();
-      this.showInsertions();
-      this.showHistory();
-      this.toolbar();
-      this.readonly();
-      this.#initializeToolbarTabindexes();
-    });
-  }
-
-  ngOnInit() {
-    
+  constructor() {
+    registerDefaultExtensions();
   }
 
   ngAfterViewInit() {
@@ -445,13 +505,11 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     }
   }
 
-  
-
   writeValue(obj: ShipEditorValue): void {
-    this.#isWriting = true;
-    this.value.set(obj);
-    this.#syncModelToDOM(obj);
-    this.#isWriting = false;
+    this.#runWithoutFeedback(() => {
+      this.value.set(obj);
+      this.#syncModelToDOM(obj);
+    });
   }
 
   registerOnChange(fn: (value: ShipEditorValue) => void): void {
@@ -462,32 +520,81 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     this.onTouched = fn;
   }
 
-  setDisabledState(isDisabled: boolean): void {
-    
+  setDisabledState(_isDisabled: boolean): void {
+    // CVA disabled state not supported — use the [readonly] signal input instead
   }
 
-  
+  #stripCompiledMarkup(html: string): string {
+    if (!html) return '';
+    let clean = html
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/\s*_ngcontent-[a-z0-9-]+(?:="[^"]*"|='[^']*'|=[^\s>]+)?/gi, '')
+      .replace(/\s*_nghost-[a-z0-9-]+(?:="[^"]*"|='[^']*'|=[^\s>]+)?/gi, '')
+      .replace(/\s*ng-[a-z0-9-]+(?:="[^"]*"|='[^']*'|=[^\s>]+)?/gi, '')
+      .replace(/\s*data-block-index="[0-9]+"/gi, '')
+      .replace(/\s*data-item-index="[0-9]+"/gi, '');
+
+    clean = clean.replace(/class="([^"]*)sh-editor-active-block([^"]*)"/gi, (match, p1, p2) => {
+      const remaining = (p1 + p2).replace(/\s+/g, ' ').trim();
+      return remaining ? `class="${remaining}"` : '';
+    });
+
+    // Remove any trailing spaces inside tag brackets (e.g. <p > -> <p>)
+    clean = clean.replace(/\s+(?=>)/g, '');
+
+    return clean;
+  }
+
+  #renderHTMLToDOM(html: string) {
+    const editor = this.editorRef()?.nativeElement;
+    if (!editor) return;
+
+    editor.innerHTML = html;
+
+    const doc = this.documentState();
+    const children = Array.from(editor.children);
+    children.forEach((child, idx) => {
+      child.setAttribute('data-block-index', idx.toString());
+      const tag = child.tagName.toLowerCase();
+      if (tag === 'ul' || tag === 'ol') {
+        const items = Array.from(child.querySelectorAll(':scope > li'));
+        items.forEach((item, itemIdx) => {
+          item.setAttribute('data-item-index', itemIdx.toString());
+        });
+      }
+
+      // Call extension onBlockRender hook for post-render DOM enhancements
+      const block = doc[idx];
+      if (block) {
+        const ext = ShipEditorRegistry.getBlock(block.type);
+        if (ext?.onBlockRender) {
+          ext.onBlockRender(child as HTMLElement, block, idx);
+        }
+      }
+    });
+  }
 
   #syncModelToDOM(val: ShipEditorValue) {
+    let ast: ShipEditorDocument = [];
     let html = '';
 
     if (val === null || val === undefined || val === '') {
+      ast = [{ type: 'paragraph', content: [] }];
       html = '<p><br></p>';
+    } else if (Array.isArray(val)) {
+      ast = val;
+      html = jsonToHTML(val);
     } else if (typeof val === 'string') {
       if (this.format() === 'markdown') {
         html = markdownToHTML(val);
       } else {
         html = val;
       }
-    } else if (Array.isArray(val)) {
-      html = jsonToHTML(val);
-    } else {
-      html = '<p><br></p>';
+      ast = htmlToJSON(html, this.#document);
     }
 
     const isNewValue = val !== this.#lastValueWrittenFromDOM;
 
-    
     if (this.format() === 'markdown' && typeof val === 'string') {
       this.rawCodeValue.set(val);
     } else if (this.format() === 'json' && Array.isArray(val)) {
@@ -496,78 +603,88 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
       this.rawCodeValue.set(html);
     }
 
-    
-    const editor = this.editorRef()?.nativeElement;
-    if (editor) {
-      this.#lastValueWrittenFromDOM = val;
-      
-      const normalizedHTML = html === '<p><br></p>' ? '' : html;
-      const currentNormalized = editor.innerHTML === '<p><br></p>' ? '' : editor.innerHTML;
-      if (normalizedHTML !== currentNormalized) {
-        editor.innerHTML = html;
-      }
-      this.#ensureImagesFocusable();
+    this.#lastValueWrittenFromDOM = val;
 
-      if (isNewValue) {
-        this.#historyStack = [];
-        this.#historyIndex = -1;
-      }
-      if (this.#historyStack.length === 0) {
-        this.#saveHistory();
-      }
+    this.#saveAndRestoreSelection(() => {
+      this.#setDocumentState(ast);
+      this.#renderHTMLToDOM(html);
+    });
+
+    if (isNewValue) {
+      this.#historyStack = [];
+      this.#historyIndex = -1;
+    }
+    if (this.#historyStack.length === 0) {
+      this.#saveHistory();
     }
     this.#updateHistoryStates();
   }
-
-  
 
   #updateValueFromDOM() {
     const editor = this.editorRef()?.nativeElement;
     if (!editor) return;
 
-    let html = editor.innerHTML;
-    
-    if (html === '' || html === '<br>' || html === '<p><br></p>') {
-      html = '';
+    const rawHtml = editor.innerHTML;
+    const initialAst = htmlToJSON(rawHtml, this.#document);
+    let cleanHtml = this.#stripCompiledMarkup(jsonToHTML(initialAst));
+
+    if (cleanHtml === '' || cleanHtml === '<br>' || cleanHtml === '<p><br></p>') {
+      cleanHtml = '';
     }
 
-    this.#isWriting = true;
-    const currentFormat = this.format();
+    const ast = htmlToJSON(cleanHtml, this.#document);
 
-    if (currentFormat === 'html') {
-      this.value.set(html);
-      this.#lastValueWrittenFromDOM = html;
-      this.onChange(html);
-    } else if (currentFormat === 'markdown') {
-      const md = htmlToMarkdown(html, this.#document);
-      this.value.set(md);
-      this.#lastValueWrittenFromDOM = md;
-      this.onChange(md);
-      this.rawCodeValue.set(md);
-    } else if (currentFormat === 'json') {
-      const json = htmlToJSON(html, this.#document);
-      this.value.set(json);
-      this.#lastValueWrittenFromDOM = json;
-      this.onChange(json);
-      this.rawCodeValue.set(JSON.stringify(json, null, 2));
-    }
+    this.#runWithoutFeedback(() => {
+      const currentFormat = this.format();
 
-    this.#isWriting = false;
+      this.#saveAndRestoreSelection(() => {
+        if (currentFormat === 'html') {
+          this.value.set(cleanHtml);
+          this.#lastValueWrittenFromDOM = cleanHtml;
+          this.onChange(cleanHtml);
+        } else if (currentFormat === 'markdown') {
+          const md = htmlToMarkdown(cleanHtml, this.#document);
+          this.value.set(md);
+          this.#lastValueWrittenFromDOM = md;
+          this.onChange(md);
+          this.rawCodeValue.set(md);
+        } else if (currentFormat === 'json') {
+          this.value.set(ast);
+          this.#lastValueWrittenFromDOM = ast;
+          this.onChange(ast);
+          this.rawCodeValue.set(JSON.stringify(ast, null, 2));
+        }
+
+        this.#setDocumentState(ast);
+      });
+    });
   }
 
-  
-
   onDOMInput() {
-    this.#ensureImagesFocusable();
+    // Run extension onBlockRender for image blocks after browser-native DOM mutations
+    const editor = this.editorRef()?.nativeElement;
+    if (editor) {
+      const imgExt = ShipEditorRegistry.getBlock('image');
+      if (imgExt?.onBlockRender) {
+        const imgs = editor.querySelectorAll('img');
+        imgs.forEach((img) => {
+          const blockEl = img.closest('[data-block-index]') as HTMLElement;
+          if (blockEl) {
+            const idx = parseInt(blockEl.getAttribute('data-block-index') || '0', 10);
+            imgExt.onBlockRender!(blockEl, { type: 'image' }, idx);
+          }
+        });
+      }
+    }
     this.#updateValueFromDOM();
 
-    
     const selection = window.getSelection();
     let saveImmediately = false;
     if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       const textNode = range.startContainer;
-      if (textNode.nodeType === 3) { // Node.TEXT_NODE
+      if (textNode.nodeType === 3) {
+        // Node.TEXT_NODE
         const char = textNode.textContent?.charAt(range.startOffset - 1);
         if (char && /[\s.,!?;/]/.test(char)) {
           saveImmediately = true;
@@ -593,6 +710,129 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     this.onTouched();
   }
 
+  onBeforeInput(event: InputEvent) {
+    if (this.readonly() || this.viewMode() === 'code') return;
+
+    const editor = this.editorRef()?.nativeElement;
+    if (!editor) return;
+
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    const position = mapDOMPositionToLogical(editor, range.startContainer, range.startOffset);
+    if (!position) return;
+
+    const type = event.inputType;
+
+    if (type === 'insertParagraph' || type === 'insertLineBreak') {
+      event.preventDefault();
+
+      // Delegate to extension onBlockKeydown if the block type has one
+      const currentBlock = this.documentState()[position.blockIndex];
+      if (currentBlock) {
+        const ext = ShipEditorRegistry.getBlock(currentBlock.type);
+        if (ext?.onBlockKeydown) {
+          const editorEl = this.editorRef()?.nativeElement;
+          const blockEl = editorEl?.children[position.blockIndex] as HTMLElement;
+          const ctx: BlockKeydownContext = {
+            position,
+            blockEl,
+            doc: this.documentState(),
+          };
+          const result = ext.onBlockKeydown(event, ctx);
+          if (result !== false) {
+            this.#updateStateAndCaret(result.doc, result.position);
+            return;
+          }
+        }
+      }
+
+      const doc = this.documentState();
+      const { doc: newDoc, newPosition } = splitBlock(doc, position);
+      this.#updateStateAndCaret(newDoc, newPosition);
+    } else if (type === 'deleteContentBackward') {
+      // Backspace
+      // Intercept if caret is at the start of a block
+      if (position.inlineIndex === 0 && position.offset === 0) {
+        event.preventDefault();
+        const doc = this.documentState();
+        const { doc: newDoc, newPosition } = mergeBlocks(doc, position);
+        this.#updateStateAndCaret(newDoc, newPosition);
+      }
+    }
+  }
+
+  #updateStateAndCaret(newDoc: ShipEditorDocument, newPosition: LogicalPosition) {
+    this.#setDocumentState(newDoc);
+    this.#updateValueFromState();
+
+    const editor = this.editorRef()?.nativeElement;
+    if (editor) {
+      // Preserve scroll position across the full DOM re-render to prevent
+      // visible jumps — especially noticeable when typing inside large code blocks.
+      const scrollTop = editor.scrollTop;
+      const scrollLeft = editor.scrollLeft;
+      this.#renderHTMLToDOM(jsonToHTML(newDoc));
+      editor.scrollTop = scrollTop;
+      editor.scrollLeft = scrollLeft;
+
+      setTimeout(() => {
+        const domPos = mapLogicalToDOMPosition(editor, newPosition, this.documentState());
+        if (domPos) {
+          const selection = window.getSelection();
+          if (selection) {
+            try {
+              const newRange = this.#document.createRange();
+              newRange.setStart(domPos.node, domPos.offset);
+              newRange.collapse(true);
+              selection.removeAllRanges();
+              selection.addRange(newRange);
+
+              // Scroll the caret into view if it ended up outside the visible area
+              // (e.g. pressing Enter at the very bottom of a long code block).
+              const caretRect = newRange.getBoundingClientRect();
+              const editorRect = editor.getBoundingClientRect();
+              if (caretRect.bottom > editorRect.bottom) {
+                editor.scrollTop += caretRect.bottom - editorRect.bottom + 4;
+              } else if (caretRect.top < editorRect.top) {
+                editor.scrollTop -= editorRect.top - caretRect.top + 4;
+              }
+            } catch { /* Caret position out of range after DOM mutation */ }
+          }
+        }
+        this.onSelectionChange();
+      }, 0);
+    }
+  }
+
+  #updateValueFromState() {
+    const ast = this.documentState();
+    this.#runWithoutFeedback(() => {
+      const currentFormat = this.format();
+
+      if (currentFormat === 'json') {
+        this.value.set(ast);
+        this.#lastValueWrittenFromDOM = ast;
+        this.onChange(ast);
+        this.rawCodeValue.set(JSON.stringify(ast, null, 2));
+      } else {
+        const html = jsonToHTML(ast);
+        if (currentFormat === 'html') {
+          this.value.set(html);
+          this.#lastValueWrittenFromDOM = html;
+          this.onChange(html);
+        } else if (currentFormat === 'markdown') {
+          const md = htmlToMarkdown(html, this.#document);
+          this.value.set(md);
+          this.#lastValueWrittenFromDOM = md;
+          this.onChange(md);
+          this.rawCodeValue.set(md);
+        }
+      }
+    });
+  }
+
   onCodeInput(event: Event) {
     const textarea = event.target as HTMLTextAreaElement;
     this.rawCodeValue.set(textarea.value);
@@ -603,577 +843,283 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     const textarea = event.target as HTMLTextAreaElement;
     const codeVal = textarea.value;
 
-    this.#isWriting = true;
-    const currentFormat = this.format();
+    this.#runWithoutFeedback(() => {
+      const currentFormat = this.format();
 
-    if (currentFormat === 'html') {
-      this.value.set(codeVal);
-      this.onChange(codeVal);
-    } else if (currentFormat === 'markdown') {
-      this.value.set(codeVal);
-      this.onChange(codeVal);
-    } else if (currentFormat === 'json') {
-      try {
-        const parsed = JSON.parse(codeVal);
-        this.value.set(parsed);
-        this.onChange(parsed);
-      } catch (e) {
-        
+      if (currentFormat === 'html') {
+        this.value.set(codeVal);
+        this.onChange(codeVal);
+      } else if (currentFormat === 'markdown') {
+        this.value.set(codeVal);
+        this.onChange(codeVal);
+      } else if (currentFormat === 'json') {
+        try {
+          const parsed = JSON.parse(codeVal);
+          this.value.set(parsed);
+          this.onChange(parsed);
+        } catch { /* JSON parse error in code view — ignored */ }
       }
-    }
-
-    this.#isWriting = false;
+    });
     this.onTouched();
   }
 
-  
+  /** Valid commands for formatText(). Case-insensitive to match template usage. */
+  static readonly FORMAT_COMMANDS: Record<string, (editor: ShipEditor, value?: string) => void> = {
+    bold: (e) => e.applyInlineStyle('strong'),
+    italic: (e) => e.applyInlineStyle('em'),
+    underline: (e) => e.applyInlineStyle('u'),
+    strikethrough: (e) => e.applyInlineStyle('s'),
+    undo: (e) => e.undo(),
+    redo: (e) => e.redo(),
+    insertunorderedlist: (e) => e.toggleList('ul'),
+    insertorderedlist: (e) => e.toggleList('ol'),
+    inserthorizontalrule: (e) => e.insertHorizontalRule(),
+    removeformat: (e) => e.removeFormat(),
+    justifyleft: (e) => e.setAlign('left'),
+    justifycenter: (e) => e.setAlign('center'),
+    justifyright: (e) => e.setAlign('right'),
+    formatblock: (e, v) => e.setBlockType(v ?? ''),
+  };
 
   formatText(command: string, value: string = '') {
     if (this.readonly()) return;
     if (this.viewMode() === 'code') return;
 
-    const cmd = command.toLowerCase();
-
-    if (cmd === 'bold') {
-      this.applyInlineStyle('strong');
-    } else if (cmd === 'italic') {
-      this.applyInlineStyle('em');
-    } else if (cmd === 'underline') {
-      this.applyInlineStyle('u');
-    } else if (cmd === 'strikethrough') {
-      this.applyInlineStyle('s');
-    } else if (cmd === 'undo') {
-      this.undo();
-    } else if (cmd === 'redo') {
-      this.redo();
-    } else if (cmd === 'insertunorderedlist') {
-      this.toggleList('ul');
-    } else if (cmd === 'insertorderedlist') {
-      this.toggleList('ol');
-    } else if (cmd === 'inserthorizontalrule') {
-      this.insertHorizontalRule();
-    } else if (cmd === 'removeformat') {
-      this.removeFormat();
-    } else if (cmd === 'justifyleft') {
-      this.setAlign('left');
-    } else if (cmd === 'justifycenter') {
-      this.setAlign('center');
-    } else if (cmd === 'justifyright') {
-      this.setAlign('right');
-    } else if (cmd === 'formatblock') {
-      this.setBlockType(value);
+    const handler = ShipEditor.FORMAT_COMMANDS[command.toLowerCase()];
+    if (handler) {
+      handler(this, value);
     }
+  }
+
+  runTransaction(
+    action: (
+      doc: ShipEditorDocument,
+      selection: { start: LogicalPosition; end: LogicalPosition }
+    ) =>
+      | {
+          doc?: ShipEditorDocument;
+          selectionShift?: {
+            start: { blockIndex: number; listItemIndex?: number };
+            end: { blockIndex: number; listItemIndex?: number };
+          };
+        }
+      | ShipEditorDocument
+      | void
+      | null
+  ) {
+    if (this.readonly() || this.viewMode() === 'code') return;
+    this.#restoreSelection();
+
+    const editor = this.editorRef()?.nativeElement;
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    if (!editor?.contains(range.commonAncestorContainer)) return;
+
+    const startLogical = mapDOMPositionToLogical(editor, range.startContainer, range.startOffset);
+    const endLogical = mapDOMPositionToLogical(editor, range.endContainer, range.endOffset);
+    if (!startLogical || !endLogical) return;
+
+    const docBefore = this.documentState();
+    const startOffset = getBlockRelativeOffset(startLogical, docBefore);
+    const endOffset = getBlockRelativeOffset(endLogical, docBefore);
+
+    const docClone = cloneDoc(docBefore);
+    const result = action(docClone, { start: startLogical, end: endLogical });
+    if (result === null) return;
+
+    let newDoc: ShipEditorDocument;
+    let targetSelectionShift:
+      | {
+          start: { blockIndex: number; listItemIndex?: number };
+          end: { blockIndex: number; listItemIndex?: number };
+        }
+      | undefined = undefined;
+
+    if (Array.isArray(result)) {
+      newDoc = result;
+    } else if (result && typeof result === 'object') {
+      newDoc = result.doc || docClone;
+      targetSelectionShift = result.selectionShift;
+    } else {
+      newDoc = docClone;
+    }
+
+    this.#saveHistory();
+    this.#isInternalDOMUpdate = true;
+
+    this.#setDocumentState(newDoc);
+    this.#updateValueFromState();
+
+    if (editor) {
+      this.#renderHTMLToDOM(jsonToHTML(newDoc));
+    }
+
+    // Restore selection synchronously — innerHTML is sync so the new DOM nodes
+    // are immediately available. Using setTimeout caused a gap where Angular's
+    // change detection could re-render and destroy the restored selection.
+    const docAfter = this.documentState();
+
+    const targetStartBlockIdx = targetSelectionShift
+      ? targetSelectionShift.start.blockIndex
+      : startLogical.blockIndex;
+    const targetStartListItemIdx = targetSelectionShift
+      ? targetSelectionShift.start.listItemIndex
+      : startLogical.listItemIndex;
+    const targetEndBlockIdx = targetSelectionShift ? targetSelectionShift.end.blockIndex : endLogical.blockIndex;
+    const targetEndListItemIdx = targetSelectionShift
+      ? targetSelectionShift.end.listItemIndex
+      : endLogical.listItemIndex;
+
+    const startLogicalAfter = getLogicalFromBlockRelative(
+      targetStartBlockIdx,
+      targetStartListItemIdx,
+      startOffset,
+      docAfter
+    );
+    const endLogicalAfter = getLogicalFromBlockRelative(targetEndBlockIdx, targetEndListItemIdx, endOffset, docAfter);
+
+    const startDom = mapLogicalToDOMPosition(editor, startLogicalAfter, docAfter);
+    const endDom = mapLogicalToDOMPosition(editor, endLogicalAfter, docAfter);
+
+    if (startDom && endDom) {
+      try {
+        const newRange = this.#document.createRange();
+        newRange.setStart(startDom.node, startDom.offset);
+        newRange.setEnd(endDom.node, endDom.offset);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+      } catch { /* Selection range out of bounds after formatting */ }
+    }
+
+    this.#saveHistory();
+    // Clear the guard so our explicit onSelectionChange() call can save the
+    // correct selection range and update formatting state signals.
+    this.#isInternalDOMUpdate = false;
+    this.onSelectionChange();
+    // Re-activate the guard to block any browser-queued selectionchange events
+    // that fire because innerHTML destroyed the old DOM nodes. These stale events
+    // would otherwise overwrite #savedRange with a collapsed/wrong range.
+    // The guard is cleared on the next microtask, after those events have passed.
+    this.#isInternalDOMUpdate = true;
+    queueMicrotask(() => {
+      this.#isInternalDOMUpdate = false;
+    });
   }
 
   applyInlineStyle(tag: string) {
-    if (this.readonly() || this.viewMode() === 'code') return;
-    this.#restoreSelection();
+    let markType = '';
+    const cleanTag = tag.toLowerCase();
+    if (cleanTag === 'strong' || cleanTag === 'b') markType = 'bold';
+    else if (cleanTag === 'em' || cleanTag === 'i') markType = 'italic';
+    else if (cleanTag === 'u') markType = 'underline';
+    else if (cleanTag === 's' || cleanTag === 'del') markType = 'strike';
+    else if (cleanTag === 'code') markType = 'code';
 
-    const editor = this.editorRef()?.nativeElement;
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
-
-    const range = selection.getRangeAt(0);
-    if (!editor?.contains(range.commonAncestorContainer)) return;
-
-    this.#saveHistory();
-    this.#isInternalDOMUpdate = true;
-
-    const textNodes = getTextNodesInRange(range);
-    if (textNodes.length === 0) {
-      this.#isInternalDOMUpdate = false;
-      return;
+    // Fall back to registry: look up mark type by tagName for custom extensions
+    if (!markType) {
+      const ext = ShipEditorRegistry.getAllMarks().find((m) => m.tagName === cleanTag);
+      if (ext) markType = ext.type;
     }
 
-    const tagName = tag.toUpperCase();
-    const allWrapped = textNodes.every((node) => isNodeWrappedInTag(node, tag, editor));
+    if (!markType) return;
 
-    let finalStartNode: Node = range.startContainer;
-    let finalStartOffset = range.startOffset;
-    let finalEndNode: Node = range.endContainer;
-    let finalEndOffset = range.endOffset;
-
-    if (allWrapped) {
-      const elementsToUnwrap = new Set<HTMLElement>();
-      for (const node of textNodes) {
-        let current: Node | null = node.parentNode;
-        while (current && current !== editor) {
-          if (current.nodeType === Node.ELEMENT_NODE && (current as HTMLElement).tagName === tagName) {
-            elementsToUnwrap.add(current as HTMLElement);
-          }
-          current = current.parentNode;
-        }
-      }
-
-      for (const el of elementsToUnwrap) {
-        const parent = el.parentNode;
-        if (parent) {
-          while (el.firstChild) {
-            parent.insertBefore(el.firstChild, el);
-          }
-          parent.removeChild(el);
-        }
-      }
-    } else {
-      for (const node of textNodes) {
-        const isStart = node === range.startContainer;
-        const isEnd = node === range.endContainer;
-
-        let start = isStart ? range.startOffset : 0;
-        let end = isEnd ? range.endOffset : node.textContent!.length;
-
-        if (start >= end) continue;
-
-        let targetNode = node;
-
-        if (isStart && start > 0) {
-          targetNode = node.splitText(start);
-          if (isEnd) {
-            finalEndNode = targetNode;
-            finalEndOffset = end - start;
-          }
-          finalStartNode = targetNode;
-          finalStartOffset = 0;
-
-          end = end - start;
-          start = 0;
-        }
-
-        if (isEnd && finalEndOffset < targetNode.textContent!.length) {
-          targetNode.splitText(finalEndOffset);
-          finalEndNode = targetNode;
-          finalEndOffset = targetNode.textContent!.length;
-          end = targetNode.textContent!.length;
-        }
-
-        if (!isNodeWrappedInTag(targetNode, tag, editor)) {
-          const element = node.ownerDocument!.createElement(tag);
-          targetNode.parentNode?.insertBefore(element, targetNode);
-          element.appendChild(targetNode);
-        }
-      }
-    }
-
-    const newRange = this.#document.createRange();
-    try {
-      newRange.setStart(finalStartNode, finalStartOffset);
-      newRange.setEnd(finalEndNode, finalEndOffset);
-      selection.removeAllRanges();
-      selection.addRange(newRange);
-    } catch (e) {}
-
-    this.#updateValueFromDOM();
-    this.#saveHistory();
-    this.#isInternalDOMUpdate = false;
-    this.onSelectionChange();
+    this.runTransaction((doc, selection) => {
+      return formatDocRange(doc, selection.start, selection.end, markType, 'toggle');
+    });
   }
 
   toggleLink(url: string) {
-    if (this.readonly() || this.viewMode() === 'code') return;
-    this.#restoreSelection();
-
-    const editor = this.editorRef()?.nativeElement;
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    const range = selection.getRangeAt(0);
-    if (!editor?.contains(range.commonAncestorContainer)) return;
-
-    this.#saveHistory();
-    this.#isInternalDOMUpdate = true;
-
-    let existingLink: HTMLAnchorElement | null = null;
-    let node: Node | null = range.commonAncestorContainer;
-    while (node && node !== editor) {
-      if (node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).tagName === 'A') {
-        existingLink = node as HTMLAnchorElement;
-        break;
-      }
-      node = node.parentNode;
-    }
-
-    if (existingLink) {
+    this.runTransaction((doc, selection) => {
       if (!url) {
-        const parent = existingLink.parentNode;
-        if (parent) {
-          while (existingLink.firstChild) {
-            parent.insertBefore(existingLink.firstChild, existingLink);
-          }
-          parent.removeChild(existingLink);
-        }
+        return formatDocRange(doc, selection.start, selection.end, 'link', 'remove');
       } else {
-        existingLink.href = url;
+        return formatDocRange(doc, selection.start, selection.end, 'link', 'add', { href: url, target: '_blank' });
       }
-    } else if (url && !selection.isCollapsed) {
-      const link = this.#document.createElement('a');
-      link.href = url;
-      link.target = '_blank';
-      try {
-        link.appendChild(range.extractContents());
-        range.insertNode(link);
-
-        const newRange = this.#document.createRange();
-        newRange.selectNodeContents(link);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-      } catch (e) {
-        
-      }
-    }
-
-    this.#updateValueFromDOM();
-    this.#saveHistory();
-    this.#isInternalDOMUpdate = false;
-    this.onSelectionChange();
+    });
   }
 
   setBlockType(tag: string) {
-    if (this.readonly() || this.viewMode() === 'code') return;
-    this.#restoreSelection();
+    this.runTransaction((doc, selection) => {
+      const targetTag = tag.toLowerCase();
+      let newType: ShipEditorBlock['type'] = 'paragraph';
+      let newAttrs: Record<string, any> = {};
 
-    const editor = this.editorRef()?.nativeElement;
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    const range = selection.getRangeAt(0);
-    if (!editor?.contains(range.commonAncestorContainer)) return;
-
-    this.#saveHistory();
-    this.#isInternalDOMUpdate = true;
-
-    let blockNode: HTMLElement | null = null;
-    let node: Node | null = range.commonAncestorContainer;
-    while (node && node !== editor) {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        const el = node as HTMLElement;
-        if (el.parentElement === editor) {
-          blockNode = el;
-          break;
-        }
-      }
-      node = node.parentNode;
-    }
-
-    if (!blockNode) {
-      node = range.commonAncestorContainer;
-      while (node && node !== editor) {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          const el = node as HTMLElement;
-          const tagName = el.tagName.toLowerCase();
-          if (['p', 'h1', 'h2', 'h3', 'blockquote', 'pre', 'ul', 'ol', 'li'].includes(tagName)) {
-            blockNode = el;
-            break;
-          }
-        }
-        node = node.parentNode;
-      }
-    }
-
-    if (blockNode) {
-      const newBlock = this.#document.createElement(tag);
-      newBlock.innerHTML = blockNode.innerHTML;
-      if (blockNode.className) {
-        newBlock.className = blockNode.className;
+      if (targetTag === 'p') {
+        newType = 'paragraph';
+      } else if (targetTag.startsWith('h') && targetTag.length === 2 && !isNaN(parseInt(targetTag.substring(1)))) {
+        newType = 'heading';
+        newAttrs = { level: parseInt(targetTag.substring(1)) };
+      } else if (targetTag === 'blockquote') {
+        newType = 'quote';
+      } else if (targetTag === 'pre') {
+        newType = 'code-block';
+        newAttrs = { language: '' };
       }
 
-      if (tag === 'pre') {
-        newBlock.innerHTML = `<code>${blockNode.innerText || blockNode.innerHTML}</code>`;
-      } else if (blockNode.tagName.toLowerCase() === 'pre' && tag !== 'pre') {
-        const codeEl = blockNode.querySelector('code');
-        if (codeEl) {
-          newBlock.innerHTML = codeEl.innerHTML;
-        }
-      }
+      const res = setBlockTypeInDoc(doc, selection, newType, newAttrs);
+      if (!res) return null;
 
-      // Ensure empty block has placeholder <br> so caret is visible and focusable
-      if (!newBlock.innerHTML || newBlock.innerHTML === '<br>') {
-        newBlock.innerHTML = '<br>';
-      }
+      // Update docClone in-place to match res.doc
+      doc.length = 0;
+      doc.push(...res.doc);
 
-      const parent = blockNode.parentNode;
-      if (parent) {
-        parent.replaceChild(newBlock, blockNode);
-
-        try {
-          const newRange = this.#document.createRange();
-          if (newBlock.textContent?.trim() === '') {
-            newRange.setStart(newBlock, 0);
-            newRange.collapse(true);
-          } else {
-            newRange.selectNodeContents(newBlock);
-            newRange.collapse(false);
-          }
-          selection.removeAllRanges();
-          selection.addRange(newRange);
-        } catch (e) {}
-      }
-    } else {
-      const newBlock = this.#document.createElement(tag);
-      newBlock.appendChild(range.extractContents());
-      range.insertNode(newBlock);
-    }
-
-    this.#updateValueFromDOM();
-    this.#saveHistory();
-    this.#isInternalDOMUpdate = false;
-    this.onSelectionChange();
+      return {
+        selectionShift: res.selectionShift,
+      };
+    });
   }
 
   toggleList(listType: 'ul' | 'ol') {
-    if (this.readonly() || this.viewMode() === 'code') return;
-    this.#restoreSelection();
+    this.runTransaction((doc, selection) => {
+      const res = toggleListInDoc(doc, selection, listType);
+      if (!res) return null;
 
-    const editor = this.editorRef()?.nativeElement;
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
+      // Update docClone in-place to match res.doc
+      doc.length = 0;
+      doc.push(...res.doc);
 
-    const range = selection.getRangeAt(0);
-    if (!editor?.contains(range.commonAncestorContainer)) return;
-
-    this.#saveHistory();
-    this.#isInternalDOMUpdate = true;
-
-    let listNode: HTMLElement | null = null;
-    let listTagName = '';
-    let node: Node | null = range.commonAncestorContainer;
-    while (node && node !== editor) {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        const el = node as HTMLElement;
-        const tag = el.tagName.toLowerCase();
-        if (tag === 'ul' || tag === 'ol') {
-          listNode = el;
-          listTagName = tag;
-          break;
-        }
-      }
-      node = node.parentNode;
-    }
-
-    if (listNode) {
-      if (listTagName === listType) {
-        const parent = listNode.parentNode;
-        if (parent) {
-          const items = Array.from(listNode.querySelectorAll('li'));
-          let lastP: HTMLElement | null = null;
-          items.forEach((item) => {
-            const p = this.#document.createElement('p');
-            p.innerHTML = item.innerHTML;
-            if (!p.innerHTML || p.innerHTML === '<br>') {
-              p.innerHTML = '<br>';
-            }
-            parent.insertBefore(p, listNode);
-            lastP = p;
-          });
-          parent.removeChild(listNode);
-
-          if (lastP) {
-            try {
-              const newRange = this.#document.createRange();
-              if ((lastP as HTMLElement).textContent?.trim() === '') {
-                newRange.setStart(lastP, 0);
-                newRange.collapse(true);
-              } else {
-                newRange.selectNodeContents(lastP);
-                newRange.collapse(false);
-              }
-              selection.removeAllRanges();
-              selection.addRange(newRange);
-            } catch (e) {}
-          }
-        }
-      } else {
-        const newList = this.#document.createElement(listType);
-        newList.innerHTML = listNode.innerHTML;
-        const parent = listNode.parentNode;
-        if (parent) {
-          parent.replaceChild(newList, listNode);
-
-          const firstItem = newList.querySelector('li');
-          if (firstItem) {
-            try {
-              const newRange = this.#document.createRange();
-              if (firstItem.textContent?.trim() === '') {
-                newRange.setStart(firstItem, 0);
-                newRange.collapse(true);
-              } else {
-                newRange.selectNodeContents(firstItem);
-                newRange.collapse(false);
-              }
-              selection.removeAllRanges();
-              selection.addRange(newRange);
-            } catch (e) {}
-          }
-        }
-      }
-    } else {
-      let blockNode: HTMLElement | null = null;
-      let node: Node | null = range.commonAncestorContainer;
-      while (node && node !== editor) {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          const el = node as HTMLElement;
-          if (el.parentElement === editor) {
-            blockNode = el;
-            break;
-          }
-        }
-        node = node.parentNode;
-      }
-
-      if (blockNode) {
-        const newList = this.#document.createElement(listType);
-        const item = this.#document.createElement('li');
-        item.innerHTML = blockNode.innerHTML;
-        if (!item.innerHTML || item.innerHTML === '<br>') {
-          item.innerHTML = '<br>';
-        }
-        newList.appendChild(item);
-
-        const parent = blockNode.parentNode;
-        if (parent) {
-          parent.replaceChild(newList, blockNode);
-
-          try {
-            const newRange = this.#document.createRange();
-            if (item.textContent?.trim() === '') {
-              newRange.setStart(item, 0);
-              newRange.collapse(true);
-            } else {
-              newRange.selectNodeContents(item);
-              newRange.collapse(false);
-            }
-            selection.removeAllRanges();
-            selection.addRange(newRange);
-          } catch (e) {}
-        }
-      }
-    }
-
-    this.#updateValueFromDOM();
-    this.#saveHistory();
-    this.#isInternalDOMUpdate = false;
-    this.onSelectionChange();
+      return {
+        selectionShift: res.selectionShift,
+      };
+    });
   }
 
   insertHorizontalRule() {
-    if (this.readonly() || this.viewMode() === 'code') return;
-    this.#restoreSelection();
+    this.runTransaction((doc, selection) => {
+      const { doc: splitDoc } = splitBlock(doc, selection.start);
+      const hrBlock: ShipEditorBlock = { type: 'hr' };
+      splitDoc.splice(selection.start.blockIndex + 1, 0, hrBlock);
 
-    const editor = this.editorRef()?.nativeElement;
-    if (!editor) return;
-
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    const range = selection.getRangeAt(0);
-    if (!editor.contains(range.commonAncestorContainer)) return;
-
-    this.#saveHistory();
-    this.#isInternalDOMUpdate = true;
-
-    const hr = this.#document.createElement('hr');
-    range.deleteContents();
-    range.insertNode(hr);
-
-    const p = this.#document.createElement('p');
-    p.innerHTML = '<br>';
-    if (hr.nextSibling) {
-      hr.parentNode?.insertBefore(p, hr.nextSibling);
-    } else {
-      hr.parentNode?.appendChild(p);
-    }
-
-    const newRange = this.#document.createRange();
-    newRange.setStart(p, 0);
-    newRange.collapse(true);
-    selection.removeAllRanges();
-    selection.addRange(newRange);
-
-    this.#updateValueFromDOM();
-    this.#saveHistory();
-    this.#isInternalDOMUpdate = false;
-    this.onSelectionChange();
+      return {
+        doc: splitDoc,
+        selectionShift: {
+          start: { blockIndex: selection.start.blockIndex + 2, listItemIndex: undefined },
+          end: { blockIndex: selection.start.blockIndex + 2, listItemIndex: undefined },
+        },
+      };
+    });
   }
 
   setAlign(direction: 'left' | 'center' | 'right') {
-    if (this.readonly() || this.viewMode() === 'code') return;
-    this.#restoreSelection();
-
-    const editor = this.editorRef()?.nativeElement;
-    if (!editor) return;
-
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    const range = selection.getRangeAt(0);
-    if (!editor.contains(range.commonAncestorContainer)) return;
-
-    this.#saveHistory();
-    this.#isInternalDOMUpdate = true;
-
-    let blockNode: HTMLElement | null = null;
-    let node: Node | null = range.commonAncestorContainer;
-    while (node && node !== editor) {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        const el = node as HTMLElement;
-        const tag = el.tagName.toLowerCase();
-        if (['p', 'h1', 'h2', 'h3', 'blockquote', 'pre', 'li'].includes(tag)) {
-          blockNode = el;
-          break;
+    this.runTransaction((doc, selection) => {
+      const block = doc[selection.start.blockIndex];
+      if (block) {
+        if (!block.attrs) block.attrs = {};
+        if (block.attrs.align === direction) {
+          delete block.attrs.align;
+        } else {
+          block.attrs.align = direction;
         }
       }
-      node = node.parentNode;
-    }
-
-    if (blockNode) {
-      blockNode.style.textAlign = direction;
-    }
-
-    this.#updateValueFromDOM();
-    this.#saveHistory();
-    this.#isInternalDOMUpdate = false;
-    this.onSelectionChange();
+    });
   }
 
   removeFormat() {
-    if (this.readonly() || this.viewMode() === 'code') return;
-    this.#restoreSelection();
-
-    const editor = this.editorRef()?.nativeElement;
-    if (!editor) return;
-
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
-
-    const range = selection.getRangeAt(0);
-    if (!editor.contains(range.commonAncestorContainer)) return;
-
-    this.#saveHistory();
-    this.#isInternalDOMUpdate = true;
-
-    const fragment = range.extractContents();
-    const stripTags = ['strong', 'em', 'u', 's', 'a', 'b', 'i', 'span'];
-    const container = this.#document.createElement('div');
-    container.appendChild(fragment);
-
-    stripTags.forEach((tag) => {
-      const els = Array.from(container.querySelectorAll(tag));
-      els.forEach((el) => {
-        const parent = el.parentNode;
-        if (parent) {
-          while (el.firstChild) {
-            parent.insertBefore(el.firstChild, el);
-          }
-          parent.removeChild(el);
-        }
-      });
+    this.runTransaction((doc, selection) => {
+      return clearDocRangeFormatting(doc, selection.start, selection.end);
     });
-
-    range.insertNode(container.firstChild || container);
-
-    this.#updateValueFromDOM();
-    this.#saveHistory();
-    this.#isInternalDOMUpdate = false;
-    this.onSelectionChange();
   }
 
   undo() {
@@ -1193,30 +1139,43 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     const editor = this.editorRef()?.nativeElement;
     if (!editor) return;
 
-    const html = editor.innerHTML;
-    if (this.#historyIndex >= 0 && this.#historyStack[this.#historyIndex].html === html) {
-      return;
-    }
+    const doc = this.documentState();
 
-    let caret: CaretState | null = null;
+    let selectionState: {
+      start: LogicalPosition;
+      end: LogicalPosition | null;
+      isCollapsed: boolean;
+    } | null = null;
+
     const selection = window.getSelection();
     if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       if (editor.contains(range.commonAncestorContainer)) {
-        caret = {
-          startPath: getNodePath(editor, range.startContainer),
-          startOffset: range.startOffset,
-          endPath: getNodePath(editor, range.endContainer),
-          endOffset: range.endOffset,
-        };
+        const start = mapDOMPositionToLogical(editor, range.startContainer, range.startOffset);
+        if (start) {
+          const isCollapsed = range.collapsed;
+          const end = isCollapsed ? null : mapDOMPositionToLogical(editor, range.endContainer, range.endOffset);
+          selectionState = { start, end, isCollapsed };
+        }
       }
+    }
+
+    if (this.#historyIndex >= 0 && this.#historyStack[this.#historyIndex].docVersion === this.#docVersion) {
+      if (selectionState) {
+        this.#historyStack[this.#historyIndex].selection = selectionState;
+      }
+      return;
     }
 
     if (this.#historyIndex < this.#historyStack.length - 1) {
       this.#historyStack = this.#historyStack.slice(0, this.#historyIndex + 1);
     }
 
-    this.#historyStack.push({ html, caret });
+    this.#historyStack.push({
+      doc: cloneDoc(doc),
+      docVersion: this.#docVersion,
+      selection: selectionState,
+    });
     if (this.#historyStack.length > this.#maxHistorySize) {
       this.#historyStack.shift();
     } else {
@@ -1226,31 +1185,52 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     this.#updateHistoryStates();
   }
 
-  #restoreHistoryState(state: { html: string; caret: CaretState | null }) {
+  #restoreHistoryState(state: {
+    doc: ShipEditorDocument;
+    selection: {
+      start: LogicalPosition;
+      end: LogicalPosition | null;
+      isCollapsed: boolean;
+    } | null;
+  }) {
     const editor = this.editorRef()?.nativeElement;
     if (!editor) return;
 
-    this.#isWriting = true;
-    editor.innerHTML = state.html;
-    this.#ensureImagesFocusable();
-    this.#updateValueFromDOM();
-    this.#isWriting = false;
+    this.#runWithoutFeedback(() => {
+      const docCopy = cloneDoc(state.doc);
+      this.#setDocumentState(docCopy);
+      this.#updateValueFromState();
+      this.#renderHTMLToDOM(jsonToHTML(docCopy));
+    });
 
-    if (state.caret) {
-      const startNode = getNodeByPath(editor, state.caret.startPath);
-      const endNode = getNodeByPath(editor, state.caret.endPath);
-      const selection = window.getSelection();
-      if (selection) {
-        try {
-          const range = this.#document.createRange();
-          range.setStart(startNode, state.caret.startOffset);
-          range.setEnd(endNode, state.caret.endOffset);
-          selection.removeAllRanges();
-          selection.addRange(range);
-        } catch (e) {
-          // Fallback
+    const sel = state.selection;
+    if (sel) {
+      setTimeout(() => {
+        const selection = window.getSelection();
+        if (selection) {
+          try {
+            const startDom = mapLogicalToDOMPosition(editor, sel.start, this.documentState());
+            if (startDom) {
+              const range = this.#document.createRange();
+              range.setStart(startDom.node, startDom.offset);
+              if (!sel.isCollapsed && sel.end) {
+                const endDom = mapLogicalToDOMPosition(editor, sel.end, this.documentState());
+                if (endDom) {
+                  range.setEnd(endDom.node, endDom.offset);
+                } else {
+                  range.collapse(true);
+                }
+              } else {
+                range.collapse(true);
+              }
+              selection.removeAllRanges();
+              selection.addRange(range);
+            }
+          } catch (e) {
+            // Fallback
+          }
         }
-      }
+      }, 0);
     }
     this.#updateHistoryStates();
   }
@@ -1304,7 +1284,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
         try {
           selection.removeAllRanges();
           selection.addRange(this.#savedRange);
-        } catch (e) {}
+        } catch { /* Selection restore failed — fallback ignored */ }
       }
     }
   }
@@ -1314,6 +1294,11 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     if (!this.#isBrowser) return;
     this.#updateHistoryStates();
     if (this.readonly() || this.viewMode() === 'code') return;
+
+    // During internal DOM updates (e.g. after formatting), the browser fires
+    // selectionchange because the old nodes are destroyed. Skip saving the range
+    // here — runTransaction will restore the correct selection asynchronously.
+    if (this.#isInternalDOMUpdate) return;
 
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) return;
@@ -1393,6 +1378,36 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
         activeNode = activeNode.parentElement;
       }
     }
+
+    // Extension-driven activeClassName — add/remove on the active block's DOM element
+    const topLevelBlock = activeNode;
+    if (this.#activeBlockEl && this.#activeBlockEl !== topLevelBlock) {
+      // Remove previous active class
+      const prevIdx = this.#activeBlockEl.getAttribute('data-block-index');
+      if (prevIdx !== null) {
+        const prevBlock = this.documentState()[parseInt(prevIdx, 10)];
+        if (prevBlock) {
+          const prevExt = ShipEditorRegistry.getBlock(prevBlock.type);
+          if (prevExt?.activeClassName) {
+            this.#activeBlockEl.classList.remove(prevExt.activeClassName);
+          }
+        }
+      }
+      this.#activeBlockEl = null;
+    }
+    if (topLevelBlock && topLevelBlock !== editorEl) {
+      const blockIdx = topLevelBlock.getAttribute('data-block-index');
+      if (blockIdx !== null) {
+        const block = this.documentState()[parseInt(blockIdx, 10)];
+        if (block) {
+          const ext = ShipEditorRegistry.getBlock(block.type);
+          if (ext?.activeClassName) {
+            topLevelBlock.classList.add(ext.activeClassName);
+            this.#activeBlockEl = topLevelBlock;
+          }
+        }
+      }
+    }
   }
 
   // --- MODALS (LINK & IMAGE) ---
@@ -1439,6 +1454,52 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
 
   // --- IMAGE FILE HANDLING & LAYOUT OVERLAYS ---
 
+  #selectImage(img: HTMLImageElement) {
+    this.#selectedImage.set(img);
+    const { mode, size } = parseImageClassNames(img.className || '');
+    this.imgMode.set(mode);
+    this.imgSize.set(size);
+  }
+
+  #updateImageBlock(updater: (block: ShipEditorBlock) => void) {
+    const img = this.#selectedImage();
+    if (!img) return;
+
+    const blockIndexAttr = img.getAttribute('data-block-index');
+    if (blockIndexAttr === null) return;
+    const blockIndex = parseInt(blockIndexAttr, 10);
+
+    const doc = this.documentState();
+    const newDoc = cloneDoc(doc);
+    const block = newDoc[blockIndex];
+    const editor = this.editorRef()?.nativeElement;
+
+    if (block && block.type === 'image') {
+      updater(block);
+
+      this.#saveHistory();
+      this.#isInternalDOMUpdate = true;
+      this.#setDocumentState(newDoc);
+      this.#updateValueFromState();
+
+      if (editor) {
+        this.#renderHTMLToDOM(jsonToHTML(newDoc));
+      }
+
+      setTimeout(() => {
+        const newImg = this.editorRef()?.nativeElement.querySelector(
+          `img[data-block-index="${blockIndex}"]`
+        ) as HTMLImageElement;
+        if (newImg) {
+          newImg.focus();
+          this.#selectedImage.set(newImg);
+        }
+        this.#saveHistory();
+        this.#isInternalDOMUpdate = false;
+      }, 50);
+    }
+  }
+
   selectedImage = this.#selectedImage.asReadonly();
 
   @HostListener('focusin', ['$event'])
@@ -1446,28 +1507,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     if (!this.#isBrowser) return;
     const target = event.target as HTMLElement;
     if (target && target.tagName === 'IMG') {
-      this.#selectedImage.set(target as HTMLImageElement);
-      const className = target.className || '';
-      if (className.includes('sh-editor-img-theater')) {
-        this.imgMode.set('theater');
-      } else if (className.includes('sh-editor-img-float')) {
-        this.imgMode.set('float');
-      } else if (className.includes('sh-editor-img-custom') || className.includes('sh-editor-img-auto')) {
-        this.imgMode.set('custom');
-      } else {
-        this.imgMode.set('content');
-      }
-
-      if (className.includes('sh-editor-img-size-small')) {
-        this.imgSize.set('small');
-      } else if (className.includes('sh-editor-img-size-medium')) {
-        this.imgSize.set('medium');
-      } else if (className.includes('sh-editor-img-size-large')) {
-        this.imgSize.set('large');
-      } else {
-        this.imgSize.set('auto');
-      }
-      this.updateImgToolbarPosition();
+      this.#selectImage(target as HTMLImageElement);
     }
   }
 
@@ -1490,27 +1530,7 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
         selection.addRange(range);
       }
       this.#selectedImage.set(target as HTMLImageElement);
-      const className = target.className || '';
-      if (className.includes('sh-editor-img-theater')) {
-        this.imgMode.set('theater');
-      } else if (className.includes('sh-editor-img-float')) {
-        this.imgMode.set('float');
-      } else if (className.includes('sh-editor-img-custom') || className.includes('sh-editor-img-auto')) {
-        this.imgMode.set('custom');
-      } else {
-        this.imgMode.set('content');
-      }
-
-      if (className.includes('sh-editor-img-size-small')) {
-        this.imgSize.set('small');
-      } else if (className.includes('sh-editor-img-size-medium')) {
-        this.imgSize.set('medium');
-      } else if (className.includes('sh-editor-img-size-large')) {
-        this.imgSize.set('large');
-      } else {
-        this.imgSize.set('auto');
-      }
-      this.updateImgToolbarPosition();
+      this.#selectImage(target as HTMLImageElement);
     } else {
       // If clicking inside image toolbar itself, don't dismiss
       if (target && target.closest('.sh-editor-img-toolbar')) {
@@ -1525,137 +1545,360 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     if (!this.#isBrowser) return;
     if (this.readonly()) return;
 
-    if (this.viewMode() === 'design') {
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const anchorNode = selection.anchorNode;
-        if (anchorNode) {
-          const editorEl = this.editorRef()?.nativeElement;
-          if (editorEl) {
-            let currentBlock: HTMLElement | null = null;
-            if (anchorNode.nodeType === Node.TEXT_NODE) {
-              currentBlock = anchorNode.parentElement;
-            } else {
-              currentBlock = anchorNode as HTMLElement;
-            }
-
-            // Traverse up to find blockquote, pre, or li
-            let blockquoteEl: HTMLElement | null = null;
-            let preEl: HTMLElement | null = null;
-            let liEl: HTMLElement | null = null;
-
-            let node: HTMLElement | null = currentBlock;
-            while (node && node !== editorEl) {
-              const tagName = node.tagName.toLowerCase();
-              if (tagName === 'blockquote') {
-                blockquoteEl = node;
-              } else if (tagName === 'pre') {
-                preEl = node;
-              } else if (tagName === 'li') {
-                liEl = node;
-              }
-              node = node.parentElement;
-            }
-
-            // 1. Exit block with Ctrl+Enter or Cmd+Enter
-            if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
-              const targetBlock = preEl || blockquoteEl || liEl;
-              if (targetBlock) {
-                event.preventDefault();
-                const p = this.#document.createElement('p');
-                p.innerHTML = '<br>';
-
-                // If we are in a list item, we should insert the paragraph after the parent list (ul/ol)
-                let insertAfterNode: HTMLElement = targetBlock;
-                if (liEl) {
-                  const listParent = liEl.closest('ul, ol') as HTMLElement;
-                  if (listParent && editorEl.contains(listParent)) {
-                    insertAfterNode = listParent;
-                  }
-                }
-
-                insertAfterNode.parentNode?.insertBefore(p, insertAfterNode.nextSibling);
-
-                // Focus the new paragraph
-                const newRange = this.#document.createRange();
-                newRange.setStart(p, 0);
-                newRange.collapse(true);
-                selection.removeAllRanges();
-                selection.addRange(newRange);
-                p.focus();
-
-                this.#updateValueFromDOM();
-                return;
-              }
-            }
-
-            // 2. Double enter on empty blockquote or list item
-            if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
-              const targetBlock = blockquoteEl || liEl;
-              if (targetBlock) {
-                const text = targetBlock.textContent?.trim() || '';
-                if (text === '') {
-                  event.preventDefault();
-
-                  const p = this.#document.createElement('p');
-                  p.innerHTML = '<br>';
-
-                  if (liEl) {
-                    const listParent = liEl.closest('ul, ol') as HTMLElement;
-                    if (listParent) {
-                      if (listParent.children.length <= 1) {
-                        listParent.parentNode?.replaceChild(p, listParent);
-                      } else {
-                        listParent.parentNode?.insertBefore(p, listParent.nextSibling);
-                        liEl.remove();
-                      }
-                    }
+    // When an image is selected, only handle image-specific hotkeys — block all text formatting
+    if (this.#selectedImage()) {
+      if (this.#handleImageKeyDown(event)) return;
+      // Escape deselects the image
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.#selectedImage.set(null);
+        return;
+      }
+      // Arrow keys navigate to the adjacent block
+      const goBack = event.key === 'ArrowUp' || event.key === 'ArrowLeft';
+      const goForward = event.key === 'ArrowDown' || event.key === 'ArrowRight';
+      if (goBack || goForward) {
+        event.preventDefault();
+        const img = this.#selectedImage()!;
+        const blockIndexAttr = img.getAttribute('data-block-index');
+        if (blockIndexAttr !== null) {
+          const blockIndex = parseInt(blockIndexAttr, 10);
+          const doc = this.documentState();
+          const targetIndex = goBack
+            ? Math.max(0, blockIndex - 1)
+            : Math.min(doc.length - 1, blockIndex + 1);
+          const targetBlock = doc[targetIndex];
+          // Only move if the target block is not the image itself
+          if (targetIndex !== blockIndex && targetBlock && targetBlock.type !== 'image') {
+            this.#selectedImage.set(null);
+            // Place caret in the target block
+            const editorEl = this.editorRef()?.nativeElement;
+            if (editorEl) {
+              const blockEl = editorEl.children[targetIndex] as HTMLElement;
+              if (blockEl) {
+                blockEl.focus();
+                const sel = window.getSelection();
+                if (sel) {
+                  const range = this.#document.createRange();
+                  if (goBack) {
+                    // Place caret at end of previous block
+                    range.selectNodeContents(blockEl);
+                    range.collapse(false);
                   } else {
-                    targetBlock.parentNode?.replaceChild(p, targetBlock);
+                    // Place caret at start of next block
+                    range.selectNodeContents(blockEl);
+                    range.collapse(true);
                   }
-
-                  // Focus new paragraph
-                  const newRange = this.#document.createRange();
-                  newRange.setStart(p, 0);
-                  newRange.collapse(true);
-                  selection.removeAllRanges();
-                  selection.addRange(newRange);
-                  p.focus();
-
-                  this.#updateValueFromDOM();
-                  return;
+                  sel.removeAllRanges();
+                  sel.addRange(range);
                 }
-              }
-            }
-
-            // 3. Enter inside pre (code block) to insert newline instead of splitting tag
-            if (event.key === 'Enter' && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
-              if (preEl) {
-                event.preventDefault();
-                // Insert a newline character at current caret position
-                const selection = window.getSelection();
-                if (selection && selection.rangeCount > 0) {
-                  const range = selection.getRangeAt(0);
-                  const textNode = this.#document.createTextNode('\n');
-                  range.insertNode(textNode);
-
-                  // Move caret after the new line character
-                  range.setStartAfter(textNode);
-                  range.setEndAfter(textNode);
-                  selection.removeAllRanges();
-                  selection.addRange(range);
-
-                  this.#updateValueFromDOM();
-                }
-                return;
               }
             }
           }
         }
+        return;
+      }
+      // Block all other modifier shortcuts (bold, italic, etc.) so they don't apply to nothing
+      if (event.metaKey || event.ctrlKey) {
+        return;
+      }
+      return;
+    }
+
+    // Registry-driven mark keybindings — custom marks with `keybinding` get shortcuts automatically
+    for (const markExt of ShipEditorRegistry.getAllMarks()) {
+      if (markExt.keybinding && this.#keybindings.matches(event, markExt.keybinding)) {
+        event.preventDefault();
+        if (markExt.onKeyAction) {
+          markExt.onKeyAction(this);
+        } else {
+          this.applyInlineStyle(markExt.tagName);
+        }
+        return;
+      }
+    }
+    // Registry-driven block keybindings — custom blocks with `keybinding` get shortcuts automatically
+    for (const blockExt of ShipEditorRegistry.getAllBlocks()) {
+      if (blockExt.keybinding && this.#keybindings.matches(event, blockExt.keybinding)) {
+        event.preventDefault();
+        if (blockExt.onKeyAction) {
+          blockExt.onKeyAction(this);
+        } else {
+          this.setBlockType(blockExt.type);
+        }
+        return;
+      }
+    }
+    // Non-mark keybindings (link modal, undo, redo)
+    if (this.#keybindings.matches(event, 'editor.link')) {
+      event.preventDefault();
+      this.openLinkModal();
+      return;
+    }
+    if (this.#keybindings.matches(event, 'editor.undo')) {
+      event.preventDefault();
+      this.formatText('undo');
+      return;
+    }
+    if (this.#keybindings.matches(event, 'editor.redo')) {
+      event.preventDefault();
+      this.formatText('redo');
+      return;
+    }
+
+    // Heading shortcuts (Ctrl+Alt+0/1/2/3)
+    if (this.#keybindings.matches(event, 'editor.heading1')) {
+      event.preventDefault();
+      this.setBlockType('h1');
+      return;
+    }
+    if (this.#keybindings.matches(event, 'editor.heading2')) {
+      event.preventDefault();
+      this.setBlockType('h2');
+      return;
+    }
+    if (this.#keybindings.matches(event, 'editor.heading3')) {
+      event.preventDefault();
+      this.setBlockType('h3');
+      return;
+    }
+    if (this.#keybindings.matches(event, 'editor.paragraph')) {
+      event.preventDefault();
+      this.setBlockType('p');
+      return;
+    }
+
+    // Text alignment (Ctrl+Shift+L/E/R)
+    if (this.#keybindings.matches(event, 'editor.alignLeft')) {
+      event.preventDefault();
+      this.setAlign('left');
+      return;
+    }
+    if (this.#keybindings.matches(event, 'editor.alignCenter')) {
+      event.preventDefault();
+      this.setAlign('center');
+      return;
+    }
+    if (this.#keybindings.matches(event, 'editor.alignRight')) {
+      event.preventDefault();
+      this.setAlign('right');
+      return;
+    }
+
+    // Remove formatting (Ctrl+\)
+    if (this.#keybindings.matches(event, 'editor.removeFormat')) {
+      event.preventDefault();
+      this.removeFormat();
+      return;
+    }
+
+    // Horizontal rule (Ctrl+Shift+-)
+    if (this.#keybindings.matches(event, 'editor.horizontalRule')) {
+      event.preventDefault();
+      this.insertHorizontalRule();
+      return;
+    }
+
+    if (this.viewMode() === 'design') {
+      if (this.#handleBlockKeyDown(event)) return;
+    }
+  }
+
+  #handleBlockKeyDown(event: KeyboardEvent): boolean {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return false;
+
+    const range = selection.getRangeAt(0);
+    const anchorNode = selection.anchorNode;
+    if (!anchorNode) return false;
+
+    const editorEl = this.editorRef()?.nativeElement;
+    if (!editorEl) return false;
+
+    let currentBlock: HTMLElement | null = null;
+    if (anchorNode.nodeType === Node.TEXT_NODE) {
+      currentBlock = anchorNode.parentElement;
+    } else {
+      currentBlock = anchorNode as HTMLElement;
+    }
+
+    // Traverse up to find blockquote, pre, or li
+    let blockquoteEl: HTMLElement | null = null;
+    let preEl: HTMLElement | null = null;
+    let liEl: HTMLElement | null = null;
+
+    let node: HTMLElement | null = currentBlock;
+    while (node && node !== editorEl) {
+      const tagName = node.tagName.toLowerCase();
+      if (tagName === 'blockquote') {
+        blockquoteEl = node;
+      } else if (tagName === 'pre') {
+        preEl = node;
+      } else if (tagName === 'li') {
+        liEl = node;
+      }
+      node = node.parentElement;
+    }
+
+    const position = mapDOMPositionToLogical(editorEl, range.startContainer, range.startOffset);
+    if (!position) return false;
+
+    // Delegate to extension onBlockKeydown before generic block-level handling
+    const doc = this.documentState();
+    const currentBlockData = doc[position.blockIndex];
+    if (currentBlockData) {
+      const ext = ShipEditorRegistry.getBlock(currentBlockData.type);
+      if (ext?.onBlockKeydown) {
+        const blockEl = editorEl.children[position.blockIndex] as HTMLElement;
+        const ctx: BlockKeydownContext = { position, blockEl, doc };
+        const result = ext.onBlockKeydown(event, ctx);
+        if (result !== false) {
+          event.preventDefault();
+          this.#updateStateAndCaret(result.doc, result.position);
+          return true;
+        }
       }
     }
 
+    // 1. Exit block with Ctrl+Enter or Cmd+Enter
+    if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+      if (preEl || blockquoteEl || liEl) {
+        event.preventDefault();
+
+        const doc = this.documentState();
+        const newDoc = cloneDoc(doc);
+
+        const emptyP: ShipEditorBlock = { type: 'paragraph', content: [] };
+        newDoc.splice(position.blockIndex + 1, 0, emptyP);
+
+        const newPos: LogicalPosition = {
+          blockIndex: position.blockIndex + 1,
+          inlineIndex: 0,
+          offset: 0,
+        };
+
+        this.#updateStateAndCaret(newDoc, newPos);
+        return true;
+      }
+    }
+
+    // 2. Double enter on empty blockquote or list item
+    if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
+      if (blockquoteEl || liEl) {
+        const doc = this.documentState();
+        const currentBlock = doc[position.blockIndex];
+
+        let isEmpty = false;
+        if (liEl && typeof position.listItemIndex === 'number' && currentBlock) {
+          const items = currentBlock.content as ShipEditorBlock[];
+          const item = items[position.listItemIndex];
+          isEmpty = getJSONText([item]).trim() === '';
+        } else if (blockquoteEl && currentBlock) {
+          isEmpty = getJSONText([currentBlock]).trim() === '';
+        }
+
+        if (isEmpty) {
+          event.preventDefault();
+          const newDoc = cloneDoc(doc);
+          let newPos: LogicalPosition;
+
+          if (liEl && typeof position.listItemIndex === 'number') {
+            const listBlock = newDoc[position.blockIndex];
+            const items = listBlock.content as ShipEditorBlock[];
+            if (items.length <= 1) {
+              newDoc.splice(position.blockIndex, 1, { type: 'paragraph', content: [] });
+              newPos = {
+                blockIndex: position.blockIndex,
+                inlineIndex: 0,
+                offset: 0,
+              };
+            } else {
+              items.splice(position.listItemIndex, 1);
+              newDoc.splice(position.blockIndex + 1, 0, { type: 'paragraph', content: [] });
+              newPos = {
+                blockIndex: position.blockIndex + 1,
+                inlineIndex: 0,
+                offset: 0,
+              };
+            }
+          } else {
+            newDoc.splice(position.blockIndex, 1, { type: 'paragraph', content: [] });
+            newPos = {
+              blockIndex: position.blockIndex,
+              inlineIndex: 0,
+              offset: 0,
+            };
+          }
+
+          this.#updateStateAndCaret(newDoc, newPos);
+          return true;
+        }
+      }
+    }
+
+    // 3. Arrow into adjacent image block
+    const isForward = event.key === 'ArrowDown' || event.key === 'ArrowRight';
+    const isBackward = event.key === 'ArrowUp' || event.key === 'ArrowLeft';
+
+    if (isForward || isBackward) {
+      const doc = this.documentState();
+      const blockIndex = position.blockIndex;
+      const currentBlockData = doc[blockIndex];
+
+      // Check if caret is at the boundary of the current block
+      let atBoundary = false;
+
+      if (isForward) {
+        // At end of block: check if offset is at the end of the last inline node
+        const blockText = currentBlockData ? getJSONText([currentBlockData]) : '';
+        const totalLength = blockText.length;
+        // For right/down, we need to be at the very end of the block content
+        const topLevelBlock = editorEl.children[blockIndex] as HTMLElement;
+        if (topLevelBlock) {
+          const textContent = topLevelBlock.textContent || '';
+          // Caret is at end if: at the last text position in the DOM block
+          if (range.collapsed) {
+            const rangeClone = range.cloneRange();
+            rangeClone.selectNodeContents(topLevelBlock);
+            rangeClone.setStart(range.endContainer, range.endOffset);
+            atBoundary = rangeClone.toString().length === 0;
+          }
+        }
+      } else {
+        // At start of block: offset is 0 at the very beginning
+        if (range.collapsed) {
+          const topLevelBlock = editorEl.children[blockIndex] as HTMLElement;
+          if (topLevelBlock) {
+            const rangeClone = range.cloneRange();
+            rangeClone.selectNodeContents(topLevelBlock);
+            rangeClone.setEnd(range.startContainer, range.startOffset);
+            atBoundary = rangeClone.toString().length === 0;
+          }
+        }
+      }
+
+      if (atBoundary) {
+        const targetIndex = isForward ? blockIndex + 1 : blockIndex - 1;
+        const targetBlock = doc[targetIndex];
+
+        if (targetBlock && targetBlock.type === 'image') {
+          event.preventDefault();
+          const imgEl = editorEl.querySelector(
+            `img[data-block-index="${targetIndex}"]`
+          ) as HTMLImageElement;
+          if (imgEl) {
+            imgEl.focus();
+            this.#selectImage(imgEl);
+          }
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  #handleImageKeyDown(event: KeyboardEvent): boolean {
     const img = this.#selectedImage();
     if (img && (event.key === 'Backspace' || event.key === 'Delete')) {
       const activeEl = this.#document.activeElement;
@@ -1667,8 +1910,10 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
       ) {
         event.preventDefault();
         this.deleteImage();
+        return true;
       }
     }
+    return false;
   }
 
   @HostListener('keyup', ['$event'])
@@ -1735,6 +1980,8 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
             selection.removeAllRanges();
             selection.addRange(range);
             range.deleteContents();
+            // Sync the AST from the DOM so the slash text is gone from the document state
+            this.#updateValueFromDOM();
           }
         }
       }
@@ -1910,106 +2157,49 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
     });
   }
 
-  #ensureImagesFocusable() {
-    const editor = this.editorRef()?.nativeElement;
-    if (!editor) return;
-    const imgs = editor.querySelectorAll('img');
-    Array.from(imgs).forEach((img) => {
-      if (!img.hasAttribute('tabindex')) {
-        img.setAttribute('tabindex', '0');
+  setImageMode(mode: 'content' | 'theater' | 'float' | 'custom') {
+    this.#updateImageBlock((block) => {
+      if (!block.attrs) block.attrs = {};
+      block.attrs.mode = mode;
+      if (mode === 'content' || mode === 'theater') {
+        delete block.attrs.size;
+        this.imgSize.set('auto');
       }
+      this.imgMode.set(mode);
     });
   }
 
-  @HostListener('scroll', ['$event'])
-  onComponentScroll(event: Event) {
-    if (this.#selectedImage()) {
-      this.updateImgToolbarPosition();
-    }
-  }
-
-  @HostListener('window:resize')
-  onWindowResize() {
-    if (this.#selectedImage()) {
-      this.updateImgToolbarPosition();
-    }
-  }
-
-  updateImgToolbarPosition() {
-    const img = this.#selectedImage();
-    const editorEl = this.editorRef()?.nativeElement;
-    if (!img || !editorEl) return;
-
-    const imgRect = img.getBoundingClientRect();
-    const editorRect = editorEl.getBoundingClientRect();
-
-    // Position toolbar just above the top-left edge of the image
-    const top = imgRect.top - editorRect.top - 55 + editorEl.scrollTop;
-    const left = imgRect.left - editorRect.left;
-
-    this.imgToolbarTop.set(top);
-    this.imgToolbarLeft.set(left);
-  }
-
-  setImageMode(mode: 'content' | 'theater' | 'float' | 'custom') {
-    const img = this.#selectedImage();
-    if (!img) return;
-
-    img.classList.remove(
-      'sh-editor-img-content',
-      'sh-editor-img-theater',
-      'sh-editor-img-float',
-      'sh-editor-img-custom',
-      'sh-editor-img-auto'
-    );
-
-    img.classList.add(`sh-editor-img-${mode}`);
-    this.imgMode.set(mode);
-
-    // If switching to content or theater (which do not support sizes), strip size classes
-    if (mode === 'content' || mode === 'theater') {
-      img.classList.remove(
-        'sh-editor-img-size-auto',
-        'sh-editor-img-size-small',
-        'sh-editor-img-size-medium',
-        'sh-editor-img-size-large'
-      );
-      this.imgSize.set('auto');
-    }
-
-    // Reposition overlay after CSS layout transition
-    setTimeout(() => this.updateImgToolbarPosition(), 50);
-
-    this.#updateValueFromDOM();
-  }
-
   setImageSize(size: 'auto' | 'small' | 'medium' | 'large') {
-    const img = this.#selectedImage();
-    if (!img) return;
-
-    img.classList.remove(
-      'sh-editor-img-size-auto',
-      'sh-editor-img-size-small',
-      'sh-editor-img-size-medium',
-      'sh-editor-img-size-large'
-    );
-
-    img.classList.add(`sh-editor-img-size-${size}`);
-    this.imgSize.set(size);
-
-    // Reposition overlay after CSS layout transition
-    setTimeout(() => this.updateImgToolbarPosition(), 50);
-
-    this.#updateValueFromDOM();
+    this.#updateImageBlock((block) => {
+      if (!block.attrs) block.attrs = {};
+      block.attrs.size = size;
+      this.imgSize.set(size);
+    });
   }
 
   deleteImage() {
     const img = this.#selectedImage();
-    if (img) {
-      img.remove();
-      this.#selectedImage.set(null);
-      this.#updateValueFromDOM();
-    }
+    if (!img) return;
+
+    const blockIndexAttr = img.getAttribute('data-block-index');
+    if (blockIndexAttr === null) return;
+    const blockIndex = parseInt(blockIndexAttr, 10);
+
+    const doc = this.documentState();
+    const newDoc = cloneDoc(doc);
+    newDoc.splice(blockIndex, 1);
+
+    this.#saveHistory();
+    this.#isInternalDOMUpdate = true;
+    this.#setDocumentState(newDoc);
+    this.#updateValueFromState();
+    this.#selectedImage.set(null);
+
+    setTimeout(() => {
+      this.#saveHistory();
+      this.#isInternalDOMUpdate = false;
+      this.onSelectionChange();
+    }, 0);
   }
 
   onFileSelected(event: Event) {
@@ -2066,131 +2256,169 @@ export class ShipEditor implements ControlValueAccessor, OnInit, OnDestroy, Afte
   insertImage(url: string) {
     if (!url) return;
 
-    const editor = this.editorRef()?.nativeElement;
-    if (!editor) return;
+    this.runTransaction((doc, selection) => {
+      const position = selection.start;
+      const currentBlock = doc[position.blockIndex];
 
-    // Restore selection range
-    const selection = window.getSelection();
-    if (selection && this.#savedRange) {
-      selection.removeAllRanges();
-      selection.addRange(this.#savedRange);
-    }
+      const imgBlock: ShipEditorBlock = {
+        type: 'image',
+        attrs: {
+          src: url,
+          alt: 'Image',
+          mode: 'content',
+          size: 'auto',
+        },
+      };
 
-    editor.focus();
+      let imgBlockIndex: number;
 
-    // Insert image markup with default content layout class
-    const imgHtml = `<img src="${url}" class="sh-editor-img-content" alt="Image">`;
-    const range = selection?.getRangeAt(0);
-    if (range) {
-      this.#saveHistory();
-      this.#isInternalDOMUpdate = true;
+      if (currentBlock && currentBlock.type === 'paragraph' && getJSONText([currentBlock]).trim() === '') {
+        // Replace the empty paragraph with the image
+        doc.splice(position.blockIndex, 1, imgBlock);
+        imgBlockIndex = position.blockIndex;
+      } else {
+        const { doc: splitDoc } = splitBlock(doc, position);
+        splitDoc.splice(position.blockIndex + 1, 0, imgBlock);
 
-      range.deleteContents();
-      const el = this.#document.createElement('div');
-      el.innerHTML = imgHtml;
-      const child = el.firstChild;
-      if (child) {
-        range.insertNode(child);
-
-        const newRange = this.#document.createRange();
-        newRange.setStartAfter(child);
-        newRange.collapse(true);
-        selection?.removeAllRanges();
-        selection?.addRange(newRange);
+        doc.length = 0;
+        doc.push(...splitDoc);
+        imgBlockIndex = position.blockIndex + 1;
       }
 
-      this.#updateValueFromDOM();
-      this.#saveHistory();
-      this.#isInternalDOMUpdate = false;
-      this.onSelectionChange();
-    }
+      return {
+        selectionShift: {
+          start: { blockIndex: imgBlockIndex, listItemIndex: undefined },
+          end: { blockIndex: imgBlockIndex, listItemIndex: undefined },
+        },
+      };
+    });
+
+    // After the DOM is rendered, focus and select the inserted image
+    setTimeout(() => {
+      const editor = this.editorRef()?.nativeElement;
+      if (!editor) return;
+      const imgs = editor.querySelectorAll('img') as NodeListOf<HTMLImageElement>;
+      const lastImg = imgs[imgs.length - 1];
+      if (lastImg) {
+        lastImg.focus();
+        this.#selectImage(lastImg);
+      }
+    }, 50);
   }
 
   // --- PUBLIC API METHODS ---
 
   getHTML(): string {
+    if (this.viewMode() === 'code') {
+      const textarea = this.codeEditorRef()?.nativeElement;
+      const val = textarea ? textarea.value : this.rawCodeValue();
+      if (this.format() === 'markdown') {
+        return markdownToHTML(val);
+      } else if (this.format() === 'json') {
+        try {
+          return jsonToHTML(JSON.parse(val));
+        } catch (e) {
+          return '';
+        }
+      }
+      return this.#stripCompiledMarkup(val);
+    }
     const editor = this.editorRef()?.nativeElement;
     if (editor) {
-      return editor.innerHTML;
+      return this.#stripCompiledMarkup(editor.innerHTML);
     }
-    // Fallback if not rendered
-    const val = this.value();
-    if (typeof val === 'string') {
-      return this.format() === 'markdown' ? markdownToHTML(val) : val;
-    }
-    if (Array.isArray(val)) {
-      return jsonToHTML(val);
-    }
-    return '';
+    return jsonToHTML(this.documentState());
   }
 
   getMarkdown(): string {
+    if (this.viewMode() === 'code') {
+      const textarea = this.codeEditorRef()?.nativeElement;
+      const val = textarea ? textarea.value : this.rawCodeValue();
+      if (this.format() === 'markdown') {
+        return val;
+      }
+      const html = this.getHTML();
+      return htmlToMarkdown(html, this.#document);
+    }
     const html = this.getHTML();
     return htmlToMarkdown(html, this.#document);
   }
 
   getJSON(): ShipEditorDocument {
+    if (this.viewMode() === 'code') {
+      const textarea = this.codeEditorRef()?.nativeElement;
+      const val = textarea ? textarea.value : this.rawCodeValue();
+      if (this.format() === 'json') {
+        try {
+          return JSON.parse(val);
+        } catch (e) {
+          return [];
+        }
+      }
+      const html = this.getHTML();
+      return htmlToJSON(html, this.#document);
+    }
     const html = this.getHTML();
     return htmlToJSON(html, this.#document);
   }
 
   setHTML(html: string) {
-    this.#isWriting = true;
-    const currentFormat = this.format();
-    if (currentFormat === 'html') {
-      this.value.set(html);
-      this.onChange(html);
-    } else if (currentFormat === 'markdown') {
-      const md = htmlToMarkdown(html, this.#document);
-      this.value.set(md);
-      this.onChange(md);
-    } else if (currentFormat === 'json') {
-      const json = htmlToJSON(html, this.#document);
-      this.value.set(json);
-      this.onChange(json);
-    }
-    this.#syncModelToDOM(this.value());
-    this.#isWriting = false;
+    this.#runWithoutFeedback(() => {
+      const currentFormat = this.format();
+      if (currentFormat === 'html') {
+        this.value.set(html);
+        this.onChange(html);
+      } else if (currentFormat === 'markdown') {
+        const md = htmlToMarkdown(html, this.#document);
+        this.value.set(md);
+        this.onChange(md);
+      } else if (currentFormat === 'json') {
+        const json = htmlToJSON(html, this.#document);
+        this.value.set(json);
+        this.onChange(json);
+      }
+      this.#syncModelToDOM(this.value());
+    });
   }
 
   setMarkdown(md: string) {
-    this.#isWriting = true;
-    const currentFormat = this.format();
-    if (currentFormat === 'markdown') {
-      this.value.set(md);
-      this.onChange(md);
-    } else if (currentFormat === 'html') {
-      const html = markdownToHTML(md);
-      this.value.set(html);
-      this.onChange(html);
-    } else if (currentFormat === 'json') {
-      const html = markdownToHTML(md);
-      const json = htmlToJSON(html, this.#document);
-      this.value.set(json);
-      this.onChange(json);
-    }
-    this.#syncModelToDOM(this.value());
-    this.#isWriting = false;
+    this.#runWithoutFeedback(() => {
+      const currentFormat = this.format();
+      if (currentFormat === 'markdown') {
+        this.value.set(md);
+        this.onChange(md);
+      } else if (currentFormat === 'html') {
+        const html = markdownToHTML(md);
+        this.value.set(html);
+        this.onChange(html);
+      } else if (currentFormat === 'json') {
+        const html = markdownToHTML(md);
+        const json = htmlToJSON(html, this.#document);
+        this.value.set(json);
+        this.onChange(json);
+      }
+      this.#syncModelToDOM(this.value());
+    });
   }
 
   setJSON(json: ShipEditorDocument) {
-    this.#isWriting = true;
-    const currentFormat = this.format();
-    if (currentFormat === 'json') {
-      this.value.set(json);
-      this.onChange(json);
-    } else if (currentFormat === 'html') {
-      const html = jsonToHTML(json);
-      this.value.set(html);
-      this.onChange(html);
-    } else if (currentFormat === 'markdown') {
-      const html = jsonToHTML(json);
-      const md = htmlToMarkdown(html, this.#document);
-      this.value.set(md);
-      this.onChange(md);
-    }
-    this.#syncModelToDOM(this.value());
-    this.#isWriting = false;
+    this.#runWithoutFeedback(() => {
+      const currentFormat = this.format();
+      if (currentFormat === 'json') {
+        this.value.set(json);
+        this.onChange(json);
+      } else if (currentFormat === 'html') {
+        const html = jsonToHTML(json);
+        this.value.set(html);
+        this.onChange(html);
+      } else if (currentFormat === 'markdown') {
+        const html = jsonToHTML(json);
+        const md = htmlToMarkdown(html, this.#document);
+        this.value.set(md);
+        this.onChange(md);
+      }
+      this.#syncModelToDOM(this.value());
+    });
   }
 
   clear() {
