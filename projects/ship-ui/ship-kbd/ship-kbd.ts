@@ -29,6 +29,7 @@ export class ShipKbd {
   shift = input<boolean, string | boolean>(false, { transform: booleanAttribute });
   alt = input<boolean, string | boolean>(false, { transform: booleanAttribute });
   ctrl = input<boolean, string | boolean>(false, { transform: booleanAttribute });
+  ctrlOrCmd = input<boolean, string | boolean>(false, { transform: booleanAttribute });
   enter = input<boolean, string | boolean>(false, { transform: booleanAttribute });
   escape = input<boolean, string | boolean>(false, { transform: booleanAttribute });
   backspace = input<boolean, string | boolean>(false, { transform: booleanAttribute });
@@ -51,6 +52,7 @@ export class ShipKbd {
     const keys: string[] = [];
     const mac = this.isMac();
 
+    if (this.ctrlOrCmd()) keys.push(mac ? '⌘' : 'Ctrl');
     if (this.meta()) keys.push(mac ? '⌘' : 'Win');
     if (this.ctrl()) keys.push(mac ? '⌃' : 'Ctrl');
     if (this.alt()) keys.push(mac ? '⌥' : 'Alt');
