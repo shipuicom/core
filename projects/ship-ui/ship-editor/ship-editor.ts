@@ -1,5 +1,6 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
+  afterNextRender,
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
@@ -9,6 +10,7 @@ import {
   forwardRef,
   HostListener,
   inject,
+  Injector,
   input,
   model,
   OnDestroy,
@@ -28,28 +30,38 @@ import { ShipMenu } from '@ship-ui/core/ship-menu';
 import { ShipTooltip } from '@ship-ui/core/ship-tooltip';
 
 import {
-  BlockKeydownContext,
   CaretState,
   clearDocRangeFormatting,
   cloneDoc,
+  codeBlockBlockExtension,
+  configureExtension,
+  defaultBlockExtensions,
+  EditorSelection,
+  EditorSelectionState,
+  escapeHTML,
   formatDocRange,
-  getBlockRelativeOffset,
   getJSONText,
-  getLogicalFromBlockRelative,
+  headingBlockExtension,
   htmlToJSON,
   htmlToMarkdown,
+  imageBlockExtension,
+  infoCalloutBlockExtension,
   inlineToHTML,
-  insertText,
   jsonToHTML,
   LogicalPosition,
   mapDOMPositionToLogical,
-  mapLogicalToDOMPosition,
   markdownToHTML,
+  mergeBlockForward,
   mergeBlocks,
+  paragraphBlockExtension,
   parseImageClassNames,
+  quoteBlockExtension,
   registerDefaultExtensions,
+  sanitizeHTML,
   setBlockTypeInDoc,
   ShipEditorBlock,
+  ShipEditorBlockContext,
+  ShipEditorBlockExtension,
   ShipEditorCommand,
   ShipEditorDocument,
   ShipEditorInlineNode,
@@ -64,10 +76,21 @@ import {
 
 export {
   CaretState,
+  codeBlockBlockExtension,
+  configureExtension,
+  defaultBlockExtensions,
+  EditorSelection,
+  EditorSelectionState,
+  headingBlockExtension,
+  imageBlockExtension,
+  infoCalloutBlockExtension,
   LogicalPosition,
   mergeBlocks,
+  paragraphBlockExtension,
+  quoteBlockExtension,
   registerDefaultExtensions,
   ShipEditorBlock,
+  ShipEditorBlockExtension,
   ShipEditorCommand,
   ShipEditorDocument,
   ShipEditorInlineNode,
@@ -78,8 +101,6 @@ export {
   ShipEditorValue,
   splitBlock,
 };
-
-
 
 const SHIP_EDITOR_VALUE_ACCESSOR: Provider = {
   provide: NG_VALUE_ACCESSOR,
@@ -93,7 +114,7 @@ const SHIP_EDITOR_VALUE_ACCESSOR: Provider = {
   styleUrl: './ship-editor.scss',
   encapsulation: ViewEncapsulation.None,
   imports: [ShipTooltip, ShipIcon, ShipKbd, ShipMenu],
-  providers: [SHIP_EDITOR_VALUE_ACCESSOR],
+  providers: [SHIP_EDITOR_VALUE_ACCESSOR, ShipEditorRegistry],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': 'hostClasses()',
@@ -107,6 +128,8 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
   #platformId = inject(PLATFORM_ID);
   #isBrowser = isPlatformBrowser(this.#platformId);
   #keybindings = inject(ShipA11yKeybindingsService);
+  #injector = inject(Injector);
+  #registry = inject(ShipEditorRegistry);
 
   editorRef = viewChild<ElementRef<HTMLDivElement>>('editorRef');
   codeEditorRef = viewChild<ElementRef<HTMLTextAreaElement>>('codeEditorRef');
@@ -144,6 +167,7 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
   #docVersion = 0;
   #isInternalDOMUpdate = false;
   #typingTimeout: ReturnType<typeof setTimeout> | undefined;
+  #valueUpdateTimeout: ReturnType<typeof setTimeout> | undefined;
 
   defaultCommands = computed<ShipEditorCommand[]>(() => [
     {
@@ -194,6 +218,13 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       icon: 'quotes',
       description: 'Capture a quote',
       action: (editor) => editor.selectBlockType('blockquote'),
+    },
+    {
+      id: 'info-callout',
+      label: 'Info Callout',
+      icon: 'lightbulb',
+      description: 'Highlight important information',
+      action: (editor) => editor.selectBlockType('info-callout'),
     },
     {
       id: 'code-block',
@@ -257,6 +288,22 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
   imageUploadEnabled = input<boolean>(true);
   imageUpload = output<File>();
 
+  /**
+   * Block extensions to use. Defaults to the built-in set.
+   * Override to customize behavior or add custom blocks.
+   *
+   * @example
+   * ```typescript
+   * import { defaultBlockExtensions, configureExtension, imageBlockExtension } from 'ship-ui/ship-editor';
+   *
+   * myExtensions = [
+   *   ...defaultBlockExtensions.filter(e => e.type !== 'image'),
+   *   configureExtension(imageBlockExtension, { defaultMode: 'content', defaultSize: 'auto' }),
+   * ];
+   * ```
+   */
+  extensions = input<ShipEditorBlockExtension[]>(defaultBlockExtensions);
+
   #selectedImage = signal<HTMLImageElement | null>(null);
   imgMode = signal<'content' | 'theater' | 'float' | 'custom'>('content');
   imgSize = signal<'auto' | 'small' | 'medium' | 'large'>('auto');
@@ -308,48 +355,14 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     }
 
     const editor = this.editorRef()?.nativeElement;
-    const selection = window.getSelection();
-    let savedStartPos: LogicalPosition | null = null;
-    let savedEndPos: LogicalPosition | null = null;
-    let isCollapsed = true;
-    let isInside = false;
-
-    if (editor && selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      if (editor.contains(range.commonAncestorContainer)) {
-        isInside = true;
-        isCollapsed = range.collapsed;
-        savedStartPos = mapDOMPositionToLogical(editor, range.startContainer, range.startOffset);
-        if (!isCollapsed) {
-          savedEndPos = mapDOMPositionToLogical(editor, range.endContainer, range.endOffset);
-        }
-      }
-    }
+    const saved = editor ? EditorSelection.read(editor) : null;
 
     action();
 
-    if (isInside && savedStartPos && editor && selection) {
-      setTimeout(() => {
-        const startDom = mapLogicalToDOMPosition(editor, savedStartPos!, this.documentState());
-        if (startDom) {
-          try {
-            const newRange = this.#document.createRange();
-            newRange.setStart(startDom.node, startDom.offset);
-            if (!isCollapsed && savedEndPos) {
-              const endDom = mapLogicalToDOMPosition(editor, savedEndPos, this.documentState());
-              if (endDom) {
-                newRange.setEnd(endDom.node, endDom.offset);
-              } else {
-                newRange.collapse(true);
-              }
-            } else {
-              newRange.collapse(true);
-            }
-            selection.removeAllRanges();
-            selection.addRange(newRange);
-          } catch { /* Selection out of bounds after DOM mutation */ }
-        }
-      }, 0);
+    // Synchronous caret restoration — the action uses innerHTML which is
+    // synchronous, so the new DOM nodes are immediately available.
+    if (saved && editor) {
+      EditorSelection.apply(editor, this.documentState(), saved.start, saved.end);
     }
   }
 
@@ -372,13 +385,107 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
   #setDocumentState(doc: ShipEditorDocument) {
     this.#docVersion++;
     this.documentState.set(doc);
+
+    // Update word/char counts from the AST. This is the single source of truth for
+    // programmatic doc changes (transactions, undo, paste, etc.). The onDOMInput()
+    // handler provides instant counts from editor.textContent during typing.
+    const text = getJSONText(doc).replace(/\u00a0/g, ' ').trim();
+    this.charCount.set(text.length);
+    this.wordCount.set(text === '' ? 0 : text.split(/\s+/).filter((w) => w.length > 0).length);
   }
 
   /** Run a callback while suppressing feedback loops (DOM→model→DOM cycles). */
   #runWithoutFeedback(fn: () => void) {
     this.#isWriting = true;
-    try { fn(); }
-    finally { this.#isWriting = false; }
+    try {
+      fn();
+    } finally {
+      this.#isWriting = false;
+    }
+  }
+
+  /**
+   * Unified state commit: AST → signals → serialized value → DOM.
+   * Every document mutation should go through this single path to keep
+   * state, value, and DOM in sync and avoid forgotten guards.
+   */
+  #commitDocument(
+    newDoc: ShipEditorDocument,
+    options?: {
+      /** Wrap in #runWithoutFeedback to suppress DOM→model→DOM loops. */
+      suppressFeedback?: boolean;
+      /** Set #isInternalDOMUpdate to block stale selectionchange events. */
+      guardSelectionChange?: boolean;
+      /** Preserve scroll position across the DOM re-render. */
+      preserveScroll?: boolean;
+      /** Skip DOM render (caller handles it or no editor ref). */
+      skipRender?: boolean;
+    }
+  ) {
+    const opts = {
+      suppressFeedback: false,
+      guardSelectionChange: false,
+      preserveScroll: false,
+      skipRender: false,
+      ...options,
+    };
+
+    if (opts.guardSelectionChange) this.#isInternalDOMUpdate = true;
+
+    const commit = () => {
+      this.#setDocumentState(newDoc);
+      this.#updateValueFromState();
+
+      if (!opts.skipRender) {
+        const editor = this.editorRef()?.nativeElement;
+        if (editor) {
+          const scrollTop = opts.preserveScroll ? editor.scrollTop : undefined;
+          const scrollLeft = opts.preserveScroll ? editor.scrollLeft : undefined;
+          this.#renderHTMLToDOM(jsonToHTML(newDoc, this.#registry));
+          if (scrollTop !== undefined) editor.scrollTop = scrollTop;
+          if (scrollLeft !== undefined) editor.scrollLeft = scrollLeft;
+        }
+      }
+    };
+
+    if (opts.suppressFeedback) {
+      this.#runWithoutFeedback(commit);
+    } else {
+      commit();
+    }
+  }
+
+  /**
+   * Serialize an AST to the current format and push to the value signal.
+   * Centralises the format-branching logic used by #updateValueFromState,
+   * setHTML, setMarkdown, and setJSON.
+   */
+  #serializeASTToValue(ast: ShipEditorDocument): ShipEditorValue {
+    const currentFormat = this.format();
+
+    if (currentFormat === 'json') {
+      this.value.set(ast);
+      this.#lastValueWrittenFromDOM = ast;
+      this.onChange(ast);
+      this.rawCodeValue.set(JSON.stringify(ast, null, 2));
+      return ast;
+    } else {
+      const html = jsonToHTML(ast, this.#registry);
+      if (currentFormat === 'html') {
+        this.value.set(html);
+        this.#lastValueWrittenFromDOM = html;
+        this.onChange(html);
+        return html;
+      } else if (currentFormat === 'markdown') {
+        const md = htmlToMarkdown(html, this.#document, this.#registry);
+        this.value.set(md);
+        this.#lastValueWrittenFromDOM = md;
+        this.onChange(md);
+        this.rawCodeValue.set(md);
+        return md;
+      }
+    }
+    return null;
   }
 
   #linkModalFocusEffect = effect(() => {
@@ -393,20 +500,23 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
   #imageModalFocusEffect = effect(() => {
     if (this.showImageModal()) {
       // Defer focus to next render so Angular has rendered the @if block
-      setTimeout(() => {
-        const uploadBtn = this.uploadBtn();
-        const imageInput = this.imageInput();
+      afterNextRender(
+        () => {
+          const uploadBtn = this.uploadBtn();
+          const imageInput = this.imageInput();
 
-        if (this.imageUploadEnabled()) {
-          if (uploadBtn) {
-            uploadBtn.nativeElement.focus();
+          if (this.imageUploadEnabled()) {
+            if (uploadBtn) {
+              uploadBtn.nativeElement.focus();
+            }
+          } else {
+            if (imageInput) {
+              imageInput.nativeElement.focus();
+            }
           }
-        } else {
-          if (imageInput) {
-            imageInput.nativeElement.focus();
-          }
-        }
-      });
+        },
+        { injector: this.#injector }
+      );
     }
   });
 
@@ -435,18 +545,18 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       if (prev === 'html' && typeof val === 'string') {
         html = val;
       } else if (prev === 'markdown' && typeof val === 'string') {
-        html = markdownToHTML(val);
+        html = markdownToHTML(val, this.#registry);
       } else if (prev === 'json' && Array.isArray(val)) {
-        html = jsonToHTML(val);
+        html = jsonToHTML(val, this.#registry);
       }
 
       let newValue: ShipEditorValue = '';
       if (fmt === 'html') {
         newValue = html;
       } else if (fmt === 'markdown') {
-        newValue = htmlToMarkdown(html, this.#document);
+        newValue = htmlToMarkdown(html, this.#document, this.#registry);
       } else if (fmt === 'json') {
-        newValue = htmlToJSON(html, this.#document);
+        newValue = htmlToJSON(html, this.#document, this.#registry);
       }
 
       this.#runWithoutFeedback(() => {
@@ -462,7 +572,7 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
           this.rawCodeValue.set(html);
         }
 
-        const ast = htmlToJSON(html, this.#document);
+        const ast = htmlToJSON(html, this.#document, this.#registry);
         this.#saveAndRestoreSelection(() => {
           this.#setDocumentState(ast);
         });
@@ -470,13 +580,8 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     }
   });
 
-  #wordCountEffect = effect(() => {
-    const doc = this.documentState();
-    const text = getJSONText(doc).replace(/\u00a0/g, ' ').trim();
-
-    this.charCount.set(text.length);
-    this.wordCount.set(text === '' ? 0 : text.split(/\s+/).filter((w) => w.length > 0).length);
-  });
+  // Word/char counts are updated synchronously in #setDocumentState() (for programmatic
+  // changes) and in onDOMInput() (for instant typing feedback). No async effect needed.
 
   #toolbarVisibilityEffect = effect(() => {
     this.showFormats();
@@ -491,18 +596,30 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
   });
 
   constructor() {
-    registerDefaultExtensions();
+    // Register mark extensions once (these aren't configurable via input yet)
+    this.#registry.registerDefaultMarks();
+
+    // Register block extensions from the input — defaults to defaultBlockExtensions
+    effect(() => {
+      const exts = this.extensions();
+      this.#registry.clearBlocks();
+      exts.forEach((ext) => this.#registry.registerBlock(ext));
+    });
   }
 
   ngAfterViewInit() {
     this.#syncModelToDOM(this.value());
+    this.#registry.getAllBlocks().forEach((ext) => ext.onInit?.(this));
+    this.#registry.getAllMarks().forEach((ext) => ext.onInit?.(this));
   }
 
   ngOnDestroy() {
     this.#savedRange = null;
-    if (this.#typingTimeout) {
-      clearTimeout(this.#typingTimeout);
+    if (this.#valueUpdateTimeout) {
+      clearTimeout(this.#valueUpdateTimeout);
     }
+    this.#registry.getAllBlocks().forEach((ext) => ext.onDestroy?.(this));
+    this.#registry.getAllMarks().forEach((ext) => ext.onDestroy?.(this));
   }
 
   writeValue(obj: ShipEditorValue): void {
@@ -566,7 +683,7 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       // Call extension onBlockRender hook for post-render DOM enhancements
       const block = doc[idx];
       if (block) {
-        const ext = ShipEditorRegistry.getBlock(block.type);
+        const ext = this.#registry.getBlock(block.type);
         if (ext?.onBlockRender) {
           ext.onBlockRender(child as HTMLElement, block, idx);
         }
@@ -583,14 +700,14 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       html = '<p><br></p>';
     } else if (Array.isArray(val)) {
       ast = val;
-      html = jsonToHTML(val);
+      html = jsonToHTML(val, this.#registry);
     } else if (typeof val === 'string') {
       if (this.format() === 'markdown') {
-        html = markdownToHTML(val);
+        html = markdownToHTML(val, this.#registry);
       } else {
         html = val;
       }
-      ast = htmlToJSON(html, this.#document);
+      ast = htmlToJSON(html, this.#document, this.#registry);
     }
 
     const isNewValue = val !== this.#lastValueWrittenFromDOM;
@@ -625,46 +742,48 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     if (!editor) return;
 
     const rawHtml = editor.innerHTML;
-    const initialAst = htmlToJSON(rawHtml, this.#document);
-    let cleanHtml = this.#stripCompiledMarkup(jsonToHTML(initialAst));
+    // Phase 1: Build AST (Internal State) - Fast
+    const initialAst = htmlToJSON(rawHtml, this.#document, this.#registry);
+    let cleanHtml = this.#stripCompiledMarkup(jsonToHTML(initialAst, this.#registry));
 
     if (cleanHtml === '' || cleanHtml === '<br>' || cleanHtml === '<p><br></p>') {
       cleanHtml = '';
     }
 
-    const ast = htmlToJSON(cleanHtml, this.#document);
+    const ast = htmlToJSON(cleanHtml, this.#document, this.#registry);
 
     this.#runWithoutFeedback(() => {
-      const currentFormat = this.format();
-
       this.#saveAndRestoreSelection(() => {
-        if (currentFormat === 'html') {
-          this.value.set(cleanHtml);
-          this.#lastValueWrittenFromDOM = cleanHtml;
-          this.onChange(cleanHtml);
-        } else if (currentFormat === 'markdown') {
-          const md = htmlToMarkdown(cleanHtml, this.#document);
-          this.value.set(md);
-          this.#lastValueWrittenFromDOM = md;
-          this.onChange(md);
-          this.rawCodeValue.set(md);
-        } else if (currentFormat === 'json') {
-          this.value.set(ast);
-          this.#lastValueWrittenFromDOM = ast;
-          this.onChange(ast);
-          this.rawCodeValue.set(JSON.stringify(ast, null, 2));
-        }
-
         this.#setDocumentState(ast);
       });
+
+      // Phase 2: Serialize & Emit Value - Debounced for performance
+      if (this.#valueUpdateTimeout) {
+        clearTimeout(this.#valueUpdateTimeout);
+      }
+
+      const format = this.format();
+      // Heuristic: Use longer debounce for heavy markdown serialization on large docs
+      const isHeavy = format === 'markdown' && rawHtml.length > 5000;
+      const emitDelay = isHeavy ? 800 : 200;
+
+      this.#valueUpdateTimeout = setTimeout(() => {
+        this.#lastValueWrittenFromDOM = this.#serializeASTToValue(ast);
+        this.#saveHistory();
+      }, emitDelay);
     });
   }
 
   onDOMInput() {
-    // Run extension onBlockRender for image blocks after browser-native DOM mutations
+    // Update internal metrics (character and word tracking) instantly via local evaluations
     const editor = this.editorRef()?.nativeElement;
     if (editor) {
-      const imgExt = ShipEditorRegistry.getBlock('image');
+      const textContent = editor.textContent || '';
+      this.charCount.set(textContent.length);
+      this.wordCount.set(textContent.trim() === '' ? 0 : textContent.trim().split(/\s+/).length);
+
+      // Run extension onBlockRender for image blocks after browser-native DOM mutations
+      const imgExt = this.#registry.getBlock('image');
       if (imgExt?.onBlockRender) {
         const imgs = editor.querySelectorAll('img');
         imgs.forEach((img) => {
@@ -676,7 +795,6 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
         });
       }
     }
-    this.#updateValueFromDOM();
 
     const selection = window.getSelection();
     let saveImmediately = false;
@@ -696,18 +814,28 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       clearTimeout(this.#typingTimeout);
     }
 
-    if (saveImmediately) {
-      this.#saveHistory();
-    } else {
-      this.#typingTimeout = setTimeout(() => {
-        this.#saveHistory();
-      }, 500);
-    }
+    const delay = saveImmediately ? 50 : 500;
+    this.#typingTimeout = setTimeout(() => {
+      this.#updateValueFromDOM();
+    }, delay);
   }
 
   onDOMBlur() {
     this.isFocused.set(false);
     this.onTouched();
+
+    // Flush any pending debounced updates immediately on blur
+    if (this.#typingTimeout) {
+      clearTimeout(this.#typingTimeout);
+      this.#updateValueFromDOM();
+    }
+
+    // We also need to ensure the Phase 2 (serialization) is flushed
+    if (this.#valueUpdateTimeout) {
+      clearTimeout(this.#valueUpdateTimeout);
+      const ast = this.documentState();
+      this.#lastValueWrittenFromDOM = this.#serializeASTToValue(ast);
+    }
   }
 
   onBeforeInput(event: InputEvent) {
@@ -731,11 +859,11 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       // Delegate to extension onBlockKeydown if the block type has one
       const currentBlock = this.documentState()[position.blockIndex];
       if (currentBlock) {
-        const ext = ShipEditorRegistry.getBlock(currentBlock.type);
+        const ext = this.#registry.getBlock(currentBlock.type);
         if (ext?.onBlockKeydown) {
           const editorEl = this.editorRef()?.nativeElement;
           const blockEl = editorEl?.children[position.blockIndex] as HTMLElement;
-          const ctx: BlockKeydownContext = {
+          const ctx: ShipEditorBlockContext = {
             position,
             blockEl,
             doc: this.documentState(),
@@ -760,76 +888,40 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
         const { doc: newDoc, newPosition } = mergeBlocks(doc, position);
         this.#updateStateAndCaret(newDoc, newPosition);
       }
+    } else if (type === 'deleteContentForward') {
+      // Delete key — merge with the next block when caret is at the end.
+      // Only intercept at block boundaries; let the browser handle mid-block deletes.
+      const doc = this.documentState();
+      const block = doc[position.blockIndex];
+      if (block) {
+        const content = (Array.isArray(block.content) ? block.content : []) as ShipEditorInlineNode[];
+        const lastIdx = Math.max(0, content.length - 1);
+        const lastLen = content[lastIdx]?.text?.length || 0;
+        const isAtEnd = position.inlineIndex >= lastIdx && position.offset >= lastLen;
+        if (isAtEnd) {
+          const result = mergeBlockForward(doc, position);
+          event.preventDefault();
+          this.#updateStateAndCaret(result.doc, result.newPosition);
+        }
+      }
     }
   }
 
   #updateStateAndCaret(newDoc: ShipEditorDocument, newPosition: LogicalPosition) {
-    this.#setDocumentState(newDoc);
-    this.#updateValueFromState();
+    this.#commitDocument(newDoc, { preserveScroll: true });
 
     const editor = this.editorRef()?.nativeElement;
     if (editor) {
-      // Preserve scroll position across the full DOM re-render to prevent
-      // visible jumps — especially noticeable when typing inside large code blocks.
-      const scrollTop = editor.scrollTop;
-      const scrollLeft = editor.scrollLeft;
-      this.#renderHTMLToDOM(jsonToHTML(newDoc));
-      editor.scrollTop = scrollTop;
-      editor.scrollLeft = scrollLeft;
-
-      setTimeout(() => {
-        const domPos = mapLogicalToDOMPosition(editor, newPosition, this.documentState());
-        if (domPos) {
-          const selection = window.getSelection();
-          if (selection) {
-            try {
-              const newRange = this.#document.createRange();
-              newRange.setStart(domPos.node, domPos.offset);
-              newRange.collapse(true);
-              selection.removeAllRanges();
-              selection.addRange(newRange);
-
-              // Scroll the caret into view if it ended up outside the visible area
-              // (e.g. pressing Enter at the very bottom of a long code block).
-              const caretRect = newRange.getBoundingClientRect();
-              const editorRect = editor.getBoundingClientRect();
-              if (caretRect.bottom > editorRect.bottom) {
-                editor.scrollTop += caretRect.bottom - editorRect.bottom + 4;
-              } else if (caretRect.top < editorRect.top) {
-                editor.scrollTop -= editorRect.top - caretRect.top + 4;
-              }
-            } catch { /* Caret position out of range after DOM mutation */ }
-          }
-        }
-        this.onSelectionChange();
-      }, 0);
+      // Synchronous caret restoration — #commitDocument uses innerHTML which
+      // is synchronous, so the new DOM nodes are immediately available.
+      EditorSelection.apply(editor, this.documentState(), newPosition, null, { scrollIntoView: true });
+      this.onSelectionChange();
     }
   }
 
   #updateValueFromState() {
-    const ast = this.documentState();
     this.#runWithoutFeedback(() => {
-      const currentFormat = this.format();
-
-      if (currentFormat === 'json') {
-        this.value.set(ast);
-        this.#lastValueWrittenFromDOM = ast;
-        this.onChange(ast);
-        this.rawCodeValue.set(JSON.stringify(ast, null, 2));
-      } else {
-        const html = jsonToHTML(ast);
-        if (currentFormat === 'html') {
-          this.value.set(html);
-          this.#lastValueWrittenFromDOM = html;
-          this.onChange(html);
-        } else if (currentFormat === 'markdown') {
-          const md = htmlToMarkdown(html, this.#document);
-          this.value.set(md);
-          this.#lastValueWrittenFromDOM = md;
-          this.onChange(md);
-          this.rawCodeValue.set(md);
-        }
-      }
+      this.#serializeASTToValue(this.documentState());
     });
   }
 
@@ -857,7 +949,9 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
           const parsed = JSON.parse(codeVal);
           this.value.set(parsed);
           this.onChange(parsed);
-        } catch { /* JSON parse error in code view — ignored */ }
+        } catch {
+          /* JSON parse error in code view — ignored */
+        }
       }
     });
     this.onTouched();
@@ -911,19 +1005,15 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     this.#restoreSelection();
 
     const editor = this.editorRef()?.nativeElement;
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
+    if (!editor) return;
 
-    const range = selection.getRangeAt(0);
-    if (!editor?.contains(range.commonAncestorContainer)) return;
+    const sel = EditorSelection.read(editor);
+    if (!sel) return;
 
-    const startLogical = mapDOMPositionToLogical(editor, range.startContainer, range.startOffset);
-    const endLogical = mapDOMPositionToLogical(editor, range.endContainer, range.endOffset);
-    if (!startLogical || !endLogical) return;
+    const startLogical = sel.start;
+    const endLogical = sel.end ?? sel.start;
 
     const docBefore = this.documentState();
-    const startOffset = getBlockRelativeOffset(startLogical, docBefore);
-    const endOffset = getBlockRelativeOffset(endLogical, docBefore);
 
     const docClone = cloneDoc(docBefore);
     const result = action(docClone, { start: startLogical, end: endLogical });
@@ -947,51 +1037,18 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     }
 
     this.#saveHistory();
-    this.#isInternalDOMUpdate = true;
+    this.#commitDocument(newDoc, { guardSelectionChange: true });
 
-    this.#setDocumentState(newDoc);
-    this.#updateValueFromState();
-
-    if (editor) {
-      this.#renderHTMLToDOM(jsonToHTML(newDoc));
-    }
-
-    // Restore selection synchronously — innerHTML is sync so the new DOM nodes
-    // are immediately available. Using setTimeout caused a gap where Angular's
-    // change detection could re-render and destroy the restored selection.
+    // Map selection from pre-mutation to post-mutation coordinates and restore.
     const docAfter = this.documentState();
-
-    const targetStartBlockIdx = targetSelectionShift
-      ? targetSelectionShift.start.blockIndex
-      : startLogical.blockIndex;
-    const targetStartListItemIdx = targetSelectionShift
-      ? targetSelectionShift.start.listItemIndex
-      : startLogical.listItemIndex;
-    const targetEndBlockIdx = targetSelectionShift ? targetSelectionShift.end.blockIndex : endLogical.blockIndex;
-    const targetEndListItemIdx = targetSelectionShift
-      ? targetSelectionShift.end.listItemIndex
-      : endLogical.listItemIndex;
-
-    const startLogicalAfter = getLogicalFromBlockRelative(
-      targetStartBlockIdx,
-      targetStartListItemIdx,
-      startOffset,
-      docAfter
+    const mapped = EditorSelection.mapAcrossMutation(
+      startLogical,
+      endLogical,
+      docBefore,
+      docAfter,
+      targetSelectionShift
     );
-    const endLogicalAfter = getLogicalFromBlockRelative(targetEndBlockIdx, targetEndListItemIdx, endOffset, docAfter);
-
-    const startDom = mapLogicalToDOMPosition(editor, startLogicalAfter, docAfter);
-    const endDom = mapLogicalToDOMPosition(editor, endLogicalAfter, docAfter);
-
-    if (startDom && endDom) {
-      try {
-        const newRange = this.#document.createRange();
-        newRange.setStart(startDom.node, startDom.offset);
-        newRange.setEnd(endDom.node, endDom.offset);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-      } catch { /* Selection range out of bounds after formatting */ }
-    }
+    EditorSelection.apply(editor, docAfter, mapped.start, mapped.end);
 
     this.#saveHistory();
     // Clear the guard so our explicit onSelectionChange() call can save the
@@ -1019,7 +1076,7 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
 
     // Fall back to registry: look up mark type by tagName for custom extensions
     if (!markType) {
-      const ext = ShipEditorRegistry.getAllMarks().find((m) => m.tagName === cleanTag);
+      const ext = this.#registry.getAllMarks().find((m) => m.tagName === cleanTag);
       if (ext) markType = ext.type;
     }
 
@@ -1053,9 +1110,17 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
         newAttrs = { level: parseInt(targetTag.substring(1)) };
       } else if (targetTag === 'blockquote') {
         newType = 'quote';
+      } else if (targetTag === 'info-callout') {
+        newType = 'info-callout';
       } else if (targetTag === 'pre') {
         newType = 'code-block';
         newAttrs = { language: '' };
+      } else {
+        // Fallback: look up the type in the registry (supports custom blocks like 'callout')
+        const registeredBlock = this.#registry.getBlock(targetTag);
+        if (registeredBlock) {
+          newType = registeredBlock.type;
+        }
       }
 
       const res = setBlockTypeInDoc(doc, selection, newType, newAttrs);
@@ -1141,24 +1206,7 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
 
     const doc = this.documentState();
 
-    let selectionState: {
-      start: LogicalPosition;
-      end: LogicalPosition | null;
-      isCollapsed: boolean;
-    } | null = null;
-
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      if (editor.contains(range.commonAncestorContainer)) {
-        const start = mapDOMPositionToLogical(editor, range.startContainer, range.startOffset);
-        if (start) {
-          const isCollapsed = range.collapsed;
-          const end = isCollapsed ? null : mapDOMPositionToLogical(editor, range.endContainer, range.endOffset);
-          selectionState = { start, end, isCollapsed };
-        }
-      }
-    }
+    const selectionState = EditorSelection.read(editor);
 
     if (this.#historyIndex >= 0 && this.#historyStack[this.#historyIndex].docVersion === this.#docVersion) {
       if (selectionState) {
@@ -1196,41 +1244,13 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     const editor = this.editorRef()?.nativeElement;
     if (!editor) return;
 
-    this.#runWithoutFeedback(() => {
-      const docCopy = cloneDoc(state.doc);
-      this.#setDocumentState(docCopy);
-      this.#updateValueFromState();
-      this.#renderHTMLToDOM(jsonToHTML(docCopy));
-    });
+    const docCopy = cloneDoc(state.doc);
+    this.#commitDocument(docCopy, { suppressFeedback: true });
 
     const sel = state.selection;
     if (sel) {
-      setTimeout(() => {
-        const selection = window.getSelection();
-        if (selection) {
-          try {
-            const startDom = mapLogicalToDOMPosition(editor, sel.start, this.documentState());
-            if (startDom) {
-              const range = this.#document.createRange();
-              range.setStart(startDom.node, startDom.offset);
-              if (!sel.isCollapsed && sel.end) {
-                const endDom = mapLogicalToDOMPosition(editor, sel.end, this.documentState());
-                if (endDom) {
-                  range.setEnd(endDom.node, endDom.offset);
-                } else {
-                  range.collapse(true);
-                }
-              } else {
-                range.collapse(true);
-              }
-              selection.removeAllRanges();
-              selection.addRange(range);
-            }
-          } catch (e) {
-            // Fallback
-          }
-        }
-      }, 0);
+      // Synchronous caret restoration — DOM is already updated by #commitDocument.
+      EditorSelection.apply(editor, this.documentState(), sel.start, sel.end);
     }
     this.#updateHistoryStates();
   }
@@ -1239,22 +1259,25 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     const nextMode = this.viewMode() === 'design' ? 'code' : 'design';
     this.viewMode.set(nextMode);
 
-    // Give time to render then sync and focus
-    setTimeout(() => {
-      if (nextMode === 'design') {
-        const editor = this.editorRef()?.nativeElement;
-        if (editor) {
-          this.#syncModelToDOM(this.value());
-          editor.focus();
+    // Wait for Angular to render the toggled @if block, then sync and focus
+    afterNextRender(
+      () => {
+        if (nextMode === 'design') {
+          const editor = this.editorRef()?.nativeElement;
+          if (editor) {
+            this.#syncModelToDOM(this.value());
+            editor.focus();
+          }
+        } else {
+          const codeEditor = this.codeEditorRef()?.nativeElement;
+          if (codeEditor) {
+            codeEditor.focus();
+          }
         }
-      } else {
-        const codeEditor = this.codeEditorRef()?.nativeElement;
-        if (codeEditor) {
-          codeEditor.focus();
-        }
-      }
-      this.#updateHistoryStates();
-    });
+        this.#updateHistoryStates();
+      },
+      { injector: this.#injector }
+    );
   }
 
   #updateHistoryStates() {
@@ -1269,23 +1292,15 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
 
   #restoreSelection() {
     if (!this.#isBrowser) return;
-    const selection = window.getSelection();
     const editor = this.editorRef()?.nativeElement;
-    if (selection && this.#savedRange && editor) {
-      let isInside = false;
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        if (editor.contains(range.commonAncestorContainer)) {
-          isInside = true;
-        }
-      }
-      if (!isInside) {
-        editor.focus();
-        try {
-          selection.removeAllRanges();
-          selection.addRange(this.#savedRange);
-        } catch { /* Selection restore failed — fallback ignored */ }
-      }
+    if (!editor || !this.#savedRange) return;
+
+    // Only restore if the selection is not already inside the editor
+    // (i.e. focus was lost to a toolbar button or modal).
+    const currentSel = EditorSelection.read(editor);
+    if (!currentSel) {
+      editor.focus();
+      EditorSelection.restoreRange(this.#savedRange);
     }
   }
 
@@ -1300,17 +1315,17 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     // here — runTransaction will restore the correct selection asynchronously.
     if (this.#isInternalDOMUpdate) return;
 
+    const editorEl = this.editorRef()?.nativeElement;
+    if (!editorEl) return;
+
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) return;
 
     const range = selection.getRangeAt(0);
-    const editorEl = this.editorRef()?.nativeElement;
-    if (!editorEl || !editorEl.contains(range.commonAncestorContainer)) {
-      return;
-    }
+    if (!editorEl.contains(range.commonAncestorContainer)) return;
 
     // Save selection range for modal operations
-    this.#savedRange = range.cloneRange();
+    this.#savedRange = EditorSelection.saveRange(editorEl);
 
     // DOM tree traversal for formatting active states
     let current: Node | null = range.commonAncestorContainer;
@@ -1353,7 +1368,12 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       if (node.nodeType === Node.ELEMENT_NODE) {
         const tag = (node as HTMLElement).tagName.toLowerCase();
         if (['h1', 'h2', 'h3', 'blockquote', 'pre', 'ul', 'ol', 'li'].includes(tag)) {
-          blockType = tag;
+          // Differentiate info-callout from plain blockquote
+          if (tag === 'blockquote' && (node as HTMLElement).classList.contains('sh-editor-callout')) {
+            blockType = 'info-callout';
+          } else {
+            blockType = tag;
+          }
           break;
         }
       }
@@ -1387,7 +1407,7 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       if (prevIdx !== null) {
         const prevBlock = this.documentState()[parseInt(prevIdx, 10)];
         if (prevBlock) {
-          const prevExt = ShipEditorRegistry.getBlock(prevBlock.type);
+          const prevExt = this.#registry.getBlock(prevBlock.type);
           if (prevExt?.activeClassName) {
             this.#activeBlockEl.classList.remove(prevExt.activeClassName);
           }
@@ -1400,7 +1420,7 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       if (blockIdx !== null) {
         const block = this.documentState()[parseInt(blockIdx, 10)];
         if (block) {
-          const ext = ShipEditorRegistry.getBlock(block.type);
+          const ext = this.#registry.getBlock(block.type);
           if (ext?.activeClassName) {
             topLevelBlock.classList.add(ext.activeClassName);
             this.#activeBlockEl = topLevelBlock;
@@ -1414,10 +1434,8 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
 
   openLinkModal() {
     // Back up current selection before focus shifts to modal
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      this.#savedRange = selection.getRangeAt(0).cloneRange();
-    }
+    const editor = this.editorRef()?.nativeElement;
+    if (editor) this.#savedRange = EditorSelection.saveRange(editor);
     this.showLinkModal.set(true);
   }
 
@@ -1429,21 +1447,15 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     if (!editor) return;
 
     // Restore selection range
-    const selection = window.getSelection();
-    if (selection && this.#savedRange) {
-      selection.removeAllRanges();
-      selection.addRange(this.#savedRange);
-    }
+    EditorSelection.restoreRange(this.#savedRange);
 
     editor.focus();
     this.toggleLink(url);
   }
 
   openImageModal() {
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      this.#savedRange = selection.getRangeAt(0).cloneRange();
-    }
+    const editor = this.editorRef()?.nativeElement;
+    if (editor) this.#savedRange = EditorSelection.saveRange(editor);
     this.showImageModal.set(true);
   }
 
@@ -1478,25 +1490,18 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       updater(block);
 
       this.#saveHistory();
-      this.#isInternalDOMUpdate = true;
-      this.#setDocumentState(newDoc);
-      this.#updateValueFromState();
+      this.#commitDocument(newDoc, { guardSelectionChange: true });
 
-      if (editor) {
-        this.#renderHTMLToDOM(jsonToHTML(newDoc));
+      // Synchronous — #commitDocument uses innerHTML so the new DOM is ready.
+      const newImg = this.editorRef()?.nativeElement.querySelector(
+        `img[data-block-index="${blockIndex}"]`
+      ) as HTMLImageElement;
+      if (newImg) {
+        newImg.focus();
+        this.#selectedImage.set(newImg);
       }
-
-      setTimeout(() => {
-        const newImg = this.editorRef()?.nativeElement.querySelector(
-          `img[data-block-index="${blockIndex}"]`
-        ) as HTMLImageElement;
-        if (newImg) {
-          newImg.focus();
-          this.#selectedImage.set(newImg);
-        }
-        this.#saveHistory();
-        this.#isInternalDOMUpdate = false;
-      }, 50);
+      this.#saveHistory();
+      this.#isInternalDOMUpdate = false;
     }
   }
 
@@ -1532,8 +1537,8 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       this.#selectedImage.set(target as HTMLImageElement);
       this.#selectImage(target as HTMLImageElement);
     } else {
-      // If clicking inside image toolbar itself, don't dismiss
-      if (target && target.closest('.sh-editor-img-toolbar')) {
+      // If clicking inside image context toolbar, don't dismiss
+      if (target && target.closest('.sh-editor-img-context-toolbar')) {
         return;
       }
       this.#selectedImage.set(null);
@@ -1564,9 +1569,7 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
         if (blockIndexAttr !== null) {
           const blockIndex = parseInt(blockIndexAttr, 10);
           const doc = this.documentState();
-          const targetIndex = goBack
-            ? Math.max(0, blockIndex - 1)
-            : Math.min(doc.length - 1, blockIndex + 1);
+          const targetIndex = goBack ? Math.max(0, blockIndex - 1) : Math.min(doc.length - 1, blockIndex + 1);
           const targetBlock = doc[targetIndex];
           // Only move if the target block is not the image itself
           if (targetIndex !== blockIndex && targetBlock && targetBlock.type !== 'image') {
@@ -1606,7 +1609,7 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     }
 
     // Registry-driven mark keybindings — custom marks with `keybinding` get shortcuts automatically
-    for (const markExt of ShipEditorRegistry.getAllMarks()) {
+    for (const markExt of this.#registry.getAllMarks()) {
       if (markExt.keybinding && this.#keybindings.matches(event, markExt.keybinding)) {
         event.preventDefault();
         if (markExt.onKeyAction) {
@@ -1618,7 +1621,7 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       }
     }
     // Registry-driven block keybindings — custom blocks with `keybinding` get shortcuts automatically
-    for (const blockExt of ShipEditorRegistry.getAllBlocks()) {
+    for (const blockExt of this.#registry.getAllBlocks()) {
       if (blockExt.keybinding && this.#keybindings.matches(event, blockExt.keybinding)) {
         event.preventDefault();
         if (blockExt.onKeyAction) {
@@ -1701,6 +1704,26 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
 
     if (this.viewMode() === 'design') {
       if (this.#handleBlockKeyDown(event)) return;
+
+      // Tab handling for lists and indentation
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
+        const range = selection.getRangeAt(0);
+        const editor = this.editorRef()?.nativeElement;
+        if (!editor) return;
+
+        const pos = mapDOMPositionToLogical(editor, range.startContainer, range.startOffset);
+        if (pos) {
+          if (event.shiftKey) {
+            this.outdent(pos);
+          } else {
+            this.indent(pos);
+          }
+        }
+        return;
+      }
     }
   }
 
@@ -1747,10 +1770,10 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     const doc = this.documentState();
     const currentBlockData = doc[position.blockIndex];
     if (currentBlockData) {
-      const ext = ShipEditorRegistry.getBlock(currentBlockData.type);
+      const ext = this.#registry.getBlock(currentBlockData.type);
       if (ext?.onBlockKeydown) {
         const blockEl = editorEl.children[position.blockIndex] as HTMLElement;
-        const ctx: BlockKeydownContext = { position, blockEl, doc };
+        const ctx: ShipEditorBlockContext = { position, blockEl, doc };
         const result = ext.onBlockKeydown(event, ctx);
         if (result !== false) {
           event.preventDefault();
@@ -1883,9 +1906,7 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
 
         if (targetBlock && targetBlock.type === 'image') {
           event.preventDefault();
-          const imgEl = editorEl.querySelector(
-            `img[data-block-index="${targetIndex}"]`
-          ) as HTMLImageElement;
+          const imgEl = editorEl.querySelector(`img[data-block-index="${targetIndex}"]`) as HTMLImageElement;
           if (imgEl) {
             imgEl.focus();
             this.#selectImage(imgEl);
@@ -1961,6 +1982,15 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
   }
 
   executeCommand(cmd: ShipEditorCommand) {
+    // Flush any pending typing debounce so the AST is current before
+    // the command operates on it — prevents stale-state race conditions.
+    if (this.#typingTimeout) {
+      clearTimeout(this.#typingTimeout);
+      this.#typingTimeout = undefined;
+      this.#updateValueFromDOM();
+      this.#saveHistory();
+    }
+
     this.#restoreSelection();
 
     const selection = window.getSelection();
@@ -1977,9 +2007,12 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
           if (slashIndex !== -1) {
             range.setStart(textNode, slashIndex);
             range.setEnd(textNode, offset);
-            selection.removeAllRanges();
-            selection.addRange(range);
             range.deleteContents();
+
+            // Collapse selection to the deletion point so runTransaction
+            // reads the correct cursor position (not a stale offset).
+            selection.collapseToStart();
+
             // Sync the AST from the DOM so the slash text is gone from the document state
             this.#updateValueFromDOM();
           }
@@ -2024,6 +2057,7 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     if (block === 'h2') return 'Heading 2';
     if (block === 'h3') return 'Heading 3';
     if (block === 'blockquote') return 'Quote';
+    if (block === 'info-callout') return 'Info Callout';
     if (block === 'pre') return 'Code Block';
     return 'Normal text';
   }
@@ -2141,20 +2175,23 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
 
   #initializeToolbarTabindexes() {
     if (!this.#isBrowser) return;
-    setTimeout(() => {
-      const toolbarEl = this.editorRef()?.nativeElement?.parentElement?.querySelector('.sh-editor-toolbar');
-      if (!toolbarEl) return;
-      const items = Array.from(toolbarEl.querySelectorAll('.sh-editor-btn, .sh-editor-dropdown-trigger')).filter(
-        (el) => {
-          const btn = el as HTMLButtonElement;
-          return !btn.disabled && el.getAttribute('disabled') === null;
-        }
-      ) as HTMLElement[];
+    afterNextRender(
+      () => {
+        const toolbarEl = this.editorRef()?.nativeElement?.parentElement?.querySelector('.sh-editor-toolbar');
+        if (!toolbarEl) return;
+        const items = Array.from(toolbarEl.querySelectorAll('.sh-editor-btn, .sh-editor-dropdown-trigger')).filter(
+          (el) => {
+            const btn = el as HTMLButtonElement;
+            return !btn.disabled && el.getAttribute('disabled') === null;
+          }
+        ) as HTMLElement[];
 
-      items.forEach((item, idx) => {
-        item.setAttribute('tabindex', idx === 0 ? '0' : '-1');
-      });
-    });
+        items.forEach((item, idx) => {
+          item.setAttribute('tabindex', idx === 0 ? '0' : '-1');
+        });
+      },
+      { injector: this.#injector }
+    );
   }
 
   setImageMode(mode: 'content' | 'theater' | 'float' | 'custom') {
@@ -2190,16 +2227,13 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     newDoc.splice(blockIndex, 1);
 
     this.#saveHistory();
-    this.#isInternalDOMUpdate = true;
-    this.#setDocumentState(newDoc);
-    this.#updateValueFromState();
+    this.#commitDocument(newDoc, { guardSelectionChange: true });
     this.#selectedImage.set(null);
 
-    setTimeout(() => {
-      this.#saveHistory();
-      this.#isInternalDOMUpdate = false;
-      this.onSelectionChange();
-    }, 0);
+    // Synchronous — DOM is already updated by #commitDocument.
+    this.#saveHistory();
+    this.#isInternalDOMUpdate = false;
+    this.onSelectionChange();
   }
 
   onFileSelected(event: Event) {
@@ -2223,21 +2257,129 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     }
   }
 
-  @HostListener('paste', ['$event'])
-  onPaste(event: ClipboardEvent) {
+  @HostListener('mousedown', ['$event'])
+  onMouseDown(event: MouseEvent) {
     if (!this.#isBrowser) return;
-    const items = event.clipboardData?.items;
-    if (items) {
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          const file = items[i].getAsFile();
-          if (file) {
+
+    // Triple click detection
+    if (event.detail === 3) {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const editor = this.editorRef()?.nativeElement;
+        if (editor) {
+          const blockEl = (
+            range.startContainer.nodeType === 1
+              ? (range.startContainer as HTMLElement)
+              : range.startContainer.parentElement
+          )?.closest('[data-block-index]');
+          if (blockEl) {
+            // Constrain selection to this block
+            const newRange = document.createRange();
+            newRange.selectNodeContents(blockEl);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
             event.preventDefault();
-            this.#handleImageUpload(file);
           }
         }
       }
     }
+
+    // Delegate to onBlockClick if applicable
+    const editorEl = this.editorRef()?.nativeElement;
+    if (editorEl) {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const position = mapDOMPositionToLogical(editorEl, range.startContainer, range.startOffset);
+        if (position) {
+          const doc = this.documentState();
+          const block = doc[position.blockIndex];
+          if (block) {
+            const ext = this.#registry.getBlock(block.type);
+            if (ext?.onBlockClick) {
+              const blockEl = editorEl.children[position.blockIndex] as HTMLElement;
+              ext.onBlockClick(event, { position, blockEl, doc });
+            }
+          }
+        }
+      }
+    }
+
+    // Clear image selection if clicking away (but not when clicking the image toolbar)
+    const target = event.target as HTMLElement;
+    if (!target.closest('img') && !target.closest('.sh-editor-img-context-toolbar')) {
+      this.#selectedImage.set(null);
+    }
+  }
+
+  @HostListener('dragend', ['$event'])
+  onDragEnd(event: DragEvent) {
+    if (!this.#isBrowser) return;
+    // Force sync after native D&D
+    this.#updateValueFromDOM();
+  }
+
+  @HostListener('paste', ['$event'])
+  async onPaste(event: ClipboardEvent) {
+    if (!this.#isBrowser) return;
+    if (this.readonly() || this.viewMode() === 'code') return;
+
+    const clipboardData = event.clipboardData;
+    if (!clipboardData) return;
+
+    event.preventDefault();
+
+    const items = clipboardData.items;
+    const html = clipboardData.getData('text/html');
+    const text = clipboardData.getData('text/plain');
+
+    // Case 1: Interleaved paste or multi-item paste
+    // We prioritize HTML but also look for direct image files in the clipboard
+    let hasImage = false;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/')) {
+        const file = items[i].getAsFile();
+        if (file) {
+          hasImage = true;
+          this.#handleImageUpload(file);
+        }
+      }
+    }
+
+    if (hasImage && !html) return; // Already handled by image uploads
+
+    // Case 2: Process HTML or Plain Text
+    const content = html || text;
+    if (!content) return;
+
+    const cleanHtml = html ? sanitizeHTML(html) : escapeHTML(text).replace(/\n/g, '<br>');
+    const ast = htmlToJSON(cleanHtml, this.#document, this.#registry);
+
+    this.runTransaction((doc, selection) => {
+      const position = selection.start;
+      const currentBlock = doc[position.blockIndex];
+
+      if (currentBlock && currentBlock.type === 'paragraph' && getJSONText([currentBlock]).trim() === '') {
+        // Replace empty paragraph
+        doc.splice(position.blockIndex, 1, ...ast);
+      } else {
+        // Split and insert
+        const { doc: splitDoc } = splitBlock(doc, position);
+        splitDoc.splice(position.blockIndex + 1, 0, ...ast);
+        doc.length = 0;
+        doc.push(...splitDoc);
+      }
+
+      // Move caret to end of pasted content
+      const lastPastedBlockIdx = Math.min(doc.length - 1, position.blockIndex + ast.length - 1);
+      return {
+        selectionShift: {
+          start: { blockIndex: lastPastedBlockIdx },
+          end: { blockIndex: lastPastedBlockIdx },
+        },
+      };
+    });
   }
 
   #handleImageUpload(file: File) {
@@ -2260,13 +2402,18 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       const position = selection.start;
       const currentBlock = doc[position.blockIndex];
 
+      // Read image defaults from the image extension's config in the registry
+      const imageExt = this.#registry.getBlock('image');
+      const defaultMode = imageExt?.config?.['defaultMode'] || 'custom';
+      const defaultSize = imageExt?.config?.['defaultSize'] || 'medium';
+
       const imgBlock: ShipEditorBlock = {
         type: 'image',
         attrs: {
           src: url,
           alt: 'Image',
-          mode: 'content',
-          size: 'auto',
+          mode: defaultMode,
+          size: defaultSize,
         },
       };
 
@@ -2293,17 +2440,16 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       };
     });
 
-    // After the DOM is rendered, focus and select the inserted image
-    setTimeout(() => {
-      const editor = this.editorRef()?.nativeElement;
-      if (!editor) return;
+    // Synchronous — runTransaction uses innerHTML so the new DOM is ready.
+    const editor = this.editorRef()?.nativeElement;
+    if (editor) {
       const imgs = editor.querySelectorAll('img') as NodeListOf<HTMLImageElement>;
       const lastImg = imgs[imgs.length - 1];
       if (lastImg) {
         lastImg.focus();
         this.#selectImage(lastImg);
       }
-    }, 50);
+    }
   }
 
   // --- PUBLIC API METHODS ---
@@ -2313,10 +2459,10 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       const textarea = this.codeEditorRef()?.nativeElement;
       const val = textarea ? textarea.value : this.rawCodeValue();
       if (this.format() === 'markdown') {
-        return markdownToHTML(val);
+        return markdownToHTML(val, this.#registry);
       } else if (this.format() === 'json') {
         try {
-          return jsonToHTML(JSON.parse(val));
+          return jsonToHTML(JSON.parse(val), this.#registry);
         } catch (e) {
           return '';
         }
@@ -2327,7 +2473,7 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     if (editor) {
       return this.#stripCompiledMarkup(editor.innerHTML);
     }
-    return jsonToHTML(this.documentState());
+    return jsonToHTML(this.documentState(), this.#registry);
   }
 
   getMarkdown(): string {
@@ -2338,10 +2484,10 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
         return val;
       }
       const html = this.getHTML();
-      return htmlToMarkdown(html, this.#document);
+      return htmlToMarkdown(html, this.#document, this.#registry);
     }
     const html = this.getHTML();
-    return htmlToMarkdown(html, this.#document);
+    return htmlToMarkdown(html, this.#document, this.#registry);
   }
 
   getJSON(): ShipEditorDocument {
@@ -2363,61 +2509,102 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
   }
 
   setHTML(html: string) {
+    const ast = htmlToJSON(html, this.#document);
     this.#runWithoutFeedback(() => {
-      const currentFormat = this.format();
-      if (currentFormat === 'html') {
-        this.value.set(html);
-        this.onChange(html);
-      } else if (currentFormat === 'markdown') {
-        const md = htmlToMarkdown(html, this.#document);
-        this.value.set(md);
-        this.onChange(md);
-      } else if (currentFormat === 'json') {
-        const json = htmlToJSON(html, this.#document);
-        this.value.set(json);
-        this.onChange(json);
-      }
+      this.#serializeASTToValue(ast);
       this.#syncModelToDOM(this.value());
     });
   }
 
   setMarkdown(md: string) {
+    const html = markdownToHTML(md);
+    const ast = htmlToJSON(html, this.#document);
     this.#runWithoutFeedback(() => {
-      const currentFormat = this.format();
-      if (currentFormat === 'markdown') {
-        this.value.set(md);
-        this.onChange(md);
-      } else if (currentFormat === 'html') {
-        const html = markdownToHTML(md);
-        this.value.set(html);
-        this.onChange(html);
-      } else if (currentFormat === 'json') {
-        const html = markdownToHTML(md);
-        const json = htmlToJSON(html, this.#document);
-        this.value.set(json);
-        this.onChange(json);
-      }
+      this.#serializeASTToValue(ast);
       this.#syncModelToDOM(this.value());
     });
   }
 
   setJSON(json: ShipEditorDocument) {
     this.#runWithoutFeedback(() => {
-      const currentFormat = this.format();
-      if (currentFormat === 'json') {
-        this.value.set(json);
-        this.onChange(json);
-      } else if (currentFormat === 'html') {
-        const html = jsonToHTML(json);
-        this.value.set(html);
-        this.onChange(html);
-      } else if (currentFormat === 'markdown') {
-        const html = jsonToHTML(json);
-        const md = htmlToMarkdown(html, this.#document);
-        this.value.set(md);
-        this.onChange(md);
-      }
+      this.#serializeASTToValue(json);
       this.#syncModelToDOM(this.value());
+    });
+  }
+
+  // --- INDENT / OUTDENT LOGIC ---
+
+  indent(pos: LogicalPosition) {
+    this.runTransaction((doc) => {
+      const block = doc[pos.blockIndex];
+      if (!block) return null;
+
+      if (typeof pos.listItemIndex === 'number') {
+        // Nested list logic: indent current item into a sub-list of the previous item
+        const items = block.content as ShipEditorBlock[];
+        if (pos.listItemIndex > 0) {
+          const currentItem = items[pos.listItemIndex];
+          const prevItem = items[pos.listItemIndex - 1];
+
+          // Move current item into prevItem's sublist (or create one)
+          if (!prevItem.content) prevItem.content = [];
+          const prevContent = prevItem.content as any[];
+
+          // Check if the last node in prevItem is already a list of same type
+          let subList = prevContent[prevContent.length - 1];
+          if (!subList || (subList.type !== 'bullet-list' && subList.type !== 'ordered-list')) {
+            subList = { type: block.type, content: [] };
+            prevContent.push(subList);
+          }
+
+          (subList.content as ShipEditorBlock[]).push(currentItem);
+          items.splice(pos.listItemIndex, 1);
+
+          return {
+            selectionShift: {
+              start: { blockIndex: pos.blockIndex, listItemIndex: pos.listItemIndex - 1, inlineIndex: 0, offset: 0 },
+              end: { blockIndex: pos.blockIndex, listItemIndex: pos.listItemIndex - 1, inlineIndex: 0, offset: 0 },
+            },
+          };
+        }
+      } else if (block.type === 'paragraph') {
+        // Simple indent: convert to bullet list (standard behavior in many editors)
+        doc.splice(pos.blockIndex, 1, {
+          type: 'bullet-list',
+          content: [block],
+        });
+      }
+      return doc;
+    });
+  }
+
+  outdent(pos: LogicalPosition) {
+    this.runTransaction((doc) => {
+      const block = doc[pos.blockIndex];
+      if (!block) return null;
+
+      if (typeof pos.listItemIndex === 'number') {
+        // Outdent current item: move it up one level
+        const items = block.content as ShipEditorBlock[];
+        const currentItem = items[pos.listItemIndex];
+
+        // If we are at the top level of a list, turn into paragraph
+        items.splice(pos.listItemIndex, 1);
+        doc.splice(pos.blockIndex + 1, 0, currentItem);
+        currentItem.type = 'paragraph';
+
+        if (items.length === 0) {
+          doc.splice(pos.blockIndex, 1);
+        }
+
+        return {
+          selectionShift: {
+            start: { blockIndex: pos.blockIndex },
+            end: { blockIndex: pos.blockIndex },
+          },
+        };
+      }
+      return doc;
     });
   }
 

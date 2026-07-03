@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   escapeHTML,
@@ -12,8 +13,10 @@ import {
   ShipEditorDocument,
   ShipEditorInlineNode,
   ShipEditorBlock,
+  ShipEditorBlockExtension,
   ShipEditorRegistry,
   registerDefaultExtensions,
+  configureExtension,
   mapDOMPositionToLogical,
   mapLogicalToDOMPosition,
   splitBlock,
@@ -1461,5 +1464,182 @@ describe('ShipEditor Core: Hotkey toggle simulation', () => {
     const after2 = simulateToggle(after1.doc, after1.start, after1.end, 'bold');
     expect(jsonToHTML(after2.doc)).not.toContain('<strong>');
     expect(jsonToHTML(after2.doc)).toContain('The quick brown fox');
+  });
+});
+
+describe('ShipEditor Core: configureExtension', () => {
+  it('should create a copy with merged config', () => {
+    const original: ShipEditorBlockExtension = {
+      type: 'test',
+      config: { a: 1, b: 2 },
+    };
+    const configured = configureExtension(original, { b: 99, c: 3 });
+
+    // Original unchanged
+    expect(original.config).toEqual({ a: 1, b: 2 });
+    // New object with merged config
+    expect(configured.config).toEqual({ a: 1, b: 99, c: 3 });
+    // Type preserved
+    expect(configured.type).toBe('test');
+  });
+
+  it('should handle extension with no existing config', () => {
+    const original: ShipEditorBlockExtension = { type: 'bare' };
+    const configured = configureExtension(original, { foo: 'bar' });
+
+    expect(configured.config).toEqual({ foo: 'bar' });
+    expect(original.config).toBeUndefined();
+  });
+
+  it('should preserve all other extension properties', () => {
+    const toHTML = (_b: any, c: string) => `<div>${c}</div>`;
+    const parseHTML = () => null;
+    const original: ShipEditorBlockExtension = {
+      type: 'full',
+      keybinding: 'editor.test',
+      toHTML,
+      parseHTML,
+      config: { x: 1 },
+    };
+    const configured = configureExtension(original, { y: 2 });
+
+    expect(configured.keybinding).toBe('editor.test');
+    expect(configured.toHTML).toBe(toHTML);
+    expect(configured.parseHTML).toBe(parseHTML);
+  });
+
+  it('should not mutate the source extension', () => {
+    const original: ShipEditorBlockExtension = {
+      type: 'immutable',
+      config: { deep: { nested: true } },
+    };
+    const configured = configureExtension(original, { deep: 'overridden' });
+
+    expect(original.config!['deep']).toEqual({ nested: true });
+    expect(configured.config!['deep']).toBe('overridden');
+  });
+});
+
+describe('ShipEditor Core: Extension Config on Built-in Extensions', () => {
+  it('imageBlockExtension should have default config', () => {
+    const registry = ShipEditorRegistry.getInstance();
+    const imageExt = registry.getBlock('image');
+
+    expect(imageExt).toBeDefined();
+    expect(imageExt!.config).toBeDefined();
+    expect(imageExt!.config!['defaultMode']).toBe('custom');
+    expect(imageExt!.config!['defaultSize']).toBe('medium');
+  });
+
+  it('should allow overriding image config with configureExtension', () => {
+    const imageExt = ShipEditorRegistry.getInstance().getBlock('image')!;
+    const custom = configureExtension(imageExt, { defaultMode: 'content', defaultSize: 'auto' });
+
+    expect(custom.config!['defaultMode']).toBe('content');
+    expect(custom.config!['defaultSize']).toBe('auto');
+    // toHTML/parseHTML still work
+    expect(custom.type).toBe('image');
+    expect(custom.toHTML).toBeDefined();
+    expect(custom.parseHTML).toBeDefined();
+  });
+
+  it('configuring image extension should not affect the registered default', () => {
+    const imageExt = ShipEditorRegistry.getInstance().getBlock('image')!;
+    configureExtension(imageExt, { defaultMode: 'theater', defaultSize: 'large' });
+
+    // Original in registry unchanged
+    const stillDefault = ShipEditorRegistry.getInstance().getBlock('image')!;
+    expect(stillDefault.config!['defaultMode']).toBe('custom');
+    expect(stillDefault.config!['defaultSize']).toBe('medium');
+  });
+});
+
+describe('ShipEditor Core: Registry clearBlocks and registerDefaultMarks', () => {
+  it('clearBlocks should remove all blocks but keep marks', () => {
+    const registry = ShipEditorRegistry.getInstance();
+    const marksBefore = registry.getAllMarks().length;
+    const blocksBefore = registry.getAllBlocks().length;
+
+    expect(blocksBefore).toBeGreaterThan(0);
+    expect(marksBefore).toBeGreaterThan(0);
+
+    registry.clearBlocks();
+    expect(registry.getAllBlocks().length).toBe(0);
+    // Marks untouched
+    expect(registry.getAllMarks().length).toBe(marksBefore);
+  });
+
+  it('registerDefaultMarks should restore marks after clear', () => {
+    const registry = ShipEditorRegistry.getInstance();
+    registry.clear();
+    expect(registry.getAllMarks().length).toBe(0);
+
+    registry.registerDefaultMarks();
+    const marks = registry.getAllMarks();
+    expect(marks.length).toBeGreaterThan(0);
+    expect(marks.some(m => m.type === 'bold')).toBe(true);
+    expect(marks.some(m => m.type === 'italic')).toBe(true);
+  });
+});
+
+describe('ShipEditor Core: Info-Callout with Inline Marks', () => {
+  it('should preserve bold text inside an info-callout', () => {
+    const doc: ShipEditorDocument = [
+      {
+        type: 'info-callout',
+        content: [
+          { type: 'text', text: 'This is ' },
+          { type: 'text', text: 'important', marks: [{ type: 'bold' }] },
+        ],
+      },
+    ];
+
+    const html = jsonToHTML(doc);
+    expect(html).toContain('sh-editor-callout-info');
+    expect(html).toContain('💡');
+    expect(html).toContain('This is <strong>important</strong>');
+  });
+
+  it('should round-trip info-callout with bold + italic text', () => {
+    const html =
+      '<blockquote class="sh-editor-callout sh-editor-callout-info">' +
+      '<span class="sh-editor-callout-icon" contenteditable="false">💡</span>' +
+      'Read the <strong><em>docs</em></strong> carefully' +
+      '</blockquote>';
+
+    const parsed = htmlToJSON(html);
+    expect(parsed[0].type).toBe('info-callout');
+    expect(getJSONText(parsed).trim()).toBe('Read the docs carefully');
+
+    // Verify inline marks survived
+    const content = parsed[0].content as ShipEditorInlineNode[];
+    const docsNode = content.find((n) => n.text === 'docs');
+    expect(docsNode).toBeDefined();
+    expect(docsNode!.marks).toBeDefined();
+    expect(docsNode!.marks!.some((m) => m.type === 'bold')).toBe(true);
+    expect(docsNode!.marks!.some((m) => m.type === 'italic')).toBe(true);
+  });
+
+  it('should not match a plain blockquote as info-callout', () => {
+    const html = '<blockquote>Just a quote</blockquote>';
+    const parsed = htmlToJSON(html);
+    expect(parsed[0].type).toBe('quote');
+    expect(getJSONText(parsed).trim()).toBe('Just a quote');
+  });
+
+  it('info-callout and plain quote should coexist in the same document', () => {
+    const doc: ShipEditorDocument = [
+      { type: 'info-callout', content: [{ type: 'text', text: 'A tip' }] },
+      { type: 'quote', content: [{ type: 'text', text: 'A wise person said' }] },
+    ];
+
+    const html = jsonToHTML(doc);
+    const reparsed = htmlToJSON(html);
+
+    expect(reparsed.length).toBe(2);
+    expect(reparsed[0].type).toBe('info-callout');
+    expect(reparsed[1].type).toBe('quote');
+    expect(getJSONText([reparsed[0]]).trim()).toBe('A tip');
+    expect(getJSONText([reparsed[1]]).trim()).toBe('A wise person said');
   });
 });

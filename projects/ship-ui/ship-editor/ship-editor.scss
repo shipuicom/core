@@ -189,6 +189,27 @@ $shipEditor: true !default;
         color: var(--base-11);
         border-radius: 0 var(--shape-2) var(--shape-2) 0;
         font-style: italic;
+
+        // Info Callout — override the plain blockquote styling
+        &.sh-editor-callout {
+          font-style: normal;
+          display: flex;
+          align-items: flex-start;
+          gap: #{p2r(10)};
+          padding: #{p2r(12)} #{p2r(16)};
+        }
+
+        &.sh-editor-callout-info {
+          border-left-color: var(--info-8, var(--primary-8));
+          background-color: var(--info-2, var(--primary-2));
+        }
+
+        .sh-editor-callout-icon {
+          flex-shrink: 0;
+          font-size: #{p2r(18)};
+          line-height: 1.4;
+          user-select: none;
+        }
       }
 
       pre {

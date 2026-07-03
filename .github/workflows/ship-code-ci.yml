@@ -1,0 +1,123 @@
+name: ship-code CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'projects/ship-ui/ship-code/**'
+  pull_request:
+    paths:
+      - 'projects/ship-ui/ship-code/**'
+
+concurrency:
+  group: ship-code-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  # Unit tests — correctness, edge cases, scenarios
+  # ──────────────────────────────────────────────────────────────────────────
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run ship-code tests
+        run: npx vitest run --config projects/ship-ui/vitest-base.config.ts projects/ship-ui/ship-code/ --reporter=verbose
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Fuzz tests — property-based random testing
+  # ──────────────────────────────────────────────────────────────────────────
+  fuzz:
+    name: Fuzz Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run fuzz tests
+        run: npx vitest run --config projects/ship-ui/vitest-base.config.ts projects/ship-ui/ship-code/core/general-tests/fuzz.spec.ts --reporter=verbose
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Performance benchmarks — regression detection
+  # ──────────────────────────────────────────────────────────────────────────
+  perf:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run perf tests (vitest budgets)
+        run: npx vitest run --config projects/ship-ui/vitest-base.config.ts projects/ship-ui/ship-code/core/general-tests/perf.spec.ts --reporter=verbose
+
+      - name: Run benchmark suite
+        run: npx tsx projects/ship-ui/ship-code/benchmarks/run.ts
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            projects/ship-ui/ship-code/benchmarks/latest.json
+            projects/ship-ui/ship-code/benchmarks/latest.csv
+          retention-days: 90
+
+      - name: Comment benchmark results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(
+              fs.readFileSync('projects/ship-ui/ship-code/benchmarks/latest.json', 'utf-8')
+            );
+
+            const rows = results.results
+              .filter(r => r.category !== 'sharing')
+              .map(r => `| ${r.name} | ${r.avgMs.toFixed(4)} | ${r.opsPerSec.toLocaleString()} |`)
+              .join('\n');
+
+            const sharing = results.results
+              .filter(r => r.category === 'sharing')
+              .map(r => `- **${r.name}**: ${r.opsPerSec} lines shared`)
+              .join('\n');
+
+            const body = `## ⚡ ship-code Benchmark Results
+
+            | Benchmark | Avg (ms) | Ops/sec |
+            |-----------|----------|---------|
+            ${rows}
+
+            ### Structural Sharing
+            ${sharing}
+
+            <sub>Run: ${results.timestamp} · ${results.runtime}</sub>`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });

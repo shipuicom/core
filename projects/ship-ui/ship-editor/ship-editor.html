@@ -31,6 +31,7 @@
             class="sh-editor-btn"
             [class.enabled]="isBold()"
             [attr.aria-pressed]="isBold()"
+            aria-label="Bold"
             (click)="formatText('bold')"
             [shTooltip]="boldTip">
             <sh-icon>text-b</sh-icon>
@@ -40,6 +41,7 @@
             class="sh-editor-btn"
             [class.enabled]="isItalic()"
             [attr.aria-pressed]="isItalic()"
+            aria-label="Italic"
             (click)="formatText('italic')"
             [shTooltip]="italicTip">
             <sh-icon>text-italic</sh-icon>
@@ -49,6 +51,7 @@
             class="sh-editor-btn"
             [class.enabled]="isUnderline()"
             [attr.aria-pressed]="isUnderline()"
+            aria-label="Underline"
             (click)="formatText('underline')"
             [shTooltip]="underlineTip">
             <sh-icon>text-underline</sh-icon>
@@ -58,11 +61,12 @@
             class="sh-editor-btn"
             [class.enabled]="isStrike()"
             [attr.aria-pressed]="isStrike()"
+            aria-label="Strikethrough"
             (click)="formatText('strikeThrough')"
             [shTooltip]="strikeTip">
             <sh-icon>text-strikethrough</sh-icon>
           </button>
-          <button type="button" class="sh-editor-btn" (click)="formatText('removeFormat')" [shTooltip]="clearFormatTip">
+          <button type="button" class="sh-editor-btn" aria-label="Clear Formatting" (click)="formatText('removeFormat')" [shTooltip]="clearFormatTip">
             <sh-icon>eraser</sh-icon>
           </button>
         </div>
@@ -96,9 +100,12 @@
                 <sh-icon>quotes</sh-icon>
                 <span>Quote</span>
               </button>
+              <button (click)="selectBlockType('info-callout')" [class.enabled]="activeBlock() === 'info-callout'">
+                <sh-icon>lightbulb</sh-icon>
+                <span>Info Callout</span>
+              </button>
               <button (click)="selectBlockType('pre')" [class.enabled]="activeBlock() === 'pre'">
                 <sh-icon>code</sh-icon>
-
                 <span>Code Block</span>
               </button>
             </div>

@@ -1,0 +1,294 @@
+{
+  "timestamp": "2026-07-03T09:41:24.214Z",
+  "runtime": "Node v26.3.0",
+  "results": [
+    {
+      "name": "createDocument (100 lines)",
+      "category": "document.create",
+      "docLines": 100,
+      "iterations": 500,
+      "totalMs": 2.159,
+      "avgMs": 0.0043,
+      "opsPerSec": 231589
+    },
+    {
+      "name": "createDocument (1000 lines)",
+      "category": "document.create",
+      "docLines": 1000,
+      "iterations": 500,
+      "totalMs": 27.405,
+      "avgMs": 0.0548,
+      "opsPerSec": 18245
+    },
+    {
+      "name": "createDocument (10000 lines)",
+      "category": "document.create",
+      "docLines": 10000,
+      "iterations": 50,
+      "totalMs": 27.814,
+      "avgMs": 0.5563,
+      "opsPerSec": 1798
+    },
+    {
+      "name": "createDocument (50000 lines)",
+      "category": "document.create",
+      "docLines": 50000,
+      "iterations": 10,
+      "totalMs": 30.343,
+      "avgMs": 3.0343,
+      "opsPerSec": 330
+    },
+    {
+      "name": "insertText char (100 lines)",
+      "category": "document.insertChar",
+      "docLines": 100,
+      "iterations": 5000,
+      "totalMs": 9.731,
+      "avgMs": 0.0019,
+      "opsPerSec": 513839
+    },
+    {
+      "name": "insertText char (1000 lines)",
+      "category": "document.insertChar",
+      "docLines": 1000,
+      "iterations": 5000,
+      "totalMs": 11.036,
+      "avgMs": 0.0022,
+      "opsPerSec": 453054
+    },
+    {
+      "name": "insertText char (10000 lines)",
+      "category": "document.insertChar",
+      "docLines": 10000,
+      "iterations": 500,
+      "totalMs": 9.651,
+      "avgMs": 0.0193,
+      "opsPerSec": 51805
+    },
+    {
+      "name": "insertText char (50000 lines)",
+      "category": "document.insertChar",
+      "docLines": 50000,
+      "iterations": 50,
+      "totalMs": 7.621,
+      "avgMs": 0.1524,
+      "opsPerSec": 6561
+    },
+    {
+      "name": "insertText newline (1000 lines)",
+      "category": "document.insertNewline",
+      "docLines": 1000,
+      "iterations": 2000,
+      "totalMs": 10.024,
+      "avgMs": 0.005,
+      "opsPerSec": 199524
+    },
+    {
+      "name": "insertText newline (10000 lines)",
+      "category": "document.insertNewline",
+      "docLines": 10000,
+      "iterations": 200,
+      "totalMs": 7.875,
+      "avgMs": 0.0394,
+      "opsPerSec": 25395
+    },
+    {
+      "name": "insertText newline (50000 lines)",
+      "category": "document.insertNewline",
+      "docLines": 50000,
+      "iterations": 20,
+      "totalMs": 2.754,
+      "avgMs": 0.1377,
+      "opsPerSec": 7261
+    },
+    {
+      "name": "deleteRange single line (1000 lines)",
+      "category": "document.deleteSingle",
+      "docLines": 1000,
+      "iterations": 2000,
+      "totalMs": 6.054,
+      "avgMs": 0.003,
+      "opsPerSec": 330333
+    },
+    {
+      "name": "deleteRange single line (10000 lines)",
+      "category": "document.deleteSingle",
+      "docLines": 10000,
+      "iterations": 200,
+      "totalMs": 3.662,
+      "avgMs": 0.0183,
+      "opsPerSec": 54617
+    },
+    {
+      "name": "deleteRange single line (50000 lines)",
+      "category": "document.deleteSingle",
+      "docLines": 50000,
+      "iterations": 20,
+      "totalMs": 2.085,
+      "avgMs": 0.1043,
+      "opsPerSec": 9590
+    },
+    {
+      "name": "deleteRange multi-line (1000 lines)",
+      "category": "document.deleteMulti",
+      "docLines": 1000,
+      "iterations": 2000,
+      "totalMs": 6.635,
+      "avgMs": 0.0033,
+      "opsPerSec": 301424
+    },
+    {
+      "name": "deleteRange multi-line (10000 lines)",
+      "category": "document.deleteMulti",
+      "docLines": 10000,
+      "iterations": 200,
+      "totalMs": 4.018,
+      "avgMs": 0.0201,
+      "opsPerSec": 49780
+    },
+    {
+      "name": "deleteRange multi-line (50000 lines)",
+      "category": "document.deleteMulti",
+      "docLines": 50000,
+      "iterations": 20,
+      "totalMs": 2.729,
+      "avgMs": 0.1364,
+      "opsPerSec": 7329
+    },
+    {
+      "name": "getText (1000 lines)",
+      "category": "document.getText",
+      "docLines": 1000,
+      "iterations": 500,
+      "totalMs": 13.933,
+      "avgMs": 0.0279,
+      "opsPerSec": 35886
+    },
+    {
+      "name": "getText (10000 lines)",
+      "category": "document.getText",
+      "docLines": 10000,
+      "iterations": 50,
+      "totalMs": 13.346,
+      "avgMs": 0.2669,
+      "opsPerSec": 3746
+    },
+    {
+      "name": "getText (50000 lines)",
+      "category": "document.getText",
+      "docLines": 50000,
+      "iterations": 10,
+      "totalMs": 15.536,
+      "avgMs": 1.5536,
+      "opsPerSec": 644
+    },
+    {
+      "name": "100 sequential inserts (1000 lines)",
+      "category": "document.seqInsert100",
+      "docLines": 1000,
+      "iterations": 1,
+      "totalMs": 1.197,
+      "avgMs": 1.1966,
+      "opsPerSec": 836
+    },
+    {
+      "name": "100 sequential inserts (10000 lines)",
+      "category": "document.seqInsert100",
+      "docLines": 10000,
+      "iterations": 1,
+      "totalMs": 4.21,
+      "avgMs": 4.2103,
+      "opsPerSec": 238
+    },
+    {
+      "name": "moveCaretRight 1000x (1000 lines)",
+      "category": "caret.moveRight",
+      "docLines": 1000,
+      "iterations": 1,
+      "totalMs": 0.388,
+      "avgMs": 0.3875,
+      "opsPerSec": 2580
+    },
+    {
+      "name": "moveCaretRight 1000x (10000 lines)",
+      "category": "caret.moveRight",
+      "docLines": 10000,
+      "iterations": 1,
+      "totalMs": 0.173,
+      "avgMs": 0.1735,
+      "opsPerSec": 5764
+    },
+    {
+      "name": "moveCaretDown 1000x (1000 lines)",
+      "category": "caret.moveDown",
+      "docLines": 1000,
+      "iterations": 1,
+      "totalMs": 0.429,
+      "avgMs": 0.4287,
+      "opsPerSec": 2333
+    },
+    {
+      "name": "moveCaretDown 1000x (10000 lines)",
+      "category": "caret.moveDown",
+      "docLines": 10000,
+      "iterations": 1,
+      "totalMs": 0.183,
+      "avgMs": 0.1827,
+      "opsPerSec": 5472
+    },
+    {
+      "name": "moveWordRight 500x (1000 lines)",
+      "category": "caret.moveWordRight",
+      "docLines": 1000,
+      "iterations": 1,
+      "totalMs": 0.483,
+      "avgMs": 0.4827,
+      "opsPerSec": 2072
+    },
+    {
+      "name": "moveWordRight 500x (10000 lines)",
+      "category": "caret.moveWordRight",
+      "docLines": 10000,
+      "iterations": 1,
+      "totalMs": 0.28,
+      "avgMs": 0.2796,
+      "opsPerSec": 3577
+    },
+    {
+      "name": "applyTransaction 10 changes (1000 lines)",
+      "category": "document.transaction",
+      "docLines": 1000,
+      "iterations": 200,
+      "totalMs": 6.567,
+      "avgMs": 0.0328,
+      "opsPerSec": 30457
+    },
+    {
+      "name": "applyTransaction 10 changes (10000 lines)",
+      "category": "document.transaction",
+      "docLines": 10000,
+      "iterations": 20,
+      "totalMs": 5.443,
+      "avgMs": 0.2722,
+      "opsPerSec": 3674
+    },
+    {
+      "name": "structural sharing after insert (1000 lines)",
+      "category": "sharing",
+      "docLines": 1000,
+      "iterations": 1,
+      "totalMs": 0,
+      "avgMs": 0,
+      "opsPerSec": 999
+    },
+    {
+      "name": "structural sharing after insert (10000 lines)",
+      "category": "sharing",
+      "docLines": 10000,
+      "iterations": 1,
+      "totalMs": 0,
+      "avgMs": 0,
+      "opsPerSec": 9999
+    }
+  ]
+}
