@@ -35,14 +35,28 @@ $shipSidenav: true !default;
       height: 100%;
       overflow: auto;
       padding: p2r(16 16 16 0);
-      background-color: var(--base-1);
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: p2r(16);
+        right: p2r(16);
+        bottom: p2r(16);
+        left: 0;
+        background-color: var(--base-1);
+        border-radius: var(--shape-3);
+        pointer-events: none;
+      }
     }
 
     main {
+      position: relative;
+      z-index: 1;
       overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: auto;
       border: var(--border-10);
+      background-color: var(--base-1);
       border-radius: var(--shape-3);
       height: calc(100vh - 2rem);
       box-shadow: var(--box-shadow-35);
