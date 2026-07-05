@@ -15,8 +15,8 @@ import { ShipCardVariant, ShipColor } from '@ship-ui/core';
       [attr.tabindex]="disableToggle() ? null : '0'"
       [attr.aria-expanded]="disableToggle() ? null : (isActive() ? 'true' : 'false')"
       [attr.aria-disabled]="disableToggle() ? 'true' : null"
-      (click)="!disableToggle() && toggle()"
-      (keydown)="!disableToggle() && handleKeyDown($event)">
+      (click)="disableToggle() ? null : toggle()"
+      (keydown)="disableToggle() ? null : handleKeyDown($event)">
       <ng-content select="[title]">Title</ng-content>
 
       @if (!disableToggle()) {

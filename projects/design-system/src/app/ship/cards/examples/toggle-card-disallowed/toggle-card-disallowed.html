@@ -2,3 +2,20 @@
   <ng-container title>Advanced options</ng-container>
   <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
 </sh-toggle-card>
+
+<sh-toggle-card [disableToggle]="true">
+  <div title style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+    <span>Options</span>
+    <sh-menu [searchable]="true">
+      <button shButton class="outlined small">Select option</button>
+      <ng-container menu>
+        @for (item of menuItems; track item.value) {
+          <button (click)="select(item)" [class.selected]="selected === item.value">
+            {{ item.label }}
+          </button>
+        }
+      </ng-container>
+    </sh-menu>
+  </div>
+  <p>This toggle card has a searchable menu in its title. You should be able to type in the search field.</p>
+</sh-toggle-card>
