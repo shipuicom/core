@@ -1,7 +1,8 @@
+import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { formatShortcut, matchKeybinding, parseKeybinding } from './keybinding-utils';
 import { SHIP_A11Y_KEYBINDINGS_OVERRIDE } from './ship-a11y-keybindings-override.token';
+import { SHIP_A11Y_KEYBINDINGS_DISABLED } from './ship-a11y-keybindings-disabled.token';
 
 export const DEFAULT_KEYBINDINGS: Record<string, string> = {
   'datepicker.prev-month': 'PageUp',
@@ -93,10 +94,14 @@ export const DEFAULT_KEYBINDINGS: Record<string, string> = {
 export class ShipA11yKeybindingsService {
   #platformId = inject(PLATFORM_ID);
   #overrides = inject(SHIP_A11Y_KEYBINDINGS_OVERRIDE, { optional: true });
+  #disabledToken = inject(SHIP_A11Y_KEYBINDINGS_DISABLED, { optional: true });
 
   #bindings = new Map<string, string>();
-
   #defaults = new Map<string, string>();
+
+  #pauseCount = 0;
+  isPaused = signal(false);
+  isDisabled = signal(this.#disabledToken ?? false);
 
   get isMac(): boolean {
     if (!isPlatformBrowser(this.#platformId)) return false;
@@ -107,6 +112,18 @@ export class ShipA11yKeybindingsService {
     this.registerDefaults(DEFAULT_KEYBINDINGS);
     if (this.#overrides) {
       this.registerOverrides(this.#overrides);
+    }
+  }
+
+  pause(): void {
+    this.#pauseCount++;
+    this.isPaused.set(true);
+  }
+
+  resume(): void {
+    this.#pauseCount = Math.max(0, this.#pauseCount - 1);
+    if (this.#pauseCount === 0) {
+      this.isPaused.set(false);
     }
   }
 
@@ -144,6 +161,8 @@ export class ShipA11yKeybindingsService {
   }
 
   matches(event: KeyboardEvent, action: string): boolean {
+    if (this.isDisabled()) return false;
+
     const shortcut = this.getShortcut(action);
     if (!shortcut) return false;
 

@@ -1,0 +1,13 @@
+<sh-menu [searchable]="true">
+  <button shButton class="outlined">Menu with Titles and Search</button>
+  <ng-container menu>
+    @for (section of sections; track section.title) {
+      <h3>{{ section.title }}</h3>
+      @for (item of section.items; track item.value) {
+        <button (click)="select(item.value)" [class.selected]="selected === item.value">
+          {{ item.label }}
+        </button>
+      }
+    }
+  </ng-container>
+</sh-menu>

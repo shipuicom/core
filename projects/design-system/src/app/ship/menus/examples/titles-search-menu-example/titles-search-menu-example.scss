@@ -1,0 +1,29 @@
+h3 {
+  margin: 8px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--ship-color-text-secondary);
+  letter-spacing: 0.05em;
+}
+
+button {
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--ship-color-text-primary);
+  font-size: 14px;
+
+  &:hover {
+    background: var(--ship-color-surface-hover);
+  }
+
+  &.selected {
+    background: var(--ship-color-primary-soft);
+    color: var(--ship-color-primary);
+  }
+}

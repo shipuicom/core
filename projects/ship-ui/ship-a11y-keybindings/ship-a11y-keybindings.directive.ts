@@ -66,6 +66,9 @@ export class ShipA11yKeybindingsDirective {
     effect((onCleanup) => {
       if (this.mode() === 'global' && isPlatformBrowser(this.#platformId)) {
         const listener = (event: KeyboardEvent) => {
+          if (this.#service.isPaused()) {
+            return;
+          }
           
           if (this.#isFocusInInput() && !event.ctrlKey && !event.metaKey && !event.altKey) {
             return;

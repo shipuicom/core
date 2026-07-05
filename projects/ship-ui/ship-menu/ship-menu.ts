@@ -1,11 +1,25 @@
-import { ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, ElementRef, HostListener, inject, input, model, output, Renderer2, signal, viewChild, ViewEncapsulation } from '@angular/core';
-import { ShipFormField } from '@ship-ui/core/ship-form-field';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DOCUMENT,
+  effect,
+  ElementRef,
+  HostListener,
+  inject,
+  input,
+  model,
+  output,
+  Renderer2,
+  signal,
+  viewChild,
+  ViewEncapsulation,
+} from '@angular/core';
+import { createFormInputSignal, generateUniqueId, observeChildren } from '@ship-ui/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
+import { ShipFormField } from '@ship-ui/core/ship-form-field';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipPopover } from '@ship-ui/core/ship-popover';
-import { createFormInputSignal } from '@ship-ui/core';
-import { observeChildren } from '@ship-ui/core';
-import { generateUniqueId } from '@ship-ui/core';
 
 const openMenus: ShipMenu[] = [];
 
@@ -127,13 +141,23 @@ export class ShipMenu {
   activeOptionId = signal<string | undefined>(undefined);
 
   abortController: AbortController | null = null;
-  optionsEffect = effect(() => {
+  optionsEffect = effect((onCleanup) => {
     if (this.abortController !== null) {
       this.abortController.abort();
       this.abortController = null;
     }
 
     if (!this.isOpen()) return;
+
+    if (this.searchable()) {
+      this.#keybindings.pause();
+    }
+
+    onCleanup(() => {
+      if (this.searchable()) {
+        this.#keybindings.resume();
+      }
+    });
 
     this.abortController = new AbortController();
 
@@ -183,10 +207,10 @@ export class ShipMenu {
   });
 
   keyDownEventListener = (e: KeyboardEvent) => {
-    
     if (openMenus.at(-1) !== this) return;
 
     const activeOptionIndex = this.activeOptionIndex();
+    const searchable = this.searchable();
 
     if (this.#keybindings.matches(e, 'menu.next')) {
       e.preventDefault();
@@ -195,11 +219,10 @@ export class ShipMenu {
       e.preventDefault();
       this.activeOptionIndex.set(this.prevActiveIndex(activeOptionIndex));
     } else if (this.#keybindings.matches(e, 'menu.open-submenu')) {
-      if (activeOptionIndex > -1) {
+      if (!searchable && activeOptionIndex > -1) {
         const el = this.activeElements()[activeOptionIndex as number];
         const parent = el.parentElement;
 
-        
         if (parent?.hasAttribute('trigger')) {
           e.preventDefault();
           const event = new CustomEvent('ship-menu-open', {
@@ -212,29 +235,33 @@ export class ShipMenu {
         }
       }
     } else if (this.#keybindings.matches(e, 'menu.close-submenu')) {
-      if (this.isSubmenu()) {
+      if (!searchable && this.isSubmenu()) {
         e.preventDefault();
         this.close('closed');
       }
     } else if (this.#keybindings.matches(e, 'menu.select')) {
-      e.preventDefault();
-      if (activeOptionIndex > -1) {
-        const el = this.activeElements()[activeOptionIndex as number];
-        const parent = el.parentElement;
+      const isEnter = e.key === 'Enter';
+      const isSpace = e.key === ' ' || e.key === 'Spacebar';
 
-        
-        if (parent?.hasAttribute('trigger')) {
-          const event = new CustomEvent('ship-menu-open', {
-            bubbles: true,
-            cancelable: true,
-            detail: { keyboard: true },
-          });
+      if (isEnter || (isSpace && !searchable)) {
+        e.preventDefault();
+        if (activeOptionIndex > -1) {
+          const el = this.activeElements()[activeOptionIndex as number];
+          const parent = el.parentElement;
 
-          el.dispatchEvent(event);
-        } else {
-          el.click();
-          if (!el.querySelector('sh-checkbox')) {
-            queueMicrotask(() => this.close('active'));
+          if (parent?.hasAttribute('trigger')) {
+            const event = new CustomEvent('ship-menu-open', {
+              bubbles: true,
+              cancelable: true,
+              detail: { keyboard: true },
+            });
+
+            el.dispatchEvent(event);
+          } else {
+            el.click();
+            if (!el.querySelector('sh-checkbox')) {
+              queueMicrotask(() => this.close('active'));
+            }
           }
         }
       }
