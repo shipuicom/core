@@ -2,25 +2,68 @@
   <!-- Editor Toolbar -->
   @if (toolbar() && !readonly()) {
     <!-- Tooltip templates with keyboard shortcuts -->
-    <ng-template #boldTip>Bold <sh-kbd ctrlOrCmd>B</sh-kbd></ng-template>
-    <ng-template #italicTip>Italic <sh-kbd ctrlOrCmd>I</sh-kbd></ng-template>
-    <ng-template #underlineTip>Underline <sh-kbd ctrlOrCmd>U</sh-kbd></ng-template>
-    <ng-template #strikeTip>Strikethrough <sh-kbd ctrlOrCmd shift>X</sh-kbd></ng-template>
-    <ng-template #clearFormatTip>Clear Formatting <sh-kbd ctrlOrCmd>\</sh-kbd></ng-template>
-    <ng-template #bulletListTip>Bullet List <sh-kbd ctrlOrCmd shift>8</sh-kbd></ng-template>
-    <ng-template #orderedListTip>Numbered List <sh-kbd ctrlOrCmd shift>7</sh-kbd></ng-template>
-    <ng-template #alignLeftTip>Align Left <sh-kbd ctrlOrCmd shift>L</sh-kbd></ng-template>
-    <ng-template #alignCenterTip>Align Center <sh-kbd ctrlOrCmd shift>E</sh-kbd></ng-template>
-    <ng-template #alignRightTip>Align Right <sh-kbd ctrlOrCmd shift>R</sh-kbd></ng-template>
-    <ng-template #linkTip>Insert Link <sh-kbd ctrlOrCmd>K</sh-kbd></ng-template>
-    <ng-template #hrTip>Horizontal Line <sh-kbd ctrlOrCmd shift>-</sh-kbd></ng-template>
-    <ng-template #undoTip>Undo <sh-kbd ctrlOrCmd>Z</sh-kbd></ng-template>
-    <ng-template #redoTip>Redo <sh-kbd ctrlOrCmd shift>Z</sh-kbd></ng-template>
+    <ng-template #boldTip>
+      Bold
+      <sh-kbd ctrlOrCmd>B</sh-kbd>
+    </ng-template>
+    <ng-template #italicTip>
+      Italic
+      <sh-kbd ctrlOrCmd>I</sh-kbd>
+    </ng-template>
+    <ng-template #underlineTip>
+      Underline
+      <sh-kbd ctrlOrCmd>U</sh-kbd>
+    </ng-template>
+    <ng-template #strikeTip>
+      Strikethrough
+      <sh-kbd ctrlOrCmd shift>X</sh-kbd>
+    </ng-template>
+    <ng-template #clearFormatTip>
+      Clear Formatting
+      <sh-kbd ctrlOrCmd>\</sh-kbd>
+    </ng-template>
+    <ng-template #bulletListTip>
+      Bullet List
+      <sh-kbd ctrlOrCmd shift>8</sh-kbd>
+    </ng-template>
+    <ng-template #orderedListTip>
+      Numbered List
+      <sh-kbd ctrlOrCmd shift>7</sh-kbd>
+    </ng-template>
+    <ng-template #alignLeftTip>
+      Align Left
+      <sh-kbd ctrlOrCmd shift>L</sh-kbd>
+    </ng-template>
+    <ng-template #alignCenterTip>
+      Align Center
+      <sh-kbd ctrlOrCmd shift>E</sh-kbd>
+    </ng-template>
+    <ng-template #alignRightTip>
+      Align Right
+      <sh-kbd ctrlOrCmd shift>R</sh-kbd>
+    </ng-template>
+    <ng-template #linkTip>
+      Insert Link
+      <sh-kbd ctrlOrCmd>K</sh-kbd>
+    </ng-template>
+    <ng-template #hrTip>
+      Horizontal Line
+      <sh-kbd ctrlOrCmd shift>-</sh-kbd>
+    </ng-template>
+    <ng-template #undoTip>
+      Undo
+      <sh-kbd ctrlOrCmd>Z</sh-kbd>
+    </ng-template>
+    <ng-template #redoTip>
+      Redo
+      <sh-kbd ctrlOrCmd shift>Z</sh-kbd>
+    </ng-template>
 
     <div
       class="sh-editor-toolbar"
       role="toolbar"
       aria-label="Rich Text Editor Formatting Toolbar"
+      (mousedown)="$event.preventDefault()"
       (keydown)="onToolbarKeyDown($event)"
       (focusin)="onToolbarFocusIn($event)">
       <!-- Text formatting group -->
@@ -66,7 +109,12 @@
             [shTooltip]="strikeTip">
             <sh-icon>text-strikethrough</sh-icon>
           </button>
-          <button type="button" class="sh-editor-btn" aria-label="Clear Formatting" (click)="formatText('removeFormat')" [shTooltip]="clearFormatTip">
+          <button
+            type="button"
+            class="sh-editor-btn"
+            aria-label="Clear Formatting"
+            (click)="formatText('removeFormat')"
+            [shTooltip]="clearFormatTip">
             <sh-icon>eraser</sh-icon>
           </button>
         </div>
@@ -83,22 +131,27 @@
               <button (click)="selectBlockType('p')" [class.enabled]="activeBlock() === 'p'">
                 <sh-icon>paragraph</sh-icon>
                 <span>Normal text</span>
+                <sh-kbd ctrlOrCmd alt>0</sh-kbd>
               </button>
               <button (click)="selectBlockType('h1')" [class.enabled]="activeBlock() === 'h1'">
                 <sh-icon>text-h-one</sh-icon>
                 <span>Heading 1</span>
+                <sh-kbd ctrlOrCmd alt>1</sh-kbd>
               </button>
               <button (click)="selectBlockType('h2')" [class.enabled]="activeBlock() === 'h2'">
                 <sh-icon>text-h-two</sh-icon>
                 <span>Heading 2</span>
+                <sh-kbd ctrlOrCmd alt>2</sh-kbd>
               </button>
               <button (click)="selectBlockType('h3')" [class.enabled]="activeBlock() === 'h3'">
                 <sh-icon>text-h-three</sh-icon>
                 <span>Heading 3</span>
+                <sh-kbd ctrlOrCmd alt>3</sh-kbd>
               </button>
               <button (click)="selectBlockType('blockquote')" [class.enabled]="activeBlock() === 'blockquote'">
                 <sh-icon>quotes</sh-icon>
                 <span>Quote</span>
+                <sh-kbd ctrlOrCmd shift>9</sh-kbd>
               </button>
               <button (click)="selectBlockType('info-callout')" [class.enabled]="activeBlock() === 'info-callout'">
                 <sh-icon>lightbulb</sh-icon>
@@ -107,6 +160,7 @@
               <button (click)="selectBlockType('pre')" [class.enabled]="activeBlock() === 'pre'">
                 <sh-icon>code</sh-icon>
                 <span>Code Block</span>
+                <sh-kbd ctrlOrCmd shift>C</sh-kbd>
               </button>
             </div>
           </sh-menu>
@@ -179,11 +233,7 @@
           <button type="button" class="sh-editor-btn" (click)="openImageModal()" shTooltip="Insert Image">
             <sh-icon>image</sh-icon>
           </button>
-          <button
-            type="button"
-            class="sh-editor-btn"
-            (click)="formatText('insertHorizontalRule')"
-            [shTooltip]="hrTip">
+          <button type="button" class="sh-editor-btn" (click)="formatText('insertHorizontalRule')" [shTooltip]="hrTip">
             <sh-icon>minus</sh-icon>
           </button>
         </div>
@@ -245,7 +295,7 @@
 
     <!-- Image contextual toolbar (shown when an image is selected) -->
     @if (selectedImage()) {
-      <div class="sh-editor-toolbar sh-editor-img-context-toolbar" role="toolbar" aria-label="Image options">
+      <div class="sh-editor-toolbar sh-editor-img-context-toolbar" role="toolbar" aria-label="Image options" (mousedown)="$event.preventDefault()">
         <div class="sh-editor-toolbar-group" role="group" aria-label="Image layout">
           <span class="sh-editor-img-context-label">Layout</span>
           <button
@@ -315,11 +365,7 @@
         <div class="spacer"></div>
 
         <div class="sh-editor-toolbar-group" role="group" aria-label="Image actions">
-          <button
-            type="button"
-            class="sh-editor-btn danger"
-            (click)="deleteImage()"
-            shTooltip="Delete Image">
+          <button type="button" class="sh-editor-btn danger" (click)="deleteImage()" shTooltip="Delete Image">
             <sh-icon>trash</sh-icon>
           </button>
         </div>
@@ -330,7 +376,7 @@
   <!-- Simple Dialogs for Link and Image Inputs -->
   @if (showLinkModal()) {
     <div class="sh-editor-modal">
-      <div class="sh-editor-modal-backdrop" (click)="showLinkModal.set(false)"></div>
+      <div class="sh-editor-modal-backdrop" (click)="cancelLinkModal()"></div>
       <div class="sh-editor-modal-content">
         <h4>Insert Link</h4>
         <input
@@ -341,7 +387,7 @@
           (keyup.enter)="applyLink(linkInput.value)"
           autofocus />
         <div class="sh-editor-modal-actions">
-          <button type="button" class="sh-editor-modal-btn cancel" (click)="showLinkModal.set(false)">Cancel</button>
+          <button type="button" class="sh-editor-modal-btn cancel" (click)="cancelLinkModal()">Cancel</button>
           <button type="button" class="sh-editor-modal-btn confirm" (click)="applyLink(linkInput.value)">Insert</button>
         </div>
       </div>
@@ -350,7 +396,7 @@
 
   @if (showImageModal()) {
     <div class="sh-editor-modal">
-      <div class="sh-editor-modal-backdrop" (click)="showImageModal.set(false)"></div>
+      <div class="sh-editor-modal-backdrop" (click)="cancelImageModal()"></div>
       <div class="sh-editor-modal-content">
         <h4>Insert Image</h4>
 
@@ -371,7 +417,7 @@
           class="sh-editor-input"
           (keyup.enter)="applyImage(imageInput.value)" />
         <div class="sh-editor-modal-actions">
-          <button type="button" class="sh-editor-modal-btn cancel" (click)="showImageModal.set(false)">Cancel</button>
+          <button type="button" class="sh-editor-modal-btn cancel" (click)="cancelImageModal()">Cancel</button>
           <button type="button" class="sh-editor-modal-btn confirm" (click)="applyImage(imageInput.value)">
             Insert
           </button>
@@ -379,8 +425,6 @@
       </div>
     </div>
   }
-
-
 
   <!-- Slash Commands floating menu using design system sh-menu component -->
   @if (filteredCommands().length > 0 && !readonly()) {
@@ -430,7 +474,7 @@
         aria-multiline="true"
         (beforeinput)="onBeforeInput($event)"
         (input)="onDOMInput()"
-        (blur)="onDOMBlur()"
+        (focusout)="onDOMFocusOut($event)"
         (focus)="isFocused.set(true)"></div>
     } @else {
       <textarea

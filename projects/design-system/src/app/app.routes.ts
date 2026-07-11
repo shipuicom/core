@@ -219,6 +219,10 @@ export const routes: Routes = [
         path: 'editors',
         loadComponent: () => import('./ship/editors/editors'),
       },
+      {
+        path: 'editors-exp',
+        loadComponent: () => import('./ship/editors-exp/editors-exp-showcase'),
+      },
     ],
   },
 ];

@@ -359,7 +359,7 @@ export const codeBlockBlockExtension: ShipEditorBlockExtension = {
         !event.shiftKey) ||
       (event instanceof InputEvent && (event.inputType === 'insertParagraph' || event.inputType === 'insertLineBreak'))
     ) {
-      const doc = cloneDoc(ctx.doc);
+      const doc = cloneBlockAt(ctx.doc, ctx.position.blockIndex, ctx.position.listItemIndex);
       const block = getTargetBlock(doc, ctx.position.blockIndex, ctx.position.listItemIndex);
       if (!block || !block.content) return false;
 
@@ -702,33 +702,37 @@ export function escapeHTML(text: string): string {
 }
 
 // JSON => HTML Converter
+
+/** Render a single block to its HTML string. */
+export function blockToHTML(
+  block: ShipEditorBlock,
+  registry: ShipEditorRegistry = ShipEditorRegistry.getInstance()
+): string {
+  const ext = registry.getBlock(block.type);
+  if (!ext) return '';
+
+  let contentHtml = '';
+  if (block.content && block.content.length > 0) {
+    const firstChild = block.content[0];
+    if (firstChild && 'type' in firstChild && firstChild.type === 'text') {
+      contentHtml = inlineToHTML(block.content as ShipEditorInlineNode[], registry);
+    } else {
+      contentHtml = jsonToHTML(block.content as ShipEditorBlock[], registry);
+    }
+  }
+
+  if (ext.toHTML) {
+    return ext.toHTML(block, contentHtml);
+  }
+  return '';
+}
+
 export function jsonToHTML(
   doc: ShipEditorDocument,
   registry: ShipEditorRegistry = ShipEditorRegistry.getInstance()
 ): string {
   if (!doc || !Array.isArray(doc)) return '';
-
-  return doc
-    .map((block) => {
-      const ext = registry.getBlock(block.type);
-      if (!ext) return '';
-
-      let contentHtml = '';
-      if (block.content && block.content.length > 0) {
-        const firstChild = block.content[0];
-        if (firstChild && 'type' in firstChild && firstChild.type === 'text') {
-          contentHtml = inlineToHTML(block.content as ShipEditorInlineNode[], registry);
-        } else {
-          contentHtml = jsonToHTML(block.content as ShipEditorBlock[], registry);
-        }
-      }
-
-      if (ext.toHTML) {
-        return ext.toHTML(block, contentHtml);
-      }
-      return '';
-    })
-    .join('');
+  return doc.map((block) => blockToHTML(block, registry)).join('');
 }
 
 export function inlineToHTML(
@@ -836,7 +840,15 @@ export function sanitizeHTML(rawHtml: string): string {
     const tag = el.tagName.toLowerCase();
 
     if (!allowedTags.has(tag)) {
-      // For security, remove unknown or blacklisted tags entirely
+      // Unwrap: replace the unknown element with its children (preserve text content).
+      // Sanitize children first so they're clean before re-parenting.
+      const childNodes = Array.from(el.childNodes);
+      for (const child of childNodes) {
+        sanitizeNode(child);
+      }
+      while (el.firstChild) {
+        el.parentNode?.insertBefore(el.firstChild, el);
+      }
       el.parentNode?.removeChild(el);
       return;
     }
@@ -941,6 +953,89 @@ export function htmlToJSON(
   }
 
   return doc;
+}
+
+/**
+ * Post-parse normalization for pasted AST content.
+ *
+ * Cleans up common artifacts from external HTML paste:
+ * 1. Removes empty paragraphs (no text content)
+ * 2. Merges short, unformatted text-only paragraphs into the preceding paragraph
+ *    (catches citation remnants like "Macworld", "Reddit" from Gemini/ChatGPT)
+ * 3. Trims leading/trailing whitespace from text nodes
+ */
+export function normalizeASTPaste(doc: ShipEditorDocument): ShipEditorDocument {
+  if (doc.length === 0) return doc;
+
+  const result: ShipEditorDocument = [];
+
+  for (let i = 0; i < doc.length; i++) {
+    const block = doc[i];
+
+    // Skip empty paragraphs (no content or whitespace-only)
+    if (block.type === 'paragraph') {
+      const text = getJSONText([block]).trim();
+      if (text === '') continue;
+    }
+
+    // Trim whitespace from inline text nodes
+    if (block.type === 'paragraph' && Array.isArray(block.content)) {
+      const content = block.content as ShipEditorInlineNode[];
+      for (const node of content) {
+        if (node.text) {
+          node.text = node.text.replace(/\s+/g, ' ');
+        }
+      }
+      // Trim leading whitespace on first node, trailing on last
+      if (content.length > 0) {
+        content[0].text = content[0].text.replace(/^\s+/, '');
+        content[content.length - 1].text = content[content.length - 1].text.replace(/\s+$/, '');
+      }
+      // Re-check if trimming made it empty
+      if (content.every((n) => n.text === '')) continue;
+    }
+
+    // Merge short, plain-text paragraphs into the previous paragraph.
+    // This catches citation artifacts (e.g. "Macworld", "The Gadgeteer") that
+    // appear as standalone <div> elements in pasted HTML from Gemini/ChatGPT.
+    if (
+      block.type === 'paragraph' &&
+      result.length > 0
+    ) {
+      const prev = result[result.length - 1];
+      const content = block.content as ShipEditorInlineNode[];
+      const isShortPlain =
+        content &&
+        content.length === 1 &&
+        !content[0].marks &&
+        content[0].text.length <= 40;
+
+      if (
+        isShortPlain &&
+        prev.type === 'paragraph' &&
+        Array.isArray(prev.content) &&
+        (prev.content as ShipEditorInlineNode[]).length > 0
+      ) {
+        // Merge into previous paragraph with a space separator
+        const prevContent = prev.content as ShipEditorInlineNode[];
+        const lastNode = prevContent[prevContent.length - 1];
+        if (lastNode && !lastNode.text.endsWith(' ')) {
+          lastNode.text += ' ';
+        }
+        prevContent.push(...content);
+        continue;
+      }
+    }
+
+    result.push(block);
+  }
+
+  // Ensure at least one block
+  if (result.length === 0) {
+    result.push({ type: 'paragraph', content: [] });
+  }
+
+  return result;
 }
 
 export function getAlign(el: HTMLElement): 'left' | 'center' | 'right' | undefined {
@@ -1461,7 +1556,49 @@ export function cloneDoc(doc: ShipEditorDocument): ShipEditorDocument {
   return doc.map((block) => cloneBlock(block));
 }
 
-function cloneBlock(block: ShipEditorBlock): ShipEditorBlock {
+/**
+ * Shallow-copy the document array. Block references are preserved (structural sharing).
+ * Only blocks that are subsequently mutated need to be individually cloned via cloneBlock().
+ * This pairs with #patchDOM — unchanged blocks keep the same identity, so their DOM nodes survive.
+ */
+export function shallowCloneDoc(doc: ShipEditorDocument): ShipEditorDocument {
+  return [...doc];
+}
+
+/**
+ * Shallow-copy the document array and deep-clone only the block at the given index.
+ * If listItemIndex is provided, the top-level list block AND the specific list item are cloned.
+ * All other blocks keep the same object reference (structural sharing).
+ */
+export function cloneBlockAt(
+  doc: ShipEditorDocument,
+  blockIndex: number,
+  listItemIndex?: number
+): ShipEditorDocument {
+  const newDoc = [...doc];
+  const block = newDoc[blockIndex];
+  if (!block) return newDoc;
+
+  if (
+    (block.type === 'bullet-list' || block.type === 'ordered-list') &&
+    typeof listItemIndex === 'number'
+  ) {
+    // Clone the list container and only the target list item
+    const clonedList: ShipEditorBlock = { ...block, attrs: block.attrs ? { ...block.attrs } : undefined };
+    clonedList.content = [...(block.content as ShipEditorBlock[])];
+    const items = clonedList.content as ShipEditorBlock[];
+    if (items[listItemIndex]) {
+      items[listItemIndex] = cloneBlock(items[listItemIndex]);
+    }
+    newDoc[blockIndex] = clonedList;
+  } else {
+    newDoc[blockIndex] = cloneBlock(block);
+  }
+
+  return newDoc;
+}
+
+export function cloneBlock(block: ShipEditorBlock): ShipEditorBlock {
   const copy: ShipEditorBlock = { ...block };
   if (block.attrs) {
     copy.attrs = { ...block.attrs };
@@ -1484,10 +1621,11 @@ function cloneBlock(block: ShipEditorBlock): ShipEditorBlock {
   return copy;
 }
 
+
 // Functional AST Operations
 export function insertText(doc: ShipEditorDocument, position: LogicalPosition, text: string): ShipEditorDocument {
-  // Clone doc to avoid mutating the original
-  const newDoc = cloneDoc(doc);
+  // Structural sharing: only clone the target block
+  const newDoc = cloneBlockAt(doc, position.blockIndex, position.listItemIndex);
   const block = getTargetBlock(newDoc, position.blockIndex, position.listItemIndex);
   if (!block) return newDoc;
 
@@ -1508,7 +1646,7 @@ export function insertText(doc: ShipEditorDocument, position: LogicalPosition, t
 }
 
 export function deleteRange(doc: ShipEditorDocument, from: LogicalPosition, to: LogicalPosition): ShipEditorDocument {
-  const newDoc = cloneDoc(doc);
+  const newDoc = cloneBlockAt(doc, from.blockIndex, from.listItemIndex);
   if (from.blockIndex !== to.blockIndex || from.listItemIndex !== to.listItemIndex) {
     // Multi-block / multi-item deletion fallback
     return newDoc;
@@ -1536,7 +1674,7 @@ export function applyMark(
   from: LogicalPosition,
   to: LogicalPosition
 ): ShipEditorDocument {
-  const newDoc = cloneDoc(doc);
+  const newDoc = cloneBlockAt(doc, from.blockIndex, from.listItemIndex);
   if (from.blockIndex !== to.blockIndex || from.listItemIndex !== to.listItemIndex) return newDoc;
 
   const block = getTargetBlock(newDoc, from.blockIndex, from.listItemIndex);
@@ -1562,7 +1700,7 @@ export function removeMark(
   from: LogicalPosition,
   to: LogicalPosition
 ): ShipEditorDocument {
-  const newDoc = cloneDoc(doc);
+  const newDoc = cloneBlockAt(doc, from.blockIndex, from.listItemIndex);
   if (from.blockIndex !== to.blockIndex || from.listItemIndex !== to.listItemIndex) return newDoc;
 
   const block = getTargetBlock(newDoc, from.blockIndex, from.listItemIndex);
@@ -1929,8 +2067,12 @@ export function splitBlock(
   doc: ShipEditorDocument,
   position: LogicalPosition
 ): { doc: ShipEditorDocument; newPosition: LogicalPosition } {
-  const newDoc = cloneDoc(doc);
+  const newDoc = shallowCloneDoc(doc);
 
+  // Clone only the block we're splitting so the original stays untouched
+  if (newDoc[position.blockIndex]) {
+    newDoc[position.blockIndex] = cloneBlock(newDoc[position.blockIndex]);
+  }
   let topBlock = newDoc[position.blockIndex];
   if (!topBlock) return { doc: newDoc, newPosition: position };
 
@@ -2040,11 +2182,19 @@ export function splitBlock(
   return { doc: newDoc, newPosition };
 }
 
+/**
+ * Returns true if the block type is a "void" block (no inline text content).
+ * Void blocks (image, hr) can't be merged — they should be deleted outright.
+ */
+export function isVoidBlock(block: ShipEditorBlock): boolean {
+  return block.type === 'image' || block.type === 'hr';
+}
+
 export function mergeBlocks(
   doc: ShipEditorDocument,
   position: LogicalPosition
 ): { doc: ShipEditorDocument; newPosition: LogicalPosition } {
-  const newDoc = cloneDoc(doc);
+  const newDoc = shallowCloneDoc(doc);
 
   if (
     position.blockIndex === 0 &&
@@ -2053,6 +2203,14 @@ export function mergeBlocks(
     position.offset === 0
   ) {
     return { doc: newDoc, newPosition: position };
+  }
+
+  // Clone blocks that will be mutated (current + previous)
+  if (newDoc[position.blockIndex]) {
+    newDoc[position.blockIndex] = cloneBlock(newDoc[position.blockIndex]);
+  }
+  if (position.blockIndex > 0 && newDoc[position.blockIndex - 1]) {
+    newDoc[position.blockIndex - 1] = cloneBlock(newDoc[position.blockIndex - 1]);
   }
 
   let newPosition = { ...position };
@@ -2143,7 +2301,27 @@ export function mergeBlocks(
     const prevBlock = newDoc[position.blockIndex - 1];
     const currentBlock = newDoc[position.blockIndex];
     if (prevBlock && currentBlock) {
-      if (prevBlock.type === 'bullet-list' || prevBlock.type === 'ordered-list') {
+      if (isVoidBlock(prevBlock)) {
+        // Previous block is void (image/hr) — delete it, keep current block.
+        newDoc.splice(position.blockIndex - 1, 1);
+        newPosition = {
+          blockIndex: position.blockIndex - 1,
+          inlineIndex: 0,
+          offset: 0,
+        };
+      } else if (isVoidBlock(currentBlock)) {
+        // Current block is void (image/hr) — delete it, move caret to end of previous.
+        const prevContent = (prevBlock.content as ShipEditorInlineNode[]) || [];
+        const targetInlineIndex = Math.max(0, prevContent.length - 1);
+        const targetOffset = prevContent[targetInlineIndex]?.text?.length || 0;
+
+        newDoc.splice(position.blockIndex, 1);
+        newPosition = {
+          blockIndex: position.blockIndex - 1,
+          inlineIndex: targetInlineIndex,
+          offset: targetOffset,
+        };
+      } else if (prevBlock.type === 'bullet-list' || prevBlock.type === 'ordered-list') {
         const items = prevBlock.content as ShipEditorBlock[];
         const lastItem = items[items.length - 1];
         if (lastItem) {
@@ -2191,7 +2369,7 @@ export function mergeBlockForward(
   doc: ShipEditorDocument,
   position: LogicalPosition
 ): { doc: ShipEditorDocument; newPosition: LogicalPosition } {
-  const newDoc = cloneDoc(doc);
+  const newDoc = shallowCloneDoc(doc);
   const block = getTargetBlock(newDoc, position.blockIndex, position.listItemIndex);
 
   // Only merge if caret is at the very end of the block's text content
@@ -2383,12 +2561,13 @@ export function formatDocRange(
   action: 'add' | 'remove' | 'toggle',
   attrs?: Record<string, any>
 ): ShipEditorDocument {
-  const newDoc = cloneDoc(doc);
+  const newDoc = shallowCloneDoc(doc);
 
   let shouldAdd = action === 'add';
   if (action === 'toggle') {
     let allHaveMark = true;
     let hasAnyText = false;
+    // Read-only pass — uses original block references (no cloning needed)
     for (let b = from.blockIndex; b <= to.blockIndex; b++) {
       const block = getTargetBlock(
         newDoc,
@@ -2422,11 +2601,20 @@ export function formatDocRange(
     shouldAdd = hasAnyText ? !allHaveMark : true;
   }
 
+  // Mutation pass — clone only the blocks we touch
   for (let b = from.blockIndex; b <= to.blockIndex; b++) {
+    const listItemIdx =
+      b === from.blockIndex ? from.listItemIndex : b === to.blockIndex ? to.listItemIndex : undefined;
+
+    // Clone this block before mutating it (structural sharing for untouched blocks)
+    if (newDoc[b] && newDoc[b] === doc[b]) {
+      newDoc[b] = cloneBlock(newDoc[b]);
+    }
+
     const block = getTargetBlock(
       newDoc,
       b,
-      b === from.blockIndex ? from.listItemIndex : b === to.blockIndex ? to.listItemIndex : undefined
+      listItemIdx
     );
     if (!block || !block.content) continue;
 
@@ -2471,8 +2659,12 @@ export function setBlockTypeInDoc(
     end: { blockIndex: number; listItemIndex?: number };
   };
 } | null {
-  const newDoc = cloneDoc(doc);
+  const newDoc = shallowCloneDoc(doc);
   const blockIndex = selection.start.blockIndex;
+  // Clone only the block we're modifying
+  if (newDoc[blockIndex]) {
+    newDoc[blockIndex] = cloneBlock(newDoc[blockIndex]);
+  }
   const block = newDoc[blockIndex];
   if (!block) return null;
 
@@ -2589,9 +2781,13 @@ export function toggleListInDoc(
     end: { blockIndex: number; listItemIndex?: number };
   };
 } | null {
-  const newDoc = cloneDoc(doc);
+  const newDoc = shallowCloneDoc(doc);
   const startBlockIdx = selection.start.blockIndex;
   const endBlockIdx = selection.end.blockIndex;
+  // Clone the start block since several paths mutate it in-place
+  if (newDoc[startBlockIdx]) {
+    newDoc[startBlockIdx] = cloneBlock(newDoc[startBlockIdx]);
+  }
   const block = newDoc[startBlockIdx];
   if (!block) return null;
 

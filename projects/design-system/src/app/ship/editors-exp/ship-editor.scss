@@ -1,0 +1,220 @@
+@use 'helpers' as *;
+
+sh-editor {
+  --editor-bg: var(--base-1);
+  --editor-code-bg: var(--base-2);
+  --editor-border-color: var(--base-4);
+  --editor-toolbar-bg: rgb(from var(--base-1) r g b / 70%);
+  --editor-toolbar-border: var(--base-4);
+  --editor-btn-hover: var(--base-3);
+  --editor-btn-active-bg: var(--primary-3);
+  --editor-btn-active-c: var(--primary-11);
+  --editor-footer-bg: var(--base-2);
+  --editor-p: #{p2r(16)} #{p2r(20)};
+  --editor-min-h: #{p2r(150)};
+  --editor-border-focus: var(--primary-8);
+  --editor-shadow-focus: 0 0 0 3px var(--primary-3);
+  --editor-shape: var(--shape-3);
+
+  display: block;
+  width: 100%;
+  border-radius: var(--editor-shape);
+
+  .sh-editor-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: var(--editor-min-h);
+    background-color: var(--editor-bg);
+    border: 1px solid var(--editor-border-color);
+    border-radius: inherit;
+    overflow: hidden;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+
+    &:focus-within {
+      border-color: var(--editor-border-focus);
+      box-shadow: var(--editor-shadow-focus);
+    }
+  }
+
+  .sh-editor-body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .sh-editor-content {
+    padding: var(--editor-p);
+    outline: none;
+    flex: 1;
+    z-index: 2;
+    position: relative;
+    color: var(--base-12);
+    font: var(--paragraph-20);
+    line-height: 1.6;
+    word-break: break-word;
+
+    /* Typography Styles */
+    p {
+      margin-top: 0;
+      margin-bottom: #{p2r(12)};
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    h1, h2, h3 {
+      color: var(--base-12);
+      font-weight: 700;
+      margin-top: #{p2r(16)};
+      margin-bottom: #{p2r(8)};
+      line-height: 1.3;
+    }
+
+    h1 { font: var(--title-30B); }
+    h2 { font: var(--title-20B); }
+    h3 { font: var(--title-10B); }
+
+    blockquote {
+      border-left: 4px solid var(--primary-8);
+      background: var(--base-2);
+      padding: #{p2r(8)} #{p2r(16)};
+      margin: #{p2r(16)} 0;
+      color: var(--base-11);
+      border-radius: 0 var(--shape-2) var(--shape-2) 0;
+      font-style: italic;
+
+      &.sh-editor-callout-info {
+        border-left-color: var(--info-8);
+        background: var(--info-2);
+        padding-left: #{p2r(40)};
+        position: relative;
+
+        &::before {
+          content: '💡';
+          position: absolute;
+          left: #{p2r(12)};
+          top: #{p2r(8)};
+          font-style: normal;
+          user-select: none;
+          pointer-events: none;
+        }
+      }
+    }
+
+    pre {
+      background-color: var(--editor-code-bg);
+      border-radius: var(--shape-2);
+      padding: #{p2r(12)} #{p2r(16)};
+      margin: #{p2r(16)} 0;
+      overflow-x: auto;
+      min-height: #{p2r(50)};
+      border: 2px solid transparent;
+      transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+
+      code {
+        font: var(--code-20);
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        color: inherit;
+      }
+
+      // Active highlight when caret is inside code block
+      &.sh-editor-code-active {
+        border-color: var(--primary-8);
+        box-shadow: 0 0 0 3px var(--primary-3);
+      }
+    }
+
+    code {
+      font: var(--code-20);
+      background-color: var(--base-2);
+      padding: #{p2r(2)} #{p2r(6)};
+      border-radius: var(--shape-1);
+      color: var(--primary-11);
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--editor-border-color);
+      margin: #{p2r(24)} 0;
+    }
+
+    // Custom highlight mark (registered via the [behaviors] extension point)
+    mark.sh-editor-highlight {
+      background-color: var(--warn-3);
+      color: var(--base-12);
+      border-radius: var(--shape-1);
+      padding: 0 #{p2r(2)};
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+  }
+
+  .sh-editor-placeholder {
+    position: absolute;
+    top: p2r(16);
+    left: p2r(20);
+    color: var(--base-7);
+    pointer-events: none;
+    z-index: 1;
+    font-style: italic;
+  }
+
+  .sh-editor-slash-menu {
+    position: fixed;
+    z-index: 100;
+    border: 1px solid var(--base-4);
+    border-radius: var(--shape-2);
+    box-shadow: var(--box-shadow-30);
+    display: flex;
+    flex-direction: column;
+    padding: p2r(4);
+    min-width: p2r(180);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgb(from var(--base-1) r g b / 85%);
+
+    .slash-header {
+      font-size: p2r(11);
+      text-transform: uppercase;
+      color: var(--base-8);
+      padding: p2r(6) p2r(12);
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    button {
+      padding: p2r(8) p2r(12);
+      text-align: left;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--base-11);
+      border-radius: var(--shape-1);
+      font: var(--paragraph-20);
+      transition: all 0.1s ease;
+
+      &:hover {
+        background: var(--base-3);
+        color: var(--base-12);
+      }
+    }
+  }
+
+  .sh-editor-stats {
+    padding: p2r(6) p2r(12);
+    font: var(--paragraph-10);
+    color: var(--base-8);
+    border-top: 1px solid var(--editor-border-color);
+    background: var(--editor-footer-bg);
+    text-align: right;
+  }
+}

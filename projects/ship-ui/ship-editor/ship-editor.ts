@@ -30,8 +30,10 @@ import { ShipMenu } from '@ship-ui/core/ship-menu';
 import { ShipTooltip } from '@ship-ui/core/ship-tooltip';
 
 import {
+  blockToHTML,
   CaretState,
   clearDocRangeFormatting,
+  cloneBlock,
   cloneDoc,
   codeBlockBlockExtension,
   configureExtension,
@@ -47,12 +49,14 @@ import {
   imageBlockExtension,
   infoCalloutBlockExtension,
   inlineToHTML,
+  isVoidBlock,
   jsonToHTML,
   LogicalPosition,
   mapDOMPositionToLogical,
   markdownToHTML,
   mergeBlockForward,
   mergeBlocks,
+  normalizeASTPaste,
   paragraphBlockExtension,
   parseImageClassNames,
   quoteBlockExtension,
@@ -328,6 +332,12 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
   canRedo = signal<boolean>(false);
 
   #savedRange: Range | null = null;
+  #savedLogicalSelection: { start: LogicalPosition; end: LogicalPosition } | null = null;
+  /** When true, `onSelectionChange` won't overwrite `#savedLogicalSelection`.
+   *  Locked when the editor loses focus (modals, blur) and unlocked only by
+   *  explicit user interaction (mousedown, keyboard input). */
+  #selectionLocked = false;
+  #previousDocState: ShipEditorDocument = [];
 
   documentState = signal<ShipEditorDocument>([]);
 
@@ -389,7 +399,9 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     // Update word/char counts from the AST. This is the single source of truth for
     // programmatic doc changes (transactions, undo, paste, etc.). The onDOMInput()
     // handler provides instant counts from editor.textContent during typing.
-    const text = getJSONText(doc).replace(/\u00a0/g, ' ').trim();
+    const text = getJSONText(doc)
+      .replace(/\u00a0/g, ' ')
+      .trim();
     this.charCount.set(text.length);
     this.wordCount.set(text === '' ? 0 : text.split(/\s+/).filter((w) => w.length > 0).length);
   }
@@ -432,6 +444,8 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
 
     if (opts.guardSelectionChange) this.#isInternalDOMUpdate = true;
 
+    const oldDoc = this.#previousDocState;
+
     const commit = () => {
       this.#setDocumentState(newDoc);
       this.#updateValueFromState();
@@ -441,11 +455,21 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
         if (editor) {
           const scrollTop = opts.preserveScroll ? editor.scrollTop : undefined;
           const scrollLeft = opts.preserveScroll ? editor.scrollLeft : undefined;
-          this.#renderHTMLToDOM(jsonToHTML(newDoc, this.#registry));
+
+          // Use incremental patching when we have a previous state to diff against
+          // and the editor already has children (not a first render).
+          if (oldDoc.length > 0 && editor.children.length > 0) {
+            this.#patchDOM(oldDoc, newDoc);
+          } else {
+            this.#renderHTMLToDOM(jsonToHTML(newDoc, this.#registry));
+          }
+
           if (scrollTop !== undefined) editor.scrollTop = scrollTop;
           if (scrollLeft !== undefined) editor.scrollLeft = scrollLeft;
         }
       }
+
+      this.#previousDocState = newDoc;
     };
 
     if (opts.suppressFeedback) {
@@ -502,17 +526,9 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       // Defer focus to next render so Angular has rendered the @if block
       afterNextRender(
         () => {
-          const uploadBtn = this.uploadBtn();
           const imageInput = this.imageInput();
-
-          if (this.imageUploadEnabled()) {
-            if (uploadBtn) {
-              uploadBtn.nativeElement.focus();
-            }
-          } else {
-            if (imageInput) {
-              imageInput.nativeElement.focus();
-            }
+          if (imageInput) {
+            imageInput.nativeElement.focus();
           }
         },
         { injector: this.#injector }
@@ -662,6 +678,27 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     return clean;
   }
 
+  /** Decorate a single block DOM element with data attributes and extension hooks. */
+  #decorateBlockEl(el: Element, doc: ShipEditorDocument, idx: number) {
+    el.setAttribute('data-block-index', idx.toString());
+    const tag = el.tagName.toLowerCase();
+    if (tag === 'ul' || tag === 'ol') {
+      const items = Array.from(el.querySelectorAll(':scope > li'));
+      items.forEach((item, itemIdx) => {
+        item.setAttribute('data-item-index', itemIdx.toString());
+      });
+    }
+
+    const block = doc[idx];
+    if (block) {
+      const ext = this.#registry.getBlock(block.type);
+      if (ext?.onBlockRender) {
+        ext.onBlockRender(el as HTMLElement, block, idx);
+      }
+    }
+  }
+
+  /** Full innerHTML render — used for initial load and external value sets. */
   #renderHTMLToDOM(html: string) {
     const editor = this.editorRef()?.nativeElement;
     if (!editor) return;
@@ -669,26 +706,75 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     editor.innerHTML = html;
 
     const doc = this.documentState();
-    const children = Array.from(editor.children);
-    children.forEach((child, idx) => {
-      child.setAttribute('data-block-index', idx.toString());
-      const tag = child.tagName.toLowerCase();
-      if (tag === 'ul' || tag === 'ol') {
-        const items = Array.from(child.querySelectorAll(':scope > li'));
-        items.forEach((item, itemIdx) => {
-          item.setAttribute('data-item-index', itemIdx.toString());
-        });
+    Array.from(editor.children).forEach((child, idx) => {
+      this.#decorateBlockEl(child, doc, idx);
+    });
+  }
+
+  /**
+   * Incremental block-level DOM patching.
+   *
+   * Diffs oldDoc vs newDoc using reference equality (===) on block objects.
+   * Only blocks that changed get their DOM element replaced; unchanged blocks
+   * keep the same DOM node, so selection Ranges pointing at them stay valid.
+   */
+  #patchDOM(oldDoc: ShipEditorDocument, newDoc: ShipEditorDocument) {
+    const editor = this.editorRef()?.nativeElement;
+    if (!editor) return;
+
+    const maxLen = Math.max(oldDoc.length, newDoc.length);
+
+    for (let i = 0; i < maxLen; i++) {
+      const oldBlock = oldDoc[i];
+      const newBlock = newDoc[i];
+      const existingEl = editor.children[i] as Element | undefined;
+
+      if (!newBlock && existingEl) {
+        // Block was removed
+        existingEl.remove();
+        // After removal, don't increment — the next element slides into [i]
+        continue;
       }
 
-      // Call extension onBlockRender hook for post-render DOM enhancements
-      const block = doc[idx];
-      if (block) {
-        const ext = this.#registry.getBlock(block.type);
-        if (ext?.onBlockRender) {
-          ext.onBlockRender(child as HTMLElement, block, idx);
-        }
+      if (!oldBlock && newBlock) {
+        // Block was added
+        const el = this.#blockToElement(newBlock);
+        this.#decorateBlockEl(el, newDoc, i);
+        editor.appendChild(el);
+        continue;
       }
-    });
+
+      if (oldBlock !== newBlock && newBlock) {
+        // Block changed — replace just this element
+        const el = this.#blockToElement(newBlock);
+        this.#decorateBlockEl(el, newDoc, i);
+        if (existingEl) {
+          existingEl.replaceWith(el);
+        } else {
+          editor.appendChild(el);
+        }
+        continue;
+      }
+
+      // Same reference — DOM node survives, just update the index attribute
+      // in case blocks before it were added/removed.
+      if (existingEl) {
+        existingEl.setAttribute('data-block-index', i.toString());
+      }
+    }
+
+    // Remove any trailing DOM elements if newDoc is shorter
+    while (editor.children.length > newDoc.length) {
+      editor.lastElementChild?.remove();
+    }
+  }
+
+  /** Convert a single block to a DOM element. */
+  #blockToElement(block: ShipEditorBlock): Element {
+    const html = blockToHTML(block, this.#registry);
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    return template.content.firstElementChild || document.createElement('p');
   }
 
   #syncModelToDOM(val: ShipEditorValue) {
@@ -725,6 +811,7 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     this.#saveAndRestoreSelection(() => {
       this.#setDocumentState(ast);
       this.#renderHTMLToDOM(html);
+      this.#previousDocState = ast;
     });
 
     if (isNewValue) {
@@ -775,6 +862,11 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
   }
 
   onDOMInput() {
+    // User is actively typing — unlock the selection.
+    // Keep locked if a modal is open (shouldn't happen, but safety guard).
+    if (!this.showImageModal() && !this.showLinkModal()) {
+      this.#selectionLocked = false;
+    }
     // Update internal metrics (character and word tracking) instantly via local evaluations
     const editor = this.editorRef()?.nativeElement;
     if (editor) {
@@ -820,9 +912,33 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     }, delay);
   }
 
-  onDOMBlur() {
+  onDOMFocusOut(event: FocusEvent) {
+    const relatedTarget = event.relatedTarget as HTMLElement | null;
+    const editor = this.editorRef()?.nativeElement;
+
+    // If focus moved to a toolbar button or any element inside our editor component,
+    // immediately refocus the contenteditable to keep the selection alive.
+    // BUT: don't refocus when a modal is open — the modal should trap focus.
+    if (relatedTarget && editor && !this.showImageModal() && !this.showLinkModal()) {
+      const hostEl = editor.closest('sh-editor');
+      if (hostEl?.contains(relatedTarget)) {
+        // Schedule refocus on the next microtask so Angular's click handler
+        // still fires on the toolbar button.
+        queueMicrotask(() => editor.focus());
+        return;
+      }
+    }
+
+    // Genuine blur — focus left the editor entirely.
     this.isFocused.set(false);
+    this.#selectionLocked = true;
     this.onTouched();
+
+    // Clear selection so text doesn't appear selected when editor is unfocused.
+    const selection = window.getSelection();
+    if (selection && editor?.contains(selection.anchorNode)) {
+      selection.removeAllRanges();
+    }
 
     // Flush any pending debounced updates immediately on blur
     if (this.#typingTimeout) {
@@ -957,32 +1073,34 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     this.onTouched();
   }
 
-  /** Valid commands for formatText(). Case-insensitive to match template usage. */
-  static readonly FORMAT_COMMANDS: Record<string, (editor: ShipEditor, value?: string) => void> = {
-    bold: (e) => e.applyInlineStyle('strong'),
-    italic: (e) => e.applyInlineStyle('em'),
-    underline: (e) => e.applyInlineStyle('u'),
-    strikethrough: (e) => e.applyInlineStyle('s'),
-    undo: (e) => e.undo(),
-    redo: (e) => e.redo(),
-    insertunorderedlist: (e) => e.toggleList('ul'),
-    insertorderedlist: (e) => e.toggleList('ol'),
-    inserthorizontalrule: (e) => e.insertHorizontalRule(),
-    removeformat: (e) => e.removeFormat(),
-    justifyleft: (e) => e.setAlign('left'),
-    justifycenter: (e) => e.setAlign('center'),
-    justifyright: (e) => e.setAlign('right'),
-    formatblock: (e, v) => e.setBlockType(v ?? ''),
-  };
+  /** Command registry for formatText(). Keys are lowercase-normalized. */
+  readonly #formatCommands: ReadonlyMap<string, (value?: string) => void> = new Map([
+    ['bold', () => this.applyInlineStyle('strong')],
+    ['italic', () => this.applyInlineStyle('em')],
+    ['underline', () => this.applyInlineStyle('u')],
+    ['strikethrough', () => this.applyInlineStyle('s')],
+    ['undo', () => this.undo()],
+    ['redo', () => this.redo()],
+    ['insertunorderedlist', () => this.toggleList('ul')],
+    ['insertorderedlist', () => this.toggleList('ol')],
+    ['inserthorizontalrule', () => this.insertHorizontalRule()],
+    ['removeformat', () => this.removeFormat()],
+    ['justifyleft', () => this.setAlign('left')],
+    ['justifycenter', () => this.setAlign('center')],
+    ['justifyright', () => this.setAlign('right')],
+    ['formatblock', (v?: string) => this.setBlockType(v ?? '')],
+  ]);
+
+  /** Resolve a format command by name (case-insensitive). */
+  #getFormatCommand(command: string): ((value?: string) => void) | undefined {
+    return this.#formatCommands.get(command.toLowerCase());
+  }
 
   formatText(command: string, value: string = '') {
     if (this.readonly()) return;
     if (this.viewMode() === 'code') return;
 
-    const handler = ShipEditor.FORMAT_COMMANDS[command.toLowerCase()];
-    if (handler) {
-      handler(this, value);
-    }
+    this.#getFormatCommand(command)?.(value);
   }
 
   runTransaction(
@@ -1007,16 +1125,34 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     const editor = this.editorRef()?.nativeElement;
     if (!editor) return;
 
-    const sel = EditorSelection.read(editor);
-    if (!sel) return;
+    // When the selection is locked (editor blurred / modal open), the DOM
+    // selection is unreliable (browser defaults to position 0 on re-focus).
+    // Use the saved logical selection which was captured before the lock.
+    // When unlocked (normal editing), the live DOM selection is authoritative.
+    let startLogical: LogicalPosition;
+    let endLogical: LogicalPosition;
 
-    const startLogical = sel.start;
-    const endLogical = sel.end ?? sel.start;
+    if (this.#selectionLocked && this.#savedLogicalSelection) {
+      startLogical = this.#savedLogicalSelection.start;
+      endLogical = this.#savedLogicalSelection.end;
+    } else {
+      const sel = EditorSelection.read(editor);
+      if (sel) {
+        startLogical = sel.start;
+        endLogical = sel.end ?? sel.start;
+      } else if (this.#savedLogicalSelection) {
+        startLogical = this.#savedLogicalSelection.start;
+        endLogical = this.#savedLogicalSelection.end;
+      } else {
+        return;
+      }
+    }
 
     const docBefore = this.documentState();
 
-    const docClone = cloneDoc(docBefore);
-    const result = action(docClone, { start: startLogical, end: endLogical });
+    // Core functions (formatDocRange, splitBlock, etc.) handle structural sharing internally.
+    // No need to deep-clone the entire doc upfront.
+    const result = action(docBefore, { start: startLogical, end: endLogical });
     if (result === null) return;
 
     let newDoc: ShipEditorDocument;
@@ -1030,10 +1166,10 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     if (Array.isArray(result)) {
       newDoc = result;
     } else if (result && typeof result === 'object') {
-      newDoc = result.doc || docClone;
+      newDoc = result.doc || docBefore;
       targetSelectionShift = result.selectionShift;
     } else {
-      newDoc = docClone;
+      newDoc = docBefore;
     }
 
     this.#saveHistory();
@@ -1049,6 +1185,12 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       targetSelectionShift
     );
     EditorSelection.apply(editor, docAfter, mapped.start, mapped.end);
+
+    // Immediately capture the just-applied selection so rapid toolbar clicks
+    // always have a known-good saved state, even if onSelectionChange hasn't
+    // fired yet due to the #isInternalDOMUpdate guard.
+    this.#savedRange = EditorSelection.saveRange(editor);
+    this.#savedLogicalSelection = { start: mapped.start, end: mapped.end };
 
     this.#saveHistory();
     // Clear the guard so our explicit onSelectionChange() call can save the
@@ -1126,11 +1268,8 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       const res = setBlockTypeInDoc(doc, selection, newType, newAttrs);
       if (!res) return null;
 
-      // Update docClone in-place to match res.doc
-      doc.length = 0;
-      doc.push(...res.doc);
-
       return {
+        doc: res.doc,
         selectionShift: res.selectionShift,
       };
     });
@@ -1141,11 +1280,8 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       const res = toggleListInDoc(doc, selection, listType);
       if (!res) return null;
 
-      // Update docClone in-place to match res.doc
-      doc.length = 0;
-      doc.push(...res.doc);
-
       return {
+        doc: res.doc,
         selectionShift: res.selectionShift,
       };
     });
@@ -1324,8 +1460,19 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     const range = selection.getRangeAt(0);
     if (!editorEl.contains(range.commonAncestorContainer)) return;
 
-    // Save selection range for modal operations
-    this.#savedRange = EditorSelection.saveRange(editorEl);
+    // Save selection range for modal operations.
+    // Skip when locked — the editor lost focus (modal/blur) and the browser's
+    // selectionchange on re-focus would clobber the correct saved position.
+    if (!this.#selectionLocked) {
+      this.#savedRange = EditorSelection.saveRange(editorEl);
+      const logicalSel = EditorSelection.read(editorEl);
+      if (logicalSel) {
+        this.#savedLogicalSelection = {
+          start: logicalSel.start,
+          end: logicalSel.end ?? logicalSel.start,
+        };
+      }
+    }
 
     // DOM tree traversal for formatting active states
     let current: Node | null = range.commonAncestorContainer;
@@ -1433,35 +1580,64 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
   // --- MODALS (LINK & IMAGE) ---
 
   openLinkModal() {
-    // Back up current selection before focus shifts to modal
-    const editor = this.editorRef()?.nativeElement;
-    if (editor) this.#savedRange = EditorSelection.saveRange(editor);
+    if (!this.#selectionLocked) {
+      this.#selectionLocked = true;
+    }
+    this.editorRef()?.nativeElement?.blur();
     this.showLinkModal.set(true);
   }
 
   applyLink(url: string) {
     this.showLinkModal.set(false);
-    if (!url) return;
-
-    const editor = this.editorRef()?.nativeElement;
-    if (!editor) return;
-
-    // Restore selection range
-    EditorSelection.restoreRange(this.#savedRange);
-
-    editor.focus();
+    if (!url) {
+      this.#restoreAfterModalCancel();
+      return;
+    }
     this.toggleLink(url);
   }
 
+  cancelLinkModal() {
+    this.showLinkModal.set(false);
+    this.#restoreAfterModalCancel();
+  }
+
   openImageModal() {
-    const editor = this.editorRef()?.nativeElement;
-    if (editor) this.#savedRange = EditorSelection.saveRange(editor);
+    if (!this.#selectionLocked) {
+      this.#selectionLocked = true;
+    }
+    this.editorRef()?.nativeElement?.blur();
     this.showImageModal.set(true);
   }
 
   applyImage(url: string) {
     this.showImageModal.set(false);
+    if (!url) {
+      this.#restoreAfterModalCancel();
+      return;
+    }
     this.insertImage(url);
+  }
+
+  cancelImageModal() {
+    this.showImageModal.set(false);
+    this.#restoreAfterModalCancel();
+  }
+
+  /**
+   * After a modal is cancelled, restore focus to the editor at the saved
+   * position so the user can continue editing where they left off.
+   */
+  #restoreAfterModalCancel() {
+    const editor = this.editorRef()?.nativeElement;
+    if (editor && this.#savedLogicalSelection) {
+      const pos = this.#savedLogicalSelection.start;
+      this.#selectionLocked = false;
+      editor.focus();
+      EditorSelection.apply(editor, this.documentState(), pos, null, { scrollIntoView: true });
+    } else {
+      this.#selectionLocked = false;
+    }
+    this.#savedLogicalSelection = null;
   }
 
   // --- IMAGE FILE HANDLING & LAYOUT OVERLAYS ---
@@ -1482,7 +1658,8 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     const blockIndex = parseInt(blockIndexAttr, 10);
 
     const doc = this.documentState();
-    const newDoc = cloneDoc(doc);
+    const newDoc = [...doc];
+    newDoc[blockIndex] = cloneBlock(doc[blockIndex]);
     const block = newDoc[blockIndex];
     const editor = this.editorRef()?.nativeElement;
 
@@ -1789,7 +1966,7 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
         event.preventDefault();
 
         const doc = this.documentState();
-        const newDoc = cloneDoc(doc);
+        const newDoc = [...doc];
 
         const emptyP: ShipEditorBlock = { type: 'paragraph', content: [] };
         newDoc.splice(position.blockIndex + 1, 0, emptyP);
@@ -1822,10 +1999,11 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
 
         if (isEmpty) {
           event.preventDefault();
-          const newDoc = cloneDoc(doc);
+          const newDoc = [...doc];
           let newPos: LogicalPosition;
 
           if (liEl && typeof position.listItemIndex === 'number') {
+            newDoc[position.blockIndex] = cloneBlock(doc[position.blockIndex]);
             const listBlock = newDoc[position.blockIndex];
             const items = listBlock.content as ShipEditorBlock[];
             if (items.length <= 1) {
@@ -1920,17 +2098,38 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
   }
 
   #handleImageKeyDown(event: KeyboardEvent): boolean {
-    const img = this.#selectedImage();
-    if (img && (event.key === 'Backspace' || event.key === 'Delete')) {
-      const activeEl = this.#document.activeElement;
-      if (
-        activeEl === img ||
-        window.getSelection()?.anchorNode === img ||
-        window.getSelection()?.focusNode === img ||
-        window.getSelection()?.anchorNode?.contains(img)
-      ) {
+    if (event.key !== 'Backspace' && event.key !== 'Delete') return false;
+
+    const editor = this.editorRef()?.nativeElement;
+    if (!editor) return false;
+
+    // Check if a focused image is the active element inside the editor
+    const activeEl = this.#document.activeElement;
+    const isImgFocused = activeEl instanceof HTMLImageElement && editor.contains(activeEl);
+    const selectedImg = this.#selectedImage();
+
+    if (isImgFocused || selectedImg) {
+      const img = isImgFocused ? (activeEl as HTMLImageElement) : selectedImg;
+      if (img && editor.contains(img)) {
         event.preventDefault();
-        this.deleteImage();
+
+        // Find the block index of the image to position the caret after deletion
+        const blockEl = img.closest('[data-block-index]') as HTMLElement | null;
+        const blockIdx = blockEl ? parseInt(blockEl.getAttribute('data-block-index') || '0', 10) : -1;
+
+        this.deleteImage(img);
+
+        // Place caret at the block that took the deleted image's position,
+        // or the previous block if we deleted the last one.
+        const doc = this.documentState();
+        const targetIdx = Math.min(blockIdx, doc.length - 1);
+        if (targetIdx >= 0) {
+          const targetBlock = doc[targetIdx];
+          if (targetBlock && !isVoidBlock(targetBlock)) {
+            const pos: LogicalPosition = { blockIndex: targetIdx, inlineIndex: 0, offset: 0 };
+            EditorSelection.apply(editor, doc, pos, null, { scrollIntoView: true });
+          }
+        }
         return true;
       }
     }
@@ -2005,6 +2204,15 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
         if (match) {
           const slashIndex = textBeforeCaret.lastIndexOf('/');
           if (slashIndex !== -1) {
+            // Compute the logical position from the DOM BEFORE deleting.
+            // This is more reliable than re-reading the selection after
+            // #updateValueFromDOM which can produce stale positions.
+            const editor = this.editorRef()?.nativeElement;
+            const blockEl = (textNode.parentElement)?.closest('[data-block-index]') as HTMLElement | null;
+            const blockIndex = blockEl
+              ? parseInt(blockEl.getAttribute('data-block-index') || '0', 10)
+              : (editor ? Array.from(editor.children).indexOf(textNode.parentElement!) : 0);
+
             range.setStart(textNode, slashIndex);
             range.setEnd(textNode, offset);
             range.deleteContents();
@@ -2015,6 +2223,14 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
 
             // Sync the AST from the DOM so the slash text is gone from the document state
             this.#updateValueFromDOM();
+
+            // Use the block index we captured from the DOM before deletion.
+            // This avoids any round-trip issues from DOM→AST→selection mapping.
+            this.#savedLogicalSelection = {
+              start: { blockIndex, inlineIndex: 0, offset: slashIndex },
+              end: { blockIndex, inlineIndex: 0, offset: slashIndex },
+            };
+            this.#selectionLocked = true;
           }
         }
       }
@@ -2073,6 +2289,8 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
   }
 
   onToolbarKeyDown(event: KeyboardEvent) {
+    event.stopPropagation();
+
     if (!this.#isBrowser) return;
     const target = event.target as HTMLElement;
     const toolbarEl = target.closest('.sh-editor-toolbar');
@@ -2214,16 +2432,25 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     });
   }
 
-  deleteImage() {
-    const img = this.#selectedImage();
+  deleteImage(imgEl?: HTMLImageElement) {
+    const img = imgEl || this.#selectedImage();
     if (!img) return;
 
-    const blockIndexAttr = img.getAttribute('data-block-index');
-    if (blockIndexAttr === null) return;
-    const blockIndex = parseInt(blockIndexAttr, 10);
+    // Find block index from the img's data attribute or its parent wrapper
+    let blockIndex = -1;
+    const directAttr = img.getAttribute('data-block-index');
+    if (directAttr !== null) {
+      blockIndex = parseInt(directAttr, 10);
+    } else {
+      const blockEl = img.closest('[data-block-index]') as HTMLElement | null;
+      if (blockEl) {
+        blockIndex = parseInt(blockEl.getAttribute('data-block-index') || '-1', 10);
+      }
+    }
+    if (blockIndex < 0) return;
 
     const doc = this.documentState();
-    const newDoc = cloneDoc(doc);
+    const newDoc = [...doc];
     newDoc.splice(blockIndex, 1);
 
     this.#saveHistory();
@@ -2260,6 +2487,14 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
   @HostListener('mousedown', ['$event'])
   onMouseDown(event: MouseEvent) {
     if (!this.#isBrowser) return;
+
+    // User is actively clicking — unlock the selection so onSelectionChange
+    // can save the new position the user is establishing.
+    // BUT: keep it locked if a modal is open — the user might click through
+    // the dialog backdrop and we must preserve the saved insertion point.
+    if (!this.showImageModal() && !this.showLinkModal()) {
+      this.#selectionLocked = false;
+    }
 
     // Triple click detection
     if (event.detail === 3) {
@@ -2354,26 +2589,36 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
     if (!content) return;
 
     const cleanHtml = html ? sanitizeHTML(html) : escapeHTML(text).replace(/\n/g, '<br>');
-    const ast = htmlToJSON(cleanHtml, this.#document, this.#registry);
+    const ast = normalizeASTPaste(htmlToJSON(cleanHtml, this.#document, this.#registry));
 
     this.runTransaction((doc, selection) => {
       const position = selection.start;
       const currentBlock = doc[position.blockIndex];
 
+      let newDoc: ShipEditorDocument;
+
       if (currentBlock && currentBlock.type === 'paragraph' && getJSONText([currentBlock]).trim() === '') {
         // Replace empty paragraph
-        doc.splice(position.blockIndex, 1, ...ast);
+        newDoc = [...doc];
+        newDoc.splice(position.blockIndex, 1, ...ast);
       } else {
         // Split and insert
         const { doc: splitDoc } = splitBlock(doc, position);
         splitDoc.splice(position.blockIndex + 1, 0, ...ast);
-        doc.length = 0;
-        doc.push(...splitDoc);
+
+        // If the split left an empty block before the paste (cursor was at start), remove it
+        const leftBlock = splitDoc[position.blockIndex];
+        if (leftBlock && leftBlock.type === 'paragraph' && getJSONText([leftBlock]).trim() === '') {
+          splitDoc.splice(position.blockIndex, 1);
+        }
+
+        newDoc = splitDoc;
       }
 
       // Move caret to end of pasted content
-      const lastPastedBlockIdx = Math.min(doc.length - 1, position.blockIndex + ast.length - 1);
+      const lastPastedBlockIdx = Math.min(newDoc.length - 1, position.blockIndex + ast.length - 1);
       return {
+        doc: newDoc,
         selectionShift: {
           start: { blockIndex: lastPastedBlockIdx },
           end: { blockIndex: lastPastedBlockIdx },
@@ -2418,21 +2663,22 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       };
 
       let imgBlockIndex: number;
+      let newDoc: ShipEditorDocument;
 
       if (currentBlock && currentBlock.type === 'paragraph' && getJSONText([currentBlock]).trim() === '') {
         // Replace the empty paragraph with the image
-        doc.splice(position.blockIndex, 1, imgBlock);
+        newDoc = [...doc];
+        newDoc.splice(position.blockIndex, 1, imgBlock);
         imgBlockIndex = position.blockIndex;
       } else {
         const { doc: splitDoc } = splitBlock(doc, position);
         splitDoc.splice(position.blockIndex + 1, 0, imgBlock);
-
-        doc.length = 0;
-        doc.push(...splitDoc);
+        newDoc = splitDoc;
         imgBlockIndex = position.blockIndex + 1;
       }
 
       return {
+        doc: newDoc,
         selectionShift: {
           start: { blockIndex: imgBlockIndex, listItemIndex: undefined },
           end: { blockIndex: imgBlockIndex, listItemIndex: undefined },
@@ -2440,14 +2686,19 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
       };
     });
 
-    // Synchronous — runTransaction uses innerHTML so the new DOM is ready.
+    // Focus and select the newly inserted image by its block index
     const editor = this.editorRef()?.nativeElement;
     if (editor) {
-      const imgs = editor.querySelectorAll('img') as NodeListOf<HTMLImageElement>;
-      const lastImg = imgs[imgs.length - 1];
-      if (lastImg) {
-        lastImg.focus();
-        this.#selectImage(lastImg);
+      // Find the image block element by data-block-index, fall back to last img
+      const doc = this.documentState();
+      const idx = doc.findIndex((b) => b.type === 'image' && b.attrs?.['src'] === url);
+      const blockEl = idx >= 0 ? editor.querySelector(`[data-block-index="${idx}"]`) : null;
+      const img = blockEl?.querySelector('img') as HTMLImageElement | null;
+      const fallbackImg = img || (editor.querySelector('img:last-of-type') as HTMLImageElement | null);
+
+      if (fallbackImg) {
+        fallbackImg.focus();
+        this.#selectImage(fallbackImg);
       }
     }
   }
@@ -2543,8 +2794,11 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
         // Nested list logic: indent current item into a sub-list of the previous item
         const items = block.content as ShipEditorBlock[];
         if (pos.listItemIndex > 0) {
-          const currentItem = items[pos.listItemIndex];
-          const prevItem = items[pos.listItemIndex - 1];
+          const newDoc = [...doc];
+          newDoc[pos.blockIndex] = cloneBlock(block);
+          const clonedItems = (newDoc[pos.blockIndex].content as ShipEditorBlock[]);
+          const currentItem = clonedItems[pos.listItemIndex];
+          const prevItem = clonedItems[pos.listItemIndex - 1];
 
           // Move current item into prevItem's sublist (or create one)
           if (!prevItem.content) prevItem.content = [];
@@ -2558,9 +2812,10 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
           }
 
           (subList.content as ShipEditorBlock[]).push(currentItem);
-          items.splice(pos.listItemIndex, 1);
+          clonedItems.splice(pos.listItemIndex, 1);
 
           return {
+            doc: newDoc,
             selectionShift: {
               start: { blockIndex: pos.blockIndex, listItemIndex: pos.listItemIndex - 1, inlineIndex: 0, offset: 0 },
               end: { blockIndex: pos.blockIndex, listItemIndex: pos.listItemIndex - 1, inlineIndex: 0, offset: 0 },
@@ -2569,12 +2824,14 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
         }
       } else if (block.type === 'paragraph') {
         // Simple indent: convert to bullet list (standard behavior in many editors)
-        doc.splice(pos.blockIndex, 1, {
+        const newDoc = [...doc];
+        newDoc.splice(pos.blockIndex, 1, {
           type: 'bullet-list',
           content: [block],
         });
+        return newDoc;
       }
-      return doc;
+      return null;
     });
   }
 
@@ -2585,26 +2842,28 @@ export class ShipEditor implements ControlValueAccessor, OnDestroy, AfterViewIni
 
       if (typeof pos.listItemIndex === 'number') {
         // Outdent current item: move it up one level
-        const items = block.content as ShipEditorBlock[];
-        const currentItem = items[pos.listItemIndex];
+        const newDoc = [...doc];
+        newDoc[pos.blockIndex] = cloneBlock(block);
+        const items = newDoc[pos.blockIndex].content as ShipEditorBlock[];
+        const currentItem = { ...items[pos.listItemIndex], type: 'paragraph' as const };
 
         // If we are at the top level of a list, turn into paragraph
         items.splice(pos.listItemIndex, 1);
-        doc.splice(pos.blockIndex + 1, 0, currentItem);
-        currentItem.type = 'paragraph';
+        newDoc.splice(pos.blockIndex + 1, 0, currentItem);
 
         if (items.length === 0) {
-          doc.splice(pos.blockIndex, 1);
+          newDoc.splice(pos.blockIndex, 1);
         }
 
         return {
+          doc: newDoc,
           selectionShift: {
             start: { blockIndex: pos.blockIndex },
             end: { blockIndex: pos.blockIndex },
           },
         };
       }
-      return doc;
+      return null;
     });
   }
 

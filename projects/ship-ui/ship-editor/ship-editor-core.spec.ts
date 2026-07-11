@@ -34,6 +34,8 @@ import {
   getLogicalFromBlockRelative,
   parseInlineMarkdown,
   LogicalPosition,
+  sanitizeHTML,
+  normalizeASTPaste,
 } from './ship-editor-core';
 
 // Use global document which is available in Vitest test environment (JSDOM/Happy-DOM)
@@ -1641,5 +1643,109 @@ describe('ShipEditor Core: Info-Callout with Inline Marks', () => {
     expect(reparsed[1].type).toBe('quote');
     expect(getJSONText([reparsed[0]]).trim()).toBe('A tip');
     expect(getJSONText([reparsed[1]]).trim()).toBe('A wise person said');
+  });
+});
+
+describe('ShipEditor Core: sanitizeHTML', () => {
+  it('should unwrap unknown tags and preserve their text content', () => {
+    const result = sanitizeHTML('<section><p>Hello</p></section>');
+    expect(result).toContain('Hello');
+    expect(result).not.toContain('<section');
+  });
+
+  it('should unwrap nested unknown tags', () => {
+    const result = sanitizeHTML('<article><nav><p>Text</p></nav></article>');
+    expect(result).toContain('<p>Text</p>');
+    expect(result).not.toContain('<article');
+    expect(result).not.toContain('<nav');
+  });
+
+  it('should preserve allowed tags', () => {
+    const result = sanitizeHTML('<p>Hello <strong>world</strong></p>');
+    expect(result).toContain('<p>');
+    expect(result).toContain('<strong>world</strong>');
+  });
+
+  it('should handle text-only unknown elements', () => {
+    const result = sanitizeHTML('<footer>Copyright 2024</footer>');
+    expect(result).toContain('Copyright 2024');
+    expect(result).not.toContain('<footer');
+  });
+});
+
+describe('ShipEditor Core: normalizeASTPaste', () => {
+  it('should remove empty paragraphs', () => {
+    const doc: ShipEditorDocument = [
+      { type: 'paragraph', content: [{ type: 'text', text: 'First paragraph with some real content here.' }] },
+      { type: 'paragraph', content: [] },
+      { type: 'paragraph', content: [{ type: 'text', text: 'Second paragraph that is also long enough to stay separate.' }] },
+    ];
+    const result = normalizeASTPaste(doc);
+    expect(result.length).toBe(2);
+    expect(getJSONText([result[0]])).toContain('First paragraph');
+    expect(getJSONText([result[1]])).toContain('Second paragraph');
+  });
+
+  it('should remove whitespace-only paragraphs', () => {
+    const doc: ShipEditorDocument = [
+      { type: 'paragraph', content: [{ type: 'text', text: '   ' }] },
+      { type: 'paragraph', content: [{ type: 'text', text: 'Content' }] },
+    ];
+    const result = normalizeASTPaste(doc);
+    expect(result.length).toBe(1);
+    expect(getJSONText([result[0]])).toBe('Content');
+  });
+
+  it('should merge short plain citation paragraphs into previous', () => {
+    const doc: ShipEditorDocument = [
+      { type: 'paragraph', content: [{ type: 'text', text: 'Apple has canceled the M6 Pro.' }] },
+      { type: 'paragraph', content: [{ type: 'text', text: 'Macworld' }] },
+    ];
+    const result = normalizeASTPaste(doc);
+    expect(result.length).toBe(1);
+    expect(getJSONText([result[0]])).toContain('Macworld');
+  });
+
+  it('should NOT merge long paragraphs (> 40 chars)', () => {
+    const doc: ShipEditorDocument = [
+      { type: 'paragraph', content: [{ type: 'text', text: 'First paragraph.' }] },
+      { type: 'paragraph', content: [{ type: 'text', text: 'This is a second paragraph that is long enough to be its own block.' }] },
+    ];
+    const result = normalizeASTPaste(doc);
+    expect(result.length).toBe(2);
+  });
+
+  it('should NOT merge paragraphs with marks (formatted text)', () => {
+    const doc: ShipEditorDocument = [
+      { type: 'paragraph', content: [{ type: 'text', text: 'Main text.' }] },
+      { type: 'paragraph', content: [{ type: 'text', text: 'Bold', marks: [{ type: 'bold' }] }] },
+    ];
+    const result = normalizeASTPaste(doc);
+    expect(result.length).toBe(2);
+  });
+
+  it('should preserve headings and lists', () => {
+    const doc: ShipEditorDocument = [
+      { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Title' }] },
+      { type: 'paragraph', content: [{ type: 'text', text: 'Body text.' }] },
+      { type: 'bullet-list', content: [{ type: 'list-item', content: [{ type: 'text', text: 'Item 1' }] }] },
+    ];
+    const result = normalizeASTPaste(doc);
+    expect(result.length).toBe(3);
+    expect(result[0].type).toBe('heading');
+    expect(result[2].type).toBe('bullet-list');
+  });
+
+  it('should handle empty doc', () => {
+    const result = normalizeASTPaste([]);
+    expect(result.length).toBe(0);
+  });
+
+  it('should collapse excessive whitespace in text nodes', () => {
+    const doc: ShipEditorDocument = [
+      { type: 'paragraph', content: [{ type: 'text', text: '  Hello   world  ' }] },
+    ];
+    const result = normalizeASTPaste(doc);
+    expect(getJSONText([result[0]])).toBe('Hello world');
   });
 });
