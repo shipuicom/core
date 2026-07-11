@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'child_process';
-import { FSWatcher, watch } from 'fs';
+import { watch, type FSWatcher } from 'fs';
 import { readFile, writeFile, readdir, mkdir } from 'fs/promises';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
@@ -9,9 +9,9 @@ import { gzipSync } from 'zlib';
 
 const _dirname = dirname(fileURLToPath(import.meta.url));
 
-import subsetFont from './subset';
+import subsetFont from './subset.ts';
 
-import { formatFileSize, InputArguments, SupportedFontTypes } from './utilities';
+import { formatFileSize, type InputArguments, type SupportedFontTypes } from './utilities.ts';
 
 const CWD_PATH = process.cwd();
 const PHOSPHOR_SRC_PATH = resolve(CWD_PATH, 'node_modules', '@phosphor-icons', 'web', 'src');
@@ -356,9 +356,19 @@ export const main = async (values: InputArguments) => {
 
   console.log('\nWatching for file changes. Press Cmd+C to stop.');
 
-  process.on('SIGINT', killWatchers);
-  process.on('SIGTERM', killWatchers);
-  process.on('SIGBREAK', killWatchers);
+  // When launched under bin/ship-fg.ts alongside a spawned command (e.g.
+  // `ship-fg … ng serve`), that wrapper owns process shutdown: it forwards
+  // signals to the child and exits with the child's code. Registering our own
+  // signal→exit here would preempt that with an immediate process.exit(0),
+  // SIGKILLing the child before it can shut its own subprocesses down cleanly.
+  // In that mode we only close the watchers as the process exits.
+  if (process.env.SHIP_FG_MANAGED === '1') {
+    process.on('exit', closeWatchers);
+  } else {
+    process.on('SIGINT', killWatchers);
+    process.on('SIGTERM', killWatchers);
+    process.on('SIGBREAK', killWatchers);
+  }
 
   const debouncedRun = debounce(async (triggerName: string | null) => {
     console.log(`Change detected (${triggerName}), regenerating...`);
@@ -397,9 +407,7 @@ function debounce<T extends (...args: any[]) => void>(func: T, wait: number): T 
   }) as T;
 }
 
-function killWatchers() {
-  console.log(`\n✅ The icon font generation watch process has been stopped.`);
-
+function closeWatchers() {
   for (let index = 0; index < watchers.length; index++) {
     try {
       const watcher = watchers[index];
@@ -411,6 +419,10 @@ function killWatchers() {
       // Ignore native watcher cleanup errors
     }
   }
+}
 
+function killWatchers() {
+  console.log(`\n✅ The icon font generation watch process has been stopped.`);
+  closeWatchers();
   process.exit(0);
 }
