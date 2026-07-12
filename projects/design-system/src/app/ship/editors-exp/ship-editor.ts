@@ -17,8 +17,8 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
 import { EditorEngineService } from './editor-engine.service';
-import { htmlToAst, markdownToAst, parseDOMToAST } from './editor-serializers';
-import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalPosition, LogicalSelection } from './editor.types';
+import { htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
+import { ASTBlockNode, ASTDocument, ASTInlineNode, LogicalPosition, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import * as Behaviors from './standard-behaviors';
 
@@ -46,7 +46,9 @@ import * as Behaviors from './standard-behaviors';
           (focus)="onDOMFocus()"
           (keydown)="onKeyDown($event)"
           (paste)="onPaste($event)"
-          (input)="onDOMInput()"></div>
+          (beforeinput)="onBeforeInput($event)"
+          (compositionstart)="onCompositionStart()"
+          (compositionend)="onCompositionEnd()"></div>
       </div>
     </div>
   `,
@@ -72,7 +74,14 @@ export class ShipEditorExp implements ControlValueAccessor {
   public selection = inject(EditorSelectionService);
   keybindings = inject(ShipA11yKeybindingsService, { optional: true });
 
+  /** Set only while reconciling a block after IME composition, so the render
+   * effect skips patching (the DOM already holds the composed text). */
   #isWritingFromDOM = false;
+  /** True between compositionstart/compositionend — the IME owns the DOM then. */
+  #composing = false;
+  /** The doc reference last projected to the DOM. Lets the render effect skip a
+   * redundant pass when an input handler already rendered this exact version. */
+  #lastRenderedDoc: ASTDocument | null = null;
   #isInternalValueUpdate = false;
   onChange: any = () => {};
   onTouched: any = () => {};
@@ -137,13 +146,12 @@ export class ShipEditorExp implements ControlValueAccessor {
         this.#isWritingFromDOM = false;
         return;
       }
-      this.selection.suppress();
-      this.patchDOM(doc);
-      queueMicrotask(() => {
-        this.selection.unsuppress();
-        const currentSel = this.selection.active();
-        if (currentSel) this.restoreDOMSelection(currentSel);
-      });
+      // An input handler may have already projected this exact doc synchronously
+      // (fast-typing path). Skip the redundant patch, but only for the identical
+      // doc reference — a mutation from elsewhere (toolbar, undo) is a new array
+      // and still renders here.
+      if (doc === this.#lastRenderedDoc) return;
+      this.#render();
     });
   }
 
@@ -159,37 +167,242 @@ export class ShipEditorExp implements ControlValueAccessor {
 
   @HostListener('document:selectionchange')
   onSelectionChange() {
-    if (this.selection.isSuppressed() || typeof window === 'undefined') return;
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) return;
-
-    const range = sel.getRangeAt(0);
-    // Only update our logical selection when the browser selection is inside this editor
-    if (this.surface().nativeElement.contains(range.commonAncestorContainer)) {
-      this.selection.updateRect(this.surface().nativeElement);
-
-      const startLogical = this.mapDOMToLogical(this.surface().nativeElement, range.startContainer, range.startOffset);
-      const endLogical = range.collapsed
-        ? startLogical
-        : this.mapDOMToLogical(this.surface().nativeElement, range.endContainer, range.endOffset);
-
-      if (startLogical && endLogical) {
-        this.selection.live.set({ start: startLogical, end: endLogical, isCollapsed: range.collapsed });
-      }
-    } else {
-      this.selection.domRect.set(null);
-    }
+    if (this.selection.isSuppressed() || this.#composing || typeof window === 'undefined') return;
+    this.#syncLogicalSelectionFromDOM();
   }
 
-  onDOMInput() {
-    const newDoc = parseDOMToAST(this.surface().nativeElement, this.engine.blocks, this.engine.inlines);
-    this.#isWritingFromDOM = true;
-    this.engine.document.set(newDoc);
+  /**
+   * All content mutation flows through here. We intercept `beforeinput`, cancel
+   * the browser's native edit, and translate the `inputType` into an AST
+   * transaction — so the DOM is a pure projection of the AST and is never read
+   * back for content. The exception is IME composition, which must edit the DOM
+   * natively; it's reconciled once, per block, on `compositionend`.
+   */
+  onBeforeInput(event: InputEvent) {
+    if (this.readonly()) return;
+    if (this.#composing) return; // IME owns the DOM until compositionend
+
+    // Sample the real caret/selection from the DOM at command time, so a
+    // transaction never runs against a stale mirror when selectionchange lagged
+    // a user-driven caret move (click/arrow-then-type). Branches below that
+    // carry a precise getTargetRanges() still refine this afterwards.
+    this.#syncLogicalSelectionFromDOM();
+
+    const format: Record<string, string> = {
+      formatBold: 'bold',
+      formatItalic: 'italic',
+      formatUnderline: 'underline',
+      formatStrikeThrough: 'strike',
+    };
+
+    // Every handled branch mutates the AST; the two exceptions clear this so we
+    // don't patch (composition edits the DOM itself; unknown types are no-ops).
+    let mutated = true;
+
+    switch (event.inputType) {
+      case 'insertText':
+      case 'insertReplacementText': {
+        const data = event.data ?? '';
+        event.preventDefault();
+        if (!data) break;
+        // Autocorrect/spellcheck replacements carry the range to replace.
+        this.#selectTargetRange(event);
+        this.engine.insertText(data);
+        break;
+      }
+      case 'insertParagraph':
+        event.preventDefault();
+        this.engine.handleEnter();
+        break;
+      case 'insertLineBreak':
+        event.preventDefault();
+        this.engine.insertText('\n');
+        break;
+      case 'deleteContentBackward':
+      case 'deleteWordBackward':
+      case 'deleteSoftLineBackward':
+      case 'deleteHardLineBackward':
+        event.preventDefault();
+        this.#handleDelete(event, 'backward');
+        break;
+      case 'deleteContentForward':
+      case 'deleteWordForward':
+      case 'deleteSoftLineForward':
+      case 'deleteHardLineForward':
+        event.preventDefault();
+        this.#handleDelete(event, 'forward');
+        break;
+      case 'deleteByCut':
+      case 'deleteContent':
+        event.preventDefault();
+        this.engine.deleteRange();
+        break;
+      case 'insertFromPaste':
+      case 'insertFromDrop':
+        // Paste content is applied transactionally by onPaste(); block the native
+        // insert so the DOM can't drift. Drag-drop is not yet supported.
+        event.preventDefault();
+        break;
+      case 'historyUndo':
+        event.preventDefault();
+        this.engine.undo();
+        break;
+      case 'historyRedo':
+        event.preventDefault();
+        this.engine.redo();
+        break;
+      case 'insertCompositionText':
+        // We only reach this while NOT composing — during a real composition the
+        // guard above returns before the switch. So this is a lone composition
+        // input with no surrounding compositionstart/end: Android GBoard commits
+        // autocorrect/suggestions/glide typing (and sometimes plain keystrokes)
+        // this way, often with null `data`. Allow the native edit, but there is no
+        // compositionend coming to reconcile it, so schedule the reconcile
+        // ourselves once the browser has applied the edit (default action runs
+        // synchronously after this handler; the microtask sees the updated DOM).
+        mutated = false;
+        queueMicrotask(() => {
+          if (this.#composing) return; // a real composition began; its end will reconcile
+          this.#reconcileCaretBlockFromDOM();
+        });
+        break;
+      default: {
+        const markType = format[event.inputType];
+        if (markType && this.engine.inlines.has(markType)) {
+          event.preventDefault();
+          this.engine.toggleMark(markType);
+          break;
+        }
+        // Unknown input type: cancel it so the DOM stays in lockstep with the AST.
+        event.preventDefault();
+        mutated = false;
+      }
+    }
+
+    // Project the transaction to the DOM synchronously, before this handler
+    // returns — no async gap for a stale selectionchange to race the caret.
+    if (mutated) this.#render();
+  }
+
+  onCompositionStart() {
+    this.#composing = true;
+  }
+
+  onCompositionEnd() {
+    this.#composing = false;
+    // The IME wrote composed text straight into the DOM. Reconcile just that one
+    // block back into the AST (never the whole surface) and resync the selection.
+    this.#reconcileCaretBlockFromDOM();
+  }
+
+  /** Reparse the block the caret sits in from the DOM, then resync the logical
+   * selection. Shared by compositionend and the lone-`insertCompositionText`
+   * path — both leave composed text in the DOM that the AST hasn't seen yet. */
+  #reconcileCaretBlockFromDOM() {
+    const index = this.#currentBlockIndex();
+    if (index >= 0) this.#reconcileBlockFromDOM(index);
+    this.#syncLogicalSelectionFromDOM();
+  }
+
+  /** Point the logical selection at a beforeinput target range (single-block only). */
+  #selectTargetRange(event: InputEvent): boolean {
+    const tr = event.getTargetRanges?.()[0];
+    if (!tr) return false;
+    const container = this.surface().nativeElement;
+    const start = this.mapDOMToLogical(container, tr.startContainer, tr.startOffset);
+    const end = this.mapDOMToLogical(container, tr.endContainer, tr.endOffset);
+    if (!start || !end || start.blockIndex !== end.blockIndex) return false;
+    const collapsed =
+      start.inlineIndex === end.inlineIndex && start.offset === end.offset;
+    this.selection.live.set({ start, end, isCollapsed: collapsed });
+    return true;
+  }
+
+  #handleDelete(event: InputEvent, direction: 'backward' | 'forward') {
+    const sel = this.selection.active();
+    // An existing (user) selection: delete exactly it.
+    if (sel && !sel.isCollapsed) {
+      this.engine.deleteRange();
+      return;
+    }
+    // Word/line delete: the browser hands us the precise range to remove. Use it
+    // when it stays within one block; block-boundary deletes fall through to the
+    // engine so merge/escape semantics apply.
+    const tr = event.getTargetRanges?.()[0];
+    if (tr) {
+      const container = this.surface().nativeElement;
+      const start = this.mapDOMToLogical(container, tr.startContainer, tr.startOffset);
+      const end = this.mapDOMToLogical(container, tr.endContainer, tr.endOffset);
+      const sameBlockRange =
+        start &&
+        end &&
+        start.blockIndex === end.blockIndex &&
+        !(start.inlineIndex === end.inlineIndex && start.offset === end.offset);
+      if (sameBlockRange) {
+        this.selection.live.set({ start, end, isCollapsed: false });
+        this.engine.deleteRange();
+        return;
+      }
+    }
+    if (direction === 'backward') this.engine.handleBackspace();
+    else this.engine.deleteForward();
+  }
+
+  /** Index (within the surface) of the block the caret is currently in, or -1. */
+  #currentBlockIndex(): number {
+    if (typeof window === 'undefined') return -1;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return -1;
+    const container = this.surface().nativeElement;
+    const node = sel.getRangeAt(0).startContainer;
+    let el: HTMLElement | null =
+      node.nodeType === Node.ELEMENT_NODE ? (node as HTMLElement) : node.parentElement;
+    while (el && el.parentElement !== container) el = el.parentElement;
+    return el && el.parentElement === container ? Array.from(container.children).indexOf(el) : -1;
+  }
+
+  /** Re-parse a single block element from the DOM into the AST (post-composition). */
+  #reconcileBlockFromDOM(index: number) {
+    const container = this.surface().nativeElement;
+    const blockEl = container.children[index] as HTMLElement | undefined;
+    if (!blockEl) return;
+    const temp = this.#document.createElement('div');
+    temp.appendChild(blockEl.cloneNode(true));
+    const parsed = parseDOMToAST(temp, this.engine.blocks, this.engine.inlines);
+    if (!parsed.length) return;
+    const doc = [...this.engine.document()];
+    doc[index] = parsed[0];
+    this.#isWritingFromDOM = true; // DOM already reflects this block; skip the patch
+    this.engine.document.set(doc);
+  }
+
+  #syncLogicalSelectionFromDOM() {
+    if (typeof window === 'undefined') return;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    const container = this.surface().nativeElement;
+    if (!container.contains(range.commonAncestorContainer)) {
+      this.selection.domRect.set(null);
+      return;
+    }
+    this.selection.updateRect(container);
+    const startLogical = this.mapDOMToLogical(container, range.startContainer, range.startOffset);
+    const endLogical = range.collapsed
+      ? startLogical
+      : this.mapDOMToLogical(container, range.endContainer, range.endOffset);
+    if (startLogical && endLogical) {
+      this.selection.live.set({ start: startLogical, end: endLogical, isCollapsed: range.collapsed });
+    }
   }
 
   onPaste(event: ClipboardEvent) {
     if (this.readonly()) return;
     event.preventDefault();
+
+    // Paste replaces the current selection — sample it from the DOM at command
+    // time rather than trusting the possibly-stale mirror.
+    this.#syncLogicalSelectionFromDOM();
 
     const clipboard = event.clipboardData;
     if (!clipboard) return;
@@ -215,6 +428,7 @@ export class ShipEditorExp implements ControlValueAccessor {
     }
 
     this.engine.insertFragment(fragment);
+    this.#render();
   }
 
   onDOMBlur() {
@@ -224,6 +438,7 @@ export class ShipEditorExp implements ControlValueAccessor {
 
   onKeyDown(event: KeyboardEvent) {
     if (this.readonly()) return;
+    if (this.#composing) return; // IME dispatches keyCode 229; ignore during composition
 
     if (this.keybindings) {
       if (this.keybindings.matches(event, 'editor.undo')) {
@@ -250,33 +465,32 @@ export class ShipEditorExp implements ControlValueAccessor {
       }
     }
 
+    // Structural navigation only. Text entry, Enter, and deletion are handled
+    // transactionally in onBeforeInput().
     if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
       if (this.engine.handleEscapeHatch()) event.preventDefault();
       return;
     }
+  }
 
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      return this.engine.handleEnter();
-    }
-
-    if (event.key === 'Backspace') {
-      event.preventDefault();
-      return this.engine.handleBackspace();
-    }
-
-    if (event.key === 'Delete') {
-      event.preventDefault();
-      return this.engine.deleteForward();
-    }
-
-    if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
-      const sel = this.selection.active();
-      if (sel && !sel.isCollapsed) {
-        event.preventDefault();
-        this.engine.insertText(event.key);
-      }
-    }
+  /**
+   * Synchronously project the current AST to the DOM and restore the caret.
+   *
+   * Deliberately synchronous — no queued microtask. Input handlers call this
+   * before returning, so by the time a keystroke is processed the DOM and caret
+   * already reflect the transaction. That leaves no async window in which a
+   * stale `selectionchange` (reading the not-yet-patched DOM) could clobber the
+   * logical selection — the cause of the caret jumping between letters when
+   * typing fast. `selectionchange` is suppressed for the duration.
+   */
+  #render() {
+    const doc = this.engine.document();
+    this.selection.suppress();
+    this.patchDOM(doc);
+    const sel = this.selection.active();
+    if (sel) this.restoreDOMSelection(sel);
+    this.selection.unsuppress();
+    this.#lastRenderedDoc = doc;
   }
 
   private patchDOM(doc: ASTDocument) {
@@ -293,31 +507,37 @@ export class ShipEditorExp implements ControlValueAccessor {
       const existingEl = container.children[index] as HTMLElement;
 
       if (!existingEl) {
-        const template = this.#document.createElement('template');
-        template.innerHTML = newHTML;
-        container.appendChild(template.content.firstElementChild!);
+        const el = this.#htmlToElement(newHTML);
+        if (el) container.appendChild(el);
       } else if (existingEl.outerHTML !== newHTML) {
-        const template = this.#document.createElement('template');
-        template.innerHTML = newHTML;
-        existingEl.replaceWith(template.content.firstElementChild!);
+        const el = this.#htmlToElement(newHTML);
+        if (el) existingEl.replaceWith(el);
       }
     });
 
     while (container.children.length > doc.length) container.lastElementChild?.remove();
   }
 
+  /**
+   * Parse a single block's HTML string into an element.
+   *
+   * Uses a `<div>` wrapper rather than `<template>` so it works under
+   * server-side rendering too: Angular's SSR DOM (domino) has no
+   * `<template>.content`, which made `patchDOM` crash during prerender. Every
+   * block renders to one top-level element, so a `<div>` parses it faithfully in
+   * both the browser and on the server.
+   */
+  #htmlToElement(html: string): Element | null {
+    const wrapper = this.#document.createElement('div');
+    wrapper.innerHTML = html;
+    return wrapper.firstElementChild;
+  }
+
   private renderInlineContent(nodes: ASTInlineNode[]): string {
-    return nodes
-      .map((n: any) => {
-        let text = n.text || '';
-        text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        n.marks?.forEach((mark: ASTMark) => {
-          const inline = this.engine.inlines.get(mark.type);
-          if (inline) text = inline.renderHTML(mark, text);
-        });
-        return text;
-      })
-      .join('');
+    // Use the shared mark-stack serializer so the live DOM matches astToHtml
+    // exactly — overlapping marks (e.g. a highlight spanning bold) render as one
+    // continuous, correctly-nested run instead of a fresh tag per node.
+    return renderInlineHTML(nodes, this.engine.inlines);
   }
 
   private renderContainerBlock(block: ASTBlockNode, behavior: BaseBlockBehavior): string {
