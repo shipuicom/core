@@ -17,6 +17,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
 import { EditorEngineService } from './editor-engine.service';
+import { SanitizeOption, sanitizeDocumentUrls } from './editor-sanitize';
 import { htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
 import { ASTBlockNode, ASTDocument, ASTInlineNode, LogicalPosition, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
@@ -68,6 +69,16 @@ export class ShipEditorExp implements ControlValueAccessor {
    */
   behaviors = input<(BaseBlockBehavior | BaseInlineBehavior)[]>([]);
 
+  /**
+   * Sanitization policy for untrusted HTML/markdown/JSON reaching `value` or the
+   * clipboard. `true` (default) scrubs against the built-in allow-list; `false`
+   * trusts the input and skips the scrub (HTML is still parsed inertly — never
+   * `innerHTML`'d — so it can't execute); an object extends the allow-list with
+   * extra `tags`/`attrs` for custom behaviors. Render-time escaping always runs
+   * regardless, so a hostile JSON `value` can never inject on render.
+   */
+  sanitize = input<SanitizeOption>(true);
+
   value = model<string | ASTDocument | null>(null);
 
   public engine = inject(EditorEngineService);
@@ -117,14 +128,18 @@ export class ShipEditorExp implements ControlValueAccessor {
         this.#isInternalValueUpdate = false;
         return;
       }
+      const sanitize = this.sanitize();
       untracked(() => {
         if (!externalVal) this.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
-        else if (this.format() === 'json' && Array.isArray(externalVal)) this.engine.reset(externalVal as ASTDocument);
+        else if (this.format() === 'json' && Array.isArray(externalVal))
+          // JSON bypasses HTML parsing, so neutralize dangerous URLs in the AST
+          // itself (unless the consumer opted out). Render escaping guards too.
+          this.engine.reset(sanitize === false ? (externalVal as ASTDocument) : sanitizeDocumentUrls(externalVal as ASTDocument));
         else {
           const doc =
             this.format() === 'markdown'
-              ? markdownToAst(externalVal as string, this.engine.blocks, this.engine.inlines)
-              : htmlToAst(externalVal as string, this.engine.blocks, this.engine.inlines);
+              ? markdownToAst(externalVal as string, this.engine.blocks, this.engine.inlines, sanitize)
+              : htmlToAst(externalVal as string, this.engine.blocks, this.engine.inlines, sanitize);
           this.engine.reset(doc);
         }
       });
@@ -413,7 +428,7 @@ export class ShipEditorExp implements ControlValueAccessor {
     let fragment: ASTDocument;
 
     if (html) {
-      fragment = htmlToAst(html, this.engine.blocks, this.engine.inlines);
+      fragment = htmlToAst(html, this.engine.blocks, this.engine.inlines, this.sanitize());
     } else if (plainText) {
       fragment = plainText
         .split(/\n{2,}/)

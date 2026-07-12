@@ -1,6 +1,6 @@
 import { normalizeInlineNodes } from './editor-ast.utils';
 import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
-import { sanitizeHtmlToBody } from './editor-sanitize';
+import { SanitizeOption, escapeAttr, isSafeUrl, sanitizeHtmlToBody } from './editor-sanitize';
 import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark } from './editor.types';
 
 function escapeHtml(text: string): string {
@@ -269,12 +269,13 @@ export function astToMarkdown(
 export function htmlToAst(
   html: string,
   blocks: Map<string, BaseBlockBehavior>,
-  inlines: Map<string, BaseInlineBehavior>
+  inlines: Map<string, BaseInlineBehavior>,
+  sanitize: SanitizeOption = true
 ): ASTDocument {
   // Sanitize untrusted HTML into an INERT, allow-listed tree before parsing.
   // Never `innerHTML` the raw string onto a live element — a detached
   // `<img src=x onerror=…>` still loads and fires its handler at parse time.
-  const body = sanitizeHtmlToBody(html);
+  const body = sanitizeHtmlToBody(html, sanitize);
   if (!body) return [{ type: 'paragraph', content: [{ type: 'text', text: '' }] }];
   return parseDOMToAST(body, blocks, inlines);
 }
@@ -303,7 +304,9 @@ export function markdownToHtml(md: string): string {
       }
       if (block.match(/^!\[(.*?)\]\((.*?)\)/)) {
         const match = block.match(/^!\[(.*?)\]\((.*?)\)/);
-        return match ? `<img src="${match[2]}" alt="${match[1]}">` : '';
+        if (!match) return '';
+        const src = isSafeUrl(match[2], { allowDataImage: true }) ? escapeAttr(match[2]) : '';
+        return `<img src="${src}" alt="${escapeAttr(match[1])}">`;
       }
       return `<p>${escapeHtml(block)}</p>`;
     })
@@ -313,7 +316,8 @@ export function markdownToHtml(md: string): string {
 export function markdownToAst(
   md: string,
   blocks: Map<string, BaseBlockBehavior>,
-  inlines: Map<string, BaseInlineBehavior>
+  inlines: Map<string, BaseInlineBehavior>,
+  sanitize: SanitizeOption = true
 ): ASTDocument {
-  return htmlToAst(markdownToHtml(md), blocks, inlines);
+  return htmlToAst(markdownToHtml(md), blocks, inlines, sanitize);
 }

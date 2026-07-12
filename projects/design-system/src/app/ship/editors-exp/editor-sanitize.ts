@@ -121,27 +121,55 @@ function unwrap(el: Element): void {
   parent.removeChild(el);
 }
 
-function scrubChildren(parent: Node): void {
+/** Consumer additions to the base ingest allow-list, for custom behaviors whose
+ * tags/attributes the defaults would otherwise strip. */
+export interface SanitizeExtend {
+  tags?: string[];
+  attrs?: Record<string, string[]>;
+}
+
+/** How to sanitize inbound HTML: `true`/omitted → default scrub; `false` → inert
+ * parse with no scrub (trusted HTML); object → default scrub plus these additions. */
+export type SanitizeOption = boolean | SanitizeExtend;
+
+interface ResolvedPolicy {
+  allowedTags: Set<string>;
+  tagAttrs: Record<string, string[]>;
+}
+
+function resolvePolicy(extend?: SanitizeExtend): ResolvedPolicy {
+  if (!extend) return { allowedTags: ALLOWED_TAGS, tagAttrs: TAG_ATTRS };
+  const allowedTags = new Set(ALLOWED_TAGS);
+  extend.tags?.forEach((t) => allowedTags.add(t.toLowerCase()));
+  const tagAttrs: Record<string, string[]> = { ...TAG_ATTRS };
+  for (const [tag, attrs] of Object.entries(extend.attrs ?? {})) {
+    const key = tag.toLowerCase();
+    tagAttrs[key] = [...(tagAttrs[key] ?? []), ...attrs.map((a) => a.toLowerCase())];
+  }
+  return { allowedTags, tagAttrs };
+}
+
+function scrubChildren(parent: Node, policy: ResolvedPolicy): void {
   for (const child of Array.from(parent.childNodes)) {
-    if (child.nodeType === 1) scrubElement(child as Element);
+    if (child.nodeType === 1) scrubElement(child as Element, policy);
     else if (child.nodeType !== 3) child.parentNode?.removeChild(child); // drop comments/PIs
   }
 }
 
-function scrubElement(el: Element): void {
+function scrubElement(el: Element, policy: ResolvedPolicy): void {
   const tag = el.tagName.toLowerCase();
 
   if (DROP_TAGS.has(tag)) {
     el.remove();
     return;
   }
-  if (!ALLOWED_TAGS.has(tag)) {
-    scrubChildren(el); // clean descendants first, then lift them out
+  if (!policy.allowedTags.has(tag)) {
+    scrubChildren(el, policy); // clean descendants first, then lift them out
     unwrap(el);
     return;
   }
 
-  const allowedForTag = TAG_ATTRS[tag] ?? [];
+  const allowedForTag = policy.tagAttrs[tag] ?? [];
   for (const attr of Array.from(el.attributes)) {
     const name = attr.name.toLowerCase();
 
@@ -161,7 +189,7 @@ function scrubElement(el: Element): void {
     }
   }
 
-  scrubChildren(el);
+  scrubChildren(el, policy);
 }
 
 /**
@@ -170,11 +198,45 @@ function scrubElement(el: Element): void {
  * or null when no DOM is available. This is the ingest counterpart to the
  * render-time escaping in the behaviors — together they keep both the stored
  * AST and the projected DOM free of script/handler/dangerous-URL content.
+ *
+ * `option`: `true`/omitted scrubs with the defaults; `false` skips the scrub but
+ * STILL parses inertly (trusted HTML — never re-introduces the live-innerHTML
+ * execution bug); an object extends the default allow-list.
  */
-export function sanitizeHtmlToBody(html: string): HTMLElement | null {
+export function sanitizeHtmlToBody(html: string, option: SanitizeOption = true): HTMLElement | null {
   if (!html) return null;
   const body = inertParseBody(html);
   if (!body) return null;
-  scrubChildren(body);
+  if (option === false) return body; // trusted: inert parse only, no scrub
+  scrubChildren(body, resolvePolicy(option === true ? undefined : option));
   return body;
+}
+
+/**
+ * Defense-in-depth for the JSON `value` ingest path, which stores an AST as-is
+ * without ever passing an HTML parser. Deep-clone `doc` and neutralize any
+ * dangerous `href`/`src` attribute (by name) on blocks and inline marks, so the
+ * stored AST — not just the rendered DOM — never holds an executable URL.
+ */
+export function sanitizeDocumentUrls<T>(doc: T): T {
+  const clone = structuredClone(doc);
+  const scrubAttrs = (attrs: unknown) => {
+    if (!attrs || typeof attrs !== 'object') return;
+    const a = attrs as Record<string, unknown>;
+    if (typeof a['href'] === 'string' && !isSafeUrl(a['href'])) a['href'] = '#';
+    if (typeof a['src'] === 'string' && !isSafeUrl(a['src'], { allowDataImage: true })) a['src'] = '';
+  };
+  const walkBlock = (block: unknown) => {
+    if (!block || typeof block !== 'object') return;
+    const b = block as { attrs?: unknown; content?: unknown };
+    scrubAttrs(b.attrs);
+    if (Array.isArray(b.content)) {
+      for (const child of b.content) {
+        if (child?.type === 'text') child.marks?.forEach((m: { attrs?: unknown }) => scrubAttrs(m.attrs));
+        else walkBlock(child); // nested container blocks (lists)
+      }
+    }
+  };
+  if (Array.isArray(clone)) (clone as unknown[]).forEach(walkBlock);
+  return clone;
 }

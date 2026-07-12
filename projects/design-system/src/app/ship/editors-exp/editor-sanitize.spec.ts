@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { escapeAttr, isSafeUrl, sanitizeHtmlToBody } from './editor-sanitize';
-import { htmlToAst } from './editor-serializers';
+import { escapeAttr, isSafeUrl, sanitizeDocumentUrls, sanitizeHtmlToBody } from './editor-sanitize';
+import { htmlToAst, markdownToAst } from './editor-serializers';
 import * as B from './standard-behaviors';
 import { HeadingBehavior, ImageBehavior, LinkBehavior, ParagraphBehavior } from './standard-behaviors';
 import { ASTBlockNode, ASTMark } from './editor.types';
@@ -192,5 +192,66 @@ describe('htmlToAst end-to-end ingest', () => {
     const { blocks, inlines } = makeMaps();
     const doc = htmlToAst('<p><a href="javascript:alert(1)">x</a></p>', blocks, inlines);
     expect(JSON.stringify(doc)).not.toMatch(/javascript:/i);
+  });
+});
+
+describe('markdown ingest (I2)', () => {
+  it('neutralizes a breakout/javascript payload in a markdown image', () => {
+    const { blocks, inlines } = makeMaps();
+    const doc = markdownToAst('![a" onerror=alert(1)](javascript:alert(2))', blocks, inlines);
+    const json = JSON.stringify(doc);
+    expect(doc[0].type).toBe('image');
+    expect(doc[0].attrs!['src']).toBe(''); // javascript: rejected
+    expect(json).not.toMatch(/javascript:/i);
+    // The alt is stored as inert text; no handler survives into the DOM.
+    const el = document.createElement('div');
+    el.innerHTML = doc.map((b) => (blocks.get(b.type) as any).renderHTML(b)).join('');
+    expect(el.querySelector('[onerror]')).toBeNull();
+  });
+
+  it('keeps a safe markdown image', () => {
+    const { blocks, inlines } = makeMaps();
+    const doc = markdownToAst('![cat](https://ok.example/cat.png)', blocks, inlines);
+    expect(doc[0].attrs!['src']).toBe('https://ok.example/cat.png');
+  });
+});
+
+describe('sanitizeDocumentUrls (I3 — JSON value path)', () => {
+  it('neutralizes dangerous href/src in a hostile AST and preserves safe ones', () => {
+    const hostile = [
+      { type: 'paragraph', content: [{ type: 'text', text: 'x', marks: [{ type: 'link', attrs: { href: 'javascript:alert(1)' } }] }] },
+      { type: 'paragraph', content: [{ type: 'text', text: 'y', marks: [{ type: 'link', attrs: { href: 'https://ok.example' } }] }] },
+      { type: 'image', attrs: { src: 'javascript:alert(2)' }, content: [] },
+      { type: 'image', attrs: { src: 'data:image/png;base64,AAAA' }, content: [] },
+      { type: 'bullet-list', content: [{ type: 'list-item', content: [{ type: 'text', text: 'z', marks: [{ type: 'link', attrs: { href: 'vbscript:1' } }] }] }] },
+    ];
+    const clean = sanitizeDocumentUrls(hostile);
+    expect(clean[0].content[0].marks[0].attrs.href).toBe('#');
+    expect(clean[1].content[0].marks[0].attrs.href).toBe('https://ok.example');
+    expect(clean[2].attrs.src).toBe('');
+    expect(clean[3].attrs.src).toBe('data:image/png;base64,AAAA');
+    expect(clean[4].content[0].content[0].marks[0].attrs.href).toBe('#'); // nested list item
+    // Original input is not mutated (works on a clone).
+    expect(hostile[0].content[0].marks![0].attrs.href).toBe('javascript:alert(1)');
+  });
+});
+
+describe('sanitize option (opt-out & allow-list extension)', () => {
+  it('option=false parses inertly but skips the scrub (trusted content)', () => {
+    const body = sanitizeHtmlToBody('<img src="x" onerror="y"><script>1</script>', false)!;
+    // Not scrubbed: the handler attribute and script node are retained...
+    expect(body.querySelector('[onerror]')).not.toBeNull();
+    // ...but parsing was inert — the script never executed (no throw, no side effect).
+    expect(body.querySelector('script')).not.toBeNull();
+  });
+
+  it('extends the tag/attribute allow-list for custom behaviors', () => {
+    const withExt = sanitizeHtmlToBody('<figure><figcaption>c</figcaption></figure>', { tags: ['figure', 'figcaption'] })!;
+    expect(withExt.innerHTML).toBe('<figure><figcaption>c</figcaption></figure>');
+    // Without the extension the same markup is unwrapped to its text.
+    expect(sanitizeHtmlToBody('<figure><figcaption>c</figcaption></figure>')!.innerHTML).toBe('c');
+    // Attribute extension keeps a custom attr while still dropping handlers.
+    const attrExt = sanitizeHtmlToBody('<p data-id="1" onclick="x">t</p>', { attrs: { p: ['data-id'] } })!;
+    expect(attrExt.innerHTML).toBe('<p data-id="1">t</p>');
   });
 });
