@@ -1,9 +1,7 @@
 import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
-import { escapeAttr, isSafeUrl } from './editor-sanitize';
+import { ALLOWED_ALIGN, escapeAttr, isSafeUrl } from './editor-sanitize';
 import { ASTBlockNode, ASTMark } from './editor.types';
 
-/** Text-align values the editor is allowed to emit into an inline `style`. */
-const ALLOWED_ALIGN = new Set(['left', 'center', 'right', 'justify']);
 /** Render an allow-listed `text-align` style attribute, or nothing. */
 function alignStyle(align: unknown): string {
   return typeof align === 'string' && ALLOWED_ALIGN.has(align) ? ` style="text-align: ${align}"` : '';

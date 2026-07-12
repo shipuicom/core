@@ -1,5 +1,6 @@
 import { normalizeInlineNodes } from './editor-ast.utils';
 import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
+import { sanitizeHtmlToBody } from './editor-sanitize';
 import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark } from './editor.types';
 
 function escapeHtml(text: string): string {
@@ -270,10 +271,12 @@ export function htmlToAst(
   blocks: Map<string, BaseBlockBehavior>,
   inlines: Map<string, BaseInlineBehavior>
 ): ASTDocument {
-  if (typeof document === 'undefined') return [{ type: 'paragraph', content: [{ type: 'text', text: '' }] }];
-  const temp = document.createElement('div');
-  temp.innerHTML = html;
-  return parseDOMToAST(temp, blocks, inlines);
+  // Sanitize untrusted HTML into an INERT, allow-listed tree before parsing.
+  // Never `innerHTML` the raw string onto a live element — a detached
+  // `<img src=x onerror=…>` still loads and fires its handler at parse time.
+  const body = sanitizeHtmlToBody(html);
+  if (!body) return [{ type: 'paragraph', content: [{ type: 'text', text: '' }] }];
+  return parseDOMToAST(body, blocks, inlines);
 }
 
 // Minimal robust MD -> HTML translation for paste events
