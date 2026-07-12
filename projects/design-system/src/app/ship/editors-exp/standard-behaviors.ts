@@ -1,5 +1,13 @@
 import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
+import { escapeAttr, isSafeUrl } from './editor-sanitize';
 import { ASTBlockNode, ASTMark } from './editor.types';
+
+/** Text-align values the editor is allowed to emit into an inline `style`. */
+const ALLOWED_ALIGN = new Set(['left', 'center', 'right', 'justify']);
+/** Render an allow-listed `text-align` style attribute, or nothing. */
+function alignStyle(align: unknown): string {
+  return typeof align === 'string' && ALLOWED_ALIGN.has(align) ? ` style="text-align: ${align}"` : '';
+}
 
 // =======================
 // BLOCK BEHAVIORS
@@ -18,8 +26,7 @@ export class ParagraphBehavior extends BaseBlockBehavior {
       : null;
   }
   renderHTML(block: ASTBlockNode, contentHtml: string) {
-    const align = block.attrs?.['align'] ? ` style="text-align: ${block.attrs['align']}"` : '';
-    return `<p${align}>${contentHtml || '<br>'}</p>`;
+    return `<p${alignStyle(block.attrs?.['align'])}>${contentHtml || '<br>'}</p>`;
   }
   override renderMarkdown(block: ASTBlockNode, contentMd: string) {
     return `${contentMd}\n\n`;
@@ -40,9 +47,10 @@ export class HeadingBehavior extends BaseBlockBehavior {
       : null;
   }
   renderHTML(block: ASTBlockNode, contentHtml: string) {
-    const level = block.attrs?.['level'] || 1;
-    const align = block.attrs?.['align'] ? ` style="text-align: ${block.attrs['align']}"` : '';
-    return `<h${level}${align}>${contentHtml || '<br>'}</h${level}>`;
+    // Clamp to a valid heading level: `level` may arrive from untrusted JSON
+    // `value`, and it's interpolated straight into the tag name.
+    const level = Math.min(6, Math.max(1, parseInt(String(block.attrs?.['level'] ?? 1), 10) || 1));
+    return `<h${level}${alignStyle(block.attrs?.['align'])}>${contentHtml || '<br>'}</h${level}>`;
   }
   override renderMarkdown(block: ASTBlockNode, contentMd: string) {
     return `${'#'.repeat(block.attrs?.['level'] || 1)} ${contentMd}\n\n`;
@@ -124,6 +132,8 @@ export class HrBehavior extends BaseBlockBehavior {
 }
 
 export class ImageBehavior extends BaseBlockBehavior {
+  static readonly MODES = new Set(['content', 'theater', 'float', 'custom']);
+  static readonly SIZES = new Set(['auto', 'small', 'medium', 'large']);
   readonly type = 'image';
   readonly category = 'void';
   readonly enterPhysics = { strategy: 'insert-default-below' as const, defaultSplitTarget: 'paragraph' };
@@ -148,9 +158,15 @@ export class ImageBehavior extends BaseBlockBehavior {
     return null;
   }
   renderHTML(block: ASTBlockNode) {
-    const { src, alt, mode = 'content', size = 'auto' } = block.attrs || {};
-    const cls = mode === 'custom' ? `sh-editor-img-custom sh-editor-img-size-${size}` : `sh-editor-img-${mode}`;
-    return `<img src="${src}" alt="${alt || ''}" class="${cls}">`;
+    const { src, alt, mode, size } = block.attrs || {};
+    // Constrain enum-valued attrs before they reach the class list, and drop an
+    // unsafe `src` (data:image/* is allowed for pasted/inline images).
+    const safeMode = ImageBehavior.MODES.has(mode) ? mode : 'content';
+    const safeSize = ImageBehavior.SIZES.has(size) ? size : 'auto';
+    const cls =
+      safeMode === 'custom' ? `sh-editor-img-custom sh-editor-img-size-${safeSize}` : `sh-editor-img-${safeMode}`;
+    const safeSrc = isSafeUrl(src, { allowDataImage: true }) ? escapeAttr(src) : '';
+    return `<img src="${safeSrc}" alt="${escapeAttr(alt)}" class="${cls}">`;
   }
   override renderMarkdown(block: ASTBlockNode) {
     return `![${block.attrs?.['alt'] || ''}](${block.attrs?.['src'] || ''})\n\n`;
@@ -290,7 +306,9 @@ export class LinkBehavior extends BaseInlineBehavior {
     return null;
   }
   renderHTML(mark: ASTMark, text: string) {
-    return `<a href="${mark.attrs?.['href'] || '#'}">${text}</a>`;
+    const raw = mark.attrs?.['href'];
+    const href = isSafeUrl(raw) ? escapeAttr(raw) : '#';
+    return `<a href="${href}">${text}</a>`;
   }
   override renderMarkdown(mark: ASTMark, text: string) {
     return `[${text}](${mark.attrs?.['href'] || '#'})`;
