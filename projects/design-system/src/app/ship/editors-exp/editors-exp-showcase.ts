@@ -1,5 +1,5 @@
 import { JsonPipe, UpperCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipKbd } from '@ship-ui/core/ship-kbd';
 import { ShipTooltip } from '@ship-ui/core/ship-tooltip';
@@ -71,4 +71,66 @@ export default class EditorsExpShowcase {
 
   // Current value model
   editorValue = signal<string | ASTDocument | null>(this.initialHtml);
+
+  /**
+   * Testing-only persistence. When on, the current value + format are mirrored to
+   * localStorage on every change and restored on reload; off (or Reset) clears it.
+   * Not part of the editor — just a harness to exercise round-tripping.
+   */
+  persist = signal(false);
+  #storageKey = 'ship:editors-exp:showcase';
+
+  constructor() {
+    // Restore any previously-persisted content on load (browser only).
+    const saved = this.#readStorage();
+    if (saved) {
+      this.format.set(saved.format);
+      this.editorValue.set(saved.value);
+      this.persist.set(true);
+    }
+
+    // Mirror to / clear from localStorage as the value, format, or toggle change.
+    effect(() => {
+      const value = this.editorValue();
+      const format = this.format();
+      if (this.persist()) this.#writeStorage({ format, value });
+      else this.#clearStorage();
+    });
+  }
+
+  /** Restore the initial demo content and clear the persisted copy. */
+  reset() {
+    this.persist.set(false);
+    this.format.set('html');
+    this.editorValue.set(this.initialHtml);
+    this.#clearStorage();
+  }
+
+  #readStorage(): { format: 'html' | 'json' | 'markdown'; value: string | ASTDocument | null } | null {
+    if (typeof localStorage === 'undefined') return null;
+    try {
+      const raw = localStorage.getItem(this.#storageKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  #writeStorage(data: { format: 'html' | 'json' | 'markdown'; value: string | ASTDocument | null }) {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      localStorage.setItem(this.#storageKey, JSON.stringify(data));
+    } catch {
+      /* quota / disabled storage — ignore in the demo */
+    }
+  }
+
+  #clearStorage() {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      localStorage.removeItem(this.#storageKey);
+    } catch {
+      /* ignore */
+    }
+  }
 }

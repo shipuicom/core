@@ -56,6 +56,22 @@
             Show Metrics
           </label>
         </div>
+        <div class="control-group">
+          <label [shTooltip]="persistTip">
+            <input type="checkbox" [checked]="persist()" (change)="persist.set($any($event.target).checked)" />
+            Persist (localStorage)
+          </label>
+          @if (persist()) {
+            <span class="persist-badge">saved</span>
+          }
+        </div>
+        <ng-template #persistTip>Testing only — mirrors the value to localStorage and restores it on reload.</ng-template>
+        <div class="control-group control-group--end">
+          <button type="button" class="reset-btn" (click)="reset()">
+            <sh-icon size="small">arrow-counter-clockwise</sh-icon>
+            Reset
+          </button>
+        </div>
       </div>
 
       <!-- Tooltip templates with keyboard shortcuts (mirrors the sh-editor toolbar) -->

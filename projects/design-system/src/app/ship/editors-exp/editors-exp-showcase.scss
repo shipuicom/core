@@ -53,6 +53,44 @@
       accent-color: var(--primary-9);
       cursor: pointer;
     }
+
+    &--end {
+      margin-left: auto;
+    }
+  }
+
+  .persist-badge {
+    font: var(--code-10);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--success-11, var(--primary-11));
+    background: var(--success-3, var(--primary-3));
+    border: 1px solid var(--success-6, var(--primary-6));
+    border-radius: var(--shape-1);
+    padding: 1px 6px;
+  }
+
+  .reset-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--shape-2);
+    border: 1px solid var(--base-4);
+    background: var(--base-2);
+    color: var(--base-12);
+    font: var(--paragraph-20);
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      border-color: var(--base-6);
+      background: var(--base-3);
+    }
+
+    &:active {
+      background: var(--base-4);
+    }
   }
 }
 
