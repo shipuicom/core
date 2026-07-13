@@ -12,7 +12,7 @@ import {
 } from './editor-ast.utils';
 import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
 import { astToHtml, astToMarkdown } from './editor-serializers';
-import { EditorTransaction, applySplice, diffDocuments, invertSplice } from './editor-transactions';
+import { EditorOp, EditorTransaction, applyOp, diffDocuments, invertOp, transformOp } from './editor-transactions';
 import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalSelection, TransactionResult } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 
@@ -237,7 +237,7 @@ export class EditorEngineService {
     const tx = stack[stack.length - 1];
     if (!tx) return;
     this.#undoStack.set(stack.slice(0, -1));
-    this.document.set(applySplice(this.document(), invertSplice(tx.splice)));
+    this.document.set(applyOp(this.document(), invertOp(tx.op)));
     if (tx.selBefore) this.selection.live.set(structuredClone(tx.selBefore));
     this.#redoStack.update((s) => [...s, tx]);
     this.version.update((v) => v + 1);
@@ -248,24 +248,46 @@ export class EditorEngineService {
     const tx = stack[stack.length - 1];
     if (!tx) return;
     this.#redoStack.set(stack.slice(0, -1));
-    this.document.set(applySplice(this.document(), tx.splice));
+    this.document.set(applyOp(this.document(), tx.op));
     if (tx.selAfter) this.selection.live.set(structuredClone(tx.selAfter));
     this.#undoStack.update((s) => [...s, tx]);
     this.version.update((v) => v + 1);
   }
 
   /**
-   * Record one invertible transaction: diff old→new into a minimal block
-   * splice, push it onto the undo stack, and clear the redo stack. A no-op
-   * mutation (identical documents) records nothing.
+   * Apply an operation produced elsewhere (a collaborating peer) WITHOUT
+   * entering local undo history — you can't Cmd+Z someone else's edit. Local
+   * pending history is rebased over the remote op via transformOp so undo/redo
+   * still target the text they originally touched; entries whose target the
+   * remote op destroyed (transform conflict) are dropped.
+   */
+  applyRemoteOperation(op: EditorOp) {
+    this.document.set(applyOp(this.document(), op));
+    const rebase = (stack: EditorTransaction[]) =>
+      stack
+        .map((tx) => {
+          const rebased = transformOp(tx.op, op, 'left');
+          return rebased ? (rebased === tx.op ? tx : { ...tx, op: rebased }) : null;
+        })
+        .filter((tx): tx is EditorTransaction => tx !== null);
+    this.#undoStack.update(rebase);
+    this.#redoStack.update(rebase);
+    this.version.update((v) => v + 1);
+  }
+
+  /**
+   * Record one invertible transaction: diff old→new into the minimal operation
+   * (char-level inside a single text block, block-level otherwise), push it
+   * onto the undo stack, and clear the redo stack. A no-op mutation records
+   * nothing.
    */
   #commit(oldDoc: ASTDocument, newDoc: ASTDocument, selBefore: LogicalSelection | null) {
-    const splice = diffDocuments(oldDoc, newDoc);
-    if (!splice) return;
+    const op = diffDocuments(oldDoc, newDoc);
+    if (!op) return;
     const selAfter = this.selection.active();
     const tx: EditorTransaction = {
       baseVersion: this.version(),
-      splice,
+      op,
       selBefore: selBefore ? structuredClone(selBefore) : null,
       selAfter: selAfter ? structuredClone(selAfter) : null,
     };
