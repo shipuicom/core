@@ -1,7 +1,11 @@
 import { JsonPipe, UpperCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipCheckbox } from '@ship-ui/core/ship-checkbox';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipKbd } from '@ship-ui/core/ship-kbd';
+import { ShipSelect } from '@ship-ui/core/ship-select';
 import { ShipTooltip } from '@ship-ui/core/ship-tooltip';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
@@ -40,6 +44,7 @@ class HighlightBehavior extends BaseInlineBehavior {
   selector: 'app-editors-exp',
   standalone: true,
   imports: [
+    FormsModule,
     Previewer,
     PropertyViewer,
     ShipEditorExp,
@@ -47,6 +52,9 @@ class HighlightBehavior extends BaseInlineBehavior {
     ShipEditorFloatingToolbar,
     ShipEditorActionDirective,
     ShipEditorSelectionDebug,
+    ShipButton,
+    ShipCheckbox,
+    ShipSelect,
     ShipIcon,
     ShipKbd,
     ShipTooltip,
@@ -65,6 +73,11 @@ export default class EditorsExpShowcase {
 
   // Editor configuration
   format = signal<'html' | 'json' | 'markdown'>('html');
+  formatOptions = [
+    { value: 'html', label: 'HTML' },
+    { value: 'markdown', label: 'Markdown' },
+    { value: 'json', label: 'JSON (AST)' },
+  ];
   readonly = signal(false);
   showMetrics = signal(true);
   placeholder = signal('Start typing something beautiful...');

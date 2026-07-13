@@ -37,37 +37,26 @@
     <div class="experimental-editor-container">
       <div class="editor-controls">
         <div class="control-group">
-          <label>Storage Format:</label>
-          <select [value]="format()" (change)="format.set($any($event.target).value)">
-            <option value="html">HTML</option>
-            <option value="markdown">Markdown</option>
-            <option value="json">JSON (AST)</option>
-          </select>
+          <sh-select color="primary" [options]="formatOptions" label="label" value="value" [isClearable]="false">
+            <label>Storage Format</label>
+            <input type="text" [(ngModel)]="format" style="display: none" />
+          </sh-select>
         </div>
         <div class="control-group">
-          <label>
-            <input type="checkbox" [checked]="readonly()" (change)="readonly.set($any($event.target).checked)" />
-            Read Only
-          </label>
+          <sh-checkbox [(checked)]="readonly">Read Only</sh-checkbox>
         </div>
         <div class="control-group">
-          <label>
-            <input type="checkbox" [checked]="showMetrics()" (change)="showMetrics.set($any($event.target).checked)" />
-            Show Metrics
-          </label>
+          <sh-checkbox [(checked)]="showMetrics">Show Metrics</sh-checkbox>
         </div>
         <div class="control-group">
-          <label [shTooltip]="persistTip">
-            <input type="checkbox" [checked]="persist()" (change)="persist.set($any($event.target).checked)" />
-            Persist (localStorage)
-          </label>
+          <sh-checkbox [(checked)]="persist" [shTooltip]="persistTip">Persist (localStorage)</sh-checkbox>
           @if (persist()) {
             <span class="persist-badge">saved</span>
           }
         </div>
         <ng-template #persistTip>Testing only — mirrors the value to localStorage and restores it on reload.</ng-template>
         <div class="control-group control-group--end">
-          <button type="button" class="reset-btn" (click)="reset()">
+          <button shButton (click)="reset()">
             <sh-icon size="small">arrow-counter-clockwise</sh-icon>
             Reset
           </button>
