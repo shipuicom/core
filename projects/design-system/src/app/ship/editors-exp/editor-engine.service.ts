@@ -12,6 +12,7 @@ import {
 } from './editor-ast.utils';
 import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
 import { astToHtml, astToMarkdown } from './editor-serializers';
+import { EditorTransaction, applySplice, diffDocuments, invertSplice } from './editor-transactions';
 import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalSelection, TransactionResult } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 
@@ -23,15 +24,22 @@ export class EditorEngineService {
   readonly blocks = new Map<string, BaseBlockBehavior>();
   readonly inlines = new Map<string, BaseInlineBehavior>();
 
-  #history: { doc: ASTDocument; sel: LogicalSelection | null }[] = [];
-  #historyIndex = -1;
+  /**
+   * Invertible history: stacks of operations, not snapshots. Undo applies the
+   * inverse splice of the last transaction; redo re-applies it forward. Memory
+   * scales with the blocks each edit touched, not with document size.
+   */
+  #undoStack = signal<EditorTransaction[]>([]);
+  #redoStack = signal<EditorTransaction[]>([]);
 
-  readonly canUndo = computed(() => this.#historyIndex > 0);
-  readonly canRedo = computed(() => this.#historyIndex < this.#history.length - 1);
+  /** Monotonic document version; each committed transaction advances it. */
+  readonly version = signal(0);
+  /** The most recently committed transaction — plain JSON, so a future collab
+   * layer can subscribe here and ship it to peers verbatim. */
+  readonly lastTransaction = signal<EditorTransaction | null>(null);
 
-  constructor() {
-    this.pushHistory(this.document(), null);
-  }
+  readonly canUndo = computed(() => this.#undoStack().length > 0);
+  readonly canRedo = computed(() => this.#redoStack().length > 0);
 
   register(behavior: BaseBlockBehavior | BaseInlineBehavior) {
     if (behavior instanceof BaseBlockBehavior) this.blocks.set(behavior.type, behavior);
@@ -43,7 +51,8 @@ export class EditorEngineService {
     const currentSel = this.selection.active();
     if (!currentSel) return;
 
-    let targetDoc = this.document();
+    const oldDoc = this.document();
+    let targetDoc = oldDoc;
     let targetSel = currentSel;
 
     if (!currentSel.isCollapsed) {
@@ -56,12 +65,12 @@ export class EditorEngineService {
     if (result) {
       this.document.set(result.doc);
       if (result.selectionShift) this.selection.live.set(result.selectionShift);
-      this.pushHistory(result.doc, this.selection.active());
+      this.#commit(oldDoc, result.doc, currentSel);
     } else if (!currentSel.isCollapsed) {
       // Action was No-op but Truncation happened
       this.document.set(targetDoc);
       this.selection.live.set(targetSel);
-      this.pushHistory(targetDoc, targetSel);
+      this.#commit(oldDoc, targetDoc, currentSel);
     }
   }
 
@@ -69,11 +78,12 @@ export class EditorEngineService {
   handleEscapeHatch(): boolean {
     const currentSel = this.selection.active();
     if (currentSel) {
-      const result = handleEscapeHatch(this.document(), currentSel, this.blocks);
+      const oldDoc = this.document();
+      const result = handleEscapeHatch(oldDoc, currentSel, this.blocks);
       if (result) {
         this.document.set(result.doc);
         if (result.selectionShift) this.selection.live.set(result.selectionShift);
-        this.pushHistory(result.doc, this.selection.active());
+        this.#commit(oldDoc, result.doc, currentSel);
         return true;
       }
     }
@@ -163,10 +173,11 @@ export class EditorEngineService {
     const currentSel = this.selection.active();
     if (!currentSel || currentSel.isCollapsed) return;
 
-    const result = toggleMark(this.document(), currentSel, markType, attrs, this.blocks);
+    const oldDoc = this.document();
+    const result = toggleMark(oldDoc, currentSel, markType, attrs, this.blocks);
     this.document.set(result.doc);
     if (result.selectionShift) this.selection.live.set(result.selectionShift);
-    this.pushHistory(result.doc, this.selection.active());
+    this.#commit(oldDoc, result.doc, currentSel);
   }
 
   insertFragment(fragment: ASTDocument) {
@@ -186,11 +197,12 @@ export class EditorEngineService {
       if (truncation.selectionShift) targetSel = truncation.selectionShift;
     }
 
-    const result = setBlockType(this.document(), currentSel, type, this.blocks, attrs);
+    const oldDoc = this.document();
+    const result = setBlockType(oldDoc, currentSel, type, this.blocks, attrs);
     if (result) {
       this.document.set(result.doc);
       if (result.selectionShift) this.selection.live.set(result.selectionShift);
-      this.pushHistory(result.doc, this.selection.active());
+      this.#commit(oldDoc, result.doc, currentSel);
     }
   }
 
@@ -201,29 +213,65 @@ export class EditorEngineService {
   }
 
   reset(doc: ASTDocument) {
+    // A reset (external value set) is itself an invertible transaction — the
+    // splice replaces the whole old document, so undo returns to it.
+    const oldDoc = this.document();
     this.document.set(doc);
-    this.pushHistory(doc, null);
+    this.#commit(oldDoc, doc, null);
+  }
+
+  /**
+   * Commit an externally-produced document (e.g. the post-IME block reconcile,
+   * which reads composed text back from the DOM). Diffs against the current
+   * document so the composition becomes a normal, undoable transaction.
+   */
+  commitDocument(newDoc: ASTDocument) {
+    const oldDoc = this.document();
+    const selBefore = this.selection.active();
+    this.document.set(newDoc);
+    this.#commit(oldDoc, newDoc, selBefore);
   }
 
   undo() {
-    if (!this.canUndo()) return;
-    this.#historyIndex--;
-    const state = this.#history[this.#historyIndex];
-    this.document.set(structuredClone(state.doc));
-    if (state.sel) this.selection.live.set(state.sel);
+    const stack = this.#undoStack();
+    const tx = stack[stack.length - 1];
+    if (!tx) return;
+    this.#undoStack.set(stack.slice(0, -1));
+    this.document.set(applySplice(this.document(), invertSplice(tx.splice)));
+    if (tx.selBefore) this.selection.live.set(structuredClone(tx.selBefore));
+    this.#redoStack.update((s) => [...s, tx]);
+    this.version.update((v) => v + 1);
   }
 
   redo() {
-    if (!this.canRedo()) return;
-    this.#historyIndex++;
-    const state = this.#history[this.#historyIndex];
-    this.document.set(structuredClone(state.doc));
-    if (state.sel) this.selection.live.set(state.sel);
+    const stack = this.#redoStack();
+    const tx = stack[stack.length - 1];
+    if (!tx) return;
+    this.#redoStack.set(stack.slice(0, -1));
+    this.document.set(applySplice(this.document(), tx.splice));
+    if (tx.selAfter) this.selection.live.set(structuredClone(tx.selAfter));
+    this.#undoStack.update((s) => [...s, tx]);
+    this.version.update((v) => v + 1);
   }
 
-  private pushHistory(doc: ASTDocument, sel: LogicalSelection | null) {
-    this.#history = this.#history.slice(0, this.#historyIndex + 1);
-    this.#history.push({ doc: structuredClone(doc), sel: sel ? structuredClone(sel) : null });
-    this.#historyIndex++;
+  /**
+   * Record one invertible transaction: diff old→new into a minimal block
+   * splice, push it onto the undo stack, and clear the redo stack. A no-op
+   * mutation (identical documents) records nothing.
+   */
+  #commit(oldDoc: ASTDocument, newDoc: ASTDocument, selBefore: LogicalSelection | null) {
+    const splice = diffDocuments(oldDoc, newDoc);
+    if (!splice) return;
+    const selAfter = this.selection.active();
+    const tx: EditorTransaction = {
+      baseVersion: this.version(),
+      splice,
+      selBefore: selBefore ? structuredClone(selBefore) : null,
+      selAfter: selAfter ? structuredClone(selAfter) : null,
+    };
+    this.#undoStack.update((s) => [...s, tx]);
+    if (this.#redoStack().length) this.#redoStack.set([]);
+    this.version.update((v) => v + 1);
+    this.lastTransaction.set(tx);
   }
 }

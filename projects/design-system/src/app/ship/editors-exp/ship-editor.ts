@@ -388,7 +388,10 @@ export class ShipEditorExp implements ControlValueAccessor {
     const doc = [...this.engine.document()];
     doc[index] = parsed[0];
     this.#isWritingFromDOM = true; // DOM already reflects this block; skip the patch
-    this.engine.document.set(doc);
+    // Commit through the engine so the composed text is an invertible,
+    // undoable transaction like any other edit (a raw document.set would
+    // desync the operation-based history).
+    this.engine.commitDocument(doc);
   }
 
   #syncLogicalSelectionFromDOM() {
