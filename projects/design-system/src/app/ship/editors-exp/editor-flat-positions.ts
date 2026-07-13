@@ -69,7 +69,9 @@ export function docSize(doc: ASTDocument): number {
  * position just before it. */
 export function logicalToPos(doc: ASTDocument, lp: LogicalPosition): number {
   let pos = 0;
-  for (let i = 0; i < lp.blockIndex; i++) pos += nodeSize(doc[i]);
+  // Clamp against the doc — callers may map historical positions that outlive
+  // the block they referenced.
+  for (let i = 0; i < lp.blockIndex && i < doc.length; i++) pos += nodeSize(doc[i]);
   const block = doc[lp.blockIndex];
   if (!block) return pos;
   const shape = shapeOf(block);

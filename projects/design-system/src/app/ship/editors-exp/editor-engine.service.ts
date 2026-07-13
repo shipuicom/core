@@ -12,8 +12,9 @@ import {
 } from './editor-ast.utils';
 import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
 import { astToHtml, astToMarkdown } from './editor-serializers';
+import { diffFlat, logicalToPos, posToLogical } from './editor-flat-positions';
 import { EditorOp, EditorTransaction, applyOp, diffDocuments, invertOp, transformOp } from './editor-transactions';
-import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalSelection, TransactionResult } from './editor.types';
+import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalPosition, LogicalSelection, TransactionResult } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 
 @Injectable()
@@ -256,22 +257,82 @@ export class EditorEngineService {
 
   /**
    * Apply an operation produced elsewhere (a collaborating peer) WITHOUT
-   * entering local undo history — you can't Cmd+Z someone else's edit. Local
-   * pending history is rebased over the remote op via transformOp so undo/redo
-   * still target the text they originally touched; entries whose target the
-   * remote op destroyed (transform conflict) are dropped.
+   * entering local undo history — you can't Cmd+Z someone else's edit.
+   *
+   * Rebasing here is the op-sequence LADDER, not a flat per-entry transform:
+   * only the top undo entry shares the remote op's coordinate frame — deeper
+   * entries are expressed against deeper document states. Walking the undo
+   * stack top→bottom, the remote op is localized into each deeper frame by
+   * transforming it through the entry's INVERSE, and each entry rebases
+   * against the remote op as seen at its own depth (side 'right': applyOp
+   * inserts remote content before existing content at an equal point, so a
+   * tied local insert shifts after it — the fuzz marker oracle catches both
+   * the 'left' variant and the missing ladder deleting a peer's character).
+   * The redo stack is the mirror image, walking away from the tip. A conflict
+   * at any rung truncates that entry and everything beyond it — undo depth is
+   * lost, correctness never.
+   *
+   * The live selection and caret snapshots map through the FLAT StepMap
+   * diffed from the actual before/after documents, which recovers exact
+   * correspondence even when the wire op is coarse (a merge arriving as a
+   * whole-block splice still maps interior carets to the right character).
    */
   applyRemoteOperation(op: EditorOp) {
-    this.document.set(applyOp(this.document(), op));
-    const rebase = (stack: EditorTransaction[]) =>
-      stack
-        .map((tx) => {
-          const rebased = transformOp(tx.op, op, 'left');
-          return rebased ? (rebased === tx.op ? tx : { ...tx, op: rebased }) : null;
-        })
-        .filter((tx): tx is EditorTransaction => tx !== null);
-    this.#undoStack.update(rebase);
-    this.#redoStack.update(rebase);
+    const oldDoc = this.document();
+    const newDoc = applyOp(oldDoc, op);
+    const map = diffFlat(oldDoc, newDoc);
+    if (!map) return; // semantic no-op — leave doc, history, and carets alone
+    this.document.set(newDoc);
+
+    // assoc -1: a remote insert exactly at a caret lands after it (the caret
+    // stays anchored to the text it was in front of).
+    const mapLp = (lp: LogicalPosition | null | undefined): LogicalPosition | null =>
+      lp ? posToLogical(newDoc, map.map(logicalToPos(oldDoc, lp), -1)) : null;
+
+    const sel = this.selection.active();
+    if (sel) {
+      const start = mapLp(sel.start);
+      const end = sel.isCollapsed ? start : mapLp(sel.end);
+      if (start && end) this.selection.live.set({ start, end, isCollapsed: sel.isCollapsed });
+    }
+
+    // Undo stack (index 0 = oldest, end = top/next-to-undo). Rebase the UNDO
+    // CHAIN in inverse space: U1=invert(top) is valid at the tip — the same
+    // frame as the remote op — U2 at the frame after U1, and so on, so every
+    // transform happens in a frame where both operands are actually
+    // expressed. (Localizing the remote op down through inverses instead
+    // collapses distinct orderings at coincident positions — the fuzz marker
+    // oracle caught it undoing a peer's character.)
+    this.#undoStack.update((stack) => {
+      const out: EditorTransaction[] = [];
+      let remote: EditorOp = op;
+      for (let k = stack.length - 1; k >= 0; k--) {
+        const tx = stack[k];
+        const inverse = invertOp(tx.op);
+        const rebasedInverse = transformOp(inverse, remote, 'right');
+        const remoteNext = rebasedInverse ? transformOp(remote, inverse, 'left') : null;
+        if (!rebasedInverse || !remoteNext) return out.reverse(); // truncate k and deeper
+        out.push({ ...tx, op: invertOp(rebasedInverse), selBefore: mapLp(tx.selBefore), selAfter: mapLp(tx.selAfter) });
+        remote = remoteNext;
+      }
+      return out.reverse();
+    });
+
+    // Redo stack (end = next-to-redo, based at the tip). Localize the remote
+    // op upward through the entries as they would re-apply.
+    this.#redoStack.update((stack) => {
+      const out: EditorTransaction[] = [];
+      let remote: EditorOp = op;
+      for (let k = stack.length - 1; k >= 0; k--) {
+        const tx = stack[k];
+        const rebased = transformOp(tx.op, remote, 'right');
+        const remoteAbove = rebased ? transformOp(remote, tx.op, 'left') : null;
+        if (!rebased || !remoteAbove) return out.reverse(); // truncate k and beyond
+        out.push({ ...tx, op: rebased, selBefore: mapLp(tx.selBefore), selAfter: mapLp(tx.selAfter) });
+        remote = remoteAbove;
+      }
+      return out.reverse();
+    });
     this.version.update((v) => v + 1);
   }
 

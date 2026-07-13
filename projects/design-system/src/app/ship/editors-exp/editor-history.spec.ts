@@ -295,6 +295,52 @@ describe('Invertible editor history', () => {
       expect(textOf(engine.document(), 0)).toBe('>>>>> hello world');
     });
 
+    it('maps the live caret through a remote edit (no caret jump)', () => {
+      arrange([p('hello world')]);
+      caret(0, 8); // 'hello wo|rld'
+      engine.applyRemoteOperation({
+        kind: 'inline',
+        blockIndex: 0,
+        at: 0,
+        removed: [],
+        inserted: [{ type: 'text', text: '>>> ' }],
+      });
+      const sel = engine.selection.active()!;
+      expect(sel.start.offset).toBe(12); // still 'wo|rld', shifted by 4
+    });
+
+    it('maps the caret EXACTLY through a remote coarse block merge', () => {
+      // The wire op is a whole-block splice (removed 2, inserted 1) — the flat
+      // diff inside applyRemoteOperation recovers the interior correspondence.
+      arrange([p('hello'), p('world')]);
+      caret(1, 3); // 'wor|ld'
+      engine.applyRemoteOperation({
+        kind: 'block',
+        at: 0,
+        removed: [p('hello'), p('world')],
+        inserted: [p('helloworld')],
+      });
+      const sel = engine.selection.active()!;
+      expect(sel.start.blockIndex).toBe(0);
+      expect(sel.start.offset).toBe(8); // 'hellowor|ld'
+    });
+
+    it('tie regression: remote insert at the offset of a pending local char — undo removes the LOCAL one', () => {
+      arrange([p('..')]);
+      caret(0, 1);
+      engine.insertText('a'); // '.a.'
+      engine.applyRemoteOperation({
+        kind: 'inline',
+        blockIndex: 0,
+        at: 1,
+        removed: [],
+        inserted: [{ type: 'text', text: 'B' }],
+      });
+      expect(textOf(engine.document(), 0)).toBe('.Ba.'); // remote lands before at equal offset
+      engine.undo();
+      expect(textOf(engine.document(), 0)).toBe('.B.'); // local 'a' gone, peer's 'B' intact
+    });
+
     it('a remote op that destroys a pending edit target drops that history entry', () => {
       arrange([p('abc'), p('target')]);
       caret(1, 6);

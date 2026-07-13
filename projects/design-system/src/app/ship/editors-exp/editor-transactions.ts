@@ -239,8 +239,15 @@ function shiftIndex(
   const delta = aInsertedLen - aRemovedLen;
   if (aEnd < opStart) return opStart + delta;
   if (aEnd === opStart) {
-    // Insertion by `against` exactly at op start: side decides who goes first.
-    if (aStart === opStart) return side === 'right' ? opStart + delta : opStart;
+    if (aStart === opStart) {
+      // `against` is a pure insertion exactly at op's start. Only when op is
+      // ALSO a pure insertion is this a genuine ordering tie for `side` to
+      // break; if op removes content, a concurrent insert can never sit inside
+      // its removal range, so the range shifts after the insert. (The fuzz
+      // found the TP1 divergence: merge-at-1 vs insert-at-1 must converge.)
+      if (opRemovedLen === 0) return side === 'right' ? opStart + delta : opStart;
+      return opStart + delta;
+    }
     return opStart + delta; // against's removal ends exactly where op starts
   }
   if (opEnd <= aStart) return opStart;
