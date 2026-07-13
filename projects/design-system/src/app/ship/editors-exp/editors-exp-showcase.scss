@@ -36,6 +36,11 @@
     }
   }
 
+  .control-hint {
+    color: var(--base-8);
+    cursor: help;
+  }
+
   .persist-badge {
     font: var(--code-10);
     text-transform: uppercase;
