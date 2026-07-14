@@ -41,6 +41,10 @@ import { BulletListBehavior, ListItemBehavior, ParagraphBehavior } from './stand
 // Deterministic PRNG + helpers
 // ---------------------------------------------------------------------------
 
+/** Iteration multiplier — CI's nightly job runs the same suite deeper
+ * (FUZZ_SCALE=10); locally and on PRs it stays fast at 1. */
+const SCALE = Math.max(1, Number(globalThis.process?.env?.['FUZZ_SCALE'] ?? 1) || 1);
+
 function mulberry32(seed: number) {
   return () => {
     let t = (seed += 0x6d2b79f5);
@@ -182,7 +186,7 @@ function randomMutation(rnd: Rnd, doc: ASTDocument): ASTDocument | null {
 describe('fuzz layer 1: op algebra (TP1, invert, flat maps)', () => {
   it('holds across 400 random concurrent pairs', () => {
     let convergenceChecks = 0;
-    for (let seed = 1; seed <= 400; seed++) {
+    for (let seed = 1; seed <= 400 * SCALE; seed++) {
       const rnd = mulberry32(seed);
       const base = randomBaseDoc(rnd);
       const mutA = randomMutation(rnd, base);
@@ -257,7 +261,7 @@ describe('fuzz layer 2: engine rebase marker oracle', () => {
   it('undo-all removes exactly the local markers across 80 interleavings', () => {
     const LOCAL = 'abcdefghijkl';
     const REMOTE = 'ABCDEFGHIJKL';
-    for (let seed = 1; seed <= 80; seed++) {
+    for (let seed = 1; seed <= 80 * SCALE; seed++) {
       const rnd = mulberry32(seed * 7919);
       const engine = makeEngine();
       engine.document.set([p('....'), p('....'), p('....')] as ASTDocument);
@@ -314,7 +318,7 @@ describe('fuzz layer 2: engine rebase marker oracle', () => {
   it('a remote insert arriving MID-UNDO rebases the redo stack correctly (40 runs)', () => {
     const LOCAL = 'abcdefgh';
     const REMOTE = 'ABCDEFGH';
-    for (let seed = 1; seed <= 40; seed++) {
+    for (let seed = 1; seed <= 40 * SCALE; seed++) {
       const rnd = mulberry32(seed * 31337);
       const engine = makeEngine();
       engine.document.set([p('....'), p('....')] as ASTDocument);
@@ -362,7 +366,7 @@ describe('fuzz layer 2: engine rebase marker oracle', () => {
 
 describe('fuzz layer 3: engine chaos invariants', () => {
   it('never corrupts the document across 60 mixed runs', () => {
-    for (let seed = 1; seed <= 60; seed++) {
+    for (let seed = 1; seed <= 60 * SCALE; seed++) {
       const rnd = mulberry32(seed * 104729);
       const engine = makeEngine();
       engine.document.set([p('alpha0'), p('bravo1'), ul(li('itemA'), li('itemB')), p('delta3')] as ASTDocument);

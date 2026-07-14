@@ -1,0 +1,83 @@
+name: editors-exp CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'projects/design-system/src/app/ship/editors-exp/**'
+      - '.github/workflows/editors-exp-ci.yml'
+  pull_request:
+    paths:
+      - 'projects/design-system/src/app/ship/editors-exp/**'
+      - '.github/workflows/editors-exp-ci.yml'
+  schedule:
+    # Nightly deep fuzz — same seeds ×10 iterations (FUZZ_SCALE).
+    - cron: '17 3 * * *'
+
+concurrency:
+  group: editors-exp-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  # Unit + integration + fuzz (fast, seeded — runs on every change)
+  # ──────────────────────────────────────────────────────────────────────────
+  test:
+    name: Editor Tests
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run editors-exp suite
+        run: npx vitest run projects/design-system/src/app/ship/editors-exp/ --reporter=verbose
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Typecheck — vitest transpiles without type-checking, so type errors only
+  # surface at build time (a mis-typed selection mapper shipped green tests).
+  # ──────────────────────────────────────────────────────────────────────────
+  typecheck:
+    name: Typecheck (ng build)
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build design-system (development)
+        run: npx ng build design-system --configuration development
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Nightly deep fuzz — identical suite, 10× the seeds
+  # ──────────────────────────────────────────────────────────────────────────
+  fuzz-deep:
+    name: Deep Fuzz (nightly)
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run rebase fuzz at 10x scale
+        env:
+          FUZZ_SCALE: '10'
+        run: npx vitest run projects/design-system/src/app/ship/editors-exp/editor-rebase-fuzz.spec.ts --reporter=verbose
