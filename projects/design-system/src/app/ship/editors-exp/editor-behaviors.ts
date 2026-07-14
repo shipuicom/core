@@ -18,6 +18,19 @@ export abstract class BaseBlockBehavior implements BlockBehaviorManifest {
   activeClassName?: string;
 
   abstract parseDOM(el: HTMLElement): ASTBlockNode | null;
+
+  /**
+   * Render this block to an HTML string. `contentHtml` is already-escaped
+   * inline markup and safe to interpolate verbatim.
+   *
+   * SECURITY CONTRACT: the returned string becomes live DOM (patchDOM →
+   * innerHTML) and the serialized `value`, and `block.attrs` can arrive from
+   * untrusted JSON. Every attr you interpolate MUST go through `escapeAttr()`
+   * (attribute values), `isSafeUrl()` (href/src — rewrite failures to '#'/''),
+   * or an allow-list (enum-valued attrs interpolated into class/tag names).
+   * See `standard-behaviors.ts` (ImageBehavior/LinkBehavior) for the pattern;
+   * both helpers are exported from `./editor-sanitize`.
+   */
   abstract renderHTML(block: ASTBlockNode, contentHtml: string): string;
   renderMarkdown?(block: ASTBlockNode, contentMd: string): string;
 
@@ -36,6 +49,15 @@ export abstract class BaseInlineBehavior {
   keybinding?: string;
 
   abstract parseDOM(el: HTMLElement): ASTMark | null;
+
+  /**
+   * Render `text` (already escaped — interpolate verbatim) wrapped in this
+   * mark's markup.
+   *
+   * SECURITY CONTRACT: same as {@link BaseBlockBehavior.renderHTML} — any
+   * `mark.attrs` value you interpolate MUST pass `escapeAttr()` and, for URL
+   * attributes, `isSafeUrl()` (both exported from `./editor-sanitize`).
+   */
   abstract renderHTML(mark: ASTMark, text: string): string;
   renderMarkdown?(mark: ASTMark, text: string): string;
 

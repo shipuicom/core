@@ -36,6 +36,8 @@ import {
   LogicalPosition,
   sanitizeHTML,
   normalizeASTPaste,
+  isSafeUrl,
+  linkMarkExtension,
 } from './ship-editor-core';
 
 // Use global document which is available in Vitest test environment (JSDOM/Happy-DOM)
@@ -1747,5 +1749,38 @@ describe('ShipEditor Core: normalizeASTPaste', () => {
     ];
     const result = normalizeASTPaste(doc);
     expect(getJSONText([result[0]])).toBe('Hello world');
+  });
+});
+
+describe('ShipEditor Core: isSafeUrl scheme allow-list', () => {
+  it('allows benign and scheme-less URLs', () => {
+    for (const url of ['https://a.b/c', 'http://a.b', 'mailto:x@y.z', 'tel:+1', '/rel', '#anchor', '//cdn.a.b']) {
+      expect(isSafeUrl(url), url).toBe(true);
+    }
+  });
+
+  it('rejects dangerous and obfuscated schemes the old substring check missed', () => {
+    for (const url of ['javascript:alert(1)', 'JavaScript:x', 'java\tscript:x', ' vbscript:x', 'data:text/html,<script>1</script>']) {
+      expect(isSafeUrl(url), url).toBe(false);
+    }
+  });
+
+  it('permits data:image/* only when opted in (img src)', () => {
+    expect(isSafeUrl('data:image/png;base64,AA')).toBe(false);
+    expect(isSafeUrl('data:image/png;base64,AA', { allowDataImage: true })).toBe(true);
+  });
+
+  it('linkMarkExtension rewrites an unsafe href to #', () => {
+    const html = linkMarkExtension.toHTML!({ type: 'link', attrs: { href: 'javascript:alert(1)' } } as any, 'x');
+    expect(html).toBe('<a href="#">x</a>');
+    const ok = linkMarkExtension.toHTML!({ type: 'link', attrs: { href: 'https://ok.example' } } as any, 'x');
+    expect(ok).toContain('href="https://ok.example"');
+  });
+
+  it('sanitizeHTML neutralizes vbscript: and control-char-obfuscated javascript:', () => {
+    expect(sanitizeHTML('<a href="vbscript:msgbox(1)">x</a>')).toContain('href="#"');
+    expect(sanitizeHTML('<a href="java\tscript:alert(1)">x</a>')).toContain('href="#"');
+    expect(sanitizeHTML('<img src="javascript:alert(1)">')).toContain('src=""');
+    expect(sanitizeHTML('<img src="data:image/png;base64,AA">')).toContain('data:image/png');
   });
 });

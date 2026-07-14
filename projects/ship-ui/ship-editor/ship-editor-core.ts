@@ -139,7 +139,9 @@ export const linkMarkExtension: ShipEditorMarkExtension = {
   type: 'link',
   tagName: 'a',
   toHTML: (mark, text) => {
-    const href = escapeHTML(mark.attrs?.['href'] || '');
+    const rawHref = mark.attrs?.['href'] || '';
+    // Scheme allow-list: escaping alone doesn't stop javascript:/vbscript: URLs.
+    const href = isSafeUrl(rawHref) ? escapeHTML(rawHref) : '#';
     const target = mark.attrs?.['target'] ? ` target="${escapeHTML(mark.attrs['target'])}"` : '';
     return `<a href="${href}"${target}>${text}</a>`;
   },
@@ -518,7 +520,8 @@ export const imageBlockExtension: ShipEditorBlockExtension = {
     defaultSize: 'medium',
   },
   toHTML: (block) => {
-    const src = escapeHTML(block.attrs?.src || '');
+    const rawSrc = block.attrs?.src || '';
+    const src = isSafeUrl(rawSrc, { allowDataImage: true }) ? escapeHTML(rawSrc) : '';
     const alt = escapeHTML(block.attrs?.alt || '');
     const mode = block.attrs?.mode || 'content';
     const size = block.attrs?.size || 'auto';
@@ -701,6 +704,33 @@ export function escapeHTML(text: string): string {
     .replace(/'/g, '&#039;');
 }
 
+/** URL schemes considered safe to emit into an `href`/`src` attribute. */
+const SAFE_URL_SCHEMES = new Set(['http:', 'https:', 'mailto:', 'tel:']);
+
+/**
+ * Is `value` safe to place in a URL attribute?
+ *
+ * Allow-list, not deny-list: scheme-less URLs (relative paths, anchors,
+ * queries, protocol-relative) are allowed; a value with a scheme is allowed
+ * only for http/https/mailto/tel. `data:` is rejected unless `allowDataImage`
+ * is set and the payload is `data:image/*`. Control characters and whitespace
+ * are stripped before scheme detection, so obfuscations like `java\tscript:`
+ * can't slip past — the previous substring check (`startsWith('javascript:')`)
+ * missed those as well as e.g. `vbscript:`.
+ */
+export function isSafeUrl(rawValue: unknown, opts: { allowDataImage?: boolean } = {}): boolean {
+  const value = String(rawValue ?? '').trim();
+  if (!value) return false;
+  // eslint-disable-next-line no-control-regex
+  const collapsed = value.replace(/[\u0000-\u0020]+/g, '');
+  const schemeMatch = collapsed.match(/^([a-z][a-z0-9+.-]*):/i);
+  if (!schemeMatch) return true;
+  const scheme = `${schemeMatch[1].toLowerCase()}:`;
+  if (SAFE_URL_SCHEMES.has(scheme)) return true;
+  if (opts.allowDataImage && /^data:image\/[a-z0-9.+-]+[;,]/i.test(collapsed)) return true;
+  return false;
+}
+
 // JSON => HTML Converter
 
 /** Render a single block to its HTML string. */
@@ -867,12 +897,11 @@ export function sanitizeHTML(rawHtml: string): string {
         continue;
       }
 
-      // 2. Block dangerous protocols in URI-based attributes
+      // 2. Scheme allow-list for URI-based attributes (the old substring
+      // deny-list missed vbscript: and control-char obfuscations).
       if (name === 'href' || name === 'src') {
-        const value = attr.value.toLowerCase().trim();
-        // Block javascript: and data:text/html protocols
-        if (value.startsWith('javascript:') || value.replace(/\s/g, '').includes('data:text/html')) {
-          el.setAttribute(attr.name, '#');
+        if (!isSafeUrl(attr.value, { allowDataImage: tag === 'img' && name === 'src' })) {
+          el.setAttribute(attr.name, name === 'href' ? '#' : '');
         }
       }
 
