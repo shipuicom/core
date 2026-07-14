@@ -288,13 +288,15 @@ export class EditorEngineService {
     // stays anchored to the text it was in front of).
     const mapLp = (lp: LogicalPosition | null | undefined): LogicalPosition | null =>
       lp ? posToLogical(newDoc, map.map(logicalToPos(oldDoc, lp), -1)) : null;
-
-    const sel = this.selection.active();
-    if (sel) {
+    const mapSel = (sel: LogicalSelection | null): LogicalSelection | null => {
+      if (!sel) return null;
       const start = mapLp(sel.start);
       const end = sel.isCollapsed ? start : mapLp(sel.end);
-      if (start && end) this.selection.live.set({ start, end, isCollapsed: sel.isCollapsed });
-    }
+      return start && end ? { start, end, isCollapsed: sel.isCollapsed } : null;
+    };
+
+    const live = mapSel(this.selection.active());
+    if (live) this.selection.live.set(live);
 
     // Undo stack (index 0 = oldest, end = top/next-to-undo). Rebase the UNDO
     // CHAIN in inverse space: U1=invert(top) is valid at the tip — the same
@@ -312,7 +314,7 @@ export class EditorEngineService {
         const rebasedInverse = transformOp(inverse, remote, 'right');
         const remoteNext = rebasedInverse ? transformOp(remote, inverse, 'left') : null;
         if (!rebasedInverse || !remoteNext) return out.reverse(); // truncate k and deeper
-        out.push({ ...tx, op: invertOp(rebasedInverse), selBefore: mapLp(tx.selBefore), selAfter: mapLp(tx.selAfter) });
+        out.push({ ...tx, op: invertOp(rebasedInverse), selBefore: mapSel(tx.selBefore), selAfter: mapSel(tx.selAfter) });
         remote = remoteNext;
       }
       return out.reverse();
@@ -328,7 +330,7 @@ export class EditorEngineService {
         const rebased = transformOp(tx.op, remote, 'right');
         const remoteAbove = rebased ? transformOp(remote, tx.op, 'left') : null;
         if (!rebased || !remoteAbove) return out.reverse(); // truncate k and beyond
-        out.push({ ...tx, op: rebased, selBefore: mapLp(tx.selBefore), selAfter: mapLp(tx.selAfter) });
+        out.push({ ...tx, op: rebased, selBefore: mapSel(tx.selBefore), selAfter: mapSel(tx.selAfter) });
         remote = remoteAbove;
       }
       return out.reverse();

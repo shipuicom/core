@@ -341,6 +341,27 @@ describe('Invertible editor history', () => {
       expect(textOf(engine.document(), 0)).toBe('.B.'); // local 'a' gone, peer's 'B' intact
     });
 
+    it('rebases stored caret snapshots: undo after a remote edit restores the MAPPED caret', () => {
+      // Regression: selBefore/selAfter are LogicalSelections; feeding them to
+      // the position mapper type-degraded them to caret (0,0) silently.
+      arrange([p('....'), p('....')]);
+      caret(1, 2);
+      engine.insertText('a'); // block1: '..a..', selBefore caret (1,2)
+      engine.applyRemoteOperation({
+        kind: 'inline',
+        blockIndex: 1,
+        at: 0,
+        removed: [],
+        inserted: [{ type: 'text', text: 'RR' }],
+      });
+      expect(textOf(engine.document(), 1)).toBe('RR..a..');
+      engine.undo();
+      expect(textOf(engine.document(), 1)).toBe('RR....');
+      const sel = engine.selection.active()!;
+      expect(sel.start.blockIndex).toBe(1);
+      expect(sel.start.offset).toBe(4); // (1,2) mapped through the remote insert
+    });
+
     it('a remote op that destroys a pending edit target drops that history entry', () => {
       arrange([p('abc'), p('target')]);
       caret(1, 6);
