@@ -5,10 +5,12 @@ on:
     branches: [main]
     paths:
       - 'projects/design-system/src/app/ship/editors-exp/**'
+      - 'scripts/editor-e2e/**'
       - '.github/workflows/editors-exp-ci.yml'
   pull_request:
     paths:
       - 'projects/design-system/src/app/ship/editors-exp/**'
+      - 'scripts/editor-e2e/**'
       - '.github/workflows/editors-exp-ci.yml'
   schedule:
     # Nightly deep fuzz — same seeds ×10 iterations (FUZZ_SCALE).
@@ -59,6 +61,30 @@ jobs:
 
       - name: Build design-system (development)
         run: npx ng build design-system --configuration development
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # E2E — the DOM ≡ AST invariant under real Chromium input (keyboard storms,
+  # shortcuts, CDP-driven IME composition). Playwright boots ng serve itself.
+  # ──────────────────────────────────────────────────────────────────────────
+  e2e:
+    name: Editor E2E (Playwright)
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run editor e2e suite
+        run: npx playwright test -c scripts/editor-e2e/playwright.config.ts
 
   # ──────────────────────────────────────────────────────────────────────────
   # Nightly deep fuzz — identical suite, 10× the seeds
