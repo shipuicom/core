@@ -7,13 +7,14 @@ import {
   handleEnter,
   handleEscapeHatch,
   insertFragment,
+  resolveInlinePosition,
   setBlockType,
   toggleMark,
 } from './editor-ast.utils';
 import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
 import { astToHtml, astToMarkdown } from './editor-serializers';
 import { diffFlat, logicalToPos, posToLogical } from './editor-flat-positions';
-import { EditorOp, EditorTransaction, applyOp, diffDocuments, invertOp, transformOp } from './editor-transactions';
+import { EditorOp, EditorTransaction, applyOp, diffDocuments, invertOp, spliceInlineContent, transformOp } from './editor-transactions';
 import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalPosition, LogicalSelection, TransactionResult } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 
@@ -41,6 +42,45 @@ export class EditorEngineService {
 
   readonly canUndo = computed(() => this.#undoStack().length > 0);
   readonly canRedo = computed(() => this.#redoStack().length > 0);
+
+  /**
+   * PM-style stored marks. Toggling a mark at a COLLAPSED caret can't restyle
+   * a range — instead the desired mark set is parked here and applied to the
+   * next text inserted at that exact spot ("Cmd+B, type" produces bold text).
+   * The anchor compares by character offset (a caret at a node boundary has
+   * two inlineIndex/offset spellings); a pending set at any other position is
+   * simply never applied, so stale entries self-expire.
+   */
+  readonly pendingMarks = signal<{
+    blockIndex: number;
+    itemIndex: number;
+    charOffset: number;
+    marks: ASTMark[];
+  } | null>(null);
+
+  /** Character offset of a logical position within its block/item content. */
+  #charOffsetOf(pos: LogicalPosition): number {
+    const block = this.document()[pos.blockIndex];
+    if (!block) return pos.offset;
+    const content = (
+      pos.itemIndex !== undefined && this.blocks.get(block.type)?.category === 'container'
+        ? ((block.content as ASTBlockNode[])[pos.itemIndex]?.content ?? [])
+        : block.content
+    ) as ASTInlineNode[];
+    let chars = 0;
+    for (let i = 0; i < pos.inlineIndex && i < content.length; i++) chars += content[i].text?.length ?? 0;
+    return chars + pos.offset;
+  }
+
+  #pendingAt(pos: LogicalPosition): ASTMark[] | null {
+    const pending = this.pendingMarks();
+    if (!pending) return null;
+    const matches =
+      pending.blockIndex === pos.blockIndex &&
+      pending.itemIndex === (pos.itemIndex ?? 0) &&
+      pending.charOffset === this.#charOffsetOf(pos);
+    return matches ? pending.marks : null;
+  }
 
   register(behavior: BaseBlockBehavior | BaseInlineBehavior) {
     if (behavior instanceof BaseBlockBehavior) this.blocks.set(behavior.type, behavior);
@@ -100,7 +140,29 @@ export class EditorEngineService {
   }
 
   insertText(text: string) {
-    this.dispatchWithTruncation((doc, sel) => executeInsertText(doc, sel, text, this.inlines, this.blocks));
+    const sel = this.selection.active();
+    const pending = sel?.isCollapsed ? this.#pendingAt(sel.start) : null;
+    this.pendingMarks.set(null); // consumed or stale either way
+    this.dispatchWithTruncation((doc, s) => {
+      const result = executeInsertText(doc, s, text, this.inlines, this.blocks);
+      if (!result || !pending) return result;
+      // Re-mark the inserted characters with the stored mark set, then re-seat
+      // the caret by char offset (marking may have re-split the inline nodes).
+      const block = result.doc[s.start.blockIndex];
+      const isContainer = this.blocks.get(block.type)?.category === 'container';
+      const itemIdx = s.start.itemIndex ?? 0;
+      const holder = isContainer ? (block.content as ASTBlockNode[])[itemIdx] : block;
+      const content = holder.content as ASTInlineNode[];
+      let charStart = s.start.offset;
+      for (let i = 0; i < s.start.inlineIndex && i < content.length; i++) charStart += content[i].text?.length ?? 0;
+      holder.content = spliceInlineContent(content, charStart, text.length, [
+        { type: 'text', text, ...(pending.length ? { marks: pending } : {}) },
+      ]);
+      const resolved = resolveInlinePosition(holder.content as ASTInlineNode[], charStart + text.length);
+      const pos: LogicalPosition = { blockIndex: s.start.blockIndex, ...resolved };
+      if (isContainer) pos.itemIndex = itemIdx;
+      return { doc: result.doc, selectionShift: { start: pos, end: pos, isCollapsed: true } };
+    });
   }
 
   deleteRange() {
@@ -141,6 +203,13 @@ export class EditorEngineService {
       marks = inline?.marks ? [...inline.marks] : [];
     }
 
+    // A pending (stored) mark set at the caret overrides what the text carries,
+    // so the toolbar reflects what the NEXT typed character will get.
+    if (sel.isCollapsed) {
+      const pending = this.#pendingAt(sel.start);
+      if (pending) marks = structuredClone(pending);
+    }
+
     return { blockType: block.type, blockAttrs: block.attrs ?? null, marks };
   });
 
@@ -172,8 +241,25 @@ export class EditorEngineService {
 
   toggleMark(markType: string, attrs?: Record<string, any>) {
     const currentSel = this.selection.active();
-    if (!currentSel || currentSel.isCollapsed) return;
+    if (!currentSel) return;
 
+    if (currentSel.isCollapsed) {
+      // Stored marks: toggle within the pending set for the next insertion.
+      const base = this.#pendingAt(currentSel.start) ?? this.activeFormats().marks;
+      const has = base.some((m) => m.type === markType);
+      const marks = has
+        ? base.filter((m) => m.type !== markType)
+        : [...base, { type: markType, ...(attrs ? { attrs } : {}) } as ASTMark];
+      this.pendingMarks.set({
+        blockIndex: currentSel.start.blockIndex,
+        itemIndex: currentSel.start.itemIndex ?? 0,
+        charOffset: this.#charOffsetOf(currentSel.start),
+        marks: structuredClone(marks),
+      });
+      return;
+    }
+
+    this.pendingMarks.set(null);
     const oldDoc = this.document();
     const result = toggleMark(oldDoc, currentSel, markType, attrs, this.blocks);
     this.document.set(result.doc);

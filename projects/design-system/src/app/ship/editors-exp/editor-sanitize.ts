@@ -213,6 +213,90 @@ export function sanitizeHtmlToBody(html: string, option: SanitizeOption = true):
 }
 
 /**
+ * Structural schema guard for the JSON `value` ingest path. A hostile or buggy
+ * consumer can hand the editor arbitrary JSON; without coercion a malformed
+ * node (`content: null`, `text: 42`, a mark that isn't an object…) flows into
+ * behaviors and render and can throw mid-patch. This normalizes ANY input into
+ * a document satisfying the editor's invariants:
+ *
+ * - the document is a non-empty array of `{type: string, attrs?, content: []}`
+ * - text blocks carry ≥1 inline node, every inline node is `{type:'text',
+ *   text: string, marks?: {type: string, attrs?}[]}`
+ * - container blocks carry item blocks (recursively normalized, one level —
+ *   deeper nesting is flattened by the same rule)
+ * - void blocks carry `content: []`
+ *
+ * Salvage over rejection: invalid nodes are dropped, coercible ones coerced.
+ * Runs unconditionally on JSON ingest (crash-safety is not opt-out); URL
+ * scrubbing stays separate in {@link sanitizeDocumentUrls}.
+ */
+export function normalizeDocument(input: unknown): ASTBlockNodeLike[] {
+  const doc = Array.isArray(input) ? input.map(normalizeBlock).filter((b): b is ASTBlockNodeLike => b !== null) : [];
+  if (doc.length === 0) return [{ type: 'paragraph', content: [{ type: 'text', text: '' }] }];
+  return doc;
+}
+
+interface ASTInlineNodeLike {
+  type: 'text';
+  text: string;
+  marks?: { type: string; attrs?: Record<string, unknown> }[];
+}
+interface ASTBlockNodeLike {
+  type: string;
+  attrs?: Record<string, unknown>;
+  content: ASTInlineNodeLike[] | ASTBlockNodeLike[];
+}
+
+const isPlainObject = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
+
+function normalizeInline(node: unknown): ASTInlineNodeLike | null {
+  if (!isPlainObject(node)) return null;
+  const text = node['text'];
+  if (typeof text !== 'string') return null;
+  const marks = Array.isArray(node['marks'])
+    ? node['marks']
+        .filter(isPlainObject)
+        .filter((m) => typeof m['type'] === 'string')
+        .map((m) => ({ type: m['type'] as string, ...(isPlainObject(m['attrs']) ? { attrs: m['attrs'] } : {}) }))
+    : undefined;
+  return { type: 'text', text, ...(marks?.length ? { marks } : {}) };
+}
+
+function normalizeBlock(block: unknown, depth = 0): ASTBlockNodeLike | null {
+  if (!isPlainObject(block) || typeof block['type'] !== 'string') return null;
+  const attrs = isPlainObject(block['attrs']) ? block['attrs'] : undefined;
+  const rawContent = Array.isArray(block['content']) ? block['content'] : [];
+
+  // Decide the content shape from what the children actually are.
+  const inline = rawContent.map(normalizeInline).filter((n): n is ASTInlineNodeLike => n !== null);
+  if (inline.length > 0 || rawContent.length === 0) {
+    // Text block (≥1 inline node) or void block (empty content preserved).
+    // A paragraph may never be void-shaped: empty content becomes the editor's
+    // empty-text convention so downstream shape detection stays sound.
+    const content =
+      rawContent.length === 0 ? (block['type'] === 'paragraph' ? [{ type: 'text' as const, text: '' }] : []) : inline;
+    return { type: block['type'], ...(attrs ? { attrs } : {}), content };
+  }
+
+  // Children look like blocks → container. One nesting level: deeper
+  // containers normalize their own children as text/void and stop.
+  if (depth >= 1) {
+    // Too deep — flatten to a text block from any salvageable descendant text.
+    return { type: block['type'], ...(attrs ? { attrs } : {}), content: [{ type: 'text', text: '' }] };
+  }
+  const items = rawContent.map((c) => normalizeBlock(c, depth + 1)).filter((b): b is ASTBlockNodeLike => b !== null);
+  if (items.length === 0) return { type: block['type'], ...(attrs ? { attrs } : {}), content: [{ type: 'text', text: '' }] };
+  // Container items must be text blocks with ≥1 inline node.
+  const normalizedItems = items.map((item) =>
+    (item.content as ASTInlineNodeLike[]).length === 0
+      ? { ...item, content: [{ type: 'text' as const, text: '' }] }
+      : item
+  );
+  return { type: block['type'], ...(attrs ? { attrs } : {}), content: normalizedItems };
+}
+
+/**
  * Defense-in-depth for the JSON `value` ingest path, which stores an AST as-is
  * without ever passing an HTML parser. Deep-clone `doc` and neutralize any
  * dangerous `href`/`src` attribute (by name) on blocks and inline marks, so the

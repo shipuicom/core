@@ -17,7 +17,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
 import { EditorEngineService } from './editor-engine.service';
-import { SanitizeOption, sanitizeDocumentUrls } from './editor-sanitize';
+import { SanitizeOption, normalizeDocument, sanitizeDocumentUrls } from './editor-sanitize';
 import { htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
 import { ASTBlockNode, ASTDocument, ASTInlineNode, LogicalPosition, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
@@ -131,10 +131,13 @@ export class ShipEditorExp implements ControlValueAccessor {
       const sanitize = this.sanitize();
       untracked(() => {
         if (!externalVal) this.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
-        else if (this.format() === 'json' && Array.isArray(externalVal))
-          // JSON bypasses HTML parsing, so neutralize dangerous URLs in the AST
-          // itself (unless the consumer opted out). Render escaping guards too.
-          this.engine.reset(sanitize === false ? (externalVal as ASTDocument) : sanitizeDocumentUrls(externalVal as ASTDocument));
+        else if (this.format() === 'json' && Array.isArray(externalVal)) {
+          // JSON bypasses HTML parsing. Always coerce to a structurally valid
+          // document (crash-safety is not opt-out); additionally neutralize
+          // dangerous URLs unless the consumer opted out of sanitization.
+          const structural = normalizeDocument(externalVal) as ASTDocument;
+          this.engine.reset(sanitize === false ? structural : sanitizeDocumentUrls(structural));
+        }
         else {
           const doc =
             this.format() === 'markdown'

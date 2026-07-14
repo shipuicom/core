@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { escapeAttr, isSafeUrl, sanitizeDocumentUrls, sanitizeHtmlToBody } from './editor-sanitize';
-import { htmlToAst, markdownToAst } from './editor-serializers';
+import { escapeAttr, isSafeUrl, normalizeDocument, sanitizeDocumentUrls, sanitizeHtmlToBody } from './editor-sanitize';
+import { astToHtml, htmlToAst, markdownToAst } from './editor-serializers';
 import * as B from './standard-behaviors';
 import { HeadingBehavior, ImageBehavior, LinkBehavior, ParagraphBehavior } from './standard-behaviors';
 import { ASTBlockNode, ASTMark } from './editor.types';
@@ -233,6 +233,64 @@ describe('sanitizeDocumentUrls (I3 — JSON value path)', () => {
     expect(clean[4].content[0].content[0].marks[0].attrs.href).toBe('#'); // nested list item
     // Original input is not mutated (works on a clone).
     expect(hostile[0].content[0].marks![0].attrs.href).toBe('javascript:alert(1)');
+  });
+});
+
+describe('normalizeDocument (JSON schema guard)', () => {
+  const render = (doc: any) => {
+    const { blocks, inlines } = makeMaps();
+    return astToHtml(doc, blocks, inlines);
+  };
+
+  it('falls back to an empty paragraph for garbage input', () => {
+    for (const garbage of [null, undefined, 42, 'str', {}, [], [null], [42], ['x'], [{ no: 'type' }]]) {
+      const doc = normalizeDocument(garbage as any);
+      expect(doc).toEqual([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
+      expect(() => render(doc)).not.toThrow();
+    }
+  });
+
+  it('coerces malformed nodes and drops unsalvageable ones', () => {
+    const hostile = [
+      { type: 'paragraph', content: null }, // content not an array
+      { type: 'paragraph', content: [{ type: 'text', text: 42 }, { type: 'text', text: 'ok' }] }, // numeric text dropped
+      { type: 'paragraph', content: [{ type: 'text', text: 'm', marks: [null, { noType: 1 }, { type: 'bold' }] }] },
+      { type: 'heading', attrs: 'not-an-object', content: [{ type: 'text', text: 'h' }] },
+      { type: 12, content: [] }, // non-string type dropped entirely
+    ];
+    const doc = normalizeDocument(hostile as any) as any[];
+    expect(doc.map((b) => b.type)).toEqual(['paragraph', 'paragraph', 'paragraph', 'heading']);
+    expect(doc[0].content).toEqual([{ type: 'text', text: '' }]); // empty paragraph convention
+    expect(doc[1].content).toEqual([{ type: 'text', text: 'ok' }]);
+    expect(doc[2].content[0].marks).toEqual([{ type: 'bold' }]); // invalid marks filtered
+    expect(doc[3].attrs).toBeUndefined();
+    expect(() => render(doc)).not.toThrow();
+  });
+
+  it('normalizes container items and flattens over-deep nesting', () => {
+    const input = [
+      {
+        type: 'bullet-list',
+        content: [
+          { type: 'list-item', content: [{ type: 'text', text: 'ok' }] },
+          { type: 'list-item', content: [] }, // empty item healed
+          { type: 'bullet-list', content: [{ type: 'list-item', content: [{ type: 'text', text: 'too deep' }] }] },
+          'garbage',
+        ],
+      },
+    ];
+    const doc = normalizeDocument(input as any) as any[];
+    const items = doc[0].content;
+    expect(items.every((it: any) => Array.isArray(it.content) && it.content.length >= 1)).toBe(true);
+    expect(() => render(doc)).not.toThrow();
+  });
+
+  it('is wired into the value path together with URL scrubbing', () => {
+    const hostile = [
+      { type: 'paragraph', content: [{ type: 'text', text: 'x', marks: [{ type: 'link', attrs: { href: 'javascript:alert(1)' } }] }] },
+    ];
+    const doc = sanitizeDocumentUrls(normalizeDocument(hostile as any));
+    expect((doc as any)[0].content[0].marks[0].attrs.href).toBe('#');
   });
 });
 
