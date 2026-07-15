@@ -231,12 +231,125 @@ export class EditorEngineService {
     return false;
   }
 
+  /**
+   * A mark action that needs input UI before it can commit (e.g. 'link' needs
+   * an href). Emitted by dispatch() when the behavior sets `requestsUi`; a UI
+   * component (sh-editor-link-popover) reacts, collects attrs, and commits via
+   * setMark/removeMark. `token` makes consecutive requests distinct.
+   */
+  readonly uiRequest = signal<{ action: string; token: number } | null>(null);
+  #uiToken = 0;
+
   // --- GENERIC DISPATCH ---
   dispatch(action: string, attrs?: Record<string, any>) {
     if (this.blocks.has(action)) this.setBlockType(action, attrs);
-    else if (this.inlines.has(action)) this.toggleMark(action, attrs);
-    else if (action === 'undo') this.undo();
+    else if (this.inlines.has(action)) {
+      const behavior = this.inlines.get(action)!;
+      if (behavior.requestsUi && (!attrs || Object.keys(attrs).length === 0)) {
+        this.uiRequest.set({ action, token: ++this.#uiToken });
+      } else {
+        this.toggleMark(action, attrs);
+      }
+    } else if (action === 'undo') this.undo();
     else if (action === 'redo') this.redo();
+  }
+
+  /**
+   * Force-apply a mark with these attrs over the selection (replacing an
+   * existing same-type mark, so editing a link's href works). A collapsed
+   * caret inside a run of the mark expands to the whole contiguous run —
+   * "edit the link under the caret" without selecting it first.
+   * Returns false when there is nothing to apply to.
+   */
+  setMark(markType: string, attrs?: Record<string, any>): boolean {
+    const sel = this.#markTargetSelection(markType);
+    if (!sel) return false;
+    this.pendingMarks.set(null);
+    const oldDoc = this.document();
+    const result = toggleMark(oldDoc, sel, markType, attrs, this.blocks, 'add');
+    this.document.set(result.doc);
+    if (result.selectionShift) this.selection.live.set(result.selectionShift);
+    this.#commit(oldDoc, result.doc, sel);
+    return true;
+  }
+
+  /** Force-remove a mark from the selection (or the run under the caret). */
+  removeMark(markType: string): boolean {
+    const sel = this.#markTargetSelection(markType);
+    if (!sel) return false;
+    this.pendingMarks.set(null);
+    const oldDoc = this.document();
+    const result = toggleMark(oldDoc, sel, markType, undefined, this.blocks, 'remove');
+    this.document.set(result.doc);
+    if (result.selectionShift) this.selection.live.set(result.selectionShift);
+    this.#commit(oldDoc, result.doc, sel);
+    return true;
+  }
+
+  /**
+   * Insert text carrying these marks as ONE transaction — rides the stored-
+   * marks pipeline. Used by the link popover when the caret isn't on any text
+   * to mark (type a URL into the popover → linked text appears).
+   */
+  insertTextWithMarks(text: string, marks: ASTMark[]) {
+    const sel = this.selection.active();
+    if (!sel || !sel.isCollapsed) return;
+    this.pendingMarks.set({
+      blockIndex: sel.start.blockIndex,
+      itemIndex: sel.start.itemIndex ?? 0,
+      charOffset: this.#charOffsetOf(sel.start),
+      marks: structuredClone(marks),
+    });
+    this.insertText(text);
+  }
+
+  /** The selection a setMark/removeMark should operate on: the live selection,
+   * or — for a collapsed caret — the contiguous run of `markType` around it. */
+  #markTargetSelection(markType: string): LogicalSelection | null {
+    const sel = this.selection.active();
+    if (!sel) return null;
+    if (!sel.isCollapsed) return sel;
+    const run = this.#expandToMarkRun(sel.start, markType);
+    if (run) this.selection.live.set(run);
+    return run;
+  }
+
+  /** Contiguous char range around `pos` whose nodes all carry `markType`. */
+  #expandToMarkRun(pos: LogicalPosition, markType: string): LogicalSelection | null {
+    const block = this.document()[pos.blockIndex];
+    if (!block) return null;
+    const isContainer = this.blocks.get(block.type)?.category === 'container';
+    const itemIdx = pos.itemIndex ?? 0;
+    const content = (isContainer ? ((block.content as ASTBlockNode[])[itemIdx]?.content ?? []) : block.content) as ASTInlineNode[];
+    const caretChar = this.#charOffsetOf(pos);
+
+    // Collect contiguous [start, end) char ranges carrying the mark, then take
+    // the one the caret touches (inclusive at both edges).
+    const runs: [number, number][] = [];
+    let at = 0;
+    for (const node of content) {
+      const len = node.text?.length ?? 0;
+      const marked = node.marks?.some((m) => m.type === markType) ?? false;
+      if (marked && len > 0) {
+        const last = runs[runs.length - 1];
+        if (last && last[1] === at) last[1] = at + len;
+        else runs.push([at, at + len]);
+      }
+      at += len;
+    }
+    const run = runs.find(([s, e]) => caretChar >= s && caretChar <= e);
+    if (!run) return null;
+
+    const resolve = (char: number) => resolveInlinePosition(content, char);
+    const s = resolve(run[0]);
+    const e = resolve(run[1]);
+    const mk = (r: { inlineIndex: number; offset: number }): LogicalPosition => ({
+      blockIndex: pos.blockIndex,
+      ...(isContainer ? { itemIndex: itemIdx } : {}),
+      inlineIndex: r.inlineIndex,
+      offset: r.offset,
+    });
+    return { start: mk(s), end: mk(e), isCollapsed: false };
   }
 
   toggleMark(markType: string, attrs?: Record<string, any>) {

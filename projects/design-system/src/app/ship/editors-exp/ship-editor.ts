@@ -19,6 +19,7 @@ import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
 import { EditorEngineService } from './editor-engine.service';
 import { SanitizeOption, normalizeDocument, sanitizeDocumentUrls } from './editor-sanitize';
 import { htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
+import { ShipEditorLinkPopover } from './sh-editor-link-popover';
 import { ASTBlockNode, ASTDocument, ASTInlineNode, LogicalPosition, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import * as Behaviors from './standard-behaviors';
@@ -29,6 +30,7 @@ import * as Behaviors from './standard-behaviors';
   exportAs: 'shEditor',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  imports: [ShipEditorLinkPopover],
   providers: [
     EditorEngineService,
     EditorSelectionService,
@@ -51,6 +53,7 @@ import * as Behaviors from './standard-behaviors';
           (compositionstart)="onCompositionStart()"
           (compositionend)="onCompositionEnd()"></div>
       </div>
+      <sh-editor-link-popover [surface]="surface" />
     </div>
   `,
   styleUrl: './ship-editor.scss',
@@ -462,26 +465,35 @@ export class ShipEditorExp implements ControlValueAccessor {
     if (this.#composing) return; // IME dispatches keyCode 229; ignore during composition
 
     if (this.keybindings) {
-      if (this.keybindings.matches(event, 'editor.undo')) {
+      // A shortcut the editor consumes must not also reach app-level document
+      // listeners — e.g. Cmd+K is both editor.link and the app's spotlight
+      // search, and without stopPropagation both would fire.
+      const consume = () => {
         event.preventDefault();
+        event.stopPropagation();
+      };
+      if (this.keybindings.matches(event, 'editor.undo')) {
+        consume();
         return this.engine.undo();
       }
       if (this.keybindings.matches(event, 'editor.redo')) {
-        event.preventDefault();
+        consume();
         return this.engine.redo();
       }
 
       for (const block of this.engine.blocks.values()) {
         if (block.keybinding && this.keybindings.matches(event, block.keybinding)) {
-          event.preventDefault();
+          consume();
           return this.engine.setBlockType(block.type);
         }
       }
 
       for (const inline of this.engine.inlines.values()) {
         if (inline.keybinding && this.keybindings.matches(event, inline.keybinding)) {
-          event.preventDefault();
-          return this.engine.toggleMark(inline.type);
+          consume();
+          // Through dispatch, so UI-requesting marks (Cmd+K -> link popover)
+          // open their input instead of toggling an attr-less mark.
+          return this.engine.dispatch(inline.type);
         }
       }
     }

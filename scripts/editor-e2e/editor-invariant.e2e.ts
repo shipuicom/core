@@ -141,6 +141,44 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('link popover: Cmd+K applies, edits, and refuses unsafe URLs', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    await page.keyboard.type('read the docs today');
+    // Select the word "docs" (4 chars back from " today")
+    for (let i = 0; i < 6; i++) await page.keyboard.press('ArrowLeft');
+    for (let i = 0; i < 4; i++) await page.keyboard.press('Shift+ArrowLeft');
+
+    await page.keyboard.press('ControlOrMeta+k');
+    const input = page.locator('sh-editor-link-popover input');
+    await expect(input).toBeVisible();
+    await expect(input).toBeFocused(); // typing goes straight into the URL field
+    await input.fill('ship-ui.dev/docs'); // bare domain — normalized to https
+    await page.keyboard.press('Enter');
+    await expect(input).toBeHidden();
+    await expectInvariant(page, 'after link apply');
+    let ast = JSON.stringify(await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.serialize('json')));
+    expect(ast).toContain('"href":"https://ship-ui.dev/docs"');
+
+    // Reopen with the caret inside the link: prefilled, and unsafe URLs refused
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('ControlOrMeta+k');
+    await expect(input).toBeVisible();
+    await expect(input).toHaveValue('https://ship-ui.dev/docs');
+    await input.fill('javascript:alert(1)');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('sh-editor-link-popover [role=alert]')).toBeVisible();
+    ast = JSON.stringify(await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.serialize('json')));
+    expect(ast).not.toContain('javascript:');
+
+    // Remove unlinks the whole run
+    await page.locator('sh-editor-link-popover button', { hasText: 'Remove' }).click();
+    await expect(input).toBeHidden();
+    await expectInvariant(page, 'after unlink');
+    ast = JSON.stringify(await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.serialize('json')));
+    expect(ast).not.toContain('"href"');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('REAL IME composition via CDP lands once, in the right block', async ({ page }) => {
     const { surface, errors } = await openEditor(page);
     // Caret mid-paragraph: after "Welcome! " in the intro block.

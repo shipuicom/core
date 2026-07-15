@@ -46,6 +46,13 @@ export abstract class BaseInlineBehavior {
   // Controls mark behavior when typing precisely at the trailing edge of the styled text
   abstract readonly isSticky: boolean;
 
+  /**
+   * When true, dispatching this mark's action without attrs does NOT toggle it
+   * — the engine emits a `uiRequest` instead, so attr-carrying marks (link)
+   * can open an input UI. The UI then commits via `setMark`/`removeMark`.
+   */
+  requestsUi?: boolean;
+
   keybinding?: string;
 
   abstract parseDOM(el: HTMLElement): ASTMark | null;

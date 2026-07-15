@@ -218,3 +218,34 @@ sh-editor {
     text-align: right;
   }
 }
+
+/* ── Link popover ──────────────────────────────────────────────────────── */
+/* Zero-size anchor positioned at the caret inside .sh-editor-container;
+   the sh-popover inside it anchors its panel here. */
+.sh-editor-link-anchor {
+  position: absolute;
+  width: 0;
+  height: 0;
+
+  .trigger-wrapper {
+    display: none; /* no visible trigger — opened programmatically */
+  }
+}
+
+.sh-editor-link-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  min-width: 280px;
+
+  input {
+    min-width: 220px;
+  }
+
+  .link-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+}

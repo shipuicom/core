@@ -7,6 +7,8 @@ import { defineConfig } from '@playwright/test';
  * live AST straight off the component to assert the editor's core invariant
  * (DOM text ≡ AST text) under real keyboard/IME event streams.
  */
+const PORT = Number(process.env['EDITOR_E2E_PORT'] ?? 4205);
+
 export default defineConfig({
   testDir: '.',
   // *.e2e.ts (not *.spec.ts) so vitest's default include never picks these up.
@@ -17,11 +19,11 @@ export default defineConfig({
   workers: 1,
   use: {
     headless: true,
-    baseURL: 'http://localhost:4205',
+    baseURL: `http://localhost:${PORT}`,
   },
   webServer: {
-    command: 'npx ng serve --port=4205',
-    url: 'http://localhost:4205',
+    command: `npx ng serve --port=${PORT}`,
+    url: `http://localhost:${PORT}`,
     reuseExistingServer: true,
     timeout: 300_000, // cold ng serve build on CI runners
 

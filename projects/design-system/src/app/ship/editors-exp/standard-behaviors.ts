@@ -298,6 +298,8 @@ export class InlineCodeBehavior extends BaseInlineBehavior {
 export class LinkBehavior extends BaseInlineBehavior {
   readonly type = 'link';
   override isSticky = false;
+  /** Links need an href — dispatching 'link' opens the URL popover. */
+  override requestsUi = true;
   override readonly keybinding = 'editor.link';
   parseDOM(el: HTMLElement) {
     if (el.tagName.toLowerCase() === 'a') return { type: this.type, attrs: { href: el.getAttribute('href') } };

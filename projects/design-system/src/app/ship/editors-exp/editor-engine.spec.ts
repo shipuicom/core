@@ -355,6 +355,75 @@ describe('EditorEngine integration', () => {
     });
   });
 
+  describe('link marks (setMark / removeMark / uiRequest)', () => {
+    it('setMark force-applies a link with attrs over a selection', () => {
+      engine.document.set([p('visit here now')]);
+      range([0, 6], [0, 10]);
+      engine.setMark('link', { href: 'https://a.example' });
+      expect(html()).toBe('<p>visit <a href="https://a.example">here</a> now</p>');
+    });
+
+    it('setMark REPLACES an existing link href (editing is not a toggle)', () => {
+      engine.document.set([p('visit here now')]);
+      range([0, 6], [0, 10]);
+      engine.setMark('link', { href: 'https://old.example' });
+      range([0, 6], [0, 10]);
+      engine.setMark('link', { href: 'https://new.example' });
+      expect(html()).toContain('href="https://new.example"');
+      expect(html()).not.toContain('old.example');
+    });
+
+    it('a collapsed caret inside a link expands to the whole run for edit and removal', () => {
+      engine.document.set([p('visit here now')]);
+      range([0, 6], [0, 10]);
+      engine.setMark('link', { href: 'https://a.example' });
+      // caret in the middle of "here" (char 8 of the block)
+      caret(0, 2, { inlineIndex: 1 });
+      engine.setMark('link', { href: 'https://edited.example' });
+      expect(html()).toBe('<p>visit <a href="https://edited.example">here</a> now</p>');
+
+      caret(0, 2, { inlineIndex: 1 });
+      engine.removeMark('link');
+      expect(html()).toBe('<p>visit here now</p>');
+    });
+
+    it('setMark returns false for a collapsed caret outside any link', () => {
+      engine.document.set([p('plain')]);
+      caret(0, 2);
+      expect(engine.setMark('link', { href: 'https://x.example' })).toBe(false);
+      expect(html()).toBe('<p>plain</p>');
+    });
+
+    it('insertTextWithMarks inserts linked text as one undoable transaction', () => {
+      engine.document.set([p('see ')]);
+      caret(0, 4);
+      engine.insertTextWithMarks('https://d.example', [{ type: 'link', attrs: { href: 'https://d.example' } }]);
+      expect(html()).toBe('<p>see <a href="https://d.example">https://d.example</a></p>');
+      engine.undo();
+      expect(html()).toBe('<p>see </p>');
+    });
+
+    it("dispatch('link') without attrs emits a uiRequest instead of toggling", () => {
+      engine.document.set([p('text')]);
+      range([0, 0], [0, 4]);
+      expect(engine.uiRequest()).toBeNull();
+      engine.dispatch('link');
+      expect(engine.uiRequest()?.action).toBe('link');
+      expect(html()).toBe('<p>text</p>'); // nothing toggled
+      const t1 = engine.uiRequest()!.token;
+      engine.dispatch('link');
+      expect(engine.uiRequest()!.token).not.toBe(t1); // re-dispatch re-triggers
+    });
+
+    it("dispatch('bold') still toggles directly (no UI request)", () => {
+      engine.document.set([p('text')]);
+      range([0, 0], [0, 4]);
+      engine.dispatch('bold');
+      expect(engine.uiRequest()).toBeNull();
+      expect(html()).toBe('<p><strong>text</strong></p>');
+    });
+  });
+
   describe('escape hatch (ArrowUp/Left at doc start)', () => {
     it('injects an empty paragraph above a non-paragraph first block', () => {
       engine.document.set([{ type: 'code-block', content: [{ type: 'text', text: 'code' }] }] as ASTDocument);

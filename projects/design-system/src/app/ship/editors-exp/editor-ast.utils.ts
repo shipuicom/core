@@ -974,7 +974,8 @@ export function toggleMark(
   sel: LogicalSelection,
   markType: string,
   attrs?: Record<string, any>,
-  blocks?: Map<string, BaseBlockBehavior>
+  blocks?: Map<string, BaseBlockBehavior>,
+  force?: 'add' | 'remove'
 ): TransactionResult {
   if (sel.isCollapsed) return { doc };
 
@@ -986,7 +987,7 @@ export function toggleMark(
   // Selection spanning multiple blocks (e.g. "llo" on line 1 → "wor" on line 2).
   // Apply the mark to the affected inline range of every block in the span.
   if (sel.start.blockIndex !== sel.end.blockIndex) {
-    return toggleMarkAcrossBlocks(newDoc, sel, markType, attrs, blocks);
+    return toggleMarkAcrossBlocks(newDoc, sel, markType, attrs, blocks, force);
   }
 
   // For container blocks (lists), resolve into the item's inline content
@@ -1013,7 +1014,7 @@ export function toggleMark(
       let itemStartChar = itemIdx === startItemIdx ? startChar : 0;
       let itemEndChar = itemIdx === endItemIdx ? endChar : content.reduce((sum, n) => sum + n.text.length, 0);
 
-      item.content = applyMarkToContent(content, itemStartChar, itemEndChar, markType, attrs);
+      item.content = applyMarkToContent(content, itemStartChar, itemEndChar, markType, attrs, force);
     }
 
     const startRes = resolveInlinePosition(items[startItemIdx].content as ASTInlineNode[], startChar);
@@ -1045,7 +1046,7 @@ export function toggleMark(
   for (let i = 0; i < sel.end.inlineIndex; i++) endChar += content[i].text.length;
   endChar += sel.end.offset;
 
-  block.content = applyMarkToContent(content, startChar, endChar, markType, attrs);
+  block.content = applyMarkToContent(content, startChar, endChar, markType, attrs, force);
 
   const startRes = resolveInlinePosition(block.content as ASTInlineNode[], startChar);
   const endRes = resolveInlinePosition(block.content as ASTInlineNode[], endChar);
@@ -1113,7 +1114,14 @@ function applyMarkToContent(
     if (attrs && Object.keys(attrs).length > 0) mark.attrs = attrs;
     for (const node of selected) {
       if (!node.marks) node.marks = [];
-      if (!node.marks.some((m) => m.type === markType)) node.marks.push({ ...mark });
+      if (force === 'add') {
+        // Forced set: replace an existing same-type mark so new attrs win
+        // (editing a link's href must not be a no-op).
+        node.marks = node.marks.filter((m) => m.type !== markType);
+        node.marks.push({ ...mark });
+      } else if (!node.marks.some((m) => m.type === markType)) {
+        node.marks.push({ ...mark });
+      }
     }
   }
 
@@ -1188,7 +1196,8 @@ function toggleMarkAcrossBlocks(
   sel: LogicalSelection,
   markType: string,
   attrs: Record<string, any> | undefined,
-  blocks?: Map<string, BaseBlockBehavior>
+  blocks?: Map<string, BaseBlockBehavior>,
+  callerForce?: 'add' | 'remove'
 ): TransactionResult {
   const startB = sel.start.blockIndex;
   const endB = sel.end.blockIndex;
@@ -1202,7 +1211,7 @@ function toggleMarkAcrossBlocks(
   // Consistent toggle: only remove if the WHOLE selection already has the mark.
   const active = segments.filter((seg) => seg.e > seg.s);
   const allMarked = active.length > 0 && active.every((seg) => rangeHasMark(seg.content, seg.s, seg.e, markType));
-  const force: 'add' | 'remove' = allMarked ? 'remove' : 'add';
+  const force: 'add' | 'remove' = callerForce ?? (allMarked ? 'remove' : 'add');
 
   // Capture original boundary offsets before content arrays are rebuilt.
   const startChar = active[0]?.s ?? 0;
