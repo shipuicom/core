@@ -536,7 +536,7 @@ export class ShipEditorExp implements ControlValueAccessor {
       const newHTML =
         behavior.category === 'container'
           ? this.renderContainerBlock(block, behavior)
-          : behavior.renderHTML(block, this.renderInlineContent(block.content as any));
+          : behavior.renderHTML(block, this.renderInlineContent(block.content as any, !behavior.preserveWhitespace));
       const existingEl = container.children[index] as HTMLElement;
 
       if (!existingEl) {
@@ -566,11 +566,11 @@ export class ShipEditorExp implements ControlValueAccessor {
     return wrapper.firstElementChild;
   }
 
-  private renderInlineContent(nodes: ASTInlineNode[]): string {
+  private renderInlineContent(nodes: ASTInlineNode[], softBreaks = true): string {
     // Use the shared mark-stack serializer so the live DOM matches astToHtml
     // exactly — overlapping marks (e.g. a highlight spanning bold) render as one
     // continuous, correctly-nested run instead of a fresh tag per node.
-    return renderInlineHTML(nodes, this.engine.inlines);
+    return renderInlineHTML(nodes, this.engine.inlines, softBreaks);
   }
 
   private renderContainerBlock(block: ASTBlockNode, behavior: BaseBlockBehavior): string {
@@ -578,11 +578,102 @@ export class ShipEditorExp implements ControlValueAccessor {
       .map((child) => {
         const childBehavior = this.engine.blocks.get(child.type);
         if (!childBehavior) return '';
-        const innerHtml = this.renderInlineContent(child.content as ASTInlineNode[]);
+        const innerHtml = this.renderInlineContent(child.content as ASTInlineNode[], !childBehavior.preserveWhitespace);
         return childBehavior.renderHTML(child, innerHtml);
       })
       .join('');
     return behavior.renderHTML(block, childrenHtml);
+  }
+
+  /**
+   * Character offset of a DOM caret `(node, offset)` within `root`, counting
+   * each `<br>` as one character — soft line breaks are `\n` in the AST but
+   * zero-width in the text-node stream, so a plain text walk would undercount.
+   */
+  #domCharOffset(root: Node, node: Node, offset: number): number {
+    let chars = 0;
+    let done = false;
+    const visit = (n: Node) => {
+      if (done) return;
+      if (n === node) {
+        if (n.nodeType === Node.TEXT_NODE) {
+          chars += offset;
+        } else {
+          const kids = Array.from(n.childNodes);
+          for (let i = 0; i < offset && i < kids.length; i++) chars += this.#nodeCharLen(kids[i]);
+        }
+        done = true;
+        return;
+      }
+      if (n.nodeType === Node.TEXT_NODE) {
+        chars += n.textContent?.length ?? 0;
+      } else if (n.nodeName === 'BR') {
+        if (!this.#isPadBreak(n)) chars += 1;
+      } else {
+        for (const kid of Array.from(n.childNodes)) {
+          visit(kid);
+          if (done) return;
+        }
+      }
+    };
+    visit(root);
+    return chars;
+  }
+
+  /** A padding `<br>` (trailing-break caret shim) is zero-width, not a char. */
+  #isPadBreak(n: Node): boolean {
+    return n.nodeName === 'BR' && (n as HTMLElement).hasAttribute?.('data-sh-pad');
+  }
+
+  /** Character length of a DOM subtree (text length; each real `<br>` = 1). */
+  #nodeCharLen(n: Node): number {
+    if (n.nodeType === Node.TEXT_NODE) return n.textContent?.length ?? 0;
+    if (n.nodeName === 'BR') return this.#isPadBreak(n) ? 0 : 1;
+    let sum = 0;
+    for (const kid of Array.from(n.childNodes)) sum += this.#nodeCharLen(kid);
+    return sum;
+  }
+
+  /**
+   * Inverse of {@link #domCharOffset}: the DOM position for character offset
+   * `target` within `root`. A caret adjacent to a `<br>` resolves to the
+   * neighboring text node where possible, else an element position around the
+   * break.
+   */
+  #domPosAtChar(root: HTMLElement, target: number): { node: Node; offset: number } {
+    let chars = 0;
+    let result: { node: Node; offset: number } | null = null;
+    const visit = (n: Node) => {
+      if (result) return;
+      if (n.nodeType === Node.TEXT_NODE) {
+        const len = n.textContent?.length ?? 0;
+        if (chars + len >= target) result = { node: n, offset: target - chars };
+        else chars += len;
+      } else if (n.nodeName === 'BR') {
+        if (this.#isPadBreak(n)) {
+          // The empty line the pad shim creates: caret sits just before it
+          // (after the real trailing break), start of the new visual line.
+          if (target <= chars) {
+            const parent = n.parentNode!;
+            result = { node: parent, offset: Array.from(parent.childNodes).indexOf(n as ChildNode) };
+          }
+          return; // the shim itself consumes no characters
+        }
+        if (target <= chars) {
+          const parent = n.parentNode!;
+          result = { node: parent, offset: Array.from(parent.childNodes).indexOf(n as ChildNode) };
+        } else {
+          chars += 1; // caret after the br is handled by the following node (or the end fallback)
+        }
+      } else {
+        for (const kid of Array.from(n.childNodes)) {
+          visit(kid);
+          if (result) return;
+        }
+      }
+    };
+    visit(root);
+    return result ?? { node: root, offset: root.childNodes.length };
   }
 
   private mapDOMToLogical(container: HTMLElement, node: Node, offset: number): LogicalPosition | null {
@@ -612,15 +703,7 @@ export class ShipEditorExp implements ControlValueAccessor {
         else targetEl = liEl;
       }
 
-      const walker = document.createTreeWalker(targetEl, NodeFilter.SHOW_TEXT, null);
-      let currentNode = walker.nextNode();
-      let charOffset = 0;
-
-      while (currentNode && currentNode !== node) {
-        charOffset += currentNode.textContent?.length || 0;
-        currentNode = walker.nextNode();
-      }
-      if (currentNode === node) charOffset += offset;
+      const charOffset = this.#domCharOffset(targetEl, node, offset);
 
       const itemAst = blockAst.content[itemIndex] as ASTBlockNode | undefined;
       if (!itemAst) return { blockIndex, itemIndex, inlineIndex: 0, offset: charOffset };
@@ -637,15 +720,7 @@ export class ShipEditorExp implements ControlValueAccessor {
       return { blockIndex, itemIndex, inlineIndex: lastIdx, offset: lastInline ? lastInline.text.length : 0 };
     }
 
-    const walker = document.createTreeWalker(blockEl, NodeFilter.SHOW_TEXT, null);
-    let currentNode = walker.nextNode();
-    let charOffset = 0;
-
-    while (currentNode && currentNode !== node) {
-      charOffset += currentNode.textContent?.length || 0;
-      currentNode = walker.nextNode();
-    }
-    if (currentNode === node) charOffset += offset;
+    const charOffset = this.#domCharOffset(blockEl, node, offset);
 
     let remaining = charOffset;
     for (let i = 0; i < blockAst.content.length; i++) {
@@ -687,53 +762,30 @@ export class ShipEditorExp implements ControlValueAccessor {
             }
           }
 
-          const walker = document.createTreeWalker(liEl, NodeFilter.SHOW_TEXT, null);
-          let curr = walker.nextNode();
-          let accum = 0;
-
-          while (curr) {
-            const len = curr.textContent?.length || 0;
-            if (accum + len >= targetChar) return { node: curr, offset: targetChar - accum };
-            accum += len;
-            curr = walker.nextNode();
-          }
-          return { node: liEl, offset: 0 };
+          return this.#domPosAtChar(liEl as HTMLElement, targetChar);
         } else {
           let targetChar = pos.offset;
           for (let i = 0; i < pos.inlineIndex; i++) targetChar += (blockAst?.content[i] as ASTInlineNode).text.length;
 
           if (behavior?.resolveDOMPosition && blockAst) {
-            const result = behavior.resolveDOMPosition(blockEl, blockAst, targetChar);
+            const result = behavior.resolveDOMPosition(blockEl as HTMLElement, blockAst, targetChar);
             if (result) return result;
           }
 
-          const walker = document.createTreeWalker(blockEl, NodeFilter.SHOW_TEXT, null);
-          let curr = walker.nextNode();
-          let accum = 0;
-
-          while (curr) {
-            const len = curr.textContent?.length || 0;
-            if (accum + len >= targetChar) return { node: curr, offset: targetChar - accum };
-            accum += len;
-            curr = walker.nextNode();
-          }
-
-          return { node: blockEl, offset: 0 };
+          return this.#domPosAtChar(blockEl as HTMLElement, targetChar);
         }
       };
 
       const start = getPos(sel.start);
       if (start) {
-        if (start.node.nodeType === Node.ELEMENT_NODE) range.setStart(start.node, 0);
-        else range.setStart(start.node, start.offset);
+        // `#domPosAtChar` may return an element position (a caret around a
+        // `<br>`), so honor the real offset rather than forcing 0.
+        range.setStart(start.node, start.offset);
 
         if (sel.isCollapsed) range.collapse(true);
         else {
           const end = getPos(sel.end);
-          if (end) {
-            if (end.node.nodeType === Node.ELEMENT_NODE) range.setEnd(end.node, 0);
-            else range.setEnd(end.node, end.offset);
-          }
+          if (end) range.setEnd(end.node, end.offset);
         }
         const domSel = window.getSelection();
         domSel?.removeAllRanges();

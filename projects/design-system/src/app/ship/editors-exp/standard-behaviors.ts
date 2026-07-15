@@ -99,6 +99,8 @@ export class CodeBlockBehavior extends BaseBlockBehavior {
   readonly backspacePhysics = { fallbackType: 'paragraph' };
   override readonly keybinding = 'editor.codeBlock';
   override activeClassName = 'sh-editor-code-active';
+  // `\n` is real whitespace here (rendered literally in <pre>), not a <br>.
+  override preserveWhitespace = true;
 
   parseDOM(el: HTMLElement) {
     return el.tagName.toLowerCase() === 'pre' ? { type: this.type, content: [] } : null;

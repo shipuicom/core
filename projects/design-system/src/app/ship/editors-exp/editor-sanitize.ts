@@ -93,6 +93,9 @@ const TAG_ATTRS: Record<string, string[]> = {
   img: ['src', 'alt', 'title', 'width', 'height'],
   code: ['language'],
   pre: ['language'],
+  // `data-sh-pad` marks our trailing-break caret shim (see renderInlineHTML);
+  // it must survive sanitization so the parser knows the <br> isn't content.
+  br: ['data-sh-pad'],
 };
 
 /** Parse `html` into an INERT document body — one with no browsing context, so

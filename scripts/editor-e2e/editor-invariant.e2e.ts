@@ -26,7 +26,25 @@ async function readInvariant(page: Page) {
     const host = document.querySelector('sh-editor')!;
     const comp = (window as any).ng.getComponent(host);
     const surface = host.querySelector('.sh-editor-content')!;
-    const domTexts = Array.from(surface.children).map((c) => c.textContent ?? '');
+    // Read DOM text with soft breaks: a real <br> is a '\n' in the AST; a
+    // padding <br> (data-sh-pad) is a zero-width caret shim.
+    const domTextOf = (el: Element): string => {
+      let out = '';
+      const walk = (n: Node) => {
+        if (n.nodeType === Node.TEXT_NODE) out += n.textContent ?? '';
+        else if (n.nodeName === 'BR') {
+          const br = n as HTMLElement;
+          // Skip zero-width breaks: the trailing-break pad shim, and the
+          // empty-block/item placeholder (a lone <br> in an otherwise-empty
+          // block, which the AST represents as empty text).
+          const placeholder = (br.parentElement?.textContent ?? '').trim() === '';
+          if (!br.hasAttribute('data-sh-pad') && !placeholder) out += '\n';
+        } else n.childNodes.forEach(walk);
+      };
+      el.childNodes.forEach(walk);
+      return out;
+    };
+    const domTexts = Array.from(surface.children).map(domTextOf);
     const astTexts = comp.engine
       .document()
       .map((b: any) =>
@@ -176,6 +194,67 @@ test.describe('DOM ≡ AST invariant', () => {
     await expectInvariant(page, 'after unlink');
     ast = JSON.stringify(await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.serialize('json')));
     expect(ast).not.toContain('"href"');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
+  test('soft line break: Shift+Enter stays one block, Enter splits; caret is correct', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    const astOf = () =>
+      page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document());
+
+    // Start from a clean single empty paragraph and focus it.
+    await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
+    });
+    await page.locator('.sh-editor-content > p').first().click();
+    await page.keyboard.type('alpha');
+    await page.keyboard.press('Shift+Enter'); // soft break — same paragraph
+    await page.keyboard.type('beta');
+    let ast = await astOf();
+    expect(ast).toHaveLength(1); // ONE block
+    expect(ast[0].content.map((n: any) => n.text).join('')).toBe('alpha\nbeta');
+    // It renders a real <br>, and the caret sits after "beta" — typing continues there.
+    expect(await page.locator('.sh-editor-content > p').first().locator('br').count()).toBe(1);
+    await expectInvariant(page, 'after soft break');
+
+    await page.keyboard.press('Enter'); // hard break — new paragraph now
+    await page.keyboard.type('gamma');
+    ast = await astOf();
+    expect(ast).toHaveLength(2);
+    expect(ast[1].content.map((n: any) => n.text).join('')).toBe('gamma');
+    await expectInvariant(page, 'after hard break');
+
+    // DOM→logical mapping across the <br>: physically place the caret at the
+    // start of "beta" (immediately after the soft break) and confirm the synced
+    // logical offset counts the break as one char (char 6 of "alpha\nbeta").
+    const syncedOffset = await page.evaluate(() => {
+      const p = document.querySelector('.sh-editor-content > p')!;
+      const betaText = Array.from(p.childNodes).find(
+        (n) => n.nodeType === Node.TEXT_NODE && n.textContent === 'beta'
+      )!;
+      const range = document.createRange();
+      range.setStart(betaText, 0);
+      range.collapse(true);
+      const sel = window.getSelection()!;
+      sel.removeAllRanges();
+      sel.addRange(range);
+      document.dispatchEvent(new Event('selectionchange'));
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const s = comp.selection.active();
+      const content = comp.engine.document()[0].content;
+      let chars = s.start.offset;
+      for (let i = 0; i < s.start.inlineIndex; i++) chars += content[i].text.length;
+      return chars;
+    });
+    expect(syncedOffset).toBe(6); // after "alpha\n", before "beta"
+
+    // Backspace from there removes the soft break (not a character).
+    await page.keyboard.press('Backspace');
+    ast = await astOf();
+    expect(ast[0].content.map((n: any) => n.text).join('')).toBe('alphabeta'); // break gone
+    expect(await page.locator('.sh-editor-content > p').first().locator('br').count()).toBe(0);
+    await expectInvariant(page, 'after break deletion');
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 

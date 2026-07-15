@@ -2,6 +2,7 @@
 import { Injector, runInInjectionContext } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { EditorEngineService } from './editor-engine.service';
+import { htmlToAst } from './editor-serializers';
 import { ASTBlockNode, ASTDocument, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import * as B from './standard-behaviors';
@@ -621,6 +622,50 @@ describe('EditorEngine integration', () => {
       caret(0, 1);
       engine.deleteForward();
       expect(html()).toBe('<p>ac</p>');
+    });
+  });
+
+  describe('soft line breaks (Shift+Enter)', () => {
+    it('a paragraph \\n renders as <br> (new line, not new paragraph)', () => {
+      engine.document.set([{ type: 'paragraph', content: [{ type: 'text', text: 'hello world' }] }] as ASTDocument);
+      caret(0, 5);
+      engine.insertText('\n'); // insertLineBreak path
+      expect(engine.document()).toHaveLength(1); // still ONE block
+      expect(html()).toBe('<p>hello\n world</p>'.replace('\n', '<br>'));
+    });
+
+    it('a soft break inside a bold run stays inside the mark', () => {
+      engine.document.set([{ type: 'paragraph', content: [{ type: 'text', text: 'ab', marks: [{ type: 'bold' }] }] }] as ASTDocument);
+      caret(0, 1);
+      engine.insertText('\n');
+      expect(html()).toBe('<p><strong>a<br>b</strong></p>');
+    });
+
+    it('a code block keeps \\n literal (no <br>)', () => {
+      engine.document.set([{ type: 'code-block', content: [{ type: 'text', text: 'a\nb' }] }] as ASTDocument);
+      expect(html()).toBe('<pre><code>a\nb</code></pre>');
+    });
+
+    it('<br> round-trips through parse and render', () => {
+      const doc = htmlToAst('<p>line1<br>line2</p>', engine.blocks, engine.inlines);
+      expect(doc[0].content).toEqual([{ type: 'text', text: 'line1\nline2' }]);
+      engine.document.set(doc);
+      expect(html()).toBe('<p>line1<br>line2</p>');
+    });
+
+    it('a trailing soft break gets a padding <br> that does not round-trip as content', () => {
+      engine.document.set([{ type: 'paragraph', content: [{ type: 'text', text: 'a\n' }] }] as ASTDocument);
+      expect(html()).toBe('<p>a<br><br data-sh-pad=""></p>');
+      // The pad <br> is a caret shim, not content: re-parsing yields just "a\n".
+      const doc = htmlToAst(html(), engine.blocks, engine.inlines);
+      expect(doc[0].content).toEqual([{ type: 'text', text: 'a\n' }]);
+    });
+
+    it('an empty-block placeholder <br> parses to empty, not a newline', () => {
+      const doc = htmlToAst('<p><br></p>', engine.blocks, engine.inlines);
+      expect(doc[0].content).toEqual([{ type: 'text', text: '' }]);
+      engine.document.set(doc);
+      expect(html()).toBe('<p><br></p>'); // re-renders as the same placeholder
     });
   });
 

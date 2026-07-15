@@ -94,7 +94,14 @@ export function parseDOMToAST(
         content.push({ type: 'text', text: n.textContent, marks: marks.length ? [...marks] : undefined });
       } else if (n.nodeType === Node.ELEMENT_NODE) {
         const element = n as HTMLElement;
-        if (element.tagName.toLowerCase() === 'br') return;
+        if (element.tagName.toLowerCase() === 'br') {
+          // A padding <br> (our trailing-break caret shim) is not content.
+          if (element.hasAttribute(PAD_BREAK_ATTR)) return;
+          // Soft line break → `\n` (carrying whatever marks are open). A lone
+          // placeholder `<br>` in an empty block collapses to '' afterwards.
+          content.push({ type: 'text', text: '\n', marks: marks.length ? [...marks] : undefined });
+          return;
+        }
         if (element.getAttribute('contenteditable') === 'false') return; // Skip non-editable islands
 
         const currentMarks = [...marks];
@@ -113,6 +120,11 @@ export function parseDOMToAST(
 
     if (content.length === 0) content.push({ type: 'text', text: '' });
     parsedBlock.content = healInlineRuns(content);
+    // A block whose only content is a single `\n` came from an empty-block
+    // placeholder `<br>` (our render emits `<p><br></p>` for empty blocks) —
+    // treat it as empty, not as a blank soft-break line.
+    const only = parsedBlock.content as ASTInlineNode[];
+    if (only.length === 1 && only[0].text === '\n' && !only[0].marks?.length) only[0].text = '';
     newDoc.push(parsedBlock);
   });
 
@@ -203,19 +215,40 @@ function tagSplitter(render: ((text: string) => string) | undefined): { open: st
 }
 
 /** Render inline content to HTML with continuous, correctly-nested mark tags.
- * Shared by `astToHtml` and the editor's live DOM patcher so both agree. */
-export function renderInlineHTML(nodes: ASTInlineNode[], inlines: Map<string, BaseInlineBehavior>): string {
+ * Shared by `astToHtml` and the editor's live DOM patcher so both agree.
+ *
+ * `softBreaks` (default true): `\n` renders as `<br>` — a soft line break in a
+ * text block. Pass false for preformatted blocks (code), where `\n` is literal
+ * whitespace preserved by `<pre>`. */
+export function renderInlineHTML(
+  nodes: ASTInlineNode[],
+  inlines: Map<string, BaseInlineBehavior>,
+  softBreaks = true
+): string {
   const rank = markRanker(inlines);
-  return serializeInlineRuns(
+  const escape = softBreaks ? (text: string) => escapeHtml(text).replace(/\n/g, '<br>') : escapeHtml;
+  const out = serializeInlineRuns(
     nodes,
     (mark) => {
       const inline = inlines.get(mark.type);
       return inline ? tagSplitter((t) => inline.renderHTML(mark, t)) : null;
     },
-    escapeHtml,
+    escape,
     rank
   );
+  // A trailing soft break can't hold a caret after it (a lone trailing <br> is
+  // the line terminator, not a focusable empty line). Append a padding <br>,
+  // flagged so the DOM↔caret mapping and the parser ignore it.
+  if (softBreaks && nodes.some((n) => n.text) && nodes.map((n) => n.text).join('').endsWith('\n')) {
+    // Emit the attribute exactly as the DOM serializes it (`=""`), so patchDOM's
+    // outerHTML comparison sees an unchanged block instead of re-rendering it.
+    return `${out}<br ${PAD_BREAK_ATTR}="">`;
+  }
+  return out;
 }
+
+/** Marks a padding `<br>` (see {@link renderInlineHTML}); zero-width, not content. */
+export const PAD_BREAK_ATTR = 'data-sh-pad';
 
 export function astToHtml(
   doc: ASTDocument,
@@ -231,7 +264,7 @@ export function astToHtml(
       if (behavior.category === 'container')
         return behavior.renderHTML(block, astToHtml(block.content as ASTDocument, blocks, inlines));
 
-      return behavior.renderHTML(block, renderInlineHTML(block.content as ASTInlineNode[], inlines));
+      return behavior.renderHTML(block, renderInlineHTML(block.content as ASTInlineNode[], inlines, !behavior.preserveWhitespace));
     })
     .join('');
 }

@@ -17,6 +17,13 @@ export abstract class BaseBlockBehavior implements BlockBehaviorManifest {
   keybinding?: string;
   activeClassName?: string;
 
+  /**
+   * When true, `\n` in this block's text is significant whitespace rendered
+   * literally (code blocks in `<pre>`). When false/omitted, `\n` is a soft line
+   * break rendered as `<br>` (Shift+Enter), the way a paragraph works.
+   */
+  preserveWhitespace?: boolean;
+
   abstract parseDOM(el: HTMLElement): ASTBlockNode | null;
 
   /**
