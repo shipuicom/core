@@ -153,6 +153,10 @@ export class ShipEditorImagePopover {
 
   onClosed() {
     this.#savedSelection = null;
-    this.surface().focus();
+    // If an image was just inserted it is now the selected block; the editor's
+    // block-selection effect owns focus + the node selection for it, so a focus
+    // here would only collapse that selection and race it. Only refocus when the
+    // popover was dismissed without inserting (nothing selected).
+    if (this.engine.selectedBlock() === null) this.surface().focus();
   }
 }

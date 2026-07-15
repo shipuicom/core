@@ -288,16 +288,46 @@ test.describe('DOM ≡ AST invariant', () => {
     await expectInvariant(page, 'after image insert');
     expect(await attrOf()).toMatchObject({ mode: 'content' });
 
+    // The selected image is wrapped in a NON-collapsed node selection (no text
+    // caret blinking beside it), with focus kept on the editable surface.
+    const selectionState = () =>
+      page.evaluate(() => {
+        const sel = window.getSelection();
+        const img = document.querySelector('.sh-editor-content img');
+        const r = sel && sel.rangeCount ? sel.getRangeAt(0) : null;
+        return {
+          collapsed: r ? r.collapsed : null,
+          wrapsImg: !!(r && img && r.startContainer.contains(img) && !r.collapsed),
+          surfaceFocused: document.activeElement?.classList.contains('sh-editor-content') ?? false,
+        };
+      });
+    expect(await selectionState()).toMatchObject({ collapsed: false, wrapsImg: true, surfaceFocused: true });
+
     // Float mode → size buttons appear (3 modes + 3 sizes + delete)
     await toolbar.locator('button').nth(2).click();
     await expect(toolbar.locator('button')).toHaveCount(7);
     expect(await attrOf()).toMatchObject({ mode: 'float' });
+    // The mode change swaps the <img> element; the selection highlight and node
+    // selection must survive that patch (not just the initial insert).
+    await expect(page.locator('.sh-editor-content .sh-editor-block-selected')).toHaveCount(1);
+    expect(await selectionState()).toMatchObject({ collapsed: false, wrapsImg: true });
 
-    // Delete removes the image
+    // Backspace deletes the selected image (a node selection over a void block
+    // fires no beforeinput, so this exercises the keydown delete path).
+    await page.keyboard.press('Backspace');
+    await expect(page.locator('.sh-editor-content img')).toHaveCount(0);
+    await expect(toolbar).toBeHidden();
+    await expectInvariant(page, 'after keyboard delete');
+
+    // Re-insert and delete via the contextual toolbar's trash button too.
+    await page.locator('sh-editor-toolbar button[aria-label="Insert Image"]').dispatchEvent('mousedown');
+    await urlInput.fill('https://picsum.photos/201');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.sh-editor-content img')).toHaveCount(1);
     await toolbar.locator('button.danger').click();
     await expect(page.locator('.sh-editor-content img')).toHaveCount(0);
     await expect(toolbar).toBeHidden();
-    await expectInvariant(page, 'after image delete');
+    await expectInvariant(page, 'after trash-button delete');
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 

@@ -187,16 +187,24 @@ export class ShipEditorExp implements ControlValueAccessor {
       this.#render();
     });
 
-    // Reflect the engine's selected void block (image) as a highlight class on
-    // its element — runs after the render effect (created earlier), so the DOM
-    // is patched by the time this reads it.
+    // Reflect the engine's selected void block (image): outline it with the
+    // a11y highlight and put a *non-collapsed* selection around it — never a
+    // caret — so no text cursor blinks beside the image. Depends on document()
+    // as well as selectedBlock, so it re-applies after a patchDOM element swap
+    // (e.g. an image mode change replaces the <img>, which would otherwise drop
+    // the class and selection). Runs after the render effect (created earlier),
+    // so the DOM is already patched by the time this reads it.
     effect(() => {
       const idx = this.engine.selectedBlock();
+      this.engine.document();
       const container = this.surface().nativeElement;
       container
         .querySelectorAll('.sh-editor-block-selected')
         .forEach((el) => el.classList.remove('sh-editor-block-selected'));
-      if (idx !== null) container.children[idx]?.classList.add('sh-editor-block-selected');
+      const el = idx !== null ? (container.children[idx] as HTMLElement | undefined) : undefined;
+      if (!el) return;
+      el.classList.add('sh-editor-block-selected');
+      this.#selectVoidBlockDOM(el);
     });
   }
 
@@ -214,12 +222,18 @@ export class ShipEditorExp implements ControlValueAccessor {
   onSelectionChange() {
     if (this.selection.isSuppressed() || this.#composing || typeof window === 'undefined') return;
     this.#syncLogicalSelectionFromDOM();
-    // A genuine caret in a (non-void) text block means the user left the image
-    // — drop the void-block selection so its contextual toolbar closes.
+    // A genuine *collapsed* caret in a (non-void) text block means the user left
+    // the image — drop the void-block selection so its contextual toolbar
+    // closes. The non-collapsed node selection we place *around* a selected
+    // image is not that; ignore it (else it would immediately clear itself).
     if (this.engine.selectedBlock() !== null) {
+      const domSel = window.getSelection();
+      const collapsed = !domSel || domSel.rangeCount === 0 || domSel.getRangeAt(0).collapsed;
       const sel = this.selection.active();
       const block = sel && this.engine.document()[sel.start.blockIndex];
-      if (block && this.engine.blocks.get(block.type)?.category !== 'void') this.engine.clearBlockSelection();
+      if (collapsed && block && this.engine.blocks.get(block.type)?.category !== 'void') {
+        this.engine.clearBlockSelection();
+      }
     }
   }
 
@@ -525,13 +539,27 @@ export class ShipEditorExp implements ControlValueAccessor {
     if (this.readonly()) return;
     if (this.#composing) return; // IME dispatches keyCode 229; ignore during composition
 
-    // While an image is selected, arrows move the caret out of it and Escape
-    // deselects. (Delete/Backspace arrive as beforeinput and are handled there.)
+    // While an image is selected, Delete/Backspace remove it, arrows move the
+    // caret out of it, and Escape deselects. Deletion is handled here (not in
+    // beforeinput): a non-collapsed selection wrapping a void element fires no
+    // beforeinput on Backspace/Delete, only keydown. preventDefault also stops
+    // any browser-specific beforeinput from firing and deleting twice.
     const selectedIdx = this.engine.selectedBlock();
     if (selectedIdx !== null) {
+      if (event.key === 'Backspace' || event.key === 'Delete') {
+        event.preventDefault();
+        this.engine.deleteSelectedBlock();
+        this.#render();
+        return;
+      }
       if (event.key === 'Escape') {
         event.preventDefault();
-        return this.engine.clearBlockSelection();
+        this.engine.clearBlockSelection();
+        // Drop the node selection that wrapped the image and land a real caret
+        // in an adjacent editable block (prefer the block after it), so no
+        // orphaned browser highlight lingers over the now-deselected image.
+        this.#placeCaretBesideBlock(selectedIdx);
+        return;
       }
       if (event.key === 'ArrowLeft' || event.key === 'ArrowUp' || event.key === 'ArrowRight' || event.key === 'ArrowDown') {
         event.preventDefault();
@@ -821,6 +849,46 @@ export class ShipEditorExp implements ControlValueAccessor {
     return { blockIndex, inlineIndex: lastIdx, offset: lastInline ? lastInline.text.length : 0 };
   }
 
+  /** Land a collapsed caret in the nearest editable block next to `idx` —
+   * preferring the block after it, then the one before — and render so the DOM
+   * caret replaces any node selection. Used when leaving a void-block selection
+   * (Escape) so no browser highlight is orphaned over the deselected block. */
+  #placeCaretBesideBlock(idx: number) {
+    const doc = this.engine.document();
+    const editable = (i: number) =>
+      i >= 0 && i < doc.length && this.engine.blocks.get(doc[i]?.type)?.category !== 'void';
+    let pos: LogicalPosition | null = null;
+    if (editable(idx + 1)) pos = { blockIndex: idx + 1, inlineIndex: 0, offset: 0 };
+    else if (editable(idx - 1)) {
+      const content = (doc[idx - 1].content ?? []) as ASTInlineNode[];
+      const lastIdx = Math.max(0, content.length - 1);
+      pos = { blockIndex: idx - 1, inlineIndex: lastIdx, offset: content[lastIdx]?.text.length ?? 0 };
+    }
+    if (!pos) return;
+    this.selection.live.set({ start: pos, end: pos, isCollapsed: true });
+    this.#render();
+  }
+
+  /** Put a non-collapsed selection *around* a void block element so the browser
+   * shows it as selected rather than blinking a caret inside it. Focuses the
+   * contenteditable host first and sets the range in the same synchronous step,
+   * so the final selection the browser reports is the (non-collapsed) node
+   * selection — never a transient collapsed caret that onSelectionChange would
+   * mistake for the user leaving the image. */
+  #selectVoidBlockDOM(el: HTMLElement) {
+    if (typeof window === 'undefined') return;
+    try {
+      this.surface().nativeElement.focus({ preventScroll: true });
+      const range = document.createRange();
+      range.selectNode(el);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+    } catch (e) {
+      console.warn('[sh-editor] void-block selection failed:', e);
+    }
+  }
+
   private restoreDOMSelection(sel: LogicalSelection) {
     const container = this.surface().nativeElement;
     if (typeof window === 'undefined') return;
@@ -832,11 +900,11 @@ export class ShipEditorExp implements ControlValueAccessor {
         if (!blockEl) return null;
 
         const behavior = this.engine.blocks.get(this.engine.document()[pos.blockIndex]?.type);
-        // A void block has no text caret; put the DOM selection ON the block so
-        // it maps back to this void position, rather than leaving a stale caret
-        // in some other block that a selectionchange would then sync to (which
-        // would clear the void-block selection immediately after we set it).
-        if (behavior?.category === 'void') return { node: blockEl, offset: 0 };
+        // A void block has no text caret. The block-selection effect wraps it in
+        // a non-collapsed node selection instead (no blinking caret), and runs
+        // after this render, so skip it here rather than dropping a caret at
+        // offset 0 that would flash before the effect overrides it.
+        if (behavior?.category === 'void') return null;
 
         const blockAst = this.engine.document()[pos.blockIndex];
 
