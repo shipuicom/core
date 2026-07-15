@@ -187,6 +187,67 @@ describe('EditorEngine integration', () => {
     });
   });
 
+  describe('cross-block range delete into a list (container tail)', () => {
+    const listDoc = () =>
+      [
+        p('before'),
+        {
+          type: 'bullet-list',
+          content: [
+            { type: 'list-item', content: [{ type: 'text', text: 'item one' }] },
+            { type: 'list-item', content: [{ type: 'text', text: 'item two' }] },
+            { type: 'list-item', content: [{ type: 'text', text: 'item three' }] },
+          ],
+        },
+        p('after'),
+      ] as ASTDocument;
+
+    it('keeps the list items past the cursor; the end item tail joins the paragraph', () => {
+      engine.document.set(listDoc());
+      // "bef|ore"  →  into list item 1 (index 1) at "item| two"
+      engine.selection.live.set({
+        start: { blockIndex: 0, inlineIndex: 0, offset: 3 },
+        end: { blockIndex: 1, itemIndex: 1, inlineIndex: 0, offset: 4 },
+        isCollapsed: false,
+      } as LogicalSelection);
+      engine.deleteRange();
+      expect(html()).toBe('<p>bef two</p><ul><li>item three</li></ul><p>after</p>');
+    });
+
+    it('typing over the selection replaces it (the reported bug) without nuking the list', () => {
+      engine.document.set(listDoc());
+      engine.selection.live.set({
+        start: { blockIndex: 0, inlineIndex: 0, offset: 3 },
+        end: { blockIndex: 1, itemIndex: 0, inlineIndex: 0, offset: 5 },
+        isCollapsed: false,
+      } as LogicalSelection);
+      engine.insertText('X');
+      expect(html()).toBe('<p>befXone</p><ul><li>item two</li><li>item three</li></ul><p>after</p>');
+    });
+
+    it('consuming the whole list (into the last item end) removes the now-empty list', () => {
+      engine.document.set(listDoc());
+      engine.selection.live.set({
+        start: { blockIndex: 0, inlineIndex: 0, offset: 3 },
+        end: { blockIndex: 1, itemIndex: 2, inlineIndex: 0, offset: 10 },
+        isCollapsed: false,
+      } as LogicalSelection);
+      engine.deleteRange();
+      expect(html()).toBe('<p>bef</p><p>after</p>');
+    });
+
+    it('drops intermediate blocks between the paragraph and the list', () => {
+      engine.document.set([p('start'), p('middle'), listDoc()[1], p('end')] as ASTDocument);
+      engine.selection.live.set({
+        start: { blockIndex: 0, inlineIndex: 0, offset: 2 },
+        end: { blockIndex: 2, itemIndex: 0, inlineIndex: 0, offset: 4 },
+        isCollapsed: false,
+      } as LogicalSelection);
+      engine.deleteRange();
+      expect(html()).toBe('<p>st one</p><ul><li>item two</li><li>item three</li></ul><p>end</p>');
+    });
+  });
+
   describe('Enter physics', () => {
     it('splits a paragraph mid-text', () => {
       engine.document.set([p('hello world')]);

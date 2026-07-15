@@ -598,7 +598,22 @@ export function deleteRange(
     startBlock.content = mergedContent;
   }
 
-  newDoc.splice(start.blockIndex + 1, end.blockIndex - start.blockIndex);
+  if (endBehavior?.category === 'container') {
+    // The end block is a list. The end item's tail was merged into the start
+    // block above, so drop the CONSUMED items (0..endItemIdx) but keep the
+    // remaining ones as a list — deleting into a list must not destroy the
+    // items past the cursor (previously the whole list was spliced away).
+    const endItems = endBlock.content as ASTBlockNode[];
+    endItems.splice(0, (end.itemIndex ?? 0) + 1);
+    const removeCount =
+      endItems.length > 0
+        ? end.blockIndex - start.blockIndex - 1 // keep the now-shorter end list
+        : end.blockIndex - start.blockIndex; // end list fully consumed → remove it too
+    newDoc.splice(start.blockIndex + 1, removeCount);
+  } else {
+    newDoc.splice(start.blockIndex + 1, end.blockIndex - start.blockIndex);
+  }
+
   return { doc: newDoc, selectionShift: { start: sel.start, end: sel.start, isCollapsed: true } };
 }
 
