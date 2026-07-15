@@ -303,6 +303,42 @@ export class EditorEngineService {
     this.insertText(text);
   }
 
+  /**
+   * The mark instance the current selection "is on", boundary-inclusive: a
+   * direct hit at the selection start, or — for a collapsed caret sitting at
+   * either EDGE of a run (where activeFormats resolves into the neighboring
+   * node) — the run's mark. This is what editing UIs must use to prefill:
+   * anywhere `setMark`/`removeMark` would act on a run, this returns its mark.
+   */
+  markAtSelection(markType: string): ASTMark | null {
+    const sel = this.selection.active();
+    if (!sel) return null;
+    const direct = this.activeFormats().marks.find((m) => m.type === markType);
+    if (direct) return structuredClone(direct);
+    if (!sel.isCollapsed) return null;
+
+    const run = this.#expandToMarkRun(sel.start, markType);
+    if (!run) return null;
+    const block = this.document()[run.start.blockIndex];
+    const isContainer = this.blocks.get(block.type)?.category === 'container';
+    const content = (
+      isContainer ? ((block.content as ASTBlockNode[])[run.start.itemIndex ?? 0]?.content ?? []) : block.content
+    ) as ASTInlineNode[];
+    // Only nodes inside THIS run — a block can hold several distinct links.
+    const startChar = this.#charOffsetOf(run.start);
+    const endChar = this.#charOffsetOf(run.end);
+    let at = 0;
+    for (const node of content) {
+      const len = node.text?.length ?? 0;
+      if (at < endChar && at + len > startChar) {
+        const mark = node.marks?.find((m) => m.type === markType);
+        if (mark) return structuredClone(mark);
+      }
+      at += len;
+    }
+    return null;
+  }
+
   /** The selection a setMark/removeMark should operate on: the live selection,
    * or — for a collapsed caret — the contiguous run of `markType` around it. */
   #markTargetSelection(markType: string): LogicalSelection | null {

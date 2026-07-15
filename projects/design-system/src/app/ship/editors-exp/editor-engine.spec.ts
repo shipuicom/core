@@ -415,6 +415,41 @@ describe('EditorEngine integration', () => {
       expect(engine.uiRequest()!.token).not.toBe(t1); // re-dispatch re-triggers
     });
 
+    it('markAtSelection finds the link from EITHER edge of the run (prefill for editing)', () => {
+      engine.document.set([p('visit here now')]);
+      range([0, 6], [0, 10]);
+      engine.setMark('link', { href: 'https://edge.example' });
+
+      // Start edge: caret resolves into the preceding plain node ("visit ").
+      caret(0, 6);
+      expect(engine.markAtSelection('link')?.attrs?.['href']).toBe('https://edge.example');
+      // End edge.
+      caret(0, 0, { inlineIndex: 2 });
+      expect(engine.markAtSelection('link')?.attrs?.['href']).toBe('https://edge.example');
+      // Inside.
+      caret(0, 2, { inlineIndex: 1 });
+      expect(engine.markAtSelection('link')?.attrs?.['href']).toBe('https://edge.example');
+      // Far away: nothing.
+      caret(0, 2);
+      expect(engine.markAtSelection('link')).toBeNull();
+    });
+
+    it('markAtSelection returns the caret-adjacent link, not another link in the block', () => {
+      engine.document.set([p('aa bb cc')]);
+      range([0, 0], [0, 2]);
+      engine.setMark('link', { href: 'https://first.example' });
+      range([0, 6], [0, 8]);
+      engine.setMark('link', { href: 'https://second.example' });
+
+      // Start edge of the SECOND link, spelled as end-of-previous-node — the
+      // representation DOM mapping produces (content: [link1, " bb ", link2]).
+      caret(0, 4, { inlineIndex: 1 });
+      expect(engine.markAtSelection('link')?.attrs?.['href']).toBe('https://second.example');
+      // And inside the first link still resolves to the first.
+      caret(0, 1, { inlineIndex: 0 });
+      expect(engine.markAtSelection('link')?.attrs?.['href']).toBe('https://first.example');
+    });
+
     it("dispatch('bold') still toggles directly (no UI request)", () => {
       engine.document.set([p('text')]);
       range([0, 0], [0, 4]);

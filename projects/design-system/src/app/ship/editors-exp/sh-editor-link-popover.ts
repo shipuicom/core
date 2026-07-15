@@ -128,7 +128,9 @@ export class ShipEditorLinkPopover {
     if (!sel) return;
     this.#savedSelection = structuredClone(sel);
 
-    const existing = this.engine.activeFormats().marks.find((m) => m.type === 'link');
+    // Boundary-inclusive lookup: a caret at either edge of a link must still
+    // prefill and offer Remove — exactly the run Apply/Remove would act on.
+    const existing = this.engine.markAtSelection('link');
     this.hasExistingLink.set(!!existing);
     this.url.set((existing?.attrs?.['href'] as string) ?? '');
     this.error.set(null);
