@@ -258,6 +258,49 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('image: insert via popover, contextual toolbar edits + deletes', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    const attrOf = () =>
+      page.evaluate(() => {
+        const eng = (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine;
+        return eng.selectedBlockNode()?.attrs ?? null;
+      });
+
+    await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: 'caption' }] }]);
+    });
+    await page.locator('.sh-editor-content > p').first().click();
+
+    // Toolbar image button → popover → URL → insert
+    await page.locator('sh-editor-toolbar button[aria-label="Insert Image"]').dispatchEvent('mousedown');
+    const urlInput = page.locator('sh-editor-image-popover input[type=text]');
+    await expect(urlInput).toBeVisible();
+    await urlInput.fill('https://picsum.photos/200');
+    await page.keyboard.press('Enter');
+
+    // Image inserted, selected (highlight), contextual toolbar shown.
+    await expect(page.locator('.sh-editor-content img')).toHaveCount(1);
+    await expect(page.locator('.sh-editor-content .sh-editor-block-selected')).toHaveCount(1);
+    const toolbar = page.locator('.sh-editor-contextual-toolbar');
+    await expect(toolbar).toBeVisible();
+    await expect(toolbar.locator('button')).toHaveCount(4); // 3 modes + delete
+    await expectInvariant(page, 'after image insert');
+    expect(await attrOf()).toMatchObject({ mode: 'content' });
+
+    // Float mode → size buttons appear (3 modes + 3 sizes + delete)
+    await toolbar.locator('button').nth(2).click();
+    await expect(toolbar.locator('button')).toHaveCount(7);
+    expect(await attrOf()).toMatchObject({ mode: 'float' });
+
+    // Delete removes the image
+    await toolbar.locator('button.danger').click();
+    await expect(page.locator('.sh-editor-content img')).toHaveCount(0);
+    await expect(toolbar).toBeHidden();
+    await expectInvariant(page, 'after image delete');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('REAL IME composition via CDP lands once, in the right block', async ({ page }) => {
     const { surface, errors } = await openEditor(page);
     // Caret mid-paragraph: after "Welcome! " in the intro block.

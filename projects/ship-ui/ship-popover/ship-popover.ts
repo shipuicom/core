@@ -7,6 +7,14 @@ export type ShipPopoverOptions = {
   height?: string;
   closeOnButton?: boolean;
   closeOnEsc?: boolean;
+  /**
+   * When true (default), the backdrop overlay catches outside clicks and closes
+   * the popover — modal behavior. Set false for a non-modal popover (e.g. a
+   * contextual toolbar): the overlay becomes click-through so the content
+   * behind it stays interactive, and outside clicks no longer close it (the
+   * host drives `isOpen` itself).
+   */
+  closeOnOverlay?: boolean;
 };
 
 const BASE_SPACE = 4;
@@ -16,6 +24,7 @@ const DEFAULT_OPTIONS: ShipPopoverOptions = {
   height: undefined,
   closeOnButton: true,
   closeOnEsc: true,
+  closeOnOverlay: true,
 };
 
 @Component({
@@ -35,7 +44,7 @@ const DEFAULT_OPTIONS: ShipPopoverOptions = {
 
     @if (isOpen()) {
       <div [attr.id]="id() + 'hello'" popover="manual" #popoverRef class="popover">
-        <div class="overlay" (click)="eventClose($event)"></div>
+        <div class="overlay" [class.click-through]="!defaultOptionMerge().closeOnOverlay" (click)="eventClose($event)"></div>
         <div class="popover-content" #popoverContentRef [style.position-anchor]="id()" [style]="menuStyle()">
           <ng-content />
         </div>
@@ -163,6 +172,7 @@ export class ShipPopover {
 
   eventClose($event: MouseEvent) {
     if (!this.isOpen()) return;
+    if (!this.defaultOptionMerge().closeOnOverlay) return; // non-modal: host controls closing
     this.isOpen.set(false);
   }
 

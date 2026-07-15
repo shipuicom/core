@@ -7,6 +7,34 @@ export interface BehaviorContext {
   blockEl?: HTMLElement;
 }
 
+/** Context handed to a block's `contextualActions()` when it is the active
+ * contextual target (currently: a selected void block such as an image). */
+export interface ContextualActionCtx {
+  block: ASTBlockNode;
+  index: number;
+  engine: EditorEngineService;
+}
+
+/**
+ * One button in the contextual toolbar. Behaviors return these from
+ * `contextualActions()`, and consumers can contribute more via the editor's
+ * `contextualActions` input — so the toolbar is extensible without forking.
+ */
+export interface ContextualAction {
+  /** Stable id (used as the render key and to dedupe). */
+  id: string;
+  /** Icon ligature name (rendered via `sh-icon`); falls back to `label`. */
+  icon?: string;
+  /** Text label — the button text when there's no icon, and the tooltip. */
+  label: string;
+  /** Toggle highlight when true (e.g. the current image layout mode). */
+  isActive?: boolean;
+  /** Destructive styling (e.g. delete). */
+  danger?: boolean;
+  /** Perform the action (typically an engine call — an undoable transaction). */
+  run: () => void;
+}
+
 export abstract class BaseBlockBehavior implements BlockBehaviorManifest {
   abstract readonly type: string;
   abstract readonly category: BlockCategory;
@@ -23,6 +51,13 @@ export abstract class BaseBlockBehavior implements BlockBehaviorManifest {
    * break rendered as `<br>` (Shift+Enter), the way a paragraph works.
    */
   preserveWhitespace?: boolean;
+
+  /**
+   * When true, dispatching this block's action opens input UI (a `uiRequest`)
+   * instead of converting the current block — for blocks that need data before
+   * they can exist, e.g. an image needs a `src`.
+   */
+  requestsUi?: boolean;
 
   abstract parseDOM(el: HTMLElement): ASTBlockNode | null;
 
@@ -42,6 +77,14 @@ export abstract class BaseBlockBehavior implements BlockBehaviorManifest {
   renderMarkdown?(block: ASTBlockNode, contentMd: string): string;
 
   resolveDOMPosition?(blockEl: Element, block: ASTBlockNode, offset: number): { node: Node; offset: number } | null;
+
+  /**
+   * Buttons for the contextual toolbar, shown while this block is the active
+   * contextual target (a selected void block today). Return the actions in
+   * display order; the generic toolbar renders them and consumer-provided
+   * extras. See {@link ContextualAction}.
+   */
+  contextualActions?(ctx: ContextualActionCtx): ContextualAction[];
 
   onKeyAction?(engine: EditorEngineService): void;
   onClick?(event: MouseEvent, ctx: BehaviorContext): void;

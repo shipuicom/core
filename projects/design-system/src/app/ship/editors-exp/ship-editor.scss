@@ -249,3 +249,91 @@ sh-editor {
     justify-content: flex-end;
   }
 }
+
+/* ── Selected void block (image) ───────────────────────────────────────── */
+.sh-editor-block-selected {
+  outline: 2px solid var(--primary-9);
+  outline-offset: 2px;
+  border-radius: var(--shape-1);
+}
+
+/* ── Contextual toolbar ────────────────────────────────────────────────── */
+/* Anchor overlaying the selected block; sh-popover positions the toolbar around
+   it. pointer-events:none so it never blocks the block/editor beneath it. */
+.sh-editor-block-anchor {
+  position: absolute;
+  pointer-events: none;
+
+  .sh-editor-block-anchor-trigger {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.sh-editor-contextual-toolbar {
+  // Re-enable clicks: the anchor ancestor is pointer-events:none (click-through),
+  // which would otherwise cascade to these buttons.
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: rgb(from var(--base-12) r g b / 90%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--base-1);
+  border-radius: var(--shape-2);
+  box-shadow: var(--box-shadow-30);
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    min-width: 28px;
+    padding: 0 8px;
+    background: transparent;
+    border: none;
+    border-radius: var(--shape-1);
+    color: var(--base-1);
+    cursor: pointer;
+    font: var(--paragraph-20);
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: rgb(from var(--base-1) r g b / 15%);
+    }
+    &.active {
+      background: rgb(from var(--base-1) r g b / 28%);
+    }
+    &.danger:hover {
+      background: var(--error-9);
+    }
+  }
+
+  .divider {
+    width: 1px;
+    align-self: stretch;
+    margin: 2px 2px;
+    background: rgb(from var(--base-1) r g b / 20%);
+  }
+}
+
+.sh-editor-image-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  min-width: 300px;
+
+  input[type='text'] {
+    min-width: 240px;
+  }
+
+  .image-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    align-items: center;
+  }
+}

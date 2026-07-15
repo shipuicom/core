@@ -559,6 +559,60 @@ describe('EditorEngine integration', () => {
     });
   });
 
+  describe('images (void block insert / select / edit / delete)', () => {
+    it('inserts an image after the current block with a trailing paragraph, and selects it', () => {
+      engine.document.set([p('above')]);
+      caret(0, 5);
+      engine.insertImage({ src: 'https://x.example/a.png', alt: 'a', mode: 'content', size: 'auto' });
+      expect(engine.document().map((b) => b.type)).toEqual(['paragraph', 'image', 'paragraph']);
+      expect(engine.selectedBlock()).toBe(1);
+      expect(html()).toContain('<img src="https://x.example/a.png"');
+    });
+
+    it('replaces an empty paragraph rather than pushing it down', () => {
+      engine.document.set([p('')]);
+      caret(0, 0);
+      engine.insertImage({ src: 'https://x.example/a.png', alt: '', mode: 'content', size: 'auto' });
+      expect(engine.document().map((b) => b.type)).toEqual(['image', 'paragraph']);
+      expect(engine.selectedBlock()).toBe(0);
+    });
+
+    it("dispatch('image') opens a uiRequest instead of converting the block", () => {
+      engine.document.set([p('text')]);
+      caret(0, 0);
+      engine.dispatch('image');
+      expect(engine.uiRequest()?.action).toBe('image');
+      expect(engine.document().map((b) => b.type)).toEqual(['paragraph']); // unchanged
+    });
+
+    it('updateSelectedImage merges attrs as an undoable transaction', () => {
+      engine.document.set([p('')]);
+      caret(0, 0);
+      engine.insertImage({ src: 'https://x.example/a.png', alt: '', mode: 'content', size: 'auto' });
+      engine.updateSelectedImage({ mode: 'custom', size: 'large' });
+      expect(html()).toContain('class="sh-editor-img-custom sh-editor-img-size-large"');
+      engine.undo();
+      expect(html()).toContain('class="sh-editor-img-content"'); // reverts the attr change only
+      expect(engine.document()[0].type).toBe('image'); // image still there
+    });
+
+    it('deleteSelectedBlock removes the image and clears the selection', () => {
+      engine.document.set([p('above'), p('below')]);
+      caret(0, 5);
+      engine.insertImage({ src: 'https://x.example/a.png', alt: '', mode: 'content', size: 'auto' });
+      expect(engine.document()).toHaveLength(4); // above, image, trailing p, below
+      engine.deleteSelectedBlock();
+      expect(engine.document().some((b) => b.type === 'image')).toBe(false);
+      expect(engine.selectedBlock()).toBeNull();
+    });
+
+    it('selectBlock ignores non-void blocks', () => {
+      engine.document.set([p('text')]);
+      engine.selectBlock(0);
+      expect(engine.selectedBlock()).toBeNull();
+    });
+  });
+
   describe('escape hatch (ArrowUp/Left at doc start)', () => {
     it('injects an empty paragraph above a non-paragraph first block', () => {
       engine.document.set([{ type: 'code-block', content: [{ type: 'text', text: 'code' }] }] as ASTDocument);

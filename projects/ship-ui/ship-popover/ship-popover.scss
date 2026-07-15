@@ -58,6 +58,12 @@ $shipPopover: true !default;
         top: 0;
         left: 0;
         background-color: transparent;
+
+        // Non-modal (closeOnOverlay: false): let clicks reach the content behind
+        // the popover so it stays interactive (e.g. an editor contextual toolbar).
+        &.click-through {
+          pointer-events: none;
+        }
       }
     }
 

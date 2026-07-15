@@ -1,4 +1,4 @@
-import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
+import { BaseBlockBehavior, BaseInlineBehavior, ContextualAction, ContextualActionCtx } from './editor-behaviors';
 import { ALLOWED_ALIGN, escapeAttr, isSafeUrl } from './editor-sanitize';
 import { ASTBlockNode, ASTMark } from './editor.types';
 
@@ -136,6 +136,8 @@ export class ImageBehavior extends BaseBlockBehavior {
   static readonly SIZES = new Set(['auto', 'small', 'medium', 'large']);
   readonly type = 'image';
   readonly category = 'void';
+  /** Images need a src — dispatching 'image' opens the insert popover. */
+  override requestsUi = true;
   readonly enterPhysics = { strategy: 'insert-default-below' as const, defaultSplitTarget: 'paragraph' };
   readonly backspacePhysics = {};
 
@@ -170,6 +172,26 @@ export class ImageBehavior extends BaseBlockBehavior {
   }
   override renderMarkdown(block: ASTBlockNode) {
     return `![${block.attrs?.['alt'] || ''}](${block.attrs?.['src'] || ''})\n\n`;
+  }
+
+  override contextualActions({ block, engine }: ContextualActionCtx): ContextualAction[] {
+    const mode = (block.attrs?.['mode'] as string) ?? 'content';
+    const size = (block.attrs?.['size'] as string) ?? 'auto';
+    const setMode = (m: string) =>
+      engine.updateSelectedImage({ mode: m, ...((m === 'float' || m === 'custom') && size === 'auto' ? { size: 'medium' } : {}) });
+
+    const actions: ContextualAction[] = [
+      { id: 'mode-content', icon: 'image', label: 'Inline', isActive: mode === 'content', run: () => setMode('content') },
+      { id: 'mode-theater', icon: 'arrows-out-line-horizontal', label: 'Full width', isActive: mode === 'theater', run: () => setMode('theater') },
+      { id: 'mode-float', icon: 'text-align-left', label: 'Float', isActive: mode === 'float', run: () => setMode('float') },
+    ];
+    if (mode === 'float' || mode === 'custom') {
+      for (const s of ['small', 'medium', 'large']) {
+        actions.push({ id: `size-${s}`, label: s.charAt(0).toUpperCase(), isActive: size === s, run: () => engine.updateSelectedImage({ size: s }) });
+      }
+    }
+    actions.push({ id: 'delete', icon: 'trash', label: 'Delete', danger: true, run: () => engine.deleteSelectedBlock() });
+    return actions;
   }
 }
 

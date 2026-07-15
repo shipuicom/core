@@ -19,6 +19,8 @@ import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
 import { EditorEngineService } from './editor-engine.service';
 import { SanitizeOption, normalizeDocument, sanitizeDocumentUrls } from './editor-sanitize';
 import { htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
+import { ShipEditorContextualToolbar, ContextualActionExtras } from './sh-editor-contextual-toolbar';
+import { ShipEditorImagePopover } from './sh-editor-image-popover';
 import { ShipEditorLinkPopover } from './sh-editor-link-popover';
 import { ASTBlockNode, ASTDocument, ASTInlineNode, LogicalPosition, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
@@ -30,7 +32,7 @@ import * as Behaviors from './standard-behaviors';
   exportAs: 'shEditor',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [ShipEditorLinkPopover],
+  imports: [ShipEditorLinkPopover, ShipEditorImagePopover, ShipEditorContextualToolbar],
   providers: [
     EditorEngineService,
     EditorSelectionService,
@@ -50,10 +52,13 @@ import * as Behaviors from './standard-behaviors';
           (keydown)="onKeyDown($event)"
           (paste)="onPaste($event)"
           (beforeinput)="onBeforeInput($event)"
+          (mousedown)="onSurfaceMouseDown($event)"
           (compositionstart)="onCompositionStart()"
           (compositionend)="onCompositionEnd()"></div>
       </div>
       <sh-editor-link-popover [surface]="surface" />
+      <sh-editor-image-popover [surface]="surface" />
+      <sh-editor-contextual-toolbar [surface]="surface" [extras]="contextualActions()" />
     </div>
   `,
   styleUrl: './ship-editor.scss',
@@ -81,6 +86,13 @@ export class ShipEditorExp implements ControlValueAccessor {
    * regardless, so a hostile JSON `value` can never inject on render.
    */
   sanitize = input<SanitizeOption>(true);
+
+  /**
+   * Consumer-provided extra contextual-toolbar actions, keyed by block type —
+   * appended to whatever a block behavior declares via `contextualActions()`.
+   * Lets a consumer add buttons to (say) the image toolbar without subclassing.
+   */
+  contextualActions = input<ContextualActionExtras>({});
 
   value = model<string | ASTDocument | null>(null);
 
@@ -174,6 +186,18 @@ export class ShipEditorExp implements ControlValueAccessor {
       if (doc === this.#lastRenderedDoc) return;
       this.#render();
     });
+
+    // Reflect the engine's selected void block (image) as a highlight class on
+    // its element — runs after the render effect (created earlier), so the DOM
+    // is patched by the time this reads it.
+    effect(() => {
+      const idx = this.engine.selectedBlock();
+      const container = this.surface().nativeElement;
+      container
+        .querySelectorAll('.sh-editor-block-selected')
+        .forEach((el) => el.classList.remove('sh-editor-block-selected'));
+      if (idx !== null) container.children[idx]?.classList.add('sh-editor-block-selected');
+    });
   }
 
   writeValue(obj: any): void {
@@ -190,6 +214,30 @@ export class ShipEditorExp implements ControlValueAccessor {
   onSelectionChange() {
     if (this.selection.isSuppressed() || this.#composing || typeof window === 'undefined') return;
     this.#syncLogicalSelectionFromDOM();
+    // A genuine caret in a (non-void) text block means the user left the image
+    // — drop the void-block selection so its contextual toolbar closes.
+    if (this.engine.selectedBlock() !== null) {
+      const sel = this.selection.active();
+      const block = sel && this.engine.document()[sel.start.blockIndex];
+      if (block && this.engine.blocks.get(block.type)?.category !== 'void') this.engine.clearBlockSelection();
+    }
+  }
+
+  /** Select an image on click (a void block has no text caret), else clear any
+   * void-block selection when the click lands in text. */
+  onSurfaceMouseDown(event: MouseEvent) {
+    if (this.readonly()) return;
+    const surface = this.surface().nativeElement;
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'IMG' && target.parentElement === surface) {
+      const idx = Array.from(surface.children).indexOf(target);
+      if (idx >= 0) {
+        event.preventDefault(); // no text caret in a void block
+        this.engine.selectBlock(idx);
+        return;
+      }
+    }
+    this.engine.clearBlockSelection();
   }
 
   /**
@@ -202,6 +250,19 @@ export class ShipEditorExp implements ControlValueAccessor {
   onBeforeInput(event: InputEvent) {
     if (this.readonly()) return;
     if (this.#composing) return; // IME owns the DOM until compositionend
+
+    // A selected image (void block) has no text caret: delete removes it, any
+    // other input just dismisses the selection (never writes into the void).
+    if (this.engine.selectedBlock() !== null) {
+      event.preventDefault();
+      if (event.inputType.startsWith('delete')) {
+        this.engine.deleteSelectedBlock();
+      } else {
+        this.engine.clearBlockSelection();
+      }
+      this.#render();
+      return;
+    }
 
     // Sample the real caret/selection from the DOM at command time, so a
     // transaction never runs against a stale mirror when selectionchange lagged
@@ -463,6 +524,32 @@ export class ShipEditorExp implements ControlValueAccessor {
   onKeyDown(event: KeyboardEvent) {
     if (this.readonly()) return;
     if (this.#composing) return; // IME dispatches keyCode 229; ignore during composition
+
+    // While an image is selected, arrows move the caret out of it and Escape
+    // deselects. (Delete/Backspace arrive as beforeinput and are handled there.)
+    const selectedIdx = this.engine.selectedBlock();
+    if (selectedIdx !== null) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        return this.engine.clearBlockSelection();
+      }
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowUp' || event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+        event.preventDefault();
+        const before = event.key === 'ArrowLeft' || event.key === 'ArrowUp';
+        const targetIdx = before ? Math.max(0, selectedIdx - 1) : Math.min(this.engine.document().length - 1, selectedIdx + 1);
+        this.engine.clearBlockSelection();
+        const targetBlock = this.engine.document()[targetIdx];
+        if (targetBlock && this.engine.blocks.get(targetBlock.type)?.category !== 'void') {
+          const content = targetBlock.content as ASTInlineNode[];
+          const lastIdx = before ? Math.max(0, content.length - 1) : 0;
+          const offset = before ? (content[lastIdx]?.text.length ?? 0) : 0;
+          const pos: LogicalPosition = { blockIndex: targetIdx, inlineIndex: lastIdx, offset };
+          this.selection.live.set({ start: pos, end: pos, isCollapsed: true });
+          this.#render();
+        }
+        return;
+      }
+    }
 
     if (this.keybindings) {
       // A shortcut the editor consumes must not also reach app-level document
@@ -745,7 +832,11 @@ export class ShipEditorExp implements ControlValueAccessor {
         if (!blockEl) return null;
 
         const behavior = this.engine.blocks.get(this.engine.document()[pos.blockIndex]?.type);
-        if (behavior?.category === 'void') return null;
+        // A void block has no text caret; put the DOM selection ON the block so
+        // it maps back to this void position, rather than leaving a stale caret
+        // in some other block that a selectionchange would then sync to (which
+        // would clear the void-block selection immediately after we set it).
+        if (behavior?.category === 'void') return { node: blockEl, offset: 0 };
 
         const blockAst = this.engine.document()[pos.blockIndex];
 

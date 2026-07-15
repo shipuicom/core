@@ -274,8 +274,14 @@ export class EditorEngineService {
 
   // --- GENERIC DISPATCH ---
   dispatch(action: string, attrs?: Record<string, any>) {
-    if (this.blocks.has(action)) this.setBlockType(action, attrs);
-    else if (this.inlines.has(action)) {
+    if (this.blocks.has(action)) {
+      const behavior = this.blocks.get(action)!;
+      if (behavior.requestsUi && (!attrs || Object.keys(attrs).length === 0)) {
+        this.uiRequest.set({ action, token: ++this.#uiToken });
+      } else {
+        this.setBlockType(action, attrs);
+      }
+    } else if (this.inlines.has(action)) {
       const behavior = this.inlines.get(action)!;
       if (behavior.requestsUi && (!attrs || Object.keys(attrs).length === 0)) {
         this.uiRequest.set({ action, token: ++this.#uiToken });
@@ -333,6 +339,107 @@ export class EditorEngineService {
       marks: structuredClone(marks),
     });
     this.insertText(text);
+  }
+
+  // =========================================================================
+  // VOID BLOCK (IMAGE) SELECTION & EDITING
+  // =========================================================================
+
+  /**
+   * Index of a currently-selected void block (an image), or null. A void block
+   * has no text caret, so "selecting" it is a separate mode: its contextual
+   * toolbar shows while this is set, and Backspace/Delete removes it. Cleared
+   * when the caret re-enters text or an edit happens elsewhere.
+   */
+  readonly selectedBlock = signal<number | null>(null);
+
+  /** The selected void block's AST node, or null. */
+  readonly selectedBlockNode = computed(() => {
+    const i = this.selectedBlock();
+    return i !== null ? (this.document()[i] ?? null) : null;
+  });
+
+  /** Select a void block by index (no-op for non-void blocks). */
+  selectBlock(index: number) {
+    const block = this.document()[index];
+    if (!block || this.blocks.get(block.type)?.category !== 'void') return;
+    this.pendingMarks.set(null);
+    const pos: LogicalPosition = { blockIndex: index, inlineIndex: 0, offset: 0 };
+    this.selection.live.set({ start: pos, end: pos, isCollapsed: true });
+    this.selectedBlock.set(index);
+  }
+
+  clearBlockSelection() {
+    if (this.selectedBlock() !== null) this.selectedBlock.set(null);
+  }
+
+  #isTextBlockEmpty(block: ASTBlockNode): boolean {
+    const c = block.content as ASTInlineNode[];
+    return c.length === 0 || (c.length === 1 && c[0].text === '');
+  }
+
+  /**
+   * Insert an image (void block) at the caret. Replaces the current block if it
+   * is an empty paragraph, else inserts on its own line after it, always with a
+   * trailing empty paragraph so the image is never the last block (nowhere to
+   * type). The new image is left selected so its contextual toolbar appears.
+   */
+  insertImage(attrs: Record<string, unknown>) {
+    const sel = this.selection.active();
+    if (!sel) return;
+    const oldDoc = this.document();
+    let doc = oldDoc;
+    let base = sel;
+    if (!sel.isCollapsed) {
+      const t = deleteRange(oldDoc, sel, this.blocks);
+      doc = t.doc;
+      base = t.selectionShift ?? sel;
+    }
+    const idx = base.start.blockIndex;
+    const block = doc[idx];
+    const image: ASTBlockNode = { type: 'image', attrs: { ...attrs }, content: [] };
+    const trailing: ASTBlockNode = { type: 'paragraph', content: [{ type: 'text', text: '' }] };
+    const newDoc = [...doc];
+    let imageIdx: number;
+    if (block && block.type === 'paragraph' && this.#isTextBlockEmpty(block)) {
+      newDoc.splice(idx, 1, image, trailing);
+      imageIdx = idx;
+    } else {
+      newDoc.splice(idx + 1, 0, image, trailing);
+      imageIdx = idx + 1;
+    }
+    this.document.set(newDoc);
+    this.selectBlock(imageIdx);
+    this.#commit(oldDoc, newDoc, sel);
+  }
+
+  /** Merge attrs into the selected image (mode/size/alt/src), as a transaction. */
+  updateSelectedImage(attrs: Record<string, unknown>) {
+    const idx = this.selectedBlock();
+    if (idx === null) return;
+    const oldDoc = this.document();
+    const block = oldDoc[idx];
+    if (!block || this.blocks.get(block.type)?.category !== 'void') return;
+    const newDoc = [...oldDoc];
+    newDoc[idx] = { ...block, attrs: { ...(block.attrs ?? {}), ...attrs } };
+    this.document.set(newDoc);
+    this.#commit(oldDoc, newDoc, this.selection.active());
+  }
+
+  /** Remove the selected void block; drop the selection and place the caret. */
+  deleteSelectedBlock() {
+    const idx = this.selectedBlock();
+    if (idx === null) return;
+    const oldDoc = this.document();
+    if (!oldDoc[idx]) return;
+    let newDoc = oldDoc.filter((_, i) => i !== idx);
+    if (newDoc.length === 0) newDoc = [{ type: 'paragraph', content: [{ type: 'text', text: '' }] }];
+    this.document.set(newDoc);
+    this.clearBlockSelection();
+    const caretIdx = Math.min(idx, newDoc.length - 1);
+    const pos: LogicalPosition = { blockIndex: caretIdx, inlineIndex: 0, offset: 0 };
+    this.selection.live.set({ start: pos, end: pos, isCollapsed: true });
+    this.#commit(oldDoc, newDoc, this.selection.active());
   }
 
   /**
