@@ -187,20 +187,31 @@ export class EditorEngineService {
     const block = doc[sel.start.blockIndex];
     if (!block) return { blockType: null, blockAttrs: null, marks: [] as ASTMark[] };
 
-    let marks: ASTMark[] = [];
     const behavior = this.blocks.get(block.type);
-
+    let content: ASTInlineNode[] | null = null;
     if (behavior?.category === 'container') {
-      const itemIdx = sel.start.itemIndex ?? 0;
-      const item = block.content[itemIdx] as ASTBlockNode | undefined;
-      if (item) {
-        const inline = (item.content as ASTInlineNode[])[sel.start.inlineIndex] as ASTInlineNode | undefined;
+      const item = block.content[sel.start.itemIndex ?? 0] as ASTBlockNode | undefined;
+      content = item ? (item.content as ASTInlineNode[]) : null;
+    } else if (behavior?.category !== 'void') {
+      content = block.content as ASTInlineNode[];
+    }
+
+    let marks: ASTMark[] = [];
+    if (content) {
+      const sameHolder =
+        sel.start.blockIndex === sel.end.blockIndex && (sel.start.itemIndex ?? 0) === (sel.end.itemIndex ?? 0);
+      if (!sel.isCollapsed && sameHolder) {
+        // Range: a mark is active only if EVERY selected character carries it
+        // (identity = type + attrs, so two differently-href'd links don't count
+        // as one active link). Also fixes the boundary case where sel.start
+        // resolves into the plain node just before a selected mark run.
+        const a = this.#charOffsetOf(sel.start);
+        const b = this.#charOffsetOf(sel.end);
+        marks = this.#commonMarks(content, Math.min(a, b), Math.max(a, b));
+      } else {
+        const inline = content[sel.start.inlineIndex] as ASTInlineNode | undefined;
         marks = inline?.marks ? [...inline.marks] : [];
       }
-    } else if (behavior?.category !== 'void') {
-      const content = block.content as ASTInlineNode[];
-      const inline = content[sel.start.inlineIndex] as ASTInlineNode | undefined;
-      marks = inline?.marks ? [...inline.marks] : [];
     }
 
     // A pending (stored) mark set at the caret overrides what the text carries,
@@ -212,6 +223,27 @@ export class EditorEngineService {
 
     return { blockType: block.type, blockAttrs: block.attrs ?? null, marks };
   });
+
+  /** Marks carried by EVERY character in [startChar, endChar) of `content`
+   * (identity by type + attrs). Empty range or no overlap → []. */
+  #commonMarks(content: ASTInlineNode[], startChar: number, endChar: number): ASTMark[] {
+    if (endChar <= startChar) return [];
+    const key = (m: ASTMark) => JSON.stringify({ t: m.type, a: m.attrs ?? null });
+    const overlapping: ASTInlineNode[] = [];
+    let at = 0;
+    for (const node of content) {
+      const len = node.text?.length ?? 0;
+      if (at < endChar && at + len > startChar) overlapping.push(node);
+      at += len;
+    }
+    if (overlapping.length === 0) return [];
+    let common = overlapping[0].marks ? [...overlapping[0].marks] : [];
+    for (let i = 1; i < overlapping.length && common.length; i++) {
+      const set = new Set((overlapping[i].marks ?? []).map(key));
+      common = common.filter((m) => set.has(key(m)));
+    }
+    return structuredClone(common);
+  }
 
   isActive(action: string, attrs?: Record<string, any>): boolean {
     const state = this.activeFormats();

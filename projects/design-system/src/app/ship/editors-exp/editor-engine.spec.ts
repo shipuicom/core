@@ -278,6 +278,16 @@ describe('EditorEngine integration', () => {
       expect(html()).toBe('<p>make bold</p>');
     });
 
+    it('a fully-bold selection reports bold active (whole-selection intersection)', () => {
+      engine.document.set([p('one bold two')]);
+      range([0, 4], [0, 8]);
+      engine.toggleMark('bold');
+      range([0, 4], [0, 8]); // reselect exactly "bold"
+      expect(engine.isActive('bold')).toBe(true);
+      range([0, 4], [0, 12]); // "bold two" — partly plain
+      expect(engine.isActive('bold')).toBe(false);
+    });
+
     it('nests overlapping bold and italic as one continuous run', () => {
       engine.document.set([p('abcd')]);
       range([0, 0], [0, 4]);
@@ -448,6 +458,34 @@ describe('EditorEngine integration', () => {
       // And inside the first link still resolves to the first.
       caret(0, 1, { inlineIndex: 0 });
       expect(engine.markAtSelection('link')?.attrs?.['href']).toBe('https://first.example');
+    });
+
+    it('selecting a linked word makes the link active and prefills for editing', () => {
+      engine.document.set([p('go here now')]);
+      range([0, 3], [0, 7]);
+      engine.setMark('link', { href: 'https://sel.example' });
+      // Reselect exactly the linked word.
+      range([0, 3], [0, 7]);
+      expect(engine.isActive('link')).toBe(true);
+      expect(engine.markAtSelection('link')?.attrs?.['href']).toBe('https://sel.example');
+    });
+
+    it('a selection only partly covering a link is NOT active', () => {
+      engine.document.set([p('go here now')]);
+      range([0, 3], [0, 7]);
+      engine.setMark('link', { href: 'https://x.example' });
+      range([0, 3], [0, 10]); // "here now" — spills past the link
+      expect(engine.isActive('link')).toBe(false);
+    });
+
+    it('a selection spanning two different links is not one active link', () => {
+      engine.document.set([p('aa bb cc')]);
+      range([0, 0], [0, 2]);
+      engine.setMark('link', { href: 'https://one.example' });
+      range([0, 6], [0, 8]);
+      engine.setMark('link', { href: 'https://two.example' });
+      range([0, 0], [0, 8]); // covers both
+      expect(engine.isActive('link')).toBe(false);
     });
 
     it("dispatch('bold') still toggles directly (no UI request)", () => {
