@@ -128,33 +128,46 @@
           <div class="divider"></div>
 
           <!-- Google-Docs-style character formatting via the 'style' mark. -->
-          <select class="sh-editor-style-select" aria-label="Font family" [value]="mainEditor.engine.currentStyle()['font-family'] || ''"
-            (change)="mainEditor.engine.applyStyle({ 'font-family': $any($event.target).value || null })">
-            <option value="">Font</option>
-            <option value="Arial, sans-serif">Arial</option>
-            <option value="Georgia, serif">Georgia</option>
-            <option value="'Times New Roman', serif">Times</option>
-            <option value="'Courier New', monospace">Mono</option>
-          </select>
-          <select class="sh-editor-style-select" aria-label="Font size" [value]="mainEditor.engine.currentStyle()['font-size'] || ''"
-            (change)="mainEditor.engine.applyStyle({ 'font-size': $any($event.target).value || null })">
-            <option value="">Size</option>
-            <option value="12px">12</option>
-            <option value="14px">14</option>
-            <option value="16px">16</option>
-            <option value="20px">20</option>
-            <option value="28px">28</option>
-          </select>
-          <label class="sh-editor-style-color" aria-label="Text color" shTooltip="Text color">
-            <sh-icon>text-aa</sh-icon>
-            <input type="color" [value]="mainEditor.engine.currentStyle()['color'] || '#000000'"
-              (change)="mainEditor.engine.applyStyle({ color: $any($event.target).value })" />
-          </label>
-          <label class="sh-editor-style-color" aria-label="Highlight color" shTooltip="Highlight color">
-            <sh-icon>highlighter</sh-icon>
-            <input type="color" [value]="mainEditor.engine.currentStyle()['background-color'] || '#ffff00'"
-              (change)="mainEditor.engine.applyStyle({ 'background-color': $any($event.target).value })" />
-          </label>
+          <!-- Font family: sh-select with inline search -->
+          <sh-select
+            class="sh-editor-style-font"
+            [options]="fontOptions()"
+            label="label"
+            value="value"
+            [inlineSearch]="true"
+            [isClearable]="false"
+            placeholder="Font">
+            <label>Font</label>
+            <input [formField]="fontField" />
+          </sh-select>
+
+          <!-- Font size: sh-select with inline search + free-text custom sizes -->
+          <sh-select
+            class="sh-editor-style-size"
+            [options]="fontSizeOptions()"
+            label="label"
+            value="value"
+            [inlineSearch]="true"
+            [asFreeText]="true"
+            [validateFreeText]="isValidFontSize"
+            [isClearable]="false"
+            freeTextTitle="Custom"
+            freeTextPlaceholder="e.g. 18px"
+            placeholder="Size">
+            <label>Size</label>
+            <input [formField]="sizeField" />
+          </sh-select>
+
+          <!-- Text + highlight color: patch-variant color pickers (swatch → popover) -->
+          <sh-color-picker-input [patch]="true" format="hex" shTooltip="Text color"
+            (closed)="mainEditor.engine.applyStyle({ color: $event })">
+            <input [value]="mainEditor.engine.currentStyle()['color'] || '#111111'" />
+          </sh-color-picker-input>
+          <sh-color-picker-input [patch]="true" format="hex" shTooltip="Highlight color"
+            (closed)="mainEditor.engine.applyStyle({ 'background-color': $event })">
+            <input [value]="mainEditor.engine.currentStyle()['background-color'] || '#ffe066'" />
+          </sh-color-picker-input>
+
           <button type="button" aria-label="Clear styling" shTooltip="Clear styling"
             (click)="mainEditor.engine.applyStyle({ color: null, 'background-color': null, 'font-family': null, 'font-size': null, 'line-height': null, 'text-shadow': null })">
             <sh-icon>eraser</sh-icon>

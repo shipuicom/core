@@ -1,8 +1,10 @@
 import { JsonPipe, UpperCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, signal, untracked, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { form, FormField } from '@angular/forms/signals';
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipCheckbox } from '@ship-ui/core/ship-checkbox';
+import { ShipColorPickerInput } from '@ship-ui/core/ship-color-picker';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipKbd } from '@ship-ui/core/ship-kbd';
 import { ShipSelect } from '@ship-ui/core/ship-select';
@@ -53,7 +55,9 @@ class HighlightBehavior extends BaseInlineBehavior {
     ShipEditorActionDirective,
     ShipEditorSelectionDebug,
     ShipButton,
+    FormField,
     ShipCheckbox,
+    ShipColorPickerInput,
     ShipSelect,
     ShipIcon,
     ShipKbd,
@@ -93,6 +97,30 @@ export default class EditorsExpShowcase {
     return `https://picsum.photos/seed/${encodeURIComponent(file.name)}/480/320`;
   };
 
+  // ── Style toolbar (sh-select bound with Signal Forms) ──────────────────────
+  fontOptions = signal([
+    { value: 'Arial, sans-serif', label: 'Arial' },
+    { value: 'Georgia, serif', label: 'Georgia' },
+    { value: "'Times New Roman', serif", label: 'Times New Roman' },
+    { value: "'Courier New', monospace", label: 'Courier New' },
+    { value: 'Verdana, sans-serif', label: 'Verdana' },
+    { value: "'Trebuchet MS', sans-serif", label: 'Trebuchet MS' },
+  ]);
+  fontSizeOptions = signal([12, 14, 16, 18, 20, 24, 28, 32, 48].map((n) => ({ value: `${n}px`, label: String(n) })));
+
+  /** Accept a preset value, a bare number, or a css length as a custom size. */
+  isValidFontSize = (value: string) => /^\d+(\.\d+)?(px|pt|em|rem|%)?$/.test(value.trim());
+
+  /** The main editor, so the style effects can read/apply its selection style. */
+  mainEditorRef = viewChild<ShipEditorExp>('mainEditor');
+
+  // Signal-Forms models for the font/size selects. `form()` makes each a form
+  // field; the projected <input [formField]> binds it (no FormsModule/ngModel).
+  fontModel = signal('');
+  fontField = form(this.fontModel);
+  sizeModel = signal('');
+  sizeField = form(this.sizeModel);
+
   // Current value model
   editorValue = signal<string | ASTDocument | null>(this.initialHtml);
 
@@ -119,6 +147,32 @@ export default class EditorsExpShowcase {
       const format = this.format();
       if (this.persist()) this.#writeStorage({ format, value });
       else this.#clearStorage();
+    });
+
+    // Apply the font/size selects (Signal-Forms models) to the selection. The
+    // apply is deferred to a microtask so the resulting engine writes never land
+    // inside the render pass (which would trip NG0600), and only fire on a real
+    // change vs the current style.
+    effect(() => {
+      const editor = this.mainEditorRef();
+      const font = this.fontModel(); // re-run when the font select changes
+      if (!editor) return;
+      queueMicrotask(() => {
+        if (font !== (editor.engine.currentStyle()['font-family'] ?? '')) {
+          editor.engine.applyStyle({ 'font-family': font || null });
+        }
+      });
+    });
+    effect(() => {
+      const editor = this.mainEditorRef();
+      const size = this.sizeModel(); // re-run when the size select changes
+      if (!editor) return;
+      queueMicrotask(() => {
+        if (size === (editor.engine.currentStyle()['font-size'] ?? '')) return;
+        // A bare number from the free-text option becomes px.
+        const v = size && /^\d+(\.\d+)?$/.test(size) ? `${size}px` : size;
+        editor.engine.applyStyle({ 'font-size': v || null });
+      });
     });
   }
 

@@ -146,5 +146,67 @@ $shipColorPicker: true !default;
     sh-color-picker {
       width: 100%;
     }
+
+    // Patch appearance: the field collapses to a single clickable color swatch
+    // that opens the picker popover. The text input stays in the DOM (hidden)
+    // so [(ngModel)] value binding is unchanged.
+    &.patch {
+      display: inline-flex;
+      width: auto;
+
+      sh-popover {
+        width: auto;
+      }
+
+      .input-wrap {
+        border: none;
+        background: none;
+        padding: 0;
+        min-height: 0;
+        min-width: 0;
+        cursor: pointer;
+      }
+
+      .prefix,
+      .prefix-space,
+      .suffix-space,
+      .helpers {
+        display: none;
+      }
+
+      .input-container {
+        flex: none;
+        padding: 0;
+        gap: 0;
+
+        input {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          min-width: 0;
+          padding: 0;
+          border: 0;
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        // eyedropper button — not shown in the compact swatch
+        > button {
+          display: none;
+        }
+      }
+
+      .color-indicator {
+        width: p2r(28);
+        height: p2r(28);
+        cursor: pointer;
+        border-radius: var(--shape-2);
+        transition: box-shadow 0.15s ease;
+
+        &:hover {
+          box-shadow: 0 0 0 2px color-mix(in srgb, var(--base-8) 40%, transparent);
+        }
+      }
+    }
   }
 }

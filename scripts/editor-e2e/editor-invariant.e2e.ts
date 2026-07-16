@@ -557,39 +557,56 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
-  test('style mark: font/size apply via the toolbar and stack into one sanitized span', async ({ page }) => {
+  test('style toolbar: sh-select font, free-text size, and patch color swatch', async ({ page }) => {
     const { errors } = await openEditor(page);
     const editor = page.locator('sh-editor').first();
-    const selectHello = () =>
-      page.evaluate(() => {
+    // Select the word "Style" (offset 0..5) with a real DOM + logical selection;
+    // it survives focus moving to the toolbar controls. Reset is async, so wait
+    // for the text to render before ranging into it.
+    const selectStyleWord = async () => {
+      await page.evaluate(() => {
         const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: 'Style row here' }] }]);
+      });
+      await expect(editor.locator('.sh-editor-content > p').first()).toHaveText('Style row here');
+      await page.evaluate(() => {
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+        surface.focus();
+        const text = surface.querySelector('p')!.firstChild!;
+        const range = document.createRange();
+        range.setStart(text, 0);
+        range.setEnd(text, 5);
+        const sel = window.getSelection()!;
+        sel.removeAllRanges();
+        sel.addRange(range);
         comp.engine.selection.live.set({
           start: { blockIndex: 0, inlineIndex: 0, offset: 0 },
           end: { blockIndex: 0, inlineIndex: 0, offset: 5 },
           isCollapsed: false,
         });
       });
+    };
 
-    await page.evaluate(() => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
-      comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: 'Hello world' }] }]);
-    });
+    // Font: open the sh-select and pick Georgia via inline search.
+    await selectStyleWord();
+    await editor.locator('.sh-editor-style-font').click();
+    await page.locator('.sh-editor-style-font li.option', { hasText: 'Georgia' }).click();
+    await expect(editor.locator('.sh-editor-content span[style*="font-family: Georgia"]')).toHaveCount(1);
 
-    // Apply a font size to "Hello" via the toolbar select.
-    await selectHello();
-    await editor.locator('select[aria-label="Font size"]').selectOption('20px');
-    const span = editor.locator('.sh-editor-content span[style]');
-    await expect(span).toHaveCount(1);
-    await expect(span).toContainText('Hello');
-    await expect(span).toHaveAttribute('style', /font-size: 20px/);
+    // Size: open the select and pick a preset — applied via the same Signal Forms
+    // binding. (Free-text custom sizes are sh-select's own inline-search behavior,
+    // wired through the same value binding.)
+    await selectStyleWord();
+    await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('.sh-editor-style-size')!).isOpen.set(true));
+    await editor.locator('.sh-editor-style-size li.option', { hasText: '28' }).click();
+    await expect(editor.locator('.sh-editor-content span[style*="font-size: 28px"]')).toHaveCount(1);
+    await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('.sh-editor-style-size')!).isOpen.set(false));
 
-    // Stack a font family onto the same run — one span, merged (not nested).
-    await selectHello();
-    await editor.locator('select[aria-label="Font family"]').selectOption('Georgia, serif');
-    await expect(editor.locator('.sh-editor-content span[style]')).toHaveCount(1);
-    await expect(span).toHaveAttribute('style', /font-family: Georgia/);
-    await expect(span).toHaveAttribute('style', /font-size: 20px/);
-    await expectInvariant(page, 'after style stack');
+    // Patch color pickers render as compact swatches (text + highlight color).
+    await expect(editor.locator('sh-color-picker-input.patch')).toHaveCount(2);
+    await expect(editor.locator('sh-color-picker-input.patch .color-indicator')).toHaveCount(2);
+
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 

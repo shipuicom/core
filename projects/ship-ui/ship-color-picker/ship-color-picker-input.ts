@@ -93,6 +93,11 @@ import { ShipColorPicker } from './ship-color-picker';
     </sh-form-field-popover>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    // `patch` collapses the field to just the color swatch (a compact trigger);
+    // the swatch opens the picker popover on click. Styled in the scss.
+    '[class.patch]': 'patch()',
+  },
 })
 export class ShipColorPickerInput {
   #document = inject(DOCUMENT);
@@ -104,6 +109,12 @@ export class ShipColorPickerInput {
   variant = input<ShipFormFieldVariant | null>(null);
   size = input<ShipSize | null>(null);
   readonly = input<boolean>(false);
+  /**
+   * Compact "swatch only" appearance: the field renders as a single color patch
+   * that opens the picker popover when clicked. The text input is still present
+   * (hidden) so `[(ngModel)]` value binding works exactly as in the full field.
+   */
+  patch = input<boolean>(false);
 
   closed = output<string>();
 
