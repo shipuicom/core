@@ -118,14 +118,25 @@ export default class EditorsExpShowcase {
 
   /** Map a font token (the select value) to the CSS font stack; null = base font (clears the mark). */
   #fontStackFor = (token: string): string | null => this.fontOptions().find((o) => o.value === token)?.stack ?? null;
-  /** Map a CSS font stack (from the editor's style) to its select token; 'Default' when unset/unknown. */
-  #fontTokenFor = (stack: string): string => (stack && this.fontOptions().find((o) => o.stack === stack)?.value) || 'Default';
+  /** Map a CSS font stack (from the editor's style) to its select token; the default token when unset/unknown. */
+  #fontTokenFor = (stack: string): string => (stack && this.fontOptions().find((o) => o.stack === stack)?.value) || this.#defaultFontToken();
 
   // Leading "Default" option (base size / clears the mark), like the font select.
   fontSizeOptions = signal([
     { value: 'Default', label: 'Default' },
     ...[12, 14, 16, 18, 20, 24, 28, 32, 48].map((n) => ({ value: `${n}px`, label: `${n}px` })),
   ]);
+
+  /**
+   * The token/value a select falls back to when the selection carries no explicit
+   * font-family / font-size — so the control is never blank. Today the literal
+   * "Default" sentinel (picking it clears the mark). Hook point: later, resolve
+   * the editor's *effective* base — e.g. `getComputedStyle(<.sh-editor-content>)`
+   * `.fontFamily` / `.fontSize` — and return the matching preset token/value when
+   * it is one of the options, otherwise keep "Default".
+   */
+  #defaultFontToken = (): string => 'Default';
+  #defaultSizeValue = (): string => 'Default';
 
   /** Accept a preset value, a bare number, or a css length as a custom size. */
   isValidFontSize = (value: string) => /^\d+(\.\d+)?(px|pt|em|rem|%)?$/.test(value.trim());
@@ -230,7 +241,7 @@ export default class EditorsExpShowcase {
       // object doesn't re-trigger every render.
       const fontOpt = this.fontOptions().find((o) => o.value === fontToken)!;
       const sizeOpt =
-        this.fontSizeOptions().find((o) => o.value === (size || 'Default')) ?? { value: size, label: size };
+        this.fontSizeOptions().find((o) => o.value === (size || this.#defaultSizeValue())) ?? { value: size, label: size };
       // Seed the color pickers from the selection (defaults when unset). Writing
       // the projected input dispatches into the picker's parse → signal write, so
       // it must happen in the microtask below, never in the render pass.
