@@ -557,6 +557,42 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('style mark: font/size apply via the toolbar and stack into one sanitized span', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    const editor = page.locator('sh-editor').first();
+    const selectHello = () =>
+      page.evaluate(() => {
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        comp.engine.selection.live.set({
+          start: { blockIndex: 0, inlineIndex: 0, offset: 0 },
+          end: { blockIndex: 0, inlineIndex: 0, offset: 5 },
+          isCollapsed: false,
+        });
+      });
+
+    await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: 'Hello world' }] }]);
+    });
+
+    // Apply a font size to "Hello" via the toolbar select.
+    await selectHello();
+    await editor.locator('select[aria-label="Font size"]').selectOption('20px');
+    const span = editor.locator('.sh-editor-content span[style]');
+    await expect(span).toHaveCount(1);
+    await expect(span).toContainText('Hello');
+    await expect(span).toHaveAttribute('style', /font-size: 20px/);
+
+    // Stack a font family onto the same run — one span, merged (not nested).
+    await selectHello();
+    await editor.locator('select[aria-label="Font family"]').selectOption('Georgia, serif');
+    await expect(editor.locator('.sh-editor-content span[style]')).toHaveCount(1);
+    await expect(span).toHaveAttribute('style', /font-family: Georgia/);
+    await expect(span).toHaveAttribute('style', /font-size: 20px/);
+    await expectInvariant(page, 'after style stack');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('REAL IME composition via CDP lands once, in the right block', async ({ page }) => {
     const { surface, errors } = await openEditor(page);
     // Caret mid-paragraph: after "Welcome! " in the intro block.

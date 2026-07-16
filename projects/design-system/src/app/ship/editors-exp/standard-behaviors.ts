@@ -6,7 +6,7 @@ import {
   SlashCommand,
   SlashCommandCtx,
 } from './editor-behaviors';
-import { ALLOWED_ALIGN, escapeAttr, isSafeUrl } from './editor-sanitize';
+import { ALLOWED_ALIGN, SAFE_STYLE_PROPS, escapeAttr, isSafeUrl, safeStyleString } from './editor-sanitize';
 import { ASTBlockNode, ASTMark } from './editor.types';
 
 /** Render an allow-listed `text-align` style attribute, or nothing. */
@@ -403,5 +403,35 @@ export class LinkBehavior extends BaseInlineBehavior {
   }
   override renderMarkdown(mark: ASTMark, text: string) {
     return `[${text}](${mark.attrs?.['href'] || '#'})`;
+  }
+}
+
+/**
+ * Arbitrary inline styling — font family/size, line height, color, background
+ * (highlight), text shadow — carried as a single `<span style="…">` mark, the
+ * way Google Docs stacks character formatting. Apply/merge via
+ * `engine.applyStyle({...})`. Every property routes through {@link SAFE_STYLE_PROPS}
+ * on render AND parse, so an unknown property or an injection-shaped value never
+ * reaches a live style attribute; markdown drops styling entirely.
+ */
+export class StyleBehavior extends BaseInlineBehavior {
+  readonly type = 'style';
+  override isSticky = true; // typing at the edge continues the current styling
+
+  parseDOM(el: HTMLElement): ASTMark | null {
+    if (el.tagName.toLowerCase() !== 'span') return null;
+    const attrs: Record<string, string> = {};
+    for (const prop of Object.keys(SAFE_STYLE_PROPS)) {
+      const v = el.style.getPropertyValue(prop).trim();
+      if (v && SAFE_STYLE_PROPS[prop](v)) attrs[prop] = v;
+    }
+    return Object.keys(attrs).length ? { type: this.type, attrs } : null;
+  }
+  renderHTML(mark: ASTMark, text: string) {
+    const style = safeStyleString(mark.attrs);
+    return style ? `<span style="${escapeAttr(style)}">${text}</span>` : text;
+  }
+  override renderMarkdown(_mark: ASTMark, text: string) {
+    return text; // markdown has no inline styling
   }
 }

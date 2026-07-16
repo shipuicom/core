@@ -222,6 +222,7 @@ export class ShipEditorExp implements ControlValueAccessor {
       new Behaviors.StrikeBehavior(),
       new Behaviors.InlineCodeBehavior(),
       new Behaviors.LinkBehavior(),
+      new Behaviors.StyleBehavior(),
     ].forEach((b) => this.engine.register(b));
 
     // Register consumer-provided behaviors. Runs before the value effect below

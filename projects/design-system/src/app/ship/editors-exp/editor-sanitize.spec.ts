@@ -153,7 +153,6 @@ describe('sanitizeHtmlToBody (inbound scrub)', () => {
 
   it('unwraps unknown tags but preserves their text/children', () => {
     expect(clean('<section><p>hi</p></section>')).toBe('<p>hi</p>');
-    expect(clean('<span style="color:red">t</span>')).toBe('<span>t</span>');
   });
 
   it('neutralizes dangerous URLs on href/src', () => {
@@ -162,9 +161,23 @@ describe('sanitizeHtmlToBody (inbound scrub)', () => {
     expect(clean('<a href="https://ok.example">x</a>')).toBe('<a href="https://ok.example">x</a>');
   });
 
-  it('scrubs style down to an allow-listed text-align', () => {
-    expect(clean('<p style="color:red;text-align:center">t</p>')).toBe('<p style="text-align: center;">t</p>');
-    expect(clean('<p style="background:url(x)">t</p>')).toBe('<p>t</p>');
+  it('keeps text-align and allow-listed inline styles, drops the rest', () => {
+    // Safe character formatting survives ingest (jsdom may normalize hex→rgb,
+    // so assert on the property rather than the exact serialization).
+    const a = clean('<p style="color:red;text-align:center">t</p>');
+    expect(a).toContain('text-align: center');
+    expect(a).toContain('color: red');
+    const b = clean('<span style="font-size:20px;color:#ff0000">t</span>');
+    expect(b).toContain('font-size: 20px');
+    expect(b).toMatch(/color: (#ff0000|rgb\(255, 0, 0\))/);
+  });
+
+  it('drops injection-shaped and non-allow-listed style declarations', () => {
+    // The dangerous url()/scheme is always gone; a harmless longhand reset may remain.
+    expect(clean('<p style="background:url(javascript:alert(1))">t</p>')).not.toContain('url(');
+    expect(clean('<span style="color:red;behavior:url(x.htc)">t</span>')).not.toContain('behavior');
+    expect(clean('<span style="font-size:20px;position:fixed">t</span>')).not.toContain('position');
+    expect(clean('<span style="color:expression(alert(1))">t</span>')).not.toContain('expression');
   });
 
   it('returns null when there is no HTML', () => {

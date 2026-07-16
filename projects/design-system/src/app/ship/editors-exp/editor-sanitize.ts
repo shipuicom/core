@@ -63,6 +63,71 @@ export function isSafeUrl(rawValue: unknown, opts: { allowDataImage?: boolean } 
 }
 
 // ===========================================================================
+// Inline style allow-list — the ONLY place untrusted CSS survives ingest, so
+// keep every validator tight. Shared by the sanitizer, the `style` mark's
+// render/parse, and any consumer that applies styles.
+// ===========================================================================
+
+/** Anything that could smuggle a URL fetch, script, or a second declaration.
+ * `;`/`{`/`}` end/nest a declaration; `url(`/`image-set`/`expression`/`-moz-
+ * binding` load or execute; `<`/`>`/`\` are markup/escape vectors. */
+const UNSAFE_CSS = /url\(|image-set|expression|-moz-binding|[;{}\\<>@]|\/\*/i;
+
+function isSafeColor(v: string): boolean {
+  if (v.length > 40 || UNSAFE_CSS.test(v)) return false;
+  return (
+    /^#[0-9a-f]{3,8}$/i.test(v) || // hex
+    /^(rgb|hsl)a?\(\s*[\d.,%\s/]+\)$/i.test(v) || // rgb()/hsl() — digits/sep only inside
+    /^[a-z]+$/i.test(v) // named color, transparent, currentColor (letters only)
+  );
+}
+function isSafeCssLength(v: string): boolean {
+  return v.length <= 12 && /^-?\d+(\.\d+)?(px|pt|em|rem|%)$/.test(v);
+}
+function isSafeLineHeight(v: string): boolean {
+  return /^\d+(\.\d+)?$/.test(v) || isSafeCssLength(v);
+}
+function isSafeFontFamily(v: string): boolean {
+  return v.length <= 120 && !UNSAFE_CSS.test(v) && /^[a-z0-9 ,'"-]+$/i.test(v);
+}
+function isSafeTextShadow(v: string): boolean {
+  // lengths + hex/rgb colors, comma-separated; the char-set + UNSAFE_CSS guard
+  // block url()/expression/extra declarations. Malformed values are ignored by
+  // the browser, never injected.
+  return v.length <= 120 && !UNSAFE_CSS.test(v) && /^[#a-z0-9 ,.\-%()]+$/i.test(v);
+}
+
+/**
+ * CSS properties an inline `style` mark may carry, each with a strict value
+ * guard. Adding a property here is a security decision — a loose guard is an
+ * injection vector, since these values are written into a live `style` attribute.
+ */
+export const SAFE_STYLE_PROPS: Record<string, (value: string) => boolean> = {
+  color: isSafeColor,
+  'background-color': isSafeColor,
+  'font-family': isSafeFontFamily,
+  'font-size': isSafeCssLength,
+  'line-height': isSafeLineHeight,
+  'text-shadow': isSafeTextShadow,
+};
+
+/**
+ * Serialize a style attrs object to a validated `prop: value; …` string,
+ * dropping any unknown property or value that fails its guard. The single
+ * source of truth for what an inline style is allowed to contain, used by both
+ * render (behavior) and ingest (parseDOM).
+ */
+export function safeStyleString(attrs: Record<string, unknown> | undefined | null): string {
+  if (!attrs) return '';
+  const out: string[] = [];
+  for (const [prop, val] of Object.entries(attrs)) {
+    const v = String(val ?? '').trim();
+    if (v && SAFE_STYLE_PROPS[prop]?.(v)) out.push(`${prop}: ${v}`);
+  }
+  return out.join('; ');
+}
+
+// ===========================================================================
 // Inbound sanitizer — scrub untrusted HTML into an inert, allow-listed tree
 // before it is parsed to the AST.
 // ===========================================================================
@@ -186,9 +251,20 @@ function scrubElement(el: Element, policy: ResolvedPolicy): void {
       }
     }
     if (name === 'style') {
-      const align = (el as HTMLElement).style.textAlign;
+      const style = (el as HTMLElement).style;
+      const align = style.textAlign;
+      // Collect the survivors first, then rewrite the attribute from scratch so
+      // nothing unvalidated lingers.
+      const kept: [string, string][] = [];
+      if (align && ALLOWED_ALIGN.has(align)) kept.push(['text-align', align]);
+      for (const prop of Array.from(style)) {
+        const guard = SAFE_STYLE_PROPS[prop];
+        if (!guard) continue;
+        const value = style.getPropertyValue(prop).trim();
+        if (value && guard(value)) kept.push([prop, value]);
+      }
       el.removeAttribute('style');
-      if (align && ALLOWED_ALIGN.has(align)) (el as HTMLElement).style.textAlign = align;
+      for (const [prop, value] of kept) style.setProperty(prop, value);
     }
   }
 

@@ -60,6 +60,7 @@ describe('EditorEngine integration', () => {
       new B.StrikeBehavior(),
       new B.InlineCodeBehavior(),
       new B.LinkBehavior(),
+      new B.StyleBehavior(),
     ].forEach((b) => engine.register(b));
   });
 
@@ -697,6 +698,60 @@ describe('EditorEngine integration', () => {
       engine.applySlashCommand(cmd);
       expect(engine.uiRequest()?.action).toBe('image');
       expect(textOf(engine.document(), 0)).toBe(''); // trigger text gone
+    });
+  });
+
+  describe('inline style mark (applyStyle / span[style])', () => {
+    it('wraps the selection in a <span style> with the applied property', () => {
+      engine.document.set([p('hello')]);
+      range([0, 0], [0, 5]);
+      engine.applyStyle({ color: '#ff0000' });
+      expect(html()).toBe('<p><span style="color: #ff0000">hello</span></p>');
+    });
+
+    it('merges properties onto the existing style (Google-Docs stacking)', () => {
+      engine.document.set([p('hello')]);
+      range([0, 0], [0, 5]);
+      engine.applyStyle({ color: '#ff0000' });
+      range([0, 0], [0, 5]);
+      engine.applyStyle({ 'font-size': '20px' });
+      const out = html();
+      expect(out).toContain('color: #ff0000');
+      expect(out).toContain('font-size: 20px');
+      expect((out.match(/<span/g) ?? []).length).toBe(1); // one span, not nested
+    });
+
+    it('removes one property with a null value, and the mark when empty', () => {
+      engine.document.set([p('hi')]);
+      range([0, 0], [0, 2]);
+      engine.applyStyle({ color: '#00ff00', 'font-size': '14px' });
+      range([0, 0], [0, 2]);
+      engine.applyStyle({ color: null });
+      expect(html()).not.toContain('color');
+      expect(html()).toContain('font-size: 14px');
+      range([0, 0], [0, 2]);
+      engine.applyStyle({ 'font-size': null });
+      expect(html()).toBe('<p>hi</p>'); // mark gone entirely
+    });
+
+    it('drops injection-shaped style values on render, keeping the safe ones', () => {
+      engine.document.set([
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'text',
+              text: 'x',
+              marks: [{ type: 'style', attrs: { color: 'red; background:url(javascript:alert(1))', 'font-size': '14px' } }],
+            },
+          ],
+        },
+      ] as ASTDocument);
+      const out = html();
+      expect(out).not.toContain('javascript');
+      expect(out).not.toContain('url(');
+      expect(out).not.toMatch(/color/); // the injection-shaped color is dropped
+      expect(out).toContain('font-size: 14px'); // the valid property survives
     });
   });
 

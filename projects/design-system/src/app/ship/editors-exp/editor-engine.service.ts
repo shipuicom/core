@@ -520,6 +520,30 @@ export class EditorEngineService {
   }
 
   /**
+   * Merge inline-style properties into the run(s) at the selection, as one
+   * transaction. A null/empty value drops that property; emptying the whole
+   * style removes the `style` mark. Merges onto the style already at the
+   * selection start (via {@link markAtSelection}) so setting, say, color keeps
+   * an existing font-size — the way Google Docs stacks character formatting.
+   */
+  applyStyle(patch: Record<string, string | null | undefined>) {
+    const merged: Record<string, string> = { ...(this.markAtSelection('style')?.attrs as Record<string, string> | undefined) };
+    for (const [prop, value] of Object.entries(patch)) {
+      if (value == null || value === '') delete merged[prop];
+      else merged[prop] = value;
+    }
+    if (Object.keys(merged).length === 0) this.removeMark('style');
+    else this.setMark('style', merged);
+  }
+
+  /** The inline-style attrs at the selection (for prefilling a style UI), or {}. */
+  readonly currentStyle = computed<Record<string, string>>(() => {
+    this.document();
+    this.selection.active();
+    return (this.markAtSelection('style')?.attrs as Record<string, string>) ?? {};
+  });
+
+  /**
    * The mark instance the current selection "is on", boundary-inclusive: a
    * direct hit at the selection start, or — for a collapsed caret sitting at
    * either EDGE of a run (where activeFormats resolves into the neighboring
