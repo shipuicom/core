@@ -82,6 +82,17 @@ export default class EditorsExpShowcase {
   showMetrics = signal(true);
   placeholder = signal('Start typing something beautiful...');
 
+  /**
+   * Demo image-upload handler. Simulates a network upload (short delay + the
+   * popover's "Uploading…" state), then returns a deterministic, working URL
+   * seeded by the file name instead of inlining a `data:` URL. A real consumer
+   * would POST the file to their storage and return the resulting link.
+   */
+  demoImageUpload = async (file: File): Promise<string> => {
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    return `https://picsum.photos/seed/${encodeURIComponent(file.name)}/480/320`;
+  };
+
   // Current value model
   editorValue = signal<string | ASTDocument | null>(this.initialHtml);
 

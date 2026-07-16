@@ -338,6 +338,30 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('image upload hook: a picked file is uploaded via the handler and its URL inserted', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    const editor = page.locator('sh-editor').first();
+    await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: 'caption' }] }]);
+    });
+    await editor.locator('.sh-editor-content > p').first().click();
+
+    // Open the insert-image popover and pick a file. The showcase's demo handler
+    // "uploads" it (async) and returns a URL seeded by the file name, rather than
+    // inlining a data: URL — so the inserted src proves the hook ran.
+    await editor.locator('sh-editor-toolbar button[aria-label="Insert Image"]').dispatchEvent('mousedown');
+    await editor
+      .locator('sh-editor-image-popover input[type=file]')
+      .setInputFiles({ name: 'photo.png', mimeType: 'image/png', buffer: Buffer.from([0x89, 0x50, 0x4e, 0x47]) });
+
+    const img = editor.locator('.sh-editor-content img');
+    await expect(img).toHaveCount(1);
+    await expect(img).toHaveAttribute('src', 'https://picsum.photos/seed/photo.png/480/320');
+    await expectInvariant(page, 'after image upload');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('image: undoing the insert clears the selection instead of orphaning the highlight', async ({ page }) => {
     const { errors } = await openEditor(page);
     await page.evaluate(() => {

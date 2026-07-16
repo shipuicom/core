@@ -82,7 +82,7 @@
       <ng-template #hrTip>Horizontal Line <sh-kbd ctrlOrCmd shift>-</sh-kbd></ng-template>
       <ng-template #linkTip>Insert Link <sh-kbd ctrlOrCmd>K</sh-kbd></ng-template>
 
-      <sh-editor #mainEditor="shEditor" [(value)]="editorValue" [format]="format()" [readonly]="readonly()" [behaviors]="customBehaviors" [placeholder]="placeholder()" [showMetrics]="showMetrics()">
+      <sh-editor #mainEditor="shEditor" [(value)]="editorValue" [format]="format()" [readonly]="readonly()" [behaviors]="customBehaviors" [placeholder]="placeholder()" [showMetrics]="showMetrics()" [imageUpload]="demoImageUpload">
         <sh-editor-toolbar position="top">
           <button shEditorAction="undo" aria-label="Undo" [shTooltip]="undoTip"><sh-icon>arrow-u-up-left</sh-icon></button>
           <button shEditorAction="redo" aria-label="Redo" [shTooltip]="redoTip"><sh-icon>arrow-u-up-right</sh-icon></button>

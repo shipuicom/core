@@ -53,8 +53,10 @@ import { EditorSelectionService } from './selection.service';
           </sh-form-field>
           <input #fileInput type="file" accept="image/*" hidden (change)="onFile($event)" />
           <div class="image-actions">
-            <button shButton (click)="fileInput.click()">Upload…</button>
-            <button shButton color="primary" (click)="apply()">Insert</button>
+            <button shButton [disabled]="uploading()" (click)="fileInput.click()">
+              {{ uploading() ? 'Uploading…' : 'Upload…' }}
+            </button>
+            <button shButton color="primary" [disabled]="uploading()" (click)="apply()">Insert</button>
           </div>
         </div>
       </sh-popover>
@@ -63,6 +65,10 @@ import { EditorSelectionService } from './selection.service';
 })
 export class ShipEditorImagePopover {
   surface = input.required<HTMLElement>();
+  /** Optional upload handler. When provided, a picked file is handed to it and
+   * the resolved URL is inserted (e.g. an S3/CDN link); otherwise the file is
+   * inlined as a `data:` URL. Rejections surface as an inline error. */
+  upload = input<((file: File) => Promise<string>) | null>(null);
 
   engine = inject(EditorEngineService);
   selection = inject(EditorSelectionService);
@@ -73,6 +79,7 @@ export class ShipEditorImagePopover {
   isOpen = signal(false);
   url = signal('');
   error = signal<string | null>(null);
+  uploading = signal(false);
   top = signal(0);
   left = signal(0);
 
@@ -121,9 +128,26 @@ export class ShipEditorImagePopover {
     }
   }
 
-  onFile(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
+  async onFile(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = ''; // let the same file be re-picked after an error
     if (!file) return;
+
+    const upload = this.upload();
+    if (upload) {
+      this.uploading.set(true);
+      this.error.set(null);
+      try {
+        this.#insert(await upload(file), file.name);
+      } catch {
+        this.error.set('Upload failed — try again or paste a URL.');
+      } finally {
+        this.uploading.set(false);
+      }
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = () => this.#insert(String(reader.result), file.name);
     reader.readAsDataURL(file);

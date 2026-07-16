@@ -92,7 +92,7 @@ function blockPlainText(block: ASTBlockNode): string {
         }
       </div>
       <sh-editor-link-popover [surface]="surface" />
-      <sh-editor-image-popover [surface]="surface" />
+      <sh-editor-image-popover [surface]="surface" [upload]="imageUpload()" />
       <sh-editor-contextual-toolbar [surface]="surface" [extras]="contextualActions()" />
       <sh-editor-slash-menu [commands]="slashCommands()" />
       @if (showMetrics()) {
@@ -145,6 +145,11 @@ export class ShipEditorExp implements ControlValueAccessor {
   /** The slash menu, so keydown can drive it while it's open (focus stays in the
    * contenteditable, so the menu can't receive key events itself). */
   slashMenu = viewChild(ShipEditorSlashMenu);
+
+  /** Optional image upload handler used by the insert-image popover. Given the
+   * picked file, resolve to the URL to insert (e.g. upload to a CDN and return
+   * its link). When unset, files are inlined as `data:` URLs. */
+  imageUpload = input<((file: File) => Promise<string>) | null>(null);
 
   /** Ghost text shown while the document is empty. */
   placeholder = input<string>('');
