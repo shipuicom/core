@@ -147,6 +147,54 @@ sh-editor {
       margin: #{p2r(24)} 0;
     }
 
+    // Image blocks. Mode (content / theater / float / custom) sets layout; the
+    // size class (float/custom only — content is fixed width, theater is full
+    // bleed) sets the width. The selection ring is the .sh-editor-block-selected
+    // outline, not img:focus (focus stays on the editable surface).
+    img {
+      height: auto;
+      max-width: 100%;
+      border-radius: var(--shape-2);
+      cursor: pointer;
+      transition: width 0.2s ease;
+
+      &.sh-editor-img-content {
+        display: block;
+        box-sizing: border-box;
+        width: calc(100% - #{p2r(48)});
+        max-width: 100% !important;
+        margin: #{p2r(16)} auto;
+      }
+
+      &.sh-editor-img-theater {
+        display: block;
+        width: calc(100% + #{p2r(40)});
+        max-width: none !important;
+        margin: #{p2r(16)} #{p2r(-20)};
+        border-radius: 0;
+      }
+
+      &.sh-editor-img-float {
+        float: left;
+        margin: #{p2r(8)} #{p2r(16)} #{p2r(8)} 0;
+
+        &.sh-editor-img-size-small { width: #{p2r(240)}; max-width: 100% !important; }
+        &.sh-editor-img-size-medium { width: #{p2r(480)}; max-width: 100% !important; }
+        &.sh-editor-img-size-large { width: 100%; max-width: 100% !important; }
+        &:not([class*='sh-editor-img-size-']) { width: auto; max-width: 100% !important; }
+      }
+
+      &.sh-editor-img-custom {
+        display: inline-block;
+        margin: #{p2r(12)} 0;
+
+        &.sh-editor-img-size-small { width: #{p2r(240)}; max-width: 100% !important; }
+        &.sh-editor-img-size-medium { width: #{p2r(480)}; max-width: 100% !important; }
+        &.sh-editor-img-size-large { width: 100%; max-width: 100% !important; }
+        &:not([class*='sh-editor-img-size-']) { width: auto; max-width: 100% !important; }
+      }
+    }
+
     // Custom highlight mark (registered via the [behaviors] extension point)
     mark.sh-editor-highlight {
       background-color: var(--warn-3);

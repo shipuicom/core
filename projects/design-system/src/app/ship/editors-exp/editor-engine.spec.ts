@@ -611,6 +611,26 @@ describe('EditorEngine integration', () => {
       engine.selectBlock(0);
       expect(engine.selectedBlock()).toBeNull();
     });
+
+    it('renders a size class for float/custom modes but not for content/theater', () => {
+      engine.document.set([p('')]);
+      caret(0, 0);
+      engine.insertImage({ src: 'https://x.example/a.png', alt: '', mode: 'content', size: 'auto' });
+      // content is fixed-width: no size class (else the size buttons would have
+      // nothing to act on, but content has no size buttons)
+      expect(html()).toContain('class="sh-editor-img-content"');
+      expect(html()).not.toContain('sh-editor-img-size');
+
+      engine.updateSelectedImage({ mode: 'theater' });
+      expect(html()).toContain('class="sh-editor-img-theater"');
+      expect(html()).not.toContain('sh-editor-img-size');
+
+      // float carries the size, so the toolbar's size buttons change the render
+      engine.updateSelectedImage({ mode: 'float', size: 'medium' });
+      expect(html()).toContain('class="sh-editor-img-float sh-editor-img-size-medium"');
+      engine.updateSelectedImage({ size: 'small' });
+      expect(html()).toContain('class="sh-editor-img-float sh-editor-img-size-small"');
+    });
   });
 
   describe('escape hatch (ArrowUp/Left at doc start)', () => {

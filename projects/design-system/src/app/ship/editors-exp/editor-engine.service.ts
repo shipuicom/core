@@ -672,6 +672,19 @@ export class EditorEngineService {
     const live = mapSel(this.selection.active());
     if (live) this.selection.live.set(live);
 
+    // Rebase the selected void block (image) through the same flat map so a
+    // peer's edit can't leave the highlight/toolbar on the wrong block. Bias
+    // +1: a remote insert exactly at the block carries the selection to the
+    // image's new index rather than onto the inserted content. If the image
+    // itself was removed the mapped position no longer lands on a void block,
+    // so the selection clears.
+    const selBlock = this.selectedBlock();
+    if (selBlock !== null) {
+      const lp = posToLogical(newDoc, map.map(logicalToPos(oldDoc, { blockIndex: selBlock, inlineIndex: 0, offset: 0 }), 1));
+      const stillVoid = lp != null && this.blocks.get(newDoc[lp.blockIndex]?.type)?.category === 'void';
+      this.selectedBlock.set(stillVoid ? lp!.blockIndex : null);
+    }
+
     // Undo stack (index 0 = oldest, end = top/next-to-undo). Rebase the UNDO
     // CHAIN in inverse space: U1=invert(top) is valid at the tip — the same
     // frame as the remote op — U2 at the frame after U1, and so on, so every

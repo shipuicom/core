@@ -147,10 +147,11 @@ export class ImageBehavior extends BaseBlockBehavior {
       let mode = 'content',
         size = 'auto';
       if (cls.includes('theater')) mode = 'theater';
-      if (cls.includes('float')) mode = 'float';
-      if (cls.includes('custom')) mode = 'custom';
-      if (cls.includes('small')) size = 'small';
-      if (cls.includes('large')) size = 'large';
+      else if (cls.includes('float')) mode = 'float';
+      else if (cls.includes('custom')) mode = 'custom';
+      if (cls.includes('size-small')) size = 'small';
+      else if (cls.includes('size-medium')) size = 'medium';
+      else if (cls.includes('size-large')) size = 'large';
       return {
         type: this.type,
         attrs: { src: el.getAttribute('src'), alt: el.getAttribute('alt'), mode, size },
@@ -165,8 +166,10 @@ export class ImageBehavior extends BaseBlockBehavior {
     // unsafe `src` (data:image/* is allowed for pasted/inline images).
     const safeMode = ImageBehavior.MODES.has(mode) ? mode : 'content';
     const safeSize = ImageBehavior.SIZES.has(size) ? size : 'auto';
-    const cls =
-      safeMode === 'custom' ? `sh-editor-img-custom sh-editor-img-size-${safeSize}` : `sh-editor-img-${safeMode}`;
+    // Content/theater are fixed-width (no size class); float/custom carry the
+    // size so the size buttons in the contextual toolbar have something to act on.
+    const sized = safeMode === 'float' || safeMode === 'custom';
+    const cls = sized ? `sh-editor-img-${safeMode} sh-editor-img-size-${safeSize}` : `sh-editor-img-${safeMode}`;
     const safeSrc = isSafeUrl(src, { allowDataImage: true }) ? escapeAttr(src) : '';
     return `<img src="${safeSrc}" alt="${escapeAttr(alt)}" class="${cls}">`;
   }

@@ -312,6 +312,13 @@ test.describe('DOM ≡ AST invariant', () => {
     await expect(page.locator('.sh-editor-content .sh-editor-block-selected')).toHaveCount(1);
     expect(await selectionState()).toMatchObject({ collapsed: false, wrapsImg: true });
 
+    // Float carries a size class the size buttons act on (content/theater don't);
+    // switching size re-renders the class so the width actually changes.
+    await expect(page.locator('.sh-editor-content img.sh-editor-img-float.sh-editor-img-size-medium')).toHaveCount(1);
+    await toolbar.locator('button').nth(3).click(); // size: small
+    await expect(page.locator('.sh-editor-content img.sh-editor-img-size-small')).toHaveCount(1);
+    expect(await attrOf()).toMatchObject({ size: 'small' });
+
     // Backspace deletes the selected image (a node selection over a void block
     // fires no beforeinput, so this exercises the keydown delete path).
     await page.keyboard.press('Backspace');
@@ -328,6 +335,81 @@ test.describe('DOM ≡ AST invariant', () => {
     await expect(page.locator('.sh-editor-content img')).toHaveCount(0);
     await expect(toolbar).toBeHidden();
     await expectInvariant(page, 'after trash-button delete');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
+  test('image: undoing the insert clears the selection instead of orphaning the highlight', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: 'para' }] }]);
+      comp.engine.selection.live.set({
+        start: { blockIndex: 0, inlineIndex: 0, offset: 4 },
+        end: { blockIndex: 0, inlineIndex: 0, offset: 4 },
+        isCollapsed: true,
+      });
+      comp.engine.insertImage({ src: 'https://picsum.photos/203', alt: '', mode: 'content', size: 'auto' });
+    });
+    await expect(page.locator('.sh-editor-content img')).toHaveCount(1);
+    await expect(page.locator('.sh-editor-content .sh-editor-block-selected')).toHaveCount(1);
+
+    // Undo removes the image; the highlight must not transfer to the paragraph
+    // the image index now resolves to.
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(page.locator('.sh-editor-content img')).toHaveCount(0);
+    await expect(page.locator('.sh-editor-content .sh-editor-block-selected')).toHaveCount(0);
+    expect(await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.selectedBlock())).toBeNull();
+    await expectInvariant(page, 'after undo of image insert');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
+  test('image: arrowing out of the block above selects the image (no caret in the void)', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    const selectedBlock = () =>
+      page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.selectedBlock());
+
+    await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: 'above' }] }]);
+      comp.engine.selection.live.set({
+        start: { blockIndex: 0, inlineIndex: 0, offset: 0 },
+        end: { blockIndex: 0, inlineIndex: 0, offset: 0 },
+        isCollapsed: true,
+      });
+      comp.engine.insertImage({ src: 'https://picsum.photos/204', alt: '', mode: 'content', size: 'auto' });
+      comp.engine.clearBlockSelection();
+    });
+
+    // Caret at the end of "above" (block 0), then ArrowRight → the image (block 1)
+    // becomes the selected block rather than dropping a caret before it.
+    await page.locator('.sh-editor-content > p').first().click();
+    await page.keyboard.press('End');
+    expect(await selectedBlock()).toBeNull();
+    await page.keyboard.press('ArrowRight');
+    expect(await selectedBlock()).toBe(1);
+    await expect(page.locator('.sh-editor-content .sh-editor-block-selected')).toHaveCount(1);
+
+    // A caret in the MIDDLE of the block above is not hijacked — ArrowRight there
+    // just moves the caret. Seat the caret directly (offset 2 of "above") so the
+    // check is deterministic and unaffected by the prior image selection.
+    await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.clearBlockSelection();
+      const surface = document.querySelector('.sh-editor-content') as HTMLElement;
+      const textNode = surface.children[0].firstChild!;
+      const range = document.createRange();
+      range.setStart(textNode, 2);
+      range.collapse(true);
+      const sel = window.getSelection()!;
+      sel.removeAllRanges();
+      sel.addRange(range);
+      surface.focus();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    });
+    await page.keyboard.press('ArrowRight');
+    expect(await selectedBlock()).toBeNull();
+    await expectInvariant(page, 'after arrow-into-image');
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 

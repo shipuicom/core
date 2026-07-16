@@ -5,11 +5,13 @@ import {
   ElementRef,
   HostListener,
   ViewEncapsulation,
+  afterNextRender,
   effect,
   forwardRef,
   inject,
   input,
   model,
+  signal,
   untracked,
   viewChild,
 } from '@angular/core';
@@ -109,6 +111,11 @@ export class ShipEditorExp implements ControlValueAccessor {
    * redundant pass when an input handler already rendered this exact version. */
   #lastRenderedDoc: ASTDocument | null = null;
   #isInternalValueUpdate = false;
+  /** Flips true once the view (and thus the `surface` viewChild) exists. The
+   * render effect gates on it so its first client run — which can be scheduled
+   * before the query resolves on the hydration pass — never touches a missing
+   * surface and aborts, which would leave the editor blank until the next edit. */
+  #viewReady = signal(false);
   onChange: any = () => {};
   onTouched: any = () => {};
 
@@ -184,6 +191,10 @@ export class ShipEditorExp implements ControlValueAccessor {
       // doc reference — a mutation from elsewhere (toolbar, undo) is a new array
       // and still renders here.
       if (doc === this.#lastRenderedDoc) return;
+      // Defer the DOM projection until the view exists. Reading the signal keeps
+      // this effect subscribed, so it re-runs (and renders) the moment the
+      // surface is ready — no blank editor waiting on the next edit.
+      if (!this.#viewReady()) return;
       this.#render();
     });
 
@@ -196,16 +207,32 @@ export class ShipEditorExp implements ControlValueAccessor {
     // so the DOM is already patched by the time this reads it.
     effect(() => {
       const idx = this.engine.selectedBlock();
-      this.engine.document();
+      const doc = this.engine.document();
+      if (!this.#viewReady()) return; // surface() not queryable yet on the first pass
       const container = this.surface().nativeElement;
       container
         .querySelectorAll('.sh-editor-block-selected')
         .forEach((el) => el.classList.remove('sh-editor-block-selected'));
-      const el = idx !== null ? (container.children[idx] as HTMLElement | undefined) : undefined;
+      if (idx === null) return;
+      // Undo/redo (or any edit) can replace the block at this index with a
+      // non-void one — e.g. undoing an image insert brings back the paragraph.
+      // The selection is stale then: clear it rather than highlighting the
+      // wrong block. (Signal write re-runs this effect, which then no-ops.)
+      const block = doc[idx];
+      if (!block || this.engine.blocks.get(block.type)?.category !== 'void') {
+        this.engine.clearBlockSelection();
+        return;
+      }
+      const el = container.children[idx] as HTMLElement | undefined;
       if (!el) return;
       el.classList.add('sh-editor-block-selected');
       this.#selectVoidBlockDOM(el);
     });
+
+    // Runs once, browser-only, after the first render — the surface viewChild is
+    // resolved by now. Flipping this re-runs the gated effects above, which then
+    // project the AST that SSR left unrendered (effects don't run during SSR).
+    afterNextRender(() => this.#viewReady.set(true));
   }
 
   writeValue(obj: any): void {
@@ -457,6 +484,25 @@ export class ShipEditorExp implements ControlValueAccessor {
     return el && el.parentElement === container ? Array.from(container.children).indexOf(el) : -1;
   }
 
+  /** Whether the collapsed caret is at the far edge of block `idx` in the given
+   * direction — i.e. no text lies between it and the block's end (forward) or
+   * start (backward). Uses a range clone so multi-line blocks are handled by the
+   * DOM, not by counting characters. */
+  #caretAtBlockEdge(idx: number, forward: boolean): boolean {
+    if (typeof window === 'undefined') return false;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return false;
+    const range = sel.getRangeAt(0);
+    if (!range.collapsed) return false;
+    const blockEl = this.surface().nativeElement.children[idx] as HTMLElement | undefined;
+    if (!blockEl) return false;
+    const clone = range.cloneRange();
+    clone.selectNodeContents(blockEl);
+    if (forward) clone.setStart(range.endContainer, range.endOffset);
+    else clone.setEnd(range.startContainer, range.startOffset);
+    return clone.toString().length === 0;
+  }
+
   /** Re-parse a single block element from the DOM into the AST (post-composition). */
   #reconcileBlockFromDOM(index: number) {
     const container = this.surface().nativeElement;
@@ -575,6 +621,29 @@ export class ShipEditorExp implements ControlValueAccessor {
           this.selection.live.set({ start: pos, end: pos, isCollapsed: true });
           this.#render();
         }
+        return;
+      }
+    }
+
+    // Arrowing out of a text block toward an adjacent image selects that image
+    // (a void block has no caret to land in). Only fires when the caret sits at
+    // the block edge in the arrow's direction, so mid-block navigation between
+    // lines is untouched.
+    if (
+      selectedIdx === null &&
+      (event.key === 'ArrowRight' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowUp')
+    ) {
+      const forward = event.key === 'ArrowRight' || event.key === 'ArrowDown';
+      const blockIdx = this.#currentBlockIndex();
+      const targetIdx = forward ? blockIdx + 1 : blockIdx - 1;
+      const targetBlock = blockIdx >= 0 ? this.engine.document()[targetIdx] : undefined;
+      if (
+        targetBlock &&
+        this.engine.blocks.get(targetBlock.type)?.category === 'void' &&
+        this.#caretAtBlockEdge(blockIdx, forward)
+      ) {
+        event.preventDefault();
+        this.engine.selectBlock(targetIdx);
         return;
       }
     }

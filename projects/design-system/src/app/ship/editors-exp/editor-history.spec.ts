@@ -5,7 +5,7 @@ import { EditorEngineService } from './editor-engine.service';
 import { applyOp, diffDocuments, fragLen, invertOp } from './editor-transactions';
 import { ASTDocument, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
-import { BoldBehavior, HeadingBehavior, ParagraphBehavior } from './standard-behaviors';
+import { BoldBehavior, HeadingBehavior, ImageBehavior, ParagraphBehavior } from './standard-behaviors';
 
 /**
  * Invertible (operation-based) history.
@@ -49,7 +49,7 @@ describe('Invertible editor history', () => {
       providers: [{ provide: EditorSelectionService, useValue: new EditorSelectionService() }],
     });
     engine = runInInjectionContext(injector, () => new EditorEngineService());
-    [new ParagraphBehavior(), new HeadingBehavior()].forEach((b) => engine.register(b));
+    [new ParagraphBehavior(), new HeadingBehavior(), new ImageBehavior()].forEach((b) => engine.register(b));
     engine.register(new BoldBehavior());
   });
 
@@ -376,6 +376,27 @@ describe('Invertible editor history', () => {
       });
       expect(engine.canUndo()).toBe(false); // conflicting entry dropped, not corrupted
       expect(textOf(engine.document(), 1)).toBe('REPLACED');
+    });
+
+    it('rebases the selected image index when a peer inserts a block above it', () => {
+      const img = { type: 'image', attrs: { src: 'https://x.example/a.png', mode: 'content', size: 'auto' }, content: [] };
+      arrange([p('above'), img, p('below')]);
+      engine.selectBlock(1);
+      expect(engine.selectedBlock()).toBe(1);
+      // Peer inserts a new paragraph at the top — the image shifts to index 2.
+      engine.applyRemoteOperation({ kind: 'block', at: 0, removed: [], inserted: [p('peer')] });
+      expect(engine.document().map((b) => b.type)).toEqual(['paragraph', 'paragraph', 'image', 'paragraph']);
+      expect(engine.selectedBlock()).toBe(2); // followed the image, not stuck on 1
+    });
+
+    it('clears the selected image when a peer deletes that block', () => {
+      const img = { type: 'image', attrs: { src: 'https://x.example/a.png', mode: 'content', size: 'auto' }, content: [] };
+      arrange([p('above'), img, p('below')]);
+      engine.selectBlock(1);
+      // Peer removes the image block.
+      engine.applyRemoteOperation({ kind: 'block', at: 1, removed: [img], inserted: [] });
+      expect(engine.document().some((b) => b.type === 'image')).toBe(false);
+      expect(engine.selectedBlock()).toBeNull(); // no orphaned highlight on a text block
     });
   });
 });
