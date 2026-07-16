@@ -493,6 +493,46 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('parity: metrics footer, placeholder, and source-view round-trip', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    // The showcase mounts two editors; scope every query to the first (the one
+    // with metrics/placeholder/source wired up).
+    const editor = page.locator('sh-editor').first();
+    const reset = (doc: unknown) =>
+      page.evaluate((d) => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset(d), doc);
+
+    // Metrics footer counts the live document.
+    const stats = editor.locator('.sh-editor-stats');
+    await reset([{ type: 'paragraph', content: [{ type: 'text', text: 'one two three' }] }]);
+    await expect(stats).toContainText('3 words');
+    await expect(stats).toContainText('13 characters');
+
+    // Placeholder shows only while the document is empty.
+    await reset([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
+    await expect(editor.locator('.sh-editor-placeholder')).toBeVisible();
+    await expect(stats).toContainText('0 words');
+    await reset([{ type: 'paragraph', content: [{ type: 'text', text: 'x' }] }]);
+    await expect(editor.locator('.sh-editor-placeholder')).toHaveCount(0);
+
+    // Source view: toggle shows serialized HTML; editing it and toggling back
+    // re-parses into the AST.
+    await reset([{ type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Title' }] }]);
+    const sourceToggle = editor.locator('button[aria-label="Toggle Source View"]');
+    await sourceToggle.click();
+    const source = editor.locator('.sh-editor-source');
+    await expect(source).toBeVisible();
+    await expect(source).toHaveValue('<h2>Title</h2>');
+    await expect(editor.locator('.sh-editor-content')).toBeHidden();
+
+    await source.fill('<p>edited in source</p><blockquote>and a quote</blockquote>');
+    await sourceToggle.click();
+    await expect(source).toHaveCount(0);
+    await expect(editor.locator('.sh-editor-content > p')).toContainText('edited in source');
+    await expect(editor.locator('.sh-editor-content > blockquote')).toContainText('and a quote');
+    await expectInvariant(page, 'after source-view round-trip');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('REAL IME composition via CDP lands once, in the right block', async ({ page }) => {
     const { surface, errors } = await openEditor(page);
     // Caret mid-paragraph: after "Welcome! " in the intro block.

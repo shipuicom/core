@@ -82,7 +82,7 @@
       <ng-template #hrTip>Horizontal Line <sh-kbd ctrlOrCmd shift>-</sh-kbd></ng-template>
       <ng-template #linkTip>Insert Link <sh-kbd ctrlOrCmd>K</sh-kbd></ng-template>
 
-      <sh-editor #mainEditor="shEditor" [(value)]="editorValue" [format]="format()" [readonly]="readonly()" [behaviors]="customBehaviors">
+      <sh-editor #mainEditor="shEditor" [(value)]="editorValue" [format]="format()" [readonly]="readonly()" [behaviors]="customBehaviors" [placeholder]="placeholder()" [showMetrics]="showMetrics()">
         <sh-editor-toolbar position="top">
           <button shEditorAction="undo" aria-label="Undo" [shTooltip]="undoTip"><sh-icon>arrow-u-up-left</sh-icon></button>
           <button shEditorAction="redo" aria-label="Redo" [shTooltip]="redoTip"><sh-icon>arrow-u-up-right</sh-icon></button>
@@ -114,6 +114,17 @@
           <button shEditorAction="paragraph" [shEditorActionAttrs]="{ align: 'left' }" aria-label="Align Left" [shTooltip]="alignLeftTip"><sh-icon>text-align-left</sh-icon></button>
           <button shEditorAction="paragraph" [shEditorActionAttrs]="{ align: 'center' }" aria-label="Align Center" [shTooltip]="alignCenterTip"><sh-icon>text-align-center</sh-icon></button>
           <button shEditorAction="paragraph" [shEditorActionAttrs]="{ align: 'right' }" aria-label="Align Right" [shTooltip]="alignRightTip"><sh-icon>text-align-right</sh-icon></button>
+          <div class="divider"></div>
+
+          <button
+            type="button"
+            aria-label="Toggle Source View"
+            shTooltip="Toggle Source View"
+            [attr.aria-pressed]="mainEditor.viewMode() === 'code'"
+            [class.sh-editor-action-active]="mainEditor.viewMode() === 'code'"
+            (click)="mainEditor.toggleSourceView()">
+            <sh-icon>terminal</sh-icon>
+          </button>
         </sh-editor-toolbar>
 
         <sh-editor-floating-toolbar>

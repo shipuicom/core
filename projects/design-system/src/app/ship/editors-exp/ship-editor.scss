@@ -232,6 +232,25 @@ sh-editor {
     font-style: italic;
   }
 
+  // Raw-source (code) view — a plain textarea mirroring the editor's padding.
+  .sh-editor-source {
+    display: block;
+    width: 100%;
+    flex: 1;
+    min-height: var(--editor-min-h);
+    box-sizing: border-box;
+    padding: var(--editor-p);
+    border: none;
+    outline: none;
+    resize: vertical;
+    background: var(--editor-code-bg);
+    color: var(--base-12);
+    font: var(--code-20);
+    line-height: 1.6;
+    white-space: pre;
+    tab-size: 2;
+  }
+
   .sh-editor-slash-menu {
     position: fixed;
     z-index: 100;

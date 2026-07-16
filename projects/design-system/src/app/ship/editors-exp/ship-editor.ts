@@ -6,6 +6,7 @@ import {
   HostListener,
   ViewEncapsulation,
   afterNextRender,
+  computed,
   effect,
   forwardRef,
   inject,
@@ -29,6 +30,23 @@ import { ASTBlockNode, ASTDocument, ASTInlineNode, LogicalPosition, LogicalSelec
 import { EditorSelectionService } from './selection.service';
 import * as Behaviors from './standard-behaviors';
 
+/** Plain text of a block: inline text concatenated, nested block content (list
+ * items) newline-separated. Used for the word/character metrics. */
+function blockPlainText(block: ASTBlockNode): string {
+  const parts: string[] = [];
+  const walk = (nodes: any[]) => {
+    for (const n of nodes) {
+      if (typeof n?.text === 'string') parts.push(n.text);
+      else if (Array.isArray(n?.content)) {
+        walk(n.content);
+        parts.push('\n');
+      }
+    }
+  };
+  walk((block.content as any[]) ?? []);
+  return parts.join('');
+}
+
 @Component({
   selector: 'sh-editor',
   standalone: true,
@@ -45,9 +63,12 @@ import * as Behaviors from './standard-behaviors';
     <div class="sh-editor-container">
       <ng-content select="sh-editor-toolbar:not([position='bottom'])"></ng-content>
       <div class="sh-editor-body">
+        <!-- The surface stays in the DOM even in code view (hidden) so its
+             viewChild.required and the render effect never see it missing. -->
         <div
           #surface
           class="sh-editor-content"
+          [hidden]="viewMode() === 'code'"
           [class.readonly]="readonly()"
           [attr.contenteditable]="!readonly()"
           (blur)="onDOMBlur()"
@@ -58,11 +79,27 @@ import * as Behaviors from './standard-behaviors';
           (mousedown)="onSurfaceMouseDown($event)"
           (compositionstart)="onCompositionStart()"
           (compositionend)="onCompositionEnd()"></div>
+        @if (showPlaceholder()) {
+          <div class="sh-editor-placeholder">{{ placeholder() }}</div>
+        }
+        @if (viewMode() === 'code') {
+          <textarea
+            class="sh-editor-source"
+            spellcheck="false"
+            [readonly]="readonly()"
+            [value]="sourceDraft()"
+            (input)="onSourceInput($event)"></textarea>
+        }
       </div>
       <sh-editor-link-popover [surface]="surface" />
       <sh-editor-image-popover [surface]="surface" />
       <sh-editor-contextual-toolbar [surface]="surface" [extras]="contextualActions()" />
       <sh-editor-slash-menu [commands]="slashCommands()" />
+      @if (showMetrics()) {
+        <div class="sh-editor-stats">
+          {{ wordCount() }} words · {{ charCount() }} characters · {{ format().toUpperCase() }}
+        </div>
+      }
     </div>
   `,
   styleUrl: './ship-editor.scss',
@@ -109,11 +146,41 @@ export class ShipEditorExp implements ControlValueAccessor {
    * contenteditable, so the menu can't receive key events itself). */
   slashMenu = viewChild(ShipEditorSlashMenu);
 
+  /** Ghost text shown while the document is empty. */
+  placeholder = input<string>('');
+
+  /** Show the word/character-count footer. */
+  showMetrics = input(false);
+
   value = model<string | ASTDocument | null>(null);
+
+  /** 'design' shows the WYSIWYG surface; 'code' shows the serialized source in a
+   * textarea. Toggled via {@link toggleSourceView}. */
+  readonly viewMode = signal<'design' | 'code'>('design');
+  /** The source textarea's live text while in code view — kept local (not
+   * re-parsed per keystroke) and committed to `value` on exit, so typing source
+   * isn't reformatted under the caret. */
+  readonly sourceDraft = signal('');
 
   public engine = inject(EditorEngineService);
   public selection = inject(EditorSelectionService);
   keybindings = inject(ShipA11yKeybindingsService, { optional: true });
+
+  /** Plain text of the whole document, blocks separated by newlines. */
+  readonly #plainText = computed(() => this.engine.document().map(blockPlainText).join('\n'));
+  readonly charCount = computed(() => this.#plainText().replace(/\n/g, '').length);
+  readonly wordCount = computed(() => {
+    const t = this.#plainText().trim();
+    return t ? t.split(/\s+/).length : 0;
+  });
+  /** Show ghost text: a non-empty placeholder, an empty document, design view. */
+  readonly showPlaceholder = computed(() => {
+    if (!this.placeholder() || this.viewMode() === 'code') return false;
+    const doc = this.engine.document();
+    if (doc.length !== 1) return false;
+    const only = doc[0];
+    return this.engine.blocks.get(only.type)?.category !== 'void' && this.#plainText() === '';
+  });
 
   /** Set only while reconciling a block after IME composition, so the render
    * effect skips patching (the DOM already holds the composed text). */
@@ -246,6 +313,36 @@ export class ShipEditorExp implements ControlValueAccessor {
     // resolved by now. Flipping this re-runs the gated effects above, which then
     // project the AST that SSR left unrendered (effects don't run during SSR).
     afterNextRender(() => this.#viewReady.set(true));
+  }
+
+  /**
+   * Toggle between the WYSIWYG surface and a raw-source textarea. Entering code
+   * view snapshots the serialized document into the draft; leaving it commits
+   * the (possibly edited) draft back through `value`, which re-parses it into
+   * the AST — so hand-edited source round-trips like any external value set.
+   */
+  toggleSourceView() {
+    if (this.viewMode() === 'design') {
+      const doc = this.engine.document();
+      this.sourceDraft.set(this.format() === 'json' ? JSON.stringify(doc, null, 2) : String(this.engine.serialize(this.format())));
+      this.viewMode.set('code');
+    } else {
+      const draft = this.sourceDraft();
+      if (this.format() === 'json') {
+        try {
+          this.value.set(JSON.parse(draft));
+        } catch {
+          /* invalid JSON: keep the current document rather than crash */
+        }
+      } else {
+        this.value.set(draft);
+      }
+      this.viewMode.set('design');
+    }
+  }
+
+  onSourceInput(event: Event) {
+    this.sourceDraft.set((event.target as HTMLTextAreaElement).value);
   }
 
   writeValue(obj: any): void {
