@@ -7,7 +7,11 @@ import { ShipEditorExp } from './ship-editor';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div class="sh-editor-toolbar-inner" role="toolbar" (mousedown)="$event.preventDefault()">
+    <!-- No blanket mousedown preventDefault here: it would block focus on
+         interactive controls (sh-select, sh-color-picker-input) that open on
+         focus/click. The plain action buttons keep the editor's DOM selection
+         via shEditorAction's own per-button mousedown preventDefault. -->
+    <div class="sh-editor-toolbar-inner" role="toolbar">
       <ng-content></ng-content>
     </div>
   `,

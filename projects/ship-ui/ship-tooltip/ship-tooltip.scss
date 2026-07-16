@@ -22,6 +22,12 @@ $shipTooltip: true !default;
       left: p2r(-8);
       right: p2r(-8);
       z-index: 1;
+      // Decorative hover-bridge only. The tooltip is kept alive by the wrapper's
+      // own mouseenter + the 50ms cleanup debounce, so this buffer never needs to
+      // capture the pointer — and must not, or (when the tooltipped element is an
+      // interactive composite like sh-select/sh-color-picker-input) it sits over
+      // the inner trigger and swallows the click that would open it.
+      pointer-events: none;
     }
 
     &.primary + ship-tooltip-wrapper {

@@ -605,23 +605,31 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
-  test('style toolbar: sh-select font, free-text size, and patch color swatch', async ({ page }) => {
+  test('style toolbar: real-click opens controls, applies to + prefills from the selection', async ({ page }) => {
     const { errors } = await openEditor(page);
     const editor = page.locator('sh-editor').first();
-    // Select the word "Style" (offset 0..5) with a real DOM + logical selection;
-    // it survives focus moving to the toolbar controls. Reset is async, so wait
-    // for the text to render before ranging into it.
-    const selectStyleWord = async () => {
+    const fontSelect = page.locator('.sh-editor-style-font');
+    const sizeSelect = page.locator('.sh-editor-style-size');
+
+    // Reset to a known single paragraph. Reset is async, so wait for the render.
+    const resetRow = async () => {
       await page.evaluate(() => {
         const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
         comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: 'Style row here' }] }]);
       });
       await expect(editor.locator('.sh-editor-content > p').first()).toHaveText('Style row here');
+    };
+
+    // Select the word "Style" (chars 0..5) with a real DOM + logical selection;
+    // the logical selection survives focus moving to the toolbar controls.
+    const selectStyleWord = async () => {
       await page.evaluate(() => {
         const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
         const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
         surface.focus();
-        const text = surface.querySelector('p')!.firstChild!;
+        // "Style" is the first text node however it ends up wrapped (span, strong…).
+        const p = surface.querySelector('p')!;
+        const text = document.createTreeWalker(p, NodeFilter.SHOW_TEXT).nextNode()!;
         const range = document.createRange();
         range.setStart(text, 0);
         range.setEnd(text, 5);
@@ -636,25 +644,48 @@ test.describe('DOM ≡ AST invariant', () => {
       });
     };
 
-    // Font: open the sh-select and pick Georgia via its option list.
+    // ── Bug 1: the Font select opens on a REAL click (no isOpen.set()). ──
+    await resetRow();
     await selectStyleWord();
-    await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('.sh-editor-style-font')!).isOpen.set(true));
-    await page.locator('.sh-editor-style-font li.option', { hasText: 'Georgia' }).click();
+    await fontSelect.locator('sh-form-field[trigger]').click();
+    await expect(fontSelect.locator('li.option').first()).toBeVisible();
+    await fontSelect.locator('li.option', { hasText: 'Georgia' }).click();
     await expect(editor.locator('.sh-editor-content span[style*="font-family: Georgia"]')).toHaveCount(1);
-    await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('.sh-editor-style-font')!).isOpen.set(false));
 
-    // Size: open the select and pick a preset — applied via the same Signal Forms
-    // binding. (Free-text custom sizes are sh-select's own inline-search behavior,
-    // wired through the same value binding.)
+    // ── Bug 1: the Size select opens on a real click; a preset applies. ──
     await selectStyleWord();
-    await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('.sh-editor-style-size')!).isOpen.set(true));
-    await editor.locator('.sh-editor-style-size li.option', { hasText: '28' }).click();
+    await sizeSelect.locator('sh-form-field[trigger]').click();
+    await expect(sizeSelect.locator('li.option').first()).toBeVisible();
+    await sizeSelect.locator('li.option', { hasText: '28' }).click();
     await expect(editor.locator('.sh-editor-content span[style*="font-size: 28px"]')).toHaveCount(1);
-    await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('.sh-editor-style-size')!).isOpen.set(false));
 
-    // Patch color pickers render as compact swatches (text + highlight color).
+    // ── Bug 2: the selects prefill from the style at the cursor. Driven by REAL
+    // caret moves so the editor's selection→render→prefill path runs end to end. ──
+    // Click into the styled word "Style" → both controls reflect its font + size.
+    await editor.locator('.sh-editor-content span[style*="Georgia"]').click();
+    await expect(fontSelect.locator('.selected-value')).toContainText('Georgia');
+    await expect(sizeSelect.locator('.selected-value')).toContainText('28');
+    // Walk the caret rightward into the unstyled tail " row here" — clears both.
+    for (let i = 0; i < 10; i++) await page.keyboard.press('ArrowRight');
+    await expect(fontSelect.locator('.selected-value')).not.toContainText('Georgia');
+    await expect(sizeSelect.locator('.selected-value')).not.toContainText('28');
+
+    // ── Regression: a plain toolbar mark button still applies to the selection
+    // after removing the blanket mousedown preventDefault. ──
+    await selectStyleWord();
+    await page.locator('sh-editor-toolbar button[aria-label="Bold"]').click();
+    await expect(editor.locator('.sh-editor-content strong')).toHaveCount(1);
+
+    // ── Bug 1: a patch color swatch opens the picker popover on a real click. ──
+    await selectStyleWord();
+    const textSwatch = editor.locator('sh-color-picker-input.patch').first();
+    await textSwatch.locator('.color-indicator').click();
+    await expect
+      .poll(() =>
+        page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-color-picker-input.patch')!).isOpen())
+      )
+      .toBe(true);
     await expect(editor.locator('sh-color-picker-input.patch')).toHaveCount(2);
-    await expect(editor.locator('sh-color-picker-input.patch .color-indicator')).toHaveCount(2);
 
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });

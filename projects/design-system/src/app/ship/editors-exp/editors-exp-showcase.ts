@@ -1,5 +1,5 @@
 import { JsonPipe, UpperCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, effect, signal, untracked, viewChild } from '@angular/core';
+import { afterRenderEffect, ChangeDetectionStrategy, Component, effect, signal, untracked, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { form, FormField } from '@angular/forms/signals';
 import { ShipButton } from '@ship-ui/core/ship-button';
@@ -98,14 +98,24 @@ export default class EditorsExpShowcase {
   };
 
   // ── Style toolbar (sh-select bound with Signal Forms) ──────────────────────
+  // Comma-free value tokens: sh-select treats a comma in a value as a
+  // multi-value separator, so a value like "Georgia, serif" can never round-trip
+  // back to its option — which silently breaks prefill (the select can't show
+  // the cursor's font). Each token maps to the full CSS font stack that is
+  // actually applied to / read from the editor via #fontStackFor / #fontTokenFor.
   fontOptions = signal([
-    { value: 'Arial, sans-serif', label: 'Arial' },
-    { value: 'Georgia, serif', label: 'Georgia' },
-    { value: "'Times New Roman', serif", label: 'Times New Roman' },
-    { value: "'Courier New', monospace", label: 'Courier New' },
-    { value: 'Verdana, sans-serif', label: 'Verdana' },
-    { value: "'Trebuchet MS', sans-serif", label: 'Trebuchet MS' },
+    { value: 'Arial', label: 'Arial', stack: 'Arial, sans-serif' },
+    { value: 'Georgia', label: 'Georgia', stack: 'Georgia, serif' },
+    { value: 'Times New Roman', label: 'Times New Roman', stack: "'Times New Roman', serif" },
+    { value: 'Courier New', label: 'Courier New', stack: "'Courier New', monospace" },
+    { value: 'Verdana', label: 'Verdana', stack: 'Verdana, sans-serif' },
+    { value: 'Trebuchet MS', label: 'Trebuchet MS', stack: "'Trebuchet MS', sans-serif" },
   ]);
+
+  /** Map a font token (the select value) to the CSS font stack applied to the editor. */
+  #fontStackFor = (token: string): string | null => this.fontOptions().find((o) => o.value === token)?.stack ?? null;
+  /** Map a CSS font stack (from the editor's style) back to its select token, or '' if unknown. */
+  #fontTokenFor = (stack: string): string => this.fontOptions().find((o) => o.stack === stack)?.value ?? '';
   fontSizeOptions = signal([12, 14, 16, 18, 20, 24, 28, 32, 48].map((n) => ({ value: `${n}px`, label: `${n}px` })));
 
   /** Accept a preset value, a bare number, or a css length as a custom size. */
@@ -113,6 +123,12 @@ export default class EditorsExpShowcase {
 
   /** The main editor, so the style effects can read/apply its selection style. */
   mainEditorRef = viewChild<ShipEditorExp>('mainEditor');
+
+  // The two style selects, so prefill can drive their shown value directly:
+  // sh-select's value→option sync can skip updating its display on a programmatic
+  // write (its guard treats an empty input as a no-op), so we set selectedOptions.
+  private fontSelectRef = viewChild('fontSel', { read: ShipSelect });
+  private sizeSelectRef = viewChild('sizeSel', { read: ShipSelect });
 
   // Signal-Forms models for the font/size selects. `form()` makes each a form
   // field; the projected <input [formField]> binds it (no FormsModule/ngModel).
@@ -155,11 +171,12 @@ export default class EditorsExpShowcase {
     // change vs the current style.
     effect(() => {
       const editor = this.mainEditorRef();
-      const font = this.fontModel(); // re-run when the font select changes
+      const token = this.fontModel(); // re-run when the font select changes
       if (!editor) return;
       queueMicrotask(() => {
-        if (font !== (editor.engine.currentStyle()['font-family'] ?? '')) {
-          editor.engine.applyStyle({ 'font-family': font || null });
+        const stack = this.#fontStackFor(token); // token → full CSS font stack (null if none)
+        if ((stack ?? '') !== (editor.engine.currentStyle()['font-family'] ?? '')) {
+          editor.engine.applyStyle({ 'font-family': stack });
         }
       });
     });
@@ -172,6 +189,38 @@ export default class EditorsExpShowcase {
         // A bare number from the free-text option becomes px.
         const v = size && /^\d+(\.\d+)?$/.test(size) ? `${size}px` : size;
         editor.engine.applyStyle({ 'font-size': v || null });
+      });
+    });
+
+    // Prefill the selects from the style at the cursor — the OPPOSITE direction
+    // of the apply effects (editor → select), so the controls reflect the
+    // selection. We drive the sh-select's `selectedOptions` (its displayed value)
+    // rather than the Signal-Forms model: `[formField]` writes the native input
+    // value during render, which sh-select's value-setter patch turns into a
+    // signal write mid-render → NG0600. Writing selectedOptions is deferred to a
+    // microtask (outside the render pass) and no-op-guarded — a fresh array every
+    // render would otherwise re-trigger this effect in a loop. The apply effects
+    // above still own the select → editor direction (driven by user picks), and
+    // their currentStyle guard keeps this one-way mirror from causing a re-apply.
+    afterRenderEffect(() => {
+      const editor = this.mainEditorRef();
+      if (!editor) return;
+      const style = editor.engine.currentStyle();
+      const fontToken = this.#fontTokenFor(style['font-family'] ?? ''); // stack → select token
+      const size = style['font-size'] ?? '';
+      const fontSel = this.fontSelectRef();
+      const sizeSel = this.sizeSelectRef();
+      // Font always maps (a token or none). Size is free-text: reflect a preset
+      // match or clear when empty, but leave a custom typed size to the input.
+      const fontOpt = this.fontOptions().find((o) => o.value === fontToken) ?? null;
+      const sizeOpt = this.fontSizeOptions().find((o) => o.value === size) ?? null;
+      queueMicrotask(() => {
+        if (fontSel && (untracked(fontSel.selectedOptions)[0] ?? null) !== fontOpt) {
+          fontSel.selectedOptions.set(fontOpt ? [fontOpt] : []);
+        }
+        if (sizeSel && (sizeOpt || size === '') && (untracked(sizeSel.selectedOptions)[0] ?? null) !== sizeOpt) {
+          sizeSel.selectedOptions.set(sizeOpt ? [sizeOpt] : []);
+        }
       });
     });
   }

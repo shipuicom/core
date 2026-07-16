@@ -130,6 +130,7 @@
           <!-- Google-Docs-style character formatting via the 'style' mark. -->
           <!-- Font family: sh-select with inline search -->
           <sh-select
+            #fontSel
             class="sh-editor-style-font"
             [options]="fontOptions()"
             label="label"
@@ -143,6 +144,7 @@
 
           <!-- Font size: sh-select with inline search + free-text custom sizes -->
           <sh-select
+            #sizeSel
             class="sh-editor-style-size"
             [options]="fontSizeOptions()"
             label="label"
