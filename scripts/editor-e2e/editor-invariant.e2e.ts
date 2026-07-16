@@ -588,11 +588,12 @@ test.describe('DOM ≡ AST invariant', () => {
       });
     };
 
-    // Font: open the sh-select and pick Georgia via inline search.
+    // Font: open the sh-select and pick Georgia via its option list.
     await selectStyleWord();
-    await editor.locator('.sh-editor-style-font').click();
+    await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('.sh-editor-style-font')!).isOpen.set(true));
     await page.locator('.sh-editor-style-font li.option', { hasText: 'Georgia' }).click();
     await expect(editor.locator('.sh-editor-content span[style*="font-family: Georgia"]')).toHaveCount(1);
+    await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('.sh-editor-style-font')!).isOpen.set(false));
 
     // Size: open the select and pick a preset — applied via the same Signal Forms
     // binding. (Free-text custom sizes are sh-select's own inline-search behavior,

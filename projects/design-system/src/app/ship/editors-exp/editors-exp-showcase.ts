@@ -106,7 +106,7 @@ export default class EditorsExpShowcase {
     { value: 'Verdana, sans-serif', label: 'Verdana' },
     { value: "'Trebuchet MS', sans-serif", label: 'Trebuchet MS' },
   ]);
-  fontSizeOptions = signal([12, 14, 16, 18, 20, 24, 28, 32, 48].map((n) => ({ value: `${n}px`, label: String(n) })));
+  fontSizeOptions = signal([12, 14, 16, 18, 20, 24, 28, 32, 48].map((n) => ({ value: `${n}px`, label: `${n}px` })));
 
   /** Accept a preset value, a bare number, or a css length as a custom size. */
   isValidFontSize = (value: string) => /^\d+(\.\d+)?(px|pt|em|rem|%)?$/.test(value.trim());
