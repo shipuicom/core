@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipFormField } from '@ship-ui/core/ship-form-field';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipPopover } from '@ship-ui/core/ship-popover';
 import { EditorEngineService } from './editor-engine.service';
 import { isSafeUrl } from './editor-sanitize';
@@ -40,13 +41,17 @@ import { EditorSelectionService } from './selection.service';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [ShipPopover, ShipFormField, ShipButton],
+  imports: [ShipPopover, ShipFormField, ShipButton, ShipIcon],
   template: `
     <div class="sh-editor-link-anchor" [style.top.px]="top()" [style.left.px]="left()">
       <sh-popover [(isOpen)]="isOpen" (closed)="onClosed()" [disableOpenByClick]="true" [asSheetOnMobile]="true" [options]="{ closeOnButton: false, closeOnEsc: true }">
-        <div class="sh-editor-link-form" (keydown)="onFormKeydown($event)">
+        <div class="sh-editor-popover sh-editor-link-form" (keydown)="onFormKeydown($event)">
+          <div class="sh-editor-popover-header">
+            <sh-icon>link</sh-icon>
+            <span>{{ hasExistingLink() ? 'Edit link' : 'Insert link' }}</span>
+          </div>
           <sh-form-field size="small">
-            <label>Link URL</label>
+            <label>URL</label>
             <!-- autofocus: the Popover API focuses it natively on showPopover() -->
             <input
               #urlInput
@@ -59,11 +64,11 @@ import { EditorSelectionService } from './selection.service';
               <span error role="alert">{{ message }}</span>
             }
           </sh-form-field>
-          <div class="link-actions">
-            <button shButton color="primary" (click)="apply()">Apply</button>
+          <div class="sh-editor-popover-actions">
             @if (hasExistingLink()) {
-              <button shButton (click)="remove()">Remove</button>
+              <button shButton noBg color="error" (click)="remove()">Remove</button>
             }
+            <button shButton color="primary" (click)="apply()">{{ hasExistingLink() ? 'Update' : 'Apply' }}</button>
           </div>
         </div>
       </sh-popover>

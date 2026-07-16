@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipFormField } from '@ship-ui/core/ship-form-field';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipPopover } from '@ship-ui/core/ship-popover';
 import { EditorEngineService } from './editor-engine.service';
 import { isSafeUrl } from './editor-sanitize';
@@ -33,11 +34,15 @@ import { EditorSelectionService } from './selection.service';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [ShipPopover, ShipFormField, ShipButton],
+  imports: [ShipPopover, ShipFormField, ShipButton, ShipIcon],
   template: `
     <div class="sh-editor-link-anchor" [style.top.px]="top()" [style.left.px]="left()">
       <sh-popover [(isOpen)]="isOpen" (closed)="onClosed()" [disableOpenByClick]="true" [asSheetOnMobile]="true" [options]="{ closeOnButton: false, closeOnEsc: true }">
-        <div class="sh-editor-image-form" (keydown)="onFormKeydown($event)">
+        <div class="sh-editor-popover sh-editor-image-form" (keydown)="onFormKeydown($event)">
+          <div class="sh-editor-popover-header">
+            <sh-icon>image</sh-icon>
+            <span>Insert image</span>
+          </div>
           <sh-form-field size="small">
             <label>Image URL</label>
             <input
@@ -52,10 +57,12 @@ import { EditorSelectionService } from './selection.service';
             }
           </sh-form-field>
           <input #fileInput type="file" accept="image/*" hidden (change)="onFile($event)" />
-          <div class="image-actions">
-            <button shButton [disabled]="uploading()" (click)="fileInput.click()">
-              {{ uploading() ? 'Uploading…' : 'Upload…' }}
+          <div class="sh-editor-popover-actions">
+            <button shButton noBg [disabled]="uploading()" (click)="fileInput.click()">
+              <sh-icon>upload-simple</sh-icon>
+              {{ uploading() ? 'Uploading…' : 'Upload' }}
             </button>
+            <span class="sh-editor-popover-spacer"></span>
             <button shButton color="primary" [disabled]="uploading()" (click)="apply()">Insert</button>
           </div>
         </div>

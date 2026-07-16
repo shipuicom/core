@@ -333,21 +333,57 @@ sh-editor {
   }
 }
 
-.sh-editor-link-form {
+/* ── Popover dialog content (link / image insert) ──────────────────────────
+   The sh-popover host provides the panel chrome (surface, border, shadow); this
+   styles the content — a titled header, a full-width field, and an actions row —
+   so both popovers read as proper little dialogs in the ShipUI language. */
+.sh-editor-popover {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  min-width: 280px;
+  gap: #{p2r(12)};
+  padding: #{p2r(16)};
+  min-width: #{p2r(320)};
+  max-width: min(#{p2r(420)}, 90vw);
 
-  input {
-    min-width: 220px;
+  sh-form-field {
+    width: 100%;
+  }
+  input[type='text'] {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+.sh-editor-popover-header {
+  display: flex;
+  align-items: center;
+  gap: #{p2r(8)};
+  color: var(--base-12);
+  font: var(--paragraph-20);
+  font-weight: 700;
+  padding-bottom: #{p2r(10)};
+  border-bottom: 1px solid var(--base-4);
+
+  sh-icon {
+    color: var(--primary-9);
+    font-size: #{p2r(18)};
+    flex: none;
+  }
+}
+
+.sh-editor-popover-actions {
+  display: flex;
+  align-items: center;
+  gap: #{p2r(8)};
+  justify-content: flex-end;
+
+  .sh-editor-popover-spacer {
+    flex: 1;
   }
 
-  .link-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
+  button sh-icon {
+    font-size: #{p2r(16)};
+    margin-right: #{p2r(4)};
   }
 }
 
@@ -420,21 +456,4 @@ sh-editor {
   }
 }
 
-.sh-editor-image-form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  min-width: 300px;
-
-  input[type='text'] {
-    min-width: 240px;
-  }
-
-  .image-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: space-between;
-    align-items: center;
-  }
-}
+/* .sh-editor-link-form / .sh-editor-image-form now share .sh-editor-popover. */
