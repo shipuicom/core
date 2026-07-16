@@ -1,5 +1,5 @@
 import { JsonPipe, UpperCasePipe } from '@angular/common';
-import { afterRenderEffect, ChangeDetectionStrategy, Component, effect, signal, untracked, viewChild } from '@angular/core';
+import { afterRenderEffect, ChangeDetectionStrategy, Component, effect, ElementRef, signal, untracked, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { form, FormField } from '@angular/forms/signals';
 import { ShipButton } from '@ship-ui/core/ship-button';
@@ -130,6 +130,11 @@ export default class EditorsExpShowcase {
   private fontSelectRef = viewChild('fontSel', { read: ShipSelect });
   private sizeSelectRef = viewChild('sizeSel', { read: ShipSelect });
 
+  // The two color pickers' projected inputs, seeded imperatively by the prefill
+  // effect (outside render) — see the note in the template.
+  private textColorInput = viewChild<ElementRef<HTMLInputElement>>('textColorInput');
+  private highlightColorInput = viewChild<ElementRef<HTMLInputElement>>('highlightColorInput');
+
   // Signal-Forms models for the font/size selects. `form()` makes each a form
   // field; the projected <input [formField]> binds it (no FormsModule/ngModel).
   fontModel = signal('');
@@ -214,6 +219,13 @@ export default class EditorsExpShowcase {
       // match or clear when empty, but leave a custom typed size to the input.
       const fontOpt = this.fontOptions().find((o) => o.value === fontToken) ?? null;
       const sizeOpt = this.fontSizeOptions().find((o) => o.value === size) ?? null;
+      // Seed the color pickers from the selection (defaults when unset). Writing
+      // the projected input dispatches into the picker's parse → signal write, so
+      // it must happen in the microtask below, never in the render pass.
+      const textColor = this.textColorInput()?.nativeElement;
+      const highlightColor = this.highlightColorInput()?.nativeElement;
+      const color = style['color'] ?? '';
+      const background = style['background-color'] ?? '';
       queueMicrotask(() => {
         if (fontSel && (untracked(fontSel.selectedOptions)[0] ?? null) !== fontOpt) {
           fontSel.selectedOptions.set(fontOpt ? [fontOpt] : []);
@@ -221,8 +233,23 @@ export default class EditorsExpShowcase {
         if (sizeSel && (sizeOpt || size === '') && (untracked(sizeSel.selectedOptions)[0] ?? null) !== sizeOpt) {
           sizeSel.selectedOptions.set(sizeOpt ? [sizeOpt] : []);
         }
+        this.#seedColorInput(textColor, color || '#111111');
+        this.#seedColorInput(highlightColor, background || '#ffe066');
       });
     });
+  }
+
+  /**
+   * Seed a color picker's projected input to `value`, outside the render pass.
+   * Setting the value drives the picker's parse (which writes its color signals);
+   * doing it here (from the prefill microtask) keeps that write out of render, so
+   * it can't trip NG0600. Guarded so a converged value doesn't re-trigger.
+   */
+  #seedColorInput(input: HTMLInputElement | undefined, value: string) {
+    if (input && input.value !== value) {
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+    }
   }
 
   /** Restore the initial demo content and clear the persisted copy. */

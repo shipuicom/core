@@ -160,14 +160,17 @@
             <input [formField]="sizeField" />
           </sh-select>
 
-          <!-- Text + highlight color: patch-variant color pickers (swatch → popover) -->
+          <!-- Text + highlight color: patch-variant color pickers (swatch → popover).
+               The projected input is seeded imperatively (see the prefill effect):
+               a reactive [value] binding writes the input during render, which the
+               picker's value-setter patch turns into a signal write mid-render → NG0600. -->
           <sh-color-picker-input [patch]="true" format="hex" shTooltip="Text color"
             (closed)="mainEditor.engine.applyStyle({ color: $event })">
-            <input [value]="mainEditor.engine.currentStyle()['color'] || '#111111'" />
+            <input #textColorInput />
           </sh-color-picker-input>
           <sh-color-picker-input [patch]="true" format="hex" shTooltip="Highlight color"
             (closed)="mainEditor.engine.applyStyle({ 'background-color': $event })">
-            <input [value]="mainEditor.engine.currentStyle()['background-color'] || '#ffe066'" />
+            <input #highlightColorInput />
           </sh-color-picker-input>
 
           <button type="button" aria-label="Clear styling" shTooltip="Clear styling"

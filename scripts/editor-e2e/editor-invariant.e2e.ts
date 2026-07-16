@@ -676,6 +676,26 @@ test.describe('DOM ≡ AST invariant', () => {
     await page.locator('sh-editor-toolbar button[aria-label="Bold"]').click();
     await expect(editor.locator('.sh-editor-content strong')).toHaveCount(1);
 
+    // ── Bug 2: the text-color swatch prefills from the selection. Applying a
+    // color used to update the swatch's [value] during render → NG0600 (caught
+    // by the console-error assertion below); the swatch is now seeded off-render. ──
+    const swatchColor = () =>
+      page.evaluate(() =>
+        getComputedStyle(document.querySelector('sh-color-picker-input.patch .color-indicator')!)
+          .getPropertyValue('--indicator-color')
+          .trim()
+      );
+    await selectStyleWord();
+    await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.applyStyle({ color: '#3366ff' });
+    });
+    // Caret inside the colored run → the swatch reflects it; in the tail → resets.
+    await editor.locator('.sh-editor-content span[style*="Georgia"]').click();
+    await expect.poll(swatchColor).toBe('#3366ff');
+    for (let i = 0; i < 10; i++) await page.keyboard.press('ArrowRight');
+    await expect.poll(swatchColor).toBe('#111111');
+
     // ── Bug 1: a patch color swatch opens the picker popover on a real click. ──
     await selectStyleWord();
     const textSwatch = editor.locator('sh-color-picker-input.patch').first();
