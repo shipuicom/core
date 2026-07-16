@@ -107,7 +107,7 @@ describe('behavior render hardening (JSON-bypass sinks)', () => {
     expect(img).toBeTruthy();
     expect(el.querySelector('script')).toBeNull();
     expect(img.getAttribute('onerror')).toBeNull();
-    expect(Array.from(img.attributes).map((a) => a.name).sort()).toEqual(['alt', 'class', 'draggable', 'src']);
+    expect(Array.from(img.attributes).map((a) => a.name).sort()).toEqual(['alt', 'class', 'contenteditable', 'draggable', 'src']);
     expect(img.getAttribute('src')).toBe('x" onerror="alert(1)'); // whole payload is the src value
     expect(img.getAttribute('class')).toBe('sh-editor-img-content'); // unknown mode falls back
   });

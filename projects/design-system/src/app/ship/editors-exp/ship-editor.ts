@@ -402,7 +402,9 @@ export class ShipEditorExp implements ControlValueAccessor {
     if (target.tagName === 'IMG' && target.parentElement === surface) {
       const idx = Array.from(surface.children).indexOf(target);
       if (idx >= 0) {
-        event.preventDefault(); // no text caret in a void block
+        // No preventDefault: it would block the native drag gesture. The image is
+        // contenteditable="false" so the click leaves no caret, and the block-
+        // selection effect wraps it in a node selection.
         this.engine.selectBlock(idx);
         return;
       }

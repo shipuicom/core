@@ -216,7 +216,10 @@ export class ImageBehavior extends BaseBlockBehavior {
     const sized = safeMode === 'float' || safeMode === 'custom';
     const cls = sized ? `sh-editor-img-${safeMode} sh-editor-img-size-${safeSize}` : `sh-editor-img-${safeMode}`;
     const safeSrc = isSafeUrl(src, { allowDataImage: true }) ? escapeAttr(src) : '';
-    return `<img src="${safeSrc}" alt="${escapeAttr(alt)}" class="${cls}" draggable="true">`;
+    // contenteditable="false" makes the image a non-editable island: clicking it
+    // places no text caret (so mousedown needn't preventDefault, which would
+    // otherwise block the native drag), and it stays draggable to reorder.
+    return `<img src="${safeSrc}" alt="${escapeAttr(alt)}" class="${cls}" draggable="true" contenteditable="false">`;
   }
   override renderMarkdown(block: ASTBlockNode) {
     return `![${block.attrs?.['alt'] || ''}](${block.attrs?.['src'] || ''})\n\n`;
