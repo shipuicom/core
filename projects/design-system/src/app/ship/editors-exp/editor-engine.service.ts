@@ -503,6 +503,28 @@ export class EditorEngineService {
     this.#commit(oldDoc, newDoc, this.selection.active());
   }
 
+  /**
+   * Move the block at `from` to the gap index `to` (0..length, in the pre-move
+   * document's coordinates), as one undoable transaction. Dropping into the
+   * block's own gap (`to === from` or `to === from + 1`) is a no-op. A moved
+   * void block (image) stays selected at its new position.
+   */
+  moveBlock(from: number, to: number) {
+    const oldDoc = this.document();
+    if (from < 0 || from >= oldDoc.length || to < 0 || to > oldDoc.length) return;
+    if (to === from || to === from + 1) return;
+    const block = oldDoc[from];
+    const newDoc = [...oldDoc];
+    newDoc.splice(from, 1);
+    const insertAt = to > from ? to - 1 : to; // removing `from` shifts later gaps left by one
+    newDoc.splice(insertAt, 0, block);
+    this.document.set(newDoc);
+    if (this.selectedBlock() === from && this.blocks.get(block.type)?.category === 'void') {
+      this.selectBlock(insertAt);
+    }
+    this.#commit(oldDoc, newDoc, this.selection.active());
+  }
+
   /** Remove the selected void block; drop the selection and place the caret. */
   deleteSelectedBlock() {
     const idx = this.selectedBlock();

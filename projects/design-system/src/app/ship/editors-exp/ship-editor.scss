@@ -47,6 +47,33 @@ sh-editor {
     flex: 1;
   }
 
+  // Drop line shown while dragging an image to a new position (Google-Docs style:
+  // a primary rule with a dot at the leading edge). Positioned within the body at
+  // the target gap; aligned to the content padding.
+  .sh-editor-drop-indicator {
+    position: absolute;
+    left: #{p2r(20)};
+    right: #{p2r(20)};
+    height: #{p2r(3)};
+    margin-top: #{p2r(-1.5)};
+    background: var(--primary-9);
+    border-radius: #{p2r(2)};
+    pointer-events: none;
+    z-index: 5;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: #{p2r(-4)};
+      top: 50%;
+      width: #{p2r(9)};
+      height: #{p2r(9)};
+      border-radius: 50%;
+      background: var(--primary-9);
+      transform: translateY(-50%);
+    }
+  }
+
   .sh-editor-content {
     padding: var(--editor-p);
     outline: none;

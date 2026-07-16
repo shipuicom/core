@@ -77,8 +77,16 @@ function blockPlainText(block: ASTBlockNode): string {
           (paste)="onPaste($event)"
           (beforeinput)="onBeforeInput($event)"
           (mousedown)="onSurfaceMouseDown($event)"
+          (dragstart)="onDragStart($event)"
+          (dragover)="onDragOver($event)"
+          (drop)="onDrop($event)"
+          (dragend)="onDragEnd()"
+          (dragleave)="onDragLeave($event)"
           (compositionstart)="onCompositionStart()"
           (compositionend)="onCompositionEnd()"></div>
+        @if (dropIndicator(); as di) {
+          <div class="sh-editor-drop-indicator" [style.top.px]="di.top"></div>
+        }
         @if (showPlaceholder()) {
           <div class="sh-editor-placeholder">{{ placeholder() }}</div>
         }
@@ -201,6 +209,11 @@ export class ShipEditorExp implements ControlValueAccessor {
    * before the query resolves on the hydration pass — never touches a missing
    * surface and aborts, which would leave the editor blank until the next edit. */
   #viewReady = signal(false);
+  /** The block index of the image being dragged, or null. */
+  #dragBlockIndex: number | null = null;
+  /** Y offset (within `.sh-editor-body`) of the drop line while dragging an
+   * image, or null when not dragging. Rendered as a Google-Docs-style caret. */
+  readonly dropIndicator = signal<{ top: number } | null>(null);
   onChange: any = () => {};
   onTouched: any = () => {};
 
@@ -395,6 +408,79 @@ export class ShipEditorExp implements ControlValueAccessor {
       }
     }
     this.engine.clearBlockSelection();
+  }
+
+  // ── Image drag-to-reorder ────────────────────────────────────────────────
+  // Native drag events drive a drop-line indicator; the actual move is an AST
+  // block-splice transaction (never a DOM node move, which would desync the
+  // projection). Only images are draggable.
+
+  onDragStart(event: DragEvent) {
+    if (this.readonly()) return;
+    const surface = this.surface().nativeElement;
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'IMG' && target.parentElement === surface) {
+      const idx = Array.from(surface.children).indexOf(target);
+      if (idx >= 0) {
+        this.#dragBlockIndex = idx;
+        this.engine.selectBlock(idx);
+        event.dataTransfer?.setData('text/plain', ''); // required for the drag to start
+        if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+        return;
+      }
+    }
+    // Dragging text out of the editor isn't supported — block it entirely.
+    event.preventDefault();
+  }
+
+  onDragOver(event: DragEvent) {
+    if (this.#dragBlockIndex === null) return;
+    event.preventDefault(); // allow the drop
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    const target = this.#computeDropTarget(event.clientY);
+    this.dropIndicator.set(target ? { top: target.top } : null);
+  }
+
+  onDrop(event: DragEvent) {
+    if (this.#dragBlockIndex === null) return;
+    event.preventDefault();
+    const target = this.#computeDropTarget(event.clientY);
+    const from = this.#dragBlockIndex;
+    this.#dragBlockIndex = null;
+    this.dropIndicator.set(null);
+    if (target) {
+      this.engine.moveBlock(from, target.gap);
+      this.#render();
+    }
+  }
+
+  onDragEnd() {
+    this.#dragBlockIndex = null;
+    this.dropIndicator.set(null);
+  }
+
+  onDragLeave(event: DragEvent) {
+    // dragleave fires when crossing between child blocks too; only clear when the
+    // pointer genuinely leaves the surface.
+    const related = event.relatedTarget as Node | null;
+    if (!related || !this.surface().nativeElement.contains(related)) this.dropIndicator.set(null);
+  }
+
+  /** Nearest block gap to `clientY`: the insertion index (0..N) and the drop
+   * line's Y within `.sh-editor-body`. */
+  #computeDropTarget(clientY: number): { gap: number; top: number } | null {
+    const surface = this.surface().nativeElement;
+    const body = surface.parentElement;
+    if (!body) return null;
+    const children = Array.from(surface.children) as HTMLElement[];
+    if (!children.length) return null;
+    const bodyTop = body.getBoundingClientRect().top;
+    for (let i = 0; i < children.length; i++) {
+      const rect = children[i].getBoundingClientRect();
+      if (clientY < rect.top + rect.height / 2) return { gap: i, top: rect.top - bodyTop };
+    }
+    const last = children[children.length - 1].getBoundingClientRect();
+    return { gap: children.length, top: last.bottom - bodyTop };
   }
 
   /**

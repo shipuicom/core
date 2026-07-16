@@ -437,6 +437,54 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('image drag-to-reorder: dragging an image moves it, showing a drop line', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    const editor = page.locator('sh-editor').first();
+    await page.evaluate(() => {
+      (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset([
+        { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Heading' }] },
+        { type: 'image', attrs: { src: 'https://picsum.photos/60', mode: 'content', size: 'auto' }, content: [] },
+        { type: 'paragraph', content: [{ type: 'text', text: 'First' }] },
+        { type: 'paragraph', content: [{ type: 'text', text: 'Second' }] },
+      ]);
+    });
+    await expect(editor.locator('.sh-editor-content img[draggable="true"]')).toHaveCount(1);
+
+    // Drive the native drag: start on the image, hover the lower half of "First"
+    // (drop after it → gap 3), then drop. The drop line shows during the hover.
+    const result = await page.evaluate(() => {
+      const ed = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const surface = document.querySelector('.sh-editor-content')!;
+      const img = surface.querySelector('img')!;
+      const first = surface.children[2] as HTMLElement; // "First"
+      const rect = first.getBoundingClientRect();
+      const y = rect.top + rect.height * 0.75;
+      const dt = new DataTransfer();
+      const ev = (type: string, extra: object = {}) =>
+        new DragEvent(type, { bubbles: true, cancelable: true, dataTransfer: dt, ...extra });
+      img.dispatchEvent(ev('dragstart'));
+      surface.dispatchEvent(ev('dragover', { clientY: y }));
+      const lineShown = ed.dropIndicator() !== null;
+      surface.dispatchEvent(ev('drop', { clientY: y }));
+      img.dispatchEvent(ev('dragend'));
+      return {
+        lineShown,
+        lineCleared: ed.dropIndicator() === null,
+        order: ed.engine.document().map((b: { type: string }) => b.type),
+        selected: ed.engine.selectedBlock(),
+      };
+    });
+
+    expect(result.lineShown).toBe(true);
+    expect(result.lineCleared).toBe(true);
+    // image moved from index 1 to after "First" (index 2)
+    expect(result.order).toEqual(['heading', 'paragraph', 'image', 'paragraph']);
+    expect(result.selected).toBe(2); // stays selected at its new index
+    await expect(editor.locator('.sh-editor-content img')).toHaveCount(1);
+    await expectInvariant(page, 'after image drag-reorder');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('slash menu: "/" opens a filtered command list; Enter converts the block', async ({ page }) => {
     const { errors } = await openEditor(page);
     const blockText = () =>

@@ -613,6 +613,40 @@ describe('EditorEngine integration', () => {
       expect(engine.selectedBlock()).toBeNull();
     });
 
+    it('moveBlock reorders a block to a later gap (drag down)', () => {
+      engine.document.set([p('A'), p('B'), p('C'), p('D')]);
+      engine.moveBlock(1, 3); // move B into the gap between C and D
+      expect([0, 1, 2, 3].map((i) => textOf(engine.document(), i))).toEqual(['A', 'C', 'B', 'D']);
+    });
+
+    it('moveBlock reorders a block to an earlier gap (drag up)', () => {
+      engine.document.set([p('A'), p('B'), p('C')]);
+      engine.moveBlock(2, 0); // move C to the top
+      expect([0, 1, 2].map((i) => textOf(engine.document(), i))).toEqual(['C', 'A', 'B']);
+    });
+
+    it('moveBlock is a no-op when dropped in its own gap, and is undoable', () => {
+      const doc = [p('A'), p('B'), p('C')];
+      engine.document.set(doc);
+      engine.moveBlock(1, 1); // gap before B
+      engine.moveBlock(1, 2); // gap after B
+      expect([0, 1, 2].map((i) => textOf(engine.document(), i))).toEqual(['A', 'B', 'C']);
+
+      engine.moveBlock(0, 3); // A → end
+      expect([0, 1, 2].map((i) => textOf(engine.document(), i))).toEqual(['B', 'C', 'A']);
+      engine.undo();
+      expect([0, 1, 2].map((i) => textOf(engine.document(), i))).toEqual(['A', 'B', 'C']);
+    });
+
+    it('moveBlock keeps a selected image selected at its new index', () => {
+      const img = { type: 'image', attrs: { src: 'https://x.example/a.png', mode: 'content', size: 'auto' }, content: [] };
+      engine.document.set([p('above'), p('mid'), img] as ASTDocument);
+      engine.selectBlock(2);
+      engine.moveBlock(2, 0); // drag the image to the top
+      expect(engine.document()[0].type).toBe('image');
+      expect(engine.selectedBlock()).toBe(0);
+    });
+
     it('renders a size class for float/custom modes but not for content/theater', () => {
       engine.document.set([p('')]);
       caret(0, 0);

@@ -216,7 +216,7 @@ export class ImageBehavior extends BaseBlockBehavior {
     const sized = safeMode === 'float' || safeMode === 'custom';
     const cls = sized ? `sh-editor-img-${safeMode} sh-editor-img-size-${safeSize}` : `sh-editor-img-${safeMode}`;
     const safeSrc = isSafeUrl(src, { allowDataImage: true }) ? escapeAttr(src) : '';
-    return `<img src="${safeSrc}" alt="${escapeAttr(alt)}" class="${cls}">`;
+    return `<img src="${safeSrc}" alt="${escapeAttr(alt)}" class="${cls}" draggable="true">`;
   }
   override renderMarkdown(block: ASTBlockNode) {
     return `![${block.attrs?.['alt'] || ''}](${block.attrs?.['src'] || ''})\n\n`;
