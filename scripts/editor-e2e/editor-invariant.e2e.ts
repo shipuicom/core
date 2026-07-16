@@ -457,6 +457,42 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('float layout: list/quote/callout sit beside a floated image, never under it', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.reset([
+        { type: 'image', attrs: { src: 'https://picsum.photos/id/1062/220/160', alt: 'x', mode: 'float', size: 'small' }, content: [] },
+        { type: 'bullet-list', content: [{ type: 'list-item', content: [{ type: 'text', text: 'item beside the float' }] }] },
+        { type: 'quote', content: [{ type: 'text', text: 'quote beside the float, not under it' }] },
+        { type: 'info-callout', content: [{ type: 'text', text: 'callout beside the float, not under it' }] },
+      ]);
+    });
+    await page.waitForSelector('.sh-editor-content img.sh-editor-img-float');
+
+    // Each block container establishes a BFC, so its box starts at/after the
+    // floated image's right edge instead of its border/background sliding under.
+    const geom = await page.evaluate(() => {
+      const surface = document.querySelector('.sh-editor-content')!;
+      const imgRight = surface.querySelector('img')!.getBoundingClientRect().right;
+      const at = (sel: string) => {
+        const el = surface.querySelector(sel) as HTMLElement;
+        return { left: el.getBoundingClientRect().left, display: getComputedStyle(el).display };
+      };
+      return {
+        imgRight,
+        ul: at('ul'),
+        quote: at('blockquote:not(.sh-editor-callout)'),
+        callout: at('blockquote.sh-editor-callout'),
+      };
+    });
+    for (const key of ['ul', 'quote', 'callout'] as const) {
+      expect(geom[key].display, `${key} establishes a BFC`).toBe('flow-root');
+      expect(geom[key].left, `${key} sits beside the float`).toBeGreaterThanOrEqual(geom.imgRight - 1);
+    }
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('REAL IME composition via CDP lands once, in the right block', async ({ page }) => {
     const { surface, errors } = await openEditor(page);
     // Caret mid-paragraph: after "Welcome! " in the intro block.

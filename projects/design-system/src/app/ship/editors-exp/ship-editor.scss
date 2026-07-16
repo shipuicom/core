@@ -80,6 +80,10 @@ sh-editor {
     h3 { font: var(--title-10B); }
 
     blockquote {
+      // flow-root establishes a block formatting context so the whole box sits
+      // beside a floated image instead of its border/background sliding under it
+      // — the same reason the code block (overflow-x:auto) already behaves.
+      display: flow-root;
       border-left: 4px solid var(--primary-8);
       background: var(--base-2);
       padding: #{p2r(8)} #{p2r(16)};
@@ -145,6 +149,16 @@ sh-editor {
       border: none;
       border-top: 1px solid var(--editor-border-color);
       margin: #{p2r(24)} 0;
+    }
+
+    // Lists establish a block formatting context too, so a floated image sits
+    // beside the whole list (markers included) rather than the list box — and
+    // its bullet gutter — sliding under the float.
+    ul,
+    ol {
+      display: flow-root;
+      margin: #{p2r(12)} 0;
+      padding-left: #{p2r(24)};
     }
 
     // Image blocks. Mode (content / theater / float / custom) sets layout; the
