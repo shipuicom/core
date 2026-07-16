@@ -103,7 +103,11 @@ export default class EditorsExpShowcase {
   // back to its option — which silently breaks prefill (the select can't show
   // the cursor's font). Each token maps to the full CSS font stack that is
   // actually applied to / read from the editor via #fontStackFor / #fontTokenFor.
-  fontOptions = signal([
+  // The leading "Default" option (stack null) keeps the select non-empty for the
+  // editor's base font (Inter Tight, not in this curated list) and clears the
+  // font mark when picked.
+  fontOptions = signal<{ value: string; label: string; stack: string | null }[]>([
+    { value: 'Default', label: 'Default', stack: null },
     { value: 'Arial', label: 'Arial', stack: 'Arial, sans-serif' },
     { value: 'Georgia', label: 'Georgia', stack: 'Georgia, serif' },
     { value: 'Times New Roman', label: 'Times New Roman', stack: "'Times New Roman', serif" },
@@ -112,11 +116,16 @@ export default class EditorsExpShowcase {
     { value: 'Trebuchet MS', label: 'Trebuchet MS', stack: "'Trebuchet MS', sans-serif" },
   ]);
 
-  /** Map a font token (the select value) to the CSS font stack applied to the editor. */
+  /** Map a font token (the select value) to the CSS font stack; null = base font (clears the mark). */
   #fontStackFor = (token: string): string | null => this.fontOptions().find((o) => o.value === token)?.stack ?? null;
-  /** Map a CSS font stack (from the editor's style) back to its select token, or '' if unknown. */
-  #fontTokenFor = (stack: string): string => this.fontOptions().find((o) => o.stack === stack)?.value ?? '';
-  fontSizeOptions = signal([12, 14, 16, 18, 20, 24, 28, 32, 48].map((n) => ({ value: `${n}px`, label: `${n}px` })));
+  /** Map a CSS font stack (from the editor's style) to its select token; 'Default' when unset/unknown. */
+  #fontTokenFor = (stack: string): string => (stack && this.fontOptions().find((o) => o.stack === stack)?.value) || 'Default';
+
+  // Leading "Default" option (base size / clears the mark), like the font select.
+  fontSizeOptions = signal([
+    { value: 'Default', label: 'Default' },
+    ...[12, 14, 16, 18, 20, 24, 28, 32, 48].map((n) => ({ value: `${n}px`, label: `${n}px` })),
+  ]);
 
   /** Accept a preset value, a bare number, or a css length as a custom size. */
   isValidFontSize = (value: string) => /^\d+(\.\d+)?(px|pt|em|rem|%)?$/.test(value.trim());
@@ -190,10 +199,10 @@ export default class EditorsExpShowcase {
       const size = this.sizeModel(); // re-run when the size select changes
       if (!editor) return;
       queueMicrotask(() => {
-        if (size === (editor.engine.currentStyle()['font-size'] ?? '')) return;
-        // A bare number from the free-text option becomes px.
-        const v = size && /^\d+(\.\d+)?$/.test(size) ? `${size}px` : size;
-        editor.engine.applyStyle({ 'font-size': v || null });
+        // 'Default' clears the mark; a bare number from the free-text option becomes px.
+        const desired = size === 'Default' ? '' : size && /^\d+(\.\d+)?$/.test(size) ? `${size}px` : size;
+        if (desired === (editor.engine.currentStyle()['font-size'] ?? '')) return;
+        editor.engine.applyStyle({ 'font-size': desired || null });
       });
     });
 
@@ -215,10 +224,13 @@ export default class EditorsExpShowcase {
       const size = style['font-size'] ?? '';
       const fontSel = this.fontSelectRef();
       const sizeSel = this.sizeSelectRef();
-      // Font always maps (a token or none). Size is free-text: reflect a preset
-      // match or clear when empty, but leave a custom typed size to the input.
-      const fontOpt = this.fontOptions().find((o) => o.value === fontToken) ?? null;
-      const sizeOpt = this.fontSizeOptions().find((o) => o.value === size) ?? null;
+      // Both selects always resolve to an option so they're never blank: font
+      // falls back to "Default", size to "Default" (preset match otherwise, or an
+      // ad-hoc option for a custom typed size). Compared by value so the ad-hoc
+      // object doesn't re-trigger every render.
+      const fontOpt = this.fontOptions().find((o) => o.value === fontToken)!;
+      const sizeOpt =
+        this.fontSizeOptions().find((o) => o.value === (size || 'Default')) ?? { value: size, label: size };
       // Seed the color pickers from the selection (defaults when unset). Writing
       // the projected input dispatches into the picker's parse → signal write, so
       // it must happen in the microtask below, never in the render pass.
@@ -227,11 +239,11 @@ export default class EditorsExpShowcase {
       const color = style['color'] ?? '';
       const background = style['background-color'] ?? '';
       queueMicrotask(() => {
-        if (fontSel && (untracked(fontSel.selectedOptions)[0] ?? null) !== fontOpt) {
-          fontSel.selectedOptions.set(fontOpt ? [fontOpt] : []);
+        if (fontSel && (untracked(fontSel.selectedOptions)[0] as { value?: string })?.value !== fontOpt.value) {
+          fontSel.selectedOptions.set([fontOpt]);
         }
-        if (sizeSel && (sizeOpt || size === '') && (untracked(sizeSel.selectedOptions)[0] ?? null) !== sizeOpt) {
-          sizeSel.selectedOptions.set(sizeOpt ? [sizeOpt] : []);
+        if (sizeSel && (untracked(sizeSel.selectedOptions)[0] as { value?: string })?.value !== sizeOpt.value) {
+          sizeSel.selectedOptions.set([sizeOpt]);
         }
         this.#seedColorInput(textColor, color || '#111111');
         this.#seedColorInput(highlightColor, background || '#ffe066');

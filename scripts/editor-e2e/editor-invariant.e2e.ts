@@ -665,10 +665,11 @@ test.describe('DOM ≡ AST invariant', () => {
     await editor.locator('.sh-editor-content span[style*="Georgia"]').click();
     await expect(fontSelect.locator('.selected-value')).toContainText('Georgia');
     await expect(sizeSelect.locator('.selected-value')).toContainText('28');
-    // Walk the caret rightward into the unstyled tail " row here" — clears both.
+    // Walk the caret rightward into the unstyled tail " row here" — both fall back
+    // to the "Default" option so the controls are never blank.
     for (let i = 0; i < 10; i++) await page.keyboard.press('ArrowRight');
-    await expect(fontSelect.locator('.selected-value')).not.toContainText('Georgia');
-    await expect(sizeSelect.locator('.selected-value')).not.toContainText('28');
+    await expect(fontSelect.locator('.selected-value')).toHaveText('Default');
+    await expect(sizeSelect.locator('.selected-value')).toHaveText('Default');
 
     // ── Regression: a plain toolbar mark button still applies to the selection
     // after removing the blanket mousedown preventDefault. ──
