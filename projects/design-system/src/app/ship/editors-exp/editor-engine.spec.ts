@@ -633,6 +633,73 @@ describe('EditorEngine integration', () => {
     });
   });
 
+  describe('slash commands', () => {
+    it('aggregates the slash entries every block behavior declares', () => {
+      const ids = engine.slashCommands().map((c) => c.id);
+      // one entry per registered block behavior that opts in (order = registration)
+      expect(ids).toEqual([
+        'paragraph', 'heading-1', 'heading-2', 'quote', 'info-callout',
+        'code-block', 'hr', 'image', 'bullet-list', 'ordered-list',
+      ]);
+    });
+
+    it('detects a "/" trigger at the block start and reports the query', () => {
+      engine.document.set([p('/head')]);
+      caret(0, 5);
+      expect(engine.slashState()).toEqual({ query: 'head', length: 5 });
+    });
+
+    it('triggers after whitespace but not mid-word or inside a URL', () => {
+      engine.document.set([p('see /img')]);
+      caret(0, 8);
+      expect(engine.slashState()?.query).toBe('img'); // after a space
+
+      engine.document.set([p('a/b')]);
+      caret(0, 3);
+      expect(engine.slashState()).toBeNull(); // "/" not at a word boundary
+
+      engine.document.set([p('http://x')]);
+      caret(0, 8);
+      expect(engine.slashState()).toBeNull(); // scheme slash, preceded by ':'
+    });
+
+    it('is null when the caret is not at the end of the query or the block is not text', () => {
+      engine.document.set([p('/head extra')]);
+      caret(0, 5); // caret after "/head" but text continues → query run does not end here
+      expect(engine.slashState()?.query).toBe('head');
+      caret(0, 3); // mid-query
+      expect(engine.slashState()?.query).toBe('he');
+    });
+
+    it('applySlashCommand strips the "/query" trigger, then runs the command', () => {
+      engine.document.set([p('/head')]);
+      caret(0, 5);
+      const cmd = engine.slashCommands().find((c) => c.id === 'heading-2')!;
+      engine.applySlashCommand(cmd);
+      expect(engine.document()[0].type).toBe('heading');
+      expect(engine.document()[0].attrs?.['level']).toBe(2);
+      expect(textOf(engine.document(), 0)).toBe(''); // "/head" removed, not left behind
+    });
+
+    it('keeps text before the trigger when converting mid-line', () => {
+      engine.document.set([p('note /quote')]);
+      caret(0, 11);
+      const cmd = engine.slashCommands().find((c) => c.id === 'quote')!;
+      engine.applySlashCommand(cmd);
+      expect(engine.document()[0].type).toBe('quote');
+      expect(textOf(engine.document(), 0)).toBe('note '); // only "/quote" stripped
+    });
+
+    it('routes a requestsUi command (image) to a uiRequest after stripping', () => {
+      engine.document.set([p('/img')]);
+      caret(0, 4);
+      const cmd = engine.slashCommands().find((c) => c.id === 'image')!;
+      engine.applySlashCommand(cmd);
+      expect(engine.uiRequest()?.action).toBe('image');
+      expect(textOf(engine.document(), 0)).toBe(''); // trigger text gone
+    });
+  });
+
   describe('escape hatch (ArrowUp/Left at doc start)', () => {
     it('injects an empty paragraph above a non-paragraph first block', () => {
       engine.document.set([{ type: 'code-block', content: [{ type: 'text', text: 'code' }] }] as ASTDocument);

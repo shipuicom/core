@@ -35,6 +35,34 @@ export interface ContextualAction {
   run: () => void;
 }
 
+/** Context handed to a behavior's `slashCommands()`. The list is built once,
+ * globally (not tied to a specific block), so this only carries the engine. */
+export interface SlashCommandCtx {
+  engine: EditorEngineService;
+}
+
+/**
+ * One entry in the slash-command menu. Behaviors return these from
+ * `slashCommands()`, and consumers can contribute more via the editor's
+ * `slashCommands` input — so the menu is extensible without forking, exactly
+ * like {@link ContextualAction} is for the contextual toolbar.
+ */
+export interface SlashCommand {
+  /** Stable id (render key / dedupe). */
+  id: string;
+  /** Menu label, e.g. "Heading 1". */
+  label: string;
+  /** Icon ligature name (rendered via `sh-icon`). */
+  icon?: string;
+  /** Extra match terms beyond the label, e.g. ['h1','title'] for a heading. */
+  keywords?: string[];
+  /** Section header the entry sits under, e.g. 'Basic', 'Media'. */
+  group?: string;
+  /** Apply the command — typically `ctx.engine.dispatch(type, attrs)`. Runs
+   * after the menu has removed the `/query` trigger text from the block. */
+  run: (ctx: SlashCommandCtx) => void;
+}
+
 export abstract class BaseBlockBehavior implements BlockBehaviorManifest {
   abstract readonly type: string;
   abstract readonly category: BlockCategory;
@@ -85,6 +113,14 @@ export abstract class BaseBlockBehavior implements BlockBehaviorManifest {
    * extras. See {@link ContextualAction}.
    */
   contextualActions?(ctx: ContextualActionCtx): ContextualAction[];
+
+  /**
+   * Entries this block contributes to the slash-command menu (e.g. a heading
+   * behavior offers "Heading 1"/"Heading 2"). Aggregated across all registered
+   * behaviors by the engine, so a new block type is slash-insertable without
+   * touching the menu. See {@link SlashCommand}.
+   */
+  slashCommands?(ctx: SlashCommandCtx): SlashCommand[];
 
   onKeyAction?(engine: EditorEngineService): void;
   onClick?(event: MouseEvent, ctx: BehaviorContext): void;

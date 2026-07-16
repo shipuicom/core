@@ -11,7 +11,7 @@ import {
   setBlockType,
   toggleMark,
 } from './editor-ast.utils';
-import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
+import { BaseBlockBehavior, BaseInlineBehavior, SlashCommand } from './editor-behaviors';
 import { astToHtml, astToMarkdown } from './editor-serializers';
 import { diffFlat, logicalToPos, posToLogical } from './editor-flat-positions';
 import { EditorOp, EditorTransaction, applyOp, diffDocuments, invertOp, spliceInlineContent, transformOp } from './editor-transactions';
@@ -70,6 +70,38 @@ export class EditorEngineService {
     let chars = 0;
     for (let i = 0; i < pos.inlineIndex && i < content.length; i++) chars += content[i].text?.length ?? 0;
     return chars + pos.offset;
+  }
+
+  /** Flat text of the inline content the caret at `pos` sits in (the block, or
+   * the list item for a container). */
+  #contentTextAt(pos: LogicalPosition): string {
+    const block = this.document()[pos.blockIndex];
+    if (!block) return '';
+    const content = (
+      pos.itemIndex !== undefined && this.blocks.get(block.type)?.category === 'container'
+        ? ((block.content as ASTBlockNode[])[pos.itemIndex]?.content ?? [])
+        : block.content
+    ) as ASTInlineNode[];
+    return content.map((n) => n.text ?? '').join('');
+  }
+
+  /** Map a flat char offset back to a logical position within the same block/
+   * item as `ref`. Inverse of {@link #charOffsetOf}. */
+  #logicalAtChar(ref: LogicalPosition, targetChar: number): LogicalPosition {
+    const block = this.document()[ref.blockIndex];
+    const content = (
+      ref.itemIndex !== undefined && block && this.blocks.get(block.type)?.category === 'container'
+        ? ((block.content as ASTBlockNode[])[ref.itemIndex]?.content ?? [])
+        : (block?.content ?? [])
+    ) as ASTInlineNode[];
+    let remaining = Math.max(0, targetChar);
+    for (let i = 0; i < content.length; i++) {
+      const len = content[i].text?.length ?? 0;
+      if (remaining <= len) return { blockIndex: ref.blockIndex, itemIndex: ref.itemIndex, inlineIndex: i, offset: remaining };
+      remaining -= len;
+    }
+    const last = Math.max(0, content.length - 1);
+    return { blockIndex: ref.blockIndex, itemIndex: ref.itemIndex, inlineIndex: last, offset: content[last]?.text?.length ?? 0 };
   }
 
   #pendingAt(pos: LogicalPosition): ASTMark[] | null {
@@ -290,6 +322,51 @@ export class EditorEngineService {
       }
     } else if (action === 'undo') this.undo();
     else if (action === 'redo') this.redo();
+  }
+
+  // =========================================================================
+  // SLASH COMMANDS
+  // =========================================================================
+
+  /**
+   * The active slash trigger, or null. A `/` at the block start (or after
+   * whitespace) followed by a non-space query, ending exactly at a collapsed
+   * caret in an editable text block. `query` drives menu filtering; `length` is
+   * how many chars ("/" + query) {@link applySlashCommand} strips before running.
+   */
+  readonly slashState = computed<{ query: string; length: number } | null>(() => {
+    const sel = this.selection.active();
+    if (!sel || !sel.isCollapsed) return null;
+    const block = this.document()[sel.start.blockIndex];
+    if (!block || this.blocks.get(block.type)?.category === 'void') return null;
+    const before = this.#contentTextAt(sel.start).slice(0, this.#charOffsetOf(sel.start));
+    const m = /(?:^|\s)\/(\S*)$/.exec(before);
+    return m ? { query: m[1], length: m[1].length + 1 } : null;
+  });
+
+  /** All slash-menu entries declared by registered block behaviors, in
+   * registration order. The menu appends consumer extras to this. */
+  slashCommands(): SlashCommand[] {
+    const ctx = { engine: this };
+    const out: SlashCommand[] = [];
+    for (const behavior of this.blocks.values()) {
+      if (behavior.slashCommands) out.push(...behavior.slashCommands(ctx));
+    }
+    return out;
+  }
+
+  /** Strip the `/query` trigger text, then run the chosen command (typically a
+   * `dispatch`). Both steps commit through the engine, so the whole thing is
+   * undoable and OT-safe like any edit. */
+  applySlashCommand(cmd: SlashCommand) {
+    const state = this.slashState();
+    const sel = this.selection.active();
+    if (state && sel?.isCollapsed) {
+      const start = this.#logicalAtChar(sel.start, this.#charOffsetOf(sel.start) - state.length);
+      this.selection.live.set({ start, end: sel.start, isCollapsed: false });
+      this.deleteRange();
+    }
+    cmd.run({ engine: this });
   }
 
   /**

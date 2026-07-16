@@ -413,6 +413,50 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('slash menu: "/" opens a filtered command list; Enter converts the block', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    const blockText = () =>
+      page.evaluate(() =>
+        (window as any).ng
+          .getComponent(document.querySelector('sh-editor')!)
+          .engine.document()[0]
+          .content.map((n: any) => n.text)
+          .join('')
+      );
+    await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
+    });
+    await page.locator('.sh-editor-content > p').first().click();
+
+    // "/" opens the menu with every behavior-declared command.
+    await page.keyboard.type('/');
+    const menu = page.locator('.sh-editor-slash-menu');
+    await expect(menu).toBeVisible();
+    await expect(menu.locator('button')).toHaveCount(10);
+
+    // Typing filters; keyword/label substring match.
+    await page.keyboard.type('quote');
+    await expect(menu.locator('button')).toHaveCount(1);
+    await expect(menu.locator('button')).toContainText('Quote');
+
+    // Enter applies the highlighted command and strips the "/quote" trigger.
+    await page.keyboard.press('Enter');
+    await expect(menu).toBeHidden();
+    await expect(page.locator('.sh-editor-content > blockquote')).toHaveCount(1);
+    expect(await blockText()).toBe('');
+    await expectInvariant(page, 'after slash convert to quote');
+
+    // Escape dismisses the menu without altering the text.
+    await page.keyboard.type('/head');
+    await expect(menu).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
+    expect(await blockText()).toBe('/head'); // text untouched
+    await expectInvariant(page, 'after slash escape');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('REAL IME composition via CDP lands once, in the right block', async ({ page }) => {
     const { surface, errors } = await openEditor(page);
     // Caret mid-paragraph: after "Welcome! " in the intro block.

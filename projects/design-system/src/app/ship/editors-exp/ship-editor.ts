@@ -17,13 +17,14 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
-import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
+import { BaseBlockBehavior, BaseInlineBehavior, SlashCommand } from './editor-behaviors';
 import { EditorEngineService } from './editor-engine.service';
 import { SanitizeOption, normalizeDocument, sanitizeDocumentUrls } from './editor-sanitize';
 import { htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
 import { ShipEditorContextualToolbar, ContextualActionExtras } from './sh-editor-contextual-toolbar';
 import { ShipEditorImagePopover } from './sh-editor-image-popover';
 import { ShipEditorLinkPopover } from './sh-editor-link-popover';
+import { ShipEditorSlashMenu } from './sh-editor-slash-menu';
 import { ASTBlockNode, ASTDocument, ASTInlineNode, LogicalPosition, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import * as Behaviors from './standard-behaviors';
@@ -34,7 +35,7 @@ import * as Behaviors from './standard-behaviors';
   exportAs: 'shEditor',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [ShipEditorLinkPopover, ShipEditorImagePopover, ShipEditorContextualToolbar],
+  imports: [ShipEditorLinkPopover, ShipEditorImagePopover, ShipEditorContextualToolbar, ShipEditorSlashMenu],
   providers: [
     EditorEngineService,
     EditorSelectionService,
@@ -61,6 +62,7 @@ import * as Behaviors from './standard-behaviors';
       <sh-editor-link-popover [surface]="surface" />
       <sh-editor-image-popover [surface]="surface" />
       <sh-editor-contextual-toolbar [surface]="surface" [extras]="contextualActions()" />
+      <sh-editor-slash-menu [commands]="slashCommands()" />
     </div>
   `,
   styleUrl: './ship-editor.scss',
@@ -95,6 +97,17 @@ export class ShipEditorExp implements ControlValueAccessor {
    * Lets a consumer add buttons to (say) the image toolbar without subclassing.
    */
   contextualActions = input<ContextualActionExtras>({});
+
+  /**
+   * Consumer-provided extra slash-command entries, appended after whatever the
+   * registered block behaviors declare via `slashCommands()`. Lets a consumer
+   * add menu items (e.g. "Insert table") without subclassing.
+   */
+  slashCommands = input<SlashCommand[]>([]);
+
+  /** The slash menu, so keydown can drive it while it's open (focus stays in the
+   * contenteditable, so the menu can't receive key events itself). */
+  slashMenu = viewChild(ShipEditorSlashMenu);
 
   value = model<string | ASTDocument | null>(null);
 
@@ -584,6 +597,16 @@ export class ShipEditorExp implements ControlValueAccessor {
   onKeyDown(event: KeyboardEvent) {
     if (this.readonly()) return;
     if (this.#composing) return; // IME dispatches keyCode 229; ignore during composition
+
+    // The slash menu owns navigation keys while open — focus stays in the
+    // contenteditable, so the editor forwards them rather than moving the caret.
+    const slash = this.slashMenu();
+    if (slash?.isOpen()) {
+      if (event.key === 'ArrowDown') return event.preventDefault(), slash.move(1);
+      if (event.key === 'ArrowUp') return event.preventDefault(), slash.move(-1);
+      if (event.key === 'Enter' || event.key === 'Tab') return event.preventDefault(), slash.confirm();
+      if (event.key === 'Escape') return event.preventDefault(), slash.close();
+    }
 
     // While an image is selected, Delete/Backspace remove it, arrows move the
     // caret out of it, and Escape deselects. Deletion is handled here (not in

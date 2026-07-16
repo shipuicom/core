@@ -176,7 +176,9 @@ sh-editor {
 
       &.sh-editor-img-float {
         float: left;
-        margin: #{p2r(8)} #{p2r(16)} #{p2r(8)} 0;
+        // 1rem of horizontal breathing room on both sides so wrapped text never
+        // butts up against the image and the image isn't flush to the edge.
+        margin: #{p2r(8)} #{p2r(16)};
 
         &.sh-editor-img-size-small { width: #{p2r(240)}; max-width: 100% !important; }
         &.sh-editor-img-size-medium { width: #{p2r(480)}; max-width: 100% !important; }
@@ -240,6 +242,9 @@ sh-editor {
     }
 
     button {
+      display: flex;
+      align-items: center;
+      gap: p2r(10);
       padding: p2r(8) p2r(12);
       text-align: left;
       background: none;
@@ -248,12 +253,27 @@ sh-editor {
       color: var(--base-11);
       border-radius: var(--shape-1);
       font: var(--paragraph-20);
-      transition: all 0.1s ease;
+      transition: background 0.1s ease;
 
-      &:hover {
+      sh-icon {
+        color: var(--base-9);
+        flex: none;
+      }
+
+      // Highlight follows keyboard navigation (.active), not just hover, so the
+      // two never disagree.
+      &:hover,
+      &.active {
         background: var(--base-3);
         color: var(--base-12);
+        sh-icon { color: var(--base-11); }
       }
+    }
+
+    .slash-empty {
+      padding: p2r(8) p2r(12);
+      color: var(--base-8);
+      font: var(--paragraph-20);
     }
   }
 

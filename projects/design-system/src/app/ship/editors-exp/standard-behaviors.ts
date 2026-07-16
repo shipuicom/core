@@ -1,4 +1,11 @@
-import { BaseBlockBehavior, BaseInlineBehavior, ContextualAction, ContextualActionCtx } from './editor-behaviors';
+import {
+  BaseBlockBehavior,
+  BaseInlineBehavior,
+  ContextualAction,
+  ContextualActionCtx,
+  SlashCommand,
+  SlashCommandCtx,
+} from './editor-behaviors';
 import { ALLOWED_ALIGN, escapeAttr, isSafeUrl } from './editor-sanitize';
 import { ASTBlockNode, ASTMark } from './editor.types';
 
@@ -29,6 +36,12 @@ export class ParagraphBehavior extends BaseBlockBehavior {
   override renderMarkdown(block: ASTBlockNode, contentMd: string) {
     return `${contentMd}\n\n`;
   }
+  override slashCommands(): SlashCommand[] {
+    return [
+      { id: 'paragraph', label: 'Text', icon: 'paragraph', keywords: ['plain', 'body'], group: 'Basic',
+        run: (c: SlashCommandCtx) => c.engine.dispatch('paragraph') },
+    ];
+  }
 }
 
 export class HeadingBehavior extends BaseBlockBehavior {
@@ -53,6 +66,14 @@ export class HeadingBehavior extends BaseBlockBehavior {
   override renderMarkdown(block: ASTBlockNode, contentMd: string) {
     return `${'#'.repeat(block.attrs?.['level'] || 1)} ${contentMd}\n\n`;
   }
+  override slashCommands(): SlashCommand[] {
+    return [
+      { id: 'heading-1', label: 'Heading 1', icon: 'text-h-one', keywords: ['h1', 'title', 'header'], group: 'Basic',
+        run: (c: SlashCommandCtx) => c.engine.dispatch('heading', { level: 1 }) },
+      { id: 'heading-2', label: 'Heading 2', icon: 'text-h-two', keywords: ['h2', 'subtitle', 'header'], group: 'Basic',
+        run: (c: SlashCommandCtx) => c.engine.dispatch('heading', { level: 2 }) },
+    ];
+  }
 }
 
 export class QuoteBehavior extends BaseBlockBehavior {
@@ -73,6 +94,12 @@ export class QuoteBehavior extends BaseBlockBehavior {
   override renderMarkdown(block: ASTBlockNode, contentMd: string) {
     return `> ${contentMd.replace(/\n/g, '\n> ')}\n\n`;
   }
+  override slashCommands(): SlashCommand[] {
+    return [
+      { id: 'quote', label: 'Quote', icon: 'quotes', keywords: ['blockquote', 'citation'], group: 'Basic',
+        run: (c: SlashCommandCtx) => c.engine.dispatch('quote') },
+    ];
+  }
 }
 
 export class InfoCalloutBehavior extends BaseBlockBehavior {
@@ -89,6 +116,12 @@ export class InfoCalloutBehavior extends BaseBlockBehavior {
   }
   override renderMarkdown(block: ASTBlockNode, contentMd: string) {
     return `> 💡 ${contentMd}\n\n`;
+  }
+  override slashCommands(): SlashCommand[] {
+    return [
+      { id: 'info-callout', label: 'Callout', icon: 'lightbulb', keywords: ['note', 'info', 'tip', 'aside'], group: 'Basic',
+        run: (c: SlashCommandCtx) => c.engine.dispatch('info-callout') },
+    ];
   }
 }
 
@@ -111,6 +144,12 @@ export class CodeBlockBehavior extends BaseBlockBehavior {
   override renderMarkdown(block: ASTBlockNode, contentMd: string) {
     return `\`\`\`\n${contentMd}\n\`\`\`\n\n`;
   }
+  override slashCommands(): SlashCommand[] {
+    return [
+      { id: 'code-block', label: 'Code block', icon: 'code-block', keywords: ['code', 'pre', 'snippet'], group: 'Basic',
+        run: (c: SlashCommandCtx) => c.engine.dispatch('code-block') },
+    ];
+  }
 }
 
 export class HrBehavior extends BaseBlockBehavior {
@@ -128,6 +167,12 @@ export class HrBehavior extends BaseBlockBehavior {
   }
   override renderMarkdown() {
     return `---\n\n`;
+  }
+  override slashCommands(): SlashCommand[] {
+    return [
+      { id: 'hr', label: 'Divider', icon: 'minus', keywords: ['divider', 'rule', 'separator', 'line'], group: 'Media',
+        run: (c: SlashCommandCtx) => c.engine.dispatch('hr') },
+    ];
   }
 }
 
@@ -196,6 +241,13 @@ export class ImageBehavior extends BaseBlockBehavior {
     actions.push({ id: 'delete', icon: 'trash', label: 'Delete', danger: true, run: () => engine.deleteSelectedBlock() });
     return actions;
   }
+
+  override slashCommands(): SlashCommand[] {
+    return [
+      { id: 'image', label: 'Image', icon: 'image', keywords: ['image', 'picture', 'photo', 'media'], group: 'Media',
+        run: (c: SlashCommandCtx) => c.engine.dispatch('image') },
+    ];
+  }
 }
 
 export class BulletListBehavior extends BaseBlockBehavior {
@@ -214,6 +266,12 @@ export class BulletListBehavior extends BaseBlockBehavior {
   override renderMarkdown(block: ASTBlockNode, contentMd: string) {
     return contentMd;
   }
+  override slashCommands(): SlashCommand[] {
+    return [
+      { id: 'bullet-list', label: 'Bulleted list', icon: 'list-bullets', keywords: ['bullet', 'unordered', 'ul'], group: 'Basic',
+        run: (c: SlashCommandCtx) => c.engine.dispatch('bullet-list') },
+    ];
+  }
 }
 
 export class OrderedListBehavior extends BaseBlockBehavior {
@@ -231,6 +289,12 @@ export class OrderedListBehavior extends BaseBlockBehavior {
   }
   override renderMarkdown(block: ASTBlockNode, contentMd: string) {
     return contentMd;
+  }
+  override slashCommands(): SlashCommand[] {
+    return [
+      { id: 'ordered-list', label: 'Numbered list', icon: 'list-numbers', keywords: ['number', 'ordered', 'ol'], group: 'Basic',
+        run: (c: SlashCommandCtx) => c.engine.dispatch('ordered-list') },
+    ];
   }
 }
 
