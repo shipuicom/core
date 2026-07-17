@@ -58,3 +58,6 @@ Thumbs.db
 
 # E2E test results
 /test-results/
+
+# Claude Code local tooling
+.claude/
