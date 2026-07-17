@@ -1,0 +1,272 @@
+<h1>Editor</h1>
+<!-- @keywords: editor, wysiwyg, rich text, signals, zoneless, document -->
+
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="styling">Styling</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
+
+@let _activeTab = activeTab();
+
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-property-viewer>
+      <section>
+        <h4>Overview</h4>
+        <p>
+          <code>&lt;sh-editor&gt;</code> is a signal-based, zoneless WYSIWYG editor with a clean separation between the DOM,
+          the AST (Abstract Syntax Tree) and behaviors. The AST is the source of truth: edits flow through
+          <code>beforeinput</code> into an undoable engine transaction and the DOM is re-projected from the AST. It binds
+          two-way via <code>ControlValueAccessor</code> and serializes to HTML, Markdown or JSON.
+        </p>
+      </section>
+      <section>
+        <h4>Architecture</h4>
+        <ul>
+          <li><strong>Behavior-driven:</strong> each block/mark is a standalone behavior class; extend via <code>[behaviors]</code>.</li>
+          <li><strong>AST as source of truth:</strong> the DOM is a pure projection, so undo/redo and serialization are exact.</li>
+          <li><strong>Signal-based &amp; zoneless:</strong> reactive state throughout, no zone.js.</li>
+          <li><strong>Dependency-free:</strong> no Prosemirror or Quill.</li>
+        </ul>
+      </section>
+      <section>
+        <h4>Basic usage</h4>
+        <p>Import the editor and (optionally) the composable toolbar pieces, then bind <code>[(value)]</code>.</p>
+        <app-highlight lang="ts" [content]="usageExample" />
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-property-viewer>
+      <section>
+        <h4>Inputs</h4>
+        <ul>
+          <li><code>value</code> — two-way (<code>[(value)]</code>); the content as a string or AST, per <code>format</code>.</li>
+          <li><code>format</code> — <code>'html' | 'json' | 'markdown'</code> (default <code>'html'</code>); the serialized shape of <code>value</code>.</li>
+          <li><code>variant</code> — <code>'base' | 'document'</code>; <code>'document'</code> renders a centered page canvas.</li>
+          <li><code>readonly</code>, <code>placeholder</code>, <code>showMetrics</code> — disable editing, ghost text, word/character footer.</li>
+          <li><code>behaviors</code> — extra block/inline behavior classes (<code>BaseBlockBehavior</code> / <code>BaseInlineBehavior</code>).</li>
+          <li><code>sanitize</code> — <code>SanitizeOption</code>; scrub untrusted HTML against the allow-list (or extend it).</li>
+          <li><code>imageUpload</code> — <code>(file) =&gt; Promise&lt;string&gt;</code>; resolve a picked file to its URL.</li>
+          <li><code>imageEdgeResize</code> — opt in to the image mid-edge (one-axis) resize handles.</li>
+          <li><code>contextualActions</code>, <code>slashCommands</code> — consumer-provided block actions and slash-menu entries.</li>
+        </ul>
+      </section>
+      <section>
+        <h4>Composition</h4>
+        <p>
+          The editor exports as <code>shEditor</code>. Compose a toolbar with <code>&lt;sh-editor-toolbar&gt;</code> +
+          <code>[shEditorAction]</code> buttons (inside the editor, or elsewhere via <code>[editor]</code>), and a selection
+          bubble with <code>&lt;sh-editor-floating-toolbar&gt;</code>.
+        </p>
+      </section>
+      <section>
+        <h4>Custom behaviors</h4>
+        <p>Register custom marks/blocks through <code>[behaviors]</code> — e.g. a highlight mark:</p>
+        <app-highlight lang="ts" [content]="behaviorExample" />
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'styling') {
+    <app-property-viewer>
+      <section>
+        <h4>Variants</h4>
+        <p>
+          Like every Ship component, the editor takes a <code>variant</code>. <code>variant="document"</code> converts the
+          surface into a Google-Docs-style page canvas (a centered, width-constrained page on a muted desk). The default
+          <code>'base'</code> is the inline surface. The active state is a subtle neutral border on the outer edge.
+        </p>
+        <app-highlight lang="html" [content]="stylingExample" />
+      </section>
+      <section>
+        <h4>Theming</h4>
+        <p>
+          The editor is themed with CSS custom properties on <code>sh-editor</code> (e.g. <code>--editor-bg</code>,
+          <code>--editor-border-color</code>, <code>--editor-border-focus</code>, <code>--editor-p</code>,
+          <code>--editor-min-h</code>). Override them to restyle the surface, or switch light/dark automatically via the
+          Ship <code>base</code>/<code>primary</code> scales.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'examples') {
+    <div class="sandbox-example">
+      <app-previewer path="/editors" title="Feature-Rich Integrated Editor" class="no-space">
+        <div class="experimental-editor-container">
+          <div class="editor-controls">
+            <div class="control-group">
+              <sh-select color="primary" [options]="formatOptions" label="label" value="value" [isClearable]="false">
+                <label>Storage Format</label>
+                <input type="text" [(ngModel)]="format" style="display: none" />
+              </sh-select>
+            </div>
+            <div class="control-group">
+              <sh-checkbox [(checked)]="readonly">Read Only</sh-checkbox>
+            </div>
+            <div class="control-group">
+              <sh-checkbox [(checked)]="showMetrics">Show Metrics</sh-checkbox>
+            </div>
+            <div class="control-group">
+              <sh-checkbox [(checked)]="imageEdgeResize">Image Edge Handles</sh-checkbox>
+            </div>
+            <div class="control-group">
+              <sh-checkbox [(checked)]="documentVariant">Document Canvas</sh-checkbox>
+            </div>
+            <div class="control-group">
+              <sh-checkbox [(checked)]="persist">Persist (localStorage)</sh-checkbox>
+              <sh-icon size="small" class="control-hint" [shTooltip]="persistTip">info</sh-icon>
+              @if (persist()) {
+                <span class="persist-badge">saved</span>
+              }
+            </div>
+            <ng-template #persistTip>Testing only — mirrors the value to localStorage and restores it on reload.</ng-template>
+            <div class="control-group control-group--end">
+              <button shButton (click)="reset()">
+                <sh-icon size="small">arrow-counter-clockwise</sh-icon>
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <ng-template #undoTip>Undo <sh-kbd ctrlOrCmd>Z</sh-kbd></ng-template>
+          <ng-template #redoTip>Redo <sh-kbd ctrlOrCmd shift>Z</sh-kbd></ng-template>
+          <ng-template #boldTip>Bold <sh-kbd ctrlOrCmd>B</sh-kbd></ng-template>
+          <ng-template #italicTip>Italic <sh-kbd ctrlOrCmd>I</sh-kbd></ng-template>
+          <ng-template #underlineTip>Underline <sh-kbd ctrlOrCmd>U</sh-kbd></ng-template>
+          <ng-template #strikeTip>Strikethrough <sh-kbd ctrlOrCmd shift>X</sh-kbd></ng-template>
+          <ng-template #bulletListTip>Bullet List <sh-kbd ctrlOrCmd shift>8</sh-kbd></ng-template>
+          <ng-template #orderedListTip>Numbered List <sh-kbd ctrlOrCmd shift>7</sh-kbd></ng-template>
+          <ng-template #alignLeftTip>Align Left <sh-kbd ctrlOrCmd shift>L</sh-kbd></ng-template>
+          <ng-template #alignCenterTip>Align Center <sh-kbd ctrlOrCmd shift>E</sh-kbd></ng-template>
+          <ng-template #alignRightTip>Align Right <sh-kbd ctrlOrCmd shift>R</sh-kbd></ng-template>
+          <ng-template #hrTip>Horizontal Line <sh-kbd ctrlOrCmd shift>-</sh-kbd></ng-template>
+          <ng-template #linkTip>Insert Link <sh-kbd ctrlOrCmd>K</sh-kbd></ng-template>
+
+          <sh-editor #mainEditor="shEditor" [(value)]="editorValue" [format]="format()" [readonly]="readonly()" [behaviors]="customBehaviors" [placeholder]="placeholder()" [showMetrics]="showMetrics()" [imageUpload]="demoImageUpload" [imageEdgeResize]="imageEdgeResize()" [variant]="documentVariant() ? 'document' : 'base'">
+            <sh-editor-toolbar position="top">
+              <button shEditorAction="undo" aria-label="Undo" [shTooltip]="undoTip"><sh-icon>arrow-u-up-left</sh-icon></button>
+              <button shEditorAction="redo" aria-label="Redo" [shTooltip]="redoTip"><sh-icon>arrow-u-up-right</sh-icon></button>
+              <div class="divider"></div>
+
+              <button shEditorAction="bold" aria-label="Bold" [shTooltip]="boldTip"><sh-icon>text-b</sh-icon></button>
+              <button shEditorAction="italic" aria-label="Italic" [shTooltip]="italicTip"><sh-icon>text-italic</sh-icon></button>
+              <button shEditorAction="underline" aria-label="Underline" [shTooltip]="underlineTip"><sh-icon>text-underline</sh-icon></button>
+              <button shEditorAction="strike" aria-label="Strikethrough" [shTooltip]="strikeTip"><sh-icon>text-strikethrough</sh-icon></button>
+              <button shEditorAction="highlight" aria-label="Highlight" shTooltip="Highlight"><sh-icon>highlighter</sh-icon></button>
+              <button shEditorAction="code" aria-label="Inline Code" shTooltip="Inline Code"><sh-icon>code</sh-icon></button>
+              <button shEditorAction="link" aria-label="Insert Link" [shTooltip]="linkTip"><sh-icon>link</sh-icon></button>
+              <div class="divider"></div>
+
+              <button shEditorAction="heading" [shEditorActionAttrs]="{ level: 1 }" aria-label="Heading 1" shTooltip="Heading 1"><sh-icon>text-h-one</sh-icon></button>
+              <button shEditorAction="heading" [shEditorActionAttrs]="{ level: 2 }" aria-label="Heading 2" shTooltip="Heading 2"><sh-icon>text-h-two</sh-icon></button>
+              <button shEditorAction="paragraph" aria-label="Normal text" shTooltip="Normal text"><sh-icon>paragraph</sh-icon></button>
+              <button shEditorAction="quote" aria-label="Quote" shTooltip="Quote"><sh-icon>quotes</sh-icon></button>
+              <button shEditorAction="info-callout" aria-label="Info Callout" shTooltip="Info Callout"><sh-icon>lightbulb</sh-icon></button>
+              <button shEditorAction="code-block" aria-label="Code Block" shTooltip="Code Block"><sh-icon>code-block</sh-icon></button>
+              <div class="divider"></div>
+
+              <button shEditorAction="bullet-list" aria-label="Bullet List" [shTooltip]="bulletListTip"><sh-icon>list-bullets</sh-icon></button>
+              <button shEditorAction="ordered-list" aria-label="Numbered List" [shTooltip]="orderedListTip"><sh-icon>list-numbers</sh-icon></button>
+              <button shEditorAction="hr" aria-label="Horizontal Line" [shTooltip]="hrTip"><sh-icon>minus</sh-icon></button>
+              <button shEditorAction="image" aria-label="Insert Image" shTooltip="Insert Image"><sh-icon>image</sh-icon></button>
+              <div class="divider"></div>
+
+              <button shEditorAction="paragraph" [shEditorActionAttrs]="{ align: 'left' }" aria-label="Align Left" [shTooltip]="alignLeftTip"><sh-icon>text-align-left</sh-icon></button>
+              <button shEditorAction="paragraph" [shEditorActionAttrs]="{ align: 'center' }" aria-label="Align Center" [shTooltip]="alignCenterTip"><sh-icon>text-align-center</sh-icon></button>
+              <button shEditorAction="paragraph" [shEditorActionAttrs]="{ align: 'right' }" aria-label="Align Right" [shTooltip]="alignRightTip"><sh-icon>text-align-right</sh-icon></button>
+              <div class="divider"></div>
+
+              <button
+                type="button"
+                aria-label="Toggle Source View"
+                shTooltip="Toggle Source View"
+                [attr.aria-pressed]="mainEditor.viewMode() === 'code'"
+                [class.sh-editor-action-active]="mainEditor.viewMode() === 'code'"
+                (click)="mainEditor.toggleSourceView()">
+                <sh-icon>terminal</sh-icon>
+              </button>
+              <div class="divider"></div>
+
+              <sh-select
+                #fontSel
+                class="sh-editor-style-font"
+                [options]="fontOptions()"
+                label="label"
+                value="value"
+                [inlineSearch]="true"
+                [isClearable]="false"
+                shTooltip="Font"
+                placeholder="Font">
+                <input [formField]="fontField" />
+              </sh-select>
+
+              <sh-select
+                #sizeSel
+                class="sh-editor-style-size"
+                [options]="fontSizeOptions()"
+                label="label"
+                value="value"
+                [inlineSearch]="true"
+                [asFreeText]="true"
+                [validateFreeText]="isValidFontSize"
+                [isClearable]="false"
+                freeTextTitle="Custom"
+                freeTextPlaceholder="e.g. 18px"
+                shTooltip="Font size"
+                placeholder="Size">
+                <input [formField]="sizeField" />
+              </sh-select>
+
+              <sh-color-picker-input [patch]="true" format="hex" shTooltip="Text color"
+                (closed)="mainEditor.engine.applyStyle({ color: $event })">
+                <input #textColorInput />
+              </sh-color-picker-input>
+              <sh-color-picker-input [patch]="true" format="hex" shTooltip="Highlight color"
+                (closed)="mainEditor.engine.applyStyle({ 'background-color': $event })">
+                <input #highlightColorInput />
+              </sh-color-picker-input>
+
+              <button type="button" aria-label="Clear styling" shTooltip="Clear styling"
+                (click)="mainEditor.engine.applyStyle({ color: null, 'background-color': null, 'font-family': null, 'font-size': null, 'line-height': null, 'text-shadow': null })">
+                <sh-icon>eraser</sh-icon>
+              </button>
+            </sh-editor-toolbar>
+
+            <sh-editor-floating-toolbar>
+              <button shEditorAction="bold" aria-label="Bold" [shTooltip]="boldTip"><sh-icon>text-b</sh-icon></button>
+              <button shEditorAction="italic" aria-label="Italic" [shTooltip]="italicTip"><sh-icon>text-italic</sh-icon></button>
+              <button shEditorAction="highlight" aria-label="Highlight" shTooltip="Highlight"><sh-icon>highlighter</sh-icon></button>
+              <button shEditorAction="link" aria-label="Insert Link" [shTooltip]="linkTip"><sh-icon>link</sh-icon></button>
+            </sh-editor-floating-toolbar>
+          </sh-editor>
+
+          <sh-editor-selection-debug [editor]="mainEditor" />
+
+          <div class="raw-value-preview">
+            <h5>Raw Output ({{ format() | uppercase }})</h5>
+            <pre><code>{{ editorValue() | json }}</code></pre>
+          </div>
+        </div>
+      </app-previewer>
+    </div>
+
+    <div class="sandbox-example">
+      <app-previewer path="/editors" title="Detached Toolbar" class="no-space">
+        <div class="experimental-editor-container">
+          <p>The toolbar controls the editor below even though it lives outside the editor, connected via the <code>[editor]</code> input.</p>
+
+          <div class="global-app-header" style="background: #f1f5f9; padding: 12px; margin-bottom: 24px">
+            <span>My App Navbar</span>
+            <sh-editor-toolbar [editor]="externalEditor" style="display: inline-flex; margin-left: 16px">
+              <button class="sh-btn" shEditorAction="undo" [editor]="externalEditor" aria-label="Undo" [shTooltip]="undoTip"><sh-icon>arrow-u-up-left</sh-icon></button>
+              <button class="sh-btn" shEditorAction="redo" [editor]="externalEditor" aria-label="Redo" [shTooltip]="redoTip"><sh-icon>arrow-u-up-right</sh-icon></button>
+            </sh-editor-toolbar>
+          </div>
+
+          <div class="editor-container">
+            <sh-editor #externalEditor="shEditor"></sh-editor>
+          </div>
+        </div>
+      </app-previewer>
+    </div>
+  }
+</div>

@@ -1,7 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
 /**
- * E2E harness for the experimental editor (/editors-exp).
+ * E2E harness for the experimental editor (/editors).
  *
  * Runs against the dev server so `window.ng` is available — the specs read the
  * live AST straight off the component to assert the editor's core invariant

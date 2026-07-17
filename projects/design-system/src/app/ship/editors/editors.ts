@@ -8,7 +8,9 @@ import { ShipColorPickerInput } from '@ship-ui/core/ship-color-picker';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipKbd } from '@ship-ui/core/ship-kbd';
 import { ShipSelect } from '@ship-ui/core/ship-select';
+import { ShipTabs } from '@ship-ui/core/ship-tabs';
 import { ShipTooltip } from '@ship-ui/core/ship-tooltip';
+import { Highlight } from '../../previewer/highlight/highlight';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
 import {
@@ -46,12 +48,14 @@ class HighlightBehavior extends BaseInlineBehavior {
 }
 
 @Component({
-  selector: 'app-editors-exp',
+  selector: 'app-editors',
   standalone: true,
   imports: [
     FormsModule,
+    Highlight,
     Previewer,
     PropertyViewer,
+    ShipTabs,
     ShipEditor,
     ShipEditorToolbar,
     ShipEditorFloatingToolbar,
@@ -68,11 +72,54 @@ class HighlightBehavior extends BaseInlineBehavior {
     UpperCasePipe,
     JsonPipe,
   ],
-  templateUrl: './editors-exp-showcase.html',
-  styleUrl: './editors-exp-showcase.scss',
+  templateUrl: './editors.html',
+  styleUrl: './editors.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class EditorsExpShowcase {
+export default class Editors {
+  /** Active doc tab (spotlight-style tabs). */
+  activeTab = signal<'overview' | 'api' | 'styling' | 'examples'>('overview');
+
+  usageExample = `import { Component, signal } from '@angular/core';
+import { ShipEditor, ShipEditorToolbar, ShipEditorActionDirective } from '@ship-ui/core/ship-editor';
+
+@Component({
+  selector: 'app-my-editor',
+  imports: [ShipEditor, ShipEditorToolbar, ShipEditorActionDirective],
+  template: \`
+    <sh-editor [(value)]="content" format="html">
+      <sh-editor-toolbar position="top">
+        <button shEditorAction="bold" aria-label="Bold">B</button>
+        <button shEditorAction="italic" aria-label="Italic">I</button>
+        <button shEditorAction="heading" [shEditorActionAttrs]="{ level: 1 }">H1</button>
+      </sh-editor-toolbar>
+    </sh-editor>\`,
+})
+export class MyEditor {
+  content = signal('<p>Hello, world.</p>');
+}`;
+
+  behaviorExample = `import { BaseInlineBehavior, ASTMark } from '@ship-ui/core/ship-editor';
+
+// A custom "highlight" mark, registered via the [behaviors] input.
+class HighlightBehavior extends BaseInlineBehavior {
+  readonly type = 'highlight';
+  override isSticky = true;
+  parseDOM(el: HTMLElement) {
+    return el.tagName.toLowerCase() === 'mark' ? { type: this.type } : null;
+  }
+  renderHTML(_mark: ASTMark, text: string) {
+    return \`<mark>\${text}</mark>\`;
+  }
+}
+
+// <sh-editor [behaviors]="[new HighlightBehavior()]" ...>`;
+
+  stylingExample = `<!-- Google-Docs-style page canvas (variant), like any Ship component -->
+<sh-editor variant="document" [(value)]="content"></sh-editor>
+
+<!-- Opt in to image mid-edge (one-axis) resize handles -->
+<sh-editor [imageEdgeResize]="true" ...></sh-editor>`;
   /** Consumer-supplied behaviors registered on top of the built-in set. */
   customBehaviors = [new HighlightBehavior()];
 

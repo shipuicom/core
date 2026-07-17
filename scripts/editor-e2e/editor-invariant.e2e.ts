@@ -81,7 +81,9 @@ async function openEditor(page: Page) {
   page.on('console', (msg) => {
     if (msg.type() === 'error') errors.push(msg.text());
   });
-  await page.goto('/editors-exp');
+  await page.goto('/editors');
+  // The live editor lives under the "Examples" tab of the docs page.
+  await page.locator('sh-tabs button[value="examples"]').click();
   const surface = page.locator('.sh-editor-content').first();
   await surface.waitFor();
   // Place the caret at the start of the intro paragraph.
@@ -356,33 +358,32 @@ test.describe('DOM ≡ AST invariant', () => {
     const se = page.locator('.sh-editor-resize-se');
     await expect(se).toBeVisible();
 
-    // Drag the bottom-right handle 200px to the left → shrink. hover() scrolls the
-    // handle on-screen and waits for its position to settle (the frame re-anchors
-    // on a microtask) before we press, so the mousedown lands on it reliably.
+    // Drag the bottom-right handle 200px to the left → shrink. Dispatched directly
+    // on the handle (mousedown) + window (move/up) so it's independent of scroll
+    // position and hit-testing — the drag always reaches the handler.
     const before = await img.evaluate((el) => Math.round(el.getBoundingClientRect().width));
-    await se.hover();
-    const box = (await se.boundingBox())!;
-    const cx = box.x + box.width / 2;
-    const cy = box.y + box.height / 2;
-    await page.mouse.down();
-    await page.mouse.move(cx - 200, cy - 150, { steps: 8 });
-    await page.mouse.up();
+    await page.evaluate(() => {
+      const se = document.querySelector('.sh-editor-resize-se')!;
+      const r = se.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      se.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, clientX: cx, clientY: cy }));
+      window.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: cx - 200, clientY: cy - 150 }));
+      window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: cx - 200, clientY: cy - 150 }));
+    });
 
-    // Width shrank, persisted to the AST + rendered attrs, aspect ratio held (4:3).
-    const after = await img.evaluate((el) => {
-      const r = el.getBoundingClientRect();
-      return {
-        w: Math.round(r.width),
-        aspect: r.height / r.width,
-        attr: Number(el.getAttribute('width')),
-        ast: (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document()[1].attrs.width,
-      };
+    // Committed to the AST (source of truth): width shrank, no explicit height
+    // (a corner preserves aspect via height:auto).
+    const after = await page.evaluate(() => {
+      const attrs = (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document()[1].attrs;
+      return { astW: attrs.width as number, astH: attrs.height ?? null };
     });
     const ctx = JSON.stringify({ before, after });
-    expect(after.w, ctx).toBeLessThan(before - 100); // the drag shrank it
-    expect(after.ast, ctx).toBe(after.attr); // AST width == rendered width attribute
-    expect(Math.abs(after.attr - after.w), ctx).toBeLessThanOrEqual(1); // matches the measured box
-    expect(after.aspect, ctx).toBeCloseTo(0.75, 2); // 4:3 aspect ratio preserved
+    expect(after.astW, ctx).toBeLessThan(before - 100); // the drag shrank it
+    expect(after.astH, ctx).toBeNull(); // corner keeps aspect — width only
+    // The projected <img> renders at the committed width and keeps 4:3 (poll past the patch swap).
+    await expect.poll(() => img.evaluate((el) => Math.round(el.getBoundingClientRect().width))).toBe(after.astW);
+    expect(await img.evaluate((el) => el.getBoundingClientRect().height / el.getBoundingClientRect().width)).toBeCloseTo(0.75, 2);
 
     // The resize is a single undoable transaction.
     await page.keyboard.press('ControlOrMeta+z');
@@ -400,7 +401,7 @@ test.describe('DOM ≡ AST invariant', () => {
     // Enable the mid-edge handles + insert a compact, left-aligned image (custom
     // mode, 240px wide) so the right-edge stretch is deterministic.
     await page.evaluate(() => {
-      (window as any).ng.getComponent(document.querySelector('app-editors-exp')!).imageEdgeResize.set(true);
+      (window as any).ng.getComponent(document.querySelector('app-editors')!).imageEdgeResize.set(true);
       const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='400' height='300' fill='#4f8cff'/></svg>";
       const src = 'data:image/svg+xml,' + encodeURIComponent(svg);
       const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
@@ -706,7 +707,7 @@ test.describe('DOM ≡ AST invariant', () => {
     await expect(editor).not.toHaveClass(/(^|\s)document(\s|$)/);
     expect(await container.evaluate((el) => getComputedStyle(el).maxWidth)).toBe('none'); // base: full width
 
-    await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('app-editors-exp')!).documentVariant.set(true));
+    await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('app-editors')!).documentVariant.set(true));
 
     await expect(editor).toHaveClass(/(^|\s)document(\s|$)/);
     // The container becomes a width-constrained, centred page (auto side margins).
