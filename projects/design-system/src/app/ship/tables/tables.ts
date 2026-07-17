@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
 import { ShipTabs } from '@ship-ui/core/ship-tabs';
+import { ApiReference } from '../../api-reference/api-reference';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
 import { Highlight } from '../../previewer/highlight/highlight';
@@ -47,6 +48,7 @@ type Column = Columns[number];
   selector: 'app-tables',
   standalone: true,
   imports: [
+    ApiReference,
     PropertyViewer,
     Previewer,
     Highlight,
@@ -66,7 +68,7 @@ type Column = Columns[number];
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class Tables {
-  activeTab = signal<'markup' | 'config'>('markup');
+  activeTab = signal<'markup' | 'api' | 'parts' | 'config'>('markup');
 
   configTableHtml = `<sh-table [data]="data()">
   <sh-table-content [columns]="columns" [data]="data()" />

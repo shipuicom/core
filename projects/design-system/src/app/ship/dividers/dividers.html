@@ -1,29 +1,47 @@
 <h1>Divider</h1>
 <!-- @keywords: divider, separator, line, hr, rule -->
 
-<app-property-viewer>
-  <section>
-    <h4>Orientation</h4>
-    <p>
-      Use the
-      <code>&lt;sh-divider&gt;</code>
-      element to visually separate sections. By default, it is horizontal.
-    </p>
-  </section>
-  <section>
-    <h4>Content</h4>
-    <p>
-      You can place text or icons inside the divider tags to create a divider with integrated content:
-      <code>&lt;sh-divider&gt;OR&lt;/sh-divider&gt;</code>
-      .
-    </p>
-  </section>
-</app-property-viewer>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-<app-previewer path="/dividers/examples/base-divider/base-divider" title="Default Divider">
-  <app-base-divider class="example" />
-</app-previewer>
+@let _activeTab = activeTab();
 
-<app-previewer path="/dividers/examples/text-divider/text-divider" title="Divider with Text">
-  <app-text-divider class="example" />
-</app-previewer>
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/dividers/examples/base-divider/base-divider" title="Basic">
+      <app-base-divider class="example" />
+    </app-previewer>
+
+    <app-property-viewer>
+      <section>
+        <h4>Orientation</h4>
+        <p>
+          Use the
+          <code>&lt;sh-divider&gt;</code>
+          element to visually separate sections. By default, it is horizontal.
+        </p>
+      </section>
+      <section>
+        <h4>Content</h4>
+        <p>
+          You can place text or icons inside the divider tags to create a divider with integrated content:
+          <code>&lt;sh-divider&gt;OR&lt;/sh-divider&gt;</code>
+          .
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipDivider" />
+  } @else if (_activeTab === 'examples') {
+    <app-previewer path="/dividers/examples/base-divider/base-divider" title="Default Divider">
+      <app-base-divider class="example" />
+    </app-previewer>
+
+    <app-previewer path="/dividers/examples/text-divider/text-divider" title="Divider with Text">
+      <app-text-divider class="example" />
+    </app-previewer>
+  }
+</div>

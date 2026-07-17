@@ -1,84 +1,102 @@
 <h1>Icons</h1>
 <!-- @keywords: icon, phosphor, vector, graphic, symbol, svg -->
 
-<app-property-viewer>
-  <section>
-    <h4>Sizes</h4>
-    <p>
-      Icons can be set to different sizes using the
-      <code>size</code>
-      attribute. Valid options are:
-      <b>small</b>
-      ,
-      <b>large</b>
-      , or
-      <b>inherit</b>
-      .
-    </p>
-  </section>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-  <section>
-    <h4>Colors</h4>
-    <p>
-      Icon colors can be set using the
-      <code>color</code>
-      attribute. Valid options are:
-      <b>primary</b>
-      ,
-      <b>accent</b>
-      ,
-      <b>warn</b>
-      ,
-      <b>error</b>
-      , and
-      <b>success</b>
-      .
-    </p>
+@let _activeTab = activeTab();
 
-    <p>
-      Color can also be overridden with CSS color variables:
-      <code>{{ `\<sh-icon [style.--icon-c]="'blue'">cloud-warning\</sh-icon>` }}</code>
-    </p>
-  </section>
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/icons/examples/basic-icon/basic-icon" title="Basic">
+      <app-basic-icon class="example" />
+    </app-previewer>
 
-  <section>
-    <h4>Icon Packs</h4>
-    <p>Currently we support Phosphor Icons. Search for icons here:</p>
-    <a shButton variant="raised" color="primary" size="small" href="https://phosphoricons.com/#toolbar" target="_blank">
-      Search Phosphor Icons
-      <sh-icon>arrow-square-out</sh-icon>
-    </a>
-    <p>We support multiple weight variations using ligatures:</p>
-    <ul>
-      <li>
-        <code>cloud-warning</code>
-        (Regular - default)
-      </li>
-      <li><code>cloud-warning-thin</code></li>
-      <li><code>cloud-warning-light</code></li>
-      <li><code>cloud-warning-fill</code></li>
-      <li><code>cloud-warning-bold</code></li>
-    </ul>
-  </section>
+    <app-property-viewer>
+      <section>
+        <h4>Sizes</h4>
+        <p>
+          Icons can be set to different sizes using the
+          <code>size</code>
+          attribute. Valid options are:
+          <b>small</b>
+          ,
+          <b>large</b>
+          , or
+          <b>inherit</b>
+          .
+        </p>
+      </section>
 
-  <section>
-    <h4>Icon CLI</h4>
-    <p>Use our CLI tool to generate optimized icon fonts containing only the icons you use.</p>
-    <p>
-      Generate once:
-      <code>ship-fg --src='./src' --out='./src/assets' --rootPath='./'</code>
-    </p>
-    <p>
-      Watch mode:
-      <code>ship-fg --src='./src' --out='./src/assets' --rootPath='./' --watch</code>
-    </p>
-  </section>
-</app-property-viewer>
+      <section>
+        <h4>Colors</h4>
+        <p>
+          Icon colors can be set using the
+          <code>color</code>
+          attribute. Valid options are:
+          <b>primary</b>
+          ,
+          <b>accent</b>
+          ,
+          <b>warn</b>
+          ,
+          <b>error</b>
+          , and
+          <b>success</b>
+          .
+        </p>
 
-<div class="content">
-  <h3>Variations</h3>
+        <p>
+          Color can also be overridden with CSS color variables:
+          <code>{{ `\<sh-icon [style.--icon-c]="'blue'">cloud-warning\</sh-icon>` }}</code>
+        </p>
+      </section>
 
-  <app-previewer path="/icons/examples/sandbox-icon/sandbox-icon" title="Default" configName="icon">
-    <app-sandbox-icon class="example" />
-  </app-previewer>
+      <section>
+        <h4>Icon Packs</h4>
+        <p>Currently we support Phosphor Icons. Search for icons here:</p>
+        <a shButton variant="raised" color="primary" size="small" href="https://phosphoricons.com/#toolbar" target="_blank">
+          Search Phosphor Icons
+          <sh-icon>arrow-square-out</sh-icon>
+        </a>
+        <p>We support multiple weight variations using ligatures:</p>
+        <ul>
+          <li>
+            <code>cloud-warning</code>
+            (Regular - default)
+          </li>
+          <li><code>cloud-warning-thin</code></li>
+          <li><code>cloud-warning-light</code></li>
+          <li><code>cloud-warning-fill</code></li>
+          <li><code>cloud-warning-bold</code></li>
+        </ul>
+      </section>
+
+      <section>
+        <h4>Icon CLI</h4>
+        <p>Use our CLI tool to generate optimized icon fonts containing only the icons you use.</p>
+        <p>
+          Generate once:
+          <code>ship-fg --src='./src' --out='./src/assets' --rootPath='./'</code>
+        </p>
+        <p>
+          Watch mode:
+          <code>ship-fg --src='./src' --out='./src/assets' --rootPath='./' --watch</code>
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipIcon" />
+  } @else if (_activeTab === 'examples') {
+    <div class="content">
+      <h3>Variations</h3>
+
+      <app-previewer path="/icons/examples/sandbox-icon/sandbox-icon" title="Default" configName="icon">
+        <app-sandbox-icon class="example" />
+      </app-previewer>
+    </div>
+  }
 </div>

@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
+import { ShipTabs } from '@ship-ui/core/ship-tabs';
+import { ApiReference } from '../../api-reference/api-reference';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
 import { BasicDynamicDialog } from './examples/basic-dynamic-dialog/basic-dynamic-dialog';
@@ -11,6 +13,8 @@ import { TemplateDialog } from './examples/template-dialog/template-dialog';
 @Component({
   selector: 'app-dialogs',
   imports: [
+    ShipTabs,
+    ApiReference,
     Previewer,
     PropertyViewer,
     BasicDynamicDialog,
@@ -26,5 +30,6 @@ import { TemplateDialog } from './examples/template-dialog/template-dialog';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class Dialogs {
+  activeTab = signal('overview');
   type = signal('');
 }

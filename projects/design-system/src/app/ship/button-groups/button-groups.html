@@ -1,36 +1,54 @@
 <h1>Button Group</h1>
 <!-- @keywords: button, group, joined, grouped, cluster, segment -->
 
-<app-property-viewer>
-  <section>
-    <h4>Sizes</h4>
-    <p>
-      Use the
-      <code>size</code>
-      attribute to change the scale of the group, e.g.,
-      <code>size="small"</code>
-      .
-    </p>
-  </section>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-  <section>
-    <h4>Active State</h4>
-    <p>
-      Apply the
-      <code>active</code>
-      attribute or class to a button within the group to highlight it as the current selection.
-    </p>
-  </section>
-</app-property-viewer>
+@let _activeTab = activeTab();
 
-<div>
-  <sh-toggle [(checked)]="small">Small</sh-toggle>
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/button-groups/examples/basic-button-group/basic-button-group" title="Basic">
+      <app-basic-button-group class="example" />
+    </app-previewer>
 
+    <app-property-viewer>
+      <section>
+        <h4>Sizes</h4>
+        <p>
+          Use the
+          <code>size</code>
+          attribute to change the scale of the group, e.g.,
+          <code>size="small"</code>
+          .
+        </p>
+      </section>
+
+      <section>
+        <h4>Active State</h4>
+        <p>
+          Apply the
+          <code>active</code>
+          attribute or class to a button within the group to highlight it as the current selection.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipButtonGroup" />
+  } @else if (_activeTab === 'examples') {
+    <div>
+      <sh-toggle [(checked)]="small">Small</sh-toggle>
+
+    </div>
+
+    <app-previewer
+      path="/button-groups/examples/base-button-group/base-button-group"
+      title="Default"
+      configName="buttonGroup">
+      <app-base-button-group class="example" [small]="small()" />
+    </app-previewer>
+  }
 </div>
-
-<app-previewer
-  path="/button-groups/examples/base-button-group/base-button-group"
-  title="Default"
-  configName="buttonGroup">
-  <app-base-button-group class="example" [small]="small()" />
-</app-previewer>

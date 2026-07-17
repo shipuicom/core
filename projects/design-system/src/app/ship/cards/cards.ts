@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ShipTabs } from '@ship-ui/core/ship-tabs';
+import { ApiReference } from '../../api-reference/api-reference';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
 import { BaseCardComponent } from './examples/base-card/base-card';
@@ -12,6 +14,8 @@ import { TypeCCardComponent } from './examples/type-c-card/type-c-card';
 @Component({
   selector: 'app-cards',
   imports: [
+    ShipTabs,
+    ApiReference,
     CardSandbox,
     PropertyViewer,
     Previewer,
@@ -26,4 +30,6 @@ import { TypeCCardComponent } from './examples/type-c-card/type-c-card';
   styleUrl: './cards.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class Cards {}
+export default class Cards {
+  activeTab = signal('overview');
+}

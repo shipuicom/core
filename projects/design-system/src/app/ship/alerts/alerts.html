@@ -1,65 +1,84 @@
 <h1>Alerts</h1>
 <!-- @keywords: alert, notification, banner, warning, error, info, success, message -->
 
-<app-property-viewer>
-  <section>
-    <h4>Variants</h4>
-    <p>
-      Alert variants can be set using the
-      <code>variant</code>
-      attribute. Valid options are:
-      <b>simple</b>
-      ,
-      <b>outlined</b>
-      ,
-      <b>flat</b>
-      , and
-      <b>raised</b>
-      .
-    </p>
-  </section>
-  <section>
-    <h4>Colors</h4>
-    <p>
-      Alert colors can be set using the
-      <code>color</code>
-      attribute. Valid options are:
-      <b>primary</b>
-      ,
-      <b>accent</b>
-      ,
-      <b>warn</b>
-      ,
-      <b>error</b>
-      , and
-      <b>success</b>
-      .
-    </p>
-  </section>
-</app-property-viewer>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-<div class="sandbox-example">
-  <app-previewer path="/alerts/examples/alerts-sandbox/alerts-sandbox" title="Sandbox" class="no-space">
-    <app-alerts-sandbox />
-  </app-previewer>
-</div>
+@let _activeTab = activeTab();
 
-<h3>Variations</h3>
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/alerts/examples/basic-alert/basic-alert" title="Basic">
+      <app-basic-alert class="example" />
+    </app-previewer>
 
-<div class="content">
-  <app-previewer path="/alerts/examples/base-alert/base-alert" title="Default" configName="alert">
-    <app-base-alert class="example" />
-  </app-previewer>
-  <app-previewer path="/alerts/examples/simple-alert/simple-alert" title="Simple">
-    <app-simple-alert class="example" />
-  </app-previewer>
-  <app-previewer path="/alerts/examples/outlined-alert/outlined-alert" title="Outlined">
-    <app-outlined-alert class="example" />
-  </app-previewer>
-  <app-previewer path="/alerts/examples/flat-alert/flat-alert" title="Flat">
-    <app-flat-alert class="example" />
-  </app-previewer>
-  <app-previewer path="/alerts/examples/raised-alert/raised-alert" title="Raised">
-    <app-raised-alert class="example" />
-  </app-previewer>
+    <app-property-viewer>
+      <section>
+        <h4>Variants</h4>
+        <p>
+          Alert variants can be set using the
+          <code>variant</code>
+          attribute. Valid options are:
+          <b>simple</b>
+          ,
+          <b>outlined</b>
+          ,
+          <b>flat</b>
+          , and
+          <b>raised</b>
+          .
+        </p>
+      </section>
+      <section>
+        <h4>Colors</h4>
+        <p>
+          Alert colors can be set using the
+          <code>color</code>
+          attribute. Valid options are:
+          <b>primary</b>
+          ,
+          <b>accent</b>
+          ,
+          <b>warn</b>
+          ,
+          <b>error</b>
+          , and
+          <b>success</b>
+          .
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipAlert" />
+    <app-api-reference name="ShipAlertService" />
+  } @else if (_activeTab === 'examples') {
+    <div class="sandbox-example">
+      <app-previewer path="/alerts/examples/alerts-sandbox/alerts-sandbox" title="Sandbox" class="no-space">
+        <app-alerts-sandbox />
+      </app-previewer>
+    </div>
+
+    <h3>Variations</h3>
+
+    <div class="content">
+      <app-previewer path="/alerts/examples/base-alert/base-alert" title="Default" configName="alert">
+        <app-base-alert class="example" />
+      </app-previewer>
+      <app-previewer path="/alerts/examples/simple-alert/simple-alert" title="Simple">
+        <app-simple-alert class="example" />
+      </app-previewer>
+      <app-previewer path="/alerts/examples/outlined-alert/outlined-alert" title="Outlined">
+        <app-outlined-alert class="example" />
+      </app-previewer>
+      <app-previewer path="/alerts/examples/flat-alert/flat-alert" title="Flat">
+        <app-flat-alert class="example" />
+      </app-previewer>
+      <app-previewer path="/alerts/examples/raised-alert/raised-alert" title="Raised">
+        <app-raised-alert class="example" />
+      </app-previewer>
+    </div>
+  }
 </div>

@@ -16,3 +16,10 @@ sh-list {
   padding: 40px;
   background-color: var(--base-2);
 }
+
+.tab-content {
+  margin-top: p2r(24);
+  display: flex;
+  flex-direction: column;
+  gap: p2r(24);
+}

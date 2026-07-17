@@ -4,3 +4,10 @@
   min-height: 100%;
   height: 100%;
 }
+
+.tab-content {
+  margin-top: p2r(24);
+  display: flex;
+  flex-direction: column;
+  gap: p2r(24);
+}

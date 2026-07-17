@@ -1,7 +1,21 @@
 <h1>Color picker</h1>
 <!-- @keywords: color, picker, hue, saturation, lightness, rgb, hex, eyedropper, palette -->
 
-<sh-alert class="error">
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
+
+@let _activeTab = activeTab();
+
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/color-pickers/examples/basic-color-picker/basic-color-picker" title="Basic">
+      <app-basic-color-picker class="example" />
+    </app-previewer>
+
+    <sh-alert class="error">
   <strong>IMPORTANT - not production ready</strong>
   <ng-container content>
     This is an early version of the color picker. It is not yet ready for production use. We will probably be changing
@@ -86,12 +100,17 @@
       input.
     </p>
   </section>
-</app-property-viewer>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipColorPicker" />
+    <app-api-reference name="ShipColorPickerInput" />
+  } @else if (_activeTab === 'examples') {
+    <div class="content">
+      <h3>Variations</h3>
 
-<div class="content">
-  <h3>Variations</h3>
-
-  <app-previewer path="/color-pickers/examples/base-color-picker/base-color-picker" title="Default">
-    <app-base-color-picker class="example" />
-  </app-previewer>
+      <app-previewer path="/color-pickers/examples/base-color-picker/base-color-picker" title="Default">
+        <app-base-color-picker class="example" />
+      </app-previewer>
+    </div>
+  }
 </div>

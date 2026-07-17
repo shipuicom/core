@@ -1,37 +1,59 @@
 <h1>List</h1>
 <!-- @keywords: list, items, listview, row, collection, group -->
 
-<app-property-viewer>
-  <section>
-    <h4>Item</h4>
-    <p>
-      Add the
-      <code>item</code>
-      attribute to a child element of
-      <code>sh-list</code>
-      to designate it as a list item.
-    </p>
-  </section>
-  <section>
-    <h4>Action</h4>
-    <p>
-      Add the
-      <code>action</code>
-      attribute to a child element of
-      <code>sh-list</code>
-      to make it interactive (e.g., clickable with hover effects).
-    </p>
-  </section>
-  <section>
-    <h4>Suffix</h4>
-    <p>
-      Add the
-      <code>suffix</code>
-      attribute to an element inside a list item to align it to the trailing end of the item.
-    </p>
-  </section>
-</app-property-viewer>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="parts">Sub-components</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-<app-previewer path="/lists/examples/base-list-example/base-list-example" title="Default">
-  <base-list-example class="example" />
-</app-previewer>
+@let _activeTab = activeTab();
+
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/lists/examples/basic-list/basic-list" title="Basic">
+      <app-basic-list class="example" />
+    </app-previewer>
+
+    <app-property-viewer>
+      <section>
+        <h4>Item</h4>
+        <p>
+          Add the
+          <code>item</code>
+          attribute to a child element of
+          <code>sh-list</code>
+          to designate it as a list item.
+        </p>
+      </section>
+      <section>
+        <h4>Action</h4>
+        <p>
+          Add the
+          <code>action</code>
+          attribute to a child element of
+          <code>sh-list</code>
+          to make it interactive (e.g., clickable with hover effects).
+        </p>
+      </section>
+      <section>
+        <h4>Suffix</h4>
+        <p>
+          Add the
+          <code>suffix</code>
+          attribute to an element inside a list item to align it to the trailing end of the item.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipList" />
+  } @else if (_activeTab === 'parts') {
+    <p>Swipe-to-reveal actions for individual list items.</p>
+    <app-api-reference name="ShipListItemSwipe" />
+  } @else if (_activeTab === 'examples') {
+    <app-previewer path="/lists/examples/base-list-example/base-list-example" title="Default">
+      <base-list-example class="example" />
+    </app-previewer>
+  }
+</div>

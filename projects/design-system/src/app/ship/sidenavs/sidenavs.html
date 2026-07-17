@@ -1,62 +1,80 @@
 <h1>Sidenav</h1>
 <!-- @keywords: sidenav, sidebar, drawer, navigation, menu, layout -->
 
-<app-property-viewer>
-  <section>
-    <h4>Variants</h4>
-    <p>
-      Sidenavs support multiple behaviors via the
-      <code>variant</code>
-      attribute:
-    </p>
-    <ul>
-      <li>
-        <b>default</b>
-        : Fixed position, non-toggleable.
-      </li>
-      <li>
-        <b>simple</b>
-        : Support for toggling width (e.g., icon-only vs. full expanded view).
-      </li>
-      <li>
-        <b>overlay</b>
-        : Overlays content when opened and supports swipe-to-close gestures.
-      </li>
-    </ul>
-  </section>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-  <section>
-    <h4>Drag Interaction</h4>
-    <p>
-      Use the
-      <code>disableDrag</code>
-      attribute/binding to disable swipe gestures on the
-      <b>overlay</b>
-      variant.
-    </p>
-  </section>
-</app-property-viewer>
+@let _activeTab = activeTab();
 
-<div class="sandbox-example">
-  <app-previewer path="/sidenavs/examples/sandbox-sidenav/sandbox-sidenav" title="Sandbox" class="no-space">
-    <app-sandbox-sidenav />
-  </app-previewer>
-</div>
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/sidenavs/examples/default-sidenav/default-sidenav" title="Basic">
+      <app-default-sidenav class="example" />
+    </app-previewer>
 
-<div class="sandbox-example">
-  <app-previewer path="/sidenavs/examples/default-sidenav/default-sidenav" title="Default" class="no-space">
-    <app-default-sidenav />
-  </app-previewer>
-</div>
+    <app-property-viewer>
+      <section>
+        <h4>Variants</h4>
+        <p>
+          Sidenavs support multiple behaviors via the
+          <code>variant</code>
+          attribute:
+        </p>
+        <ul>
+          <li>
+            <b>default</b>
+            : Fixed position, non-toggleable.
+          </li>
+          <li>
+            <b>simple</b>
+            : Support for toggling width (e.g., icon-only vs. full expanded view).
+          </li>
+          <li>
+            <b>overlay</b>
+            : Overlays content when opened and supports swipe-to-close gestures.
+          </li>
+        </ul>
+      </section>
 
-<div class="sandbox-example">
-  <app-previewer path="/sidenavs/examples/simple-sidenav/simple-sidenav" title="Simple" class="no-space">
-    <app-simple-sidenav />
-  </app-previewer>
-</div>
+      <section>
+        <h4>Drag Interaction</h4>
+        <p>
+          Use the
+          <code>disableDrag</code>
+          attribute/binding to disable swipe gestures on the
+          <b>overlay</b>
+          variant.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipSidenav" />
+  } @else if (_activeTab === 'examples') {
+    <div class="sandbox-example">
+      <app-previewer path="/sidenavs/examples/sandbox-sidenav/sandbox-sidenav" title="Sandbox" class="no-space">
+        <app-sandbox-sidenav />
+      </app-previewer>
+    </div>
 
-<div class="sandbox-example">
-  <app-previewer path="/sidenavs/examples/overlay-sidenav/overlay-sidenav" title="Overlay" class="no-space">
-    <app-overlay-sidenav />
-  </app-previewer>
+    <div class="sandbox-example">
+      <app-previewer path="/sidenavs/examples/default-sidenav/default-sidenav" title="Default" class="no-space">
+        <app-default-sidenav />
+      </app-previewer>
+    </div>
+
+    <div class="sandbox-example">
+      <app-previewer path="/sidenavs/examples/simple-sidenav/simple-sidenav" title="Simple" class="no-space">
+        <app-simple-sidenav />
+      </app-previewer>
+    </div>
+
+    <div class="sandbox-example">
+      <app-previewer path="/sidenavs/examples/overlay-sidenav/overlay-sidenav" title="Overlay" class="no-space">
+        <app-overlay-sidenav />
+      </app-previewer>
+    </div>
+  }
 </div>

@@ -1,83 +1,101 @@
 <h1>Progress Bar</h1>
 <!-- @keywords: progress, bar, loading, indicator, linear, status -->
 
-<sh-alert class="warn">
-  Currently only have variants
-  <b>flat</b>
-  and
-  <b>raised</b>
-  more to come.
-</sh-alert>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-<app-property-viewer>
-  <section>
-    <h4>Variants</h4>
-    <p>
-      Progress bar variants can be set using the
-      <code>variant</code>
-      attribute. Available variants:
-      <b>base</b>
-      ,
+@let _activeTab = activeTab();
+
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/progress-bars/examples/basic-progress-bar/basic-progress-bar" title="Basic">
+      <app-basic-progress-bar class="example" />
+    </app-previewer>
+
+    <sh-alert class="warn">
+      Currently only have variants
       <b>flat</b>
-      ,
-      <b>outlined</b>
-      , and
+      and
       <b>raised</b>
-      .
-    </p>
-  </section>
-  <section>
-    <h4>Colors</h4>
-    <p>
-      Progress bar colors can be set using the
-      <code>color</code>
-      attribute. Available colors:
-      <b>primary</b>
-      ,
-      <b>accent</b>
-      ,
-      <b>warn</b>
-      ,
-      <b>error</b>
-      , and
-      <b>success</b>
-      .
-    </p>
-  </section>
-  <section>
-    <h4>Disabled</h4>
-    <p>
-      The progress bar can be disabled using the standard
-      <code>disabled</code>
-      attribute or
-      <code>[disabled]</code>
-      binding.
-    </p>
-  </section>
-</app-property-viewer>
+      more to come.
+    </sh-alert>
 
-<div class="content">
-  <h3>Variations</h3>
+    <app-property-viewer>
+      <section>
+        <h4>Variants</h4>
+        <p>
+          Progress bar variants can be set using the
+          <code>variant</code>
+          attribute. Available variants:
+          <b>base</b>
+          ,
+          <b>flat</b>
+          ,
+          <b>outlined</b>
+          , and
+          <b>raised</b>
+          .
+        </p>
+      </section>
+      <section>
+        <h4>Colors</h4>
+        <p>
+          Progress bar colors can be set using the
+          <code>color</code>
+          attribute. Available colors:
+          <b>primary</b>
+          ,
+          <b>accent</b>
+          ,
+          <b>warn</b>
+          ,
+          <b>error</b>
+          , and
+          <b>success</b>
+          .
+        </p>
+      </section>
+      <section>
+        <h4>Disabled</h4>
+        <p>
+          The progress bar can be disabled using the standard
+          <code>disabled</code>
+          attribute or
+          <code>[disabled]</code>
+          binding.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipProgressBar" />
+  } @else if (_activeTab === 'examples') {
+    <div class="content">
+      <h3>Variations</h3>
 
-  <app-previewer path="/progress-bars/examples/base-progress-bar/base-progress-bar" title="Default">
-    <app-base-progress-bar class="example" />
-  </app-previewer>
+      <app-previewer path="/progress-bars/examples/base-progress-bar/base-progress-bar" title="Default">
+        <app-base-progress-bar class="example" />
+      </app-previewer>
 
-  <app-previewer
-    path="/progress-bars/examples/indeterminte-progress-bar/indeterminte-progress-bar"
-    title="Indeterminate">
-    <app-indeterminte-progress-bar class="example" />
-  </app-previewer>
+      <app-previewer
+        path="/progress-bars/examples/indeterminte-progress-bar/indeterminte-progress-bar"
+        title="Indeterminate">
+        <app-indeterminte-progress-bar class="example" />
+      </app-previewer>
 
-  <app-previewer path="/progress-bars/examples/flat-progress-bar/flat-progress-bar" title="Flat">
-    <app-flat-progress-bar class="example" />
-  </app-previewer>
+      <app-previewer path="/progress-bars/examples/flat-progress-bar/flat-progress-bar" title="Flat">
+        <app-flat-progress-bar class="example" />
+      </app-previewer>
 
-  <app-previewer path="/progress-bars/examples/outlined-progress-bar/outlined-progress-bar" title="Outlined">
-    <app-outlined-progress-bar class="example" />
-  </app-previewer>
+      <app-previewer path="/progress-bars/examples/outlined-progress-bar/outlined-progress-bar" title="Outlined">
+        <app-outlined-progress-bar class="example" />
+      </app-previewer>
 
-  <app-previewer path="/progress-bars/examples/raised-progress-bar/raised-progress-bar" title="Raised">
-    <app-raised-progress-bar class="example" />
-  </app-previewer>
+      <app-previewer path="/progress-bars/examples/raised-progress-bar/raised-progress-bar" title="Raised">
+        <app-raised-progress-bar class="example" />
+      </app-previewer>
+    </div>
+  }
 </div>

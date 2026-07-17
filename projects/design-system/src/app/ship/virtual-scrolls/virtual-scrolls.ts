@@ -1,5 +1,10 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ShipTabs } from '@ship-ui/core/ship-tabs';
 import { ShipVirtualScroll } from '@ship-ui/core/ship-virtual-scroll';
+import { ApiReference } from '../../api-reference/api-reference';
+import { Previewer } from '../../previewer/previewer';
+import { PropertyViewer } from '../../property-viewer/property-viewer';
+import { BasicVirtualScroll } from './examples/basic-virtual-scroll/basic-virtual-scroll';
 
 type ExampleItem = {
   id: number;
@@ -24,11 +29,12 @@ for (let i = 0; i < 1000; i++) {
 
 @Component({
   selector: 'app-virtual-scrolls',
-  imports: [ShipVirtualScroll],
+  imports: [ShipTabs, ApiReference, PropertyViewer, Previewer, ShipVirtualScroll, BasicVirtualScroll],
   templateUrl: './virtual-scrolls.html',
   styleUrl: './virtual-scrolls.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class VirtualScrolls {
+  activeTab = signal('overview');
   items = signal<ExampleItem[]>(data);
 }

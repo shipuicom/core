@@ -1,59 +1,81 @@
 <h1>File Upload</h1>
 <!-- @keywords: file, upload, drag and drop, dropzone, attachment, upload input -->
 
-<app-property-viewer>
-  <section>
-    <h4>Files</h4>
-    <p>
-      Selected files are available via the
-      <code>files</code>
-      attribute. Use
-      <code>[(files)]</code>
-      for two-way binding.
-    </p>
-  </section>
-  <section>
-    <h4>Selection</h4>
-    <p>Customize selection behavior:</p>
-    <ul>
-      <li>
-        <code>multiple</code>
-        : Allows selecting more than one file.
-      </li>
-      <li>
-        <code>accept</code>
-        : Restricts file types (e.g.,
-        <code>accept=".png,.jpg"</code>
-        ).
-      </li>
-    </ul>
-  </section>
-  <section>
-    <h4>Text</h4>
-    <p>Customize displayed labels:</p>
-    <ul>
-      <li>
-        <code>placeholder</code>
-        : Text shown when empty.
-      </li>
-      <li>
-        <code>overlayText</code>
-        : Text shown during drag-and-drop.
-      </li>
-    </ul>
-  </section>
-</app-property-viewer>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="parts">Sub-components</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-<div class="sandbox-example">
-  <app-previewer path="/file-uploads/examples/file-upload-sandbox/file-upload-sandbox" title="Sandbox" class="no-space">
-    <app-file-upload-sandbox />
-  </app-previewer>
+@let _activeTab = activeTab();
+
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/file-uploads/examples/base-file-upload/base-file-upload" title="Basic">
+      <app-base-file-upload class="example" />
+    </app-previewer>
+
+    <app-property-viewer>
+      <section>
+        <h4>Files</h4>
+        <p>
+          Selected files are available via the
+          <code>files</code>
+          attribute. Use
+          <code>[(files)]</code>
+          for two-way binding.
+        </p>
+      </section>
+      <section>
+        <h4>Selection</h4>
+        <p>Customize selection behavior:</p>
+        <ul>
+          <li>
+            <code>multiple</code>
+            : Allows selecting more than one file.
+          </li>
+          <li>
+            <code>accept</code>
+            : Restricts file types (e.g.,
+            <code>accept=".png,.jpg"</code>
+            ).
+          </li>
+        </ul>
+      </section>
+      <section>
+        <h4>Text</h4>
+        <p>Customize displayed labels:</p>
+        <ul>
+          <li>
+            <code>placeholder</code>
+            : Text shown when empty.
+          </li>
+          <li>
+            <code>overlayText</code>
+            : Text shown during drag-and-drop.
+          </li>
+        </ul>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipFileUpload" />
+  } @else if (_activeTab === 'parts') {
+    <p>Standalone directive that emits files dropped onto any element.</p>
+    <app-api-reference name="ShipFileDragDrop" />
+  } @else if (_activeTab === 'examples') {
+    <div class="sandbox-example">
+      <app-previewer path="/file-uploads/examples/file-upload-sandbox/file-upload-sandbox" title="Sandbox" class="no-space">
+        <app-file-upload-sandbox />
+      </app-previewer>
+    </div>
+
+    <div class="content">
+      <app-previewer path="/file-uploads/examples/base-file-upload/base-file-upload" title="Default">
+        <app-base-file-upload class="example" />
+      </app-previewer>
+    </div>
+
+    <p>More variants to come</p>
+  }
 </div>
-
-<div class="content">
-  <app-previewer path="/file-uploads/examples/base-file-upload/base-file-upload" title="Default">
-    <app-base-file-upload class="example" />
-  </app-previewer>
-</div>
-
-<p>More variants to come</p>

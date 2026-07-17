@@ -1,128 +1,146 @@
 <h1>Range Slider</h1>
 <!-- @keywords: range, slider, track, thumb, value, drag, input -->
 
-<app-property-viewer>
-  <section>
-    <h4>Binding</h4>
-    <p>
-      Two-way bindable value. Use
-      <code>[(ngModel)]</code>
-      or
-      <code>[formControl]</code>
-      .
-    </p>
-  </section>
-  <section>
-    <h4>Constraints</h4>
-    <p>
-      Set the range limits and increments using the
-      <code>min</code>
-      ,
-      <code>max</code>
-      , and
-      <code>step</code>
-      attributes.
-    </p>
-  </section>
-  <section>
-    <h4>Visuals</h4>
-    <p>Customize the look and feel:</p>
-    <ul>
-      <li>
-        <code>color</code>
-        :
-        <b>primary</b>
-        ,
-        <b>accent</b>
-        ,
-        <b>warn</b>
-        ,
-        <b>success</b>
-        , or
-        <b>error</b>
-        .
-      </li>
-      <li>
-        <code>variant</code>
-        :
-        <b>base</b>
-        ,
-        <b>thick</b>
-        ,
-        <b>outlined</b>
-        ,
-        <b>flat</b>
-        , or
-        <b>raised</b>
-        .
-      </li>
-      <li>
-        <code>sharp</code>
-        : Use sharp corners instead of rounded.
-      </li>
-      <li>
-        <code>always-show</code>
-        : Keep the value indicator visible at all times.
-      </li>
-    </ul>
-  </section>
-  <section>
-    <h4>Unit</h4>
-    <p>
-      Specify a suffix for the value display using the
-      <code>unit</code>
-      attribute (e.g.,
-      <code>unit="%"</code>
-      ).
-    </p>
-  </section>
-  <section>
-    <h4>Disabled</h4>
-    <p>
-      The slider can be disabled using the standard
-      <code>disabled</code>
-      attribute or
-      <code>[disabled]</code>
-      binding.
-    </p>
-  </section>
-</app-property-viewer>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-<div class="sandbox-example">
-  <app-previewer
-    path="/range-sliders/examples/range-slider-sandbox/range-slider-sandbox"
-    title="Sandbox"
-    class="no-space">
-    <app-range-slider-sandbox class="example" />
-  </app-previewer>
+@let _activeTab = activeTab();
+
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/range-sliders/examples/base-range-slider/base-range-slider" title="Basic">
+      <app-base-range-slider class="example" />
+    </app-previewer>
+
+    <app-property-viewer>
+      <section>
+        <h4>Binding</h4>
+        <p>
+          Two-way bindable value. Use
+          <code>[(ngModel)]</code>
+          or
+          <code>[formControl]</code>
+          .
+        </p>
+      </section>
+      <section>
+        <h4>Constraints</h4>
+        <p>
+          Set the range limits and increments using the
+          <code>min</code>
+          ,
+          <code>max</code>
+          , and
+          <code>step</code>
+          attributes.
+        </p>
+      </section>
+      <section>
+        <h4>Visuals</h4>
+        <p>Customize the look and feel:</p>
+        <ul>
+          <li>
+            <code>color</code>
+            :
+            <b>primary</b>
+            ,
+            <b>accent</b>
+            ,
+            <b>warn</b>
+            ,
+            <b>success</b>
+            , or
+            <b>error</b>
+            .
+          </li>
+          <li>
+            <code>variant</code>
+            :
+            <b>base</b>
+            ,
+            <b>thick</b>
+            ,
+            <b>outlined</b>
+            ,
+            <b>flat</b>
+            , or
+            <b>raised</b>
+            .
+          </li>
+          <li>
+            <code>sharp</code>
+            : Use sharp corners instead of rounded.
+          </li>
+          <li>
+            <code>always-show</code>
+            : Keep the value indicator visible at all times.
+          </li>
+        </ul>
+      </section>
+      <section>
+        <h4>Unit</h4>
+        <p>
+          Specify a suffix for the value display using the
+          <code>unit</code>
+          attribute (e.g.,
+          <code>unit="%"</code>
+          ).
+        </p>
+      </section>
+      <section>
+        <h4>Disabled</h4>
+        <p>
+          The slider can be disabled using the standard
+          <code>disabled</code>
+          attribute or
+          <code>[disabled]</code>
+          binding.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipRangeSlider" />
+  } @else if (_activeTab === 'examples') {
+    <div class="sandbox-example">
+      <app-previewer
+        path="/range-sliders/examples/range-slider-sandbox/range-slider-sandbox"
+        title="Sandbox"
+        class="no-space">
+        <app-range-slider-sandbox class="example" />
+      </app-previewer>
+    </div>
+
+    <app-previewer path="/range-sliders/examples/base-range-slider/base-range-slider" title="Default">
+      <app-base-range-slider class="example" />
+    </app-previewer>
+
+    <app-previewer path="/range-sliders/examples/float-range-slider/float-range-slider" title="Float">
+      <app-float-range-slider class="example" />
+    </app-previewer>
+
+    <app-previewer path="/range-sliders/examples/reactive-range-slider/reactive-range-slider" title="Reactive Form">
+      <app-reactive-range-slider class="example" />
+    </app-previewer>
+
+    <app-previewer path="/range-sliders/examples/readonly-range-slider/readonly-range-slider" title="Readonly">
+      <app-readonly-range-slider class="example" />
+    </app-previewer>
+
+    <app-previewer path="/range-sliders/examples/unit-range-slider/unit-range-slider" title="Unit">
+      <app-unit-range-slider class="example" />
+    </app-previewer>
+
+    <app-previewer
+      path="/range-sliders/examples/always-show-indicator-range-slider/always-show-indicator-range-slider"
+      title="Always Show Indicator">
+      <app-always-show-indicator-range-slider class="example" />
+    </app-previewer>
+
+    <app-previewer path="/range-sliders/examples/disabled-range-slider/disabled-range-slider" title="Disabled">
+      <app-disabled-range-slider class="example" />
+    </app-previewer>
+  }
 </div>
-
-<app-previewer path="/range-sliders/examples/base-range-slider/base-range-slider" title="Default">
-  <app-base-range-slider class="example" />
-</app-previewer>
-
-<app-previewer path="/range-sliders/examples/float-range-slider/float-range-slider" title="Float">
-  <app-float-range-slider class="example" />
-</app-previewer>
-
-<app-previewer path="/range-sliders/examples/reactive-range-slider/reactive-range-slider" title="Reactive Form">
-  <app-reactive-range-slider class="example" />
-</app-previewer>
-
-<app-previewer path="/range-sliders/examples/readonly-range-slider/readonly-range-slider" title="Readonly">
-  <app-readonly-range-slider class="example" />
-</app-previewer>
-
-<app-previewer path="/range-sliders/examples/unit-range-slider/unit-range-slider" title="Unit">
-  <app-unit-range-slider class="example" />
-</app-previewer>
-
-<app-previewer
-  path="/range-sliders/examples/always-show-indicator-range-slider/always-show-indicator-range-slider"
-  title="Always Show Indicator">
-  <app-always-show-indicator-range-slider class="example" />
-</app-previewer>
-
-<app-previewer path="/range-sliders/examples/disabled-range-slider/disabled-range-slider" title="Disabled">
-  <app-disabled-range-slider class="example" />
-</app-previewer>

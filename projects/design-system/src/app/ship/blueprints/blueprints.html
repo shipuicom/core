@@ -1,13 +1,45 @@
-<h3>
-  WIP Blueprints
-  <sh-toggle [(checked)]="showAsDots">Show as dots</sh-toggle>
-</h3>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-<section>
-  <sh-blueprint [class.dots]="showAsDots()" [autoLayout]="true" [(nodes)]="nodes" (nodesChange)="onChange($event)">
-    <button shButton size="small" (click)="addNewNode()">
-      Add node
-      <sh-icon>leaf</sh-icon>
-    </button>
-  </sh-blueprint>
-</section>
+@let _activeTab = activeTab();
+
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <div class="overview-blueprint">
+      <sh-blueprint [autoLayout]="true" [(nodes)]="nodes" />
+    </div>
+
+    <app-highlight lang="html" [content]="basicCode" />
+
+    <app-property-viewer>
+      <section>
+        <h4>WIP Blueprints</h4>
+        <p>
+          ShipBlueprint renders a node-based canvas of draggable nodes with inputs, outputs, and
+          connections. Toggle <code>autoLayout</code> to position nodes automatically, and use the
+          <code>dots</code> class to switch the background grid to a dotted style. This component is a
+          work in progress.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipBlueprint" />
+  } @else if (_activeTab === 'examples') {
+    <h3>
+      WIP Blueprints
+      <sh-toggle [(checked)]="showAsDots">Show as dots</sh-toggle>
+    </h3>
+
+    <section>
+      <sh-blueprint [class.dots]="showAsDots()" [autoLayout]="true" [(nodes)]="nodes" (nodesChange)="onChange($event)">
+        <button shButton size="small" (click)="addNewNode()">
+          Add node
+          <sh-icon>leaf</sh-icon>
+        </button>
+      </sh-blueprint>
+    </section>
+  }
+</div>

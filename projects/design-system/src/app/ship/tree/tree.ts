@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ApiReference } from '../../api-reference/api-reference';
 import { Highlight } from '../../previewer/highlight/highlight';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
@@ -14,6 +15,7 @@ import { TemplateTreeExample } from './examples/template-tree/template-tree';
     BasicTree,
     SortableTreeExample,
     TemplateTreeExample,
+    ApiReference,
     PropertyViewer,
     Previewer,
     Highlight,

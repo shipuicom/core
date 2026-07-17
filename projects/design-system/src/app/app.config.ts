@@ -42,6 +42,7 @@ export const appConfig: ApplicationConfig = {
           data: { route: '/getting-started' },
         },
         { id: 'typography', label: 'Typography', category: 'Theme', icon: 'text-t', data: { route: '/typography' } },
+        { id: 'theme-toggle', label: 'Theme Toggle', category: 'Theme', icon: 'circle-half-tilt', data: { route: '/theme-toggle' } },
         { id: 'accordions', label: 'Accordions', category: 'Components', data: { route: '/accordions' } },
         { id: 'alerts', label: 'Alerts', category: 'Components', data: { route: '/alerts' } },
         {

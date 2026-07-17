@@ -2,17 +2,24 @@ import { ChangeDetectionStrategy, Component, signal, viewChild } from '@angular/
 import { Coordinates, ShipBlueprint, TEST_NODES } from '@ship-ui/core/ship-blueprint';
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipTabs } from '@ship-ui/core/ship-tabs';
 import { ShipToggle } from '@ship-ui/core/ship-toggle';
+import { ApiReference } from '../../api-reference/api-reference';
+import { Highlight } from '../../previewer/highlight/highlight';
+import { PropertyViewer } from '../../property-viewer/property-viewer';
 
 @Component({
   selector: 'app-blueprints',
-  imports: [ShipBlueprint, ShipToggle, ShipButton, ShipIcon],
+  imports: [ShipTabs, ApiReference, Highlight, PropertyViewer, ShipBlueprint, ShipToggle, ShipButton, ShipIcon],
   templateUrl: './blueprints.html',
   styleUrl: './blueprints.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class Blueprints {
+  activeTab = signal('overview');
   showAsDots = signal(false);
+
+  basicCode = `<sh-blueprint [autoLayout]="true" [(nodes)]="nodes" />`;
 
   nodes = signal(TEST_NODES);
   blueprint = viewChild.required(ShipBlueprint);

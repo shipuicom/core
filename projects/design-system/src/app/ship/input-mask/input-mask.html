@@ -1,19 +1,37 @@
 <h1>Input Mask</h1>
 <!-- @keywords: input, mask, formatting, text field, validation, number mask, pattern, telephone, credit card -->
 
-<app-property-viewer>
-  <section>
-    <h4>Enable Masking</h4>
-    <p>
-      Apply the
-      <code>[shInputMask]</code>
-      directive to an input element to enforce a specific format. You can pass a static mask string (e.g.,
-      <code>"(00) 000-000"</code>
-      ) or a custom formatting function.
-    </p>
-  </section>
-</app-property-viewer>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-<app-previewer path="/input-mask/examples/base-input-mask/base-input-mask" title="Default">
-  <app-base-input-mask class="example" />
-</app-previewer>
+@let _activeTab = activeTab();
+
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/input-mask/examples/basic-input-mask/basic-input-mask" title="Basic">
+      <app-basic-input-mask class="example" />
+    </app-previewer>
+
+    <app-property-viewer>
+      <section>
+        <h4>Enable Masking</h4>
+        <p>
+          Apply the
+          <code>[shInputMask]</code>
+          directive to an input element to enforce a specific format. You can pass a static mask string (e.g.,
+          <code>"(00) 000-000"</code>
+          ) or a custom formatting function.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipInputMask" />
+  } @else if (_activeTab === 'examples') {
+    <app-previewer path="/input-mask/examples/base-input-mask/base-input-mask" title="Default">
+      <app-base-input-mask class="example" />
+    </app-previewer>
+  }
+</div>

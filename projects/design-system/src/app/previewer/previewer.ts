@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, linkedSignal, signal } from '@angular/core';
 import { ShipCard } from '@ship-ui/core/ship-card';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipTabs } from '@ship-ui/core/ship-tabs';
@@ -21,7 +21,10 @@ export class Previewer {
   title = input<string>('');
   noSpace = input<boolean>(false);
   configName = input<keyof import('ship-ui').ShipConfig | null>(null);
-  view = signal('');
+  // Which source tab is open initially ('' = none, 'markup' | 'typescript' | 'styles').
+  // Overview "Basic" previewers open on 'markup' so the code is visible at a glance.
+  defaultView = input<string>('');
+  view = linkedSignal(() => this.defaultView());
 
   anchorId = computed(() => {
     const pathValue = this.path();

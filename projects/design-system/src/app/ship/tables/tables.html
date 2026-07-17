@@ -3,6 +3,8 @@
 
 <sh-tabs color="primary" [(value)]="activeTab">
   <button value="markup">Markup-based</button>
+  <button value="api">API</button>
+  <button value="parts">Sub-components</button>
   <button value="config">Configuration-based</button>
 </sh-tabs>
 
@@ -117,6 +119,15 @@
   <app-previewer path="/tables/examples/sorting-table/sorting-table" title="Sorting Table">
     <sorting-table class="example" [variant]="type()" />
   </app-previewer>
+} @else if (_activeTab === 'api') {
+  <app-api-reference name="ShipTable" />
+} @else if (_activeTab === 'parts') {
+  <p>Public directives and sub-components that compose <code>sh-table</code>.</p>
+  <app-api-reference name="ShipTableContent" />
+  <app-api-reference name="ShipSort" />
+  <app-api-reference name="ShipResize" />
+  <app-api-reference name="ShipStickyColumns" />
+  <app-api-reference name="ShipTableFilterBar" />
 } @else if (_activeTab === 'config') {
   <app-property-viewer>
     <section>

@@ -19,3 +19,10 @@
   grid-template-columns: 1fr;
   gap: p2r(40);
 }
+
+.tab-content {
+  margin-top: p2r(24);
+  display: flex;
+  flex-direction: column;
+  gap: p2r(24);
+}

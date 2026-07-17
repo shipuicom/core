@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ShipTabs } from '@ship-ui/core/ship-tabs';
+import { ApiReference } from '../../api-reference/api-reference';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
 import { AlwaysShowIndicatorRangeSlider } from './examples/always-show-indicator-range-slider/always-show-indicator-range-slider';
@@ -14,6 +16,8 @@ import { UnitRangeSlider } from './examples/unit-range-slider/unit-range-slider'
 @Component({
   selector: 'app-range-sliders',
   imports: [
+    ShipTabs,
+    ApiReference,
     FormsModule,
     ReactiveFormsModule,
     BaseRangeSlider,
@@ -32,6 +36,7 @@ import { UnitRangeSlider } from './examples/unit-range-slider/unit-range-slider'
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class RangeSliders {
+  activeTab = signal('overview');
   active = signal(false);
 
   someFloatRangeValue = signal(0.12);

@@ -1,135 +1,152 @@
 <h1>Buttons</h1>
+<!-- @keywords: button, cta, action, submit -->
 
-<!-- <button shButton class="raised primary experimental-border">Experimental button</button> -->
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-<app-property-viewer>
-  <section>
-    <h4>Variants</h4>
-    <p>
-      Button variants can be set using the
-      <code>variant</code>
-      attribute. Valid options are:
-      <b>simple</b>
-      ,
-      <b>outlined</b>
-      ,
-      <b>flat</b>
-      , and
-      <b>raised</b>
-      .
-    </p>
-  </section>
+@let _activeTab = activeTab();
 
-  <section>
-    <h4>Sizes</h4>
-    <p>
-      Button sizes can be set using the
-      <code>size</code>
-      attribute. For example:
-      <code>size="small"</code>
-      .
-    </p>
-  </section>
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer path="/buttons/examples/basic-button/basic-button" title="Basic" defaultView="markup">
+      <app-basic-button class="example" />
+    </app-previewer>
 
-  <section>
-    <h4>Colors</h4>
-    <p>
-      Button colors can be set using the
-      <code>color</code>
-      attribute. Valid options are:
-      <b>primary</b>
-      ,
-      <b>accent</b>
-      ,
-      <b>warn</b>
-      ,
-      <b>error</b>
-      , and
-      <b>success</b>
-      .
-    </p>
-  </section>
+    <app-property-viewer>
+      <section>
+        <h4>Variants</h4>
+        <p>
+          Button variants can be set using the
+          <code>variant</code>
+          attribute. Valid options are:
+          <b>simple</b>
+          ,
+          <b>outlined</b>
+          ,
+          <b>flat</b>
+          , and
+          <b>raised</b>
+          .
+        </p>
+      </section>
 
-  <section>
-    <h4>Background</h4>
-    <p>
-      The button background can be removed by applying the
-      <code>noBg</code>
-      input (adds the
-      <code>no-bg</code>
-      class).
-    </p>
-  </section>
+      <section>
+        <h4>Sizes</h4>
+        <p>
+          Button sizes can be set using the
+          <code>size</code>
+          attribute. For example:
+          <code>size="small"</code>
+          .
+        </p>
+      </section>
 
-  <section>
-    <h4>Loading</h4>
-    <p>
-      The button can be set to loading state by adding the
-      <code>loading</code>
-      class.
-    </p>
-  </section>
+      <section>
+        <h4>Colors</h4>
+        <p>
+          Button colors can be set using the
+          <code>color</code>
+          attribute. Valid options are:
+          <b>primary</b>
+          ,
+          <b>accent</b>
+          ,
+          <b>warn</b>
+          ,
+          <b>error</b>
+          , and
+          <b>success</b>
+          .
+        </p>
+      </section>
 
-  <section>
-    <h4>Readonly</h4>
-    <p>
-      The button can be set to readonly through the
-      <code>readonly</code>
-      input (adds the
-      <code>readonly</code>
-      class) or the standard
-      <code>readonly</code>
-      attribute.
-    </p>
-  </section>
+      <section>
+        <h4>Background</h4>
+        <p>
+          The button background can be removed by applying the
+          <code>noBg</code>
+          input (adds the
+          <code>no-bg</code>
+          class).
+        </p>
+      </section>
 
-  <section>
-    <h4>Rotate icon</h4>
-    <p>
-      Icons within the button can be rotated by adding the
-      <code>rotated-icon</code>
-      class.
-    </p>
-  </section>
+      <section>
+        <h4>Loading</h4>
+        <p>
+          The button can be set to loading state by adding the
+          <code>loading</code>
+          class.
+        </p>
+      </section>
 
-  <section>
-    <h4>Disabled</h4>
-    <p>
-      The button can be disabled using the standard
-      <code>disabled</code>
-      attribute or
-      <code>[disabled]</code>
-      binding.
-    </p>
-  </section>
-</app-property-viewer>
+      <section>
+        <h4>Readonly</h4>
+        <p>
+          The button can be set to readonly through the
+          <code>readonly</code>
+          input (adds the
+          <code>readonly</code>
+          class) or the standard
+          <code>readonly</code>
+          attribute.
+        </p>
+      </section>
 
-<div class="sandbox-example">
-  <app-previewer path="/buttons/examples/button-sandbox/button-sandbox" title="Sandbox" class="no-space">
-    <app-button-sandbox />
-  </app-previewer>
-</div>
+      <section>
+        <h4>Rotate icon</h4>
+        <p>
+          Icons within the button can be rotated by adding the
+          <code>rotated-icon</code>
+          class.
+        </p>
+      </section>
 
-<h3>Variantions</h3>
+      <section>
+        <h4>Disabled</h4>
+        <p>
+          The button can be disabled using the standard
+          <code>disabled</code>
+          attribute or
+          <code>[disabled]</code>
+          binding.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipButton" />
+  } @else if (_activeTab === 'examples') {
+    <div class="sandbox-example">
+      <app-previewer path="/buttons/examples/button-sandbox/button-sandbox" title="Sandbox" class="no-space">
+        <app-button-sandbox />
+      </app-previewer>
+    </div>
 
-<div class="content">
-  <app-previewer path="/buttons/examples/base-button/base-button" title="Default" configName="button">
-    <app-base-button class="example" />
-  </app-previewer>
+    <h3>Variantions</h3>
 
-  <app-previewer path="/buttons/examples/simple-button/simple-button" title="Simple">
-    <app-simple-button class="example" />
-  </app-previewer>
+    <div class="content">
+      <app-previewer path="/buttons/examples/base-button/base-button" title="Default" configName="button">
+        <app-base-button class="example" />
+      </app-previewer>
 
-  <app-previewer path="/buttons/examples/outlined-button/outlined-button" title="Outlined">
-    <app-outlined-button class="example" />
-  </app-previewer>
+      <app-previewer path="/buttons/examples/simple-button/simple-button" title="Simple">
+        <app-simple-button class="example" />
+      </app-previewer>
 
-  <app-previewer path="/buttons/examples/flat-button/flat-button" title="Flat">
-    <app-flat-button class="example" />
-  </app-previewer>
+      <app-previewer path="/buttons/examples/outlined-button/outlined-button" title="Outlined">
+        <app-outlined-button class="example" />
+      </app-previewer>
 
-  <app-previewer path="/buttons/examples/raised-button/raised-button" title="Raised">
-    <app-raised-button class="example" />
-  </app-previewer>
+      <app-previewer path="/buttons/examples/flat-button/flat-button" title="Flat">
+        <app-flat-button class="example" />
+      </app-previewer>
+
+      <app-previewer path="/buttons/examples/raised-button/raised-button" title="Raised">
+        <app-raised-button class="example" />
+      </app-previewer>
+    </div>
+  }
 </div>

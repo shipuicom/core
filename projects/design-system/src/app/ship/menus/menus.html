@@ -1,74 +1,92 @@
 <h1>Menu</h1>
 <!-- @keywords: menu, popup, dropdown, list, context, navigation -->
 
-<app-property-viewer>
-  <section>
-    <h4>Searchable</h4>
-    <p>
-      Enable a wildcard search input to filter menu options using the
-      <code>searchable</code>
-      attribute.
-    </p>
-  </section>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-  <section>
-    <h4>Behavior</h4>
-    <p>Customize menu interaction:</p>
-    <ul>
-      <li>
-        <code>asMultiLayer</code>
-        : Enables nested menu support.
-      </li>
-      <li>
-        <code>closeOnClick</code>
-        : Determines if the menu closes when an option is selected (default: true).
-      </li>
-      <li>
-        <code>disabled</code>
-        : Disables the menu trigger and content.
-      </li>
-    </ul>
-  </section>
+@let _activeTab = activeTab();
 
-  <section>
-    <h4>Slots</h4>
-    <p>
-      Add a
-      <code>suffix</code>
-      attribute to an element inside a menu option to display hotkeys, icons, or secondary information at the trailing
-      end.
-    </p>
-  </section>
-</app-property-viewer>
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/menus/examples/base-menu-example/base-menu-example" title="Basic">
+      <base-menu-example class="example" />
+    </app-previewer>
 
-<div class="content">
-  <h3>Examples</h3>
+    <app-property-viewer>
+      <section>
+        <h4>Searchable</h4>
+        <p>
+          Enable a wildcard search input to filter menu options using the
+          <code>searchable</code>
+          attribute.
+        </p>
+      </section>
 
-  <app-previewer path="/menus/examples/base-menu-example/base-menu-example" title="Default Menu">
-    <base-menu-example class="example" />
-  </app-previewer>
+      <section>
+        <h4>Behavior</h4>
+        <p>Customize menu interaction:</p>
+        <ul>
+          <li>
+            <code>asMultiLayer</code>
+            : Enables nested menu support.
+          </li>
+          <li>
+            <code>closeOnClick</code>
+            : Determines if the menu closes when an option is selected (default: true).
+          </li>
+          <li>
+            <code>disabled</code>
+            : Disables the menu trigger and content.
+          </li>
+        </ul>
+      </section>
 
-  <app-previewer path="/menus/examples/icon-suffix-menu/icon-suffix-menu" title="Icon Suffix Menu">
-    <sh-icon-suffix-menu class="example" />
-  </app-previewer>
+      <section>
+        <h4>Slots</h4>
+        <p>
+          Add a
+          <code>suffix</code>
+          attribute to an element inside a menu option to display hotkeys, icons, or secondary information at the trailing
+          end.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipMenu" />
+  } @else if (_activeTab === 'examples') {
+    <div class="content">
+      <h3>Examples</h3>
 
-  <app-previewer path="/menus/examples/multi-layer-menu-example/multi-layer-menu-example" title="Multi Layer Menu">
-    <sh-multi-layer-menu-example class="example" />
-  </app-previewer>
+      <app-previewer path="/menus/examples/base-menu-example/base-menu-example" title="Default Menu">
+        <base-menu-example class="example" />
+      </app-previewer>
 
-  <app-previewer path="/menus/examples/search-menu-example/search-menu-example" title="Searchable Menu">
-    <sh-search-menu-example class="example" />
-  </app-previewer>
+      <app-previewer path="/menus/examples/icon-suffix-menu/icon-suffix-menu" title="Icon Suffix Menu">
+        <sh-icon-suffix-menu class="example" />
+      </app-previewer>
 
-  <app-previewer
-    path="/menus/examples/titles-search-menu-example/titles-search-menu-example"
-    title="Searchable Menu with Titles">
-    <sh-titles-search-menu-example class="example" />
-  </app-previewer>
+      <app-previewer path="/menus/examples/multi-layer-menu-example/multi-layer-menu-example" title="Multi Layer Menu">
+        <sh-multi-layer-menu-example class="example" />
+      </app-previewer>
 
-  <app-previewer
-    path="/menus/examples/toggle-select-menu-example/toggle-select-menu-example"
-    title="Toggle Select Menu">
-    <sh-toggle-select-menu-example class="example" />
-  </app-previewer>
+      <app-previewer path="/menus/examples/search-menu-example/search-menu-example" title="Searchable Menu">
+        <sh-search-menu-example class="example" />
+      </app-previewer>
+
+      <app-previewer
+        path="/menus/examples/titles-search-menu-example/titles-search-menu-example"
+        title="Searchable Menu with Titles">
+        <sh-titles-search-menu-example class="example" />
+      </app-previewer>
+
+      <app-previewer
+        path="/menus/examples/toggle-select-menu-example/toggle-select-menu-example"
+        title="Toggle Select Menu">
+        <sh-toggle-select-menu-example class="example" />
+      </app-previewer>
+    </div>
+  }
 </div>

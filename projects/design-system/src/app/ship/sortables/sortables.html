@@ -12,6 +12,10 @@
 
 <div class="tab-content" style="margin-top: 24px">
   @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/sortables/examples/base-sortable/base-sortable" title="Basic">
+      <app-base-sortable class="example" />
+    </app-previewer>
+
     <p>
       Apply the
       <code>shSortable</code>
@@ -20,11 +24,8 @@
 
     <h3>Basic Usage</h3>
     <app-highlight lang="html" [content]="exampleCode" />
-
-    <app-previewer path="/sortables/examples/base-sortable/base-sortable" title="Default">
-      <app-base-sortable class="example" />
-    </app-previewer>
   } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipSortable" />
     <app-property-viewer>
       <section>
         <h4>Enable Sorting</h4>

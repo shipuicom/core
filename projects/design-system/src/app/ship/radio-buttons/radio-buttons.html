@@ -1,85 +1,103 @@
 <h1>Radios</h1>
 <!-- @keywords: radio, button, choice, selection, option, single select -->
 
-<app-property-viewer>
-  <section>
-    <h4>Variants</h4>
-    <p>
-      Radio variants can be set using the
-      <code>variant</code>
-      attribute. Valid options are:
-      <b>simple</b>
-      ,
-      <b>outlined</b>
-      ,
-      <b>flat</b>
-      , and
-      <b>raised</b>
-      .
-    </p>
-  </section>
-  <section>
-    <h4>Colors</h4>
-    <p>
-      Radio colors can be set using the
-      <code>color</code>
-      attribute. Valid options are:
-      <b>primary</b>
-      ,
-      <b>accent</b>
-      ,
-      <b>warn</b>
-      ,
-      <b>error</b>
-      , and
-      <b>success</b>
-      .
-    </p>
-  </section>
-  <section>
-    <h4>Readonly</h4>
-    <p>
-      The radio can be set to readonly through the
-      <code>readonly</code>
-      input (adds the
-      <code>readonly</code>
-      class).
-    </p>
-  </section>
-  <section>
-    <h4>Disabled</h4>
-    <p>
-      The radio can be disabled using the standard
-      <code>disabled</code>
-      attribute or
-      <code>[disabled]</code>
-      binding.
-    </p>
-  </section>
-</app-property-viewer>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-<div class="sandbox-example">
-  <app-previewer path="/radio-buttons/examples/radio-sandbox/radio-sandbox" title="Sandbox" class="no-space">
-    <app-radio-sandbox />
-  </app-previewer>
-</div>
+@let _activeTab = activeTab();
 
-<h3>Variations</h3>
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/radio-buttons/examples/basic-radio/basic-radio" title="Basic">
+      <app-basic-radio class="example" />
+    </app-previewer>
 
-<div class="content">
-  <app-previewer path="/radio-buttons/examples/base-radio/base-radio" title="Default" configName="radio">
-    <app-base-radio class="example" />
-  </app-previewer>
-  <app-previewer path="/radio-buttons/examples/simple-radio/simple-radio" title="Simple">
-    <app-simple-radio class="example" />
-  </app-previewer>
-  <app-previewer path="/radio-buttons/examples/outlined-radio/outlined-radio" title="Outlined">
-    <app-outlined-radio class="example" />
-  </app-previewer>
-  <app-previewer path="/radio-buttons/examples/flat-radio/flat-radio" title="Flat">
-    <app-flat-radio class="example" />
-  </app-previewer>
-  <app-previewer path="/radio-buttons/examples/raised-radio/raised-radio" title="Raised">
-    <app-raised-radio class="example" />
-  </app-previewer>
+    <app-property-viewer>
+      <section>
+        <h4>Variants</h4>
+        <p>
+          Radio variants can be set using the
+          <code>variant</code>
+          attribute. Valid options are:
+          <b>simple</b>
+          ,
+          <b>outlined</b>
+          ,
+          <b>flat</b>
+          , and
+          <b>raised</b>
+          .
+        </p>
+      </section>
+      <section>
+        <h4>Colors</h4>
+        <p>
+          Radio colors can be set using the
+          <code>color</code>
+          attribute. Valid options are:
+          <b>primary</b>
+          ,
+          <b>accent</b>
+          ,
+          <b>warn</b>
+          ,
+          <b>error</b>
+          , and
+          <b>success</b>
+          .
+        </p>
+      </section>
+      <section>
+        <h4>Readonly</h4>
+        <p>
+          The radio can be set to readonly through the
+          <code>readonly</code>
+          input (adds the
+          <code>readonly</code>
+          class).
+        </p>
+      </section>
+      <section>
+        <h4>Disabled</h4>
+        <p>
+          The radio can be disabled using the standard
+          <code>disabled</code>
+          attribute or
+          <code>[disabled]</code>
+          binding.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipRadio" />
+  } @else if (_activeTab === 'examples') {
+    <div class="sandbox-example">
+      <app-previewer path="/radio-buttons/examples/radio-sandbox/radio-sandbox" title="Sandbox" class="no-space">
+        <app-radio-sandbox />
+      </app-previewer>
+    </div>
+
+    <h3>Variations</h3>
+
+    <div class="content">
+      <app-previewer path="/radio-buttons/examples/base-radio/base-radio" title="Default" configName="radio">
+        <app-base-radio class="example" />
+      </app-previewer>
+      <app-previewer path="/radio-buttons/examples/simple-radio/simple-radio" title="Simple">
+        <app-simple-radio class="example" />
+      </app-previewer>
+      <app-previewer path="/radio-buttons/examples/outlined-radio/outlined-radio" title="Outlined">
+        <app-outlined-radio class="example" />
+      </app-previewer>
+      <app-previewer path="/radio-buttons/examples/flat-radio/flat-radio" title="Flat">
+        <app-flat-radio class="example" />
+      </app-previewer>
+      <app-previewer path="/radio-buttons/examples/raised-radio/raised-radio" title="Raised">
+        <app-raised-radio class="example" />
+      </app-previewer>
+    </div>
+  }
 </div>

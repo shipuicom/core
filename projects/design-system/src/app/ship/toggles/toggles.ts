@@ -1,6 +1,9 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ShipTabs } from '@ship-ui/core/ship-tabs';
+import { ApiReference } from '../../api-reference/api-reference';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
+import { BasicToggle } from './examples/basic-toggle/basic-toggle';
 import { BaseToggle } from './examples/base-toggle/base-toggle';
 import { FlatToggle } from './examples/flat-toggle/flat-toggle';
 import { OutlinedToggle } from './examples/outlined-toggle/outlined-toggle';
@@ -11,8 +14,11 @@ import { ToggleSandbox } from './examples/toggle-sandbox';
 @Component({
   selector: 'app-toggles',
   imports: [
+    ShipTabs,
+    ApiReference,
     Previewer,
     PropertyViewer,
+    BasicToggle,
     BaseToggle,
     SimpleToggle,
     OutlinedToggle,
@@ -24,4 +30,6 @@ import { ToggleSandbox } from './examples/toggle-sandbox';
   styleUrl: './toggles.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class Toggles {}
+export default class Toggles {
+  activeTab = signal('overview');
+}

@@ -1,89 +1,108 @@
 <h1>Dialog</h1>
 <!-- @keywords: dialog, modal, popup, overlay, alert, confirm, window -->
 
-<p>Utility component to create dialogs for modals, forms, and more.</p>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-<app-property-viewer>
-  <section>
-    <h4>Customization</h4>
-    <p>
-      The
-      <code>options</code>
-      attribute accepts a configuration object for:
-      <code>width</code>
-      ,
-      <code>height</code>
-      ,
-      <code>maxWidth</code>
-      ,
-      <code>maxHeight</code>
-      ,
-      <code>closeOnButton</code>
-      ,
-      <code>closeOnEsc</code>
-      , and
-      <code>closeOnOutsideClick</code>
-      .
-    </p>
-  </section>
+@let _activeTab = activeTab();
 
-  <section>
-    <h4>Variants</h4>
-    <p>
-      Dialogs support multiple layouts via the
-      <code>variant</code>
-      attribute. Valid options:
-      <b>default</b>
-      and
-      <b>type-b</b>
-      .
-    </p>
-  </section>
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/dialogs/examples/basic-dynamic-dialog/basic-dynamic-dialog" title="Basic">
+      <basic-dynamic-dialog class="example" />
+    </app-previewer>
 
-  <section>
-    <h4>Slots</h4>
-    <p>
-      Structure your dialog content using the
-      <code>header</code>
-      ,
-      <code>content</code>
-      , and
-      <code>footer</code>
-      attributes on container elements.
-    </p>
-  </section>
-</app-property-viewer>
+    <p>Utility component to create dialogs for modals, forms, and more.</p>
 
-<div class="controls">
-  <sh-button-group [(value)]="type">
-    <button value="">Default</button>
-    <button value="type-b">Type B</button>
-    <button value="type-c">Type C</button>
-  </sh-button-group>
-</div>
+    <app-property-viewer>
+      <section>
+        <h4>Customization</h4>
+        <p>
+          The
+          <code>options</code>
+          attribute accepts a configuration object for:
+          <code>width</code>
+          ,
+          <code>height</code>
+          ,
+          <code>maxWidth</code>
+          ,
+          <code>maxHeight</code>
+          ,
+          <code>closeOnButton</code>
+          ,
+          <code>closeOnEsc</code>
+          , and
+          <code>closeOnOutsideClick</code>
+          .
+        </p>
+      </section>
 
-<div class="content">
-  <h3>Examples</h3>
+      <section>
+        <h4>Variants</h4>
+        <p>
+          Dialogs support multiple layouts via the
+          <code>variant</code>
+          attribute. Valid options:
+          <b>default</b>
+          and
+          <b>type-b</b>
+          .
+        </p>
+      </section>
 
-  <app-previewer path="/dialogs/examples/basic-dynamic-dialog/basic-dynamic-dialog" title="Basic Dialog">
-    <basic-dynamic-dialog class="example" [type]="type()" />
-  </app-previewer>
+      <section>
+        <h4>Slots</h4>
+        <p>
+          Structure your dialog content using the
+          <code>header</code>
+          ,
+          <code>content</code>
+          , and
+          <code>footer</code>
+          attributes on container elements.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipDialog" />
+    <app-api-reference name="ShipDialogService" />
+  } @else if (_activeTab === 'examples') {
+    <div class="controls">
+      <sh-button-group [(value)]="type">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </div>
 
-  <app-previewer path="/dialogs/examples/dialog-as-component/dialog-as-component" title="Data Passing & Close Event">
-    <app-dialog-as-component class="example" [type]="type()" />
-  </app-previewer>
+    <div class="content">
+      <h3>Examples</h3>
 
-  <app-previewer
-    path="/dialogs/examples/header-footer-dialog/header-footer-dialog"
-    title="Header, Content & Footer Dialog">
-    <header-footer-dialog class="example" [type]="type()" />
-  </app-previewer>
+      <app-previewer path="/dialogs/examples/basic-dynamic-dialog/basic-dynamic-dialog" title="Basic Dialog">
+        <basic-dynamic-dialog class="example" [type]="type()" />
+      </app-previewer>
 
-  <app-previewer path="/dialogs/examples/data-passing-dialog/data-passing-dialog" title="Data Passing & Close Event">
-    <data-passing-dialog class="example" [type]="type()" />
-  </app-previewer>
+      <app-previewer path="/dialogs/examples/dialog-as-component/dialog-as-component" title="Data Passing & Close Event">
+        <app-dialog-as-component class="example" [type]="type()" />
+      </app-previewer>
 
-  <app-previewer path="/dialogs/examples/template-dialog/template-dialog" title="Template-based Dialog">
-    <template-dialog class="example" [type]="type()" />
-  </app-previewer>
+      <app-previewer
+        path="/dialogs/examples/header-footer-dialog/header-footer-dialog"
+        title="Header, Content & Footer Dialog">
+        <header-footer-dialog class="example" [type]="type()" />
+      </app-previewer>
+
+      <app-previewer path="/dialogs/examples/data-passing-dialog/data-passing-dialog" title="Data Passing & Close Event">
+        <data-passing-dialog class="example" [type]="type()" />
+      </app-previewer>
+
+      <app-previewer path="/dialogs/examples/template-dialog/template-dialog" title="Template-based Dialog">
+        <template-dialog class="example" [type]="type()" />
+      </app-previewer>
+    </div>
+  }
 </div>

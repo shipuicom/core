@@ -1,9 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ShipAlertService } from '@ship-ui/core/ship-alert';
+import { ShipTabs } from '@ship-ui/core/ship-tabs';
+import { ApiReference } from '../../api-reference/api-reference';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
 import { AlertsSandbox } from './examples/alerts-sandbox';
 import { BaseAlert } from './examples/base-alert/base-alert';
+import { BasicAlert } from './examples/basic-alert/basic-alert';
 import { FlatAlert } from './examples/flat-alert/flat-alert';
 import { OutlinedAlert } from './examples/outlined-alert/outlined-alert';
 import { RaisedAlert } from './examples/raised-alert/raised-alert';
@@ -11,12 +14,13 @@ import { SimpleAlert } from './examples/simple-alert/simple-alert';
 
 @Component({
   selector: 'app-alerts',
-  imports: [Previewer, PropertyViewer, AlertsSandbox, BaseAlert, SimpleAlert, OutlinedAlert, FlatAlert, RaisedAlert],
+  imports: [ShipTabs, ApiReference, Previewer, PropertyViewer, AlertsSandbox, BasicAlert, BaseAlert, SimpleAlert, OutlinedAlert, FlatAlert, RaisedAlert],
   templateUrl: './alerts.html',
   styleUrl: './alerts.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class Alerts {
+  activeTab = signal('overview');
   shipAlertService = inject(ShipAlertService);
 
   count = 0;

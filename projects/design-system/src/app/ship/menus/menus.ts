@@ -1,4 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ShipTabs } from '@ship-ui/core/ship-tabs';
+import { ApiReference } from '../../api-reference/api-reference';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
 import { BaseMenuExample } from './examples/base-menu-example/base-menu-example';
@@ -11,6 +13,8 @@ import { ToggleSelectMenuExample } from './examples/toggle-select-menu-example/t
 @Component({
   selector: 'app-menus',
   imports: [
+    ShipTabs,
+    ApiReference,
     PropertyViewer,
     Previewer,
     BaseMenuExample,
@@ -25,6 +29,7 @@ import { ToggleSelectMenuExample } from './examples/toggle-select-menu-example/t
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class Menus {
+  activeTab = signal('overview');
   menuItems = signal<any[]>(new Array(2000).fill(0));
   activeItems = signal<number[]>([]);
 

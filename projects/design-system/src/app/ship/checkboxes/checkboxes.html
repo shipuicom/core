@@ -1,7 +1,21 @@
 <h1>Checkboxes</h1>
 <!-- @keywords: checkbox, toggle, boolean, checkmark, tick box, checked, multi-select, form control -->
 
-<app-property-viewer>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
+
+@let _activeTab = activeTab();
+
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/checkboxes/examples/basic-checkbox/basic-checkbox" title="Basic">
+      <app-basic-checkbox class="example" />
+    </app-previewer>
+
+    <app-property-viewer>
   <section>
     <h4>Variants</h4>
     <p>
@@ -64,34 +78,38 @@
       binding.
     </p>
   </section>
-</app-property-viewer>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipCheckbox" />
+  } @else if (_activeTab === 'examples') {
+    <div class="sandbox-example">
+      <app-previewer path="/checkboxes/examples/checkbox-sandbox/checkbox-sandbox" title="Sandbox" class="no-space">
+        <app-checkbox-sandbox />
+      </app-previewer>
+    </div>
 
-<div class="sandbox-example">
-  <app-previewer path="/checkboxes/examples/checkbox-sandbox/checkbox-sandbox" title="Sandbox" class="no-space">
-    <app-checkbox-sandbox />
-  </app-previewer>
-</div>
+    <h3>Variations</h3>
 
-<h3>Variations</h3>
+    <div class="content">
+      <app-previewer path="/checkboxes/examples/base-checkbox/base-checkbox" title="Default" configName="checkbox">
+        <app-base-checkbox class="example" />
+      </app-previewer>
 
-<div class="content">
-  <app-previewer path="/checkboxes/examples/base-checkbox/base-checkbox" title="Default" configName="checkbox">
-    <app-base-checkbox class="example" />
-  </app-previewer>
+      <app-previewer path="/checkboxes/examples/simple-checkbox/simple-checkbox" title="Simple">
+        <app-simple-checkbox class="example" />
+      </app-previewer>
 
-  <app-previewer path="/checkboxes/examples/simple-checkbox/simple-checkbox" title="Simple">
-    <app-simple-checkbox class="example" />
-  </app-previewer>
+      <app-previewer path="/checkboxes/examples/outlined-checkbox/outlined-checkbox" title="Outlined">
+        <app-outlined-checkbox class="example" />
+      </app-previewer>
 
-  <app-previewer path="/checkboxes/examples/outlined-checkbox/outlined-checkbox" title="Outlined">
-    <app-outlined-checkbox class="example" />
-  </app-previewer>
+      <app-previewer path="/checkboxes/examples/flat-checkbox/flat-checkbox" title="Flat">
+        <app-flat-checkbox class="example" />
+      </app-previewer>
 
-  <app-previewer path="/checkboxes/examples/flat-checkbox/flat-checkbox" title="Flat">
-    <app-flat-checkbox class="example" />
-  </app-previewer>
-
-  <app-previewer path="/checkboxes/examples/raised-checkbox/raised-checkbox" title="Raised">
-    <app-raised-checkbox class="example" />
-  </app-previewer>
+      <app-previewer path="/checkboxes/examples/raised-checkbox/raised-checkbox" title="Raised">
+        <app-raised-checkbox class="example" />
+      </app-previewer>
+    </div>
+  }
 </div>

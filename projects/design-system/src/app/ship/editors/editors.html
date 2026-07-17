@@ -4,6 +4,7 @@
 <sh-tabs color="primary" [(value)]="activeTab">
   <button value="overview">Overview</button>
   <button value="api">API</button>
+  <button value="parts">Sub-components</button>
   <button value="styling">Styling</button>
   <button value="examples">Examples</button>
 </sh-tabs>
@@ -50,6 +51,12 @@
       </app-previewer>
     </div>
   } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipEditor" />
+  } @else if (_activeTab === 'parts') {
+    <p>Public directives and sub-components that compose <code>sh-editor</code>.</p>
+    <app-api-reference name="ShipEditorToolbar" />
+    <app-api-reference name="ShipEditorFloatingToolbar" />
+    <app-api-reference name="ShipEditorActionDirective" />
     <app-property-viewer>
       <section>
         <h4>Inputs</h4>

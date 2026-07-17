@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ShipTabs } from '@ship-ui/core/ship-tabs';
+import { ApiReference } from '../../api-reference/api-reference';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
 import { SandboxAccordion } from './examples/sandbox-accordion/sandbox-accordion';
@@ -8,6 +10,8 @@ import { TypeBAccordion } from './examples/type-b-accordion/type-b-accordion';
 @Component({
   selector: 'app-accordions',
   imports: [
+    ShipTabs,
+    ApiReference,
     Previewer,
     PropertyViewer,
     SandboxAccordion,
@@ -18,4 +22,6 @@ import { TypeBAccordion } from './examples/type-b-accordion/type-b-accordion';
   styleUrl: './accordions.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class Accordions {}
+export default class Accordions {
+  activeTab = signal('overview');
+}

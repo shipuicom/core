@@ -1,13 +1,45 @@
-<sh-virtual-scroll>
-  @for (item of items(); track item.id) {
-    <div #item class="my-item" [style.background-color]="item.color">
-      <div [style.font-size.px]="item.fontSize">{{ item.name }} (ID: {{ item.id }})</div>
-      @if (item.showContent) {
-        <div>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident, excepturi deserunt dignissimos corrupti
-          repellendus obcaecati.
+<h1>Virtual Scroll</h1>
+
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
+
+@let _activeTab = activeTab();
+
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/virtual-scrolls/examples/basic-virtual-scroll/basic-virtual-scroll" title="Basic">
+      <app-basic-virtual-scroll class="example" />
+    </app-previewer>
+
+    <app-property-viewer>
+      <section>
+        <h4>Virtual Scroll</h4>
+        <p>
+          The
+          <code>sh-virtual-scroll</code>
+          component efficiently renders large lists by only rendering the items currently visible in the viewport,
+          supporting variable item heights.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipVirtualScroll" />
+  } @else if (_activeTab === 'examples') {
+    <sh-virtual-scroll>
+      @for (item of items(); track item.id) {
+        <div #item class="my-item" [style.background-color]="item.color">
+          <div [style.font-size.px]="item.fontSize">{{ item.name }} (ID: {{ item.id }})</div>
+          @if (item.showContent) {
+            <div>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident, excepturi deserunt dignissimos corrupti
+              repellendus obcaecati.
+            </div>
+          }
         </div>
       }
-    </div>
+    </sh-virtual-scroll>
   }
-</sh-virtual-scroll>
+</div>

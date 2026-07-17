@@ -1,67 +1,85 @@
 <h1>Cards</h1>
 <!-- @keywords: card, container, panel, surface, layout, box -->
 
-<app-property-viewer>
-  <section>
-    <h4>Variants</h4>
-    <p>
-      Card variants can be set using the
-      <code>variant</code>
-      attribute. Available options:
-      <b>type-a</b>
-      ,
-      <b>type-b</b>
-      ,
-      <b>type-c</b>
-      , and
-      <b>default</b>
-      .
-    </p>
-  </section>
-  <section>
-    <h4>Toggle Card</h4>
-    <p>
-      Use
-      <code>&lt;sh-toggle-card&gt;</code>
-      for collapsible content. Use the
-      <code>disableToggle</code>
-      attribute or binding to keep the card open.
-    </p>
-  </section>
-</app-property-viewer>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-<div class="sandbox-example">
-  <app-previewer path="/cards/examples/card-sandbox/card-sandbox" title="Sandbox" class="no-space">
-    <app-card-sandbox />
-  </app-previewer>
-</div>
+@let _activeTab = activeTab();
 
-<div class="content">
-  <h3>Variations</h3>
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/cards/examples/base-card/base-card" title="Basic">
+      <app-base-card class="example" />
+    </app-previewer>
 
-  <app-previewer path="/cards/examples/base-card/base-card" title="Default">
-    <app-base-card />
-  </app-previewer>
+    <app-property-viewer>
+      <section>
+        <h4>Variants</h4>
+        <p>
+          Card variants can be set using the
+          <code>variant</code>
+          attribute. Available options:
+          <b>type-a</b>
+          ,
+          <b>type-b</b>
+          ,
+          <b>type-c</b>
+          , and
+          <b>default</b>
+          .
+        </p>
+      </section>
+      <section>
+        <h4>Toggle Card</h4>
+        <p>
+          Use
+          <code>&lt;sh-toggle-card&gt;</code>
+          for collapsible content. Use the
+          <code>disableToggle</code>
+          attribute or binding to keep the card open.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipCard" />
+  } @else if (_activeTab === 'examples') {
+    <div class="sandbox-example">
+      <app-previewer path="/cards/examples/card-sandbox/card-sandbox" title="Sandbox" class="no-space">
+        <app-card-sandbox />
+      </app-previewer>
+    </div>
 
-  <app-previewer path="/cards/examples/type-a-card/type-a-card" title="Type A">
-    <app-type-a-card />
-  </app-previewer>
+    <div class="content">
+      <h3>Variations</h3>
 
-  <app-previewer path="/cards/examples/type-b-card/type-b-card" title="Type B">
-    <app-type-b-card />
-  </app-previewer>
+      <app-previewer path="/cards/examples/base-card/base-card" title="Default">
+        <app-base-card />
+      </app-previewer>
 
-  <app-previewer path="/cards/examples/type-c-card/type-c-card" title="Type C">
-    <app-type-c-card />
-  </app-previewer>
+      <app-previewer path="/cards/examples/type-a-card/type-a-card" title="Type A">
+        <app-type-a-card />
+      </app-previewer>
 
-  <app-previewer path="/cards/examples/toggle-card/toggle-card" title="Toggle Card">
-    <app-toggle-card-example />
-  </app-previewer>
+      <app-previewer path="/cards/examples/type-b-card/type-b-card" title="Type B">
+        <app-type-b-card />
+      </app-previewer>
 
-  <app-previewer
-    path="/cards/examples/toggle-card-disallowed/toggle-card-disallowed"
-    title="Toggle Card (disableToggle)">
-    <app-toggle-card-disallowed-example />
-  </app-previewer>
+      <app-previewer path="/cards/examples/type-c-card/type-c-card" title="Type C">
+        <app-type-c-card />
+      </app-previewer>
+
+      <app-previewer path="/cards/examples/toggle-card/toggle-card" title="Toggle Card">
+        <app-toggle-card-example />
+      </app-previewer>
+
+      <app-previewer
+        path="/cards/examples/toggle-card-disallowed/toggle-card-disallowed"
+        title="Toggle Card (disableToggle)">
+        <app-toggle-card-disallowed-example />
+      </app-previewer>
+    </div>
+  }
 </div>

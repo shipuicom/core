@@ -1,0 +1,17 @@
+<sh-stepper [(value)]="activeStep">
+  <button value="0">Step 1</button>
+  <button value="1">Step 2</button>
+  <button value="2">Step 3</button>
+</sh-stepper>
+
+@let _activeStep = activeStep();
+
+<div class="step-content">
+  @if (_activeStep === '0') {
+    <div>Step 1 Content</div>
+  } @else if (_activeStep === '1') {
+    <div>Step 2 Content</div>
+  } @else if (_activeStep === '2') {
+    <div>Step 3 Content</div>
+  }
+</div>

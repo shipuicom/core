@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ShipTabs } from '@ship-ui/core/ship-tabs';
+import { ApiReference } from '../../api-reference/api-reference';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
 import { BaseDatepicker } from './examples/base-datepicker/base-datepicker';
@@ -15,6 +17,8 @@ const now = new Date();
 @Component({
   selector: 'app-datepickers',
   imports: [
+    ShipTabs,
+    ApiReference,
     FormsModule,
     ReactiveFormsModule,
     BaseDatepicker,
@@ -32,6 +36,7 @@ const now = new Date();
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class Datepickers {
+  activeTab = signal('overview');
   someDate = signal(now);
   someOtherDate = signal(new Date('2023-01-01T12:00:00Z')); // Noon UTC
   someRangeDate = signal(new Date('2023-01-01T22:00:00Z')); // 11PM UTC

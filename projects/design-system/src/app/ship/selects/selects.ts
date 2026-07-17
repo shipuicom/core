@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, effect, model, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ShipTabs } from '@ship-ui/core/ship-tabs';
+import { ApiReference } from '../../api-reference/api-reference';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
 import { BaseSelect } from './examples/base-select/base-select';
@@ -33,6 +35,8 @@ disabledCtrl.disable();
 @Component({
   selector: 'app-selects',
   imports: [
+    ShipTabs,
+    ApiReference,
     FormsModule,
     ReactiveFormsModule,
     Previewer,
@@ -57,6 +61,8 @@ disabledCtrl.disable();
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class Selects {
+  activeTab = signal('overview');
+
   // New
   inputCtrlNew1 = new FormControl<any | null>(1);
   inputHello = signal<any | undefined>(1);

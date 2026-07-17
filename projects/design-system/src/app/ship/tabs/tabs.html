@@ -1,47 +1,65 @@
 <h1>Tabs</h1>
 <!-- @keywords: tab, panel, navigation, routing, sections -->
 
-<app-property-viewer>
-  <section>
-    <h4>Colors</h4>
-    <p>
-      Tab colors can be set using the
-      <code>color</code>
-      attribute. Available options are:
-      <b>primary</b>
-      ,
-      <b>accent</b>
-      ,
-      <b>warn</b>
-      ,
-      <b>error</b>
-      , and
-      <b>success</b>
-      .
-    </p>
-  </section>
-</app-property-viewer>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-<div class="sandbox-example">
-  <app-previewer path="/tabs/examples/tabs-sandbox/tabs-sandbox" title="Sandbox" class="no-space">
-    <app-tabs-sandbox />
-  </app-previewer>
-</div>
+@let _activeTab = activeTab();
 
-<div class="content">
-  <h3>Variations</h3>
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/tabs/examples/basic-tab/basic-tab" title="Basic">
+      <app-basic-tab class="example" />
+    </app-previewer>
 
-  <app-previewer path="/tabs/examples/default-tabs/default-tabs" title="Default Tabs as buttons">
-    <app-default-tabs />
-  </app-previewer>
+    <app-property-viewer>
+      <section>
+        <h4>Colors</h4>
+        <p>
+          Tab colors can be set using the
+          <code>color</code>
+          attribute. Available options are:
+          <b>primary</b>
+          ,
+          <b>accent</b>
+          ,
+          <b>warn</b>
+          ,
+          <b>error</b>
+          , and
+          <b>success</b>
+          .
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipTabs" />
+  } @else if (_activeTab === 'examples') {
+    <div class="sandbox-example">
+      <app-previewer path="/tabs/examples/tabs-sandbox/tabs-sandbox" title="Sandbox" class="no-space">
+        <app-tabs-sandbox />
+      </app-previewer>
+    </div>
 
-  <app-previewer path="/tabs/examples/custom-tabs/custom-tabs" title="Custom div element as Tabs">
-    <app-custom-tabs />
-  </app-previewer>
+    <div class="content">
+      <h3>Variations</h3>
 
-  <app-previewer class="align-start" path="/tabs/examples/router-tabs/router-tabs" title="Router Tabs">
-    <app-router-tabs />
+      <app-previewer path="/tabs/examples/default-tabs/default-tabs" title="Default Tabs as buttons">
+        <app-default-tabs />
+      </app-previewer>
 
-    <router-outlet></router-outlet>
-  </app-previewer>
+      <app-previewer path="/tabs/examples/custom-tabs/custom-tabs" title="Custom div element as Tabs">
+        <app-custom-tabs />
+      </app-previewer>
+
+      <app-previewer class="align-start" path="/tabs/examples/router-tabs/router-tabs" title="Router Tabs">
+        <app-router-tabs />
+
+        <router-outlet></router-outlet>
+      </app-previewer>
+    </div>
+  }
 </div>

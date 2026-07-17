@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ApiReference } from '../../api-reference/api-reference';
 import { Highlight } from '../../previewer/highlight/highlight';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
@@ -53,6 +54,7 @@ const CONTENT_EXAMPLE = [
     GridSortableExample,
     HandleSortable,
     SortableTreeExample,
+    ApiReference,
     PropertyViewer,
     Previewer,
     Highlight,

@@ -10,6 +10,7 @@ import { ShipKbd } from '@ship-ui/core/ship-kbd';
 import { ShipSelect } from '@ship-ui/core/ship-select';
 import { ShipTabs } from '@ship-ui/core/ship-tabs';
 import { ShipTooltip } from '@ship-ui/core/ship-tooltip';
+import { ApiReference } from '../../api-reference/api-reference';
 import { Highlight } from '../../previewer/highlight/highlight';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
@@ -44,6 +45,7 @@ class HighlightBehavior extends BaseInlineBehavior {
   standalone: true,
   imports: [
     FormsModule,
+    ApiReference,
     Highlight,
     Previewer,
     PropertyViewer,
@@ -70,7 +72,7 @@ class HighlightBehavior extends BaseInlineBehavior {
 })
 export default class Editors {
 
-  activeTab = signal<'overview' | 'api' | 'styling' | 'examples'>('overview');
+  activeTab = signal<'overview' | 'api' | 'parts' | 'styling' | 'examples'>('overview');
 
   usageExample = `import { Component, signal } from '@angular/core';
 import { ShipEditor, ShipEditorToolbar, ShipEditorActionDirective } from '@ship-ui/core/ship-editor';

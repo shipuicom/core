@@ -22,6 +22,10 @@ export const routes: Routes = [
         loadComponent: () => import('./theme-editor/theme-editor'),
       },
       {
+        path: 'theme-toggle',
+        loadComponent: () => import('./ship/theme-toggle/theme-toggle'),
+      },
+      {
         path: 'buttons',
         loadComponent: () => import('./ship/buttons/buttons'),
       },

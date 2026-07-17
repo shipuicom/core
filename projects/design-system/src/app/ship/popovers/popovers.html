@@ -1,57 +1,75 @@
 <h1>Popover</h1>
 <!-- @keywords: popover, tooltip, dropdown, flyout, overlay, popup -->
 
-<p>Utility component to create popovers with auto positioning using css anchor and js as a fallback.</p>
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
 
-<app-property-viewer>
-  <section>
-    <h4>Hover Trigger</h4>
-    <p>
-      Use the
-      <code>onHover</code>
-      attribute or binding to open the popover on hover instead of click.
-    </p>
-  </section>
-  <section>
-    <h4>Nesting</h4>
-    <p>
-      Use the
-      <code>asMultiLayer</code>
-      attribute to enable nested popover support.
-    </p>
-  </section>
-  <section>
-    <h4>Customization</h4>
-    <p>
-      The
-      <code>options</code>
-      attribute accepts a configuration object with:
-      <code>width</code>
-      ,
-      <code>height</code>
-      ,
-      <code>closeOnButton</code>
-      , and
-      <code>closeOnEsc</code>
-      .
-    </p>
-  </section>
-</app-property-viewer>
+@let _activeTab = activeTab();
 
-<div class="content">
-  <h3>Examples</h3>
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/popovers/examples/button-popover/button-popover" title="Basic">
+      <button-popover class="example" />
+    </app-previewer>
 
-  <app-previewer path="/popovers/examples/button-popover/button-popover" title="Popover with Button">
-    <button-popover class="example" />
-  </app-previewer>
+    <p>Utility component to create popovers with auto positioning using css anchor and js as a fallback.</p>
 
-  <app-previewer path="/popovers/examples/sh-button-popover/sh-button-popover" title="Popover with sh-button">
-    <sh-button-popover class="example" />
-  </app-previewer>
+    <app-property-viewer>
+      <section>
+        <h4>Hover Trigger</h4>
+        <p>
+          Use the
+          <code>onHover</code>
+          attribute or binding to open the popover on hover instead of click.
+        </p>
+      </section>
+      <section>
+        <h4>Nesting</h4>
+        <p>
+          Use the
+          <code>asMultiLayer</code>
+          attribute to enable nested popover support.
+        </p>
+      </section>
+      <section>
+        <h4>Customization</h4>
+        <p>
+          The
+          <code>options</code>
+          attribute accepts a configuration object with:
+          <code>width</code>
+          ,
+          <code>height</code>
+          ,
+          <code>closeOnButton</code>
+          , and
+          <code>closeOnEsc</code>
+          .
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipPopover" />
+  } @else if (_activeTab === 'examples') {
+    <div class="content">
+      <h3>Examples</h3>
 
-  <app-previewer
-    path="/popovers/examples/trigger-attribute-popover/trigger-attribute-popover"
-    title="Popover with Trigger Attribute">
-    <trigger-attribute-popover class="example" />
-  </app-previewer>
+      <app-previewer path="/popovers/examples/button-popover/button-popover" title="Popover with Button">
+        <button-popover class="example" />
+      </app-previewer>
+
+      <app-previewer path="/popovers/examples/sh-button-popover/sh-button-popover" title="Popover with sh-button">
+        <sh-button-popover class="example" />
+      </app-previewer>
+
+      <app-previewer
+        path="/popovers/examples/trigger-attribute-popover/trigger-attribute-popover"
+        title="Popover with Trigger Attribute">
+        <trigger-attribute-popover class="example" />
+      </app-previewer>
+    </div>
+  }
 </div>

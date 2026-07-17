@@ -4,6 +4,7 @@
 <sh-tabs color="primary" [(value)]="activeTab">
   <button value="overview">Overview</button>
   <button value="api">API</button>
+  <button value="parts">Sub-components</button>
   <button value="styling">Styling</button>
   <button value="examples">Examples</button>
 </sh-tabs>
@@ -12,6 +13,10 @@
 
 <div class="tab-content" style="margin-top: 24px">
   @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/tree/examples/basic-tree/basic-tree" title="Basic">
+      <app-basic-tree class="example" />
+    </app-previewer>
+
     <p>
       The
       <code>&lt;sh-tree&gt;</code>
@@ -30,11 +35,12 @@
         <app-highlight lang="ts" [content]="basicCodeTypescript" />
       </div>
     </div>
-
-    <app-previewer path="/tree/examples/basic-tree/basic-tree" title="Default Tree Explorer">
-      <app-basic-tree class="example" />
-    </app-previewer>
   } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipTree" />
+  } @else if (_activeTab === 'parts') {
+    <p>Public sub-components that compose <code>sh-tree</code>.</p>
+    <app-api-reference name="ShipTreeNode" />
+    <app-api-reference name="ShipTreeNodeActions" />
     <app-property-viewer>
       <section>
         <h4>Inputs</h4>

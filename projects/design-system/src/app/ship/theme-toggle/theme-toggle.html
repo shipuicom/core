@@ -1,0 +1,84 @@
+<h1>Theme Toggle</h1>
+<!-- @keywords: theme, dark mode, light mode, toggle, appearance, color scheme -->
+
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
+
+@let _activeTab = activeTab();
+
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/theme-toggle/examples/basic-theme-toggle/basic-theme-toggle" title="Basic">
+      <app-basic-theme-toggle class="example" />
+    </app-previewer>
+
+    <app-property-viewer>
+      <section>
+        <h4>Overview</h4>
+        <p>
+          <code>&lt;ship-theme-toggle&gt;</code>
+          is a ready-made button that cycles the application between
+          <b>light</b>
+          ,
+          <b>dark</b>
+          , and
+          <b>system</b>
+          appearance. It renders a Ship button with a matching icon and delegates the actual theme switching to the
+          <code>ShipThemeState</code>
+          service.
+        </p>
+      </section>
+
+      <section>
+        <h4>Usage</h4>
+        <p>Drop the component anywhere — typically in a header or toolbar. It works out of the box with no inputs.</p>
+        <app-highlight lang="ts" [content]="usageExample" />
+      </section>
+
+      <section>
+        <h4>Styling</h4>
+        <p>
+          The toggle forwards
+          <code>color</code>
+          ,
+          <code>variant</code>
+          , and
+          <code>size</code>
+          to its underlying
+          <code>shButton</code>
+          , so it matches the rest of your buttons.
+        </p>
+      </section>
+
+      <section>
+        <h4>Controlling the theme directly</h4>
+        <p>
+          The
+          <code>ShipThemeState</code>
+          service (provided in root) exposes a reactive
+          <code>theme</code>
+          signal plus
+          <code>toggleTheme()</code>
+          and
+          <code>setTheme()</code>
+          . Inject it to read or set the theme from your own UI.
+        </p>
+        <app-highlight lang="ts" [content]="serviceExample" />
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipThemeToggle" />
+    <app-api-reference name="ShipThemeState" />
+  } @else if (_activeTab === 'examples') {
+    <app-previewer defaultView="markup" path="/theme-toggle/examples/basic-theme-toggle/basic-theme-toggle" title="Basic">
+      <app-basic-theme-toggle class="example" />
+    </app-previewer>
+
+    <app-previewer path="/theme-toggle/examples/styled-theme-toggle/styled-theme-toggle" title="Styled">
+      <app-styled-theme-toggle class="example" />
+    </app-previewer>
+  }
+</div>
