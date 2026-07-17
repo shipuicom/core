@@ -10,7 +10,17 @@ sh-card {
   --card-c: var(--primary-8);
 
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  // minmax(0, …) keeps the two columns equal and lets wide content (code blocks)
+  // scroll within its column instead of blowing the grid out of the container.
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: p2r(20);
   padding: p2r(20);
+
+  // Collapse to a single column once the content column gets narrow (the sidebar
+  // eats horizontal space, so two columns read cramped well before mobile).
+  @include breakpoint(-centi) {
+    grid-template-columns: 1fr;
+    gap: p2r(16);
+    padding: p2r(16);
+  }
 }
