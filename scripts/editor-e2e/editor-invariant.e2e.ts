@@ -698,6 +698,30 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('document variant: variant="document" adds the host class and centres the page', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    const editor = page.locator('sh-editor').first();
+    const container = editor.locator('.sh-editor-container');
+
+    await expect(editor).not.toHaveClass(/(^|\s)document(\s|$)/);
+    expect(await container.evaluate((el) => getComputedStyle(el).maxWidth)).toBe('none'); // base: full width
+
+    await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('app-editors-exp')!).documentVariant.set(true));
+
+    await expect(editor).toHaveClass(/(^|\s)document(\s|$)/);
+    // The container becomes a width-constrained, centred page (auto side margins).
+    const layout = await container.evaluate((el) => {
+      const editorEl = el.closest('sh-editor') as HTMLElement;
+      return {
+        maxWidth: getComputedStyle(el).maxWidth,
+        insetFromDesk: el.getBoundingClientRect().left - editorEl.getBoundingClientRect().left,
+      };
+    });
+    expect(layout.maxWidth).not.toBe('none'); // constrained page width
+    expect(layout.insetFromDesk).toBeGreaterThan(0); // sits inside the desk, not flush
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('parity: metrics footer, placeholder, and source-view round-trip', async ({ page }) => {
     const { errors } = await openEditor(page);
     // The showcase mounts two editors; scope every query to the first (the one

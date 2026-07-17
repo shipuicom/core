@@ -86,6 +86,8 @@ export default class EditorsExpShowcase {
   showMetrics = signal(true);
   /** Opt in to the image mid-edge resize handles (one-axis stretch). */
   imageEdgeResize = signal(false);
+  /** Switch the editor to the document-canvas variant. */
+  documentVariant = signal(false);
   placeholder = signal('Start typing something beautiful...');
 
   /**

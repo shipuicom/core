@@ -54,6 +54,10 @@ function blockPlainText(block: ASTBlockNode): string {
   exportAs: 'shEditor',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  // Style variant as a host class, the Ship convention (cf. shButton): the
+  // variant name becomes a class, so `variant="document"` styles via
+  // `sh-editor.document`. Bound per-variant so consumer classes aren't clobbered.
+  host: { '[class.document]': "variant() === 'document'" },
   imports: [ShipEditorLinkPopover, ShipEditorImagePopover, ShipEditorContextualToolbar, ShipEditorImageResize, ShipEditorSlashMenu],
   providers: [
     EditorEngineService,
@@ -120,6 +124,10 @@ export class ShipEditorExp implements ControlValueAccessor {
 
   readonly = input(false);
   format = input<'html' | 'json' | 'markdown'>('html');
+
+  /** Visual style variant (Ship convention). `'document'` turns the editor into a
+   * centered page on a muted canvas; `'base'` (default) is the inline surface. */
+  variant = input<'base' | 'document'>('base');
 
   /**
    * Extra block/inline behaviors to register on top of the built-in set.

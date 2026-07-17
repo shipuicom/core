@@ -38,6 +38,27 @@ sh-editor {
     }
   }
 
+  // ── Document variant: a centered page on a muted canvas ──────────────────
+  // `variant="document"` (Ship convention → `.document` host class) restyles the
+  // editor as a page — paper surface, roomy 1in-ish margins, a page-height feel —
+  // dropped onto a muted "desk", the shadow lifting it off the canvas.
+  &.document {
+    --editor-min-h: #{p2r(720)};
+    --editor-p: #{p2r(64)} #{p2r(72)};
+    background: var(--base-3);
+    border-radius: 0;
+    padding: #{p2r(32)} #{p2r(20)};
+
+    .sh-editor-container {
+      max-width: #{p2r(816)};
+      margin-inline: auto;
+      // Keep the hairline border (it defines the page edge where the shadow is
+      // faint, e.g. dark mode) and add a lift so the page floats over the desk.
+      border-radius: var(--shape-2);
+      box-shadow: var(--box-shadow-30);
+    }
+  }
+
   .sh-editor-body {
     position: relative;
     display: flex;
