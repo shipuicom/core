@@ -12,8 +12,9 @@ sh-editor {
   --editor-footer-bg: var(--base-2);
   --editor-p: #{p2r(16)} #{p2r(20)};
   --editor-min-h: #{p2r(150)};
-  --editor-border-focus: var(--primary-8);
-  --editor-shadow-focus: 0 0 0 3px var(--primary-3);
+  // Subtle neutral focus highlight on the outer border (not a strong primary
+  // colour, and no glow ring) — a quiet step up from the resting --base-4.
+  --editor-border-focus: var(--base-8);
   --editor-shape: var(--shape-3);
 
   display: block;
@@ -30,13 +31,10 @@ sh-editor {
     border: 1px solid var(--editor-border-color);
     border-radius: inherit;
     overflow: hidden;
-    transition:
-      border-color 0.2s ease,
-      box-shadow 0.2s ease;
+    transition: border-color 0.2s ease;
 
     &:focus-within {
       border-color: var(--editor-border-focus);
-      box-shadow: var(--editor-shadow-focus);
     }
   }
 
