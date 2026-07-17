@@ -24,14 +24,6 @@ import {
 } from '@ship-ui/core/ship-editor';
 import { ShipEditorSelectionDebug } from './sh-editor-selection-debug';
 
-/**
- * Example custom inline behavior: a "highlight" mark.
- *
- * Demonstrates the extension point — it's a native `<mark>` element with a
- * class on it, so it renders as `<mark class="sh-editor-highlight">…</mark>`
- * and parses any `<mark>` back into the mark. Markdown uses the common
- * `==text==` highlight syntax.
- */
 class HighlightBehavior extends BaseInlineBehavior {
   readonly type = 'highlight';
   override isSticky = true;
@@ -77,7 +69,7 @@ class HighlightBehavior extends BaseInlineBehavior {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class Editors {
-  /** Active doc tab (spotlight-style tabs). */
+
   activeTab = signal<'overview' | 'api' | 'styling' | 'examples'>('overview');
 
   usageExample = `import { Component, signal } from '@angular/core';
@@ -120,12 +112,11 @@ class HighlightBehavior extends BaseInlineBehavior {
 
 <!-- Opt in to image mid-edge (one-axis) resize handles -->
 <sh-editor [imageEdgeResize]="true" ...></sh-editor>`;
-  /** Consumer-supplied behaviors registered on top of the built-in set. */
+
   customBehaviors = [new HighlightBehavior()];
 
   initialHtml = `<h1>Ship WYSIWYG Editor</h1><p>Welcome! This is a <strong>config-driven</strong> rich-text editor designed to support flexible storage formats.</p><ul><li><strong>Two-way binding</strong> with <code>ControlValueAccessor</code></li><li>Instant conversion to <strong>HTML</strong>, <strong>Markdown</strong>, or <strong>JSON</strong></li><li>Sticky blur-toolbar, light/dark mode support, and word counting</li></ul><blockquote>"A beautiful interface makes editing content a delight."</blockquote><hr><p>Try changing the storage format below to see the serialized output update in real time!</p>`;
 
-  // Editor configuration
   format = signal<'html' | 'json' | 'markdown'>('html');
   formatOptions = [
     { value: 'html', label: 'HTML' },
@@ -134,32 +125,17 @@ class HighlightBehavior extends BaseInlineBehavior {
   ];
   readonly = signal(false);
   showMetrics = signal(true);
-  /** Opt in to the image mid-edge resize handles (one-axis stretch). */
+
   imageEdgeResize = signal(false);
-  /** Switch the editor to the document-canvas variant. */
+
   documentVariant = signal(false);
   placeholder = signal('Start typing something beautiful...');
 
-  /**
-   * Demo image-upload handler. Simulates a network upload (short delay + the
-   * popover's "Uploading…" state), then returns a deterministic, working URL
-   * seeded by the file name instead of inlining a `data:` URL. A real consumer
-   * would POST the file to their storage and return the resulting link.
-   */
   demoImageUpload = async (file: File): Promise<string> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
     return `https://picsum.photos/seed/${encodeURIComponent(file.name)}/480/320`;
   };
 
-  // ── Style toolbar (sh-select bound with Signal Forms) ──────────────────────
-  // Comma-free value tokens: sh-select treats a comma in a value as a
-  // multi-value separator, so a value like "Georgia, serif" can never round-trip
-  // back to its option — which silently breaks prefill (the select can't show
-  // the cursor's font). Each token maps to the full CSS font stack that is
-  // actually applied to / read from the editor via #fontStackFor / #fontTokenFor.
-  // The leading "Default" option (stack null) keeps the select non-empty for the
-  // editor's base font (Inter Tight, not in this curated list) and clears the
-  // font mark when picked.
   fontOptions = signal<{ value: string; label: string; stack: string | null }[]>([
     { value: 'Default', label: 'Default', stack: null },
     { value: 'Arial', label: 'Arial', stack: 'Arial, sans-serif' },
@@ -170,65 +146,40 @@ class HighlightBehavior extends BaseInlineBehavior {
     { value: 'Trebuchet MS', label: 'Trebuchet MS', stack: "'Trebuchet MS', sans-serif" },
   ]);
 
-  /** Map a font token (the select value) to the CSS font stack; null = base font (clears the mark). */
   #fontStackFor = (token: string): string | null => this.fontOptions().find((o) => o.value === token)?.stack ?? null;
-  /** Map a CSS font stack (from the editor's style) to its select token; the default token when unset/unknown. */
+
   #fontTokenFor = (stack: string): string => (stack && this.fontOptions().find((o) => o.stack === stack)?.value) || this.#defaultFontToken();
 
-  // Leading "Default" option (base size / clears the mark), like the font select.
   fontSizeOptions = signal([
     { value: 'Default', label: 'Default' },
     ...[12, 14, 16, 18, 20, 24, 28, 32, 48].map((n) => ({ value: `${n}px`, label: `${n}px` })),
   ]);
 
-  /**
-   * The token/value a select falls back to when the selection carries no explicit
-   * font-family / font-size — so the control is never blank. Today the literal
-   * "Default" sentinel (picking it clears the mark). Hook point: later, resolve
-   * the editor's *effective* base — e.g. `getComputedStyle(<.sh-editor-content>)`
-   * `.fontFamily` / `.fontSize` — and return the matching preset token/value when
-   * it is one of the options, otherwise keep "Default".
-   */
   #defaultFontToken = (): string => 'Default';
   #defaultSizeValue = (): string => 'Default';
 
-  /** Accept a preset value, a bare number, or a css length as a custom size. */
   isValidFontSize = (value: string) => /^\d+(\.\d+)?(px|pt|em|rem|%)?$/.test(value.trim());
 
-  /** The main editor, so the style effects can read/apply its selection style. */
   mainEditorRef = viewChild<ShipEditor>('mainEditor');
 
-  // The two style selects, so prefill can drive their shown value directly:
-  // sh-select's value→option sync can skip updating its display on a programmatic
-  // write (its guard treats an empty input as a no-op), so we set selectedOptions.
   private fontSelectRef = viewChild('fontSel', { read: ShipSelect });
   private sizeSelectRef = viewChild('sizeSel', { read: ShipSelect });
 
-  // The two color pickers' projected inputs, seeded imperatively by the prefill
-  // effect (outside render) — see the note in the template.
   private textColorInput = viewChild<ElementRef<HTMLInputElement>>('textColorInput');
   private highlightColorInput = viewChild<ElementRef<HTMLInputElement>>('highlightColorInput');
 
-  // Signal-Forms models for the font/size selects. `form()` makes each a form
-  // field; the projected <input [formField]> binds it (no FormsModule/ngModel).
   fontModel = signal('');
   fontField = form(this.fontModel);
   sizeModel = signal('');
   sizeField = form(this.sizeModel);
 
-  // Current value model
   editorValue = signal<string | ASTDocument | null>(this.initialHtml);
 
-  /**
-   * Testing-only persistence. When on, the current value + format are mirrored to
-   * localStorage on every change and restored on reload; off (or Reset) clears it.
-   * Not part of the editor — just a harness to exercise round-tripping.
-   */
   persist = signal(false);
   #storageKey = 'ship:editors-exp:showcase';
 
   constructor() {
-    // Restore any previously-persisted content on load (browser only).
+
     const saved = this.#readStorage();
     if (saved) {
       this.format.set(saved.format);
@@ -236,7 +187,6 @@ class HighlightBehavior extends BaseInlineBehavior {
       this.persist.set(true);
     }
 
-    // Mirror to / clear from localStorage as the value, format, or toggle change.
     effect(() => {
       const value = this.editorValue();
       const format = this.format();
@@ -244,16 +194,12 @@ class HighlightBehavior extends BaseInlineBehavior {
       else this.#clearStorage();
     });
 
-    // Apply the font/size selects (Signal-Forms models) to the selection. The
-    // apply is deferred to a microtask so the resulting engine writes never land
-    // inside the render pass (which would trip NG0600), and only fire on a real
-    // change vs the current style.
     effect(() => {
       const editor = this.mainEditorRef();
-      const token = this.fontModel(); // re-run when the font select changes
+      const token = this.fontModel();
       if (!editor) return;
       queueMicrotask(() => {
-        const stack = this.#fontStackFor(token); // token → full CSS font stack (null if none)
+        const stack = this.#fontStackFor(token);
         if ((stack ?? '') !== (editor.engine.currentStyle()['font-family'] ?? '')) {
           editor.engine.applyStyle({ 'font-family': stack });
         }
@@ -261,44 +207,29 @@ class HighlightBehavior extends BaseInlineBehavior {
     });
     effect(() => {
       const editor = this.mainEditorRef();
-      const size = this.sizeModel(); // re-run when the size select changes
+      const size = this.sizeModel();
       if (!editor) return;
       queueMicrotask(() => {
-        // 'Default' clears the mark; a bare number from the free-text option becomes px.
+
         const desired = size === 'Default' ? '' : size && /^\d+(\.\d+)?$/.test(size) ? `${size}px` : size;
         if (desired === (editor.engine.currentStyle()['font-size'] ?? '')) return;
         editor.engine.applyStyle({ 'font-size': desired || null });
       });
     });
 
-    // Prefill the selects from the style at the cursor — the OPPOSITE direction
-    // of the apply effects (editor → select), so the controls reflect the
-    // selection. We drive the sh-select's `selectedOptions` (its displayed value)
-    // rather than the Signal-Forms model: `[formField]` writes the native input
-    // value during render, which sh-select's value-setter patch turns into a
-    // signal write mid-render → NG0600. Writing selectedOptions is deferred to a
-    // microtask (outside the render pass) and no-op-guarded — a fresh array every
-    // render would otherwise re-trigger this effect in a loop. The apply effects
-    // above still own the select → editor direction (driven by user picks), and
-    // their currentStyle guard keeps this one-way mirror from causing a re-apply.
     afterRenderEffect(() => {
       const editor = this.mainEditorRef();
       if (!editor) return;
       const style = editor.engine.currentStyle();
-      const fontToken = this.#fontTokenFor(style['font-family'] ?? ''); // stack → select token
+      const fontToken = this.#fontTokenFor(style['font-family'] ?? '');
       const size = style['font-size'] ?? '';
       const fontSel = this.fontSelectRef();
       const sizeSel = this.sizeSelectRef();
-      // Both selects always resolve to an option so they're never blank: font
-      // falls back to "Default", size to "Default" (preset match otherwise, or an
-      // ad-hoc option for a custom typed size). Compared by value so the ad-hoc
-      // object doesn't re-trigger every render.
+
       const fontOpt = this.fontOptions().find((o) => o.value === fontToken)!;
       const sizeOpt =
         this.fontSizeOptions().find((o) => o.value === (size || this.#defaultSizeValue())) ?? { value: size, label: size };
-      // Seed the color pickers from the selection (defaults when unset). Writing
-      // the projected input dispatches into the picker's parse → signal write, so
-      // it must happen in the microtask below, never in the render pass.
+
       const textColor = this.textColorInput()?.nativeElement;
       const highlightColor = this.highlightColorInput()?.nativeElement;
       const color = style['color'] ?? '';
@@ -316,12 +247,6 @@ class HighlightBehavior extends BaseInlineBehavior {
     });
   }
 
-  /**
-   * Seed a color picker's projected input to `value`, outside the render pass.
-   * Setting the value drives the picker's parse (which writes its color signals);
-   * doing it here (from the prefill microtask) keeps that write out of render, so
-   * it can't trip NG0600. Guarded so a converged value doesn't re-trigger.
-   */
   #seedColorInput(input: HTMLInputElement | undefined, value: string) {
     if (input && input.value !== value) {
       input.value = value;
@@ -329,7 +254,6 @@ class HighlightBehavior extends BaseInlineBehavior {
     }
   }
 
-  /** Restore the initial demo content and clear the persisted copy. */
   reset() {
     this.persist.set(false);
     this.format.set('html');
@@ -352,7 +276,7 @@ class HighlightBehavior extends BaseInlineBehavior {
     try {
       localStorage.setItem(this.#storageKey, JSON.stringify(data));
     } catch {
-      /* quota / disabled storage — ignore in the demo */
+
     }
   }
 
@@ -361,7 +285,7 @@ class HighlightBehavior extends BaseInlineBehavior {
     try {
       localStorage.removeItem(this.#storageKey);
     } catch {
-      /* ignore */
+
     }
   }
 }

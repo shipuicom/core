@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+
 import { describe, expect, it } from 'vitest';
 import { toggleMark } from './editor-ast.utils';
 import { astToHtml, astToMarkdown, htmlToAst } from './editor-serializers';
@@ -13,17 +14,6 @@ import {
 } from './standard-behaviors';
 import { ASTDocument, ASTMark, LogicalSelection } from './editor.types';
 
-/**
- * Regression tests for two inline-mark defects fixed in the experimental editor:
- *
- *  1. Overlapping marks (e.g. a highlight spanning a bold word) must serialize
- *     as one continuous, correctly-nested run — not a fresh tag per inline node.
- *  2. Toggling a mark across a multi-block selection must apply it to every
- *     block in the span, with a single consistent add/remove decision.
- */
-
-// A custom inline mark ("highlight") — a native <mark> with a class, used to
-// exercise overlap where the gap between marks is visible (unlike bold).
 class HighlightBehavior extends BaseInlineBehavior {
   readonly type = 'highlight';
   override isSticky = true;
@@ -50,14 +40,13 @@ const inlines = new Map<string, any>([
   ['highlight', new HighlightBehavior()],
 ]);
 
-/** Which text carries `type` in each block, joined per block. */
 const marked = (doc: ASTDocument, type: string) =>
   doc.map((b) =>
     (b.content as any[]).filter((n) => n.marks?.some((m: ASTMark) => m.type === type)).map((n) => n.text).join('')
   );
 
 describe('inline mark serialization (overlapping marks)', () => {
-  // AST equivalent of: highlight over "Welcome… config", bold over "config-driven".
+
   const doc: ASTDocument = [
     {
       type: 'paragraph',
@@ -99,7 +88,7 @@ describe('cross-block toggleMark', () => {
     { type: 'paragraph', content: [{ type: 'text', text: 'hello' }] },
     { type: 'paragraph', content: [{ type: 'text', text: 'world' }] },
   ];
-  // Select "llo" (block 0, offset 2..end) through "wor" (block 1, offset 0..3).
+
   const spanSel = (): LogicalSelection => ({
     start: { blockIndex: 0, inlineIndex: 0, offset: 2 },
     end: { blockIndex: 1, inlineIndex: 0, offset: 3 },
@@ -118,7 +107,7 @@ describe('cross-block toggleMark', () => {
   });
 
   it('ADDS across the whole span when only part of it is already marked', () => {
-    // Pre-bold just "llo" in block 0.
+
     const pre = toggleMark(
       twoParas(),
       { start: { blockIndex: 0, inlineIndex: 0, offset: 2 }, end: { blockIndex: 0, inlineIndex: 0, offset: 5 }, isCollapsed: false },

@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+
 import { Injector, runInInjectionContext } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { EditorEngineService } from './editor-engine.service';
@@ -6,18 +7,6 @@ import { applyOp, diffDocuments, fragLen, invertOp } from './editor-transactions
 import { ASTDocument, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import { BoldBehavior, HeadingBehavior, ImageBehavior, ParagraphBehavior } from './standard-behaviors';
-
-/**
- * Invertible (operation-based) history.
- *
- * The engine no longer snapshots the whole document per edit; every commit is a
- * minimal operation with an exact inverse — char-level (InlineSplice) when the
- * edit stays inside one text block, block-level (BlockSplice) for structural
- * changes. These tests pin: op minimality, undo/redo round-trips across the
- * edit kinds, redo invalidation, reset/IME-commit invertibility, remote-op
- * application with history rebasing, and that transactions stay plain JSON
- * (the future realtime-collab wire format).
- */
 
 const p = (text: string) => ({ type: 'paragraph', content: [{ type: 'text', text }] });
 const textOf = (doc: ASTDocument, i: number) => (doc[i].content as any[]).map((n) => n.text).join('');
@@ -39,12 +28,11 @@ describe('Invertible editor history', () => {
       isCollapsed: false,
     } as LogicalSelection);
   };
-  /** Arrange a starting doc WITHOUT recording history (raw signal set). */
+
   const arrange = (doc: ASTDocument) => engine.document.set(doc);
 
   beforeEach(() => {
-    // No TestBed (its environment isn't bootstrapped under vitest here) — build
-    // the engine in a minimal injection context instead.
+
     const injector = Injector.create({
       providers: [{ provide: EditorSelectionService, useValue: new EditorSelectionService() }],
     });
@@ -69,14 +57,14 @@ describe('Invertible editor history', () => {
     it('returns null for identical documents', () => {
       const doc = [p('same')] as ASTDocument;
       expect(diffDocuments(doc, [...doc])).toBeNull();
-      expect(diffDocuments(doc, [p('same')])).toBeNull(); // structural equality too
+      expect(diffDocuments(doc, [p('same')])).toBeNull();
     });
 
     it('applyOp(invertOp(op)) restores the original document (block op)', () => {
       const oldDoc = [p('a'), p('b'), p('c')] as ASTDocument;
-      const newDoc = [p('a'), p('B1'), p('B2'), p('c')] as ASTDocument; // split-like change
+      const newDoc = [p('a'), p('B1'), p('B2'), p('c')] as ASTDocument;
       const op = diffDocuments(oldDoc, newDoc)!;
-      expect(op.kind).toBe('block'); // 1 -> 2 blocks cannot be inline
+      expect(op.kind).toBe('block');
       const forward = applyOp(oldDoc, op);
       expect(JSON.stringify(forward)).toBe(JSON.stringify(newDoc));
       const back = applyOp(forward, invertOp(op));
@@ -92,7 +80,7 @@ describe('Invertible editor history', () => {
 
       expect(textOf(engine.document(), 1)).toBe('twoX');
       const tx = engine.lastTransaction()!;
-      expect(tx.op.kind).toBe('inline'); // typing stores characters, not blocks
+      expect(tx.op.kind).toBe('inline');
       if (tx.op.kind === 'inline') {
         expect(tx.op.blockIndex).toBe(1);
         expect(tx.op.at).toBe(3);
@@ -103,11 +91,11 @@ describe('Invertible editor history', () => {
       engine.undo();
       expect(textOf(engine.document(), 1)).toBe('two');
       expect(engine.document()).toHaveLength(3);
-      expect(engine.selection.active()?.start.offset).toBe(3); // selBefore restored
+      expect(engine.selection.active()?.start.offset).toBe(3);
 
       engine.redo();
       expect(textOf(engine.document(), 1)).toBe('twoX');
-      expect(engine.selection.active()?.start.offset).toBe(4); // selAfter restored
+      expect(engine.selection.active()?.start.offset).toBe(4);
     });
 
     it('Enter (block split) is invertible: 1 block -> 2 -> undo -> 1', () => {
@@ -118,7 +106,7 @@ describe('Invertible editor history', () => {
       expect(textOf(engine.document(), 0)).toBe('hello');
       expect(textOf(engine.document(), 1)).toBe(' world');
       const tx = engine.lastTransaction()!;
-      expect(tx.op.kind).toBe('block'); // structural change stays block-level
+      expect(tx.op.kind).toBe('block');
       if (tx.op.kind === 'block') {
         expect(tx.op.removed).toHaveLength(1);
         expect(tx.op.inserted).toHaveLength(2);
@@ -160,13 +148,13 @@ describe('Invertible editor history', () => {
     it('a new edit after undo clears the redo stack', () => {
       arrange([p('ab')]);
       caret(0, 2);
-      engine.insertText('c'); // abc
-      engine.undo(); // ab
+      engine.insertText('c');
+      engine.undo();
       expect(engine.canRedo()).toBe(true);
       caret(0, 2);
-      engine.insertText('Z'); // abZ
+      engine.insertText('Z');
       expect(engine.canRedo()).toBe(false);
-      engine.redo(); // no-op
+      engine.redo();
       expect(textOf(engine.document(), 0)).toBe('abZ');
     });
 
@@ -183,7 +171,7 @@ describe('Invertible editor history', () => {
     it('commitDocument (IME reconcile path) records an undoable transaction', () => {
       arrange([p('hello'), p('world')]);
       caret(1, 5);
-      // Simulate the post-composition reconcile: block 1 re-parsed from the DOM.
+
       const doc = [...engine.document()];
       doc[1] = p('world你好');
       engine.commitDocument(doc);
@@ -197,7 +185,7 @@ describe('Invertible editor history', () => {
 
     it('a no-op mutation records nothing', () => {
       arrange([p('static')]);
-      engine.commitDocument([...engine.document()]); // identical content
+      engine.commitDocument([...engine.document()]);
       expect(engine.canUndo()).toBe(false);
       expect(engine.lastTransaction()).toBeNull();
     });
@@ -215,10 +203,7 @@ describe('Invertible editor history', () => {
     });
 
     it('stored op fragments are isolated from later mutations of the live document', () => {
-      // Ops are RELATIVE — applying them to a doc mutated outside the engine is
-      // undefined (that's why every mutation path commits through the engine).
-      // What must hold is that in-place mutation of the live doc can never
-      // reach into the recorded history and corrupt the fragments themselves.
+
       arrange([p('safe')]);
       caret(0, 4);
       engine.insertText('!');
@@ -226,7 +211,7 @@ describe('Invertible editor history', () => {
       const tx = engine.lastTransaction()!;
       expect(tx.op.kind).toBe('inline');
       if (tx.op.kind === 'inline') {
-        expect(tx.op.inserted.map((n) => n.text).join('')).toBe('!'); // fragment untouched
+        expect(tx.op.inserted.map((n) => n.text).join('')).toBe('!');
         expect(fragLen(tx.op.removed)).toBe(0);
       }
     });
@@ -241,11 +226,10 @@ describe('Invertible editor history', () => {
       const tx = engine.lastTransaction()!;
       expect(tx.baseVersion).toBe(v0);
       expect(engine.version()).toBe(v0 + 1);
-      // Round-trips through JSON without loss — a peer could apply it verbatim.
+
       const wire = JSON.parse(JSON.stringify(tx));
       expect(wire).toEqual(tx);
 
-      // A "remote peer" doc at the same base version applies the op directly.
       const peerDoc = [p('a')] as ASTDocument;
       const peerAfter = applyOp(peerDoc, wire.op);
       expect(JSON.stringify(peerAfter)).toBe(JSON.stringify(engine.document()));
@@ -273,14 +257,14 @@ describe('Invertible editor history', () => {
         inserted: [{ type: 'text', text: ' [peer]' }],
       });
       expect(textOf(engine.document(), 0)).toBe('local [peer]');
-      expect(engine.canUndo()).toBe(false); // a peer's edit is not locally undoable
+      expect(engine.canUndo()).toBe(false);
     });
 
     it('a remote op rebases pending local history so undo still hits the right text', () => {
       arrange([p('hello world')]);
       caret(0, 11);
-      engine.insertText('!'); // local: "hello world!"
-      // Peer concurrently prepends at offset 0 — shifts everything right by 6.
+      engine.insertText('!');
+
       engine.applyRemoteOperation({
         kind: 'inline',
         blockIndex: 0,
@@ -290,14 +274,13 @@ describe('Invertible editor history', () => {
       });
       expect(textOf(engine.document(), 0)).toBe('>>>>> hello world!');
 
-      // Undo must remove the local "!", not the character at the stale offset.
       engine.undo();
       expect(textOf(engine.document(), 0)).toBe('>>>>> hello world');
     });
 
     it('maps the live caret through a remote edit (no caret jump)', () => {
       arrange([p('hello world')]);
-      caret(0, 8); // 'hello wo|rld'
+      caret(0, 8);
       engine.applyRemoteOperation({
         kind: 'inline',
         blockIndex: 0,
@@ -306,14 +289,13 @@ describe('Invertible editor history', () => {
         inserted: [{ type: 'text', text: '>>> ' }],
       });
       const sel = engine.selection.active()!;
-      expect(sel.start.offset).toBe(12); // still 'wo|rld', shifted by 4
+      expect(sel.start.offset).toBe(12);
     });
 
     it('maps the caret EXACTLY through a remote coarse block merge', () => {
-      // The wire op is a whole-block splice (removed 2, inserted 1) — the flat
-      // diff inside applyRemoteOperation recovers the interior correspondence.
+
       arrange([p('hello'), p('world')]);
-      caret(1, 3); // 'wor|ld'
+      caret(1, 3);
       engine.applyRemoteOperation({
         kind: 'block',
         at: 0,
@@ -322,13 +304,13 @@ describe('Invertible editor history', () => {
       });
       const sel = engine.selection.active()!;
       expect(sel.start.blockIndex).toBe(0);
-      expect(sel.start.offset).toBe(8); // 'hellowor|ld'
+      expect(sel.start.offset).toBe(8);
     });
 
     it('tie regression: remote insert at the offset of a pending local char — undo removes the LOCAL one', () => {
       arrange([p('..')]);
       caret(0, 1);
-      engine.insertText('a'); // '.a.'
+      engine.insertText('a');
       engine.applyRemoteOperation({
         kind: 'inline',
         blockIndex: 0,
@@ -336,17 +318,16 @@ describe('Invertible editor history', () => {
         removed: [],
         inserted: [{ type: 'text', text: 'B' }],
       });
-      expect(textOf(engine.document(), 0)).toBe('.Ba.'); // remote lands before at equal offset
+      expect(textOf(engine.document(), 0)).toBe('.Ba.');
       engine.undo();
-      expect(textOf(engine.document(), 0)).toBe('.B.'); // local 'a' gone, peer's 'B' intact
+      expect(textOf(engine.document(), 0)).toBe('.B.');
     });
 
     it('rebases stored caret snapshots: undo after a remote edit restores the MAPPED caret', () => {
-      // Regression: selBefore/selAfter are LogicalSelections; feeding them to
-      // the position mapper type-degraded them to caret (0,0) silently.
+
       arrange([p('....'), p('....')]);
       caret(1, 2);
-      engine.insertText('a'); // block1: '..a..', selBefore caret (1,2)
+      engine.insertText('a');
       engine.applyRemoteOperation({
         kind: 'inline',
         blockIndex: 1,
@@ -359,22 +340,22 @@ describe('Invertible editor history', () => {
       expect(textOf(engine.document(), 1)).toBe('RR....');
       const sel = engine.selection.active()!;
       expect(sel.start.blockIndex).toBe(1);
-      expect(sel.start.offset).toBe(4); // (1,2) mapped through the remote insert
+      expect(sel.start.offset).toBe(4);
     });
 
     it('a remote op that destroys a pending edit target drops that history entry', () => {
       arrange([p('abc'), p('target')]);
       caret(1, 6);
-      engine.insertText('!'); // local edit lives in block 1
+      engine.insertText('!');
       expect(engine.canUndo()).toBe(true);
-      // Peer replaces block 1 wholesale — the local edit's context is gone.
+
       engine.applyRemoteOperation({
         kind: 'block',
         at: 1,
         removed: [p('target!')],
         inserted: [p('REPLACED')],
       });
-      expect(engine.canUndo()).toBe(false); // conflicting entry dropped, not corrupted
+      expect(engine.canUndo()).toBe(false);
       expect(textOf(engine.document(), 1)).toBe('REPLACED');
     });
 
@@ -383,20 +364,20 @@ describe('Invertible editor history', () => {
       arrange([p('above'), img, p('below')]);
       engine.selectBlock(1);
       expect(engine.selectedBlock()).toBe(1);
-      // Peer inserts a new paragraph at the top — the image shifts to index 2.
+
       engine.applyRemoteOperation({ kind: 'block', at: 0, removed: [], inserted: [p('peer')] });
       expect(engine.document().map((b) => b.type)).toEqual(['paragraph', 'paragraph', 'image', 'paragraph']);
-      expect(engine.selectedBlock()).toBe(2); // followed the image, not stuck on 1
+      expect(engine.selectedBlock()).toBe(2);
     });
 
     it('clears the selected image when a peer deletes that block', () => {
       const img = { type: 'image', attrs: { src: 'https://x.example/a.png', mode: 'content', size: 'auto' }, content: [] };
       arrange([p('above'), img, p('below')]);
       engine.selectBlock(1);
-      // Peer removes the image block.
+
       engine.applyRemoteOperation({ kind: 'block', at: 1, removed: [img], inserted: [] });
       expect(engine.document().some((b) => b.type === 'image')).toBe(false);
-      expect(engine.selectedBlock()).toBeNull(); // no orphaned highlight on a text block
+      expect(engine.selectedBlock()).toBeNull();
     });
   });
 });

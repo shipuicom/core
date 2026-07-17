@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+
 import { Injector, runInInjectionContext } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { EditorEngineService } from './editor-engine.service';
@@ -6,14 +7,6 @@ import { htmlToAst } from './editor-serializers';
 import { ASTBlockNode, ASTDocument, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import * as B from './standard-behaviors';
-
-/**
- * Engine integration tests against the CURRENT public API (the predecessor of
- * this file targeted a since-removed transform API and never compiled). Each
- * scenario drives the engine like the component does — set a logical
- * selection, call an engine method — and asserts the serialized HTML and/or
- * document structure.
- */
 
 const p = (text: string) => ({ type: 'paragraph', content: [{ type: 'text', text }] });
 const textOf = (doc: ASTDocument, i: number, item?: number) => {
@@ -119,7 +112,7 @@ describe('EditorEngine integration', () => {
     it('explodes a code block back into one paragraph per line', () => {
       engine.document.set([{ type: 'code-block', content: [{ type: 'text', text: 'a\nb' }] }] as ASTDocument);
       caret(0, 0);
-      engine.setBlockType('code-block'); // toggle off
+      engine.setBlockType('code-block');
       expect(engine.document().map((b) => b.type)).toEqual(['paragraph', 'paragraph']);
       expect(html()).toBe('<p>a</p><p>b</p>');
     });
@@ -176,7 +169,7 @@ describe('EditorEngine integration', () => {
       caret(0, 0, { itemIndex: 1 });
       engine.handleEnter();
       expect(html()).toBe('<ul><li>one</li></ul><p><br></p>');
-      expect(engine.selection.active()?.start.blockIndex).toBe(1); // caret in the escape paragraph
+      expect(engine.selection.active()?.start.blockIndex).toBe(1);
     });
 
     it('Backspace at the start of an item outdents it to a paragraph', () => {
@@ -206,7 +199,7 @@ describe('EditorEngine integration', () => {
 
     it('keeps the list items past the cursor; the end item tail joins the paragraph', () => {
       engine.document.set(listDoc());
-      // "bef|ore"  →  into list item 1 (index 1) at "item| two"
+
       engine.selection.live.set({
         start: { blockIndex: 0, inlineIndex: 0, offset: 3 },
         end: { blockIndex: 1, itemIndex: 1, inlineIndex: 0, offset: 4 },
@@ -286,7 +279,7 @@ describe('EditorEngine integration', () => {
       caret(0, 2);
       engine.handleEnter();
       expect(engine.document().map((b) => b.type)).toEqual(['code-block', 'paragraph']);
-      expect(textOf(engine.document(), 0)).toBe('x'); // trailing \n consumed
+      expect(textOf(engine.document(), 0)).toBe('x');
     });
 
     it('Enter on a void block inserts a paragraph below', () => {
@@ -310,7 +303,7 @@ describe('EditorEngine integration', () => {
       caret(1, 0);
       engine.handleBackspace();
       expect(html()).toBe('<p>helloworld</p>');
-      // caret lands at the seam
+
       expect(engine.selection.active()?.start.offset).toBe(5);
     });
 
@@ -345,9 +338,9 @@ describe('EditorEngine integration', () => {
       engine.document.set([p('one bold two')]);
       range([0, 4], [0, 8]);
       engine.toggleMark('bold');
-      range([0, 4], [0, 8]); // reselect exactly "bold"
+      range([0, 4], [0, 8]);
       expect(engine.isActive('bold')).toBe(true);
-      range([0, 4], [0, 12]); // "bold two" — partly plain
+      range([0, 4], [0, 12]);
       expect(engine.isActive('bold')).toBe(false);
     });
 
@@ -366,7 +359,7 @@ describe('EditorEngine integration', () => {
       engine.document.set([p('plain ')]);
       caret(0, 6);
       engine.toggleMark('bold');
-      expect(engine.isActive('bold')).toBe(true); // toolbar lights up before typing
+      expect(engine.isActive('bold')).toBe(true);
       engine.insertText('bold');
       expect(html()).toBe('<p>plain <strong>bold</strong></p>');
     });
@@ -376,7 +369,7 @@ describe('EditorEngine integration', () => {
       caret(0, 1);
       engine.toggleMark('bold');
       engine.insertText('a');
-      engine.insertText('b'); // no pending anymore — inherited from the bold node
+      engine.insertText('b');
       expect(html()).toBe('<p>x<strong>ab</strong></p>');
     });
 
@@ -392,9 +385,9 @@ describe('EditorEngine integration', () => {
     it('does not apply when the caret has moved elsewhere', () => {
       engine.document.set([p('one'), p('two')]);
       caret(0, 3);
-      engine.toggleMark('bold'); // pending at end of block 0
+      engine.toggleMark('bold');
       caret(1, 3);
-      engine.insertText('!'); // typed somewhere else
+      engine.insertText('!');
       expect(html()).toBe('<p>one</p><p>two!</p>');
     });
 
@@ -450,7 +443,7 @@ describe('EditorEngine integration', () => {
       engine.document.set([p('visit here now')]);
       range([0, 6], [0, 10]);
       engine.setMark('link', { href: 'https://a.example' });
-      // caret in the middle of "here" (char 8 of the block)
+
       caret(0, 2, { inlineIndex: 1 });
       engine.setMark('link', { href: 'https://edited.example' });
       expect(html()).toBe('<p>visit <a href="https://edited.example">here</a> now</p>');
@@ -482,10 +475,10 @@ describe('EditorEngine integration', () => {
       expect(engine.uiRequest()).toBeNull();
       engine.dispatch('link');
       expect(engine.uiRequest()?.action).toBe('link');
-      expect(html()).toBe('<p>text</p>'); // nothing toggled
+      expect(html()).toBe('<p>text</p>');
       const t1 = engine.uiRequest()!.token;
       engine.dispatch('link');
-      expect(engine.uiRequest()!.token).not.toBe(t1); // re-dispatch re-triggers
+      expect(engine.uiRequest()!.token).not.toBe(t1);
     });
 
     it('markAtSelection finds the link from EITHER edge of the run (prefill for editing)', () => {
@@ -493,16 +486,15 @@ describe('EditorEngine integration', () => {
       range([0, 6], [0, 10]);
       engine.setMark('link', { href: 'https://edge.example' });
 
-      // Start edge: caret resolves into the preceding plain node ("visit ").
       caret(0, 6);
       expect(engine.markAtSelection('link')?.attrs?.['href']).toBe('https://edge.example');
-      // End edge.
+
       caret(0, 0, { inlineIndex: 2 });
       expect(engine.markAtSelection('link')?.attrs?.['href']).toBe('https://edge.example');
-      // Inside.
+
       caret(0, 2, { inlineIndex: 1 });
       expect(engine.markAtSelection('link')?.attrs?.['href']).toBe('https://edge.example');
-      // Far away: nothing.
+
       caret(0, 2);
       expect(engine.markAtSelection('link')).toBeNull();
     });
@@ -514,11 +506,9 @@ describe('EditorEngine integration', () => {
       range([0, 6], [0, 8]);
       engine.setMark('link', { href: 'https://second.example' });
 
-      // Start edge of the SECOND link, spelled as end-of-previous-node — the
-      // representation DOM mapping produces (content: [link1, " bb ", link2]).
       caret(0, 4, { inlineIndex: 1 });
       expect(engine.markAtSelection('link')?.attrs?.['href']).toBe('https://second.example');
-      // And inside the first link still resolves to the first.
+
       caret(0, 1, { inlineIndex: 0 });
       expect(engine.markAtSelection('link')?.attrs?.['href']).toBe('https://first.example');
     });
@@ -527,7 +517,7 @@ describe('EditorEngine integration', () => {
       engine.document.set([p('go here now')]);
       range([0, 3], [0, 7]);
       engine.setMark('link', { href: 'https://sel.example' });
-      // Reselect exactly the linked word.
+
       range([0, 3], [0, 7]);
       expect(engine.isActive('link')).toBe(true);
       expect(engine.markAtSelection('link')?.attrs?.['href']).toBe('https://sel.example');
@@ -537,7 +527,7 @@ describe('EditorEngine integration', () => {
       engine.document.set([p('go here now')]);
       range([0, 3], [0, 7]);
       engine.setMark('link', { href: 'https://x.example' });
-      range([0, 3], [0, 10]); // "here now" — spills past the link
+      range([0, 3], [0, 10]);
       expect(engine.isActive('link')).toBe(false);
     });
 
@@ -547,7 +537,7 @@ describe('EditorEngine integration', () => {
       engine.setMark('link', { href: 'https://one.example' });
       range([0, 6], [0, 8]);
       engine.setMark('link', { href: 'https://two.example' });
-      range([0, 0], [0, 8]); // covers both
+      range([0, 0], [0, 8]);
       expect(engine.isActive('link')).toBe(false);
     });
 
@@ -583,7 +573,7 @@ describe('EditorEngine integration', () => {
       caret(0, 0);
       engine.dispatch('image');
       expect(engine.uiRequest()?.action).toBe('image');
-      expect(engine.document().map((b) => b.type)).toEqual(['paragraph']); // unchanged
+      expect(engine.document().map((b) => b.type)).toEqual(['paragraph']);
     });
 
     it('updateSelectedImage merges attrs as an undoable transaction', () => {
@@ -593,15 +583,15 @@ describe('EditorEngine integration', () => {
       engine.updateSelectedImage({ mode: 'custom', size: 'large' });
       expect(html()).toContain('class="sh-editor-img-custom sh-editor-img-size-large"');
       engine.undo();
-      expect(html()).toContain('class="sh-editor-img-content"'); // reverts the attr change only
-      expect(engine.document()[0].type).toBe('image'); // image still there
+      expect(html()).toContain('class="sh-editor-img-content"');
+      expect(engine.document()[0].type).toBe('image');
     });
 
     it('deleteSelectedBlock removes the image and clears the selection', () => {
       engine.document.set([p('above'), p('below')]);
       caret(0, 5);
       engine.insertImage({ src: 'https://x.example/a.png', alt: '', mode: 'content', size: 'auto' });
-      expect(engine.document()).toHaveLength(4); // above, image, trailing p, below
+      expect(engine.document()).toHaveLength(4);
       engine.deleteSelectedBlock();
       expect(engine.document().some((b) => b.type === 'image')).toBe(false);
       expect(engine.selectedBlock()).toBeNull();
@@ -615,24 +605,24 @@ describe('EditorEngine integration', () => {
 
     it('moveBlock reorders a block to a later gap (drag down)', () => {
       engine.document.set([p('A'), p('B'), p('C'), p('D')]);
-      engine.moveBlock(1, 3); // move B into the gap between C and D
+      engine.moveBlock(1, 3);
       expect([0, 1, 2, 3].map((i) => textOf(engine.document(), i))).toEqual(['A', 'C', 'B', 'D']);
     });
 
     it('moveBlock reorders a block to an earlier gap (drag up)', () => {
       engine.document.set([p('A'), p('B'), p('C')]);
-      engine.moveBlock(2, 0); // move C to the top
+      engine.moveBlock(2, 0);
       expect([0, 1, 2].map((i) => textOf(engine.document(), i))).toEqual(['C', 'A', 'B']);
     });
 
     it('moveBlock is a no-op when dropped in its own gap, and is undoable', () => {
       const doc = [p('A'), p('B'), p('C')];
       engine.document.set(doc);
-      engine.moveBlock(1, 1); // gap before B
-      engine.moveBlock(1, 2); // gap after B
+      engine.moveBlock(1, 1);
+      engine.moveBlock(1, 2);
       expect([0, 1, 2].map((i) => textOf(engine.document(), i))).toEqual(['A', 'B', 'C']);
 
-      engine.moveBlock(0, 3); // A → end
+      engine.moveBlock(0, 3);
       expect([0, 1, 2].map((i) => textOf(engine.document(), i))).toEqual(['B', 'C', 'A']);
       engine.undo();
       expect([0, 1, 2].map((i) => textOf(engine.document(), i))).toEqual(['A', 'B', 'C']);
@@ -642,7 +632,7 @@ describe('EditorEngine integration', () => {
       const img = { type: 'image', attrs: { src: 'https://x.example/a.png', mode: 'content', size: 'auto' }, content: [] };
       engine.document.set([p('above'), p('mid'), img] as ASTDocument);
       engine.selectBlock(2);
-      engine.moveBlock(2, 0); // drag the image to the top
+      engine.moveBlock(2, 0);
       expect(engine.document()[0].type).toBe('image');
       expect(engine.selectedBlock()).toBe(0);
     });
@@ -651,8 +641,7 @@ describe('EditorEngine integration', () => {
       engine.document.set([p('')]);
       caret(0, 0);
       engine.insertImage({ src: 'https://x.example/a.png', alt: '', mode: 'content', size: 'auto' });
-      // content is fixed-width: no size class (else the size buttons would have
-      // nothing to act on, but content has no size buttons)
+
       expect(html()).toContain('class="sh-editor-img-content"');
       expect(html()).not.toContain('sh-editor-img-size');
 
@@ -660,7 +649,6 @@ describe('EditorEngine integration', () => {
       expect(html()).toContain('class="sh-editor-img-theater"');
       expect(html()).not.toContain('sh-editor-img-size');
 
-      // float carries the size, so the toolbar's size buttons change the render
       engine.updateSelectedImage({ mode: 'float', size: 'medium' });
       expect(html()).toContain('class="sh-editor-img-float sh-editor-img-size-medium"');
       engine.updateSelectedImage({ size: 'small' });
@@ -671,7 +659,7 @@ describe('EditorEngine integration', () => {
   describe('slash commands', () => {
     it('aggregates the slash entries every block behavior declares', () => {
       const ids = engine.slashCommands().map((c) => c.id);
-      // one entry per registered block behavior that opts in (order = registration)
+
       expect(ids).toEqual([
         'paragraph', 'heading-1', 'heading-2', 'quote', 'info-callout',
         'code-block', 'hr', 'image', 'bullet-list', 'ordered-list',
@@ -687,22 +675,22 @@ describe('EditorEngine integration', () => {
     it('triggers after whitespace but not mid-word or inside a URL', () => {
       engine.document.set([p('see /img')]);
       caret(0, 8);
-      expect(engine.slashState()?.query).toBe('img'); // after a space
+      expect(engine.slashState()?.query).toBe('img');
 
       engine.document.set([p('a/b')]);
       caret(0, 3);
-      expect(engine.slashState()).toBeNull(); // "/" not at a word boundary
+      expect(engine.slashState()).toBeNull();
 
       engine.document.set([p('http://x')]);
       caret(0, 8);
-      expect(engine.slashState()).toBeNull(); // scheme slash, preceded by ':'
+      expect(engine.slashState()).toBeNull();
     });
 
     it('is null when the caret is not at the end of the query or the block is not text', () => {
       engine.document.set([p('/head extra')]);
-      caret(0, 5); // caret after "/head" but text continues → query run does not end here
+      caret(0, 5);
       expect(engine.slashState()?.query).toBe('head');
-      caret(0, 3); // mid-query
+      caret(0, 3);
       expect(engine.slashState()?.query).toBe('he');
     });
 
@@ -713,7 +701,7 @@ describe('EditorEngine integration', () => {
       engine.applySlashCommand(cmd);
       expect(engine.document()[0].type).toBe('heading');
       expect(engine.document()[0].attrs?.['level']).toBe(2);
-      expect(textOf(engine.document(), 0)).toBe(''); // "/head" removed, not left behind
+      expect(textOf(engine.document(), 0)).toBe('');
     });
 
     it('keeps text before the trigger when converting mid-line', () => {
@@ -722,7 +710,7 @@ describe('EditorEngine integration', () => {
       const cmd = engine.slashCommands().find((c) => c.id === 'quote')!;
       engine.applySlashCommand(cmd);
       expect(engine.document()[0].type).toBe('quote');
-      expect(textOf(engine.document(), 0)).toBe('note '); // only "/quote" stripped
+      expect(textOf(engine.document(), 0)).toBe('note ');
     });
 
     it('routes a requestsUi command (image) to a uiRequest after stripping', () => {
@@ -731,7 +719,7 @@ describe('EditorEngine integration', () => {
       const cmd = engine.slashCommands().find((c) => c.id === 'image')!;
       engine.applySlashCommand(cmd);
       expect(engine.uiRequest()?.action).toBe('image');
-      expect(textOf(engine.document(), 0)).toBe(''); // trigger text gone
+      expect(textOf(engine.document(), 0)).toBe('');
     });
   });
 
@@ -752,7 +740,7 @@ describe('EditorEngine integration', () => {
       const out = html();
       expect(out).toContain('color: #ff0000');
       expect(out).toContain('font-size: 20px');
-      expect((out.match(/<span/g) ?? []).length).toBe(1); // one span, not nested
+      expect((out.match(/<span/g) ?? []).length).toBe(1);
     });
 
     it('removes one property with a null value, and the mark when empty', () => {
@@ -765,7 +753,7 @@ describe('EditorEngine integration', () => {
       expect(html()).toContain('font-size: 14px');
       range([0, 0], [0, 2]);
       engine.applyStyle({ 'font-size': null });
-      expect(html()).toBe('<p>hi</p>'); // mark gone entirely
+      expect(html()).toBe('<p>hi</p>');
     });
 
     it('drops injection-shaped style values on render, keeping the safe ones', () => {
@@ -784,8 +772,8 @@ describe('EditorEngine integration', () => {
       const out = html();
       expect(out).not.toContain('javascript');
       expect(out).not.toContain('url(');
-      expect(out).not.toMatch(/color/); // the injection-shaped color is dropped
-      expect(out).toContain('font-size: 14px'); // the valid property survives
+      expect(out).not.toMatch(/color/);
+      expect(out).toContain('font-size: 14px');
     });
   });
 
@@ -859,8 +847,8 @@ describe('EditorEngine integration', () => {
     it('a paragraph \\n renders as <br> (new line, not new paragraph)', () => {
       engine.document.set([{ type: 'paragraph', content: [{ type: 'text', text: 'hello world' }] }] as ASTDocument);
       caret(0, 5);
-      engine.insertText('\n'); // insertLineBreak path
-      expect(engine.document()).toHaveLength(1); // still ONE block
+      engine.insertText('\n');
+      expect(engine.document()).toHaveLength(1);
       expect(html()).toBe('<p>hello\n world</p>'.replace('\n', '<br>'));
     });
 
@@ -886,7 +874,7 @@ describe('EditorEngine integration', () => {
     it('a trailing soft break gets a padding <br> that does not round-trip as content', () => {
       engine.document.set([{ type: 'paragraph', content: [{ type: 'text', text: 'a\n' }] }] as ASTDocument);
       expect(html()).toBe('<p>a<br><br data-sh-pad=""></p>');
-      // The pad <br> is a caret shim, not content: re-parsing yields just "a\n".
+
       const doc = htmlToAst(html(), engine.blocks, engine.inlines);
       expect(doc[0].content).toEqual([{ type: 'text', text: 'a\n' }]);
     });
@@ -895,7 +883,7 @@ describe('EditorEngine integration', () => {
       const doc = htmlToAst('<p><br></p>', engine.blocks, engine.inlines);
       expect(doc[0].content).toEqual([{ type: 'text', text: '' }]);
       engine.document.set(doc);
-      expect(html()).toBe('<p><br></p>'); // re-renders as the same placeholder
+      expect(html()).toBe('<p><br></p>');
     });
   });
 
@@ -913,7 +901,7 @@ describe('EditorEngine integration', () => {
       const json = engine.serialize('json');
       expect(json).toEqual(engine.document());
       json[0].content[0].text = 'mutated';
-      expect(textOf(engine.document(), 0)).toBe('x'); // live doc untouched
+      expect(textOf(engine.document(), 0)).toBe('x');
     });
   });
 });

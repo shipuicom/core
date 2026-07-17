@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+
 import { describe, expect, it } from 'vitest';
 import { escapeAttr, isSafeUrl, normalizeDocument, sanitizeDocumentUrls, sanitizeHtmlToBody } from './editor-sanitize';
 import { astToHtml, htmlToAst, markdownToAst } from './editor-serializers';
@@ -6,7 +7,6 @@ import * as B from './standard-behaviors';
 import { HeadingBehavior, ImageBehavior, LinkBehavior, ParagraphBehavior } from './standard-behaviors';
 import { ASTBlockNode, ASTMark } from './editor.types';
 
-/** Minimal behavior maps for exercising the full htmlToAst ingest path. */
 function makeMaps() {
   const blocks = new Map<string, any>();
   [
@@ -19,15 +19,6 @@ function makeMaps() {
   );
   return { blocks, inlines };
 }
-
-/**
- * Step 1 of the sanitization plan — render hardening.
- *
- * The AST is projected to live DOM and serialized into the bound `value` on
- * every render. A hostile AST can also arrive via `value` with `format='json'`,
- * skipping HTML parsing entirely, so the render path itself must be safe. These
- * tests pin the primitives and every behavior that interpolates an attribute.
- */
 
 describe('escapeAttr', () => {
   it('escapes the characters that could break out of a double-quoted attribute', () => {
@@ -78,7 +69,7 @@ describe('isSafeUrl', () => {
     const png = 'data:image/png;base64,iVBORw0KGgo=';
     expect(isSafeUrl(png)).toBe(false);
     expect(isSafeUrl(png, { allowDataImage: true })).toBe(true);
-    // A non-image data URL stays rejected even with the image opt-in.
+
     expect(isSafeUrl('data:text/html,<script>1</script>', { allowDataImage: true })).toBe(false);
   });
 });
@@ -98,9 +89,7 @@ describe('behavior render hardening (JSON-bypass sinks)', () => {
 
   it('ImageBehavior escapes src/alt and drops an unsafe src, with no attribute breakout', () => {
     const html = image.renderHTML(block({ src: 'x" onerror="alert(1)', alt: '"><script>', mode: 'x', size: 'y' }));
-    // Parse it the way the browser would and prove the payload stayed inert: the
-    // escaped quotes keep everything inside the `src` value, so no handler
-    // attribute and no <script> element materialize.
+
     const el = document.createElement('div');
     el.innerHTML = html;
     const img = el.querySelector('img')!;
@@ -108,8 +97,8 @@ describe('behavior render hardening (JSON-bypass sinks)', () => {
     expect(el.querySelector('script')).toBeNull();
     expect(img.getAttribute('onerror')).toBeNull();
     expect(Array.from(img.attributes).map((a) => a.name).sort()).toEqual(['alt', 'class', 'contenteditable', 'draggable', 'src']);
-    expect(img.getAttribute('src')).toBe('x" onerror="alert(1)'); // whole payload is the src value
-    expect(img.getAttribute('class')).toBe('sh-editor-img-content'); // unknown mode falls back
+    expect(img.getAttribute('src')).toBe('x" onerror="alert(1)');
+    expect(img.getAttribute('class')).toBe('sh-editor-img-content');
   });
 
   it('ImageBehavior keeps a safe/data-image src and known mode/size', () => {
@@ -122,21 +111,21 @@ describe('behavior render hardening (JSON-bypass sinks)', () => {
   });
 
   it('ImageBehavior renders custom width/height (attr + inline style) and round-trips via parseDOM', () => {
-    // Width alone (aspect-preserving corner drag): no height emitted.
+
     const w = image.renderHTML(block({ src: 'data:image/png;base64,AAAA', alt: 'a', mode: 'content', size: 'auto', width: 320 }));
     expect(w).toContain('width="320"');
     expect(w).toContain('style="width:320px"');
     expect(w).not.toContain('height=');
-    // Width + height (edge stretch): both attributes and a combined inline style.
+
     const wh = image.renderHTML(block({ src: 'data:image/png;base64,AAAA', alt: 'a', mode: 'custom', size: 'auto', width: 320, height: 120 }));
     expect(wh).toContain('width="320"');
     expect(wh).toContain('height="120"');
     expect(wh).toContain('style="width:320px;height:120px"');
-    // parseDOM reads both back off the (sanitize-safe) width/height attributes.
+
     const el = document.createElement('div');
     el.innerHTML = wh;
     expect(image.parseDOM(el.querySelector('img')!)?.attrs).toMatchObject({ width: 320, height: 120 });
-    // Non-positive / non-numeric dimensions are ignored; none emitted when unset.
+
     expect(image.renderHTML(block({ src: 'data:image/png;base64,AAAA', alt: '', mode: 'content', size: 'auto' }))).not.toContain('width=');
     expect(image.renderHTML(block({ src: 'data:image/png;base64,AAAA', alt: '', mode: 'content', size: 'auto', width: 0, height: -5 }))).not.toMatch(/width=|height=/);
     expect(image.renderHTML(block({ src: 'data:image/png;base64,AAAA', alt: '', mode: 'content', size: 'auto', width: 'junk' }))).not.toContain('width=');
@@ -188,8 +177,7 @@ describe('sanitizeHtmlToBody (inbound scrub)', () => {
   });
 
   it('keeps text-align and allow-listed inline styles, drops the rest', () => {
-    // Safe character formatting survives ingest (jsdom may normalize hex→rgb,
-    // so assert on the property rather than the exact serialization).
+
     const a = clean('<p style="color:red;text-align:center">t</p>');
     expect(a).toContain('text-align: center');
     expect(a).toContain('color: red');
@@ -199,7 +187,7 @@ describe('sanitizeHtmlToBody (inbound scrub)', () => {
   });
 
   it('drops injection-shaped and non-allow-listed style declarations', () => {
-    // The dangerous url()/scheme is always gone; a harmless longhand reset may remain.
+
     expect(clean('<p style="background:url(javascript:alert(1))">t</p>')).not.toContain('url(');
     expect(clean('<span style="color:red;behavior:url(x.htc)">t</span>')).not.toContain('behavior');
     expect(clean('<span style="font-size:20px;position:fixed">t</span>')).not.toContain('position');
@@ -240,9 +228,9 @@ describe('markdown ingest (I2)', () => {
     const doc = markdownToAst('![a" onerror=alert(1)](javascript:alert(2))', blocks, inlines);
     const json = JSON.stringify(doc);
     expect(doc[0].type).toBe('image');
-    expect(doc[0].attrs!['src']).toBe(''); // javascript: rejected
+    expect(doc[0].attrs!['src']).toBe('');
     expect(json).not.toMatch(/javascript:/i);
-    // The alt is stored as inert text; no handler survives into the DOM.
+
     const el = document.createElement('div');
     el.innerHTML = doc.map((b) => (blocks.get(b.type) as any).renderHTML(b)).join('');
     expect(el.querySelector('[onerror]')).toBeNull();
@@ -269,8 +257,8 @@ describe('sanitizeDocumentUrls (I3 — JSON value path)', () => {
     expect(clean[1].content[0].marks[0].attrs.href).toBe('https://ok.example');
     expect(clean[2].attrs.src).toBe('');
     expect(clean[3].attrs.src).toBe('data:image/png;base64,AAAA');
-    expect(clean[4].content[0].content[0].marks[0].attrs.href).toBe('#'); // nested list item
-    // Original input is not mutated (works on a clone).
+    expect(clean[4].content[0].content[0].marks[0].attrs.href).toBe('#');
+
     expect(hostile[0].content[0].marks![0].attrs.href).toBe('javascript:alert(1)');
   });
 });
@@ -291,17 +279,17 @@ describe('normalizeDocument (JSON schema guard)', () => {
 
   it('coerces malformed nodes and drops unsalvageable ones', () => {
     const hostile = [
-      { type: 'paragraph', content: null }, // content not an array
-      { type: 'paragraph', content: [{ type: 'text', text: 42 }, { type: 'text', text: 'ok' }] }, // numeric text dropped
+      { type: 'paragraph', content: null },
+      { type: 'paragraph', content: [{ type: 'text', text: 42 }, { type: 'text', text: 'ok' }] },
       { type: 'paragraph', content: [{ type: 'text', text: 'm', marks: [null, { noType: 1 }, { type: 'bold' }] }] },
       { type: 'heading', attrs: 'not-an-object', content: [{ type: 'text', text: 'h' }] },
-      { type: 12, content: [] }, // non-string type dropped entirely
+      { type: 12, content: [] },
     ];
     const doc = normalizeDocument(hostile as any) as any[];
     expect(doc.map((b) => b.type)).toEqual(['paragraph', 'paragraph', 'paragraph', 'heading']);
-    expect(doc[0].content).toEqual([{ type: 'text', text: '' }]); // empty paragraph convention
+    expect(doc[0].content).toEqual([{ type: 'text', text: '' }]);
     expect(doc[1].content).toEqual([{ type: 'text', text: 'ok' }]);
-    expect(doc[2].content[0].marks).toEqual([{ type: 'bold' }]); // invalid marks filtered
+    expect(doc[2].content[0].marks).toEqual([{ type: 'bold' }]);
     expect(doc[3].attrs).toBeUndefined();
     expect(() => render(doc)).not.toThrow();
   });
@@ -312,7 +300,7 @@ describe('normalizeDocument (JSON schema guard)', () => {
         type: 'bullet-list',
         content: [
           { type: 'list-item', content: [{ type: 'text', text: 'ok' }] },
-          { type: 'list-item', content: [] }, // empty item healed
+          { type: 'list-item', content: [] },
           { type: 'bullet-list', content: [{ type: 'list-item', content: [{ type: 'text', text: 'too deep' }] }] },
           'garbage',
         ],
@@ -336,18 +324,18 @@ describe('normalizeDocument (JSON schema guard)', () => {
 describe('sanitize option (opt-out & allow-list extension)', () => {
   it('option=false parses inertly but skips the scrub (trusted content)', () => {
     const body = sanitizeHtmlToBody('<img src="x" onerror="y"><script>1</script>', false)!;
-    // Not scrubbed: the handler attribute and script node are retained...
+
     expect(body.querySelector('[onerror]')).not.toBeNull();
-    // ...but parsing was inert — the script never executed (no throw, no side effect).
+
     expect(body.querySelector('script')).not.toBeNull();
   });
 
   it('extends the tag/attribute allow-list for custom behaviors', () => {
     const withExt = sanitizeHtmlToBody('<figure><figcaption>c</figcaption></figure>', { tags: ['figure', 'figcaption'] })!;
     expect(withExt.innerHTML).toBe('<figure><figcaption>c</figcaption></figure>');
-    // Without the extension the same markup is unwrapped to its text.
+
     expect(sanitizeHtmlToBody('<figure><figcaption>c</figcaption></figure>')!.innerHTML).toBe('c');
-    // Attribute extension keeps a custom attr while still dropping handlers.
+
     const attrExt = sanitizeHtmlToBody('<p data-id="1" onclick="x">t</p>', { attrs: { p: ['data-id'] } })!;
     expect(attrExt.innerHTML).toBe('<p data-id="1">t</p>');
   });

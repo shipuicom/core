@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+
 import { Injector, runInInjectionContext } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 import { EditorEngineService } from './editor-engine.service';
@@ -9,40 +10,6 @@ import { ASTDocument, LogicalPosition } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import { BulletListBehavior, ListItemBehavior, ParagraphBehavior } from './standard-behaviors';
 
-/**
- * Deterministic fuzz suite for the rebase machinery.
- *
- * Three layers, in increasing realism:
- *
- * 1. **Op algebra (TP1)** — random concurrent op pairs from random documents:
- *    diff/apply must reproduce the mutation, inversion must round-trip, and
- *    whenever both transforms succeed the two application orders must
- *    converge: apply(apply(d,a), T(b,a,R)) === apply(apply(d,b), T(a,b,L)).
- *    Plus: flat-map cursor identity for every position outside the change.
- *
- * 2. **Engine marker oracle** — interleaved local typing and remote inserts,
- *    each edit a UNIQUE marker character. Insert-only traffic can never
- *    legitimately conflict, so after undoing ALL local history the document
- *    must contain every remote marker, zero local markers, and the untouched
- *    base text — an exact oracle for offset rebasing (a single mis-shifted
- *    undo deletes the wrong character and is caught immediately). Redo-all
- *    must then restore the pre-undo document byte-for-byte.
- *
- * 3. **Engine chaos** — all op kinds (typing, Enter, Backspace, range deletes,
- *    remote splits/merges/replacements). No exact oracle is possible once
- *    conflicts legitimately drop history entries, so the invariants are:
- *    never throws, the document stays structurally valid after every action
- *    and every undo, and undo-all → redo-all is a fixed point.
- *
- * All randomness is mulberry32 with fixed seeds — failures reproduce exactly.
- */
-
-// ---------------------------------------------------------------------------
-// Deterministic PRNG + helpers
-// ---------------------------------------------------------------------------
-
-/** Iteration multiplier — CI's nightly job runs the same suite deeper
- * (FUZZ_SCALE=10); locally and on PRs it stays fast at 1. */
 const SCALE = Math.max(1, Number(globalThis.process?.env?.['FUZZ_SCALE'] ?? 1) || 1);
 
 function mulberry32(seed: number) {
@@ -67,9 +34,6 @@ const blockText = (b: any): string =>
 const docText = (doc: ASTDocument) => doc.map(blockText).join('\n');
 const deepEq = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
-/** Canonicalize inline node structure (merge equal-mark runs, drop empties) so
- * comparisons are semantic: applyOp normalizes but engine transforms don't
- * always, and undo/redo must not be penalized for canonicalizing. */
 const canonical = (doc: ASTDocument): ASTDocument =>
   (structuredClone(doc) as any[]).map((b) => {
     if (isText(b)) b.content = normalizeInlineNodes(b.content);
@@ -82,14 +46,13 @@ const canonical = (doc: ASTDocument): ASTDocument =>
   }) as ASTDocument;
 const semanticEq = (a: ASTDocument, b: ASTDocument) => deepEq(canonical(a), canonical(b));
 
-/** Structural validity per the editor's AST invariants. */
 function validate(doc: ASTDocument): string | null {
   if (!Array.isArray(doc) || doc.length === 0) return 'empty document';
   for (const block of doc) {
     if (!block?.type) return 'block without type';
     const c = block.content as any[];
     if (!Array.isArray(c)) return `non-array content in ${block.type}`;
-    if (c.length === 0) continue; // void
+    if (c.length === 0) continue;
     if (typeof c[0]?.text === 'string') {
       if (!c.every((n) => typeof n.text === 'string')) return `mixed inline content in ${block.type}`;
     } else {
@@ -113,10 +76,6 @@ function makeEngine(): EditorEngineService {
 const caretSel = (blockIndex: number, offset: number) =>
   ({ start: { blockIndex, inlineIndex: 0, offset }, end: { blockIndex, inlineIndex: 0, offset }, isCollapsed: true }) as any;
 
-// ---------------------------------------------------------------------------
-// Layer 1: op-algebra fuzz (TP1 convergence + diff/apply/invert + flat maps)
-// ---------------------------------------------------------------------------
-
 function randomBaseDoc(rnd: Rnd): ASTDocument {
   const blocks: any[] = [];
   const n = 2 + pick(rnd, 4);
@@ -129,14 +88,13 @@ function randomBaseDoc(rnd: Rnd): ASTDocument {
   return blocks as ASTDocument;
 }
 
-/** A random single mutation, returning the new doc (or null if impossible). */
 function randomMutation(rnd: Rnd, doc: ASTDocument): ASTDocument | null {
   const kind = pick(rnd, 5);
   const textIdxs = doc.map((b, i) => (isText(b) ? i : -1)).filter((i) => i >= 0);
   const cloned = structuredClone(doc) as any[];
   switch (kind) {
     case 0: {
-      // insert text inside a block
+
       if (!textIdxs.length) return null;
       const bi = textIdxs[pick(rnd, textIdxs.length)];
       const t = blockText(cloned[bi]);
@@ -145,7 +103,7 @@ function randomMutation(rnd: Rnd, doc: ASTDocument): ASTDocument | null {
       return cloned;
     }
     case 1: {
-      // delete a char range inside a block
+
       if (!textIdxs.length) return null;
       const bi = textIdxs[pick(rnd, textIdxs.length)];
       const t = blockText(cloned[bi]);
@@ -156,13 +114,13 @@ function randomMutation(rnd: Rnd, doc: ASTDocument): ASTDocument | null {
       return cloned;
     }
     case 2: {
-      // replace a whole block
+
       const bi = pick(rnd, cloned.length);
       cloned[bi] = p('REPL' + pick(rnd, 100));
       return cloned;
     }
     case 3: {
-      // split a text block
+
       if (!textIdxs.length) return null;
       const bi = textIdxs[pick(rnd, textIdxs.length)];
       const t = blockText(cloned[bi]);
@@ -171,7 +129,7 @@ function randomMutation(rnd: Rnd, doc: ASTDocument): ASTDocument | null {
       return cloned;
     }
     default: {
-      // merge two adjacent text blocks
+
       const pairs = [];
       for (let i = 0; i + 1 < cloned.length; i++) if (isText(cloned[i]) && isText(cloned[i + 1])) pairs.push(i);
       if (!pairs.length) return null;
@@ -196,16 +154,11 @@ describe('fuzz layer 1: op algebra (TP1, invert, flat maps)', () => {
       const b = diffDocuments(base, mutB);
       if (!a || !b) continue;
 
-      // diff + apply reproduces each mutation exactly
       expect(deepEq(applyOp(base, a), mutA), `seed ${seed}: applyOp(a)`).toBe(true);
       expect(deepEq(applyOp(base, b), mutB), `seed ${seed}: applyOp(b)`).toBe(true);
-      // inversion round-trips
+
       expect(deepEq(applyOp(mutA as ASTDocument, invertOp(a)), base), `seed ${seed}: invert(a)`).toBe(true);
 
-      // flat map preserves cursor identity outside the changed range. Only
-      // offsets STRICTLY inside a block's text qualify — a cursor at
-      // end-of-block sits on a boundary token, and "the char after it" is the
-      // next block's first char, which may legitimately change.
       const map = diffFlat(base, mutA as ASTDocument);
       if (map) {
         const [start, oldSize] = map.ranges[0];
@@ -216,7 +169,7 @@ describe('fuzz layer 1: op algebra (TP1, invert, flat maps)', () => {
           for (const off of new Set([0, Math.min(1, len - 1), len - 1])) {
             const lp = { blockIndex: bi, inlineIndex: 0, offset: off } as LogicalPosition;
             const pos = logicalToPos(base, lp);
-            if (pos >= start && pos <= start + oldSize) continue; // touching the change
+            if (pos >= start && pos <= start + oldSize) continue;
             const mapped = posToLogical(mutA as ASTDocument, map.map(pos))!;
             const charBefore = docText(base).replace(/\n/g, '')[posCharIndex(base, lp)];
             const charAfter = docText(mutA as ASTDocument).replace(/\n/g, '')[posCharIndex(mutA as ASTDocument, mapped)];
@@ -225,7 +178,6 @@ describe('fuzz layer 1: op algebra (TP1, invert, flat maps)', () => {
         }
       }
 
-      // TP1 convergence whenever both transforms succeed
       const tb = transformOp(b, a, 'right');
       const ta = transformOp(a, b, 'left');
       if (ta && tb) {
@@ -235,11 +187,10 @@ describe('fuzz layer 1: op algebra (TP1, invert, flat maps)', () => {
         expect(deepEq(viaA, viaB), `seed ${seed}: TP1 divergence\na=${JSON.stringify(a)}\nb=${JSON.stringify(b)}`).toBe(true);
       }
     }
-    expect(convergenceChecks).toBeGreaterThan(50); // the fuzz actually exercised TP1
+    expect(convergenceChecks).toBeGreaterThan(50);
   });
 });
 
-/** Char index of a logical position within a doc's concatenated text. */
 function posCharIndex(doc: ASTDocument, lp: LogicalPosition): number {
   let idx = 0;
   for (let i = 0; i < lp.blockIndex; i++) idx += blockText(doc[i]).length;
@@ -252,10 +203,6 @@ function posCharIndex(doc: ASTDocument, lp: LogicalPosition): number {
   for (let k = 0; k < lp.inlineIndex; k++) idx += content[k].text.length;
   return idx + lp.offset;
 }
-
-// ---------------------------------------------------------------------------
-// Layer 2: engine marker oracle (insert-only — exact rebase validation)
-// ---------------------------------------------------------------------------
 
 describe('fuzz layer 2: engine rebase marker oracle', () => {
   it('undo-all removes exactly the local markers across 80 interleavings', () => {
@@ -301,8 +248,6 @@ describe('fuzz layer 2: engine rebase marker oracle', () => {
       while (engine.canRedo() && guard++ < 50) engine.redo();
       expect(semanticEq(engine.document(), preUndo), `seed ${seed}: redo-all is not a fixed point`).toBe(true);
 
-      // Round 2: the redone entries were rebased while ON the redo stack —
-      // undoing them again must still remove exactly the local markers.
       guard = 0;
       while (engine.canUndo() && guard++ < 50) engine.undo();
       const secondUndo = docText(engine.document());
@@ -325,14 +270,13 @@ describe('fuzz layer 2: engine rebase marker oracle', () => {
       let l = 0;
       let r = 0;
 
-      // Build some local history.
       for (let step = 0; step < 5 && l < LOCAL.length; step++) {
         const doc = engine.document();
         const bi = pick(rnd, doc.length);
         engine.selection.live.set(caretSel(bi, pick(rnd, blockText(doc[bi]).length + 1)));
         engine.insertText(LOCAL[l++]);
       }
-      // Undo part of it (populates the redo stack), then a remote op lands.
+
       const undos = 1 + pick(rnd, l - 1);
       for (let i = 0; i < undos; i++) engine.undo();
       {
@@ -346,7 +290,7 @@ describe('fuzz layer 2: engine rebase marker oracle', () => {
           inserted: [{ type: 'text', text: REMOTE[r++] }],
         });
       }
-      // Redo everything the rebase kept, then undo-all: oracle must hold.
+
       let guard = 0;
       while (engine.canRedo() && guard++ < 20) engine.redo();
       guard = 0;
@@ -359,10 +303,6 @@ describe('fuzz layer 2: engine rebase marker oracle', () => {
     }
   });
 });
-
-// ---------------------------------------------------------------------------
-// Layer 3: engine chaos (all op kinds — structural invariants)
-// ---------------------------------------------------------------------------
 
 describe('fuzz layer 3: engine chaos invariants', () => {
   it('never corrupts the document across 60 mixed runs', () => {
