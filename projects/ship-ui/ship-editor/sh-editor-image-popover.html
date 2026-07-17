@@ -1,0 +1,32 @@
+    <div class="sh-editor-link-anchor" [style.top.px]="top()" [style.left.px]="left()">
+      <sh-popover [(isOpen)]="isOpen" (closed)="onClosed()" [disableOpenByClick]="true" [asSheetOnMobile]="true" [options]="{ closeOnButton: false, closeOnEsc: true }">
+        <div class="sh-editor-popover sh-editor-image-form" (keydown)="onFormKeydown($event)">
+          <div class="sh-editor-popover-header">
+            <sh-icon>image</sh-icon>
+            <span>Insert image</span>
+          </div>
+          <sh-form-field size="small">
+            <label>Image URL</label>
+            <input
+              #urlInput
+              type="text"
+              autofocus
+              placeholder="https://example.com/image.jpg"
+              [value]="url()"
+              (input)="url.set($any($event.target).value); error.set(null)" />
+            @if (error(); as message) {
+              <span error role="alert">{{ message }}</span>
+            }
+          </sh-form-field>
+          <input #fileInput type="file" accept="image/*" hidden (change)="onFile($event)" />
+          <div class="sh-editor-popover-actions">
+            <button shButton noBg [disabled]="uploading()" (click)="fileInput.click()">
+              <sh-icon>upload-simple</sh-icon>
+              {{ uploading() ? 'Uploading…' : 'Upload' }}
+            </button>
+            <span class="sh-editor-popover-spacer"></span>
+            <button shButton color="primary" [disabled]="uploading()" (click)="apply()">Insert</button>
+          </div>
+        </div>
+      </sh-popover>
+    </div>

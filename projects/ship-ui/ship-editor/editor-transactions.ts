@@ -1,35 +1,6 @@
 import { normalizeInlineNodes } from './editor-ast.utils';
 import { ASTBlockNode, ASTDocument, ASTInlineNode, LogicalSelection } from './editor.types';
 
-/**
- * Invertible, transformable editor operations.
- *
- * Two-level operation model:
- *
- * - **BlockSplice** — "at block index `at`, `removed` blocks became `inserted`".
- *   Used for structural edits (split, merge, block-type change, reset).
- * - **InlineSplice** — "inside block `blockIndex`, at character offset `at`,
- *   this inline fragment became that one". Used whenever an edit stays inside a
- *   single text block — typing, deleting, mark toggles. Fragments are
- *   `ASTInlineNode[]`, so marks survive; offsets are UTF-16 code units in the
- *   block's flattened text (the same space `LogicalPosition.offset` lives in).
- *
- * Every op is invertible (swap removed/inserted) and plain JSON, so it can ship
- * over a wire verbatim. `transformOp(op, against, side)` is the OT primitive:
- * it rewrites `op` as if `against` had been applied first, returning null on a
- * genuine overlap conflict (same characters / same blocks touched — the caller
- * must then resolve, e.g. drop the op or fall back to a fresh diff). For two
- * ops a/b produced concurrently from the same document, non-conflicting pairs
- * converge: apply(apply(d,a), transform(b,a,'right')) ===
- * apply(apply(d,b), transform(a,b,'left')) — pinned by tests.
- *
- * What a realtime sync layer still adds on top: sequence rebasing (the
- * transform ladder over op *lists*), server ordering / acknowledgement, and a
- * conflict policy for the null cases. The per-op algebra below is the part
- * both an OT and a CRDT-flavored design need either way.
- */
-
-/** Replace `removed.length` blocks at `at` with `inserted`. */
 export interface BlockSplice {
   kind: 'block';
   at: number;
@@ -37,11 +8,10 @@ export interface BlockSplice {
   inserted: ASTBlockNode[];
 }
 
-/** Replace a character range inside one text block with an inline fragment. */
 export interface InlineSplice {
   kind: 'inline';
   blockIndex: number;
-  /** Character offset (UTF-16 units) in the block's flattened text. */
+
   at: number;
   removed: ASTInlineNode[];
   inserted: ASTInlineNode[];
@@ -49,25 +19,18 @@ export interface InlineSplice {
 
 export type EditorOp = BlockSplice | InlineSplice;
 
-/** One committed edit: the op plus caret context for undo/redo restore. */
 export interface EditorTransaction {
-  /** Document version this op applies on top of (monotonic, per engine). */
+
   baseVersion: number;
   op: EditorOp;
   selBefore: LogicalSelection | null;
   selAfter: LogicalSelection | null;
 }
 
-// ---------------------------------------------------------------------------
-// Inline fragment helpers
-// ---------------------------------------------------------------------------
-
-/** Total character length of an inline fragment. */
 export function fragLen(nodes: ASTInlineNode[]): number {
   return nodes.reduce((n, x) => n + (x.text?.length ?? 0), 0);
 }
 
-/** Extract [from, to) of a block's inline content as a fragment, marks intact. */
 export function sliceInline(content: ASTInlineNode[], from: number, to: number): ASTInlineNode[] {
   const out: ASTInlineNode[] = [];
   let pos = 0;
@@ -82,7 +45,6 @@ export function sliceInline(content: ASTInlineNode[], from: number, to: number):
   return out;
 }
 
-/** Replace `removedLen` characters at `at` with `inserted`, renormalized. */
 export function spliceInlineContent(
   content: ASTInlineNode[],
   at: number,
@@ -96,22 +58,14 @@ export function spliceInlineContent(
   ]);
 }
 
-/** Text block whose content is inline nodes (not a container/void block). */
 function isInlineContent(content: unknown): content is ASTInlineNode[] {
   return Array.isArray(content) && content.every((n) => typeof (n as ASTInlineNode)?.text === 'string');
 }
 
-// ---------------------------------------------------------------------------
-// Diff
-// ---------------------------------------------------------------------------
-
-/** Structural block equality — reference check first (transforms share untouched
- * block objects), JSON comparison as the safety net when they don't. */
 function blocksEqual(a: ASTBlockNode, b: ASTBlockNode): boolean {
   return a === b || JSON.stringify(a) === JSON.stringify(b);
 }
 
-/** Flatten inline content to per-character (char, markKey) pairs. */
 function flattenChars(content: ASTInlineNode[]): { c: string; k: string }[] {
   const out: { c: string; k: string }[] = [];
   for (const node of content) {
@@ -122,7 +76,6 @@ function flattenChars(content: ASTInlineNode[]): { c: string; k: string }[] {
   return out;
 }
 
-/** Char-level diff of one text block's content, or null when equivalent. */
 function diffInline(oldC: ASTInlineNode[], newC: ASTInlineNode[], blockIndex: number): InlineSplice | null {
   const a = flattenChars(oldC);
   const b = flattenChars(newC);
@@ -135,7 +88,7 @@ function diffInline(oldC: ASTInlineNode[], newC: ASTInlineNode[], blockIndex: nu
     endA--;
     endB--;
   }
-  if (start === endA && start === endB) return null; // equivalent (maybe different node structure)
+  if (start === endA && start === endB) return null;
   return {
     kind: 'inline',
     blockIndex,
@@ -145,15 +98,6 @@ function diffInline(oldC: ASTInlineNode[], newC: ASTInlineNode[], blockIndex: nu
   };
 }
 
-/**
- * Diff two documents into the minimal operation, or null when equivalent.
- *
- * Block-level common prefix/suffix are peeled off first. When the remaining
- * window is a single same-type/same-attrs text block on both sides, the diff
- * refines to a character-level InlineSplice — so plain typing stores the
- * changed characters, not the whole block. Everything else (splits, merges,
- * type/attr changes, void/container blocks) stays a BlockSplice.
- */
 export function diffDocuments(oldDoc: ASTDocument, newDoc: ASTDocument): EditorOp | null {
   let start = 0;
   const minLen = Math.min(oldDoc.length, newDoc.length);
@@ -166,7 +110,7 @@ export function diffDocuments(oldDoc: ASTDocument, newDoc: ASTDocument): EditorO
     endNew--;
   }
 
-  if (start === endOld && start === endNew) return null; // identical
+  if (start === endOld && start === endNew) return null;
 
   if (endOld - start === 1 && endNew - start === 1) {
     const oldBlock = oldDoc[start];
@@ -177,14 +121,11 @@ export function diffDocuments(oldDoc: ASTDocument, newDoc: ASTDocument): EditorO
       isInlineContent(oldBlock.content) &&
       isInlineContent(newBlock.content)
     ) {
-      // Same block, same shape — refine to a char-level op. A null here means
-      // the contents are equivalent modulo node structure: a semantic no-op.
+
       return diffInline(oldBlock.content, newBlock.content, start);
     }
   }
 
-  // Clone the stored blocks so later in-place mutations of the live doc can
-  // never corrupt history.
   return {
     kind: 'block',
     at: start,
@@ -193,39 +134,22 @@ export function diffDocuments(oldDoc: ASTDocument, newDoc: ASTDocument): EditorO
   };
 }
 
-// ---------------------------------------------------------------------------
-// Invert / apply
-// ---------------------------------------------------------------------------
-
-/** The exact inverse operation: applying it after the original is a no-op. */
 export function invertOp(op: EditorOp): EditorOp {
   return { ...op, removed: op.inserted, inserted: op.removed } as EditorOp;
 }
 
-/** Apply an op, returning a new document (inserted content cloned in — history
- * stays isolated from the live document). */
 export function applyOp(doc: ASTDocument, op: EditorOp): ASTDocument {
   if (op.kind === 'block') {
     return [...doc.slice(0, op.at), ...structuredClone(op.inserted), ...doc.slice(op.at + op.removed.length)];
   }
   const block = doc[op.blockIndex];
-  if (!block || !isInlineContent(block.content)) return doc; // op no longer applies
+  if (!block || !isInlineContent(block.content)) return doc;
   const content = spliceInlineContent(block.content, op.at, fragLen(op.removed), op.inserted);
   const next = [...doc];
   next[op.blockIndex] = { ...block, content };
   return next;
 }
 
-// ---------------------------------------------------------------------------
-// Transform (the OT primitive)
-// ---------------------------------------------------------------------------
-
-/**
- * Shift an operation's start index as if a concurrent splice [aStart,
- * aStart+aRemovedLen)→aInsertedLen had been applied first. Returns null when
- * the two ranges genuinely overlap. `side` breaks the tie for two insertions
- * at the same point ('left' keeps the op first, 'right' moves it after).
- */
 function shiftIndex(
   opStart: number,
   opRemovedLen: number,
@@ -240,25 +164,16 @@ function shiftIndex(
   if (aEnd < opStart) return opStart + delta;
   if (aEnd === opStart) {
     if (aStart === opStart) {
-      // `against` is a pure insertion exactly at op's start. Only when op is
-      // ALSO a pure insertion is this a genuine ordering tie for `side` to
-      // break; if op removes content, a concurrent insert can never sit inside
-      // its removal range, so the range shifts after the insert. (The fuzz
-      // found the TP1 divergence: merge-at-1 vs insert-at-1 must converge.)
+
       if (opRemovedLen === 0) return side === 'right' ? opStart + delta : opStart;
       return opStart + delta;
     }
-    return opStart + delta; // against's removal ends exactly where op starts
+    return opStart + delta;
   }
   if (opEnd <= aStart) return opStart;
-  return null; // overlap
+  return null;
 }
 
-/**
- * Rewrite `op` so it applies to a document where `against` (produced
- * concurrently from the same base document) has already been applied.
- * Returns null on an overlap conflict the algebra can't resolve.
- */
 export function transformOp(op: EditorOp, against: EditorOp, side: 'left' | 'right' = 'left'): EditorOp | null {
   if (against.kind === 'block') {
     const delta = against.inserted.length - against.removed.length;
@@ -267,24 +182,20 @@ export function transformOp(op: EditorOp, against: EditorOp, side: 'left' | 'rig
       if (at === null) return null;
       return at === op.at ? op : { ...op, at };
     }
-    // inline op vs block splice: survives only if its block wasn't replaced.
+
     const aEnd = against.at + against.removed.length;
     if (aEnd <= op.blockIndex) return delta === 0 ? op : { ...op, blockIndex: op.blockIndex + delta };
     if (op.blockIndex < against.at) return op;
-    return null; // the block this op edits was removed/replaced
+    return null;
   }
 
-  // against is inline
   if (op.kind === 'inline') {
-    if (op.blockIndex !== against.blockIndex) return op; // different blocks — independent
+    if (op.blockIndex !== against.blockIndex) return op;
     const at = shiftIndex(op.at, fragLen(op.removed), against.at, fragLen(against.removed), fragLen(against.inserted), side);
     if (at === null) return null;
     return at === op.at ? op : { ...op, at };
   }
 
-  // block op vs inline op: block indices are unaffected, but if the inline op
-  // edited a block this splice removes, refresh the stored copy so the block
-  // op's inverse still restores the latest content.
   if (against.blockIndex >= op.at && against.blockIndex < op.at + op.removed.length) {
     const idx = against.blockIndex - op.at;
     const stale = op.removed[idx];
@@ -300,11 +211,6 @@ export function transformOp(op: EditorOp, against: EditorOp, side: 'left' | 'rig
   return op;
 }
 
-/**
- * Transform one op against a list of already-applied remote ops, in order.
- * Returns null as soon as any step conflicts. This is the building block the
- * future sync layer folds over its pending-op queue.
- */
 export function rebaseOp(op: EditorOp, against: EditorOp[], side: 'left' | 'right' = 'left'): EditorOp | null {
   let current: EditorOp | null = op;
   for (const a of against) {

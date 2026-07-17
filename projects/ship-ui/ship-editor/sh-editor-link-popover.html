@@ -1,0 +1,30 @@
+    <div class="sh-editor-link-anchor" [style.top.px]="top()" [style.left.px]="left()">
+      <sh-popover [(isOpen)]="isOpen" (closed)="onClosed()" [disableOpenByClick]="true" [asSheetOnMobile]="true" [options]="{ closeOnButton: false, closeOnEsc: true }">
+        <div class="sh-editor-popover sh-editor-link-form" (keydown)="onFormKeydown($event)">
+          <div class="sh-editor-popover-header">
+            <sh-icon>link</sh-icon>
+            <span>{{ hasExistingLink() ? 'Edit link' : 'Insert link' }}</span>
+          </div>
+          <sh-form-field size="small">
+            <label>URL</label>
+
+            <input
+              #urlInput
+              type="text"
+              autofocus
+              placeholder="Paste or type a link…"
+              [value]="url()"
+              (input)="url.set($any($event.target).value); error.set(null)" />
+            @if (error(); as message) {
+              <span error role="alert">{{ message }}</span>
+            }
+          </sh-form-field>
+          <div class="sh-editor-popover-actions">
+            @if (hasExistingLink()) {
+              <button shButton noBg color="error" (click)="remove()">Remove</button>
+            }
+            <button shButton color="primary" (click)="apply()">{{ hasExistingLink() ? 'Update' : 'Apply' }}</button>
+          </div>
+        </div>
+      </sh-popover>
+    </div>

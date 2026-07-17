@@ -7,18 +7,6 @@ function escapeHtml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-/**
- * Heal inline content read from the DOM so a mark forms one continuous run.
- *
- * Browsers editing a `contenteditable` routinely split a styled span — typing
- * near a space can turn `<mark>hello world</mark>` into
- * `<mark>hello</mark> <mark>world</mark>`, leaving the space as a bare, unmarked
- * text node. Without healing, the split survives every parse→render cycle and
- * grows. We give a whitespace-only gap the marks of its neighbours when both
- * sides carry the exact same marks, then merge adjacent equal-mark nodes. Marks
- * therefore only break at block boundaries or a genuine change in formatting —
- * never on a space inside a run.
- */
 function healInlineRuns(nodes: ASTInlineNode[]): ASTInlineNode[] {
   for (let i = 1; i < nodes.length - 1; i++) {
     const node = nodes[i];
@@ -55,7 +43,6 @@ export function parseDOMToAST(
     const el = child as HTMLElement;
     let parsedBlock = child.nodeType === Node.ELEMENT_NODE ? parseNodeAsBlock(el) : null;
 
-    // Skip non-content elements that clipboard HTML includes (meta, style, link, etc.)
     if (!parsedBlock && child.nodeType === Node.ELEMENT_NODE) {
       const tag = el.tagName?.toLowerCase();
       const nonContentTags = new Set([
@@ -95,14 +82,13 @@ export function parseDOMToAST(
       } else if (n.nodeType === Node.ELEMENT_NODE) {
         const element = n as HTMLElement;
         if (element.tagName.toLowerCase() === 'br') {
-          // A padding <br> (our trailing-break caret shim) is not content.
+
           if (element.hasAttribute(PAD_BREAK_ATTR)) return;
-          // Soft line break → `\n` (carrying whatever marks are open). A lone
-          // placeholder `<br>` in an empty block collapses to '' afterwards.
+
           content.push({ type: 'text', text: '\n', marks: marks.length ? [...marks] : undefined });
           return;
         }
-        if (element.getAttribute('contenteditable') === 'false') return; // Skip non-editable islands
+        if (element.getAttribute('contenteditable') === 'false') return;
 
         const currentMarks = [...marks];
         for (const inline of inlines.values()) {
@@ -120,9 +106,7 @@ export function parseDOMToAST(
 
     if (content.length === 0) content.push({ type: 'text', text: '' });
     parsedBlock.content = healInlineRuns(content);
-    // A block whose only content is a single `\n` came from an empty-block
-    // placeholder `<br>` (our render emits `<p><br></p>` for empty blocks) —
-    // treat it as empty, not as a blank soft-break line.
+
     const only = parsedBlock.content as ASTInlineNode[];
     if (only.length === 1 && only[0].text === '\n' && !only[0].marks?.length) only[0].text = '';
     newDoc.push(parsedBlock);
@@ -134,27 +118,10 @@ export function parseDOMToAST(
 
 const TAG_SENTINEL = '\u0001';
 
-/** Identity of a mark for continuity — same type AND same attrs (two links with
- * different hrefs must not merge). */
 function markKey(mark: ASTMark): string {
   return JSON.stringify({ t: mark.type, a: mark.attrs ?? null });
 }
 
-/**
- * Serialize inline nodes into properly nested markup.
- *
- * Each `ASTInlineNode` carries an unordered set of marks. Wrapping every node
- * independently (the old approach) emits a fresh tag per node, so a mark that
- * spans a change in *other* marks — e.g. a highlight covering both plain and
- * bold text — comes out as several adjacent tags. Instead we walk the nodes
- * keeping a stack of open marks: a mark stays open across nodes as long as it's
- * still wanted, and only the marks that actually start/stop at a boundary are
- * closed and reopened. This is the standard mark-stack serialization.
- *
- * `tagsFor` yields the open/close strings for a mark (or null to skip it, e.g. a
- * mark with no markdown representation). `rank` gives a stable order for marks
- * opening at the same node so nesting is deterministic.
- */
 function serializeInlineRuns(
   nodes: ASTInlineNode[],
   tagsFor: (mark: ASTMark) => { open: string; close: string } | null,
@@ -171,15 +138,12 @@ function serializeInlineRuns(
       .sort((a, b) => rank(a.type) - rank(b.type));
     const wantedKeys = new Set(wanted.map(markKey));
 
-    // Keep the longest prefix of the open stack whose marks are all still wanted.
     let keep = 0;
     while (keep < open.length && wantedKeys.has(open[keep].key)) keep++;
 
-    // Close everything above that prefix (innermost first).
     for (let i = open.length - 1; i >= keep; i--) out += open[i].close;
     open.length = keep;
 
-    // Open any wanted marks not already on the stack.
     const openKeys = new Set(open.map((o) => o.key));
     for (const mark of wanted) {
       const key = markKey(mark);
@@ -197,7 +161,6 @@ function serializeInlineRuns(
   return out;
 }
 
-/** Build a `type -> rank` lookup from the registration order of the inline map. */
 function markRanker(inlines: Map<string, BaseInlineBehavior>): (type: string) => number {
   const order = new Map<string, number>();
   let i = 0;
@@ -205,7 +168,6 @@ function markRanker(inlines: Map<string, BaseInlineBehavior>): (type: string) =>
   return (type) => order.get(type) ?? Number.MAX_SAFE_INTEGER;
 }
 
-/** Split a behavior's wrapping render into open/close halves via a sentinel. */
 function tagSplitter(render: ((text: string) => string) | undefined): { open: string; close: string } | null {
   if (!render) return null;
   const rendered = render(TAG_SENTINEL);
@@ -214,12 +176,6 @@ function tagSplitter(render: ((text: string) => string) | undefined): { open: st
   return { open: rendered.slice(0, idx), close: rendered.slice(idx + TAG_SENTINEL.length) };
 }
 
-/** Render inline content to HTML with continuous, correctly-nested mark tags.
- * Shared by `astToHtml` and the editor's live DOM patcher so both agree.
- *
- * `softBreaks` (default true): `\n` renders as `<br>` — a soft line break in a
- * text block. Pass false for preformatted blocks (code), where `\n` is literal
- * whitespace preserved by `<pre>`. */
 export function renderInlineHTML(
   nodes: ASTInlineNode[],
   inlines: Map<string, BaseInlineBehavior>,
@@ -236,18 +192,14 @@ export function renderInlineHTML(
     escape,
     rank
   );
-  // A trailing soft break can't hold a caret after it (a lone trailing <br> is
-  // the line terminator, not a focusable empty line). Append a padding <br>,
-  // flagged so the DOM↔caret mapping and the parser ignore it.
+
   if (softBreaks && nodes.some((n) => n.text) && nodes.map((n) => n.text).join('').endsWith('\n')) {
-    // Emit the attribute exactly as the DOM serializes it (`=""`), so patchDOM's
-    // outerHTML comparison sees an unchanged block instead of re-rendering it.
+
     return `${out}<br ${PAD_BREAK_ATTR}="">`;
   }
   return out;
 }
 
-/** Marks a padding `<br>` (see {@link renderInlineHTML}); zero-width, not content. */
 export const PAD_BREAK_ATTR = 'data-sh-pad';
 
 export function astToHtml(
@@ -305,15 +257,12 @@ export function htmlToAst(
   inlines: Map<string, BaseInlineBehavior>,
   sanitize: SanitizeOption = true
 ): ASTDocument {
-  // Sanitize untrusted HTML into an INERT, allow-listed tree before parsing.
-  // Never `innerHTML` the raw string onto a live element — a detached
-  // `<img src=x onerror=…>` still loads and fires its handler at parse time.
+
   const body = sanitizeHtmlToBody(html, sanitize);
   if (!body) return [{ type: 'paragraph', content: [{ type: 'text', text: '' }] }];
   return parseDOMToAST(body, blocks, inlines);
 }
 
-// Minimal robust MD -> HTML translation for paste events
 export function markdownToHtml(md: string): string {
   if (!md) return '';
   return md

@@ -9,10 +9,6 @@ import {
   TransactionResult,
 } from './editor.types';
 
-// ============================================================
-// THE 3 UNIVERSAL AXIOMS
-// ============================================================
-
 export function handleEscapeHatch(
   doc: ASTDocument,
   sel: LogicalSelection,
@@ -33,7 +29,6 @@ export function handleEscapeHatch(
 
   if (!isAtStart) return null;
 
-  // AXIOM A: Inject Empty Block above at 0/0/0
   if (blockIndex === 0) {
     const isEmptyParagraph =
       block.type === 'paragraph' &&
@@ -78,7 +73,7 @@ export function handleEnter(
   sel: LogicalSelection,
   blocks: Map<string, BaseBlockBehavior>
 ): TransactionResult {
-  // PRE-TRANSACTION TRUNCATION PASS
+
   let draft = doc,
     currentSel = sel;
   if (!sel.isCollapsed) {
@@ -95,7 +90,6 @@ export function handleEnter(
 
   const physics = behavior.enterPhysics;
 
-  // AXIOM B: Void Blocks / Default Inserts below
   if (behavior.category === 'void' || physics.strategy === 'insert-default-below') {
     const defaultType = physics.defaultSplitTarget || 'paragraph';
     newDoc.splice(blockIdx + 1, 0, { type: defaultType, content: [{ type: 'text', text: '' }] });
@@ -103,7 +97,6 @@ export function handleEnter(
     return { doc: newDoc, selectionShift: { start: pos, end: pos, isCollapsed: true } };
   }
 
-  // AXIOM B: Container Extraction/Pop Physics
   if (behavior.category === 'container') {
     const items = block.content as ASTBlockNode[];
     const itemIdx = currentSel.start.itemIndex ?? 0;
@@ -179,7 +172,6 @@ export function handleEnter(
     return { doc: newDoc, selectionShift: { start: newPos, end: newPos, isCollapsed: true } };
   }
 
-  // AXIOM B: Text Block Routing
   const inlines = block.content as ASTInlineNode[];
   const isAtEnd =
     currentSel.start.inlineIndex === inlines.length - 1 &&
@@ -197,7 +189,7 @@ export function handleEnter(
     const node = inlines[nodeIndex];
     if (node) {
       if (isAtEnd && node.text.endsWith('\n')) {
-        // Double enter breakout
+
         node.text = node.text.replace(/\n$/, '');
         if (node.text === '' && inlines.length > 1) inlines.pop();
         const escapeType = physics.defaultSplitTarget || 'paragraph';
@@ -243,7 +235,7 @@ export function handleBackspace(
   sel: LogicalSelection,
   blocks: Map<string, BaseBlockBehavior>
 ): TransactionResult {
-  // PRE-TRANSACTION TRUNCATION PASS
+
   if (!sel.isCollapsed) return deleteRange(doc, sel, blocks);
 
   const blockIndex = sel.start.blockIndex;
@@ -261,7 +253,6 @@ export function handleBackspace(
     isAtStart = sel.start.inlineIndex === 0 && sel.start.offset === 0;
   }
 
-  // AXIOM C: The Lifting Lifecycle
   if (isAtStart) {
     if (behavior?.category === 'container') {
       const items = block.content as ASTBlockNode[];
@@ -271,20 +262,17 @@ export function handleBackspace(
         item.content.length === 0 ||
         (item.content.length === 1 && (item.content[0] as ASTInlineNode).text === '');
 
-      // Empty item: just remove it from the list
       if (isItemEmpty) {
         const newDoc = structuredClone(doc);
         const newItems = newDoc[blockIndex].content as ASTBlockNode[];
         newItems.splice(itemIndex, 1);
 
-        // Last item removed → replace entire list with empty paragraph
         if (newItems.length === 0) {
           newDoc.splice(blockIndex, 1, { type: 'paragraph', content: [{ type: 'text', text: '' }] });
           const pos = { blockIndex, inlineIndex: 0, offset: 0 };
           return { doc: newDoc, selectionShift: { start: pos, end: pos, isCollapsed: true } };
         }
 
-        // Move caret to end of previous item, or start of first item
         if (itemIndex > 0) {
           const prevItem = newItems[itemIndex - 1];
           const prevContent = prevItem.content as ASTInlineNode[];
@@ -297,7 +285,6 @@ export function handleBackspace(
         return { doc: newDoc, selectionShift: { start: pos, end: pos, isCollapsed: true } };
       }
 
-      // Non-empty item: outdent (extract from list into paragraph)
       const itemBehavior = blocks.get(item.type);
       if (itemBehavior?.backspacePhysics.fallbackType === 'outdent') {
         const newDoc = structuredClone(doc);
@@ -390,7 +377,6 @@ export function handleBackspace(
       return { doc: newDoc, selectionShift: sel };
     }
 
-    // Secondary Backspace: Normal Merging
     if (blockIndex === 0) return { doc };
 
     const newDoc = structuredClone(doc);
@@ -473,7 +459,6 @@ export function handleBackspace(
     return { doc: newDoc, selectionShift: { start: pos, end: pos, isCollapsed: true } };
   }
 
-  // Normal backspace deletion within block context
   const newDoc = structuredClone(doc);
   const b = newDoc[blockIndex];
 
@@ -513,10 +498,6 @@ export function handleBackspace(
 
   return { doc: newDoc, selectionShift: { start: pos, end: pos, isCollapsed: true } };
 }
-
-// ============================================================
-// RANGE PHYSICS & SELECTION MUTATIONS
-// ============================================================
 
 export function deleteRange(
   doc: ASTDocument,
@@ -560,7 +541,6 @@ export function deleteRange(
     return { doc: newDoc, selectionShift: { start: sel.start, end: sel.start, isCollapsed: true } };
   }
 
-  // Cross-block boundary stitching (Category Dominance)
   const startBlock = newDoc[start.blockIndex];
   const endBlock = newDoc[end.blockIndex];
 
@@ -599,16 +579,13 @@ export function deleteRange(
   }
 
   if (endBehavior?.category === 'container') {
-    // The end block is a list. The end item's tail was merged into the start
-    // block above, so drop the CONSUMED items (0..endItemIdx) but keep the
-    // remaining ones as a list — deleting into a list must not destroy the
-    // items past the cursor (previously the whole list was spliced away).
+
     const endItems = endBlock.content as ASTBlockNode[];
     endItems.splice(0, (end.itemIndex ?? 0) + 1);
     const removeCount =
       endItems.length > 0
-        ? end.blockIndex - start.blockIndex - 1 // keep the now-shorter end list
-        : end.blockIndex - start.blockIndex; // end list fully consumed → remove it too
+        ? end.blockIndex - start.blockIndex - 1
+        : end.blockIndex - start.blockIndex;
     newDoc.splice(start.blockIndex + 1, removeCount);
   } else {
     newDoc.splice(start.blockIndex + 1, end.blockIndex - start.blockIndex);
@@ -617,16 +594,6 @@ export function deleteRange(
   return { doc: newDoc, selectionShift: { start: sel.start, end: sel.start, isCollapsed: true } };
 }
 
-// THE INCLUSIVE TOGGLE (FORMAT SWITCHING AND CONTENT STEWARDSHIP)
-/**
- * Build a block of `targetType` from the inline content of a source text block.
- *
- * When the target is a void block (e.g. hr), the source's type/attrs/content are
- * stashed on `attrs.stashed` so the transformation is reversible in memory — the
- * caret text isn't destroyed, just parked. Converting the void block back to a
- * text type restores it. The stash is session-only: it is dropped on markdown
- * export because a void token like `---` has nowhere to carry inline content.
- */
 function toBlockOfType(
   targetType: string,
   targetAttrs: Record<string, any> | undefined,
@@ -668,7 +635,6 @@ export function setBlockType(
   const startIdx = currentSel.start.blockIndex;
   const endIdx = currentSel.end.blockIndex;
 
-  // Evaluator Pass (Majority/Inclusion Rule)
   let allMatch = true;
   for (let i = startIdx; i <= endIdx; i++) {
     const block = newDoc[i];
@@ -688,10 +654,9 @@ export function setBlockType(
   const finalType = allMatch ? 'paragraph' : targetType;
   const finalBehavior = blocks.get(finalType);
 
-  // Inclusive Container Consolidations
   if (finalBehavior?.category === 'container') {
     if (allMatch) {
-      // Revert containers to paragraphs safely extracting items
+
       let shift = 0;
       for (let i = endIdx; i >= startIdx; i--) {
         const block = newDoc[i];
@@ -711,15 +676,13 @@ export function setBlockType(
         },
       };
     } else {
-      // Create single layout wrapper handling multiple blocks simultaneously
+
       const listItems: ASTBlockNode[] = [];
       for (let i = startIdx; i <= endIdx; i++) {
         const block = newDoc[i];
         const cat = blocks.get(block.type)?.category;
         if (cat === 'void') {
-          // A void block created from text (e.g. hr) stashes its origin on
-          // attrs.stashed. Recover that text as a list item instead of dropping
-          // the block. Stash-less void blocks (bare hr, image) are still skipped.
+
           const stashed = block.attrs?.['stashed'] as { content?: ASTInlineNode[] } | undefined;
           if (stashed?.content) {
             listItems.push({ type: 'list-item', content: structuredClone(stashed.content) });
@@ -738,7 +701,6 @@ export function setBlockType(
     }
   }
 
-  // Code Block flattening stewardship
   if (finalType === 'code-block') {
     const rawText = newDoc
       .slice(startIdx, endIdx + 1)
@@ -758,7 +720,6 @@ export function setBlockType(
     return { doc: newDoc, selectionShift: { start: pos, end: pos, isCollapsed: true } };
   }
 
-  // Code Block Explosion out to standard paragraphs
   if (allMatch && targetType === 'code-block') {
     const newBlocks: ASTBlockNode[] = [];
     for (let i = startIdx; i <= endIdx; i++) {
@@ -777,7 +738,6 @@ export function setBlockType(
     return { doc: newDoc, selectionShift: { start: pos, end: pos, isCollapsed: true } };
   }
 
-  // Standard Transformation
   const finalAttrs = allMatch ? undefined : attrs;
   const finalIsVoid = finalBehavior?.category === 'void';
   const finalIsText = finalBehavior?.category === 'text';
@@ -793,10 +753,7 @@ export function setBlockType(
     } else if (behavior?.category === 'text') {
       replacementBlocks.push(toBlockOfType(finalType, finalAttrs, block, block.content as ASTInlineNode[], finalIsVoid));
     } else if (behavior?.category === 'void' && finalIsText) {
-      // Non-destructive restore: a void block (e.g. hr) created from text stashes
-      // its origin on `attrs.stashed`. Converting it back to a text block recovers
-      // that text. This round-trip lives purely in the AST — it does not survive a
-      // markdown export, since `---` has no slot to carry inline content.
+
       const stashed = block.attrs?.['stashed'] as { content?: ASTInlineNode[] } | undefined;
       replacementBlocks.push({
         type: finalType,
@@ -814,10 +771,6 @@ export function setBlockType(
   delete shiftRes.end.itemIndex;
   return { doc: newDoc, selectionShift: shiftRes };
 }
-
-// ============================================================
-// INLINE TEXT BOUNDARIES (STICKY / NON-STICKY)
-// ============================================================
 
 export function executeInsertText(
   doc: ASTDocument,
@@ -850,7 +803,6 @@ export function executeInsertText(
     const isAtEnd = offset === node.text.length;
     let keepMarks = node.marks;
 
-    // Boundary Drop-off for non-sticky structural marks (Link/Code)
     if (isAtEnd && node.marks && node.marks.length > 0) {
       keepMarks = node.marks.filter((m) => inlines.get(m.type)?.isSticky !== false);
       if (keepMarks.length !== node.marks.length) {
@@ -869,10 +821,6 @@ export function executeInsertText(
   if (behavior?.category === 'container') newPos.itemIndex = itemIdx;
   return { doc: newDoc, selectionShift: { start: newPos, end: newPos, isCollapsed: true } };
 }
-
-// ============================================================
-// UTILITIES (Normalization and Deletion Forward)
-// ============================================================
 
 export function deleteForward(
   doc: ASTDocument,
@@ -980,10 +928,6 @@ export function deleteForward(
   return { doc: newDoc, selectionShift: sel };
 }
 
-// ============================================================
-// INLINE MARK TOGGLING
-// ============================================================
-
 export function toggleMark(
   doc: ASTDocument,
   sel: LogicalSelection,
@@ -999,13 +943,10 @@ export function toggleMark(
   const behavior = blocks?.get(block.type);
   const blockIdx = sel.start.blockIndex;
 
-  // Selection spanning multiple blocks (e.g. "llo" on line 1 → "wor" on line 2).
-  // Apply the mark to the affected inline range of every block in the span.
   if (sel.start.blockIndex !== sel.end.blockIndex) {
     return toggleMarkAcrossBlocks(newDoc, sel, markType, attrs, blocks, force);
   }
 
-  // For container blocks (lists), resolve into the item's inline content
   if (behavior?.category === 'container') {
     const items = block.content as ASTBlockNode[];
     const startItemIdx = sel.start.itemIndex ?? 0;
@@ -1021,7 +962,6 @@ export function toggleMark(
       endChar += (items[endItemIdx].content as ASTInlineNode[])[i].text.length;
     endChar += sel.end.offset;
 
-    // Apply mark to each affected item
     for (let itemIdx = startItemIdx; itemIdx <= endItemIdx; itemIdx++) {
       const item = items[itemIdx];
       const content = item.content as ASTInlineNode[];
@@ -1049,10 +989,8 @@ export function toggleMark(
     return { doc: newDoc, selectionShift: newSel };
   }
 
-  // Standard text block path
   const content = block.content as ASTInlineNode[];
 
-  // Convert selection to absolute character offsets
   let startChar = 0;
   for (let i = 0; i < sel.start.inlineIndex; i++) startChar += content[i].text.length;
   startChar += sel.start.offset;
@@ -1074,11 +1012,6 @@ export function toggleMark(
   return { doc: newDoc, selectionShift: newSel };
 }
 
-/** Shared logic: partition inline content by char range, toggle mark, reassemble.
- *
- * `force` overrides the per-range toggle decision — pass `'add'`/`'remove'` when
- * a caller has already decided the outcome across a wider selection (e.g. a
- * multi-block toggle where the add/remove choice must be consistent everywhere). */
 function applyMarkToContent(
   content: ASTInlineNode[],
   startChar: number,
@@ -1130,8 +1063,7 @@ function applyMarkToContent(
     for (const node of selected) {
       if (!node.marks) node.marks = [];
       if (force === 'add') {
-        // Forced set: replace an existing same-type mark so new attrs win
-        // (editing a link's href must not be a no-op).
+
         node.marks = node.marks.filter((m) => m.type !== markType);
         node.marks.push({ ...mark });
       } else if (!node.marks.some((m) => m.type === markType)) {
@@ -1144,16 +1076,14 @@ function applyMarkToContent(
   return result.length > 0 ? result : [{ type: 'text', text: '' }];
 }
 
-/** Absolute char offset of a logical position within an inline content array. */
 function inlineCharOffset(inlineIndex: number, offset: number, content: ASTInlineNode[]): number {
   let c = 0;
   for (let i = 0; i < inlineIndex && i < content.length; i++) c += content[i].text.length;
   return c + offset;
 }
 
-/** True if every character in [startChar, endChar) already carries the mark. */
 function rangeHasMark(content: ASTInlineNode[], startChar: number, endChar: number, markType: string): boolean {
-  if (endChar <= startChar) return true; // empty range never forces an "add"
+  if (endChar <= startChar) return true;
   let pos = 0;
   for (const node of content) {
     const nodeEnd = pos + node.text.length;
@@ -1164,7 +1094,6 @@ function rangeHasMark(content: ASTInlineNode[], startChar: number, endChar: numb
   return true;
 }
 
-/** One markable inline range: a content array plus the [s, e) slice to touch. */
 interface MarkSegment {
   content: ASTInlineNode[];
   s: number;
@@ -1172,7 +1101,6 @@ interface MarkSegment {
   assign: (next: ASTInlineNode[]) => void;
 }
 
-/** Collect the markable segments of a block for its role within a multi-block span. */
 function collectBlockSegments(
   block: ASTBlockNode,
   role: 'start' | 'middle' | 'end',
@@ -1197,7 +1125,6 @@ function collectBlockSegments(
     return segs;
   }
 
-  // Plain text block
   const c = block.content as ASTInlineNode[];
   const total = c.reduce((a, n) => a + n.text.length, 0);
   const s = role === 'start' ? inlineCharOffset(sel.start.inlineIndex, sel.start.offset, c) : 0;
@@ -1205,7 +1132,6 @@ function collectBlockSegments(
   return [{ content: c, s, e, assign: (next) => (block.content = next) }];
 }
 
-/** Apply/remove a mark consistently across a selection that spans multiple blocks. */
 function toggleMarkAcrossBlocks(
   newDoc: ASTDocument,
   sel: LogicalSelection,
@@ -1223,12 +1149,10 @@ function toggleMarkAcrossBlocks(
     segments.push(...collectBlockSegments(newDoc[bi], role, sel, blocks));
   }
 
-  // Consistent toggle: only remove if the WHOLE selection already has the mark.
   const active = segments.filter((seg) => seg.e > seg.s);
   const allMarked = active.length > 0 && active.every((seg) => rangeHasMark(seg.content, seg.s, seg.e, markType));
   const force: 'add' | 'remove' = callerForce ?? (allMarked ? 'remove' : 'add');
 
-  // Capture original boundary offsets before content arrays are rebuilt.
   const startChar = active[0]?.s ?? 0;
   const endSeg = active[active.length - 1];
   const endChar = endSeg?.e ?? 0;
@@ -1237,7 +1161,6 @@ function toggleMarkAcrossBlocks(
     seg.assign(applyMarkToContent(seg.content, seg.s, seg.e, markType, attrs, force));
   }
 
-  // Re-resolve the selection against the rebuilt (normalized) content.
   const resolveBoundary = (pos: LogicalPosition, char: number): LogicalPosition => {
     const b = newDoc[pos.blockIndex];
     if (blocks?.get(b.type)?.category === 'container') {
@@ -1258,10 +1181,6 @@ function toggleMarkAcrossBlocks(
     },
   };
 }
-
-// ============================================================
-// FRAGMENT INSERTION (PASTE)
-// ============================================================
 
 export function insertFragment(
   doc: ASTDocument,
@@ -1293,7 +1212,6 @@ export function insertFragment(
   const right = extractRight(targetContent, sel.start.inlineIndex, sel.start.offset);
   const fragClone = structuredClone(fragment);
 
-  // --- Single-block fragment: merge inline content at caret ---
   if (fragClone.length === 1) {
     const fragContent = fragClone[0].content as ASTInlineNode[];
     const merged = normalizeInlineNodes([...left, ...fragContent, ...right]);
@@ -1315,7 +1233,6 @@ export function insertFragment(
     return { doc: newDoc, selectionShift: { start: pos, end: pos, isCollapsed: true } };
   }
 
-  // --- Multi-block fragment: split current block and merge edges ---
   const firstFragContent = fragClone[0].content as ASTInlineNode[];
   const lastFrag = fragClone[fragClone.length - 1];
   const lastFragContent = lastFrag.content as ASTInlineNode[];

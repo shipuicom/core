@@ -1,0 +1,49 @@
+    <div class="sh-editor-container">
+      <ng-content select="sh-editor-toolbar:not([position='bottom'])"></ng-content>
+      <div class="sh-editor-body">
+
+        <div
+          #surface
+          class="sh-editor-content"
+          [hidden]="viewMode() === 'code'"
+          [class.readonly]="readonly()"
+          [attr.contenteditable]="!readonly()"
+          (blur)="onDOMBlur()"
+          (focus)="onDOMFocus()"
+          (keydown)="onKeyDown($event)"
+          (paste)="onPaste($event)"
+          (beforeinput)="onBeforeInput($event)"
+          (mousedown)="onSurfaceMouseDown($event)"
+          (dragstart)="onDragStart($event)"
+          (dragover)="onDragOver($event)"
+          (drop)="onDrop($event)"
+          (dragend)="onDragEnd()"
+          (dragleave)="onDragLeave($event)"
+          (compositionstart)="onCompositionStart()"
+          (compositionend)="onCompositionEnd()"></div>
+        @if (dropIndicator(); as di) {
+          <div class="sh-editor-drop-indicator" [style.top.px]="di.top"></div>
+        }
+        @if (showPlaceholder()) {
+          <div class="sh-editor-placeholder">{{ placeholder() }}</div>
+        }
+        @if (viewMode() === 'code') {
+          <textarea
+            class="sh-editor-source"
+            spellcheck="false"
+            [readonly]="readonly()"
+            [value]="sourceDraft()"
+            (input)="onSourceInput($event)"></textarea>
+        }
+      </div>
+      <sh-editor-link-popover [surface]="surface" />
+      <sh-editor-image-popover [surface]="surface" [upload]="imageUpload()" />
+      <sh-editor-contextual-toolbar [surface]="surface" [extras]="contextualActions()" />
+      <sh-editor-image-resize [surface]="surface" [readonly]="readonly()" [edgeHandles]="imageEdgeResize()" />
+      <sh-editor-slash-menu [commands]="slashCommands()" />
+      @if (showMetrics()) {
+        <div class="sh-editor-stats">
+          {{ wordCount() }} words · {{ charCount() }} characters · {{ format().toUpperCase() }}
+        </div>
+      }
+    </div>

@@ -1,0 +1,24 @@
+    @if (isOpen()) {
+      <div class="sh-editor-slash-menu" [style.top.px]="top()" [style.left.px]="left()" (mousedown)="$event.preventDefault()">
+        @for (group of view(); track group.name) {
+          @if (group.name) {
+            <div class="slash-header">{{ group.name }}</div>
+          }
+          @for (item of group.items; track item.cmd.id) {
+            <button
+              type="button"
+              [class.active]="item.index === highlighted()"
+              (mousemove)="highlighted.set(item.index)"
+              (click)="runAt(item.index)">
+              @if (item.cmd.icon) {
+                <sh-icon>{{ item.cmd.icon }}</sh-icon>
+              }
+              <span>{{ item.cmd.label }}</span>
+            </button>
+          }
+        }
+        @if (!filtered().length) {
+          <div class="slash-empty">No matches</div>
+        }
+      </div>
+    }

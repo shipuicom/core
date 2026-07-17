@@ -31,8 +31,6 @@ import { ASTBlockNode, ASTDocument, ASTInlineNode, LogicalPosition, LogicalSelec
 import { EditorSelectionService } from './selection.service';
 import * as Behaviors from './standard-behaviors';
 
-/** Plain text of a block: inline text concatenated, nested block content (list
- * items) newline-separated. Used for the word/character metrics. */
 function blockPlainText(block: ASTBlockNode): string {
   const parts: string[] = [];
   const walk = (nodes: any[]) => {
@@ -54,9 +52,7 @@ function blockPlainText(block: ASTBlockNode): string {
   exportAs: 'shEditor',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  // Style variant as a host class, the Ship convention (cf. shButton): the
-  // variant name becomes a class, so `variant="document"` styles via
-  // `sh-editor.document`. Bound per-variant so consumer classes aren't clobbered.
+
   host: { '[class.document]': "variant() === 'document'" },
   imports: [ShipEditorLinkPopover, ShipEditorImagePopover, ShipEditorContextualToolbar, ShipEditorImageResize, ShipEditorSlashMenu],
   providers: [
@@ -64,58 +60,7 @@ function blockPlainText(block: ASTBlockNode): string {
     EditorSelectionService,
     { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => ShipEditor), multi: true },
   ],
-  template: `
-    <div class="sh-editor-container">
-      <ng-content select="sh-editor-toolbar:not([position='bottom'])"></ng-content>
-      <div class="sh-editor-body">
-        <!-- The surface stays in the DOM even in code view (hidden) so its
-             viewChild.required and the render effect never see it missing. -->
-        <div
-          #surface
-          class="sh-editor-content"
-          [hidden]="viewMode() === 'code'"
-          [class.readonly]="readonly()"
-          [attr.contenteditable]="!readonly()"
-          (blur)="onDOMBlur()"
-          (focus)="onDOMFocus()"
-          (keydown)="onKeyDown($event)"
-          (paste)="onPaste($event)"
-          (beforeinput)="onBeforeInput($event)"
-          (mousedown)="onSurfaceMouseDown($event)"
-          (dragstart)="onDragStart($event)"
-          (dragover)="onDragOver($event)"
-          (drop)="onDrop($event)"
-          (dragend)="onDragEnd()"
-          (dragleave)="onDragLeave($event)"
-          (compositionstart)="onCompositionStart()"
-          (compositionend)="onCompositionEnd()"></div>
-        @if (dropIndicator(); as di) {
-          <div class="sh-editor-drop-indicator" [style.top.px]="di.top"></div>
-        }
-        @if (showPlaceholder()) {
-          <div class="sh-editor-placeholder">{{ placeholder() }}</div>
-        }
-        @if (viewMode() === 'code') {
-          <textarea
-            class="sh-editor-source"
-            spellcheck="false"
-            [readonly]="readonly()"
-            [value]="sourceDraft()"
-            (input)="onSourceInput($event)"></textarea>
-        }
-      </div>
-      <sh-editor-link-popover [surface]="surface" />
-      <sh-editor-image-popover [surface]="surface" [upload]="imageUpload()" />
-      <sh-editor-contextual-toolbar [surface]="surface" [extras]="contextualActions()" />
-      <sh-editor-image-resize [surface]="surface" [readonly]="readonly()" [edgeHandles]="imageEdgeResize()" />
-      <sh-editor-slash-menu [commands]="slashCommands()" />
-      @if (showMetrics()) {
-        <div class="sh-editor-stats">
-          {{ wordCount() }} words · {{ charCount() }} characters · {{ format().toUpperCase() }}
-        </div>
-      }
-    </div>
-  `,
+  templateUrl: './ship-editor.html',
   styleUrl: './ship-editor.scss',
 })
 export class ShipEditor implements ControlValueAccessor {
@@ -125,82 +70,43 @@ export class ShipEditor implements ControlValueAccessor {
   readonly = input(false);
   format = input<'html' | 'json' | 'markdown'>('html');
 
-  /** Visual style variant (Ship convention). `'document'` turns the editor into a
-   * centered page on a muted canvas; `'base'` (default) is the inline surface. */
   variant = input<'base' | 'document'>('base');
 
-  /**
-   * Extra block/inline behaviors to register on top of the built-in set.
-   * Lets a consumer extend the editor with custom marks or blocks — e.g. a
-   * highlight mark that renders `<mark class="…">` — without forking the editor.
-   */
   behaviors = input<(BaseBlockBehavior | BaseInlineBehavior)[]>([]);
 
-  /**
-   * Sanitization policy for untrusted HTML/markdown/JSON reaching `value` or the
-   * clipboard. `true` (default) scrubs against the built-in allow-list; `false`
-   * trusts the input and skips the scrub (HTML is still parsed inertly — never
-   * `innerHTML`'d — so it can't execute); an object extends the allow-list with
-   * extra `tags`/`attrs` for custom behaviors. Render-time escaping always runs
-   * regardless, so a hostile JSON `value` can never inject on render.
-   */
   sanitize = input<SanitizeOption>(true);
 
-  /**
-   * Consumer-provided extra contextual-toolbar actions, keyed by block type —
-   * appended to whatever a block behavior declares via `contextualActions()`.
-   * Lets a consumer add buttons to (say) the image toolbar without subclassing.
-   */
   contextualActions = input<ContextualActionExtras>({});
 
-  /**
-   * Consumer-provided extra slash-command entries, appended after whatever the
-   * registered block behaviors declare via `slashCommands()`. Lets a consumer
-   * add menu items (e.g. "Insert table") without subclassing.
-   */
   slashCommands = input<SlashCommand[]>([]);
 
-  /** The slash menu, so keydown can drive it while it's open (focus stays in the
-   * contenteditable, so the menu can't receive key events itself). */
   slashMenu = viewChild(ShipEditorSlashMenu);
 
-  /** Optional image upload handler used by the insert-image popover. Given the
-   * picked file, resolve to the URL to insert (e.g. upload to a CDN and return
-   * its link). When unset, files are inlined as `data:` URLs. */
   imageUpload = input<((file: File) => Promise<string>) | null>(null);
 
-  /** Ghost text shown while the document is empty. */
   placeholder = input<string>('');
 
-  /** Show the word/character-count footer. */
   showMetrics = input(false);
 
-  /** Opt in to the image mid-edge resize handles (one-axis, non-aspect stretch).
-   * Corner handles (aspect-preserving) are always available. */
   imageEdgeResize = input(false);
 
   value = model<string | ASTDocument | null>(null);
 
-  /** 'design' shows the WYSIWYG surface; 'code' shows the serialized source in a
-   * textarea. Toggled via {@link toggleSourceView}. */
   readonly viewMode = signal<'design' | 'code'>('design');
-  /** The source textarea's live text while in code view — kept local (not
-   * re-parsed per keystroke) and committed to `value` on exit, so typing source
-   * isn't reformatted under the caret. */
+
   readonly sourceDraft = signal('');
 
   public engine = inject(EditorEngineService);
   public selection = inject(EditorSelectionService);
   keybindings = inject(ShipA11yKeybindingsService, { optional: true });
 
-  /** Plain text of the whole document, blocks separated by newlines. */
   readonly #plainText = computed(() => this.engine.document().map(blockPlainText).join('\n'));
   readonly charCount = computed(() => this.#plainText().replace(/\n/g, '').length);
   readonly wordCount = computed(() => {
     const t = this.#plainText().trim();
     return t ? t.split(/\s+/).length : 0;
   });
-  /** Show ghost text: a non-empty placeholder, an empty document, design view. */
+
   readonly showPlaceholder = computed(() => {
     if (!this.placeholder() || this.viewMode() === 'code') return false;
     const doc = this.engine.document();
@@ -209,24 +115,17 @@ export class ShipEditor implements ControlValueAccessor {
     return this.engine.blocks.get(only.type)?.category !== 'void' && this.#plainText() === '';
   });
 
-  /** Set only while reconciling a block after IME composition, so the render
-   * effect skips patching (the DOM already holds the composed text). */
   #isWritingFromDOM = false;
-  /** True between compositionstart/compositionend — the IME owns the DOM then. */
+
   #composing = false;
-  /** The doc reference last projected to the DOM. Lets the render effect skip a
-   * redundant pass when an input handler already rendered this exact version. */
+
   #lastRenderedDoc: ASTDocument | null = null;
   #isInternalValueUpdate = false;
-  /** Flips true once the view (and thus the `surface` viewChild) exists. The
-   * render effect gates on it so its first client run — which can be scheduled
-   * before the query resolves on the hydration pass — never touches a missing
-   * surface and aborts, which would leave the editor blank until the next edit. */
+
   #viewReady = signal(false);
-  /** The block index of the image being dragged, or null. */
+
   #dragBlockIndex: number | null = null;
-  /** Y offset (within `.sh-editor-body`) of the drop line while dragging an
-   * image, or null when not dragging. Rendered as a Google-Docs-style caret. */
+
   readonly dropIndicator = signal<{ top: number } | null>(null);
   onChange: any = () => {};
   onTouched: any = () => {};
@@ -252,9 +151,6 @@ export class ShipEditor implements ControlValueAccessor {
       new Behaviors.StyleBehavior(),
     ].forEach((b) => this.engine.register(b));
 
-    // Register consumer-provided behaviors. Runs before the value effect below
-    // (effects flush in creation order) so custom marks/blocks are known before
-    // any content is parsed. register() is idempotent — keyed by behavior type.
     effect(() => this.behaviors().forEach((b) => this.engine.register(b)));
 
     effect(() => {
@@ -267,9 +163,7 @@ export class ShipEditor implements ControlValueAccessor {
       untracked(() => {
         if (!externalVal) this.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
         else if (this.format() === 'json' && Array.isArray(externalVal)) {
-          // JSON bypasses HTML parsing. Always coerce to a structurally valid
-          // document (crash-safety is not opt-out); additionally neutralize
-          // dangerous URLs unless the consumer opted out of sanitization.
+
           const structural = normalizeDocument(externalVal) as ASTDocument;
           this.engine.reset(sanitize === false ? structural : sanitizeDocumentUrls(structural));
         }
@@ -299,38 +193,23 @@ export class ShipEditor implements ControlValueAccessor {
         this.#isWritingFromDOM = false;
         return;
       }
-      // An input handler may have already projected this exact doc synchronously
-      // (fast-typing path). Skip the redundant patch, but only for the identical
-      // doc reference — a mutation from elsewhere (toolbar, undo) is a new array
-      // and still renders here.
+
       if (doc === this.#lastRenderedDoc) return;
-      // Defer the DOM projection until the view exists. Reading the signal keeps
-      // this effect subscribed, so it re-runs (and renders) the moment the
-      // surface is ready — no blank editor waiting on the next edit.
+
       if (!this.#viewReady()) return;
       this.#render();
     });
 
-    // Reflect the engine's selected void block (image): outline it with the
-    // a11y highlight and put a *non-collapsed* selection around it — never a
-    // caret — so no text cursor blinks beside the image. Depends on document()
-    // as well as selectedBlock, so it re-applies after a patchDOM element swap
-    // (e.g. an image mode change replaces the <img>, which would otherwise drop
-    // the class and selection). Runs after the render effect (created earlier),
-    // so the DOM is already patched by the time this reads it.
     effect(() => {
       const idx = this.engine.selectedBlock();
       const doc = this.engine.document();
-      if (!this.#viewReady()) return; // surface() not queryable yet on the first pass
+      if (!this.#viewReady()) return;
       const container = this.surface().nativeElement;
       container
         .querySelectorAll('.sh-editor-block-selected')
         .forEach((el) => el.classList.remove('sh-editor-block-selected'));
       if (idx === null) return;
-      // Undo/redo (or any edit) can replace the block at this index with a
-      // non-void one — e.g. undoing an image insert brings back the paragraph.
-      // The selection is stale then: clear it rather than highlighting the
-      // wrong block. (Signal write re-runs this effect, which then no-ops.)
+
       const block = doc[idx];
       if (!block || this.engine.blocks.get(block.type)?.category !== 'void') {
         this.engine.clearBlockSelection();
@@ -342,18 +221,9 @@ export class ShipEditor implements ControlValueAccessor {
       this.#selectVoidBlockDOM(el);
     });
 
-    // Runs once, browser-only, after the first render — the surface viewChild is
-    // resolved by now. Flipping this re-runs the gated effects above, which then
-    // project the AST that SSR left unrendered (effects don't run during SSR).
     afterNextRender(() => this.#viewReady.set(true));
   }
 
-  /**
-   * Toggle between the WYSIWYG surface and a raw-source textarea. Entering code
-   * view snapshots the serialized document into the draft; leaving it commits
-   * the (possibly edited) draft back through `value`, which re-parses it into
-   * the AST — so hand-edited source round-trips like any external value set.
-   */
   toggleSourceView() {
     if (this.viewMode() === 'design') {
       const doc = this.engine.document();
@@ -365,7 +235,7 @@ export class ShipEditor implements ControlValueAccessor {
         try {
           this.value.set(JSON.parse(draft));
         } catch {
-          /* invalid JSON: keep the current document rather than crash */
+
         }
       } else {
         this.value.set(draft);
@@ -392,10 +262,7 @@ export class ShipEditor implements ControlValueAccessor {
   onSelectionChange() {
     if (this.selection.isSuppressed() || this.#composing || typeof window === 'undefined') return;
     this.#syncLogicalSelectionFromDOM();
-    // A genuine *collapsed* caret in a (non-void) text block means the user left
-    // the image — drop the void-block selection so its contextual toolbar
-    // closes. The non-collapsed node selection we place *around* a selected
-    // image is not that; ignore it (else it would immediately clear itself).
+
     if (this.engine.selectedBlock() !== null) {
       const domSel = window.getSelection();
       const collapsed = !domSel || domSel.rangeCount === 0 || domSel.getRangeAt(0).collapsed;
@@ -407,8 +274,6 @@ export class ShipEditor implements ControlValueAccessor {
     }
   }
 
-  /** Select an image on click (a void block has no text caret), else clear any
-   * void-block selection when the click lands in text. */
   onSurfaceMouseDown(event: MouseEvent) {
     if (this.readonly()) return;
     const surface = this.surface().nativeElement;
@@ -416,20 +281,13 @@ export class ShipEditor implements ControlValueAccessor {
     if (target.tagName === 'IMG' && target.parentElement === surface) {
       const idx = Array.from(surface.children).indexOf(target);
       if (idx >= 0) {
-        // No preventDefault: it would block the native drag gesture. The image is
-        // contenteditable="false" so the click leaves no caret, and the block-
-        // selection effect wraps it in a node selection.
+
         this.engine.selectBlock(idx);
         return;
       }
     }
     this.engine.clearBlockSelection();
   }
-
-  // ── Image drag-to-reorder ────────────────────────────────────────────────
-  // Native drag events drive a drop-line indicator; the actual move is an AST
-  // block-splice transaction (never a DOM node move, which would desync the
-  // projection). Only images are draggable.
 
   onDragStart(event: DragEvent) {
     if (this.readonly()) return;
@@ -440,18 +298,18 @@ export class ShipEditor implements ControlValueAccessor {
       if (idx >= 0) {
         this.#dragBlockIndex = idx;
         this.engine.selectBlock(idx);
-        event.dataTransfer?.setData('text/plain', ''); // required for the drag to start
+        event.dataTransfer?.setData('text/plain', '');
         if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
         return;
       }
     }
-    // Dragging text out of the editor isn't supported — block it entirely.
+
     event.preventDefault();
   }
 
   onDragOver(event: DragEvent) {
     if (this.#dragBlockIndex === null) return;
-    event.preventDefault(); // allow the drop
+    event.preventDefault();
     if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
     const target = this.#computeDropTarget(event.clientY);
     this.dropIndicator.set(target ? { top: target.top } : null);
@@ -476,14 +334,11 @@ export class ShipEditor implements ControlValueAccessor {
   }
 
   onDragLeave(event: DragEvent) {
-    // dragleave fires when crossing between child blocks too; only clear when the
-    // pointer genuinely leaves the surface.
+
     const related = event.relatedTarget as Node | null;
     if (!related || !this.surface().nativeElement.contains(related)) this.dropIndicator.set(null);
   }
 
-  /** Nearest block gap to `clientY`: the insertion index (0..N) and the drop
-   * line's Y within `.sh-editor-body`. */
   #computeDropTarget(clientY: number): { gap: number; top: number } | null {
     const surface = this.surface().nativeElement;
     const body = surface.parentElement;
@@ -499,19 +354,10 @@ export class ShipEditor implements ControlValueAccessor {
     return { gap: children.length, top: last.bottom - bodyTop };
   }
 
-  /**
-   * All content mutation flows through here. We intercept `beforeinput`, cancel
-   * the browser's native edit, and translate the `inputType` into an AST
-   * transaction — so the DOM is a pure projection of the AST and is never read
-   * back for content. The exception is IME composition, which must edit the DOM
-   * natively; it's reconciled once, per block, on `compositionend`.
-   */
   onBeforeInput(event: InputEvent) {
     if (this.readonly()) return;
-    if (this.#composing) return; // IME owns the DOM until compositionend
+    if (this.#composing) return;
 
-    // A selected image (void block) has no text caret: delete removes it, any
-    // other input just dismisses the selection (never writes into the void).
     if (this.engine.selectedBlock() !== null) {
       event.preventDefault();
       if (event.inputType.startsWith('delete')) {
@@ -523,10 +369,6 @@ export class ShipEditor implements ControlValueAccessor {
       return;
     }
 
-    // Sample the real caret/selection from the DOM at command time, so a
-    // transaction never runs against a stale mirror when selectionchange lagged
-    // a user-driven caret move (click/arrow-then-type). Branches below that
-    // carry a precise getTargetRanges() still refine this afterwards.
     this.#syncLogicalSelectionFromDOM();
 
     const format: Record<string, string> = {
@@ -536,8 +378,6 @@ export class ShipEditor implements ControlValueAccessor {
       formatStrikeThrough: 'strike',
     };
 
-    // Every handled branch mutates the AST; the two exceptions clear this so we
-    // don't patch (composition edits the DOM itself; unknown types are no-ops).
     let mutated = true;
 
     switch (event.inputType) {
@@ -546,7 +386,7 @@ export class ShipEditor implements ControlValueAccessor {
         const data = event.data ?? '';
         event.preventDefault();
         if (!data) break;
-        // Autocorrect/spellcheck replacements carry the range to replace.
+
         this.#selectTargetRange(event);
         this.engine.insertText(data);
         break;
@@ -580,8 +420,7 @@ export class ShipEditor implements ControlValueAccessor {
         break;
       case 'insertFromPaste':
       case 'insertFromDrop':
-        // Paste content is applied transactionally by onPaste(); block the native
-        // insert so the DOM can't drift. Drag-drop is not yet supported.
+
         event.preventDefault();
         break;
       case 'historyUndo':
@@ -593,17 +432,10 @@ export class ShipEditor implements ControlValueAccessor {
         this.engine.redo();
         break;
       case 'insertCompositionText':
-        // We only reach this while NOT composing — during a real composition the
-        // guard above returns before the switch. So this is a lone composition
-        // input with no surrounding compositionstart/end: Android GBoard commits
-        // autocorrect/suggestions/glide typing (and sometimes plain keystrokes)
-        // this way, often with null `data`. Allow the native edit, but there is no
-        // compositionend coming to reconcile it, so schedule the reconcile
-        // ourselves once the browser has applied the edit (default action runs
-        // synchronously after this handler; the microtask sees the updated DOM).
+
         mutated = false;
         queueMicrotask(() => {
-          if (this.#composing) return; // a real composition began; its end will reconcile
+          if (this.#composing) return;
           this.#reconcileCaretBlockFromDOM();
         });
         break;
@@ -614,14 +446,12 @@ export class ShipEditor implements ControlValueAccessor {
           this.engine.toggleMark(markType);
           break;
         }
-        // Unknown input type: cancel it so the DOM stays in lockstep with the AST.
+
         event.preventDefault();
         mutated = false;
       }
     }
 
-    // Project the transaction to the DOM synchronously, before this handler
-    // returns — no async gap for a stale selectionchange to race the caret.
     if (mutated) this.#render();
   }
 
@@ -631,21 +461,16 @@ export class ShipEditor implements ControlValueAccessor {
 
   onCompositionEnd() {
     this.#composing = false;
-    // The IME wrote composed text straight into the DOM. Reconcile just that one
-    // block back into the AST (never the whole surface) and resync the selection.
+
     this.#reconcileCaretBlockFromDOM();
   }
 
-  /** Reparse the block the caret sits in from the DOM, then resync the logical
-   * selection. Shared by compositionend and the lone-`insertCompositionText`
-   * path — both leave composed text in the DOM that the AST hasn't seen yet. */
   #reconcileCaretBlockFromDOM() {
     const index = this.#currentBlockIndex();
     if (index >= 0) this.#reconcileBlockFromDOM(index);
     this.#syncLogicalSelectionFromDOM();
   }
 
-  /** Point the logical selection at a beforeinput target range (single-block only). */
   #selectTargetRange(event: InputEvent): boolean {
     const tr = event.getTargetRanges?.()[0];
     if (!tr) return false;
@@ -661,14 +486,12 @@ export class ShipEditor implements ControlValueAccessor {
 
   #handleDelete(event: InputEvent, direction: 'backward' | 'forward') {
     const sel = this.selection.active();
-    // An existing (user) selection: delete exactly it.
+
     if (sel && !sel.isCollapsed) {
       this.engine.deleteRange();
       return;
     }
-    // Word/line delete: the browser hands us the precise range to remove. Use it
-    // when it stays within one block; block-boundary deletes fall through to the
-    // engine so merge/escape semantics apply.
+
     const tr = event.getTargetRanges?.()[0];
     if (tr) {
       const container = this.surface().nativeElement;
@@ -689,7 +512,6 @@ export class ShipEditor implements ControlValueAccessor {
     else this.engine.deleteForward();
   }
 
-  /** Index (within the surface) of the block the caret is currently in, or -1. */
   #currentBlockIndex(): number {
     if (typeof window === 'undefined') return -1;
     const sel = window.getSelection();
@@ -702,10 +524,6 @@ export class ShipEditor implements ControlValueAccessor {
     return el && el.parentElement === container ? Array.from(container.children).indexOf(el) : -1;
   }
 
-  /** Whether the collapsed caret is at the far edge of block `idx` in the given
-   * direction — i.e. no text lies between it and the block's end (forward) or
-   * start (backward). Uses a range clone so multi-line blocks are handled by the
-   * DOM, not by counting characters. */
   #caretAtBlockEdge(idx: number, forward: boolean): boolean {
     if (typeof window === 'undefined') return false;
     const sel = window.getSelection();
@@ -721,7 +539,6 @@ export class ShipEditor implements ControlValueAccessor {
     return clone.toString().length === 0;
   }
 
-  /** Re-parse a single block element from the DOM into the AST (post-composition). */
   #reconcileBlockFromDOM(index: number) {
     const container = this.surface().nativeElement;
     const blockEl = container.children[index] as HTMLElement | undefined;
@@ -732,10 +549,8 @@ export class ShipEditor implements ControlValueAccessor {
     if (!parsed.length) return;
     const doc = [...this.engine.document()];
     doc[index] = parsed[0];
-    this.#isWritingFromDOM = true; // DOM already reflects this block; skip the patch
-    // Commit through the engine so the composed text is an invertible,
-    // undoable transaction like any other edit (a raw document.set would
-    // desync the operation-based history).
+    this.#isWritingFromDOM = true;
+
     this.engine.commitDocument(doc);
   }
 
@@ -763,8 +578,6 @@ export class ShipEditor implements ControlValueAccessor {
     if (this.readonly()) return;
     event.preventDefault();
 
-    // Paste replaces the current selection — sample it from the DOM at command
-    // time rather than trusting the possibly-stale mirror.
     this.#syncLogicalSelectionFromDOM();
 
     const clipboard = event.clipboardData;
@@ -801,10 +614,8 @@ export class ShipEditor implements ControlValueAccessor {
 
   onKeyDown(event: KeyboardEvent) {
     if (this.readonly()) return;
-    if (this.#composing) return; // IME dispatches keyCode 229; ignore during composition
+    if (this.#composing) return;
 
-    // The slash menu owns navigation keys while open — focus stays in the
-    // contenteditable, so the editor forwards them rather than moving the caret.
     const slash = this.slashMenu();
     if (slash?.isOpen()) {
       if (event.key === 'ArrowDown') return event.preventDefault(), slash.move(1);
@@ -813,11 +624,6 @@ export class ShipEditor implements ControlValueAccessor {
       if (event.key === 'Escape') return event.preventDefault(), slash.close();
     }
 
-    // While an image is selected, Delete/Backspace remove it, arrows move the
-    // caret out of it, and Escape deselects. Deletion is handled here (not in
-    // beforeinput): a non-collapsed selection wrapping a void element fires no
-    // beforeinput on Backspace/Delete, only keydown. preventDefault also stops
-    // any browser-specific beforeinput from firing and deleting twice.
     const selectedIdx = this.engine.selectedBlock();
     if (selectedIdx !== null) {
       if (event.key === 'Backspace' || event.key === 'Delete') {
@@ -829,9 +635,7 @@ export class ShipEditor implements ControlValueAccessor {
       if (event.key === 'Escape') {
         event.preventDefault();
         this.engine.clearBlockSelection();
-        // Drop the node selection that wrapped the image and land a real caret
-        // in an adjacent editable block (prefer the block after it), so no
-        // orphaned browser highlight lingers over the now-deselected image.
+
         this.#placeCaretBesideBlock(selectedIdx);
         return;
       }
@@ -853,10 +657,6 @@ export class ShipEditor implements ControlValueAccessor {
       }
     }
 
-    // Arrowing out of a text block toward an adjacent image selects that image
-    // (a void block has no caret to land in). Only fires when the caret sits at
-    // the block edge in the arrow's direction, so mid-block navigation between
-    // lines is untouched.
     if (
       selectedIdx === null &&
       (event.key === 'ArrowRight' || event.key === 'ArrowDown' || event.key === 'ArrowLeft' || event.key === 'ArrowUp')
@@ -877,9 +677,7 @@ export class ShipEditor implements ControlValueAccessor {
     }
 
     if (this.keybindings) {
-      // A shortcut the editor consumes must not also reach app-level document
-      // listeners — e.g. Cmd+K is both editor.link and the app's spotlight
-      // search, and without stopPropagation both would fire.
+
       const consume = () => {
         event.preventDefault();
         event.stopPropagation();
@@ -903,31 +701,18 @@ export class ShipEditor implements ControlValueAccessor {
       for (const inline of this.engine.inlines.values()) {
         if (inline.keybinding && this.keybindings.matches(event, inline.keybinding)) {
           consume();
-          // Through dispatch, so UI-requesting marks (Cmd+K -> link popover)
-          // open their input instead of toggling an attr-less mark.
+
           return this.engine.dispatch(inline.type);
         }
       }
     }
 
-    // Structural navigation only. Text entry, Enter, and deletion are handled
-    // transactionally in onBeforeInput().
     if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
       if (this.engine.handleEscapeHatch()) event.preventDefault();
       return;
     }
   }
 
-  /**
-   * Synchronously project the current AST to the DOM and restore the caret.
-   *
-   * Deliberately synchronous — no queued microtask. Input handlers call this
-   * before returning, so by the time a keystroke is processed the DOM and caret
-   * already reflect the transaction. That leaves no async window in which a
-   * stale `selectionchange` (reading the not-yet-patched DOM) could clobber the
-   * logical selection — the cause of the caret jumping between letters when
-   * typing fast. `selectionchange` is suppressed for the duration.
-   */
   #render() {
     const doc = this.engine.document();
     this.selection.suppress();
@@ -963,15 +748,6 @@ export class ShipEditor implements ControlValueAccessor {
     while (container.children.length > doc.length) container.lastElementChild?.remove();
   }
 
-  /**
-   * Parse a single block's HTML string into an element.
-   *
-   * Uses a `<div>` wrapper rather than `<template>` so it works under
-   * server-side rendering too: Angular's SSR DOM (domino) has no
-   * `<template>.content`, which made `patchDOM` crash during prerender. Every
-   * block renders to one top-level element, so a `<div>` parses it faithfully in
-   * both the browser and on the server.
-   */
   #htmlToElement(html: string): Element | null {
     const wrapper = this.#document.createElement('div');
     wrapper.innerHTML = html;
@@ -979,9 +755,7 @@ export class ShipEditor implements ControlValueAccessor {
   }
 
   private renderInlineContent(nodes: ASTInlineNode[], softBreaks = true): string {
-    // Use the shared mark-stack serializer so the live DOM matches astToHtml
-    // exactly — overlapping marks (e.g. a highlight spanning bold) render as one
-    // continuous, correctly-nested run instead of a fresh tag per node.
+
     return renderInlineHTML(nodes, this.engine.inlines, softBreaks);
   }
 
@@ -997,11 +771,6 @@ export class ShipEditor implements ControlValueAccessor {
     return behavior.renderHTML(block, childrenHtml);
   }
 
-  /**
-   * Character offset of a DOM caret `(node, offset)` within `root`, counting
-   * each `<br>` as one character — soft line breaks are `\n` in the AST but
-   * zero-width in the text-node stream, so a plain text walk would undercount.
-   */
   #domCharOffset(root: Node, node: Node, offset: number): number {
     let chars = 0;
     let done = false;
@@ -1032,12 +801,10 @@ export class ShipEditor implements ControlValueAccessor {
     return chars;
   }
 
-  /** A padding `<br>` (trailing-break caret shim) is zero-width, not a char. */
   #isPadBreak(n: Node): boolean {
     return n.nodeName === 'BR' && (n as HTMLElement).hasAttribute?.('data-sh-pad');
   }
 
-  /** Character length of a DOM subtree (text length; each real `<br>` = 1). */
   #nodeCharLen(n: Node): number {
     if (n.nodeType === Node.TEXT_NODE) return n.textContent?.length ?? 0;
     if (n.nodeName === 'BR') return this.#isPadBreak(n) ? 0 : 1;
@@ -1046,12 +813,6 @@ export class ShipEditor implements ControlValueAccessor {
     return sum;
   }
 
-  /**
-   * Inverse of {@link #domCharOffset}: the DOM position for character offset
-   * `target` within `root`. A caret adjacent to a `<br>` resolves to the
-   * neighboring text node where possible, else an element position around the
-   * break.
-   */
   #domPosAtChar(root: HTMLElement, target: number): { node: Node; offset: number } {
     let chars = 0;
     let result: { node: Node; offset: number } | null = null;
@@ -1063,19 +824,18 @@ export class ShipEditor implements ControlValueAccessor {
         else chars += len;
       } else if (n.nodeName === 'BR') {
         if (this.#isPadBreak(n)) {
-          // The empty line the pad shim creates: caret sits just before it
-          // (after the real trailing break), start of the new visual line.
+
           if (target <= chars) {
             const parent = n.parentNode!;
             result = { node: parent, offset: Array.from(parent.childNodes).indexOf(n as ChildNode) };
           }
-          return; // the shim itself consumes no characters
+          return;
         }
         if (target <= chars) {
           const parent = n.parentNode!;
           result = { node: parent, offset: Array.from(parent.childNodes).indexOf(n as ChildNode) };
         } else {
-          chars += 1; // caret after the br is handled by the following node (or the end fallback)
+          chars += 1;
         }
       } else {
         for (const kid of Array.from(n.childNodes)) {
@@ -1146,10 +906,6 @@ export class ShipEditor implements ControlValueAccessor {
     return { blockIndex, inlineIndex: lastIdx, offset: lastInline ? lastInline.text.length : 0 };
   }
 
-  /** Land a collapsed caret in the nearest editable block next to `idx` —
-   * preferring the block after it, then the one before — and render so the DOM
-   * caret replaces any node selection. Used when leaving a void-block selection
-   * (Escape) so no browser highlight is orphaned over the deselected block. */
   #placeCaretBesideBlock(idx: number) {
     const doc = this.engine.document();
     const editable = (i: number) =>
@@ -1166,12 +922,6 @@ export class ShipEditor implements ControlValueAccessor {
     this.#render();
   }
 
-  /** Put a non-collapsed selection *around* a void block element so the browser
-   * shows it as selected rather than blinking a caret inside it. Focuses the
-   * contenteditable host first and sets the range in the same synchronous step,
-   * so the final selection the browser reports is the (non-collapsed) node
-   * selection — never a transient collapsed caret that onSelectionChange would
-   * mistake for the user leaving the image. */
   #selectVoidBlockDOM(el: HTMLElement) {
     if (typeof window === 'undefined') return;
     try {
@@ -1197,10 +947,7 @@ export class ShipEditor implements ControlValueAccessor {
         if (!blockEl) return null;
 
         const behavior = this.engine.blocks.get(this.engine.document()[pos.blockIndex]?.type);
-        // A void block has no text caret. The block-selection effect wraps it in
-        // a non-collapsed node selection instead (no blinking caret), and runs
-        // after this render, so skip it here rather than dropping a caret at
-        // offset 0 that would flash before the effect overrides it.
+
         if (behavior?.category === 'void') return null;
 
         const blockAst = this.engine.document()[pos.blockIndex];
@@ -1234,8 +981,7 @@ export class ShipEditor implements ControlValueAccessor {
 
       const start = getPos(sel.start);
       if (start) {
-        // `#domPosAtChar` may return an element position (a caret around a
-        // `<br>`), so honor the real offset rather than forcing 0.
+
         range.setStart(start.node, start.offset);
 
         if (sel.isCollapsed) range.collapse(true);

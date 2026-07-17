@@ -26,31 +26,16 @@ export class EditorEngineService {
   readonly blocks = new Map<string, BaseBlockBehavior>();
   readonly inlines = new Map<string, BaseInlineBehavior>();
 
-  /**
-   * Invertible history: stacks of operations, not snapshots. Undo applies the
-   * inverse splice of the last transaction; redo re-applies it forward. Memory
-   * scales with the blocks each edit touched, not with document size.
-   */
   #undoStack = signal<EditorTransaction[]>([]);
   #redoStack = signal<EditorTransaction[]>([]);
 
-  /** Monotonic document version; each committed transaction advances it. */
   readonly version = signal(0);
-  /** The most recently committed transaction — plain JSON, so a future collab
-   * layer can subscribe here and ship it to peers verbatim. */
+
   readonly lastTransaction = signal<EditorTransaction | null>(null);
 
   readonly canUndo = computed(() => this.#undoStack().length > 0);
   readonly canRedo = computed(() => this.#redoStack().length > 0);
 
-  /**
-   * PM-style stored marks. Toggling a mark at a COLLAPSED caret can't restyle
-   * a range — instead the desired mark set is parked here and applied to the
-   * next text inserted at that exact spot ("Cmd+B, type" produces bold text).
-   * The anchor compares by character offset (a caret at a node boundary has
-   * two inlineIndex/offset spellings); a pending set at any other position is
-   * simply never applied, so stale entries self-expire.
-   */
   readonly pendingMarks = signal<{
     blockIndex: number;
     itemIndex: number;
@@ -58,7 +43,6 @@ export class EditorEngineService {
     marks: ASTMark[];
   } | null>(null);
 
-  /** Character offset of a logical position within its block/item content. */
   #charOffsetOf(pos: LogicalPosition): number {
     const block = this.document()[pos.blockIndex];
     if (!block) return pos.offset;
@@ -72,8 +56,6 @@ export class EditorEngineService {
     return chars + pos.offset;
   }
 
-  /** Flat text of the inline content the caret at `pos` sits in (the block, or
-   * the list item for a container). */
   #contentTextAt(pos: LogicalPosition): string {
     const block = this.document()[pos.blockIndex];
     if (!block) return '';
@@ -85,8 +67,6 @@ export class EditorEngineService {
     return content.map((n) => n.text ?? '').join('');
   }
 
-  /** Map a flat char offset back to a logical position within the same block/
-   * item as `ref`. Inverse of {@link #charOffsetOf}. */
   #logicalAtChar(ref: LogicalPosition, targetChar: number): LogicalPosition {
     const block = this.document()[ref.blockIndex];
     const content = (
@@ -119,7 +99,6 @@ export class EditorEngineService {
     else this.inlines.set(behavior.type, behavior);
   }
 
-  // RANGE TRUNCATION WRAPPER
   dispatchWithTruncation(mutation: (draft: ASTDocument, sel: LogicalSelection) => TransactionResult | void | null) {
     const currentSel = this.selection.active();
     if (!currentSel) return;
@@ -140,14 +119,13 @@ export class EditorEngineService {
       if (result.selectionShift) this.selection.live.set(result.selectionShift);
       this.#commit(oldDoc, result.doc, currentSel);
     } else if (!currentSel.isCollapsed) {
-      // Action was No-op but Truncation happened
+
       this.document.set(targetDoc);
       this.selection.live.set(targetSel);
       this.#commit(oldDoc, targetDoc, currentSel);
     }
   }
 
-  // --- CORE AXIOMS ---
   handleEscapeHatch(): boolean {
     const currentSel = this.selection.active();
     if (currentSel) {
@@ -174,12 +152,11 @@ export class EditorEngineService {
   insertText(text: string) {
     const sel = this.selection.active();
     const pending = sel?.isCollapsed ? this.#pendingAt(sel.start) : null;
-    this.pendingMarks.set(null); // consumed or stale either way
+    this.pendingMarks.set(null);
     this.dispatchWithTruncation((doc, s) => {
       const result = executeInsertText(doc, s, text, this.inlines, this.blocks);
       if (!result || !pending) return result;
-      // Re-mark the inserted characters with the stored mark set, then re-seat
-      // the caret by char offset (marking may have re-split the inline nodes).
+
       const block = result.doc[s.start.blockIndex];
       const isContainer = this.blocks.get(block.type)?.category === 'container';
       const itemIdx = s.start.itemIndex ?? 0;
@@ -205,7 +182,6 @@ export class EditorEngineService {
     this.dispatchWithTruncation((doc, sel) => deleteForward(doc, sel, this.blocks));
   }
 
-  // --- ACTIVE STATE ---
   readonly activeFormats = computed(() => {
     const doc = this.document();
     const sel = this.selection.active();
@@ -233,10 +209,7 @@ export class EditorEngineService {
       const sameHolder =
         sel.start.blockIndex === sel.end.blockIndex && (sel.start.itemIndex ?? 0) === (sel.end.itemIndex ?? 0);
       if (!sel.isCollapsed && sameHolder) {
-        // Range: a mark is active only if EVERY selected character carries it
-        // (identity = type + attrs, so two differently-href'd links don't count
-        // as one active link). Also fixes the boundary case where sel.start
-        // resolves into the plain node just before a selected mark run.
+
         const a = this.#charOffsetOf(sel.start);
         const b = this.#charOffsetOf(sel.end);
         marks = this.#commonMarks(content, Math.min(a, b), Math.max(a, b));
@@ -246,8 +219,6 @@ export class EditorEngineService {
       }
     }
 
-    // A pending (stored) mark set at the caret overrides what the text carries,
-    // so the toolbar reflects what the NEXT typed character will get.
     if (sel.isCollapsed) {
       const pending = this.#pendingAt(sel.start);
       if (pending) marks = structuredClone(pending);
@@ -256,8 +227,6 @@ export class EditorEngineService {
     return { blockType: block.type, blockAttrs: block.attrs ?? null, marks };
   });
 
-  /** Marks carried by EVERY character in [startChar, endChar) of `content`
-   * (identity by type + attrs). Empty range or no overlap → []. */
   #commonMarks(content: ASTInlineNode[], startChar: number, endChar: number): ASTMark[] {
     if (endChar <= startChar) return [];
     const key = (m: ASTMark) => JSON.stringify({ t: m.type, a: m.attrs ?? null });
@@ -295,16 +264,9 @@ export class EditorEngineService {
     return false;
   }
 
-  /**
-   * A mark action that needs input UI before it can commit (e.g. 'link' needs
-   * an href). Emitted by dispatch() when the behavior sets `requestsUi`; a UI
-   * component (sh-editor-link-popover) reacts, collects attrs, and commits via
-   * setMark/removeMark. `token` makes consecutive requests distinct.
-   */
   readonly uiRequest = signal<{ action: string; token: number } | null>(null);
   #uiToken = 0;
 
-  // --- GENERIC DISPATCH ---
   dispatch(action: string, attrs?: Record<string, any>) {
     if (this.blocks.has(action)) {
       const behavior = this.blocks.get(action)!;
@@ -324,16 +286,6 @@ export class EditorEngineService {
     else if (action === 'redo') this.redo();
   }
 
-  // =========================================================================
-  // SLASH COMMANDS
-  // =========================================================================
-
-  /**
-   * The active slash trigger, or null. A `/` at the block start (or after
-   * whitespace) followed by a non-space query, ending exactly at a collapsed
-   * caret in an editable text block. `query` drives menu filtering; `length` is
-   * how many chars ("/" + query) {@link applySlashCommand} strips before running.
-   */
   readonly slashState = computed<{ query: string; length: number } | null>(() => {
     const sel = this.selection.active();
     if (!sel || !sel.isCollapsed) return null;
@@ -344,8 +296,6 @@ export class EditorEngineService {
     return m ? { query: m[1], length: m[1].length + 1 } : null;
   });
 
-  /** All slash-menu entries declared by registered block behaviors, in
-   * registration order. The menu appends consumer extras to this. */
   slashCommands(): SlashCommand[] {
     const ctx = { engine: this };
     const out: SlashCommand[] = [];
@@ -355,9 +305,6 @@ export class EditorEngineService {
     return out;
   }
 
-  /** Strip the `/query` trigger text, then run the chosen command (typically a
-   * `dispatch`). Both steps commit through the engine, so the whole thing is
-   * undoable and OT-safe like any edit. */
   applySlashCommand(cmd: SlashCommand) {
     const state = this.slashState();
     const sel = this.selection.active();
@@ -369,13 +316,6 @@ export class EditorEngineService {
     cmd.run({ engine: this });
   }
 
-  /**
-   * Force-apply a mark with these attrs over the selection (replacing an
-   * existing same-type mark, so editing a link's href works). A collapsed
-   * caret inside a run of the mark expands to the whole contiguous run —
-   * "edit the link under the caret" without selecting it first.
-   * Returns false when there is nothing to apply to.
-   */
   setMark(markType: string, attrs?: Record<string, any>): boolean {
     const sel = this.#markTargetSelection(markType);
     if (!sel) return false;
@@ -388,7 +328,6 @@ export class EditorEngineService {
     return true;
   }
 
-  /** Force-remove a mark from the selection (or the run under the caret). */
   removeMark(markType: string): boolean {
     const sel = this.#markTargetSelection(markType);
     if (!sel) return false;
@@ -401,11 +340,6 @@ export class EditorEngineService {
     return true;
   }
 
-  /**
-   * Insert text carrying these marks as ONE transaction — rides the stored-
-   * marks pipeline. Used by the link popover when the caret isn't on any text
-   * to mark (type a URL into the popover → linked text appears).
-   */
   insertTextWithMarks(text: string, marks: ASTMark[]) {
     const sel = this.selection.active();
     if (!sel || !sel.isCollapsed) return;
@@ -418,25 +352,13 @@ export class EditorEngineService {
     this.insertText(text);
   }
 
-  // =========================================================================
-  // VOID BLOCK (IMAGE) SELECTION & EDITING
-  // =========================================================================
-
-  /**
-   * Index of a currently-selected void block (an image), or null. A void block
-   * has no text caret, so "selecting" it is a separate mode: its contextual
-   * toolbar shows while this is set, and Backspace/Delete removes it. Cleared
-   * when the caret re-enters text or an edit happens elsewhere.
-   */
   readonly selectedBlock = signal<number | null>(null);
 
-  /** The selected void block's AST node, or null. */
   readonly selectedBlockNode = computed(() => {
     const i = this.selectedBlock();
     return i !== null ? (this.document()[i] ?? null) : null;
   });
 
-  /** Select a void block by index (no-op for non-void blocks). */
   selectBlock(index: number) {
     const block = this.document()[index];
     if (!block || this.blocks.get(block.type)?.category !== 'void') return;
@@ -455,12 +377,6 @@ export class EditorEngineService {
     return c.length === 0 || (c.length === 1 && c[0].text === '');
   }
 
-  /**
-   * Insert an image (void block) at the caret. Replaces the current block if it
-   * is an empty paragraph, else inserts on its own line after it, always with a
-   * trailing empty paragraph so the image is never the last block (nowhere to
-   * type). The new image is left selected so its contextual toolbar appears.
-   */
   insertImage(attrs: Record<string, unknown>) {
     const sel = this.selection.active();
     if (!sel) return;
@@ -490,7 +406,6 @@ export class EditorEngineService {
     this.#commit(oldDoc, newDoc, sel);
   }
 
-  /** Merge attrs into the selected image (mode/size/alt/src), as a transaction. */
   updateSelectedImage(attrs: Record<string, unknown>) {
     const idx = this.selectedBlock();
     if (idx === null) return;
@@ -503,12 +418,6 @@ export class EditorEngineService {
     this.#commit(oldDoc, newDoc, this.selection.active());
   }
 
-  /**
-   * Move the block at `from` to the gap index `to` (0..length, in the pre-move
-   * document's coordinates), as one undoable transaction. Dropping into the
-   * block's own gap (`to === from` or `to === from + 1`) is a no-op. A moved
-   * void block (image) stays selected at its new position.
-   */
   moveBlock(from: number, to: number) {
     const oldDoc = this.document();
     if (from < 0 || from >= oldDoc.length || to < 0 || to > oldDoc.length) return;
@@ -516,7 +425,7 @@ export class EditorEngineService {
     const block = oldDoc[from];
     const newDoc = [...oldDoc];
     newDoc.splice(from, 1);
-    const insertAt = to > from ? to - 1 : to; // removing `from` shifts later gaps left by one
+    const insertAt = to > from ? to - 1 : to;
     newDoc.splice(insertAt, 0, block);
     this.document.set(newDoc);
     if (this.selectedBlock() === from && this.blocks.get(block.type)?.category === 'void') {
@@ -525,7 +434,6 @@ export class EditorEngineService {
     this.#commit(oldDoc, newDoc, this.selection.active());
   }
 
-  /** Remove the selected void block; drop the selection and place the caret. */
   deleteSelectedBlock() {
     const idx = this.selectedBlock();
     if (idx === null) return;
@@ -541,13 +449,6 @@ export class EditorEngineService {
     this.#commit(oldDoc, newDoc, this.selection.active());
   }
 
-  /**
-   * Merge inline-style properties into the run(s) at the selection, as one
-   * transaction. A null/empty value drops that property; emptying the whole
-   * style removes the `style` mark. Merges onto the style already at the
-   * selection start (via {@link markAtSelection}) so setting, say, color keeps
-   * an existing font-size — the way Google Docs stacks character formatting.
-   */
   applyStyle(patch: Record<string, string | null | undefined>) {
     const merged: Record<string, string> = { ...(this.markAtSelection('style')?.attrs as Record<string, string> | undefined) };
     for (const [prop, value] of Object.entries(patch)) {
@@ -558,20 +459,12 @@ export class EditorEngineService {
     else this.setMark('style', merged);
   }
 
-  /** The inline-style attrs at the selection (for prefilling a style UI), or {}. */
   readonly currentStyle = computed<Record<string, string>>(() => {
     this.document();
     this.selection.active();
     return (this.markAtSelection('style')?.attrs as Record<string, string>) ?? {};
   });
 
-  /**
-   * The mark instance the current selection "is on", boundary-inclusive: a
-   * direct hit at the selection start, or — for a collapsed caret sitting at
-   * either EDGE of a run (where activeFormats resolves into the neighboring
-   * node) — the run's mark. This is what editing UIs must use to prefill:
-   * anywhere `setMark`/`removeMark` would act on a run, this returns its mark.
-   */
   markAtSelection(markType: string): ASTMark | null {
     const sel = this.selection.active();
     if (!sel) return null;
@@ -586,7 +479,7 @@ export class EditorEngineService {
     const content = (
       isContainer ? ((block.content as ASTBlockNode[])[run.start.itemIndex ?? 0]?.content ?? []) : block.content
     ) as ASTInlineNode[];
-    // Only nodes inside THIS run — a block can hold several distinct links.
+
     const startChar = this.#charOffsetOf(run.start);
     const endChar = this.#charOffsetOf(run.end);
     let at = 0;
@@ -601,8 +494,6 @@ export class EditorEngineService {
     return null;
   }
 
-  /** The selection a setMark/removeMark should operate on: the live selection,
-   * or — for a collapsed caret — the contiguous run of `markType` around it. */
   #markTargetSelection(markType: string): LogicalSelection | null {
     const sel = this.selection.active();
     if (!sel) return null;
@@ -612,7 +503,6 @@ export class EditorEngineService {
     return run;
   }
 
-  /** Contiguous char range around `pos` whose nodes all carry `markType`. */
   #expandToMarkRun(pos: LogicalPosition, markType: string): LogicalSelection | null {
     const block = this.document()[pos.blockIndex];
     if (!block) return null;
@@ -621,8 +511,6 @@ export class EditorEngineService {
     const content = (isContainer ? ((block.content as ASTBlockNode[])[itemIdx]?.content ?? []) : block.content) as ASTInlineNode[];
     const caretChar = this.#charOffsetOf(pos);
 
-    // Collect contiguous [start, end) char ranges carrying the mark, then take
-    // the one the caret touches (inclusive at both edges).
     const runs: [number, number][] = [];
     let at = 0;
     for (const node of content) {
@@ -655,7 +543,7 @@ export class EditorEngineService {
     if (!currentSel) return;
 
     if (currentSel.isCollapsed) {
-      // Stored marks: toggle within the pending set for the next insertion.
+
       const base = this.#pendingAt(currentSel.start) ?? this.activeFormats().marks;
       const has = base.some((m) => m.type === markType);
       const marks = has
@@ -682,7 +570,6 @@ export class EditorEngineService {
     this.dispatchWithTruncation((doc, sel) => insertFragment(doc, sel, fragment, this.blocks));
   }
 
-  // --- STANDARD TRANSACTIONS ---
   setBlockType(type: string, attrs?: any) {
     const currentSel = this.selection.active();
     if (!currentSel) return;
@@ -711,18 +598,12 @@ export class EditorEngineService {
   }
 
   reset(doc: ASTDocument) {
-    // A reset (external value set) is itself an invertible transaction — the
-    // splice replaces the whole old document, so undo returns to it.
+
     const oldDoc = this.document();
     this.document.set(doc);
     this.#commit(oldDoc, doc, null);
   }
 
-  /**
-   * Commit an externally-produced document (e.g. the post-IME block reconcile,
-   * which reads composed text back from the DOM). Diffs against the current
-   * document so the composition becomes a normal, undoable transaction.
-   */
   commitDocument(newDoc: ASTDocument) {
     const oldDoc = this.document();
     const selBefore = this.selection.active();
@@ -752,37 +633,13 @@ export class EditorEngineService {
     this.version.update((v) => v + 1);
   }
 
-  /**
-   * Apply an operation produced elsewhere (a collaborating peer) WITHOUT
-   * entering local undo history — you can't Cmd+Z someone else's edit.
-   *
-   * Rebasing here is the op-sequence LADDER, not a flat per-entry transform:
-   * only the top undo entry shares the remote op's coordinate frame — deeper
-   * entries are expressed against deeper document states. Walking the undo
-   * stack top→bottom, the remote op is localized into each deeper frame by
-   * transforming it through the entry's INVERSE, and each entry rebases
-   * against the remote op as seen at its own depth (side 'right': applyOp
-   * inserts remote content before existing content at an equal point, so a
-   * tied local insert shifts after it — the fuzz marker oracle catches both
-   * the 'left' variant and the missing ladder deleting a peer's character).
-   * The redo stack is the mirror image, walking away from the tip. A conflict
-   * at any rung truncates that entry and everything beyond it — undo depth is
-   * lost, correctness never.
-   *
-   * The live selection and caret snapshots map through the FLAT StepMap
-   * diffed from the actual before/after documents, which recovers exact
-   * correspondence even when the wire op is coarse (a merge arriving as a
-   * whole-block splice still maps interior carets to the right character).
-   */
   applyRemoteOperation(op: EditorOp) {
     const oldDoc = this.document();
     const newDoc = applyOp(oldDoc, op);
     const map = diffFlat(oldDoc, newDoc);
-    if (!map) return; // semantic no-op — leave doc, history, and carets alone
+    if (!map) return;
     this.document.set(newDoc);
 
-    // assoc -1: a remote insert exactly at a caret lands after it (the caret
-    // stays anchored to the text it was in front of).
     const mapLp = (lp: LogicalPosition | null | undefined): LogicalPosition | null =>
       lp ? posToLogical(newDoc, map.map(logicalToPos(oldDoc, lp), -1)) : null;
     const mapSel = (sel: LogicalSelection | null): LogicalSelection | null => {
@@ -795,12 +652,6 @@ export class EditorEngineService {
     const live = mapSel(this.selection.active());
     if (live) this.selection.live.set(live);
 
-    // Rebase the selected void block (image) through the same flat map so a
-    // peer's edit can't leave the highlight/toolbar on the wrong block. Bias
-    // +1: a remote insert exactly at the block carries the selection to the
-    // image's new index rather than onto the inserted content. If the image
-    // itself was removed the mapped position no longer lands on a void block,
-    // so the selection clears.
     const selBlock = this.selectedBlock();
     if (selBlock !== null) {
       const lp = posToLogical(newDoc, map.map(logicalToPos(oldDoc, { blockIndex: selBlock, inlineIndex: 0, offset: 0 }), 1));
@@ -808,13 +659,6 @@ export class EditorEngineService {
       this.selectedBlock.set(stillVoid ? lp!.blockIndex : null);
     }
 
-    // Undo stack (index 0 = oldest, end = top/next-to-undo). Rebase the UNDO
-    // CHAIN in inverse space: U1=invert(top) is valid at the tip — the same
-    // frame as the remote op — U2 at the frame after U1, and so on, so every
-    // transform happens in a frame where both operands are actually
-    // expressed. (Localizing the remote op down through inverses instead
-    // collapses distinct orderings at coincident positions — the fuzz marker
-    // oracle caught it undoing a peer's character.)
     this.#undoStack.update((stack) => {
       const out: EditorTransaction[] = [];
       let remote: EditorOp = op;
@@ -823,15 +667,13 @@ export class EditorEngineService {
         const inverse = invertOp(tx.op);
         const rebasedInverse = transformOp(inverse, remote, 'right');
         const remoteNext = rebasedInverse ? transformOp(remote, inverse, 'left') : null;
-        if (!rebasedInverse || !remoteNext) return out.reverse(); // truncate k and deeper
+        if (!rebasedInverse || !remoteNext) return out.reverse();
         out.push({ ...tx, op: invertOp(rebasedInverse), selBefore: mapSel(tx.selBefore), selAfter: mapSel(tx.selAfter) });
         remote = remoteNext;
       }
       return out.reverse();
     });
 
-    // Redo stack (end = next-to-redo, based at the tip). Localize the remote
-    // op upward through the entries as they would re-apply.
     this.#redoStack.update((stack) => {
       const out: EditorTransaction[] = [];
       let remote: EditorOp = op;
@@ -839,7 +681,7 @@ export class EditorEngineService {
         const tx = stack[k];
         const rebased = transformOp(tx.op, remote, 'right');
         const remoteAbove = rebased ? transformOp(remote, tx.op, 'left') : null;
-        if (!rebased || !remoteAbove) return out.reverse(); // truncate k and beyond
+        if (!rebased || !remoteAbove) return out.reverse();
         out.push({ ...tx, op: rebased, selBefore: mapSel(tx.selBefore), selAfter: mapSel(tx.selAfter) });
         remote = remoteAbove;
       }
@@ -848,12 +690,6 @@ export class EditorEngineService {
     this.version.update((v) => v + 1);
   }
 
-  /**
-   * Record one invertible transaction: diff old→new into the minimal operation
-   * (char-level inside a single text block, block-level otherwise), push it
-   * onto the undo stack, and clear the redo stack. A no-op mutation records
-   * nothing.
-   */
   #commit(oldDoc: ASTDocument, newDoc: ASTDocument, selBefore: LogicalSelection | null) {
     const op = diffDocuments(oldDoc, newDoc);
     if (!op) return;

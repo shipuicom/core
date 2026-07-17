@@ -19,7 +19,7 @@ export type ASTDocument = ASTBlockNode[];
 
 export interface LogicalPosition {
   blockIndex: number;
-  itemIndex?: number; // for container blocks only
+  itemIndex?: number;
   inlineIndex: number;
   offset: number;
 }
@@ -34,8 +34,6 @@ export interface TransactionResult {
   doc: ASTDocument;
   selectionShift?: LogicalSelection;
 }
-
-// --- ARCHITECTURE SCHEMAS ---
 
 export type BlockCategory = 'void' | 'container' | 'text';
 

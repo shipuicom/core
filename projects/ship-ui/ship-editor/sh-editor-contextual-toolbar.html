@@ -1,0 +1,25 @@
+    <div
+      class="sh-editor-block-anchor"
+      [style.top.px]="rect().top"
+      [style.left.px]="rect().left"
+      [style.width.px]="rect().width"
+      [style.height.px]="rect().height">
+      <sh-popover [isOpen]="actions().length > 0" [disableOpenByClick]="true" [options]="{ closeOnButton: false, closeOnEsc: false, closeOnOverlay: false }">
+        <div trigger class="sh-editor-block-anchor-trigger"></div>
+        <div class="sh-editor-contextual-toolbar" (mousedown)="$event.preventDefault()">
+          @for (action of actions(); track action.id) {
+            <button
+              [class.active]="action.isActive"
+              [class.danger]="action.danger"
+              [shTooltip]="action.label"
+              (click)="action.run()">
+              @if (action.icon) {
+                <sh-icon>{{ action.icon }}</sh-icon>
+              } @else {
+                {{ action.label }}
+              }
+            </button>
+          }
+        </div>
+      </sh-popover>
+    </div>

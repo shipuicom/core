@@ -23,12 +23,11 @@ export class ShipEditorActionDirective {
     return e;
   });
 
-  // Pass attrs into isActive to enable variant matching (H1 vs H2)
   isActive = computed(() => this.editor().engine.isActive(this.action(), this.attrs()));
 
   @HostListener('mousedown', ['$event'])
   onMouseDown(event: MouseEvent) {
-    event.preventDefault(); // Prevents physical focus from leaving contenteditable!
+    event.preventDefault();
     this.editor().engine.dispatch(this.action(), this.attrs());
   }
 }

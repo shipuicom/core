@@ -9,20 +9,15 @@ import {
 import { ALLOWED_ALIGN, SAFE_STYLE_PROPS, escapeAttr, isSafeUrl, safeStyleString } from './editor-sanitize';
 import { ASTBlockNode, ASTMark } from './editor.types';
 
-/** Render an allow-listed `text-align` style attribute, or nothing. */
 function alignStyle(align: unknown): string {
   return typeof align === 'string' && ALLOWED_ALIGN.has(align) ? ` style="text-align: ${align}"` : '';
 }
-
-// =======================
-// BLOCK BEHAVIORS
-// =======================
 
 export class ParagraphBehavior extends BaseBlockBehavior {
   readonly type = 'paragraph';
   readonly category = 'text';
   readonly enterPhysics = { strategy: 'split-self' as const };
-  readonly backspacePhysics = {}; // Cannot fallback further
+  readonly backspacePhysics = {};
   override readonly keybinding = 'editor.paragraph';
 
   parseDOM(el: HTMLElement) {
@@ -58,8 +53,7 @@ export class HeadingBehavior extends BaseBlockBehavior {
       : null;
   }
   renderHTML(block: ASTBlockNode, contentHtml: string) {
-    // Clamp to a valid heading level: `level` may arrive from untrusted JSON
-    // `value`, and it's interpolated straight into the tag name.
+
     const level = Math.min(6, Math.max(1, parseInt(String(block.attrs?.['level'] ?? 1), 10) || 1));
     return `<h${level}${alignStyle(block.attrs?.['align'])}>${contentHtml || '<br>'}</h${level}>`;
   }
@@ -132,7 +126,7 @@ export class CodeBlockBehavior extends BaseBlockBehavior {
   readonly backspacePhysics = { fallbackType: 'paragraph' };
   override readonly keybinding = 'editor.codeBlock';
   override activeClassName = 'sh-editor-code-active';
-  // `\n` is real whitespace here (rendered literally in <pre>), not a <br>.
+
   override preserveWhitespace = true;
 
   parseDOM(el: HTMLElement) {
@@ -181,13 +175,11 @@ export class ImageBehavior extends BaseBlockBehavior {
   static readonly SIZES = new Set(['auto', 'small', 'medium', 'large']);
   readonly type = 'image';
   readonly category = 'void';
-  /** Images need a src — dispatching 'image' opens the insert popover. */
+
   override requestsUi = true;
   readonly enterPhysics = { strategy: 'insert-default-below' as const, defaultSplitTarget: 'paragraph' };
   readonly backspacePhysics = {};
 
-  /** A positive integer pixel dimension, or null. The resize handles persist a
-   * custom width/height in the `width`/`height` attributes (see renderHTML). */
   static parseDimension(raw: unknown): number | null {
     const n = Math.round(Number(raw));
     return Number.isFinite(n) && n > 0 ? n : null;
@@ -216,27 +208,20 @@ export class ImageBehavior extends BaseBlockBehavior {
   }
   renderHTML(block: ASTBlockNode) {
     const { src, alt, mode, size } = block.attrs || {};
-    // Constrain enum-valued attrs before they reach the class list, and drop an
-    // unsafe `src` (data:image/* is allowed for pasted/inline images).
+
     const safeMode = ImageBehavior.MODES.has(mode) ? mode : 'content';
     const safeSize = ImageBehavior.SIZES.has(size) ? size : 'auto';
-    // Content/theater are fixed-width (no size class); float/custom carry the
-    // size so the size buttons in the contextual toolbar have something to act on.
+
     const sized = safeMode === 'float' || safeMode === 'custom';
     const cls = sized ? `sh-editor-img-${safeMode} sh-editor-img-size-${safeSize}` : `sh-editor-img-${safeMode}`;
     const safeSrc = isSafeUrl(src, { allowDataImage: true }) ? escapeAttr(src) : '';
-    // Custom width/height from the resize handles: persisted in the (already
-    // sanitize-safe) width/height attributes and mirrored to an inline `style` so
-    // they win over the mode/size class widths. A width alone keeps `height:auto`
-    // (aspect-preserving corner drags); an explicit height is a one-axis stretch.
+
     const width = ImageBehavior.parseDimension(block.attrs?.['width']);
     const height = ImageBehavior.parseDimension(block.attrs?.['height']);
     const dimAttrs = (width ? ` width="${width}"` : '') + (height ? ` height="${height}"` : '');
     const styleProps = [width ? `width:${width}px` : '', height ? `height:${height}px` : ''].filter(Boolean);
     const styleAttr = styleProps.length ? ` style="${styleProps.join(';')}"` : '';
-    // contenteditable="false" makes the image a non-editable island: clicking it
-    // places no text caret (so mousedown needn't preventDefault, which would
-    // otherwise block the native drag), and it stays draggable to reorder.
+
     return `<img src="${safeSrc}" alt="${escapeAttr(alt)}" class="${cls}" draggable="true" contenteditable="false"${dimAttrs}${styleAttr}>`;
   }
   override renderMarkdown(block: ASTBlockNode) {
@@ -246,8 +231,7 @@ export class ImageBehavior extends BaseBlockBehavior {
   override contextualActions({ block, engine }: ContextualActionCtx): ContextualAction[] {
     const mode = (block.attrs?.['mode'] as string) ?? 'content';
     const size = (block.attrs?.['size'] as string) ?? 'auto';
-    // Picking a preset mode/size clears any custom drag-resize width/height so the
-    // preset's own sizing takes effect (stale dimensions would otherwise win).
+
     const setMode = (m: string) =>
       engine.updateSelectedImage({ mode: m, width: null, height: null, ...((m === 'float' || m === 'custom') && size === 'auto' ? { size: 'medium' } : {}) });
 
@@ -338,13 +322,9 @@ export class ListItemBehavior extends BaseBlockBehavior {
   }
 }
 
-// =======================
-// INLINE BEHAVIORS (MARKS)
-// =======================
-
 export class BoldBehavior extends BaseInlineBehavior {
   readonly type = 'bold';
-  override isSticky = true; // Expands seamlessly when continuing typing at boundary end
+  override isSticky = true;
   override readonly keybinding = 'editor.bold';
   parseDOM(el: HTMLElement) {
     return ['strong', 'b'].includes(el.tagName.toLowerCase()) ? { type: this.type } : null;
@@ -397,7 +377,7 @@ export class StrikeBehavior extends BaseInlineBehavior {
 }
 export class InlineCodeBehavior extends BaseInlineBehavior {
   readonly type = 'code';
-  override isSticky = false; // Strictly non-sticky. Engine traps text outside this mark.
+  override isSticky = false;
   override readonly keybinding = 'editor.code';
   parseDOM(el: HTMLElement) {
     return el.tagName.toLowerCase() === 'code' && !el.closest('pre') ? { type: this.type } : null;
@@ -412,7 +392,7 @@ export class InlineCodeBehavior extends BaseInlineBehavior {
 export class LinkBehavior extends BaseInlineBehavior {
   readonly type = 'link';
   override isSticky = false;
-  /** Links need an href — dispatching 'link' opens the URL popover. */
+
   override requestsUi = true;
   override readonly keybinding = 'editor.link';
   parseDOM(el: HTMLElement) {
@@ -429,17 +409,9 @@ export class LinkBehavior extends BaseInlineBehavior {
   }
 }
 
-/**
- * Arbitrary inline styling — font family/size, line height, color, background
- * (highlight), text shadow — carried as a single `<span style="…">` mark, the
- * way Google Docs stacks character formatting. Apply/merge via
- * `engine.applyStyle({...})`. Every property routes through {@link SAFE_STYLE_PROPS}
- * on render AND parse, so an unknown property or an injection-shaped value never
- * reaches a live style attribute; markdown drops styling entirely.
- */
 export class StyleBehavior extends BaseInlineBehavior {
   readonly type = 'style';
-  override isSticky = true; // typing at the edge continues the current styling
+  override isSticky = true;
 
   parseDOM(el: HTMLElement): ASTMark | null {
     if (el.tagName.toLowerCase() !== 'span') return null;
@@ -455,6 +427,6 @@ export class StyleBehavior extends BaseInlineBehavior {
     return style ? `<span style="${escapeAttr(style)}">${text}</span>` : text;
   }
   override renderMarkdown(_mark: ASTMark, text: string) {
-    return text; // markdown has no inline styling
+    return text;
   }
 }

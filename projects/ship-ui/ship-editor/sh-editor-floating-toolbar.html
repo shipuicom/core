@@ -1,0 +1,9 @@
+    @if (isVisible()) {
+      <div
+        class="sh-editor-floating-panel"
+        [style.top.px]="top()"
+        [style.left.px]="left()"
+        (mousedown)="$event.preventDefault()">
+        <ng-content></ng-content>
+      </div>
+    }

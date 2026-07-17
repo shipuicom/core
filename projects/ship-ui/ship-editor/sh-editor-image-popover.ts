@@ -19,62 +19,17 @@ import { isSafeUrl } from './editor-sanitize';
 import { LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 
-/**
- * Image insertion popover — a URL field plus a file picker (read to a
- * `data:` URL). Opened by the engine's `uiRequest` for the 'image' action
- * (toolbar image button, or a future slash command). On confirm it calls
- * `engine.insertImage`, which drops the image as its own block and selects it
- * so the contextual toolbar appears.
- *
- * URLs are validated with the same `isSafeUrl` the sanitizer uses (data:image/*
- * allowed); bare domains get an https:// prefix.
- */
 @Component({
   selector: 'sh-editor-image-popover',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ShipPopover, ShipFormField, ShipButton, ShipIcon],
-  template: `
-    <div class="sh-editor-link-anchor" [style.top.px]="top()" [style.left.px]="left()">
-      <sh-popover [(isOpen)]="isOpen" (closed)="onClosed()" [disableOpenByClick]="true" [asSheetOnMobile]="true" [options]="{ closeOnButton: false, closeOnEsc: true }">
-        <div class="sh-editor-popover sh-editor-image-form" (keydown)="onFormKeydown($event)">
-          <div class="sh-editor-popover-header">
-            <sh-icon>image</sh-icon>
-            <span>Insert image</span>
-          </div>
-          <sh-form-field size="small">
-            <label>Image URL</label>
-            <input
-              #urlInput
-              type="text"
-              autofocus
-              placeholder="https://example.com/image.jpg"
-              [value]="url()"
-              (input)="url.set($any($event.target).value); error.set(null)" />
-            @if (error(); as message) {
-              <span error role="alert">{{ message }}</span>
-            }
-          </sh-form-field>
-          <input #fileInput type="file" accept="image/*" hidden (change)="onFile($event)" />
-          <div class="sh-editor-popover-actions">
-            <button shButton noBg [disabled]="uploading()" (click)="fileInput.click()">
-              <sh-icon>upload-simple</sh-icon>
-              {{ uploading() ? 'Uploading…' : 'Upload' }}
-            </button>
-            <span class="sh-editor-popover-spacer"></span>
-            <button shButton color="primary" [disabled]="uploading()" (click)="apply()">Insert</button>
-          </div>
-        </div>
-      </sh-popover>
-    </div>
-  `,
+  templateUrl: './sh-editor-image-popover.html',
 })
 export class ShipEditorImagePopover {
   surface = input.required<HTMLElement>();
-  /** Optional upload handler. When provided, a picked file is handed to it and
-   * the resolved URL is inserted (e.g. an S3/CDN link); otherwise the file is
-   * inlined as a `data:` URL. Rejections surface as an inline error. */
+
   upload = input<((file: File) => Promise<string>) | null>(null);
 
   engine = inject(EditorEngineService);
@@ -138,7 +93,7 @@ export class ShipEditorImagePopover {
   async onFile(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-    input.value = ''; // let the same file be re-picked after an error
+    input.value = '';
     if (!file) return;
 
     const upload = this.upload();
@@ -184,10 +139,7 @@ export class ShipEditorImagePopover {
 
   onClosed() {
     this.#savedSelection = null;
-    // If an image was just inserted it is now the selected block; the editor's
-    // block-selection effect owns focus + the node selection for it, so a focus
-    // here would only collapse that selection and race it. Only refocus when the
-    // popover was dismissed without inserting (nothing selected).
+
     if (this.engine.selectedBlock() === null) this.surface().focus();
   }
 }

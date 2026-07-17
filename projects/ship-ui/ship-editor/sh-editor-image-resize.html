@@ -1,0 +1,12 @@
+    @if (frame(); as f) {
+      <div class="sh-editor-resize-frame" [style.top.px]="f.top" [style.left.px]="f.left" [style.width.px]="f.width" [style.height.px]="f.height">
+        @for (c of corners; track c) {
+          <span class="sh-editor-resize-handle sh-editor-resize-{{ c }}" (mousedown)="onHandleDown($event, c)"></span>
+        }
+        @if (edgeHandles()) {
+          @for (e of edges; track e) {
+            <span class="sh-editor-resize-handle sh-editor-resize-edge sh-editor-resize-{{ e }}" (mousedown)="onHandleDown($event, e)"></span>
+          }
+        }
+      </div>
+    }

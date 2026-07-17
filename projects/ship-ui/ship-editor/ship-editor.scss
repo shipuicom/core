@@ -12,8 +12,7 @@ sh-editor {
   --editor-footer-bg: var(--base-2);
   --editor-p: #{p2r(16)} #{p2r(20)};
   --editor-min-h: #{p2r(150)};
-  // Subtle neutral focus highlight on the outer border (not a strong primary
-  // colour, and no glow ring) — a quiet step up from the resting --base-4.
+
   --editor-border-focus: var(--base-8);
   --editor-shape: var(--shape-3);
 
@@ -38,10 +37,6 @@ sh-editor {
     }
   }
 
-  // ── Document variant: a centered page on a muted canvas ──────────────────
-  // `variant="document"` (Ship convention → `.document` host class) restyles the
-  // editor as a page — paper surface, roomy 1in-ish margins, a page-height feel —
-  // dropped onto a muted "desk", the shadow lifting it off the canvas.
   &.document {
     --editor-min-h: #{p2r(720)};
     --editor-p: #{p2r(64)} #{p2r(72)};
@@ -52,8 +47,7 @@ sh-editor {
     .sh-editor-container {
       max-width: #{p2r(816)};
       margin-inline: auto;
-      // Keep the hairline border (it defines the page edge where the shadow is
-      // faint, e.g. dark mode) and add a lift so the page floats over the desk.
+
       border-radius: var(--shape-2);
       box-shadow: var(--box-shadow-30);
     }
@@ -66,9 +60,6 @@ sh-editor {
     flex: 1;
   }
 
-  // Drop line shown while dragging an image to a new position (Google-Docs style:
-  // a primary rule with a dot at the leading edge). Positioned within the body at
-  // the target gap; aligned to the content padding.
   .sh-editor-drop-indicator {
     position: absolute;
     left: #{p2r(20)};
@@ -104,7 +95,6 @@ sh-editor {
     line-height: 1.6;
     word-break: break-word;
 
-    /* Typography Styles */
     p {
       margin-top: 0;
       margin-bottom: #{p2r(12)};
@@ -126,9 +116,7 @@ sh-editor {
     h3 { font: var(--title-10B); }
 
     blockquote {
-      // flow-root establishes a block formatting context so the whole box sits
-      // beside a floated image instead of its border/background sliding under it
-      // — the same reason the code block (overflow-x:auto) already behaves.
+
       display: flow-root;
       border-left: 4px solid var(--primary-8);
       background: var(--base-2);
@@ -176,7 +164,6 @@ sh-editor {
         color: inherit;
       }
 
-      // Active highlight when caret is inside code block
       &.sh-editor-code-active {
         border-color: var(--primary-8);
         box-shadow: 0 0 0 3px var(--primary-3);
@@ -197,9 +184,6 @@ sh-editor {
       margin: #{p2r(24)} 0;
     }
 
-    // Lists establish a block formatting context too, so a floated image sits
-    // beside the whole list (markers included) rather than the list box — and
-    // its bullet gutter — sliding under the float.
     ul,
     ol {
       display: flow-root;
@@ -207,10 +191,6 @@ sh-editor {
       padding-left: #{p2r(24)};
     }
 
-    // Image blocks. Mode (content / theater / float / custom) sets layout; the
-    // size class (float/custom only — content is fixed width, theater is full
-    // bleed) sets the width. The selection ring is the .sh-editor-block-selected
-    // outline, not img:focus (focus stays on the editable surface).
     img {
       height: auto;
       max-width: 100%;
@@ -236,8 +216,7 @@ sh-editor {
 
       &.sh-editor-img-float {
         float: left;
-        // 1rem of horizontal breathing room on both sides so wrapped text never
-        // butts up against the image and the image isn't flush to the edge.
+
         margin: #{p2r(8)} #{p2r(16)};
 
         &.sh-editor-img-size-small { width: #{p2r(240)}; max-width: 100% !important; }
@@ -257,7 +236,6 @@ sh-editor {
       }
     }
 
-    // Custom highlight mark (registered via the [behaviors] extension point)
     mark.sh-editor-highlight {
       background-color: var(--warn-3);
       color: var(--base-12);
@@ -278,7 +256,6 @@ sh-editor {
     font-style: italic;
   }
 
-  // Raw-source (code) view — a plain textarea mirroring the editor's padding.
   .sh-editor-source {
     display: block;
     width: 100%;
@@ -339,8 +316,6 @@ sh-editor {
         flex: none;
       }
 
-      // Highlight follows keyboard navigation (.active), not just hover, so the
-      // two never disagree.
       &:hover,
       &.active {
         background: var(--base-3);
@@ -366,23 +341,16 @@ sh-editor {
   }
 }
 
-/* ── Link popover ──────────────────────────────────────────────────────── */
-/* Zero-size anchor positioned at the caret inside .sh-editor-container;
-   the sh-popover inside it anchors its panel here. */
 .sh-editor-link-anchor {
   position: absolute;
   width: 0;
   height: 0;
 
   .trigger-wrapper {
-    display: none; /* no visible trigger — opened programmatically */
+    display: none;
   }
 }
 
-/* ── Popover dialog content (link / image insert) ──────────────────────────
-   The sh-popover host provides the panel chrome (surface, border, shadow); this
-   styles the content — a titled header, a full-width field, and an actions row —
-   so both popovers read as proper little dialogs in the ShipUI language. */
 .sh-editor-popover {
   display: flex;
   flex-direction: column;
@@ -433,17 +401,12 @@ sh-editor {
   }
 }
 
-/* ── Selected void block (image) ───────────────────────────────────────── */
 .sh-editor-block-selected {
   outline: 2px solid var(--primary-9);
   outline-offset: 2px;
   border-radius: var(--shape-1);
 }
 
-/* ── Image resize handles (sh-editor-image-resize) ─────────────────────────
-   A frame overlaid on the selected image, with a grab handle at each corner.
-   The frame is inert (pointer-events:none); only the handles take the pointer.
-   z-index sits above the surface (z-index:2) so the handles stay grabbable. */
 .sh-editor-resize-frame {
   position: absolute;
   z-index: 5;
@@ -465,16 +428,12 @@ sh-editor {
   &.sh-editor-resize-sw { bottom: #{p2r(-6)}; left: #{p2r(-6)}; cursor: nesw-resize; }
   &.sh-editor-resize-se { bottom: #{p2r(-6)}; right: #{p2r(-6)}; cursor: nwse-resize; }
 
-  // Mid-edge handles (optional): centered on each side, one-axis resize cursors.
   &.sh-editor-resize-n { top: #{p2r(-6)}; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
   &.sh-editor-resize-s { bottom: #{p2r(-6)}; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
   &.sh-editor-resize-w { left: #{p2r(-6)}; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
   &.sh-editor-resize-e { right: #{p2r(-6)}; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
 }
 
-/* ── Contextual toolbar ────────────────────────────────────────────────── */
-/* Anchor overlaying the selected block; sh-popover positions the toolbar around
-   it. pointer-events:none so it never blocks the block/editor beneath it. */
 .sh-editor-block-anchor {
   position: absolute;
   pointer-events: none;
@@ -486,8 +445,7 @@ sh-editor {
 }
 
 .sh-editor-contextual-toolbar {
-  // Re-enable clicks: the anchor ancestor is pointer-events:none (click-through),
-  // which would otherwise cascade to these buttons.
+
   pointer-events: auto;
   display: flex;
   align-items: center;
@@ -533,5 +491,3 @@ sh-editor {
     background: rgb(from var(--base-1) r g b / 20%);
   }
 }
-
-/* .sh-editor-link-form / .sh-editor-image-form now share .sh-editor-popover. */
