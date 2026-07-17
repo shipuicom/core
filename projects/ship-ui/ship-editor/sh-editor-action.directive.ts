@@ -1,5 +1,5 @@
 import { Directive, HostListener, computed, inject, input } from '@angular/core';
-import { ShipEditorExp } from './ship-editor';
+import { ShipEditor } from './ship-editor';
 
 @Directive({
   selector: '[shEditorAction]',
@@ -10,12 +10,12 @@ import { ShipEditorExp } from './ship-editor';
   },
 })
 export class ShipEditorActionDirective {
-  editorInput = input<ShipEditorExp | null>(null, { alias: 'editor' });
+  editorInput = input<ShipEditor | null>(null, { alias: 'editor' });
 
   action = input.required<string>({ alias: 'shEditorAction' });
   attrs = input<Record<string, any>>({}, { alias: 'shEditorActionAttrs' });
 
-  #parentEditor = inject(ShipEditorExp, { optional: true });
+  #parentEditor = inject(ShipEditor, { optional: true });
 
   editor = computed(() => {
     const e = this.editorInput() ?? this.#parentEditor;

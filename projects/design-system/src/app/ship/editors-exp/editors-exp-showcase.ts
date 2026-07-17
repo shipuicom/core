@@ -11,13 +11,16 @@ import { ShipSelect } from '@ship-ui/core/ship-select';
 import { ShipTooltip } from '@ship-ui/core/ship-tooltip';
 import { Previewer } from '../../previewer/previewer';
 import { PropertyViewer } from '../../property-viewer/property-viewer';
-import { BaseInlineBehavior } from './editor-behaviors';
-import { ASTDocument, ASTMark } from './editor.types';
-import { ShipEditorActionDirective } from './sh-editor-action.directive';
-import { ShipEditorFloatingToolbar } from './sh-editor-floating-toolbar';
+import {
+  ASTDocument,
+  ASTMark,
+  BaseInlineBehavior,
+  ShipEditor,
+  ShipEditorActionDirective,
+  ShipEditorFloatingToolbar,
+  ShipEditorToolbar,
+} from '@ship-ui/core/ship-editor';
 import { ShipEditorSelectionDebug } from './sh-editor-selection-debug';
-import { ShipEditorToolbar } from './sh-editor-toolbar';
-import { ShipEditorExp } from './ship-editor';
 
 /**
  * Example custom inline behavior: a "highlight" mark.
@@ -49,7 +52,7 @@ class HighlightBehavior extends BaseInlineBehavior {
     FormsModule,
     Previewer,
     PropertyViewer,
-    ShipEditorExp,
+    ShipEditor,
     ShipEditorToolbar,
     ShipEditorFloatingToolbar,
     ShipEditorActionDirective,
@@ -146,7 +149,7 @@ export default class EditorsExpShowcase {
   isValidFontSize = (value: string) => /^\d+(\.\d+)?(px|pt|em|rem|%)?$/.test(value.trim());
 
   /** The main editor, so the style effects can read/apply its selection style. */
-  mainEditorRef = viewChild<ShipEditorExp>('mainEditor');
+  mainEditorRef = viewChild<ShipEditor>('mainEditor');
 
   // The two style selects, so prefill can drive their shown value directly:
   // sh-select's value→option sync can skip updating its display on a programmatic

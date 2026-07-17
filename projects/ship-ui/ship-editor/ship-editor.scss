@@ -1,738 +1,537 @@
 @use 'helpers' as *;
 
-$shipEditor: true !default;
+sh-editor {
+  --editor-bg: var(--base-1);
+  --editor-code-bg: var(--base-2);
+  --editor-border-color: var(--base-4);
+  --editor-toolbar-bg: rgb(from var(--base-1) r g b / 70%);
+  --editor-toolbar-border: var(--base-4);
+  --editor-btn-hover: var(--base-3);
+  --editor-btn-active-bg: var(--primary-3);
+  --editor-btn-active-c: var(--primary-11);
+  --editor-footer-bg: var(--base-2);
+  --editor-p: #{p2r(16)} #{p2r(20)};
+  --editor-min-h: #{p2r(150)};
+  // Subtle neutral focus highlight on the outer border (not a strong primary
+  // colour, and no glow ring) — a quiet step up from the resting --base-4.
+  --editor-border-focus: var(--base-8);
+  --editor-shape: var(--shape-3);
 
-@if $shipEditor == true {
-  sh-editor {
-    --editor-bg: var(--base-1);
-    --editor-code-bg: var(--base-2);
-    --editor-border-color: var(--base-4);
-    --editor-toolbar-bg: rgb(from var(--base-1) r g b / 70%);
-    --editor-toolbar-border: var(--base-4);
-    --editor-btn-hover: var(--base-3);
-    --editor-btn-active-bg: var(--primary-3);
-    --editor-btn-active-c: var(--primary-11);
-    --editor-footer-bg: var(--base-2);
-    --editor-p: #{p2r(16)} #{p2r(20)};
-    --editor-min-h: #{p2r(220)};
-    --editor-border-focus: var(--primary-8);
-    --editor-shadow-focus: 0 0 0 3px var(--primary-3);
-    --editor-shape: var(--shape-3);
+  display: block;
+  width: 100%;
+  border-radius: var(--editor-shape);
 
-    display: block;
-    width: 100%;
+  .sh-editor-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
     height: 100%;
-    margin-bottom: #{p2r(16)};
-    border-radius: var(--editor-shape);
+    min-height: var(--editor-min-h);
+    background-color: var(--editor-bg);
+    border: 1px solid var(--editor-border-color);
+    border-radius: inherit;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+
+    &:focus-within {
+      border-color: var(--editor-border-focus);
+    }
+  }
+
+  // ── Document variant: a centered page on a muted canvas ──────────────────
+  // `variant="document"` (Ship convention → `.document` host class) restyles the
+  // editor as a page — paper surface, roomy 1in-ish margins, a page-height feel —
+  // dropped onto a muted "desk", the shadow lifting it off the canvas.
+  &.document {
+    --editor-min-h: #{p2r(720)};
+    --editor-p: #{p2r(64)} #{p2r(72)};
+    background: var(--base-3);
+    border-radius: 0;
+    padding: #{p2r(32)} #{p2r(20)};
 
     .sh-editor-container {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      min-height: var(--editor-min-h);
-      background-color: var(--editor-bg);
-      border: var(--border-10);
-      border-color: var(--editor-border-color);
-      border-radius: inherit;
-      box-shadow: var(--box-shadow-10);
-      overflow: hidden;
-      transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+      max-width: #{p2r(816)};
+      margin-inline: auto;
+      // Keep the hairline border (it defines the page edge where the shadow is
+      // faint, e.g. dark mode) and add a lift so the page floats over the desk.
+      border-radius: var(--shape-2);
+      box-shadow: var(--box-shadow-30);
     }
+  }
 
-    // Focused state
-    &.sh-editor-focused .sh-editor-container {
-      border-color: var(--editor-border-focus);
-      box-shadow: var(--editor-shadow-focus);
+  .sh-editor-body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  // Drop line shown while dragging an image to a new position (Google-Docs style:
+  // a primary rule with a dot at the leading edge). Positioned within the body at
+  // the target gap; aligned to the content padding.
+  .sh-editor-drop-indicator {
+    position: absolute;
+    left: #{p2r(20)};
+    right: #{p2r(20)};
+    height: #{p2r(3)};
+    margin-top: #{p2r(-1.5)};
+    background: var(--primary-9);
+    border-radius: #{p2r(2)};
+    pointer-events: none;
+    z-index: 5;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: #{p2r(-4)};
+      top: 50%;
+      width: #{p2r(9)};
+      height: #{p2r(9)};
+      border-radius: 50%;
+      background: var(--primary-9);
+      transform: translateY(-50%);
     }
+  }
 
-    // Readonly state
-    &.sh-editor-readonly {
-      .sh-editor-content {
-        cursor: not-allowed;
+  .sh-editor-content {
+    padding: var(--editor-p);
+    outline: none;
+    flex: 1;
+    z-index: 2;
+    position: relative;
+    color: var(--base-12);
+    font: var(--paragraph-20);
+    line-height: 1.6;
+    word-break: break-word;
+
+    /* Typography Styles */
+    p {
+      margin-top: 0;
+      margin-bottom: #{p2r(12)};
+      &:last-child {
+        margin-bottom: 0;
       }
     }
 
-    // Sticky Toolbar
-    .sh-editor-toolbar {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: #{p2r(4)};
-      padding: #{p2r(6)} #{p2r(8)};
-      background-color: var(--editor-toolbar-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--editor-toolbar-border);
-      border-top-left-radius: inherit;
-      border-top-right-radius: inherit;
-    }
-
-    // Toolbar Button Groups
-    .sh-editor-toolbar-group {
-      display: flex;
-      align-items: center;
-      gap: #{p2r(2)};
-      padding-right: #{p2r(6)};
-      border-right: 1px solid var(--editor-toolbar-border);
-
-      &:last-child,
-      &.view-toggle {
-        border-right: none;
-      }
-    }
-
-    // Toolbar Buttons
-    .sh-editor-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: #{p2r(28)};
-      height: #{p2r(28)};
-      padding: 0;
-      background: transparent;
-      border: none;
-      border-radius: var(--shape-1);
-      color: var(--base-11);
-      cursor: pointer;
-      font-size: #{p2r(16)};
-      transition: all 0.15s ease;
-
-      &:hover:not(:disabled) {
-        background-color: var(--editor-btn-hover);
-        color: var(--base-12);
-      }
-
-      &:disabled {
-        opacity: 0.35;
-        cursor: not-allowed;
-      }
-
-      &.enabled {
-        background-color: var(--editor-btn-active-bg);
-        color: var(--editor-btn-active-c);
-        font-weight: bold;
-      }
-
-      &.danger {
-        color: var(--error-9);
-        &:hover {
-          background-color: var(--error-3);
-          color: var(--error-11);
-        }
-      }
-
-      i {
-        font-style: normal;
-        line-height: 1;
-      }
-    }
-
-    // Editor Body & Content
-    .sh-editor-body {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      flex: 1 1 auto;
-      min-height: 0;
-    }
-
-    .sh-editor-content {
-      flex: 1 1 auto;
-      padding: var(--editor-p);
-      outline: none;
+    h1, h2, h3 {
       color: var(--base-12);
-      font: var(--paragraph-20);
-      line-height: 1.6;
-      word-break: break-word;
-      overflow-y: auto;
+      font-weight: 700;
+      margin-top: #{p2r(16)};
+      margin-bottom: #{p2r(8)};
+      line-height: 1.3;
+    }
 
-      // Typography Styles Inside Editor
-      p {
-        margin-top: 0;
-        margin-bottom: #{p2r(12)};
-        &:last-child {
-          margin-bottom: 0;
-        }
-      }
+    h1 { font: var(--title-30B); }
+    h2 { font: var(--title-20B); }
+    h3 { font: var(--title-10B); }
 
-      h1,
-      h2,
-      h3 {
-        color: var(--base-12);
-        font-weight: 700;
-        margin-top: #{p2r(16)};
-        margin-bottom: #{p2r(8)};
-        line-height: 1.3;
-      }
+    blockquote {
+      // flow-root establishes a block formatting context so the whole box sits
+      // beside a floated image instead of its border/background sliding under it
+      // — the same reason the code block (overflow-x:auto) already behaves.
+      display: flow-root;
+      border-left: 4px solid var(--primary-8);
+      background: var(--base-2);
+      padding: #{p2r(8)} #{p2r(16)};
+      margin: #{p2r(16)} 0;
+      color: var(--base-11);
+      border-radius: 0 var(--shape-2) var(--shape-2) 0;
+      font-style: italic;
 
-      h1 {
-        font: var(--title-30B);
-      }
-      h2 {
-        font: var(--title-20B);
-      }
-      h3 {
-        font: var(--title-10B);
-      }
+      &.sh-editor-callout-info {
+        border-left-color: var(--info-8);
+        background: var(--info-2);
+        padding-left: #{p2r(40)};
+        position: relative;
 
-      blockquote {
-        margin: #{p2r(16)} 0;
-        padding: #{p2r(8)} #{p2r(16)};
-        border-left: 4px solid var(--primary-8);
-        background-color: var(--base-2);
-        color: var(--base-11);
-        border-radius: 0 var(--shape-2) var(--shape-2) 0;
-        font-style: italic;
-
-        // Info Callout — override the plain blockquote styling
-        &.sh-editor-callout {
+        &::before {
+          content: '💡';
+          position: absolute;
+          left: #{p2r(12)};
+          top: #{p2r(8)};
           font-style: normal;
-          display: flex;
-          align-items: flex-start;
-          gap: #{p2r(10)};
-          padding: #{p2r(12)} #{p2r(16)};
-        }
-
-        &.sh-editor-callout-info {
-          border-left-color: var(--info-8, var(--primary-8));
-          background-color: var(--info-2, var(--primary-2));
-        }
-
-        .sh-editor-callout-icon {
-          flex-shrink: 0;
-          font-size: #{p2r(18)};
-          line-height: 1.4;
           user-select: none;
+          pointer-events: none;
         }
       }
+    }
 
-      pre {
-        background-color: var(--editor-code-bg);
-        border-radius: var(--shape-2);
-        padding: #{p2r(12)} #{p2r(16)};
-        margin: #{p2r(16)} 0;
-        overflow-x: auto;
-        min-height: p2r(50);
-        border: 2px solid transparent;
-        transition:
-          border-color 0.15s ease,
-          box-shadow 0.15s ease;
-
-        code {
-          font: var(--code-20);
-          background: transparent;
-          padding: 0;
-          border-radius: 0;
-        }
-
-        // Active highlight when caret is inside code block (extension-driven)
-        &.sh-editor-code-active {
-          border-color: var(--primary-8);
-          box-shadow: 0 0 0 3px var(--primary-3);
-        }
-      }
+    pre {
+      background-color: var(--editor-code-bg);
+      border-radius: var(--shape-2);
+      padding: #{p2r(12)} #{p2r(16)};
+      margin: #{p2r(16)} 0;
+      overflow-x: auto;
+      min-height: #{p2r(50)};
+      border: 2px solid transparent;
+      transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
 
       code {
         font: var(--code-20);
-        background-color: var(--base-2);
-        padding: #{p2r(2)} #{p2r(6)};
-        border-radius: var(--shape-1);
-        color: var(--primary-11);
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        color: inherit;
       }
 
-      ul,
-      ol {
-        margin-top: 0;
-        margin-bottom: #{p2r(16)};
-        padding-left: #{p2r(24)};
-      }
-
-      li {
-        margin-bottom: #{p2r(4)};
-      }
-
-      hr {
-        border: none;
-        border-top: 1px solid var(--editor-border-color);
-        margin: #{p2r(24)} 0;
-      }
-
-      img {
-        height: auto;
-        max-width: 100%;
-        transition: all 0.2s ease;
-        border: 2px solid transparent;
-        border-radius: var(--shape-1);
-        cursor: pointer;
-
-        &:focus {
-          outline: none;
-          border-color: var(--primary-8);
-          box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-8) 30%, transparent);
-        }
-
-        &.sh-editor-img-content {
-          display: block;
-          margin: #{p2r(16)} auto;
-          box-sizing: border-box;
-          border-radius: var(--shape-2);
-
-          &.sh-editor-img-size-small {
-            width: #{p2r(240)};
-            max-width: 100% !important;
-          }
-          &.sh-editor-img-size-medium {
-            width: #{p2r(480)};
-            max-width: 100% !important;
-          }
-          &.sh-editor-img-size-large {
-            width: calc(100% - #{p2r(48)});
-            max-width: 100% !important;
-          }
-          &:not([class*='sh-editor-img-size-']) {
-            width: calc(100% - #{p2r(48)});
-            max-width: 100% !important;
-          }
-        }
-
-        &.sh-editor-img-theater {
-          display: block;
-          width: calc(100% + #{p2r(40)});
-          max-width: none !important;
-          margin: #{p2r(16)} #{p2r(-20)};
-          padding: 0;
-          border-radius: 0;
-          border-left: none;
-          border-right: none;
-        }
-
-        &.sh-editor-img-float {
-          float: left;
-          margin: #{p2r(8)} #{p2r(16)} #{p2r(8)} 0;
-          border-radius: var(--shape-2);
-
-          &.sh-editor-img-size-auto {
-            width: auto;
-            max-width: 100% !important;
-          }
-          &.sh-editor-img-size-small {
-            width: #{p2r(240)};
-            max-width: 100% !important;
-          }
-          &.sh-editor-img-size-medium {
-            width: #{p2r(480)};
-            max-width: 100% !important;
-          }
-          &.sh-editor-img-size-large {
-            width: 100%;
-            max-width: 100% !important;
-          }
-          &:not([class*='sh-editor-img-size-']) {
-            width: auto;
-            max-width: 100% !important;
-          }
-        }
-
-        &.sh-editor-img-custom,
-        &.sh-editor-img-auto {
-          display: inline-block;
-          margin: #{p2r(12)} 0;
-          border-radius: var(--shape-2);
-
-          &.sh-editor-img-size-auto {
-            width: auto;
-            max-width: 100% !important;
-          }
-          &.sh-editor-img-size-small {
-            width: #{p2r(240)};
-            max-width: 100% !important;
-          }
-          &.sh-editor-img-size-medium {
-            width: #{p2r(480)};
-            max-width: 100% !important;
-          }
-          &.sh-editor-img-size-large {
-            width: 100%;
-            max-width: 100% !important;
-          }
-          &:not([class*='sh-editor-img-size-']) {
-            width: auto;
-            max-width: 100% !important;
-          }
-        }
-      }
-
-      a {
-        color: var(--primary-9);
-        text-decoration: underline;
-        cursor: pointer;
-
-        &:hover {
-          color: var(--primary-11);
-        }
-      }
-
-      // Placeholder implementation
-      &:empty:before {
-        content: attr(placeholder);
-        color: var(--base-8);
-        font-style: italic;
-        pointer-events: none;
-        display: block;
-      }
-
-      p {
-        position: relative;
-      }
-
-      &.has-slash-commands p.sh-editor-active-block:empty::before,
-      &.has-slash-commands p.sh-editor-active-block:has(> br:only-child)::before {
-        content: "Type '/' for commands...";
-        position: absolute;
-        left: 0;
-        top: 0;
-        pointer-events: none;
-        color: var(--base-6);
-        font-style: normal;
-        font-weight: normal;
-        opacity: 0.6;
-      }
-    }
-
-    // Code Editor / Source View
-    .sh-editor-code {
-      flex: 1 1 auto;
-      width: 100%;
-      min-height: 0;
-      padding: var(--editor-p);
-      background-color: var(--editor-code-bg);
-      color: var(--base-12);
-      font: var(--code-20);
-      border: none;
-      resize: vertical;
-      outline: none;
-      font-family: monospace;
-      line-height: 1.5;
-    }
-
-    // Footer / Word Counters
-    .sh-editor-footer {
-      display: flex;
-      align-items: center;
-      padding: #{p2r(6)} #{p2r(12)};
-      background-color: var(--editor-footer-bg);
-      border-top: 1px solid var(--editor-border-color);
-      font: var(--paragraph-10);
-      color: var(--base-8);
-      border-bottom-left-radius: inherit;
-      border-bottom-right-radius: inherit;
-    }
-
-    // Modals
-    .sh-editor-modal {
-      position: absolute;
-      inset: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: #{p2r(16)};
-    }
-
-    .sh-editor-modal-backdrop {
-      position: absolute;
-      inset: 0;
-      background-color: rgb(from var(--base-1) r g b / 40%);
-      backdrop-filter: blur(4px);
-    }
-
-    .sh-editor-modal-content {
-      position: relative;
-      z-index: 101;
-      width: 100%;
-      max-width: #{p2r(360)};
-      padding: #{p2r(20)};
-      background-color: var(--base-1);
-      border: var(--border-10);
-      border-color: var(--base-4);
-      border-radius: var(--shape-3);
-      box-shadow: var(--box-shadow-40);
-
-      h4 {
-        margin-top: 0;
-        margin-bottom: #{p2r(12)};
-        font: var(--title-10B);
-        color: var(--base-12);
-      }
-    }
-
-    .sh-editor-input {
-      width: 100%;
-      padding: #{p2r(8)} #{p2r(12)};
-      background-color: var(--base-2);
-      border: var(--border-10);
-      border-color: var(--base-4);
-      border-radius: var(--shape-2);
-      color: var(--base-12);
-      font: var(--paragraph-20);
-      outline: none;
-      margin-bottom: #{p2r(16)};
-      transition: border-color 0.15s ease;
-
-      &:focus {
+      // Active highlight when caret is inside code block
+      &.sh-editor-code-active {
         border-color: var(--primary-8);
+        box-shadow: 0 0 0 3px var(--primary-3);
       }
     }
 
-    .sh-editor-modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: #{p2r(8)};
-    }
-
-    .sh-editor-modal-btn {
-      padding: #{p2r(6)} #{p2r(12)};
-      border-radius: var(--shape-2);
-      font: var(--paragraph-20);
-      cursor: pointer;
-      border: none;
-      transition: all 0.15s ease;
-
-      &.cancel {
-        background-color: transparent;
-        color: var(--base-11);
-        &:hover {
-          background-color: var(--base-3);
-        }
-      }
-
-      &.confirm {
-        background-color: var(--primary-9);
-        color: var(--primary-1);
-        &:hover {
-          background-color: var(--primary-10);
-        }
-      }
-    }
-
-    // Image contextual toolbar (second toolbar row when image is selected)
-    .sh-editor-img-context-toolbar {
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-      border-top: none;
-      padding-top: #{p2r(4)};
-      padding-bottom: #{p2r(4)};
+    code {
+      font: var(--code-20);
       background-color: var(--base-2);
-    }
-
-    .sh-editor-img-context-label {
-      font: var(--paragraph-40);
-      font-weight: 600;
-      color: var(--base-9);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      padding: 0 #{p2r(4)};
-      user-select: none;
-    }
-
-    .sh-editor-upload-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: #{p2r(8)};
-      width: 100%;
-      padding: #{p2r(10)} #{p2r(16)};
-      background-color: var(--base-2);
-      border: 1px dashed var(--editor-border-color);
-      border-radius: var(--shape-2);
-      color: var(--base-11);
-      font: var(--paragraph-20);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      margin-bottom: #{p2r(12)};
-
-      &:hover {
-        background-color: var(--base-3);
-        border-color: var(--primary-7);
-        color: var(--base-12);
-      }
-
-      sh-icon {
-        font-size: #{p2r(18)};
-      }
-    }
-
-    .sh-editor-modal-divider {
-      display: flex;
-      align-items: center;
-      text-align: center;
-      color: var(--base-8);
-      font: var(--paragraph-10);
-      margin-bottom: #{p2r(12)};
-      width: 100%;
-
-      &::before,
-      &::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid var(--editor-border-color);
-      }
-
-      &:not(:empty)::before {
-        margin-right: #{p2r(8)};
-      }
-
-      &:not(:empty)::after {
-        margin-left: #{p2r(8)};
-      }
-    }
-
-    // Text Style Dropdown
-    .sh-editor-dropdown {
-      position: relative;
-      display: inline-block;
-    }
-
-    .sh-editor-dropdown-trigger {
-      display: inline-flex;
-      align-items: center;
-      gap: #{p2r(6)};
-      height: #{p2r(28)};
-      padding: 0 #{p2r(8)};
-      background: transparent;
-      border: none;
+      padding: #{p2r(2)} #{p2r(6)};
       border-radius: var(--shape-1);
-      color: var(--base-11);
-      cursor: pointer;
-      font: var(--paragraph-20);
-      font-weight: 600;
-      transition: all 0.15s ease;
-      outline: none;
-
-      &:hover {
-        background-color: var(--editor-btn-hover);
-        color: var(--base-12);
-      }
-
-      &:focus {
-        outline: 2px solid var(--primary-8);
-      }
+      color: var(--primary-11);
     }
 
-    .sh-editor-dropdown-label {
-      white-space: nowrap;
-    }
-
-    // Slash commands floating menu using sh-menu container
-    // .sh-editor-slash-menu-container {
-    //   position: absolute;
-    //   width: 0;
-    //   height: 0;
-
-    //   .sh-editor-slash-anchor {
-    //     position: absolute;
-    //     width: 1px;
-    //     height: 1px;
-    //     pointer-events: none;
-    //     background: transparent;
-    //   }
-
-    //   // Customize the popover content structure of this menu
-    //   sh-popover {
-    //     position: absolute;
-
-    //     .popover-content {
-    //       width: #{p2r(280)} !important;
-    //       max-height: #{p2r(320)} !important;
-    //       padding: #{p2r(4)} !important;
-    //       border-radius: var(--shape-3) !important;
-    //       box-shadow: var(--box-shadow-30) !important;
-    //       display: flex;
-    //       flex-direction: column;
-    //       gap: #{p2r(2)};
-
-    //       // Glassmorphic styling matching user preferred color scheme
-    //       @media (prefers-color-scheme: dark) {
-    //         background: rgba(30, 30, 30, 0.75) !important;
-    //         backdrop-filter: blur(16px) !important;
-    //         -webkit-backdrop-filter: blur(16px) !important;
-    //         border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    //       }
-    //       @media (prefers-color-scheme: light) {
-    //         background: rgba(255, 255, 255, 0.75) !important;
-    //         backdrop-filter: blur(16px) !important;
-    //         -webkit-backdrop-filter: blur(16px) !important;
-    //         border: 1px solid rgba(0, 0, 0, 0.08) !important;
-    //       }
-    //     }
-    //   }
-    // }
-
-    .sh-editor-slash-item {
-      display: flex;
-      align-items: center;
-      gap: #{p2r(10)};
-      width: 100%;
-      padding: #{p2r(6)} #{p2r(10)};
-      background: transparent;
+    hr {
       border: none;
+      border-top: 1px solid var(--editor-border-color);
+      margin: #{p2r(24)} 0;
+    }
+
+    // Lists establish a block formatting context too, so a floated image sits
+    // beside the whole list (markers included) rather than the list box — and
+    // its bullet gutter — sliding under the float.
+    ul,
+    ol {
+      display: flow-root;
+      margin: #{p2r(12)} 0;
+      padding-left: #{p2r(24)};
+    }
+
+    // Image blocks. Mode (content / theater / float / custom) sets layout; the
+    // size class (float/custom only — content is fixed width, theater is full
+    // bleed) sets the width. The selection ring is the .sh-editor-block-selected
+    // outline, not img:focus (focus stays on the editable surface).
+    img {
+      height: auto;
+      max-width: 100%;
       border-radius: var(--shape-2);
-      text-align: left;
       cursor: pointer;
-      transition: all 0.1s ease;
-      outline: none;
+      transition: width 0.2s ease;
 
-      &.enabled,
-      &:hover {
-        background-color: var(--editor-btn-hover);
-
-        .sh-editor-slash-item-icon {
-          background-color: var(--editor-btn-active-bg);
-          color: var(--editor-btn-active-c);
-        }
+      &.sh-editor-img-content {
+        display: block;
+        box-sizing: border-box;
+        width: calc(100% - #{p2r(48)});
+        max-width: 100% !important;
+        margin: #{p2r(16)} auto;
       }
 
-      .sh-editor-slash-item-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: #{p2r(28)};
-        height: #{p2r(28)};
-        border-radius: var(--shape-1);
-        background-color: var(--base-3);
-        color: var(--base-11);
-        font-size: #{p2r(16)};
-        transition: all 0.15s ease;
-        flex-shrink: 0;
+      &.sh-editor-img-theater {
+        display: block;
+        width: calc(100% + #{p2r(40)});
+        max-width: none !important;
+        margin: #{p2r(16)} #{p2r(-20)};
+        border-radius: 0;
       }
 
-      .sh-editor-slash-item-content {
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
+      &.sh-editor-img-float {
+        float: left;
+        // 1rem of horizontal breathing room on both sides so wrapped text never
+        // butts up against the image and the image isn't flush to the edge.
+        margin: #{p2r(8)} #{p2r(16)};
+
+        &.sh-editor-img-size-small { width: #{p2r(240)}; max-width: 100% !important; }
+        &.sh-editor-img-size-medium { width: #{p2r(480)}; max-width: 100% !important; }
+        &.sh-editor-img-size-large { width: 100%; max-width: 100% !important; }
+        &:not([class*='sh-editor-img-size-']) { width: auto; max-width: 100% !important; }
       }
 
-      .sh-editor-slash-item-label {
-        font: var(--paragraph-20);
-        font-weight: 600;
-        color: var(--base-12);
-        line-height: 1.2;
-      }
+      &.sh-editor-img-custom {
+        display: inline-block;
+        margin: #{p2r(12)} 0;
 
-      .sh-editor-slash-item-desc {
-        font: var(--paragraph-10);
-        color: var(--base-8);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin-top: #{p2r(2)};
+        &.sh-editor-img-size-small { width: #{p2r(240)}; max-width: 100% !important; }
+        &.sh-editor-img-size-medium { width: #{p2r(480)}; max-width: 100% !important; }
+        &.sh-editor-img-size-large { width: 100%; max-width: 100% !important; }
+        &:not([class*='sh-editor-img-size-']) { width: auto; max-width: 100% !important; }
       }
+    }
+
+    // Custom highlight mark (registered via the [behaviors] extension point)
+    mark.sh-editor-highlight {
+      background-color: var(--warn-3);
+      color: var(--base-12);
+      border-radius: var(--shape-1);
+      padding: 0 #{p2r(2)};
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
     }
   }
+
+  .sh-editor-placeholder {
+    position: absolute;
+    top: p2r(16);
+    left: p2r(20);
+    color: var(--base-7);
+    pointer-events: none;
+    z-index: 1;
+    font-style: italic;
+  }
+
+  // Raw-source (code) view — a plain textarea mirroring the editor's padding.
+  .sh-editor-source {
+    display: block;
+    width: 100%;
+    flex: 1;
+    min-height: var(--editor-min-h);
+    box-sizing: border-box;
+    padding: var(--editor-p);
+    border: none;
+    outline: none;
+    resize: vertical;
+    background: var(--editor-code-bg);
+    color: var(--base-12);
+    font: var(--code-20);
+    line-height: 1.6;
+    white-space: pre;
+    tab-size: 2;
+  }
+
+  .sh-editor-slash-menu {
+    position: fixed;
+    z-index: 100;
+    border: 1px solid var(--base-4);
+    border-radius: var(--shape-2);
+    box-shadow: var(--box-shadow-30);
+    display: flex;
+    flex-direction: column;
+    padding: p2r(4);
+    min-width: p2r(180);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgb(from var(--base-1) r g b / 85%);
+
+    .slash-header {
+      font-size: p2r(11);
+      text-transform: uppercase;
+      color: var(--base-8);
+      padding: p2r(6) p2r(12);
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: p2r(10);
+      padding: p2r(8) p2r(12);
+      text-align: left;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--base-11);
+      border-radius: var(--shape-1);
+      font: var(--paragraph-20);
+      transition: background 0.1s ease;
+
+      sh-icon {
+        color: var(--base-9);
+        flex: none;
+      }
+
+      // Highlight follows keyboard navigation (.active), not just hover, so the
+      // two never disagree.
+      &:hover,
+      &.active {
+        background: var(--base-3);
+        color: var(--base-12);
+        sh-icon { color: var(--base-11); }
+      }
+    }
+
+    .slash-empty {
+      padding: p2r(8) p2r(12);
+      color: var(--base-8);
+      font: var(--paragraph-20);
+    }
+  }
+
+  .sh-editor-stats {
+    padding: p2r(6) p2r(12);
+    font: var(--paragraph-10);
+    color: var(--base-8);
+    border-top: 1px solid var(--editor-border-color);
+    background: var(--editor-footer-bg);
+    text-align: right;
+  }
 }
+
+/* ── Link popover ──────────────────────────────────────────────────────── */
+/* Zero-size anchor positioned at the caret inside .sh-editor-container;
+   the sh-popover inside it anchors its panel here. */
+.sh-editor-link-anchor {
+  position: absolute;
+  width: 0;
+  height: 0;
+
+  .trigger-wrapper {
+    display: none; /* no visible trigger — opened programmatically */
+  }
+}
+
+/* ── Popover dialog content (link / image insert) ──────────────────────────
+   The sh-popover host provides the panel chrome (surface, border, shadow); this
+   styles the content — a titled header, a full-width field, and an actions row —
+   so both popovers read as proper little dialogs in the ShipUI language. */
+.sh-editor-popover {
+  display: flex;
+  flex-direction: column;
+  gap: #{p2r(12)};
+  padding: #{p2r(16)};
+  min-width: #{p2r(320)};
+  max-width: min(#{p2r(420)}, 90vw);
+
+  sh-form-field {
+    width: 100%;
+  }
+  input[type='text'] {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+.sh-editor-popover-header {
+  display: flex;
+  align-items: center;
+  gap: #{p2r(8)};
+  color: var(--base-12);
+  font: var(--paragraph-20);
+  font-weight: 700;
+  padding-bottom: #{p2r(10)};
+  border-bottom: 1px solid var(--base-4);
+
+  sh-icon {
+    color: var(--primary-9);
+    font-size: #{p2r(18)};
+    flex: none;
+  }
+}
+
+.sh-editor-popover-actions {
+  display: flex;
+  align-items: center;
+  gap: #{p2r(8)};
+  justify-content: flex-end;
+
+  .sh-editor-popover-spacer {
+    flex: 1;
+  }
+
+  button sh-icon {
+    font-size: #{p2r(16)};
+    margin-right: #{p2r(4)};
+  }
+}
+
+/* ── Selected void block (image) ───────────────────────────────────────── */
+.sh-editor-block-selected {
+  outline: 2px solid var(--primary-9);
+  outline-offset: 2px;
+  border-radius: var(--shape-1);
+}
+
+/* ── Image resize handles (sh-editor-image-resize) ─────────────────────────
+   A frame overlaid on the selected image, with a grab handle at each corner.
+   The frame is inert (pointer-events:none); only the handles take the pointer.
+   z-index sits above the surface (z-index:2) so the handles stay grabbable. */
+.sh-editor-resize-frame {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.sh-editor-resize-handle {
+  position: absolute;
+  width: #{p2r(11)};
+  height: #{p2r(11)};
+  box-sizing: border-box;
+  background: var(--base-1);
+  border: 2px solid var(--primary-9);
+  border-radius: 2px;
+  pointer-events: auto;
+
+  &.sh-editor-resize-nw { top: #{p2r(-6)}; left: #{p2r(-6)}; cursor: nwse-resize; }
+  &.sh-editor-resize-ne { top: #{p2r(-6)}; right: #{p2r(-6)}; cursor: nesw-resize; }
+  &.sh-editor-resize-sw { bottom: #{p2r(-6)}; left: #{p2r(-6)}; cursor: nesw-resize; }
+  &.sh-editor-resize-se { bottom: #{p2r(-6)}; right: #{p2r(-6)}; cursor: nwse-resize; }
+
+  // Mid-edge handles (optional): centered on each side, one-axis resize cursors.
+  &.sh-editor-resize-n { top: #{p2r(-6)}; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+  &.sh-editor-resize-s { bottom: #{p2r(-6)}; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+  &.sh-editor-resize-w { left: #{p2r(-6)}; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+  &.sh-editor-resize-e { right: #{p2r(-6)}; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+}
+
+/* ── Contextual toolbar ────────────────────────────────────────────────── */
+/* Anchor overlaying the selected block; sh-popover positions the toolbar around
+   it. pointer-events:none so it never blocks the block/editor beneath it. */
+.sh-editor-block-anchor {
+  position: absolute;
+  pointer-events: none;
+
+  .sh-editor-block-anchor-trigger {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.sh-editor-contextual-toolbar {
+  // Re-enable clicks: the anchor ancestor is pointer-events:none (click-through),
+  // which would otherwise cascade to these buttons.
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: rgb(from var(--base-12) r g b / 90%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--base-1);
+  border-radius: var(--shape-2);
+  box-shadow: var(--box-shadow-30);
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    min-width: 28px;
+    padding: 0 8px;
+    background: transparent;
+    border: none;
+    border-radius: var(--shape-1);
+    color: var(--base-1);
+    cursor: pointer;
+    font: var(--paragraph-20);
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: rgb(from var(--base-1) r g b / 15%);
+    }
+    &.active {
+      background: rgb(from var(--base-1) r g b / 28%);
+    }
+    &.danger:hover {
+      background: var(--error-9);
+    }
+  }
+
+  .divider {
+    width: 1px;
+    align-self: stretch;
+    margin: 2px 2px;
+    background: rgb(from var(--base-1) r g b / 20%);
+  }
+}
+
+/* .sh-editor-link-form / .sh-editor-image-form now share .sh-editor-popover. */

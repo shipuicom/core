@@ -58,7 +58,7 @@ export const appConfig: ApplicationConfig = {
         { id: 'color-pickers', label: 'Color Pickers', category: 'Components', data: { route: '/color-pickers' } },
         { id: 'dialogs', label: 'Dialogs', category: 'Components', data: { route: '/dialogs' } },
         { id: 'dividers', label: 'Dividers', category: 'Components', data: { route: '/dividers' } },
-        { id: 'editors', label: 'WYSIWYG Editor', category: 'Form Fields', data: { route: '/editors' } },
+        { id: 'editors-exp', label: 'Editor', category: 'Form Fields', data: { route: '/editors-exp' } },
         { id: 'event-cards', label: 'Event Cards', category: 'Components', data: { route: '/event-cards' } },
         { id: 'icons', label: 'Icons', category: 'Components', data: { route: '/icons' } },
         { id: 'kbds', label: 'Keyboard Keys', category: 'Components', data: { route: '/kbds' } },

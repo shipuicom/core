@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, ViewEncapsulation } from '@angular/core';
-import { ShipEditorExp } from './ship-editor';
+import { ShipEditor } from './ship-editor';
 
 @Component({
   selector: 'sh-editor-floating-toolbar',
@@ -63,8 +63,8 @@ import { ShipEditorExp } from './ship-editor';
   ],
 })
 export class ShipEditorFloatingToolbar {
-  editorInput = input<ShipEditorExp | null>(null, { alias: 'editor' });
-  #parentEditor = inject(ShipEditorExp, { optional: true });
+  editorInput = input<ShipEditor | null>(null, { alias: 'editor' });
+  #parentEditor = inject(ShipEditor, { optional: true });
 
   editor = computed(() => {
     const e = this.editorInput() ?? this.#parentEditor;

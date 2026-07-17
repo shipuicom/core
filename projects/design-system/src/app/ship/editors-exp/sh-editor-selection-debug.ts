@@ -1,5 +1,5 @@
 import { Component, computed, inject, input } from '@angular/core';
-import { ShipEditorExp } from './ship-editor';
+import { ShipEditor } from '@ship-ui/core/ship-editor';
 
 @Component({
   selector: 'sh-editor-selection-debug',
@@ -24,9 +24,9 @@ import { ShipEditorExp } from './ship-editor';
   `,
 })
 export class ShipEditorSelectionDebug {
-  editorInput = input<ShipEditorExp | null>(null, { alias: 'editor' });
+  editorInput = input<ShipEditor | null>(null, { alias: 'editor' });
 
-  #parentEditor = inject(ShipEditorExp, { optional: true });
+  #parentEditor = inject(ShipEditor, { optional: true });
 
   editor = computed(() => {
     const e = this.editorInput() ?? this.#parentEditor;
