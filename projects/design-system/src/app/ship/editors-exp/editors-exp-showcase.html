@@ -49,6 +49,9 @@
           <sh-checkbox [(checked)]="showMetrics">Show Metrics</sh-checkbox>
         </div>
         <div class="control-group">
+          <sh-checkbox [(checked)]="imageEdgeResize">Image Edge Handles</sh-checkbox>
+        </div>
+        <div class="control-group">
           <sh-checkbox [(checked)]="persist">Persist (localStorage)</sh-checkbox>
           <!-- Tooltip lives on a non-interactive icon, not the checkbox: the shTooltip
                directive's .tooltip::after buffer (z-index 1) would otherwise sit over
@@ -82,7 +85,7 @@
       <ng-template #hrTip>Horizontal Line <sh-kbd ctrlOrCmd shift>-</sh-kbd></ng-template>
       <ng-template #linkTip>Insert Link <sh-kbd ctrlOrCmd>K</sh-kbd></ng-template>
 
-      <sh-editor #mainEditor="shEditor" [(value)]="editorValue" [format]="format()" [readonly]="readonly()" [behaviors]="customBehaviors" [placeholder]="placeholder()" [showMetrics]="showMetrics()" [imageUpload]="demoImageUpload">
+      <sh-editor #mainEditor="shEditor" [(value)]="editorValue" [format]="format()" [readonly]="readonly()" [behaviors]="customBehaviors" [placeholder]="placeholder()" [showMetrics]="showMetrics()" [imageUpload]="demoImageUpload" [imageEdgeResize]="imageEdgeResize()">
         <sh-editor-toolbar position="top">
           <button shEditorAction="undo" aria-label="Undo" [shTooltip]="undoTip"><sh-icon>arrow-u-up-left</sh-icon></button>
           <button shEditorAction="redo" aria-label="Redo" [shTooltip]="redoTip"><sh-icon>arrow-u-up-right</sh-icon></button>

@@ -445,6 +445,12 @@ sh-editor {
   &.sh-editor-resize-ne { top: #{p2r(-6)}; right: #{p2r(-6)}; cursor: nesw-resize; }
   &.sh-editor-resize-sw { bottom: #{p2r(-6)}; left: #{p2r(-6)}; cursor: nesw-resize; }
   &.sh-editor-resize-se { bottom: #{p2r(-6)}; right: #{p2r(-6)}; cursor: nwse-resize; }
+
+  // Mid-edge handles (optional): centered on each side, one-axis resize cursors.
+  &.sh-editor-resize-n { top: #{p2r(-6)}; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+  &.sh-editor-resize-s { bottom: #{p2r(-6)}; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+  &.sh-editor-resize-w { left: #{p2r(-6)}; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+  &.sh-editor-resize-e { right: #{p2r(-6)}; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
 }
 
 /* ── Contextual toolbar ────────────────────────────────────────────────── */

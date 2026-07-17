@@ -395,6 +395,60 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('image resize (opt-in edge handles): right edge stretches width, freezes height, undoable', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    // Enable the mid-edge handles + insert a compact, left-aligned image (custom
+    // mode, 240px wide) so the right-edge stretch is deterministic.
+    await page.evaluate(() => {
+      (window as any).ng.getComponent(document.querySelector('app-editors-exp')!).imageEdgeResize.set(true);
+      const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='400' height='300' fill='#4f8cff'/></svg>";
+      const src = 'data:image/svg+xml,' + encodeURIComponent(svg);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.reset([
+        { type: 'paragraph', content: [{ type: 'text', text: 'x' }] },
+        { type: 'image', attrs: { src, alt: 'demo', mode: 'custom', size: 'auto', width: 240 }, content: [] },
+      ]);
+    });
+    const img = page.locator('.sh-editor-content img');
+    await expect(img).toHaveCount(1);
+    await img.click();
+    const e = page.locator('.sh-editor-resize-e'); // right mid-edge (only present when opted in)
+    await expect(e).toBeVisible();
+
+    const before = await img.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { w: Math.round(r.width), h: Math.round(r.height) };
+    });
+    await e.hover();
+    const box = (await e.boundingBox())!;
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 150, box.y + box.height / 2, { steps: 8 });
+    await page.mouse.up();
+
+    // The AST is the source of truth (committed once on mouseup).
+    const after = await page.evaluate(() => {
+      const attrs = (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document()[1].attrs;
+      return { astW: attrs.width, astH: attrs.height };
+    });
+    const ctx = JSON.stringify({ before, after });
+    expect(after.astW, ctx).toBeGreaterThan(before.w + 100); // width stretched
+    expect(after.astH, ctx).toBe(before.h); // height frozen (not scaled) → non-aspect stretch
+    // The projected <img> renders at the committed size (poll past the patch swap).
+    await expect.poll(() => img.evaluate((el) => Math.round(el.getBoundingClientRect().width))).toBe(after.astW);
+    await expect.poll(() => img.evaluate((el) => Math.round(el.getBoundingClientRect().height))).toBe(after.astH);
+
+    // Undo restores the pre-stretch width and drops the explicit height.
+    await page.keyboard.press('ControlOrMeta+z');
+    const undone = await page.evaluate(() => {
+      const a = (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document()[1].attrs;
+      return { w: a.width, h: a.height ?? null };
+    });
+    expect(undone).toEqual({ w: 240, h: null });
+
+    await expectInvariant(page, 'after edge resize');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('image upload hook: a picked file is uploaded via the handler and its URL inserted', async ({ page }) => {
     const { errors } = await openEditor(page);
     const editor = page.locator('sh-editor').first();

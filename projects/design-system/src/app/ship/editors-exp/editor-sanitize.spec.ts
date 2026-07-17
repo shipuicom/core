@@ -121,21 +121,30 @@ describe('behavior render hardening (JSON-bypass sinks)', () => {
     );
   });
 
-  it('ImageBehavior renders a custom width (attr + inline style) and round-trips it via parseDOM', () => {
-    const html = image.renderHTML(block({ src: 'data:image/png;base64,AAAA', alt: 'a', mode: 'content', size: 'auto', width: 320 }));
-    expect(html).toContain('width="320"');
-    expect(html).toContain('style="width:320px"');
-    // parseDOM reads the width back off the (sanitize-safe) width attribute.
+  it('ImageBehavior renders custom width/height (attr + inline style) and round-trips via parseDOM', () => {
+    // Width alone (aspect-preserving corner drag): no height emitted.
+    const w = image.renderHTML(block({ src: 'data:image/png;base64,AAAA', alt: 'a', mode: 'content', size: 'auto', width: 320 }));
+    expect(w).toContain('width="320"');
+    expect(w).toContain('style="width:320px"');
+    expect(w).not.toContain('height=');
+    // Width + height (edge stretch): both attributes and a combined inline style.
+    const wh = image.renderHTML(block({ src: 'data:image/png;base64,AAAA', alt: 'a', mode: 'custom', size: 'auto', width: 320, height: 120 }));
+    expect(wh).toContain('width="320"');
+    expect(wh).toContain('height="120"');
+    expect(wh).toContain('style="width:320px;height:120px"');
+    // parseDOM reads both back off the (sanitize-safe) width/height attributes.
     const el = document.createElement('div');
-    el.innerHTML = html;
-    expect(image.parseDOM(el.querySelector('img')!)?.attrs?.['width']).toBe(320);
-    // No width attr when unset, and non-positive / non-numeric widths are ignored.
+    el.innerHTML = wh;
+    expect(image.parseDOM(el.querySelector('img')!)?.attrs).toMatchObject({ width: 320, height: 120 });
+    // Non-positive / non-numeric dimensions are ignored; none emitted when unset.
     expect(image.renderHTML(block({ src: 'data:image/png;base64,AAAA', alt: '', mode: 'content', size: 'auto' }))).not.toContain('width=');
-    expect(image.renderHTML(block({ src: 'data:image/png;base64,AAAA', alt: '', mode: 'content', size: 'auto', width: 0 }))).not.toContain('width=');
+    expect(image.renderHTML(block({ src: 'data:image/png;base64,AAAA', alt: '', mode: 'content', size: 'auto', width: 0, height: -5 }))).not.toMatch(/width=|height=/);
     expect(image.renderHTML(block({ src: 'data:image/png;base64,AAAA', alt: '', mode: 'content', size: 'auto', width: 'junk' }))).not.toContain('width=');
     const plain = document.createElement('div');
     plain.innerHTML = '<img src="data:image/png;base64,AAAA" class="sh-editor-img-content">';
-    expect(image.parseDOM(plain.querySelector('img')!)?.attrs?.['width']).toBeUndefined();
+    const parsed = image.parseDOM(plain.querySelector('img')!)?.attrs;
+    expect(parsed?.['width']).toBeUndefined();
+    expect(parsed?.['height']).toBeUndefined();
   });
 
   it('HeadingBehavior clamps an injected level and drops an unsafe align', () => {

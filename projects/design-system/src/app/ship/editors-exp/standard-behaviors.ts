@@ -186,11 +186,11 @@ export class ImageBehavior extends BaseBlockBehavior {
   readonly enterPhysics = { strategy: 'insert-default-below' as const, defaultSplitTarget: 'paragraph' };
   readonly backspacePhysics = {};
 
-  /** A positive integer pixel width, or null. Read from the `width` attribute —
-   * the drag-resize handles persist a custom width here (see renderHTML). */
-  static parseWidth(raw: string | null): number | null {
-    const w = Math.round(Number(raw));
-    return Number.isFinite(w) && w > 0 ? w : null;
+  /** A positive integer pixel dimension, or null. The resize handles persist a
+   * custom width/height in the `width`/`height` attributes (see renderHTML). */
+  static parseDimension(raw: unknown): number | null {
+    const n = Math.round(Number(raw));
+    return Number.isFinite(n) && n > 0 ? n : null;
   }
 
   parseDOM(el: HTMLElement) {
@@ -204,10 +204,11 @@ export class ImageBehavior extends BaseBlockBehavior {
       if (cls.includes('size-small')) size = 'small';
       else if (cls.includes('size-medium')) size = 'medium';
       else if (cls.includes('size-large')) size = 'large';
-      const width = ImageBehavior.parseWidth(el.getAttribute('width'));
+      const width = ImageBehavior.parseDimension(el.getAttribute('width'));
+      const height = ImageBehavior.parseDimension(el.getAttribute('height'));
       return {
         type: this.type,
-        attrs: { src: el.getAttribute('src'), alt: el.getAttribute('alt'), mode, size, ...(width ? { width } : {}) },
+        attrs: { src: el.getAttribute('src'), alt: el.getAttribute('alt'), mode, size, ...(width ? { width } : {}), ...(height ? { height } : {}) },
         content: [],
       };
     }
@@ -224,15 +225,19 @@ export class ImageBehavior extends BaseBlockBehavior {
     const sized = safeMode === 'float' || safeMode === 'custom';
     const cls = sized ? `sh-editor-img-${safeMode} sh-editor-img-size-${safeSize}` : `sh-editor-img-${safeMode}`;
     const safeSrc = isSafeUrl(src, { allowDataImage: true }) ? escapeAttr(src) : '';
-    // A custom width from the resize handles: persisted in the `width` attribute
-    // (already sanitize-safe) and mirrored to an inline `style` so it wins over
-    // the mode/size class widths (height stays `auto`, preserving aspect ratio).
-    const width = ImageBehavior.parseWidth(block.attrs?.['width']);
-    const widthAttrs = width ? ` width="${width}" style="width:${width}px"` : '';
+    // Custom width/height from the resize handles: persisted in the (already
+    // sanitize-safe) width/height attributes and mirrored to an inline `style` so
+    // they win over the mode/size class widths. A width alone keeps `height:auto`
+    // (aspect-preserving corner drags); an explicit height is a one-axis stretch.
+    const width = ImageBehavior.parseDimension(block.attrs?.['width']);
+    const height = ImageBehavior.parseDimension(block.attrs?.['height']);
+    const dimAttrs = (width ? ` width="${width}"` : '') + (height ? ` height="${height}"` : '');
+    const styleProps = [width ? `width:${width}px` : '', height ? `height:${height}px` : ''].filter(Boolean);
+    const styleAttr = styleProps.length ? ` style="${styleProps.join(';')}"` : '';
     // contenteditable="false" makes the image a non-editable island: clicking it
     // places no text caret (so mousedown needn't preventDefault, which would
     // otherwise block the native drag), and it stays draggable to reorder.
-    return `<img src="${safeSrc}" alt="${escapeAttr(alt)}" class="${cls}" draggable="true" contenteditable="false"${widthAttrs}>`;
+    return `<img src="${safeSrc}" alt="${escapeAttr(alt)}" class="${cls}" draggable="true" contenteditable="false"${dimAttrs}${styleAttr}>`;
   }
   override renderMarkdown(block: ASTBlockNode) {
     return `![${block.attrs?.['alt'] || ''}](${block.attrs?.['src'] || ''})\n\n`;
@@ -241,10 +246,10 @@ export class ImageBehavior extends BaseBlockBehavior {
   override contextualActions({ block, engine }: ContextualActionCtx): ContextualAction[] {
     const mode = (block.attrs?.['mode'] as string) ?? 'content';
     const size = (block.attrs?.['size'] as string) ?? 'auto';
-    // Picking a preset mode/size clears any custom drag-resize width so the
-    // preset's own sizing takes effect (a stale width would otherwise win).
+    // Picking a preset mode/size clears any custom drag-resize width/height so the
+    // preset's own sizing takes effect (stale dimensions would otherwise win).
     const setMode = (m: string) =>
-      engine.updateSelectedImage({ mode: m, width: null, ...((m === 'float' || m === 'custom') && size === 'auto' ? { size: 'medium' } : {}) });
+      engine.updateSelectedImage({ mode: m, width: null, height: null, ...((m === 'float' || m === 'custom') && size === 'auto' ? { size: 'medium' } : {}) });
 
     const actions: ContextualAction[] = [
       { id: 'mode-content', icon: 'image', label: 'Inline', isActive: mode === 'content', run: () => setMode('content') },
@@ -253,7 +258,7 @@ export class ImageBehavior extends BaseBlockBehavior {
     ];
     if (mode === 'float' || mode === 'custom') {
       for (const s of ['small', 'medium', 'large']) {
-        actions.push({ id: `size-${s}`, label: s.charAt(0).toUpperCase(), isActive: size === s, run: () => engine.updateSelectedImage({ size: s, width: null }) });
+        actions.push({ id: `size-${s}`, label: s.charAt(0).toUpperCase(), isActive: size === s, run: () => engine.updateSelectedImage({ size: s, width: null, height: null }) });
       }
     }
     actions.push({ id: 'delete', icon: 'trash', label: 'Delete', danger: true, run: () => engine.deleteSelectedBlock() });

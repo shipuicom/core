@@ -103,7 +103,7 @@ function blockPlainText(block: ASTBlockNode): string {
       <sh-editor-link-popover [surface]="surface" />
       <sh-editor-image-popover [surface]="surface" [upload]="imageUpload()" />
       <sh-editor-contextual-toolbar [surface]="surface" [extras]="contextualActions()" />
-      <sh-editor-image-resize [surface]="surface" [readonly]="readonly()" />
+      <sh-editor-image-resize [surface]="surface" [readonly]="readonly()" [edgeHandles]="imageEdgeResize()" />
       <sh-editor-slash-menu [commands]="slashCommands()" />
       @if (showMetrics()) {
         <div class="sh-editor-stats">
@@ -166,6 +166,10 @@ export class ShipEditorExp implements ControlValueAccessor {
 
   /** Show the word/character-count footer. */
   showMetrics = input(false);
+
+  /** Opt in to the image mid-edge resize handles (one-axis, non-aspect stretch).
+   * Corner handles (aspect-preserving) are always available. */
+  imageEdgeResize = input(false);
 
   value = model<string | ASTDocument | null>(null);
 

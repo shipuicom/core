@@ -84,6 +84,8 @@ export default class EditorsExpShowcase {
   ];
   readonly = signal(false);
   showMetrics = signal(true);
+  /** Opt in to the image mid-edge resize handles (one-axis stretch). */
+  imageEdgeResize = signal(false);
   placeholder = signal('Start typing something beautiful...');
 
   /**
