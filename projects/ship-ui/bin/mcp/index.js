@@ -13708,6 +13708,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           text: JSON.stringify(results.map((c) => ({
             name: c.name,
             selector: c.selector,
+            kind: c.kind,
+            package: c.package,
             description: c.description?.split(`
 `)[0],
             keywords: c.keywords
@@ -14045,8 +14047,11 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
           role: "user",
           content: {
             type: "text",
-            text: `I want to use the ${component.name} component (${component.selector}) in ${context}. 
+            text: `I want to use the ${component.name} ${component.kind ?? "component"} (${component.selector}) in ${context}.
 Here are the component details:
+
+Import:
+\`import { ${component.name} } from '${component.package ?? "@ship-ui/core"}';\`
 
 Description:
 ${component.description || "No description available"}

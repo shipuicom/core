@@ -1,552 +1,622 @@
 import fs from 'fs';
 import path from 'path';
+import ts from 'typescript';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const rootPath = path.join(__dirname, '..');
-const LIB_PATH = path.join(rootPath, 'projects/ship-ui/src/lib');
-const COMPONENTS_PATH = path.join(rootPath, 'projects/ship-ui');
-const STYLES_PATH = path.join(rootPath, 'projects/ship-ui/styles/components');
+const SHIP_UI = path.join(rootPath, 'projects/ship-ui');
+const STYLES_PATH = path.join(SHIP_UI, 'styles/components');
 const EXAMPLES_PATH = path.join(rootPath, 'projects/design-system/src/app/ship');
-const TYPES_FILE = path.join(rootPath, 'projects/ship-ui/src/lib/utilities/ship-types.ts');
-const VARIABLES_FILE = path.join(rootPath, 'projects/ship-ui/styles/core/core/variables.scss');
-const SHEET_FILE = path.join(rootPath, 'projects/ship-ui/styles/components/ship-sheet.utility.scss');
+const TYPES_FILE = path.join(SHIP_UI, 'src/lib/utilities/ship-types.ts');
+const VARIABLES_FILE = path.join(SHIP_UI, 'styles/core/core/variables.scss');
+const SHEET_FILE = path.join(STYLES_PATH, 'ship-sheet.utility.scss');
 
-// Default outputs to the library project so they get bundled
-const DEFAULT_OUTPUT = path.join(rootPath, 'projects/ship-ui/assets/mcp/components.json');
+const DEFAULT_OUTPUT = path.join(SHIP_UI, 'assets/mcp/components.json');
 const LOCAL_OUTPUT = path.join(__dirname, 'components.json');
 const DEFAULT_SNIPPETS = path.join(rootPath, '.vscode/ship-ui-components.code-snippets');
 
 const OUTPUT_FILE = process.argv[2] ? path.resolve(process.argv[2]) : DEFAULT_OUTPUT;
 const SNIPPETS_FILE = process.argv[3] ? path.resolve(process.argv[3]) : DEFAULT_SNIPPETS;
 
-// Ensure directories exist
 if (!fs.existsSync(path.dirname(OUTPUT_FILE))) fs.mkdirSync(path.dirname(OUTPUT_FILE), { recursive: true });
 if (!fs.existsSync(path.dirname(SNIPPETS_FILE))) fs.mkdirSync(path.dirname(SNIPPETS_FILE), { recursive: true });
 
+interface Input {
+  name: string;
+  type: string;
+  description?: string;
+  defaultValue?: string;
+  options?: string[];
+  twoWay?: boolean;
+}
 interface ComponentData {
   name: string;
   selector: string;
+  selectorAliases?: string[];
+  package?: string;
+  kind: 'component' | 'directive' | 'service';
   path: string;
   description?: string;
   keywords?: string[];
-  inputs: { name: string; type: string; description?: string; defaultValue?: string; options?: string[] }[];
+  inputs: Input[];
   outputs: { name: string; type: string; description?: string }[];
   methods: { name: string; parameters: string; returnType: string; description?: string }[];
   cssVariables: { name: string; defaultValue?: string; description?: string }[];
-  examples: {
-    name: string;
-    html: string;
-    ts: string;
-  }[];
+  examples: { name: string; html: string; ts: string }[];
 }
-
 interface Snippet {
   prefix: string;
   body: string[];
   description?: string;
 }
 
-function getJsDoc(content: string, propertyName: string): string {
-  const regex = new RegExp(`\\/\\*\\*([\\s\\S]*?)\\*\\/\\s*.*${propertyName}`, 'g');
-  const match = regex.exec(content);
-  if (match && match[1]) {
-    return match[1]
-      .split('\n')
-      .map((line) => line.trim().replace(/^\*\s?/, ''))
-      .filter((line) => line !== '')
-      .join(' ');
-  }
-  return '';
-}
+const LIFECYCLE = new Set([
+  'constructor',
+  'ngOnInit',
+  'ngOnDestroy',
+  'ngOnChanges',
+  'ngAfterViewInit',
+  'ngAfterViewChecked',
+  'ngAfterContentInit',
+  'ngAfterContentChecked',
+  'ngDoCheck',
+]);
+// ControlValueAccessor plumbing — public by contract but never called by consumers.
+const CVA = new Set(['writeValue', 'registerOnChange', 'registerOnTouched', 'setDisabledState']);
 
-function parseTypes() {
+// Exported-but-internal classes: the editor's auto-rendered overlays and its
+// engine/selection services. Consumers never instantiate these directly, so
+// they are excluded from the documented API surface.
+const INTERNAL = new Set([
+  'ShipEditorContextualToolbar',
+  'ShipEditorImagePopover',
+  'ShipEditorImageResize',
+  'ShipEditorLinkPopover',
+  'ShipEditorSlashMenu',
+  'EditorEngineService',
+  'EditorSelectionService',
+]);
+
+// Public-but-internal helper methods that carry no detectable signal (they take
+// primitive/DOM args, aren't wired into a template, and some are exercised by
+// unit tests so can't be made private). Excluded from the documented API.
+const INTERNAL_METHODS: Record<string, Set<string>> = {
+  ShipSortable: new Set([
+    'getIndexOfElement',
+    'processDragEnter',
+    'processDragLeave',
+    'processDragOver',
+    'cancelTouchDrag',
+    'getVisualIndexOfElement',
+    'dragEnd',
+  ]),
+  ShipBlueprint: new Set(['endNodeDrag', 'endPan']),
+  ShipAlertContainer: new Set(['getElementHeight', 'transformY']),
+};
+
+// --- Known union types (for input options) --------------------------------
+
+function parseKnownTypes(): Record<string, string[]> {
   const types: Record<string, string[]> = {};
-  if (fs.existsSync(TYPES_FILE)) {
-    const content = fs.readFileSync(TYPES_FILE, 'utf-8');
-    
-    // Parse `as const` arrays
-    const arrayMap: Record<string, string[]> = {};
-    const arrayMatches = content.matchAll(/export const (__SHIP_[A-Z_]+)\s*=\s*\[([\s\S]*?)\]\s*as\s*const;/g);
-    for (const match of arrayMatches) {
-        if (match[1] && match[2]) {
-            arrayMap[match[1]] = match[2].split(',').map(v => v.trim().replace(/['"]/g, '')).filter(v => v !== '');
-        }
-    }
-    
-    const typeMatches = content.matchAll(/export type (\w+) = ([\s\S]*?);/g);
-    for (const match of typeMatches) {
-      const name = match[1];
-      const definition = match[2];
-      if (name && definition) {
-        const typeofMatch = definition.match(/typeof (__SHIP_[A-Z_]+)\[number\]/);
-        if (typeofMatch && typeofMatch[1] && arrayMap[typeofMatch[1]]) {
-            types[name] = arrayMap[typeofMatch[1]];
-        } else {
-            const values = definition
-              .split('|')
-              .map((v) => v.trim())
-              .filter((v: string) => v.startsWith("'") || v.startsWith('"'))
-              .map((v: string) => v.replace(/['"]/g, ''));
-            
-            if (values.length > 0) {
-              types[name] = values;
-            }
-        }
-      }
+  if (!fs.existsSync(TYPES_FILE)) return types;
+  const content = fs.readFileSync(TYPES_FILE, 'utf-8');
+
+  const arrayMap: Record<string, string[]> = {};
+  for (const m of content.matchAll(/export const (__SHIP_[A-Z_]+)\s*=\s*\[([\s\S]*?)\]\s*as\s*const;/g)) {
+    // Keep intentional empty-string members (e.g. the "" default variant).
+    arrayMap[m[1]!] = m[2]!
+      .split(',')
+      .map((v) => v.trim())
+      .filter((v) => v.length > 0)
+      .map((v) => v.replace(/^['"]|['"]$/g, ''));
+  }
+  for (const m of content.matchAll(/export type (\w+)\s*=\s*([\s\S]*?);/g)) {
+    const name = m[1]!;
+    const def = m[2]!;
+    const typeofMatch = def.match(/typeof (__SHIP_[A-Z_]+)\)?\s*\[number\]/);
+    if (typeofMatch && arrayMap[typeofMatch[1]!]) {
+      types[name] = arrayMap[typeofMatch[1]!]!;
+    } else {
+      const values = def
+        .split('|')
+        .map((v) => v.trim())
+        .filter((v) => v.startsWith("'") || v.startsWith('"'))
+        .map((v) => v.replace(/['"]/g, ''));
+      if (values.length > 0) types[name] = values;
     }
   }
   return types;
 }
 
-function getOptions(type: string, knownTypes: Record<string, string[]>): string[] | undefined {
-  const parts = type.split('|').map((p) => p.trim());
-  for (const part of parts) {
-    if (knownTypes[part]) {
-      return knownTypes[part];
-    }
+function optionsFor(typeText: string | undefined, known: Record<string, string[]>): string[] | undefined {
+  if (!typeText) return undefined;
+  for (const part of typeText.split('|').map((s) => s.trim())) {
+    const base = part.replace(/\[\]$/, '').trim();
+    if (known[base]) return known[base];
+  }
+  if (typeText.includes('|')) {
+    const lits = [...typeText.matchAll(/'([^']*)'|"([^"]*)"/g)].map((m) => m[1] ?? m[2] ?? '');
+    if (lits.length > 0) return lits;
   }
   return undefined;
 }
 
-function getGlobalVariables(): ComponentData['cssVariables'] {
-  const variables: ComponentData['cssVariables'] = [];
-  if (fs.existsSync(VARIABLES_FILE)) {
-    const content = fs.readFileSync(VARIABLES_FILE, 'utf-8');
-    const varMatches = content.matchAll(/^\s*(--[\w-]+):\s*([^;!]+)/gm);
-    for (const match of varMatches) {
-      if (match[1] && !variables.some((v) => v.name === match[1])) {
-        variables.push({
-          name: match[1],
-          defaultValue: match[2]?.trim(),
-        });
-      }
-    }
+// --- CSS variables --------------------------------------------------------
+
+function scssVars(file: string): ComponentData['cssVariables'] {
+  const out: ComponentData['cssVariables'] = [];
+  if (!fs.existsSync(file)) return out;
+  const content = fs.readFileSync(file, 'utf-8');
+  for (const m of content.matchAll(/(--[\w-]+):\s*([^;!]+)/g)) {
+    if (m[1] && !out.some((v) => v.name === m[1])) out.push({ name: m[1], defaultValue: m[2]?.trim() });
   }
-  return variables;
+  return out;
 }
 
-function getSheetVariables(): ComponentData['cssVariables'] {
-  const variables: ComponentData['cssVariables'] = [];
-  if (fs.existsSync(SHEET_FILE)) {
-    const content = fs.readFileSync(SHEET_FILE, 'utf-8');
-    const varMatches = content.matchAll(/(--sheet-[\w-]+):\s*([^;!]+)/g);
-    for (const match of varMatches) {
-      if (match[1] && !variables.some((v) => v.name === match[1])) {
-        variables.push({
-          name: match[1],
-          defaultValue: match[2]?.trim(),
-        });
-      }
-    }
+// --- AST helpers ----------------------------------------------------------
+
+const sk = ts.SyntaxKind;
+
+function decoratorCall(node: ts.Node, names: string[]): ts.CallExpression | undefined {
+  if (!ts.canHaveDecorators(node)) return undefined;
+  for (const dec of ts.getDecorators(node as ts.HasDecorators) ?? []) {
+    const e = dec.expression;
+    if (ts.isCallExpression(e) && ts.isIdentifier(e.expression) && names.includes(e.expression.text)) return e;
+    if (ts.isIdentifier(e) && names.includes(e.text)) return undefined; // bare decorator, no meta
   }
-  return variables;
+  return undefined;
+}
+function hasDecorator(node: ts.Node, names: string[]): boolean {
+  if (!ts.canHaveDecorators(node)) return false;
+  for (const dec of ts.getDecorators(node as ts.HasDecorators) ?? []) {
+    const e = dec.expression;
+    const id = ts.isCallExpression(e) ? e.expression : e;
+    if (ts.isIdentifier(id) && names.includes(id.text)) return true;
+  }
+  return false;
+}
+function hasModifier(node: ts.Node, kinds: ts.SyntaxKind[]): boolean {
+  const mods = ts.canHaveModifiers(node) ? ts.getModifiers(node as ts.HasModifiers) : undefined;
+  return !!mods?.some((m) => kinds.includes(m.kind));
+}
+function metaProp(obj: ts.ObjectLiteralExpression | undefined, name: string): ts.Expression | undefined {
+  if (!obj) return undefined;
+  for (const p of obj.properties) {
+    if (ts.isPropertyAssignment(p) && p.name.getText() === name) return p.initializer;
+  }
+  return undefined;
+}
+function litText(node: ts.Expression | undefined): string | undefined {
+  if (!node) return undefined;
+  if (ts.isStringLiteralLike(node)) return node.text;
+  return undefined;
+}
+function jsdoc(node: ts.Node): string {
+  const parts = ts.getJSDocCommentsAndTags(node);
+  for (const p of parts) {
+    if (ts.isJSDoc(p) && p.comment) return typeof p.comment === 'string' ? p.comment.trim() : '';
+  }
+  return '';
 }
 
-function scanComponents() {
-  const components: ComponentData[] = [];
-  const allSnippets: Record<string, Snippet> = {};
-  const knownTypes = parseTypes();
+// Collect method names referenced as event-handlers in a `host` metadata object.
+function hostHandlers(hostObj: ts.Expression | undefined): Set<string> {
+  const out = new Set<string>();
+  if (!hostObj || !ts.isObjectLiteralExpression(hostObj)) return out;
+  for (const p of hostObj.properties) {
+    if (!ts.isPropertyAssignment(p)) continue;
+    const key = p.name.getText().replace(/['"]/g, '');
+    if (/^\(.*\)$/.test(key) || key.startsWith('@')) {
+      const val = litText(p.initializer) ?? '';
+      for (const m of val.matchAll(/(\w+)\s*\(/g)) out.add(m[1]!);
+    }
+  }
+  return out;
+}
+// Collect every method name invoked anywhere in an Angular template — event
+// handlers ((click)="x()"), property bindings ([style]="y()") and interpolations
+// ({{ z() }}). A method wired into the view is internal glue, not public API.
+function templateHandlers(html: string): Set<string> {
+  const out = new Set<string>();
+  for (const m of html.matchAll(/(\w+)\s*\(/g)) out.add(m[1]!);
+  return out;
+}
 
-  function traverse(dir: string) {
-    const files = fs.readdirSync(dir);
-    for (const file of files) {
-      const filePath = path.join(dir, file);
-      if (fs.statSync(filePath).isDirectory()) {
-        traverse(filePath);
-      } else if (file.endsWith('.ts') && !file.endsWith('.spec.ts')) {
-        const content = fs.readFileSync(filePath, 'utf-8');
+function inferType(arg: ts.Expression | undefined): string {
+  if (!arg) return 'unknown';
+  switch (arg.kind) {
+    case sk.TrueKeyword:
+    case sk.FalseKeyword:
+      return 'boolean';
+    case sk.NumericLiteral:
+      return 'number';
+    case sk.StringLiteral:
+    case sk.NoSubstitutionTemplateLiteral:
+      return 'string';
+    case sk.ArrayLiteralExpression:
+      return 'any[]';
+    case sk.NullKeyword:
+      return 'any';
+    case sk.ObjectLiteralExpression:
+      return 'object';
+  }
+  return 'unknown';
+}
 
-        if (content.includes('@Component') || content.includes('@Directive') || content.includes('@Injectable')) {
-          const selectorMatch = content.match(/selector:\s*['"](.*?)['"]/);
-          const classNameMatch = content.match(/export class (\w+)/);
-
-          if (classNameMatch) {
-            const name = classNameMatch[1];
-            if (!name) continue;
-
-            let selector = selectorMatch ? selectorMatch[1] : '';
-
-            if (!selector && content.includes('@Injectable')) {
-              // Generate a selector for services so they can be searched
-              selector = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-              if (!selector.endsWith('-service') && name.endsWith('Service')) selector += '-service';
-            }
-
-            if (!selector) continue;
-
-            // Extract inputs
-            const inputs: ComponentData['inputs'] = [];
-
-            // Signal inputs
-            const signalInputMatches = content.matchAll(/(\w+)\s*=\s*input(?:<(.*?)>)?\s*\(([\s\S]*?)\)/g);
-            for (const match of signalInputMatches) {
-              if (match[1]) {
-                let inputName = match[1];
-                const type = match[2]?.trim() || 'any';
-                const args = match[3] || '';
-
-                const aliasMatch = args.match(/alias:\s*['"](.*?)['"]/);
-                if (aliasMatch && aliasMatch[1]) {
-                  inputName = aliasMatch[1];
-                }
-
-                let defaultValue = args.split(',')[0]?.trim();
-                inputs.push({
-                  name: inputName,
-                  type,
-                  description: getJsDoc(content, match[1]),
-                  defaultValue: defaultValue === '' ? undefined : defaultValue,
-                  options: getOptions(type, knownTypes),
-                });
-              }
-            }
-
-            // Traditional inputs
-            const decoratorInputMatches = content.matchAll(
-              /@Input\s*\(\s*.*?\s*\)\s*(?:@\w+\s*\(\s*.*?\s*\)\s*)*(\w+)(?:\s*:\s*([^;=]*))?(?:\s*=\s*([^;]*)?)?/g
-            );
-            for (const match of decoratorInputMatches) {
-              if (match[1]) {
-                const type = match[2]?.trim() || 'any';
-                inputs.push({
-                  name: match[1],
-                  type,
-                  description: getJsDoc(content, match[1]),
-                  defaultValue: match[3]?.trim(),
-                  options: getOptions(type, knownTypes),
-                });
-              }
-            }
-
-            // Models
-            const modelMatches = content.matchAll(/(\w+)\s*=\s*model(?:<(.*?)>)?\s*\(([\s\S]*?)\)/g);
-            for (const match of modelMatches) {
-              if (match[1]) {
-                let inputName = match[1];
-                const type = match[2]?.trim() || 'any';
-                const args = match[3] || '';
-
-                const aliasMatch = args.match(/alias:\s*['"](.*?)['"]/);
-                if (aliasMatch && aliasMatch[1]) {
-                  inputName = aliasMatch[1];
-                }
-
-                inputs.push({
-                  name: inputName,
-                  type,
-                  description: getJsDoc(content, match[1]),
-                  defaultValue: args.split(',')[0]?.trim(),
-                  options: getOptions(type, knownTypes),
-                });
-              }
-            }
-
-            const uniqueInputs = Array.from(new Map(inputs.map((i) => [i.name, i])).values());
-
-            // Extract outputs
-            const outputs: ComponentData['outputs'] = [];
-
-            // Signal outputs
-            const signalOutputMatches = content.matchAll(/(\w+)\s*=\s*output(?:<(.*?)>)?\s*\(([\s\S]*?)\)/g);
-            for (const match of signalOutputMatches) {
-              if (match[1]) {
-                let outputName = match[1];
-                const aliasMatch = match[3]?.match(/alias:\s*['"](.*?)['"]/);
-                if (aliasMatch && aliasMatch[1]) {
-                  outputName = aliasMatch[1];
-                }
-
-                outputs.push({
-                  name: outputName,
-                  type: match[2]?.trim() || 'any',
-                  description: getJsDoc(content, match[1]),
-                });
-              }
-            }
-
-            // Traditional outputs
-            const decoratorOutputMatches = content.matchAll(/@Output\s*\(\s*.*?\s*\)\s*(\w+)/g);
-            for (const match of decoratorOutputMatches) {
-              if (match[1]) {
-                outputs.push({
-                  name: match[1],
-                  type: 'any',
-                  description: getJsDoc(content, match[1]),
-                });
-              }
-            }
-
-            const uniqueOutputs = Array.from(new Map(outputs.map((o) => [o.name, o])).values());
-
-            // Extract methods
-            const methods: ComponentData['methods'] = [];
-
-            // This is a naive regex but should capture most public methods in our codebase
-            // We look for method definitions that aren't inputs/outputs/models/etc
-            const methodMatches = content.matchAll(
-              /^(?:\s+)?(?:public\s+)?(\w+)\s*(?:<[\s\S]*?>)?\s*\(([\s\S]*?)\)\s*(?::\s*([^\{]*))?\s*{/gm
-            );
-            for (const match of methodMatches) {
-              const methodName = match[1];
-              if (!methodName) continue;
-
-              // Filter out known lifecycle hooks and other properties
-              if (
-                [
-                  'constructor',
-                  'ngOnInit',
-                  'ngOnDestroy',
-                  'ngOnChanges',
-                  'ngAfterViewInit',
-                  'if',
-                  'for',
-                  'switch',
-                  'setTimeout',
-                  'setInterval',
-                  'queueMicrotask',
-                ].includes(methodName)
-              )
-                continue;
-              if (uniqueInputs.some((i) => i.name === methodName)) continue;
-              if (uniqueOutputs.some((o) => o.name === methodName)) continue;
-
-              methods.push({
-                name: methodName,
-                parameters: match[2]?.trim() || '',
-                returnType: match[3]?.trim() || 'any',
-                description: getJsDoc(content, methodName),
-              });
-            }
-
-            const uniqueMethods = Array.from(new Map(methods.map((m) => [m.name, m])).values());
-
-            // Extract CSS variables from SCSS
-            const cssVariables: ComponentData['cssVariables'] = [];
-
-            let scssFileName = selector.replace(/^\[?sh-?/, 'ship-').replace(/\]$/, '') + '.scss';
-            if (selector === '[shButton]') scssFileName = 'ship-button.scss';
-            else if (selector === '[shSortable]') scssFileName = 'ship-sortable.scss';
-            else if (selector === '[shDragDrop]') scssFileName = 'ship-file-upload.scss';
-            else if (selector === '[shResize]') scssFileName = 'ship-table.scss';
-            else if (selector === '[shSort]') scssFileName = 'ship-table.scss';
-            if (name === 'ShipToggleCard') scssFileName = 'ship-toggle-card.scss';
-
-            const scssPath = path.join(STYLES_PATH, scssFileName);
-            if (fs.existsSync(scssPath)) {
-              const scssContent = fs.readFileSync(scssPath, 'utf-8');
-
-              const varMatches = scssContent.matchAll(/(--[\w-]+):\s*([^;!]+)/g);
-              for (const match of varMatches) {
-                if (match[1] && !cssVariables.some((v) => v.name === match[1])) {
-                  cssVariables.push({
-                    name: match[1],
-                    defaultValue: match[2]?.trim(),
-                  });
-                }
-              }
-            }
-
-            // Also check for SCSS files in the same directory as the component
-            const componentDir = path.dirname(filePath);
-            const componentScssFiles = fs.readdirSync(componentDir).filter((f: string) => f.endsWith('.scss'));
-            for (const scssFile of componentScssFiles) {
-              const localScssPath = path.join(componentDir, scssFile);
-              const localScssContent = fs.readFileSync(localScssPath, 'utf-8');
-              const localVarMatches = localScssContent.matchAll(/(--[\w-]+):\s*([^;!]+)/g);
-              for (const match of localVarMatches) {
-                if (match[1] && !cssVariables.some((v) => v.name === match[1])) {
-                  cssVariables.push({
-                    name: match[1],
-                    defaultValue: match[2]?.trim(),
-                  });
-                }
-              }
-            }
-
-            // Try to find examples and description
-            const examples: ComponentData['examples'] = [];
-            let description = '';
-            let keywords: string[] = [];
-
-            const lastDir = dir.split(path.sep).pop();
-            const searchTerms = [
-              lastDir ? lastDir.replace('ship-', '') + 's' : undefined,
-              lastDir ? lastDir.replace('ship-', '') : undefined,
-              selector.replace(/^\[?sh-?/, '').replace(/\]$/, '') + 's',
-              selector.replace(/^\[?sh-?/, '').replace(/\]$/, ''),
-            ].filter((t): t is string => !!t);
-
-            let componentDocsPath = '';
-            for (const term of searchTerms) {
-              const p = path.join(EXAMPLES_PATH, term);
-              if (fs.existsSync(p)) {
-                componentDocsPath = p;
-                break;
-              }
-            }
-
-            if (componentDocsPath) {
-              const docFiles = fs.readdirSync(componentDocsPath);
-              const mainHtmlFile = docFiles.find((f: string) => f.endsWith('.html') && !f.includes('example'));
-              if (mainHtmlFile) {
-                const docContent = fs.readFileSync(path.join(componentDocsPath, mainHtmlFile), 'utf-8');
-                const propViewerMatch = docContent.match(/<app-property-viewer>([\s\S]*?)<\/app-property-viewer>/);
-                if (propViewerMatch && propViewerMatch[1]) {
-                  description = propViewerMatch[1]
-                    .replace(/<section>/g, '')
-                    .replace(/<\/section>/g, '\n\n')
-                    .replace(/<h4>(.*?)<\/h4>/g, '### $1\n')
-                    .replace(/<p>/g, '')
-                    .replace(/<\/p>/g, '\n')
-                    .replace(/<code>(.*?)<\/code>/g, '`$1`')
-                    .replace(/<b>(.*?)<\/b>/g, '**$1**')
-                    .replace(/<li>(.*?)<\/li>/g, '- $1')
-                    .replace(/<ul>/g, '')
-                    .replace(/<\/ul>/g, '\n')
-                    .replace(/<br\s*\/?>/g, '\n')
-                    .split('\n')
-                    .map((line: string) => line.trim())
-                    .filter((line: string, i: number, arr: string[]) => line !== '' || (i > 0 && arr[i - 1] !== ''))
-                    .join('\n')
-                    .replace(/\n{3,}/g, '\n\n')
-                    .trim();
-                }
-
-                // Parse keywords from HTML comment like <!-- @keywords: textarea, input -->
-                const keywordsMatch = docContent.match(/<!--\s*@keywords:?\s*(.*?)\s*-->/i);
-                if (keywordsMatch && keywordsMatch[1]) {
-                  keywords = keywordsMatch[1].split(',').map(k => k.trim()).filter(Boolean);
-                }
-              }
-
-              const componentExamplePath = path.join(componentDocsPath, 'examples');
-              if (fs.existsSync(componentExamplePath)) {
-                const exampleDirs = fs.readdirSync(componentExamplePath);
-                for (const eDir of exampleDirs) {
-                  const eDirPath = path.join(componentExamplePath, eDir);
-                  if (fs.statSync(eDirPath).isDirectory()) {
-                    const eFiles = fs.readdirSync(eDirPath);
-                    const htmlFile = eFiles.find((f: string) => f.endsWith('.html'));
-                    const tsFile = eFiles.find((f: string) => f.endsWith('.ts'));
-
-                    if (htmlFile && tsFile) {
-                      examples.push({
-                        name: eDir,
-                        html: fs.readFileSync(path.join(eDirPath, htmlFile), 'utf-8'),
-                        ts: fs.readFileSync(path.join(eDirPath, tsFile), 'utf-8'),
-                      });
-                    }
-                  }
-                }
-              }
-            }
-
-            // Detect sh-sheet usage
-            const usesSheet = content.includes('sh-sheet');
-            if (usesSheet) {
-              description =
-                (description ? description + '\n\n' : '') +
-                ':::info\nThis component utilizes the **Ship Sheet** utility for its visual structure. It supports standard sheet variations and is affected by global sheet variables.\n:::';
-            }
-
-            // Generate snippets
-            const tag = selector.startsWith('[') ? (selector === '[shButton]' ? 'button' : 'div') : selector;
-            const isAttribute = selector.startsWith('[');
-            const selectorBase = selector.replace(/[\[\]]/g, '');
-
-            // Basic snippet
-            allSnippets[`${name}: Basic`] = {
-              prefix: selectorBase,
-              body: isAttribute ? [`<${tag} ${selectorBase}>$0</${tag}>`] : [`<${selectorBase}>$0</${selectorBase}>`],
-              description: `Basic usage of ${name}`,
-            };
-
-            // Full snippet with common inputs
-            const commonInputs = uniqueInputs.filter((i) => ['color', 'variant', 'size', 'readonly'].includes(i.name));
-            if (commonInputs.length > 0) {
-              const attrs = commonInputs
-                .map((i, idx) => {
-                  if (i.options && i.options.length > 0) {
-                    return `${i.name}="\${${idx + 1}|${i.options.join(',')}|}"`;
-                  }
-                  return `[${i.name}]="\${${idx + 1}:${i.defaultValue || "''"}}"`;
-                })
-                .join(' ');
-
-              allSnippets[`${name}: With Options`] = {
-                prefix: `${selectorBase}-full`,
-                body: isAttribute
-                  ? [`<${tag} ${selectorBase} ${attrs}>`, '  $0', `</${tag}>`]
-                  : [`<${selectorBase} ${attrs}>`, '  $0', `</${selectorBase}>`],
-                description: `Full usage of ${name} with common options`,
-              };
-            }
-
-            components.push({
-              name,
-              selector,
-              path: path.relative(path.join(process.cwd(), '..'), filePath),
-              description,
-              keywords,
-              inputs: uniqueInputs,
-              outputs: uniqueOutputs,
-              methods: uniqueMethods,
-              cssVariables,
-              examples,
-            });
-          }
+// Resolve every .ts file reachable from an entry-point public-api.ts by
+// following `export ... from './rel'` chains. This is the public-API boundary.
+function publicFiles(entryDir: string): string[] {
+  const start = path.join(entryDir, 'public-api.ts');
+  if (!fs.existsSync(start)) return [];
+  const seen = new Set<string>();
+  const files: string[] = [];
+  const queue = [start];
+  while (queue.length) {
+    const file = queue.shift()!;
+    if (seen.has(file) || !fs.existsSync(file)) continue;
+    seen.add(file);
+    const src = fs.readFileSync(file, 'utf-8');
+    let hasClass = false;
+    for (const m of src.matchAll(/\bfrom\s+['"](\.[^'"]+)['"]/g)) {
+      const rel = m[1]!;
+      const cand = [rel + '.ts', path.join(rel, 'index.ts'), rel];
+      for (const c of cand) {
+        const abs = path.resolve(path.dirname(file), c);
+        if (fs.existsSync(abs) && abs.endsWith('.ts')) {
+          queue.push(abs);
+          break;
         }
       }
     }
+    if (/@(Component|Directive|Injectable)\b/.test(src)) hasClass = true;
+    if (hasClass && file !== start) files.push(file);
   }
+  return files;
+}
 
-  traverse(LIB_PATH);
+// --- Per-class extraction -------------------------------------------------
 
-  // Traverse secondary entry point directories (ship-tree, ship-button, etc.)
-  const shipUiEntries = fs.readdirSync(COMPONENTS_PATH);
-  for (const entry of shipUiEntries) {
-    const entryPath = path.join(COMPONENTS_PATH, entry);
-    if (fs.statSync(entryPath).isDirectory() && entry.startsWith('ship-')) {
-      traverse(entryPath);
+function extractClass(
+  cls: ts.ClassDeclaration,
+  sf: ts.SourceFile,
+  filePath: string,
+  entryDir: string,
+  known: Record<string, string[]>
+): ComponentData | null {
+  const name = cls.name?.text;
+  if (!name || INTERNAL.has(name)) return null;
+
+  const comp = decoratorCall(cls, ['Component']);
+  const dir = decoratorCall(cls, ['Directive']);
+  const inj = decoratorCall(cls, ['Injectable']);
+  const kind: ComponentData['kind'] = comp ? 'component' : dir ? 'directive' : inj ? 'service' : 'component';
+  const decoCall = comp ?? dir ?? inj;
+  if (!comp && !dir && !inj) return null;
+
+  const meta =
+    decoCall && decoCall.arguments[0] && ts.isObjectLiteralExpression(decoCall.arguments[0])
+      ? (decoCall.arguments[0] as ts.ObjectLiteralExpression)
+      : undefined;
+
+  let selectorRaw = litText(metaProp(meta, 'selector'));
+  if (!selectorRaw && inj) {
+    selectorRaw = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+  }
+  if (!selectorRaw) return null;
+  const selectorTokens = selectorRaw.split(',').map((s) => s.trim()).filter(Boolean);
+  const selector = selectorTokens[0]!;
+  const selectorAliases = selectorTokens.slice(1);
+
+  // Event-handler names to exclude from the public method list.
+  const excludedHandlers = hostHandlers(metaProp(meta, 'host'));
+  const inlineTemplate = litText(metaProp(meta, 'template'));
+  const templateUrl = litText(metaProp(meta, 'templateUrl'));
+  let templateHtml = inlineTemplate ?? '';
+  if (templateUrl) {
+    const tp = path.resolve(path.dirname(filePath), templateUrl);
+    if (fs.existsSync(tp)) templateHtml = fs.readFileSync(tp, 'utf-8');
+  }
+  for (const h of templateHandlers(templateHtml)) excludedHandlers.add(h);
+
+  const inputs: Input[] = [];
+  const outputs: ComponentData['outputs'] = [];
+  const methods: ComponentData['methods'] = [];
+
+  for (const member of cls.members) {
+    // Signal input / model / output
+    if (ts.isPropertyDeclaration(member) && member.initializer && ts.isCallExpression(member.initializer)) {
+      const call = member.initializer;
+      const callee = call.expression.getText(sf); // 'input', 'input.required', 'model', 'output', ...
+      const memberName = member.name.getText(sf);
+      const isInput = callee === 'input' || callee === 'input.required';
+      const isModel = callee === 'model' || callee === 'model.required';
+      const isOutput = callee === 'output';
+      const required = callee.endsWith('.required');
+
+      if (isInput || isModel || isOutput) {
+        const typeArg = call.typeArguments?.[0]?.getText(sf);
+        // find alias in any object-literal arg
+        let alias: string | undefined;
+        for (const a of call.arguments) {
+          if (ts.isObjectLiteralExpression(a)) {
+            const al = litText(metaProp(a, 'alias'));
+            if (al) alias = al;
+          }
+        }
+        if (isOutput) {
+          outputs.push({ name: alias ?? memberName, type: typeArg ?? 'void', description: jsdoc(member) });
+          continue;
+        }
+        // default: first arg unless it's the (only) options object of a required signal
+        let defaultValue: string | undefined;
+        const first = call.arguments[0];
+        if (first && !(required && ts.isObjectLiteralExpression(first))) {
+          defaultValue = first.getText(sf);
+        }
+        const type = typeArg ?? inferType(first);
+        inputs.push({
+          name: alias ?? memberName,
+          type,
+          description: jsdoc(member),
+          defaultValue,
+          options: optionsFor(typeArg, known),
+          twoWay: isModel || undefined,
+        });
+        continue;
+      }
+    }
+
+    // Traditional @Input()/@Output()
+    if ((ts.isPropertyDeclaration(member) || ts.isGetAccessor(member) || ts.isSetAccessor(member))) {
+      if (hasDecorator(member, ['Input'])) {
+        const type = member.type?.getText(sf) ?? 'any';
+        inputs.push({
+          name: member.name.getText(sf),
+          type,
+          description: jsdoc(member),
+          options: optionsFor(type, known),
+        });
+        continue;
+      }
+      if (hasDecorator(member, ['Output'])) {
+        outputs.push({ name: member.name.getText(sf), type: 'any', description: jsdoc(member) });
+        continue;
+      }
+    }
+
+    // Public methods (consumer-facing only)
+    if (ts.isMethodDeclaration(member)) {
+      if (ts.isPrivateIdentifier(member.name)) continue;
+      if (hasModifier(member, [sk.PrivateKeyword, sk.ProtectedKeyword])) continue;
+      const mName = member.name.getText(sf);
+      if (LIFECYCLE.has(mName) || CVA.has(mName)) continue;
+      if (INTERNAL_METHODS[name]?.has(mName)) continue;
+      if (hasDecorator(member, ['HostListener'])) continue;
+      if (excludedHandlers.has(mName)) continue;
+      // DOM event handlers / canvas-render helpers are internal wiring, not API.
+      const firstParamType = member.parameters[0]?.type?.getText(sf) ?? '';
+      if (/Event|Touch|CanvasRenderingContext2D/.test(firstParamType)) continue;
+      const params = member.parameters.map((p) => p.getText(sf)).join(', ');
+      methods.push({
+        name: mName,
+        parameters: params,
+        returnType: member.type?.getText(sf) ?? 'void',
+        description: jsdoc(member),
+      });
     }
   }
 
-  // Add global variables as a virtual component
-  const globalVariables = getGlobalVariables();
+  // Dedupe by name, preferring a variant that carries a description. Overloaded
+  // methods appear multiple times (signatures + implementation) and the JSDoc
+  // lives on the first signature — keep it rather than the undocumented impl.
+  const dedupe = <T extends { name: string; description?: string }>(arr: T[]) => {
+    const map = new Map<string, T>();
+    for (const x of arr) {
+      const prev = map.get(x.name);
+      if (!prev || (!prev.description?.trim() && x.description?.trim())) map.set(x.name, x);
+    }
+    return Array.from(map.values());
+  };
+
+  // CSS variables from declared styleUrl(s) + the styles/components mapping.
+  const cssVariables: ComponentData['cssVariables'] = [];
+  const addVars = (file: string) => {
+    for (const v of scssVars(file)) if (!cssVariables.some((x) => x.name === v.name)) cssVariables.push(v);
+  };
+  const styleUrl = litText(metaProp(meta, 'styleUrl'));
+  if (styleUrl) addVars(path.resolve(path.dirname(filePath), styleUrl));
+  const styleUrlsNode = metaProp(meta, 'styleUrls');
+  if (styleUrlsNode && ts.isArrayLiteralExpression(styleUrlsNode)) {
+    for (const el of styleUrlsNode.elements) {
+      const u = litText(el);
+      if (u) addVars(path.resolve(path.dirname(filePath), u));
+    }
+  }
+  // Legacy mapping for components whose vars live in styles/components/.
+  const mappedScss = selector.replace(/^\[?sh-?/, 'ship-').replace(/\]$/, '') + '.scss';
+  addVars(path.join(STYLES_PATH, mappedScss));
+
+  return {
+    name,
+    selector,
+    selectorAliases: selectorAliases.length ? selectorAliases : undefined,
+    package: `@ship-ui/core/${path.basename(entryDir)}`,
+    kind,
+    path: path.relative(rootPath, filePath),
+    inputs: dedupe(inputs),
+    outputs: dedupe(outputs),
+    methods: dedupe(methods),
+    cssVariables,
+    examples: [],
+  };
+}
+
+// --- Docs (description / keywords / examples) -----------------------------
+
+function attachDocs(comp: ComponentData, entryDir: string) {
+  const base = path.basename(entryDir).replace(/^ship-/, '');
+  const normalized = comp.selector
+    .replace(/[\[\]]/g, '')
+    .replace(/^sh-?/i, '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .toLowerCase();
+  // Only the entry's primary element gets the docs page (avoids duplicating
+  // examples onto sibling directives / sub-components in the same file).
+  if (normalized !== base && normalized !== base + 's') return;
+
+  const terms = [base + 's', base];
+  let docsDir = '';
+  for (const t of terms) {
+    const p = path.join(EXAMPLES_PATH, t);
+    if (fs.existsSync(p)) {
+      docsDir = p;
+      break;
+    }
+  }
+  if (!docsDir) return;
+
+  const docFiles = fs.readdirSync(docsDir);
+  const mainHtml = docFiles.find((f) => f.endsWith('.html') && !f.includes('example'));
+  if (mainHtml) {
+    const docContent = fs.readFileSync(path.join(docsDir, mainHtml), 'utf-8');
+    const m = docContent.match(/<app-property-viewer>([\s\S]*?)<\/app-property-viewer>/);
+    if (m?.[1]) {
+      comp.description = m[1]
+        .replace(/<section>/g, '')
+        .replace(/<\/section>/g, '\n\n')
+        .replace(/<h4>(.*?)<\/h4>/g, '### $1\n')
+        .replace(/<p>/g, '')
+        .replace(/<\/p>/g, '\n')
+        .replace(/<code>(.*?)<\/code>/g, '`$1`')
+        .replace(/<b>(.*?)<\/b>/g, '**$1**')
+        .replace(/<li>(.*?)<\/li>/g, '- $1')
+        .replace(/<ul>/g, '')
+        .replace(/<\/ul>/g, '\n')
+        .replace(/<br\s*\/?>/g, '\n')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter((l, i, arr) => l !== '' || (i > 0 && arr[i - 1] !== ''))
+        .join('\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+    }
+    const kw = docContent.match(/<!--\s*@keywords:?\s*(.*?)\s*-->/i);
+    if (kw?.[1]) comp.keywords = kw[1].split(',').map((k) => k.trim()).filter(Boolean);
+  }
+
+  const exDir = path.join(docsDir, 'examples');
+  if (fs.existsSync(exDir)) {
+    for (const eDir of fs.readdirSync(exDir)) {
+      const eDirPath = path.join(exDir, eDir);
+      if (!fs.statSync(eDirPath).isDirectory()) continue;
+      const eFiles = fs.readdirSync(eDirPath);
+      const html = eFiles.find((f) => f.endsWith('.html'));
+      const tsf = eFiles.find((f) => f.endsWith('.ts'));
+      if (html && tsf) {
+        comp.examples.push({
+          name: eDir,
+          html: fs.readFileSync(path.join(eDirPath, html), 'utf-8'),
+          ts: fs.readFileSync(path.join(eDirPath, tsf), 'utf-8'),
+        });
+      }
+    }
+  }
+}
+
+// --- Snippets -------------------------------------------------------------
+
+function buildSnippet(comp: ComponentData, snippets: Record<string, Snippet>) {
+  const selector = comp.selector;
+  const isAttribute = selector.startsWith('[');
+  const selectorBase = selector.replace(/[\[\]]/g, '');
+  const tag = isAttribute ? (selector === '[shButton]' ? 'button' : 'div') : selector;
+
+  snippets[`${comp.name}: Basic`] = {
+    prefix: selectorBase,
+    body: isAttribute ? [`<${tag} ${selectorBase}>$0</${tag}>`] : [`<${selectorBase}>$0</${selectorBase}>`],
+    description: `Basic usage of ${comp.name}`,
+  };
+
+  const commonInputs = comp.inputs.filter((i) => ['color', 'variant', 'size', 'readonly'].includes(i.name));
+  if (commonInputs.length > 0) {
+    const attrs = commonInputs
+      .map((i, idx) =>
+        i.options && i.options.length > 0
+          ? `${i.name}="\${${idx + 1}|${i.options.filter(Boolean).join(',')}|}"`
+          : `[${i.name}]="\${${idx + 1}:${i.defaultValue || "''"}}"`
+      )
+      .join(' ');
+    snippets[`${comp.name}: With Options`] = {
+      prefix: `${selectorBase}-full`,
+      body: isAttribute
+        ? [`<${tag} ${selectorBase} ${attrs}>`, '  $0', `</${tag}>`]
+        : [`<${selectorBase} ${attrs}>`, '  $0', `</${selectorBase}>`],
+      description: `Full usage of ${comp.name} with common options`,
+    };
+  }
+}
+
+// --- Main -----------------------------------------------------------------
+
+function scan() {
+  const known = parseKnownTypes();
+  const components: ComponentData[] = [];
+  const snippets: Record<string, Snippet> = {};
+
+  const entryDirs = fs
+    .readdirSync(SHIP_UI)
+    .map((d) => path.join(SHIP_UI, d))
+    .filter((p) => fs.statSync(p).isDirectory() && fs.existsSync(path.join(p, 'public-api.ts')));
+
+  for (const entryDir of entryDirs) {
+    for (const file of publicFiles(entryDir)) {
+      const src = fs.readFileSync(file, 'utf-8');
+      const sf = ts.createSourceFile(file, src, ts.ScriptTarget.Latest, true);
+      for (const stmt of sf.statements) {
+        if (!ts.isClassDeclaration(stmt)) continue;
+        const comp = extractClass(stmt, sf, file, entryDir, known);
+        if (!comp) continue;
+        attachDocs(comp, entryDir);
+        buildSnippet(comp, snippets);
+        components.push(comp);
+      }
+    }
+  }
+
+  components.sort((a, b) => a.selector.localeCompare(b.selector));
+
   components.push({
     name: 'GlobalVariables',
     selector: 'global-variables',
+    kind: 'service',
     path: path.relative(rootPath, VARIABLES_FILE),
     description: 'Global CSS variables for ShipUI including colors, typography, and spacing.',
     inputs: [],
     outputs: [],
     methods: [],
-    cssVariables: globalVariables,
+    cssVariables: scssVars(VARIABLES_FILE),
     examples: [],
   });
-
-  const sheetVariables = getSheetVariables();
   components.push({
     name: 'SheetVariables',
     selector: 'sheet-variables',
+    kind: 'service',
     path: path.relative(rootPath, SHEET_FILE),
     description:
       'Common CSS variables for components using the "sh-sheet" class. These variables control background, border, and color scales for different variants.',
     inputs: [],
     outputs: [],
     methods: [],
-    cssVariables: sheetVariables,
+    cssVariables: scssVars(SHEET_FILE),
     examples: [],
   });
 
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(components, null, 2));
-  if (OUTPUT_FILE !== LOCAL_OUTPUT) {
-    fs.writeFileSync(LOCAL_OUTPUT, JSON.stringify(components, null, 2));
-  }
-  fs.writeFileSync(SNIPPETS_FILE, JSON.stringify(allSnippets, null, 2));
-  console.log(`Scanned ${components.length} components.`);
+  if (OUTPUT_FILE !== LOCAL_OUTPUT) fs.writeFileSync(LOCAL_OUTPUT, JSON.stringify(components, null, 2));
+  fs.writeFileSync(SNIPPETS_FILE, JSON.stringify(snippets, null, 2));
+  console.log(`Scanned ${components.length} components (${entryDirs.length} entry points).`);
   console.log(`Generated metadata in ${OUTPUT_FILE}`);
   console.log(`Generated snippets in ${SNIPPETS_FILE}`);
 }
 
-scanComponents();
+scan();

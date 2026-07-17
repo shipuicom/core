@@ -23,10 +23,13 @@ const DATA_FILE = fs.existsSync(LOCAL_DATA) ? LOCAL_DATA : BUNDLED_DATA;
 interface ComponentData {
   name: string;
   selector: string;
+  selectorAliases?: string[];
+  package?: string;
+  kind?: 'component' | 'directive' | 'service';
   path: string;
   description?: string;
   keywords?: string[];
-  inputs: { name: string; type: string; description?: string; defaultValue?: string; options?: string[] }[];
+  inputs: { name: string; type: string; description?: string; defaultValue?: string; options?: string[]; twoWay?: boolean }[];
   outputs: { name: string; type: string; description?: string }[];
   methods: { name: string; parameters: string; returnType: string; description?: string }[];
   cssVariables: { name: string; defaultValue?: string; description?: string }[];
@@ -180,6 +183,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             results.map((c) => ({
               name: c.name,
               selector: c.selector,
+              kind: c.kind,
+              package: c.package,
               description: c.description?.split('\n')[0],
               keywords: c.keywords,
             })),
@@ -534,8 +539,11 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
           role: 'user',
           content: {
             type: 'text',
-            text: `I want to use the ${component.name} component (${component.selector}) in ${context}. 
+            text: `I want to use the ${component.name} ${component.kind ?? 'component'} (${component.selector}) in ${context}.
 Here are the component details:
+
+Import:
+\`import { ${component.name} } from '${component.package ?? '@ship-ui/core'}';\`
 
 Description:
 ${component.description || 'No description available'}
