@@ -131,6 +131,10 @@ class HighlightBehavior extends BaseInlineBehavior {
   documentVariant = signal(false);
   placeholder = signal('Start typing something beautiful...');
 
+  basicValue = signal(
+    '<h2>Start here</h2><p>A <strong>basic</strong> editor — try <em>formatting</em>, headings, lists and links.</p><ul><li>Bold, italic, headings</li><li>Bullet lists</li></ul>'
+  );
+
   demoImageUpload = async (file: File): Promise<string> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
     return `https://picsum.photos/seed/${encodeURIComponent(file.name)}/480/320`;
