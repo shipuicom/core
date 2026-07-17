@@ -16,10 +16,15 @@ import { ShipButtonSize, ShipColor, ShipSheetVariant } from '@ship-ui/core';
   },
 })
 export class ShipButton {
+  /** Semantic color scale (`primary`, `accent`, `warn`, `error`, `success`). */
   color = input<ShipColor | null>(null);
+  /** Visual variant (`simple`, `outlined`, `flat`, `raised`). */
   variant = input<ShipSheetVariant | null>(null);
+  /** Size preset (`small`, `xsmall`, or default). */
   size = input<ShipButtonSize | null>(null);
+  /** Render in a non-interactive read-only state. */
   readonly = input<boolean>(false);
+  /** Remove the background (adds the `no-bg` class). */
   noBg = input<boolean, boolean | string>(false, { transform: booleanAttribute });
 
   hostClasses = shipComponentClasses('button', {

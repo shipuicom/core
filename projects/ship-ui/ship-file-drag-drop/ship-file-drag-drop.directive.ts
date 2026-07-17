@@ -9,6 +9,7 @@ import { Directive, HostListener, output, signal } from '@angular/core';
 })
 export class ShipFileDragDrop {
   filesOver = signal(false);
+  /** Emits the dropped `FileList` when one or more files are released over the host element. */
   filesDropped = output<FileList>();
 
   @HostListener('dragover', ['$event']) onDragOver(e: DragEvent) {

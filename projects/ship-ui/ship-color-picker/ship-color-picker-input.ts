@@ -102,12 +102,18 @@ import { ShipColorPicker } from './ship-color-picker';
 export class ShipColorPickerInput {
   #document = inject(DOCUMENT);
 
+  /** Which picker surface the popover renders (`hsl`, `grid`, `hue`, `rgb`, `saturation`, `alpha`). */
   renderingType = input<'hsl' | 'grid' | 'hue' | 'rgb' | 'saturation' | 'alpha'>('hsl');
+  /** Output color string format (`rgb`, `rgba`, `hex`, `hex8`, `hsl`, `hsla`). */
   format = input<'rgb' | 'rgba' | 'hex' | 'hex8' | 'hsl' | 'hsla'>('rgb');
 
+  /** Semantic color scale (`primary`, `accent`, `warn`, `error`, `success`). */
   color = input<ShipColor | null>(null);
+  /** Visual variant of the form field. */
   variant = input<ShipFormFieldVariant | null>(null);
+  /** Size preset. */
   size = input<ShipSize | null>(null);
+  /** Render in a non-interactive read-only state. */
   readonly = input<boolean>(false);
   /**
    * Compact "swatch only" appearance: the field renders as a single color patch
@@ -116,12 +122,15 @@ export class ShipColorPickerInput {
    */
   patch = input<boolean>(false);
 
+  /** Emits the formatted color string when the picker popover closes. */
   closed = output<string>();
 
+  /** Two-way open state of the picker popover. */
   isOpen = model<boolean>(false);
   currentClass = classMutationSignal();
 
   isEyeDropperSupported = typeof window !== 'undefined' && 'EyeDropper' in window;
+  /** Show the eyedropper button when the browser supports the EyeDropper API. */
   showEyeDropper = input<boolean>(true);
 
   internalHue = signal(0);

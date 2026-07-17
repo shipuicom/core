@@ -147,17 +147,27 @@ export class ShipSortable implements OnInit, OnDestroy {
   #renderer = inject(Renderer2);
   #crossSpacerEl = signal<HTMLElement | null>(null);
 
+  /** Optional sortable manager (from `createSortableManager`/`createTreeSortableManager`) that handles drops instead of emitting events. */
   shSortable = input<any>();
+  /** Group identifier that allows dragging items between sortable containers sharing the same value. */
   sortableGroup = input<string>();
+  /** Layout/sorting behaviour of the container: `'list'`, `'grid'`, or `'tree'`. */
   sortingMode = input<'list' | 'grid' | 'tree'>('list');
+  /** Two-way bound list of tree nodes, used when `sortingMode` is `'tree'`. */
   treeItems = model<any[]>([]);
 
+  /** Enables touch-based dragging on touch devices. */
   touchEnabled = input<boolean>(false);
+  /** How a touch drag is initiated: `'longpress'`, `'handle'`, or `'none'`. */
   touchActivation = input<'longpress' | 'handle' | 'none'>('longpress');
 
+  /** Emitted on any drop with the source/target containers and indices. */
   sortDrop = output<ShipDropEvent>();
+  /** Emitted after an in-container reorder with the from/to indices. */
   afterDrop = output<AfterDropResponse>();
+  /** Emitted when an item is dropped into a different container than it started in. */
   crossDrop = output<CrossDropResponse>();
+  /** Emitted on a drop in `'tree'` mode with the indices and drop position (`before`/`after`/`inside`). */
   treeDrop = output<ShipTreeDropEvent>();
 
   dragStartIndex = signal<number>(-1);

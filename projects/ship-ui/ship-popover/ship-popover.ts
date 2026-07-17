@@ -63,12 +63,18 @@ export class ShipPopover {
   SUPPORTS_ANCHOR =
     typeof CSS !== 'undefined' && CSS.supports('position-anchor', '--abc') && CSS.supports('anchor-name', '--abc');
 
+  /** Position the popover as a nested multi-layer flyout, preferring side placement. */
   asMultiLayer = input<boolean>(false);
+  /** Render the popover as a bottom sheet on mobile viewports (≤768px). */
   asSheetOnMobile = input<boolean>(false);
+  /** Prevent the trigger click from toggling the popover (host drives `isOpen`). */
   disableOpenByClick = input<boolean>(false);
+  /** Two-way bound open/closed state of the popover. */
   isOpen = model<boolean>(false);
 
+  /** Behavior options merged over the defaults (width, height, close-on-esc/button/overlay). */
   options = input<Partial<ShipPopoverOptions>>();
+  /** Emits when the popover closes. */
   closed = output<void>();
 
   defaultOptionMerge = computed(() => ({

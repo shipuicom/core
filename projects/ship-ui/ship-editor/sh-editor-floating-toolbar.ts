@@ -10,6 +10,7 @@ import { ShipEditor } from './ship-editor';
   styleUrl: './sh-editor-floating-toolbar.scss',
 })
 export class ShipEditorFloatingToolbar {
+  /** The editor the floating toolbar controls; defaults to the enclosing `<sh-editor>` when omitted. */
   editorInput = input<ShipEditor | null>(null, { alias: 'editor' });
   #parentEditor = inject(ShipEditor, { optional: true });
 

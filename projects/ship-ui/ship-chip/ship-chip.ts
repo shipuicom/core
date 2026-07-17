@@ -17,13 +17,20 @@ import { ShipColor, ShipSheetVariant, ShipSize } from '@ship-ui/core';
   },
 })
 export class ShipChip {
+  /** Semantic color scale (`primary`, `accent`, `warn`, `error`, `success`). */
   color = input<ShipColor | null>(null);
+  /** Visual variant of the chip sheet. */
   variant = input<ShipSheetVariant | null>(null);
+  /** Size preset. */
   size = input<ShipSize | null>(null);
 
+  /** Use sharp (non-rounded) corners. */
   sharp = input<boolean | undefined>(undefined);
+  /** Enable the dynamic styling variant. */
   dynamic = input<boolean | undefined>(undefined);
+  /** Render in a non-interactive read-only state. */
   readonly = input<boolean>(false);
+  /** Render without a background fill. */
   noBg = input<boolean, boolean | string>(false, { transform: booleanAttribute });
 
   hostClasses = shipComponentClasses('chip', {

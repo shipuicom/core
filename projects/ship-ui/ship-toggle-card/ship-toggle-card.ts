@@ -39,7 +39,9 @@ import { ShipCardVariant, ShipColor } from '@ship-ui/core';
 export class ShipToggleCard {
   #keybindings = inject(ShipA11yKeybindingsService);
 
+  /** When `true`, disables collapsing and forces the card to stay expanded. */
   disableToggle = input(false);
+  /** Two-way bound expanded state; `true` shows the card content. */
   isActive = model<boolean>(false);
 
   #disabledEffect = effect(() => {
@@ -48,7 +50,9 @@ export class ShipToggleCard {
     }
   });
 
+  /** Theme color applied to the card via the `card` component classes. */
   color = input<ShipColor | null>(null);
+  /** Visual variant of the card via the `card` component classes. */
   variant = input<ShipCardVariant | null>(null);
   hostClasses = shipComponentClasses('card', {
     color: this.color,

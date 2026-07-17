@@ -58,8 +58,11 @@ export class ShipDialog {
   #shConfig = inject(SHIP_CONFIG, { optional: true });
   #keybindings = inject(ShipA11yKeybindingsService);
   dialogRef = viewChild<ElementRef<HTMLDialogElement>>('dialogRef');
+  /** Whether the dialog is open. Two-way bindable. */
   isOpen = model<boolean>(false);
+  /** Behaviour and sizing overrides (class, width, close-on-esc, etc.). */
   options = input<Partial<ShipDialogOptions>>();
+  /** Emits when the dialog closes. */
   closed = output<void>();
 
   defaultOptionMerge = computed(() => ({

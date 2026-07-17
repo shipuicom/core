@@ -52,7 +52,9 @@ export class ShipDatepickerInput {
   #datePipe = inject(DatePipe);
   #inputRef = signal<HTMLInputElement | null>(null);
 
+  /** `DatePipe` format used to render the masked date display (empty disables masking). */
   masking = input('mediumDate');
+  /** Emits the selected date when the picker popover closes. */
   closed = output<Date | null>();
 
   _maskedDate = computed(() => {
@@ -66,6 +68,7 @@ export class ShipDatepickerInput {
   });
 
   internalDate = signal<Date | null>(null);
+  /** Whether the datepicker popover is open. Two-way bindable. */
   isOpen = model<boolean>(false);
   currentClass = classMutationSignal();
   #inputObserver = contentProjectionSignal<HTMLInputElement>('#input-wrap input');

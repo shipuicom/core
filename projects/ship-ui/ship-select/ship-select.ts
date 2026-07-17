@@ -190,20 +190,33 @@ export class ShipSelect {
   #selfRef = inject<ElementRef<HTMLElement>>(ElementRef<HTMLElement>);
   #keybindings = inject(ShipA11yKeybindingsService);
 
+  /** Property path used to read each option's value (e.g. `id`); when unset, the option itself is the value. */
   value = input<string>();
+  /** Property path used to read each option's display label; when unset, the option itself is shown. */
   label = input<string>();
+  /** When `true`, allows the user to create new options by typing free text. */
   asFreeText = input(false);
 
+  /** Color theme of the select (`ShipColor`). */
   color = input<ShipColor | null>(null);
+  /** Visual variant of the underlying form field (`ShipFormFieldVariant`). */
   variant = input<ShipFormFieldVariant | null>(null);
+  /** Size of the select (`ShipSize`). */
   size = input<ShipSize | null>(null);
 
+  /** Optional heading shown above the option list. */
   optionTitle = input<string | null>(null);
+  /** Optional heading shown above the free-text create option. */
   freeTextTitle = input<string | null>(null);
+  /** Placeholder text for the free-text create option. */
   freeTextPlaceholder = input<string | null>('Type to create a new option');
+  /** Predicate that validates a free-text value before it can be added as a new option. */
   validateFreeText = input<ValidateFreeText>();
+  /** Placeholder text shown when no option is selected. */
   placeholder = input<string>();
+  /** Two-way bound readonly state; when `true`, the value is shown but cannot be changed. */
   readonly = model(false);
+  /** Two-way bound disabled state; when `true`, the select is non-interactive. */
   disabled = model(false);
 
   hostClasses = shipComponentClasses('select', {
@@ -212,20 +225,35 @@ export class ShipSelect {
     size: this.size,
     readonly: this.readonly,
   });
+  /** When `true`, enables server-side/lazy search where filtering is handled externally. */
   lazySearch = input(false);
+  /** When `true`, enables client-side inline filtering of the provided options. */
   inlineSearch = input(false);
+  /** When `true`, renders selected values as plain text instead of chips. */
   asText = input(false);
+  /** When `true`, allows clearing the current selection via a clear icon. */
   isClearable = input(true);
+  /** When `true`, allows selecting multiple options. */
   selectMultiple = input(false);
+  /** Custom template for rendering each option in the list. */
   optionTemplate = input<TemplateRef<unknown> | null>(null);
+  /** Custom template for rendering the selected option(s) in the trigger. */
   selectedOptionTemplate = input<TemplateRef<unknown> | null>(null);
+  /** Custom template for rendering the placeholder when nothing is selected. */
   placeholderTemplate = input<TemplateRef<unknown> | null>(null);
+  /** Custom template for rendering the free-text create option. */
   freeTextOptionTemplate = input<TemplateRef<unknown> | null>(null);
+  /** Two-way bound open state of the options dropdown. */
   isOpen = model(false);
+  /** Two-way bound loading state; shows a spinner while `true`. */
   isLoading = model(false);
+  /** Two-way bound list of available options. */
   options = model<unknown[]>([]);
+  /** Two-way bound list of currently selected options. */
   selectedOptions = model<unknown[]>([]);
+  /** Emits when the selection is cleared. */
   cleared = output<void>();
+  /** Emits the value of a newly created free-text option. */
   onAddNewFreeTextOption = output<string>();
 
   spacedSelectedOptions = computed(() => {
@@ -626,6 +654,7 @@ export class ShipSelect {
     this.setInitInput();
   }
 
+  /** Locates the projected `<input>`/`<textarea>` and wires it up, observing the DOM if not yet present. */
   setInitInput() {
     const input = this.#selfRef.nativeElement.querySelector('input');
 
@@ -651,6 +680,7 @@ export class ShipSelect {
     }
   }
 
+  /** Resolves the selected option(s) by matching the given comma-separated value against the options. */
   setSelectedOptionsFromValue(value: string) {
     const options = this.options() || [];
     const valueKey = this.value();
@@ -674,6 +704,7 @@ export class ShipSelect {
     this.selectedOptions.set(selectMultiple ? selectedOptions : isMatched ? [selectedOptions[0]] : []);
   }
 
+  /** Updates the input value to the comma-joined values of the given options. */
   setInputValueFromOptions(options: unknown[]) {
     const valueKey = this.value();
 
@@ -697,6 +728,7 @@ export class ShipSelect {
     this.updateInputElValue();
   }
 
+  /** Returns the value of an option, reading the `value` property path when configured. */
   getValue(option: unknown) {
     const valueKey = this.value();
 
@@ -705,6 +737,7 @@ export class ShipSelect {
     return this.#getProperty(option, valueKey);
   }
 
+  /** Returns the display label of an option, reading the `label` property path when configured. */
   getLabel(option: unknown) {
     const label = this.label();
 
@@ -713,6 +746,7 @@ export class ShipSelect {
     return this.#getProperty(option, label);
   }
 
+  /** Returns the unique DOM id for the option at the given index. */
   getOptionId(index: number) {
     return `opt-${this.componentId}-${index}`;
   }
@@ -801,6 +835,7 @@ export class ShipSelect {
     this.setInputValueFromOptions(this.selectedOptions());
   }
 
+  /** Returns whether the option at the given index is currently selected. */
   isSelected(optionIndex: number): boolean {
     const valueKey = this.value();
     const option = this.filteredOptions()[optionIndex];
@@ -882,6 +917,7 @@ export class ShipSelect {
     this.updateInputElValue();
   }
 
+  /** Writes the current input value to the native input element and dispatches an `input` event. */
   updateInputElValue() {
     const inputEl = this.inputRefEl();
     const inputValue = this.inputValue();

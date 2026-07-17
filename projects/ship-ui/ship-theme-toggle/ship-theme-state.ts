@@ -41,18 +41,21 @@ export class ShipThemeState {
     }
   });
 
+  /** Returns the platform `localStorage` (where the theme is persisted), or `null` during server-side rendering. */
   localStorage() {
     if (isPlatformServer(this.#platformId)) return null;
 
     return this.#window.localStorage;
   }
 
+  /** Advances the theme to the next value in `THEME_ORDER` (light → dark → system) and persists it. */
   toggleTheme() {
     const nextTheme = this.#theme() === null ? THEME_ORDER[0] : THEME_ORDER[THEME_ORDER.indexOf(this.#theme()) + 1];
 
     this.setTheme(nextTheme);
   }
 
+  /** Sets and persists the theme; passing `null` clears the stored preference and reverts to system default. */
   setTheme(theme: ShipThemeOption) {
     if (theme === null) {
       this.localStorage()?.removeItem('shipTheme');

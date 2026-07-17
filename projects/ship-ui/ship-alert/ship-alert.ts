@@ -63,7 +63,9 @@ export type ShipAlertType = 'error' | 'success' | 'warn' | 'primary' | 'accent' 
   },
 })
 export class ShipAlert {
+  /** Semantic color scale (`primary`, `accent`, `warn`, `error`, `success`); drives the state icon and `alert`/`status` role. */
   color = input<ShipColor | null>(null);
+  /** Visual variant (`simple`, `outlined`, `flat`, `raised`). */
   variant = input<ShipSheetVariant | null>(null);
 
   hostClasses = shipComponentClasses('alert', {
@@ -71,10 +73,13 @@ export class ShipAlert {
     variant: this.variant,
   });
 
-  _el = inject(ElementRef); 
+  _el = inject(ElementRef);
+  /** Owning `ShipAlertService` used to dismiss this alert when rendered from the alert history. */
   alertService = input<ShipAlertService | null>(null);
+  /** Unique alert id; when set, renders the close button and enables dismissal. */
   id = input<string | null>(null);
 
+  /** Remove this alert from the associated `alertService` by its `id`. */
   removeAlert() {
     if (this.id() && this.alertService()) {
       this.alertService()?.removeAlert(this.id() as string);

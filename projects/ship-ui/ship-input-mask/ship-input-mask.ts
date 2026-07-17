@@ -10,6 +10,7 @@ export class ShipInputMask {
   #selfRef: ElementRef<HTMLInputElement> = inject(ElementRef);
   #renderer: Renderer2 = inject(Renderer2);
 
+  /** Mask pattern (`9` marks a digit slot) or a custom masking function applied to the input value. */
   shInputMask = input<string | MaskingFunction>('(999) 999-9999');
 
   @HostListener('input', ['$event'])

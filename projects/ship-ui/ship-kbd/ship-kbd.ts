@@ -25,13 +25,21 @@ import { isPlatformBrowser } from '@angular/common';
 export class ShipKbd {
   #platformId = inject(PLATFORM_ID);
 
+  /** Show the Meta key (`⌘` on Mac, `Win` otherwise). */
   meta = input<boolean, string | boolean>(false, { transform: booleanAttribute });
+  /** Show the Shift key (`⇧` on Mac, `Shift` otherwise). */
   shift = input<boolean, string | boolean>(false, { transform: booleanAttribute });
+  /** Show the Alt key (`⌥` on Mac, `Alt` otherwise). */
   alt = input<boolean, string | boolean>(false, { transform: booleanAttribute });
+  /** Show the Control key (`⌃` on Mac, `Ctrl` otherwise). */
   ctrl = input<boolean, string | boolean>(false, { transform: booleanAttribute });
+  /** Show the platform command key: `⌘` on Mac, `Ctrl` otherwise. */
   ctrlOrCmd = input<boolean, string | boolean>(false, { transform: booleanAttribute });
+  /** Show the Enter key (`↵` on Mac, `Enter` otherwise). */
   enter = input<boolean, string | boolean>(false, { transform: booleanAttribute });
+  /** Show the Escape key (`⎋` on Mac, `Esc` otherwise). */
   escape = input<boolean, string | boolean>(false, { transform: booleanAttribute });
+  /** Show the Backspace key (`⌫` on Mac, `Backspace` otherwise). */
   backspace = input<boolean, string | boolean>(false, { transform: booleanAttribute });
 
   isMac = computed(() => {

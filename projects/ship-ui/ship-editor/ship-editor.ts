@@ -67,29 +67,41 @@ export class ShipEditor implements ControlValueAccessor {
   #document = inject(DOCUMENT);
   surface = viewChild.required<ElementRef<HTMLElement>>('surface');
 
+  /** When `true`, the editor is view-only and rejects all input, deletion, and paste. */
   readonly = input(false);
+  /** Serialization format of `value`: rich `html`, structured `json` AST, or `markdown`. */
   format = input<'html' | 'json' | 'markdown'>('html');
 
+  /** Visual variant: compact `base` or full-width `document` styling. */
   variant = input<'base' | 'document'>('base');
 
+  /** Additional block and inline behaviors to register alongside the built-in ones. */
   behaviors = input<(BaseBlockBehavior | BaseInlineBehavior)[]>([]);
 
+  /** Controls URL/content sanitization applied to incoming and pasted content. */
   sanitize = input<SanitizeOption>(true);
 
+  /** Extra actions to surface in the selection contextual toolbar. */
   contextualActions = input<ContextualActionExtras>({});
 
+  /** Commands available in the `/` slash menu. */
   slashCommands = input<SlashCommand[]>([]);
 
   slashMenu = viewChild(ShipEditorSlashMenu);
 
+  /** Optional async handler that uploads an image `File` and resolves to its URL. */
   imageUpload = input<((file: File) => Promise<string>) | null>(null);
 
+  /** Placeholder text shown when the editor is empty. */
   placeholder = input<string>('');
 
+  /** When `true`, displays live character and word count metrics. */
   showMetrics = input(false);
 
+  /** When `true`, enables dragging image edges to resize them inline. */
   imageEdgeResize = input(false);
 
+  /** Two-way bound editor content, serialized according to `format`. */
   value = model<string | ASTDocument | null>(null);
 
   readonly viewMode = signal<'design' | 'code'>('design');
@@ -224,6 +236,7 @@ export class ShipEditor implements ControlValueAccessor {
     afterNextRender(() => this.#viewReady.set(true));
   }
 
+  /** Toggles between the design view and the raw source (code) view, syncing content in both directions. */
   toggleSourceView() {
     if (this.viewMode() === 'design') {
       const doc = this.engine.document();

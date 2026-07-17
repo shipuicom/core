@@ -47,10 +47,15 @@ type Timeout = ReturnType<typeof setTimeout>;
   },
 })
 export class ShipTooltipWrapper {
+  /** CSS `position-anchor` name tying the tooltip to its anchor element for native anchor positioning. */
   positionAnchorName = input.required<string>();
+  /** Reference to the anchor element the tooltip is positioned against. */
   anchorEl = input.required<ElementRef<HTMLElement>>();
+  /** Whether the tooltip is currently shown. */
   isOpen = input<boolean>(false);
+  /** Content to render; a plain string or a `TemplateRef` for custom markup. */
   content = input<string | TemplateRef<any> | null | undefined>();
+  /** Callback invoked to dismiss the tooltip, exposed to template content via context. */
   close = input<() => void>(() => {});
 
   tooltipContext = {
@@ -219,6 +224,7 @@ let openRef: {
   },
 })
 export class ShipTooltip implements OnDestroy {
+  /** Tooltip content to display; accepts a plain string or a `TemplateRef` for custom markup. */
   shTooltip = input.required<string | TemplateRef<any> | null | undefined>();
 
   #contentReplacedEffect = effect(() => {

@@ -41,13 +41,21 @@ export class ShipColorPicker {
     radius: number;
   } | null>(null);
 
+  /** Extend the wheel/gradients into darker lightness values. */
   showDarkColors = input(false);
+  /** Which picker surface to render (`hsl` wheel, `grid`, `hue`, `rgb`, `saturation`, or `alpha`). */
   renderingType = input<'hsl' | 'grid' | 'hue' | 'rgb' | 'saturation' | 'alpha'>('hsl');
+  /** Number of cells per axis for the `grid` rendering type. */
   gridSize = input(20);
+  /** Two-way base hue in degrees driving the gradients. */
   hue = model(0);
+  /** Orientation for linear pickers (`horizontal` or `vertical`). */
   direction = input<'horizontal' | 'vertical'>('horizontal');
+  /** Two-way selected color as an `[r, g, b, a?]` tuple. */
   selectedColor = model<[R, G, B, A?]>([255, 255, 255, 1]);
+  /** Two-way alpha channel (0–1). */
   alpha = model(1);
+  /** Emits the current color in every format (`rgb`, `rgba`, `hex`, `hex8`, `hsl`, `hsla`) plus hue, saturation and alpha. */
   currentColor = output<{
     rgb: string;
     rgba: string;

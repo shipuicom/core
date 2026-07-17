@@ -19,10 +19,14 @@ export type ShipAlertItemInternal = ShipAlertItem & {
   providedIn: 'root',
 })
 export class ShipAlertService {
+  /** Reactive list of active/queued alerts, newest first. */
   alertHistory = signal<ShipAlertItemInternal[]>([]);
+  /** Whether the alert history panel is expanded. */
   alertHistoryIsOpen = signal<boolean>(false);
+  /** Whether the alert history panel is hidden. */
   alertHistoryIsHidden = signal<boolean>(true);
 
+  /** Show an `error` alert (falls back to a default message when none is given). */
   error(message: string | null | undefined) {
     this.addAlert({
       type: 'error',
@@ -30,6 +34,7 @@ export class ShipAlertService {
     });
   }
 
+  /** Show a `success` alert with the given message. */
   success(message: string) {
     this.addAlert({
       type: 'success',
@@ -37,6 +42,7 @@ export class ShipAlertService {
     });
   }
 
+  /** Show a `question` alert with the given message. */
   question(message: string) {
     this.addAlert({
       type: 'question',
@@ -44,6 +50,7 @@ export class ShipAlertService {
     });
   }
 
+  /** Show a `warn` alert with the given message. */
   warning(message: string) {
     this.addAlert({
       type: 'warn',
@@ -51,6 +58,7 @@ export class ShipAlertService {
     });
   }
 
+  /** Show an informational (`primary`) alert with the given message. */
   info(message: string) {
     this.addAlert({
       type: 'primary',
@@ -58,6 +66,7 @@ export class ShipAlertService {
     });
   }
 
+  /** Add an alert to the history, animate it in, and auto-hide it after a timeout. */
   addAlert(alert: ShipAlertItem) {
     const id = generateUniqueId();
 
@@ -80,6 +89,7 @@ export class ShipAlertService {
     }, 2500);
   }
 
+  /** Animate out and remove the alert with the given `id` from the history. */
   removeAlert(id: string) {
     this.alertHistory.update((history) =>
       history.map((item) => ({
@@ -93,6 +103,7 @@ export class ShipAlertService {
     }, 300);
   }
 
+  /** Mark the alert with the given `id` as closed without removing it from the history. */
   hideAlert(id: string) {
     this.alertHistory.update((history) =>
       history.map((item) => ({
@@ -102,6 +113,7 @@ export class ShipAlertService {
     );
   }
 
+  /** Set whether the alert history panel is hidden. */
   setHidden(isHidden: boolean) {
     this.alertHistoryIsHidden.set(isHidden);
   }

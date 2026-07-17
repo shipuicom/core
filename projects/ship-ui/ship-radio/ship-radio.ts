@@ -44,12 +44,18 @@ export class ShipRadio {
     attributes: true,
   });
 
+  /** Two-way bound checked state of the radio. */
   checked = model<boolean>(false);
   currentClassList = classMutationSignal();
+  /** Color theme of the radio (`ShipColor`). */
   color = input<ShipColor | null>(null);
+  /** Visual sheet variant of the radio (`ShipSheetVariant`). */
   variant = input<ShipSheetVariant | null>(null);
+  /** When `true`, the radio is displayed but cannot be changed by the user. */
   readonly = input<boolean>(false);
+  /** When `true`, the radio is disabled and non-interactive. */
   disabled = input<boolean>(false);
+  /** When `true`, suppresses the built-in `<input type="radio">` and drives ARIA roles on the host instead. */
   noInternalInput = input<boolean>(false);
 
   onInternalInputChange(event: Event) {

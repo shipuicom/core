@@ -16,6 +16,7 @@ import { ShipColor } from '@ship-ui/core';
   },
 })
 export class ShipSpinner {
+  /** Color theme applied to the spinner. */
   color = input<ShipColor | null>(null);
 
   hostClasses = shipComponentClasses('spinner', {

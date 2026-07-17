@@ -20,7 +20,9 @@ import { ShipSelectionGroup } from '@ship-ui/core';
 export class ShipTabs extends ShipSelectionGroup<string> {
   id = '--' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 12);
 
+  /** Color theme applied to the tabs. */
   color = input<ShipColor | null>(null);
+  /** Sheet variant styling applied to the tabs. */
   variant = input<ShipSheetVariant | null>(null);
   
   constructor() {

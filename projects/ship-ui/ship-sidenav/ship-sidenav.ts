@@ -87,7 +87,9 @@ export class ShipSidenav {
   openWidth = 280;
   openWidthTreshold = this.openWidth * 0.5;
 
+  /** When `true`, disables drag/swipe gestures for opening and closing the sidenav. */
   disableDrag = input<boolean>(false);
+  /** Two-way bound open/closed state of the sidenav. */
   isOpen = model<boolean>(false);
   isOverlay = watchHostClass('overlay');
 

@@ -32,14 +32,20 @@ export class ShipFileUpload {
   _el = inject(ElementRef);
   inputRef = viewChild.required<ElementRef<HTMLInputElement>>('input');
   filesOver = signal(false);
+  /** Allows selecting more than one file when `true`. */
   multiple = input<boolean | null>();
+  /** Accepted file types, forwarded to the input's `accept` attribute. */
   accept = input<string | null>(null);
+  /** Prompt text shown when no files are selected. Two-way bindable. */
   placeholder = model<string>('Click or drag files here');
+  /** Prompt text shown while files are being dragged over the drop zone. */
   overlayText = input<string>('Drop files here');
+  /** Currently selected files. Two-way bindable. */
   files = model<File[]>([]);
 
   fileUploadClasses = computed(() => this._el.nativeElement.classList.toString());
 
+  /** Adds `newFiles` to the selection, appending when `multiple` is set or replacing otherwise. */
   handleFileUpload(newFiles: File[]) {
     if (this.multiple()) {
       this.files.update((currentFiles) => [...currentFiles, ...newFiles]);

@@ -25,8 +25,11 @@ import { ShipThemeOption, ShipThemeState } from './ship-theme-state';
 export class ShipThemeToggle {
   #themeState = inject(ShipThemeState);
 
+  /** Theme color applied to the underlying toggle button. */
   color = input<ShipColor | null>(null);
+  /** Visual variant applied to the underlying toggle button. */
   variant = input<ShipSheetVariant | null>(null);
+  /** Size of the underlying toggle button. */
   size = input<ShipButtonSize | null>('small');
 
   theme = this.#themeState.theme;
@@ -35,6 +38,7 @@ export class ShipThemeToggle {
     this.#themeState.toggleTheme();
   }
 
+  /** Sets the active theme explicitly to `'light'`, `'dark'`, or `null` (system default). */
   setTheme(theme: ShipThemeOption) {
     this.#themeState.setTheme(theme);
   }

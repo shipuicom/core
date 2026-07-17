@@ -27,8 +27,10 @@ export class ShipIcon implements AfterContentInit {
   #document = inject(DOCUMENT);
   #platformId = inject(PLATFORM_ID);
 
+  /** Theme color applied to the icon (`ShipColor`); `null` inherits the current color. */
   color = input<ShipColor | null>(null);
 
+  /** Icon size preset (`ShipIconSize`); `null` uses the default size. */
   size = input<ShipIconSize | null>(null);
 
   isUnfocused = signal(

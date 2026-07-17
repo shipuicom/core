@@ -60,13 +60,17 @@ export class ShipDaterangeInput {
   });
 
   #datePipe = inject(DatePipe);
+  /** Number of consecutive month grids shown in the picker popover. */
   monthsToShow = input<number>(1);
+  /** `DatePipe` format used to render the masked start/end date display (empty disables masking). */
   masking = input('mediumDate');
+  /** Emits the selected `{ start, end }` range when the picker popover closes. */
   closed = output<{ start: Date | null; end: Date | null }>();
 
   startDate = signal<Date | null>(null);
   endDate = signal<Date | null>(null);
   activeInput = signal<'start' | 'end'>('start');
+  /** Whether the range picker popover is open. Two-way bindable. */
   isOpen = model<boolean>(false);
   datepicker = viewChild(ShipDatepicker);
 

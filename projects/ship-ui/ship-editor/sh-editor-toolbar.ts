@@ -11,6 +11,7 @@ import { ShipEditor } from './ship-editor';
   styleUrl: './sh-editor-toolbar.scss',
 })
 export class ShipEditorToolbar {
+  /** The editor the toolbar controls; defaults to the enclosing `<sh-editor>` when omitted. */
   editorInput = input<ShipEditor | null>(null, { alias: 'editor' });
   #parentEditor = inject(ShipEditor, { optional: true });
 
@@ -19,5 +20,6 @@ export class ShipEditorToolbar {
     if (!e) throw new Error('[sh-editor-toolbar] missing editor reference.');
     return e;
   });
+  /** Placement of the toolbar relative to the editor: `top`, `bottom`, or `none`. */
   position = input<'top' | 'bottom' | 'none'>('none');
 }

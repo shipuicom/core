@@ -46,7 +46,9 @@ export class ShipRangeSlider {
   #inputElement: HTMLInputElement | null = null;
   #initialDefaultValue = 0;
 
+  /** Unit suffix appended to the displayed min, max and current values (e.g. `%`, `px`). */
   unit = input<string>('');
+  /** Two-way bound current value of the slider, kept in sync with the projected range input. */
   value = model<number>(this.#initialDefaultValue);
 
   inputState = signal({
@@ -55,10 +57,15 @@ export class ShipRangeSlider {
     step: 1,
   });
 
+  /** Color theme of the slider (`ShipColor`). */
   color = input<ShipColor | null>(null);
+  /** Visual variant of the slider (`ShipRangeSliderVariant`). */
   variant = input<ShipRangeSliderVariant | null>(null);
+  /** Size of the slider (`ShipSize`). */
   size = input<ShipSize | null>(null);
+  /** When `true`, renders the slider with sharp (non-rounded) corners. */
   sharp = input<boolean | undefined>(undefined);
+  /** When `true`, always shows the value indicator instead of only while interacting. */
   alwaysShow = input<boolean | undefined>(undefined);
 
   hostClasses = shipComponentClasses('rangeSlider', {
@@ -119,6 +126,7 @@ export class ShipRangeSlider {
     }
   }
 
+  /** Parses and clamps a string value to the slider's min/max range, then updates `value`. */
   setNewInputValue(value: string) {
     const inputValue = parseFloat(value ?? '0');
 

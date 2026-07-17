@@ -67,15 +67,24 @@ import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings'
 export class ShipDatepicker {
   #INIT_DATE = new Date(new Date().setHours(0, 0, 0, 0));
 
+  /** Selected date; the range start date when `asRange` is enabled. Two-way bindable. */
   date = model<Date | null>(null);
+  /** Selected range end date when `asRange` is enabled. Two-way bindable. */
   endDate = model<Date | null>(null);
+  /** When `true`, selects a date range instead of a single date. */
   asRange = input<boolean>(false);
+  /** Which end of the range is currently being edited: `'start'`, `'end'`, or `null`. */
   activeRangeSelection = input<'start' | 'end' | null>(null);
+  /** Number of consecutive month grids to display side by side. */
   monthsToShow = input<number>(1);
+  /** Disables date selection. */
   disabled = input<boolean>(false);
+  /** Emits when keyboard focus leaves the datepicker (e.g. tabbing out). */
   tabbedOut = output<void>();
 
+  /** Index of the first weekday column (`0` = Sunday, `1` = Monday). */
   startOfWeek = input<number>(1);
+  /** Weekday column labels, ordered Sunday through Saturday. */
   weekdayLabels = input<string[]>(['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']);
 
   daysRef = viewChild<ElementRef<HTMLDivElement>>('daysRef');
@@ -115,17 +124,20 @@ export class ShipDatepicker {
     this.#findSelectedAndCalc();
   });
 
+  /** Returns the date of the last month currently visible in the grid. */
   getLastVisibleMonth(): Date {
     const lastMonthOffset = this.monthsToShow() - 1;
     return this.getOffsetDate(lastMonthOffset);
   }
 
+  /** Returns `currentDate` advanced by `monthOffset` months. */
   getOffsetDate(monthOffset: number): Date {
     const date = new Date(this.currentDate());
     date.setMonth(date.getMonth() + monthOffset);
     return date;
   }
 
+  /** Returns the full calendar-grid dates for the month at `monthOffset`, including padding days. */
   getMonthDates(monthOffset: number): Date[] {
     const offsetDate = this.getOffsetDate(monthOffset);
     return this.#generateMonthDates(offsetDate, this.startOfWeek());
@@ -291,6 +303,7 @@ export class ShipDatepicker {
     this.setSelectedDateStylePosition(selectedElement);
   }
 
+  /** Returns the space-separated CSS selection classes for `date`, or `null` if unselected. */
   isDateSelected(date: Date): string | null {
     let startDate: any = this.date();
     let endDate: any = this.endDate();
@@ -369,6 +382,7 @@ export class ShipDatepicker {
     return classes.join(' ') || null;
   }
 
+  /** Moves the sliding selection highlight to cover the given day element. */
   setSelectedDateStylePosition(selectedElement: HTMLElement) {
     this.selectedDateStylePosition.set({
       transform: `translate(${selectedElement.offsetLeft}px, ${selectedElement.offsetTop}px)`,
@@ -376,15 +390,18 @@ export class ShipDatepicker {
     });
   }
 
+  /** Returns the localized full month name for `date`. */
   getMonthName(date: Date): string {
     return date.toLocaleString('default', { month: 'long' });
   }
 
+  /** Returns the four-digit year of `date`. */
   getFullYear(date: Date): number {
     return date.getFullYear();
   }
 
   // Rest of the component methods remain the same, but update isCurrentMonth:
+  /** Whether `date` belongs to the month shown at `monthOffset` (vs. a padding day). */
   isCurrentMonth(date: Date, monthOffset: number): boolean {
     const offsetDate = this.getOffsetDate(monthOffset);
     return date.getMonth() === offsetDate.getMonth();
@@ -393,6 +410,7 @@ export class ShipDatepicker {
   focusedDate = signal<Date | null>(null);
   #selfRef = inject(ElementRef);
 
+  /** Whether two dates fall on the same calendar day. */
   isSameDay(d1: Date | null | undefined, d2: Date | null | undefined): boolean {
     if (!d1 || !d2) return false;
     return d1.getFullYear() === d2.getFullYear() &&
@@ -400,10 +418,12 @@ export class ShipDatepicker {
            d1.getDate() === d2.getDate();
   }
 
+  /** Returns the localized accessible label for `date`'s day button. */
   getAriaLabel(date: Date): string {
     return date.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   }
 
+  /** Returns the roving tabindex (`0` or `-1`) for `date`'s day button. */
   getTabIndex(date: Date): number {
     const focused = this.focusedDate();
     const selected = this.date();
@@ -418,6 +438,7 @@ export class ShipDatepicker {
     return this.isSameDay(date, today) ? 0 : -1;
   }
 
+  /** Whether `date` is part of the current selection. */
   isDateSelectedBool(date: Date): boolean {
     const classes = this.isDateSelected(date);
     return classes ? classes.includes('sel') : false;
@@ -485,6 +506,7 @@ export class ShipDatepicker {
     }
   }
 
+  /** Shifts the visible months so that `date` is within the displayed range. */
   ensureDateVisible(date: Date) {
     const start = this.currentDate();
     const end = this.getLastVisibleMonth();
@@ -501,6 +523,7 @@ export class ShipDatepicker {
     }
   }
 
+  /** Moves DOM focus to the currently active (tabbable) day button. */
   focusActiveDate() {
     setTimeout(() => {
       const activeBtn = this.#selfRef.nativeElement.querySelector('button[tabindex="0"]') as HTMLButtonElement;

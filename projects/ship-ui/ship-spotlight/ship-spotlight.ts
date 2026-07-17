@@ -196,16 +196,21 @@ export class ShipSpotlight {
   inputRef = viewChild<ElementRef<HTMLInputElement>>('inputRef');
   resultsRef = viewChild<ElementRef<HTMLDivElement>>('resultsRef');
 
-  
+  /** Bulk configuration object; convenient when opening the spotlight from the service. Individual inputs below take precedence when both are set. */
   data = input<ShipSpotlightServiceOptions>();
 
-  
+  /** The searchable items to display, grouped by their optional `category`. */
   items = input<ShipSpotlightItem[]>([]);
+  /** Placeholder text shown in the search field while it is empty. */
   placeholder = input<string>('Search actions, settings, or pages...');
+  /** Disable the built-in fuzzy filtering and emit the raw query instead — bind `searchQuery` to filter items yourself (e.g. for a remote API). */
   customFilter = input<boolean>(false);
+  /** Two-way bound current search text. Read it to drive custom filtering; write it to preset or clear the query. */
   searchQuery = model<string>('');
 
+  /** Emits the chosen item when the user selects a result. */
   itemSelected = output<ShipSpotlightItem>();
+  /** Emits when the spotlight overlay is dismissed. */
   closed = output<void>();
 
   
@@ -329,6 +334,7 @@ export class ShipSpotlight {
     this.closed.emit();
   }
 
+  /** Scrolls the currently active result into view within the results list. */
   scrollToActiveItem() {
     const resultsEl = this.resultsRef()?.nativeElement;
     if (!resultsEl) return;
@@ -339,6 +345,7 @@ export class ShipSpotlight {
     }
   }
 
+  /** Splits a `+`-delimited shortcut string into its individual, lower-cased key tokens. */
   parseShortcutKeys(shortcut: string): string[] {
     if (!shortcut) return [];
     return shortcut.split('+').map((s) => s.trim().toLowerCase());

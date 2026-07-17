@@ -45,25 +45,31 @@ export class ShipTreeItemIcon {
 })
 export class ShipTree {
   
+  /** Two-way bound flat list of tree nodes; updated in place when folders are toggled. */
   items = model<any[]>([]);
 
-  
+  /** Optional external sortable manager used for drag-and-drop reordering and computing visible nodes. */
   sortableManager = input<any>(null);
 
-  
+  /** Two-way bound id of the currently selected node. */
   selectedId = model<string | null>(null);
 
-  
+  /** Accessor returning the unique id of a node. */
   getId = input<(item: any) => string>((item) => item.id);
+  /** Accessor returning the display name of a node. */
   getName = input<(item: any) => string>((item) => item.name);
+  /** Accessor returning the parent id of a node, or `null` for root nodes. */
   getParentId = input<(item: any) => string | null>((item) => item.parentId);
+  /** Predicate deciding whether a node is a folder (expandable). */
   isFolder = input<(item: any) => boolean>((item) => item.type === 'dir');
+  /** Accessor returning whether a folder node is currently expanded. */
   getIsOpen = input<(item: any) => boolean>((item) => !!item.isOpen);
+  /** Setter that updates a node's expanded state. */
   setIsOpen = input<(item: any, isOpen: boolean) => void>((item, open) => {
     item.isOpen = open;
   });
 
-  
+  /** Accessor returning a custom icon name for a node, overriding the default folder/file icons. */
   getIcon = input<(item: any) => string | null>(() => null);
 
   
@@ -76,7 +82,9 @@ export class ShipTree {
   itemIconName = computed(() => this.itemIconDir()?.el.nativeElement.textContent?.trim() || null);
 
   
+  /** Emits the node when it is selected (clicked). */
   nodeClick = output<any>();
+  /** Emits the node and its new expanded state when a folder is toggled. */
   nodeToggle = output<{ node: any; isOpen: boolean }>();
 
   nodeTemplate = contentChild<TemplateRef<any>>('nodeTemplate');
@@ -142,15 +150,18 @@ export class ShipTree {
     }
   }
 
+  /** Marks the given node as selected and emits `nodeClick`. */
   selectNode(node: any) {
     this.selectedId.set(this.getId()(node));
     this.nodeClick.emit(node);
   }
 
+  /** Returns an index array of the given length, used to render one indent guide per depth level. */
   getDepthArray(depth: number): number[] {
     return Array.from({ length: depth }, (_, i) => i);
   }
 
+  /** Computes a node's nesting depth by walking its chain of parents. */
   getNodeDepth(node: any): number {
     const list = this.items();
     let depth = 0;
@@ -164,6 +175,7 @@ export class ShipTree {
     return depth;
   }
 
+  /** Resolves the icon name for a node: a custom icon if provided, otherwise the open/closed folder or item icon. */
   getNodeIcon(node: any): string | null {
     const customIcon = this.getIcon()(node);
     if (customIcon) return customIcon;

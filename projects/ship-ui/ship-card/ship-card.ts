@@ -16,7 +16,9 @@ import { ShipCardVariant, ShipColor } from '@ship-ui/core';
   },
 })
 export class ShipCard {
+  /** Semantic color scale (`primary`, `accent`, `warn`, `error`, `success`). */
   color = input<ShipColor | null>(null);
+  /** Visual variant of the card. */
   variant = input<ShipCardVariant | null>(null);
 
   hostClasses = shipComponentClasses('card', {

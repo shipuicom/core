@@ -45,11 +45,17 @@ export class ShipToggle {
     attributes: true,
   });
 
+  /** Two-way bound checked state of the toggle. */
   checked = model<boolean>(false);
+  /** Color theme applied to the toggle. */
   color = input<ShipColor | null>(null);
+  /** Sheet variant styling applied to the toggle. */
   variant = input<ShipSheetVariant | null>(null);
+  /** When `true`, the toggle displays its state but cannot be changed by the user. */
   readonly = input<boolean>(false);
+  /** When `true`, the toggle is disabled and non-interactive. */
   disabled = input<boolean>(false);
+  /** When `true`, no internal `<input>` is rendered and the host acts as an ARIA `switch`. */
   noInternalInput = input<boolean>(false);
 
   onInternalInputChange(event: Event) {

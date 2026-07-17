@@ -99,15 +99,24 @@ export class ShipMenu {
 
   parentMenu = inject(ShipMenu, { optional: true, skipSelf: true });
   isSubmenu = computed(() => this.parentMenu !== null);
+  /** Position the menu as a nested multi-layer flyout (used for submenus). */
   asMultiLayer = input<boolean>(false);
+  /** Show a caret-down indicator on the trigger to signal an openable menu. */
   openIndicator = input(false);
+  /** Disable the menu so it cannot be opened or interacted with. */
   disabled = input<boolean>(false);
+  /** CSS selectors used to collect the menu's option elements (defaults to `button`). */
   customOptionElementSelectors = input<string[]>(['button']);
+  /** Keep the clicked option marked active after selection instead of resetting. */
   keepClickedOptionActive = input<boolean>(false);
+  /** Close the menu automatically when an option is clicked. */
   closeOnClick = input<boolean>(true);
+  /** Two-way bound open/closed state of the menu. */
   isOpen = model<boolean>(false);
+  /** Emits when the menu closes; `true` when closing via an active selection. */
   closed = output<boolean>();
 
+  /** Enable the search input for filtering and fuzzy-matching options. */
   searchable = input<boolean>(false);
   activeOptionIndex = signal<number>(-1);
   inputRef = viewChild<ElementRef<HTMLInputElement>>('inputRef');
@@ -375,6 +384,7 @@ export class ShipMenu {
     }
   }
 
+  /** Open the menu (no-op when disabled); focuses the search input when searchable. */
   open() {
     if (this.disabled()) return;
     this.isOpen.set(true);
@@ -459,6 +469,7 @@ export class ShipMenu {
     }
   });
 
+  /** Returns the next selectable option index after `activeIndex`, skipping disabled options and wrapping around. */
   nextActiveIndex(activeIndex: number): number {
     let optionElements = this.activeElements();
 
@@ -485,6 +496,7 @@ export class ShipMenu {
     return nextIndex;
   }
 
+  /** Returns the previous selectable option index before `activeIndex`, skipping disabled options and wrapping around. */
   prevActiveIndex(activeIndex: number): number {
     let optionElements = this.activeElements();
 

@@ -190,12 +190,18 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
   asDots = computed(() => this.#currentClass().includes('dots'));
   lightMode = computed(() => this.#htmlClass().includes('light'));
 
+  /** De-duplicate node and port ids on init instead of surfacing a validation error. */
   forceUnique = input<boolean>(true);
+  /** Run the auto-layout algorithm once after the view initialises. */
   autoLayout = input<boolean>(false);
+  /** Spacing in pixels of the background grid. */
   gridSize = input(20);
+  /** Snap dragged nodes to the grid (also forced while holding Shift). */
   snapToGrid = input<boolean>(true);
+  /** Grid line/dot color as a `[light, dark]` pair, chosen by the document theme. */
   gridColor = input<[string, string]>(['#d8d8d8', '#2c2c2c']);
 
+  /** Two-way bound graph of nodes, their ports, and connections. */
   nodes = model<BlueprintNode[]>([]);
 
   #currentGridColor = computed(() => this.gridColor()[this.lightMode() ? 0 : 1]);
@@ -387,11 +393,13 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     this.handleTouchEnd();
   }
 
+  /** Recompute node positions with the auto-layout algorithm and update `nodes`. */
   applyAutolayout() {
     const newNodes = layoutNodes(this.nodes());
     this.nodes.set(newNodes);
   }
 
+  /** Resize the canvas to the host's bounds (accounting for device pixel ratio) and redraw. */
   updateCanvasSize() {
     const canvas = this.canvasRef().nativeElement;
     const rect = this.#selfRef.nativeElement.getBoundingClientRect();
@@ -408,6 +416,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     this.drawCanvas();
   }
 
+  /** Clear and redraw the canvas grid, connections, and any in-progress connection at the current pan/zoom. */
   drawCanvas() {
     if (!this.#ctx) return;
 
@@ -648,6 +657,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     this.cancelPortDrag();
   }
 
+  /** Abort an in-progress connection drag, discarding the pending link. */
   cancelPortDrag() {
     this.draggingConnection.set(null);
   }
@@ -662,6 +672,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     this.draggingConnection.update((conn) => (conn ? { ...conn, x2, y2 } : conn));
   }
 
+  /** Return the world-space `[x, y]` position of a node's port, measuring the DOM when available. */
   getNodePortPosition(nodeId: string, portId: string): Coordinates {
     const node = this.nodes().find((n) => n.id === nodeId);
 
@@ -793,12 +804,14 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     }
   }
 
+  /** Hide the connection-removal midpoint control and unlock the canvas. */
   closeMidpointDiv() {
     this.showMidpointDiv.set(false);
     this.midpointDivPosition.set(null);
     this.isLocked.set(false);
   }
 
+  /** Return the CSS `translate(...)` transform for a node, using live drag coordinates while it is being dragged. */
   getDisplayCoordinates(node: BlueprintNode) {
     const draggedId = this.#draggedNodeId();
     const draggingCoords = this.#draggingNodeCoordinates();
@@ -810,6 +823,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     return `translate(${node.coordinates[0]}px, ${node.coordinates[1]}px)`;
   }
 
+  /** Remove the currently highlighted connection from both the render list and the `nodes` model. */
   removeConnection() {
     const conn = this.highlightedConnection();
 
@@ -996,6 +1010,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     return false;
   }
 
+  /** Compute coordinates for a new node below the existing ones, optionally panning the view to them. */
   getNewNodeCoordinates(panToCoordinates = false): Coordinates {
     let lowestY = 0;
     if (this.nodes().length > 0) {

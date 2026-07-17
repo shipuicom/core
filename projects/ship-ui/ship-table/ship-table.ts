@@ -59,8 +59,11 @@ export class ShipResize {
   #injector = inject(Injector);
   #sort = signal<ShipSort | null>(null);
 
+  /** Whether the column header can be resized by dragging or keyboard shortcuts. */
   resizable = input<boolean>(true);
+  /** Minimum width in pixels the column can be resized to. */
   minWidth = input<number>(50);
+  /** Maximum width in pixels the column can be resized to, or `null` for no cap. */
   maxWidth = input<number | null>(null);
 
   resizingClass = signal(false);
@@ -277,6 +280,7 @@ export class ShipSort {
   #injector = inject(Injector);
   #el = inject(ElementRef) as ElementRef<HTMLTableCellElement>;
   #resize = signal<ShipResize | null>(null);
+  /** The column id to sort by; when set, the header becomes an interactive sort control. */
   shSort = input<string | undefined>();
 
   ngOnInit() {
@@ -383,6 +387,7 @@ export class ShipSort {
     return 'none';
   });
 
+  /** Cycles this column's sort direction (ascending, descending, none) on the parent table. */
   toggleSort(event?: Event) {
     if (event) {
       const target = event.target as HTMLElement;
@@ -423,6 +428,7 @@ export class ShipStickyColumns {
   #elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   #renderer = inject(Renderer2);
 
+  /** Which edge the cells stick to while scrolling horizontally: `'start'` (default) or `'end'`. */
   shStickyColumns = input<'start' | 'end' | (string & {})>('start');
 
   ngAfterContentInit() {
@@ -508,18 +514,27 @@ export class ShipTable {
   #renderer = inject(Renderer2);
   #keybindings = inject(ShipA11yKeybindingsService);
 
+  /** Enables grid semantics and full keyboard cell navigation (`role="grid"`) instead of a plain table. */
   grid = input<boolean>(false);
   role = computed(() => (this.grid() ? 'grid' : 'table'));
 
+  /** Shows an indeterminate progress bar and marks the table as `aria-busy`. */
   loading = input<boolean>(false);
+  /** The row data rendered by the table. */
   data = input<any>([]);
+  /** Emits the reordered data whenever the active sort changes. */
   dataChange = output<any>();
+  /** Two-way bound active sort, as a column id or `-id` for descending; `null` when unsorted. */
   sortByColumn = model<string | null>(null);
 
+  /** Color theme applied to the table. */
   color = input<ShipColor | null>(null);
+  /** Visual variant of the table. */
   variant = input<ShipTableVariant | null>(null);
 
+  /** Accessible label for the table. */
   ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+  /** Id of the element that labels the table. */
   ariaLabelledby = input<string | null>(null, { alias: 'aria-labelledby' });
 
   hostClasses = shipComponentClasses('table', {
@@ -667,6 +682,7 @@ export class ShipTable {
     }, '');
   });
 
+  /** Recomputes the CSS grid column template after a column has been resized. */
   updateColumnSizes() {
     this.sizeTrigger.set(!this.sizeTrigger());
   }
@@ -929,6 +945,7 @@ export class ShipTable {
     }
   });
 
+  /** Cycles the given column through ascending, descending, and unsorted states. */
   toggleSort(column: string) {
     const currentSort = this.sortByColumn();
     const sortDir = currentSort === column ? `-${column}` : currentSort === `-${column}` ? null : column;
@@ -1062,7 +1079,9 @@ export class ShipTable {
 export class ShipTableContent {
   #table = inject(ShipTable);
 
+  /** Column definitions describing how each column is rendered, sorted, and formatted. */
   columns = input<ShipTableColumn[]>([]);
+  /** The row data rendered into table rows. */
   data = input<any[]>([]);
 
   sortByColumn = this.#table.sortByColumn;
@@ -1071,6 +1090,7 @@ export class ShipTableContent {
   thead = viewChild<ElementRef<HTMLTableSectionElement>>('thead');
   tbody = viewChild<ElementRef<HTMLTableSectionElement>>('tbody');
 
+  /** Reads a cell value from a row using the column's `accessorKey` or `id`, supporting dotted paths. */
   getValue(row: any, col: ShipTableColumn): any {
     if (!row) return '';
     const key = col.accessorKey || col.id;
@@ -1080,6 +1100,7 @@ export class ShipTableContent {
     return row[key as any];
   }
 
+  /** Formats a value as a locale date string, falling back to the raw value when it is not a valid date. */
   formatDate(value: any): string {
     if (!value) return '';
     const date = new Date(value);

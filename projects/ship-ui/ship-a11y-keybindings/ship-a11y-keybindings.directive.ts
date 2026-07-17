@@ -25,27 +25,19 @@ export class ShipA11yKeybindingsDirective {
   
 
 
+  /** Keybinding action id to bind to the host (looked up in `ShipA11yKeybindingsService`). */
   shA11yKeybinding = input.required<string>();
 
-  
-
-
-
+  /** Listen scope: `local` reacts only to key events on the host, `global` listens on `window`. */
   mode = input<'global' | 'local'>('local');
 
-  
-
-
+  /** Call `preventDefault()` on the keyboard event when the shortcut matches. */
   preventDefault = input<boolean>(true);
 
-  
-
-
+  /** Call `stopPropagation()` on the keyboard event when the shortcut matches. */
   stopPropagation = input<boolean>(true);
 
-  
-
-
+  /** Emit the originating `KeyboardEvent` when the bound shortcut is triggered. */
   triggered = output<KeyboardEvent>();
 
   constructor() {

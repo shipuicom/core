@@ -65,6 +65,7 @@ export class ShipDialogService {
   closedFieldSub: OutputRefSubscription | null = null;
   compClosedSub: OutputRefSubscription | null = null;
 
+  /** Opens a component or template in a `ShipDialog`, returning a handle to close it and observe its result. */
   open<
     I,
     K = ComponentDataType<I>,

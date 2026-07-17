@@ -56,12 +56,18 @@ import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
 export class ShipFormFieldPopover {
   #selfRef = inject(ElementRef);
 
+  /** Whether the popover is open. Two-way bindable. */
   isOpen = model<boolean>(false);
+  /** Emits when the popover closes. */
   closed = output<void>();
 
+  /** Color theme applied to the field. */
   color = input<ShipColor | null>(null);
+  /** Visual variant of the form field. */
   variant = input<ShipFormFieldVariant | null>(null);
+  /** Size of the form field. */
   size = input<ShipSize | null>(null);
+  /** Renders the field in a read-only state. */
   readonly = input<boolean>(false);
 
   hostClasses = shipComponentClasses('formField', {

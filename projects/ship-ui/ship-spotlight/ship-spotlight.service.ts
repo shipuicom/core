@@ -56,6 +56,7 @@ export class ShipSpotlightService {
     }
   }
 
+  /** Register items to appear whenever the spotlight opens. Returns a cleanup function that unregisters them (auto-called on the caller's `DestroyRef`). */
   registerItems(items: ShipSpotlightItem[], overwrite = false): () => void {
     const id = this.#nextId++;
     this.#registries.update((regs) => [...regs, { id, items, overwrite }]);
@@ -76,6 +77,7 @@ export class ShipSpotlightService {
 
   #contextualRegistryId: number | null = null;
 
+  /** Replace the current context's items (e.g. for the active route/view). Supersedes any previous contextual set. */
   setContextualItems(items: ShipSpotlightItem[], overwrite = false) {
     if (this.#contextualRegistryId !== null) {
       const oldId = this.#contextualRegistryId;
@@ -86,6 +88,7 @@ export class ShipSpotlightService {
     this.#registries.update((regs) => [...regs, { id, items, overwrite }]);
   }
 
+  /** Remove the items registered via `setContextualItems`. */
   clearContextualItems() {
     if (this.#contextualRegistryId !== null) {
       const oldId = this.#contextualRegistryId;
@@ -97,6 +100,7 @@ export class ShipSpotlightService {
   #globalShortcutListener: ((event: KeyboardEvent) => void) | null = null;
   #globalShortcutOptions: Partial<ShipSpotlightServiceOptions> | null = null;
 
+  /** Register the global `Cmd/Ctrl + K` listener that opens the spotlight. Optionally seed the options used for that global instance. */
   enableGlobalShortcuts(options?: Partial<ShipSpotlightServiceOptions>): void {
     if (this.#globalShortcutListener) {
       this.disableGlobalShortcuts();
@@ -125,6 +129,7 @@ export class ShipSpotlightService {
     this.#document.addEventListener('keydown', this.#globalShortcutListener);
   }
 
+  /** Remove the global `Cmd/Ctrl + K` listener registered by `enableGlobalShortcuts`. */
   disableGlobalShortcuts(): void {
     if (this.#globalShortcutListener) {
       this.#document.removeEventListener('keydown', this.#globalShortcutListener);
@@ -133,6 +138,7 @@ export class ShipSpotlightService {
     this.#isShortcutsEnabled.set(false);
   }
 
+  /** Open the spotlight overlay imperatively and return a handle with `itemSelected` / `closed` observables. */
   open(options?: ShipSpotlightServiceOptions): ShipSpotlightInstance {
     const finalOptions = {
       ...options,

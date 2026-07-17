@@ -22,8 +22,11 @@ export type ShipProgressBarMode = 'determinate' | 'indeterminate';
   },
 })
 export class ShipProgressBar {
+  /** Progress percentage from `0` to `100`; `undefined` renders an indeterminate bar. */
   value = input<number | undefined>(undefined);
+  /** Color theme of the progress bar (`ShipColor`). */
   color = input<ShipColor | null>(null);
+  /** Visual sheet variant of the progress bar (`ShipSheetVariant`). */
   variant = input<ShipSheetVariant | null>(null);
 
   hostClasses = shipComponentClasses('progressBar', {

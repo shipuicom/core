@@ -23,6 +23,7 @@ import { ShipColor, shipComponentClasses, ShipSelectionGroup } from '@ship-ui/co
   },
 })
 export class ShipStepper extends ShipSelectionGroup<string> {
+  /** Color theme applied to the stepper. */
   color = input<ShipColor | null>(null);
 
   constructor() {
@@ -67,6 +68,7 @@ export class ShipStepper extends ShipSelectionGroup<string> {
     }
   }
 
+  /** Recalculates the active step position and updates the `--stepper-progress` CSS variable. */
   updateProgress() {
     const items = Array.from(
       this.hostElement.querySelectorAll('[value], [step], [routerLinkActive], button, a')

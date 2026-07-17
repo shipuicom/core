@@ -50,12 +50,18 @@ export class ShipCheckbox {
     attributes: true,
   });
 
+  /** Two-way checked state of the checkbox. */
   checked = model<boolean>(false);
   currentClassList = classMutationSignal();
+  /** Semantic color scale (`primary`, `accent`, `warn`, `error`, `success`). */
   color = input<ShipColor | null>(null);
+  /** Visual variant of the checkbox sheet. */
   variant = input<ShipSheetVariant | null>(null);
+  /** Render in a non-interactive read-only state. */
   readonly = input<boolean>(false);
+  /** Disable interaction. */
   disabled = input<boolean>(false);
+  /** Suppress the internal `<input>` and expose the host element itself as the ARIA checkbox. */
   noInternalInput = input<boolean>(false);
 
   onInternalInputChange(event: Event) {

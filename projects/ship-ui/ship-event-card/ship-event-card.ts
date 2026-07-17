@@ -24,7 +24,9 @@ import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
   },
 })
 export class ShipEventCard {
+  /** Color theme applied to the card. */
   color = input<ShipColor | null>(null);
+  /** Sheet visual variant of the card. */
   variant = input<ShipSheetVariant | null>(null);
 
   hostClasses = shipComponentClasses('event-card', {

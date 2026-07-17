@@ -54,9 +54,12 @@ export class ShipListItemSwipe implements OnDestroy {
   actionsLeftEl = viewChild.required<ElementRef<HTMLElement>>('actionsLeft');
   actionsRightEl = viewChild.required<ElementRef<HTMLElement>>('actionsRight');
 
+  /** Fraction of the actions' width (0-1) the item must be dragged past to snap open on release. */
   swipeThreshold = input<number>(0.3);
 
+  /** Emits the side (`'left'` or `'right'`) when the item snaps open. */
   swipeOpen = output<'left' | 'right'>();
+  /** Emits when the item returns to its closed position. */
   swipeClose = output<void>();
 
   #startX = 0;
@@ -172,6 +175,7 @@ export class ShipListItemSwipe implements OnDestroy {
     }
   }
 
+  /** Animates the item open to reveal the actions on the given `side` and emits `swipeOpen`. */
   open(side: 'left' | 'right') {
     if (side === 'left') {
       const leftWidth = this.actionsLeftEl().nativeElement.offsetWidth || 0;
@@ -188,6 +192,7 @@ export class ShipListItemSwipe implements OnDestroy {
     }
   }
 
+  /** Animates the item back to its closed position and emits `swipeClose` if it was open. */
   close() {
     this.#animateTo(0);
     if (this.#swipeState !== 'closed') {

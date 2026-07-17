@@ -100,9 +100,12 @@ export class ShipA11yKeybindingsService {
   #defaults = new Map<string, string>();
 
   #pauseCount = 0;
+  /** Whether keybinding matching is currently paused (via `pause`/`resume`). */
   isPaused = signal(false);
+  /** Whether all keybinding matching is globally disabled. */
   isDisabled = signal(this.#disabledToken ?? false);
 
+  /** True when running in a browser on a Mac, used to map `ctrlOrCmd` to the Cmd key. */
   get isMac(): boolean {
     if (!isPlatformBrowser(this.#platformId)) return false;
     return navigator.userAgent.toLowerCase().includes('mac');
@@ -115,11 +118,13 @@ export class ShipA11yKeybindingsService {
     }
   }
 
+  /** Pause keybinding matching; reference-counted so nested pauses require matching `resume` calls. */
   pause(): void {
     this.#pauseCount++;
     this.isPaused.set(true);
   }
 
+  /** Resume keybinding matching once all outstanding `pause` calls have been balanced. */
   resume(): void {
     this.#pauseCount = Math.max(0, this.#pauseCount - 1);
     if (this.#pauseCount === 0) {
@@ -127,6 +132,7 @@ export class ShipA11yKeybindingsService {
     }
   }
 
+  /** Register default shortcuts for actions, without overriding any already-customised binding. */
   registerDefaults(defaults: Record<string, string>): void {
     for (const [action, shortcut] of Object.entries(defaults)) {
       this.#defaults.set(action, shortcut);
@@ -137,20 +143,24 @@ export class ShipA11yKeybindingsService {
     }
   }
 
+  /** Override the active shortcuts for the given actions, replacing their defaults. */
   registerOverrides(overrides: Record<string, string>): void {
     for (const [action, shortcut] of Object.entries(overrides)) {
       this.#bindings.set(action, shortcut);
     }
   }
 
+  /** Return the currently active shortcut string for an action, if any. */
   getShortcut(action: string): string | undefined {
     return this.#bindings.get(action);
   }
 
+  /** Return the original default shortcut string for an action, ignoring overrides. */
   getDefaultShortcut(action: string): string | undefined {
     return this.#defaults.get(action);
   }
 
+  /** Return a human-readable, platform-aware shortcut label for an action (e.g. for `aria-keyshortcuts`). */
   getDisplayShortcut(action: string): string | undefined {
     const shortcut = this.getShortcut(action);
     if (!shortcut) return undefined;
@@ -160,6 +170,7 @@ export class ShipA11yKeybindingsService {
       .join(', ');
   }
 
+  /** Test whether a `KeyboardEvent` matches the active shortcut for an action (always false when disabled). */
   matches(event: KeyboardEvent, action: string): boolean {
     if (this.isDisabled()) return false;
 

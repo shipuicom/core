@@ -12,9 +12,11 @@ import { ShipAlertService } from './ship-alert.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShipAlertContainer {
+  /** When set, renders the alerts inline instead of as a hover-reveal floating stack. */
   inline = input<string | null>(null);
   alerts = viewChild.required<QueryList<ShipAlert>>('alerts');
   scroller = viewChild.required<ElementRef<HTMLDivElement>>('scroller');
+  /** The `ShipAlertService` instance whose alert history this container renders. */
   alertService = input.required<ShipAlertService>();
 
   
