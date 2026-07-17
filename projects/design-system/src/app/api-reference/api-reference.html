@@ -1,0 +1,113 @@
+@let c = component();
+
+@if (loading()) {
+  <p class="api-status">Loading API…</p>
+} @else if (!c) {
+  <p class="api-status">
+    No API metadata found for <code>{{ name() ?? selector() }}</code>. Run <code>bun run mcp:update</code>.
+  </p>
+} @else {
+  <sh-card variant="type-c" class="api-ref">
+    <header class="api-head">
+      <sh-chip [color]="kindColor()" class="api-kind">{{ kindLabel() }}</sh-chip>
+      <code class="api-selector">{{ c.selector }}</code>
+      @for (a of c.selectorAliases ?? []; track a) {
+        <code class="api-selector alias">{{ a }}</code>
+      }
+    </header>
+
+    @if (c.package) {
+      <code class="api-import">import {{ '{' }} {{ c.name }} {{ '}' }} from '{{ c.package }}';</code>
+    }
+
+    @if (plainInputs().length) {
+      <h4 class="api-group">Inputs</h4>
+      <div class="api-table-wrap">
+        <table class="api-table">
+          <thead>
+            <tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            @for (i of plainInputs(); track i.name) {
+              <tr>
+                <td><code>{{ i.name }}</code></td>
+                <td>
+                  <code class="ty">{{ i.type }}</code>
+                  @if (i.options?.length) {
+                    <div class="opts">
+                      @for (o of i.options; track o) {
+                        <sh-chip size="small">{{ o === '' ? "''" : o }}</sh-chip>
+                      }
+                    </div>
+                  }
+                </td>
+                <td>@if (i.defaultValue) { <code>{{ i.defaultValue }}</code> } @else { <span class="muted">—</span> }</td>
+                <td>{{ i.description || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @if (models().length) {
+      <h4 class="api-group">Models <span class="api-hint">two-way bindable — <code>[(name)]</code></span></h4>
+      <div class="api-table-wrap">
+        <table class="api-table">
+          <thead>
+            <tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            @for (i of models(); track i.name) {
+              <tr>
+                <td><code>{{ i.name }}</code></td>
+                <td><code class="ty">{{ i.type }}</code></td>
+                <td>@if (i.defaultValue) { <code>{{ i.defaultValue }}</code> } @else { <span class="muted">—</span> }</td>
+                <td>{{ i.description || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @if (c.outputs.length) {
+      <h4 class="api-group">Outputs</h4>
+      <div class="api-table-wrap">
+        <table class="api-table">
+          <thead>
+            <tr><th>Name</th><th>Payload</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            @for (o of c.outputs; track o.name) {
+              <tr>
+                <td><code>{{ o.name }}</code></td>
+                <td><code class="ty">{{ o.type }}</code></td>
+                <td>{{ o.description || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @if (c.methods.length) {
+      <h4 class="api-group">Methods</h4>
+      <div class="api-table-wrap">
+        <table class="api-table">
+          <thead>
+            <tr><th>Signature</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            @for (m of c.methods; track m.name) {
+              <tr>
+                <td><code class="sig">{{ m.name }}({{ m.parameters }}): {{ m.returnType }}</code></td>
+                <td>{{ m.description || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </sh-card>
+}

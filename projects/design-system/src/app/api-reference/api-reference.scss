@@ -1,0 +1,128 @@
+@use '../../../../ship-ui/styles/helpers.scss' as *;
+
+:host {
+  display: block;
+}
+
+// Space consecutive API cards when they're stacked directly (e.g. multiple
+// classes in one API / Sub-components tab).
+:host:not(:last-child) {
+  margin-bottom: p2r(20);
+}
+
+.api-status {
+  font: var(--paragraph-20);
+  color: var(--base-8);
+}
+
+.api-ref {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(12);
+  padding: p2r(20);
+}
+
+.api-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: p2r(8);
+}
+
+.api-kind {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.api-selector {
+  font: var(--code-20);
+  color: var(--primary-11);
+
+  &.alias {
+    color: var(--base-8);
+  }
+}
+
+.api-import {
+  font: var(--code-10);
+  color: var(--base-11);
+  background: var(--base-2);
+  border: var(--border-10);
+  border-radius: var(--shape-2);
+  padding: p2r(8) p2r(12);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.api-group {
+  font: var(--title-10);
+  color: var(--base-12);
+  margin: p2r(12) 0 0;
+
+  .api-hint {
+    font: var(--paragraph-10);
+    color: var(--base-8);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+}
+
+.api-table-wrap {
+  overflow-x: auto;
+  border: var(--border-10);
+  border-radius: var(--shape-2);
+}
+
+.api-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--paragraph-20);
+
+  th,
+  td {
+    text-align: left;
+    padding: p2r(10) p2r(14);
+    vertical-align: top;
+    border-bottom: 1px solid var(--base-3);
+  }
+
+  thead th {
+    font: var(--paragraph-10B);
+    color: var(--base-8);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    background: var(--base-2);
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  td {
+    color: var(--base-11);
+  }
+
+  code {
+    font: var(--code-10);
+    color: var(--base-12);
+
+    &.ty {
+      color: var(--accent-11);
+    }
+    &.sig {
+      color: var(--primary-11);
+    }
+  }
+
+  .muted {
+    color: var(--base-7);
+  }
+
+  .opts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: p2r(4);
+    margin-top: p2r(6);
+  }
+}

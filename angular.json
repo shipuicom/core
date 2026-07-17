@@ -101,6 +101,11 @@
                 "glob": "**/examples/**/*",
                 "input": "projects/design-system/src/app/ship",
                 "output": "/assets/examples/"
+              },
+              {
+                "glob": "components.json",
+                "input": "projects/ship-ui/assets/mcp",
+                "output": "/assets/mcp/"
               }
             ],
             "stylePreprocessorOptions": {
