@@ -449,6 +449,28 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('image resize: handles hide in full-width (theater) mode', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    await page.evaluate(() => {
+      const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='400' height='300' fill='#4f8cff'/></svg>";
+      const src = 'data:image/svg+xml,' + encodeURIComponent(svg);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.reset([{ type: 'image', attrs: { src, alt: 'demo', mode: 'content', size: 'auto' }, content: [] }]);
+    });
+    const setMode = (mode: string) =>
+      page.evaluate((m) => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.updateSelectedImage({ mode: m }), mode);
+
+    await page.locator('.sh-editor-content img').click();
+    const se = page.locator('.sh-editor-resize-se');
+    await expect(se).toBeVisible(); // content mode → resizable
+    await setMode('theater');
+    await expect(se).toBeHidden(); // full-width → no handles
+    await setMode('content');
+    await expect(se).toBeVisible(); // and back
+    await expectInvariant(page, 'theater resize toggle');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('image upload hook: a picked file is uploaded via the handler and its URL inserted', async ({ page }) => {
     const { errors } = await openEditor(page);
     const editor = page.locator('sh-editor').first();

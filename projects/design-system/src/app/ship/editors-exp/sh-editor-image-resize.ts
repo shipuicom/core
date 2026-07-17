@@ -160,7 +160,9 @@ export class ShipEditorImageResize {
 
   #position(idx: number) {
     const el = this.surface().children[idx] as HTMLElement | undefined;
-    if (this.readonly() || !el || el.tagName !== 'IMG') {
+    // No handles when read-only, on a non-image block, or in full-width (theater)
+    // mode — a full-bleed image has no width for the user to set.
+    if (this.readonly() || !el || el.tagName !== 'IMG' || el.classList.contains('sh-editor-img-theater')) {
       this.frame.set(null);
       this.#unobserve();
       return;
