@@ -23,6 +23,7 @@ import { EditorEngineService } from './editor-engine.service';
 import { SanitizeOption, normalizeDocument, sanitizeDocumentUrls } from './editor-sanitize';
 import { htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
 import { ShipEditorContextualToolbar, ContextualActionExtras } from './sh-editor-contextual-toolbar';
+import { ShipEditorImageResize } from './sh-editor-image-resize';
 import { ShipEditorImagePopover } from './sh-editor-image-popover';
 import { ShipEditorLinkPopover } from './sh-editor-link-popover';
 import { ShipEditorSlashMenu } from './sh-editor-slash-menu';
@@ -53,7 +54,7 @@ function blockPlainText(block: ASTBlockNode): string {
   exportAs: 'shEditor',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [ShipEditorLinkPopover, ShipEditorImagePopover, ShipEditorContextualToolbar, ShipEditorSlashMenu],
+  imports: [ShipEditorLinkPopover, ShipEditorImagePopover, ShipEditorContextualToolbar, ShipEditorImageResize, ShipEditorSlashMenu],
   providers: [
     EditorEngineService,
     EditorSelectionService,
@@ -102,6 +103,7 @@ function blockPlainText(block: ASTBlockNode): string {
       <sh-editor-link-popover [surface]="surface" />
       <sh-editor-image-popover [surface]="surface" [upload]="imageUpload()" />
       <sh-editor-contextual-toolbar [surface]="surface" [extras]="contextualActions()" />
+      <sh-editor-image-resize [surface]="surface" [readonly]="readonly()" />
       <sh-editor-slash-menu [commands]="slashCommands()" />
       @if (showMetrics()) {
         <div class="sh-editor-stats">

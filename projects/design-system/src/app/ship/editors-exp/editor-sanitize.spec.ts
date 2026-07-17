@@ -121,6 +121,23 @@ describe('behavior render hardening (JSON-bypass sinks)', () => {
     );
   });
 
+  it('ImageBehavior renders a custom width (attr + inline style) and round-trips it via parseDOM', () => {
+    const html = image.renderHTML(block({ src: 'data:image/png;base64,AAAA', alt: 'a', mode: 'content', size: 'auto', width: 320 }));
+    expect(html).toContain('width="320"');
+    expect(html).toContain('style="width:320px"');
+    // parseDOM reads the width back off the (sanitize-safe) width attribute.
+    const el = document.createElement('div');
+    el.innerHTML = html;
+    expect(image.parseDOM(el.querySelector('img')!)?.attrs?.['width']).toBe(320);
+    // No width attr when unset, and non-positive / non-numeric widths are ignored.
+    expect(image.renderHTML(block({ src: 'data:image/png;base64,AAAA', alt: '', mode: 'content', size: 'auto' }))).not.toContain('width=');
+    expect(image.renderHTML(block({ src: 'data:image/png;base64,AAAA', alt: '', mode: 'content', size: 'auto', width: 0 }))).not.toContain('width=');
+    expect(image.renderHTML(block({ src: 'data:image/png;base64,AAAA', alt: '', mode: 'content', size: 'auto', width: 'junk' }))).not.toContain('width=');
+    const plain = document.createElement('div');
+    plain.innerHTML = '<img src="data:image/png;base64,AAAA" class="sh-editor-img-content">';
+    expect(image.parseDOM(plain.querySelector('img')!)?.attrs?.['width']).toBeUndefined();
+  });
+
   it('HeadingBehavior clamps an injected level and drops an unsafe align', () => {
     const html = heading.renderHTML({ type: 'heading', attrs: { level: '1><img src=x onerror=alert(1)>', align: 'right;background:url(x)' }, content: [] }, 'H');
     expect(html).toBe('<h1>H</h1>');

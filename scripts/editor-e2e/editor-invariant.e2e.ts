@@ -338,6 +338,63 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('image resize: dragging the SE handle sets width, preserves aspect ratio, is undoable', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    // A data-URL image (400×300, 4:3) loads instantly and has a deterministic size.
+    await page.evaluate(() => {
+      const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='400' height='300' fill='#4f8cff'/></svg>";
+      const src = 'data:image/svg+xml,' + encodeURIComponent(svg);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.reset([
+        { type: 'paragraph', content: [{ type: 'text', text: 'x' }] },
+        { type: 'image', attrs: { src, alt: 'demo', mode: 'content', size: 'auto' }, content: [] },
+      ]);
+    });
+    const img = page.locator('.sh-editor-content img');
+    await expect(img).toHaveCount(1);
+    await img.click(); // select + focus the surface (so undo reaches the editor)
+    const se = page.locator('.sh-editor-resize-se');
+    await expect(se).toBeVisible();
+
+    // Drag the bottom-right handle 200px to the left → shrink. hover() scrolls the
+    // handle on-screen and waits for its position to settle (the frame re-anchors
+    // on a microtask) before we press, so the mousedown lands on it reliably.
+    const before = await img.evaluate((el) => Math.round(el.getBoundingClientRect().width));
+    await se.hover();
+    const box = (await se.boundingBox())!;
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+    await page.mouse.down();
+    await page.mouse.move(cx - 200, cy - 150, { steps: 8 });
+    await page.mouse.up();
+
+    // Width shrank, persisted to the AST + rendered attrs, aspect ratio held (4:3).
+    const after = await img.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return {
+        w: Math.round(r.width),
+        aspect: r.height / r.width,
+        attr: Number(el.getAttribute('width')),
+        ast: (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document()[1].attrs.width,
+      };
+    });
+    const ctx = JSON.stringify({ before, after });
+    expect(after.w, ctx).toBeLessThan(before - 100); // the drag shrank it
+    expect(after.ast, ctx).toBe(after.attr); // AST width == rendered width attribute
+    expect(Math.abs(after.attr - after.w), ctx).toBeLessThanOrEqual(1); // matches the measured box
+    expect(after.aspect, ctx).toBeCloseTo(0.75, 2); // 4:3 aspect ratio preserved
+
+    // The resize is a single undoable transaction.
+    await page.keyboard.press('ControlOrMeta+z');
+    const astAfterUndo = await page.evaluate(
+      () => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document()[1].attrs.width ?? null
+    );
+    expect(astAfterUndo).toBeNull();
+
+    await expectInvariant(page, 'after image resize');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('image upload hook: a picked file is uploaded via the handler and its URL inserted', async ({ page }) => {
     const { errors } = await openEditor(page);
     const editor = page.locator('sh-editor').first();

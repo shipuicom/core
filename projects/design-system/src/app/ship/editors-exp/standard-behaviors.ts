@@ -186,6 +186,13 @@ export class ImageBehavior extends BaseBlockBehavior {
   readonly enterPhysics = { strategy: 'insert-default-below' as const, defaultSplitTarget: 'paragraph' };
   readonly backspacePhysics = {};
 
+  /** A positive integer pixel width, or null. Read from the `width` attribute —
+   * the drag-resize handles persist a custom width here (see renderHTML). */
+  static parseWidth(raw: string | null): number | null {
+    const w = Math.round(Number(raw));
+    return Number.isFinite(w) && w > 0 ? w : null;
+  }
+
   parseDOM(el: HTMLElement) {
     if (el.tagName.toLowerCase() === 'img') {
       const cls = el.className || '';
@@ -197,9 +204,10 @@ export class ImageBehavior extends BaseBlockBehavior {
       if (cls.includes('size-small')) size = 'small';
       else if (cls.includes('size-medium')) size = 'medium';
       else if (cls.includes('size-large')) size = 'large';
+      const width = ImageBehavior.parseWidth(el.getAttribute('width'));
       return {
         type: this.type,
-        attrs: { src: el.getAttribute('src'), alt: el.getAttribute('alt'), mode, size },
+        attrs: { src: el.getAttribute('src'), alt: el.getAttribute('alt'), mode, size, ...(width ? { width } : {}) },
         content: [],
       };
     }
@@ -216,10 +224,15 @@ export class ImageBehavior extends BaseBlockBehavior {
     const sized = safeMode === 'float' || safeMode === 'custom';
     const cls = sized ? `sh-editor-img-${safeMode} sh-editor-img-size-${safeSize}` : `sh-editor-img-${safeMode}`;
     const safeSrc = isSafeUrl(src, { allowDataImage: true }) ? escapeAttr(src) : '';
+    // A custom width from the resize handles: persisted in the `width` attribute
+    // (already sanitize-safe) and mirrored to an inline `style` so it wins over
+    // the mode/size class widths (height stays `auto`, preserving aspect ratio).
+    const width = ImageBehavior.parseWidth(block.attrs?.['width']);
+    const widthAttrs = width ? ` width="${width}" style="width:${width}px"` : '';
     // contenteditable="false" makes the image a non-editable island: clicking it
     // places no text caret (so mousedown needn't preventDefault, which would
     // otherwise block the native drag), and it stays draggable to reorder.
-    return `<img src="${safeSrc}" alt="${escapeAttr(alt)}" class="${cls}" draggable="true" contenteditable="false">`;
+    return `<img src="${safeSrc}" alt="${escapeAttr(alt)}" class="${cls}" draggable="true" contenteditable="false"${widthAttrs}>`;
   }
   override renderMarkdown(block: ASTBlockNode) {
     return `![${block.attrs?.['alt'] || ''}](${block.attrs?.['src'] || ''})\n\n`;
@@ -228,8 +241,10 @@ export class ImageBehavior extends BaseBlockBehavior {
   override contextualActions({ block, engine }: ContextualActionCtx): ContextualAction[] {
     const mode = (block.attrs?.['mode'] as string) ?? 'content';
     const size = (block.attrs?.['size'] as string) ?? 'auto';
+    // Picking a preset mode/size clears any custom drag-resize width so the
+    // preset's own sizing takes effect (a stale width would otherwise win).
     const setMode = (m: string) =>
-      engine.updateSelectedImage({ mode: m, ...((m === 'float' || m === 'custom') && size === 'auto' ? { size: 'medium' } : {}) });
+      engine.updateSelectedImage({ mode: m, width: null, ...((m === 'float' || m === 'custom') && size === 'auto' ? { size: 'medium' } : {}) });
 
     const actions: ContextualAction[] = [
       { id: 'mode-content', icon: 'image', label: 'Inline', isActive: mode === 'content', run: () => setMode('content') },
@@ -238,7 +253,7 @@ export class ImageBehavior extends BaseBlockBehavior {
     ];
     if (mode === 'float' || mode === 'custom') {
       for (const s of ['small', 'medium', 'large']) {
-        actions.push({ id: `size-${s}`, label: s.charAt(0).toUpperCase(), isActive: size === s, run: () => engine.updateSelectedImage({ size: s }) });
+        actions.push({ id: `size-${s}`, label: s.charAt(0).toUpperCase(), isActive: size === s, run: () => engine.updateSelectedImage({ size: s, width: null }) });
       }
     }
     actions.push({ id: 'delete', icon: 'trash', label: 'Delete', danger: true, run: () => engine.deleteSelectedBlock() });

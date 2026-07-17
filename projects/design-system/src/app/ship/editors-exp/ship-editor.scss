@@ -421,6 +421,32 @@ sh-editor {
   border-radius: var(--shape-1);
 }
 
+/* ── Image resize handles (sh-editor-image-resize) ─────────────────────────
+   A frame overlaid on the selected image, with a grab handle at each corner.
+   The frame is inert (pointer-events:none); only the handles take the pointer.
+   z-index sits above the surface (z-index:2) so the handles stay grabbable. */
+.sh-editor-resize-frame {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.sh-editor-resize-handle {
+  position: absolute;
+  width: #{p2r(11)};
+  height: #{p2r(11)};
+  box-sizing: border-box;
+  background: var(--base-1);
+  border: 2px solid var(--primary-9);
+  border-radius: 2px;
+  pointer-events: auto;
+
+  &.sh-editor-resize-nw { top: #{p2r(-6)}; left: #{p2r(-6)}; cursor: nwse-resize; }
+  &.sh-editor-resize-ne { top: #{p2r(-6)}; right: #{p2r(-6)}; cursor: nesw-resize; }
+  &.sh-editor-resize-sw { bottom: #{p2r(-6)}; left: #{p2r(-6)}; cursor: nesw-resize; }
+  &.sh-editor-resize-se { bottom: #{p2r(-6)}; right: #{p2r(-6)}; cursor: nwse-resize; }
+}
+
 /* ── Contextual toolbar ────────────────────────────────────────────────── */
 /* Anchor overlaying the selected block; sh-popover positions the toolbar around
    it. pointer-events:none so it never blocks the block/editor beneath it. */
