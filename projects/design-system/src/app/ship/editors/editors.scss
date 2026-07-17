@@ -4,6 +4,12 @@
   @extend %showcase-host;
 }
 
+.overview-doc {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(20);
+}
+
 .experimental-editor-container {
   display: flex;
   flex-direction: column;

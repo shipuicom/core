@@ -12,7 +12,7 @@
 
 <div class="tab-content">
   @if (_activeTab === 'overview') {
-    <app-property-viewer>
+    <div class="overview-doc">
       <section>
         <h4>Overview</h4>
         <p>
@@ -36,19 +36,19 @@
         <p>Import the editor and (optionally) the composable toolbar pieces, then bind <code>[(value)]</code>.</p>
         <app-highlight lang="ts" [content]="usageExample" />
       </section>
-    </app-property-viewer>
 
-    <app-previewer path="/editors" title="Basic Editor" class="no-space">
-      <sh-editor [(value)]="basicValue" format="html">
-        <sh-editor-toolbar position="top">
-          <button shEditorAction="bold" aria-label="Bold"><sh-icon>text-b</sh-icon></button>
-          <button shEditorAction="italic" aria-label="Italic"><sh-icon>text-italic</sh-icon></button>
-          <button shEditorAction="heading" [shEditorActionAttrs]="{ level: 2 }" aria-label="Heading"><sh-icon>text-h-two</sh-icon></button>
-          <button shEditorAction="bullet-list" aria-label="Bullet List"><sh-icon>list-bullets</sh-icon></button>
-          <button shEditorAction="link" aria-label="Insert Link"><sh-icon>link</sh-icon></button>
-        </sh-editor-toolbar>
-      </sh-editor>
-    </app-previewer>
+      <app-previewer path="/editors" title="Basic Editor" class="no-space">
+        <sh-editor [(value)]="basicValue" format="html">
+          <sh-editor-toolbar position="top">
+            <button shEditorAction="bold" aria-label="Bold"><sh-icon>text-b</sh-icon></button>
+            <button shEditorAction="italic" aria-label="Italic"><sh-icon>text-italic</sh-icon></button>
+            <button shEditorAction="heading" [shEditorActionAttrs]="{ level: 2 }" aria-label="Heading"><sh-icon>text-h-two</sh-icon></button>
+            <button shEditorAction="bullet-list" aria-label="Bullet List"><sh-icon>list-bullets</sh-icon></button>
+            <button shEditorAction="link" aria-label="Insert Link"><sh-icon>link</sh-icon></button>
+          </sh-editor-toolbar>
+        </sh-editor>
+      </app-previewer>
+    </div>
   } @else if (_activeTab === 'api') {
     <app-property-viewer>
       <section>
