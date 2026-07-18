@@ -1,4 +1,4 @@
-# Experimental Editor (`editors-exp`)
+# ShipUI Editor (`@ship-ui/core/ship-editor`)
 
 An AST-first rich text editor. The in-memory `ASTDocument` is the source of truth;
 HTML and Markdown are produced only at serialization time (`serialize('html' | 'json' | 'markdown')`).

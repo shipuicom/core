@@ -182,7 +182,7 @@ class HighlightBehavior extends BaseInlineBehavior {
   editorValue = signal<string | ASTDocument | null>(this.initialHtml);
 
   persist = signal(false);
-  #storageKey = 'ship:editors-exp:showcase';
+  #storageKey = 'ship:editor:showcase';
 
   constructor() {
 
