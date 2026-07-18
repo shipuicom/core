@@ -1,0 +1,30 @@
+:host {
+  display: block;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.wm {
+  // The previewer content-sizes its examples; give the manager a definite size
+  // so its tiling has real bounds to work with.
+  width: 760px;
+  height: 440px;
+  border: 1px solid var(--base-4);
+  border-radius: var(--shape-3);
+  background: var(--base-2);
+  padding: 6px;
+}
+
+.win-body {
+  padding: 16px;
+  font: var(--paragraph-20);
+  color: var(--base-10);
+
+  p {
+    margin: 0 0 8px;
+  }
+}
