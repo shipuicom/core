@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, ElementRef, inject, input, model, output, signal, viewChild, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, ElementRef, inject, input, model, output, signal, viewChild, ViewEncapsulation } from '@angular/core';
 import { generateUniqueId } from '@ship-ui/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 
@@ -69,7 +69,7 @@ export class ShipPopover {
   /** Render the popover as a bottom sheet on mobile viewports (≤768px). */
   asSheetOnMobile = input<boolean>(false);
   /** Prefer centering the popover horizontally under/over the trigger (`bottom center`/`top center`) instead of edge-aligning it. */
-  centered = input<boolean>(false);
+  centered = input<boolean, boolean | string>(false, { transform: booleanAttribute });
   /** Prevent the trigger click from toggling the popover (host drives `isOpen`). */
   disableOpenByClick = input<boolean>(false);
   /** Two-way bound open/closed state of the popover. */
