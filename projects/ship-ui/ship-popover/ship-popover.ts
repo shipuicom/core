@@ -55,6 +55,7 @@ const DEFAULT_OPTIONS: ShipPopoverOptions = {
   host: {
     '[class.multi-layer]': 'asMultiLayer()',
     '[class.as-sheet]': 'asSheetOnMobile()',
+    '[class.centered]': 'centered()',
   },
 })
 export class ShipPopover {
@@ -67,6 +68,8 @@ export class ShipPopover {
   asMultiLayer = input<boolean>(false);
   /** Render the popover as a bottom sheet on mobile viewports (≤768px). */
   asSheetOnMobile = input<boolean>(false);
+  /** Prefer centering the popover horizontally under/over the trigger (`bottom center`/`top center`) instead of edge-aligning it. */
+  centered = input<boolean>(false);
   /** Prevent the trigger click from toggling the popover (host drives `isOpen`). */
   disableOpenByClick = input<boolean>(false);
   /** Two-way bound open/closed state of the popover. */
@@ -209,6 +212,16 @@ export class ShipPopover {
     return { left: t.left, top: t.bottom + BASE_SPACE };
   }
 
+
+  #bottomCenter(t: DOMRect, m: DOMRect) {
+    return { left: t.left + t.width / 2 - m.width / 2, top: t.bottom + BASE_SPACE };
+  }
+
+
+  #topCenter(t: DOMRect, m: DOMRect) {
+    return { left: t.left + t.width / 2 - m.width / 2, top: t.top - m.height - BASE_SPACE };
+  }
+
   
   #topSpanRight(t: DOMRect, m: DOMRect) {
     return { left: t.left, top: t.top - m.height - BASE_SPACE };
@@ -305,7 +318,22 @@ export class ShipPopover {
       this.#topSpanLeft,
     ];
 
-    const tryOrder = this.asMultiLayer() ? tryOrderMultiLayer : tryOrderDefault;
+    const tryOrderCentered = [
+      this.#bottomCenter,
+      this.#topCenter,
+      this.#bottomSpanRight,
+      this.#topSpanRight,
+      this.#bottomSpanLeft,
+      this.#topSpanLeft,
+      this.#rightCenter,
+      this.#leftCenter,
+    ];
+
+    const tryOrder = this.centered()
+      ? tryOrderCentered
+      : this.asMultiLayer()
+        ? tryOrderMultiLayer
+        : tryOrderDefault;
 
     
     for (const positionFn of tryOrder) {

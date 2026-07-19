@@ -8,6 +8,17 @@ $shipPopover: true !default;
 
     display: var(--po-d);
 
+    &.centered {
+      .popover-content {
+        @supports (anchor-name: --anchor) {
+          position-area: bottom center;
+          position-try-fallbacks:
+            --top-center, --bottom-span-right, --top-span-right, --bottom-span-left, --top-span-left,
+            --right-center, --left-center;
+        }
+      }
+    }
+
     &.multi-layer {
       .popover-content {
         position-area: right span-y-end;
@@ -154,6 +165,18 @@ $shipPopover: true !default;
   position-area: bottom span-right;
   inset: auto;
   top: p2r(4);
+}
+
+@position-try --bottom-center {
+  position-area: bottom center;
+  inset: auto;
+  top: p2r(4);
+}
+
+@position-try --top-center {
+  position-area: top center;
+  inset: auto;
+  bottom: p2r(4);
 }
 
 @position-try --bottom-span-left {

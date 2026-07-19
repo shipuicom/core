@@ -73,7 +73,7 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 ### Nice to haves for v1 beta
 
 - [ ] sh-select feature: add support for custom filter predicates on inlineSearch
-- [ ] sh-popover should have a pos center feature for the dropdown
+- [x] sh-popover should have a pos center feature for the dropdown
 
 ### Features after v1 release
 
