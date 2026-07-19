@@ -93,6 +93,13 @@ sh-editor {
     color: var(--base-12);
     font: var(--paragraph-20);
     line-height: 1.6;
+    // Preserve significant whitespace (trailing/consecutive spaces) so the
+    // browser doesn't collapse or strip them during contenteditable editing —
+    // notably iOS WebKit, which otherwise drops a just-typed trailing space on
+    // the next autocorrect/composition pass ("space inserts then vanishes").
+    // pair with overflow-wrap so long words still wrap under pre-wrap.
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
     word-break: break-word;
 
     p {
