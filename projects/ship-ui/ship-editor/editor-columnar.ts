@@ -36,7 +36,11 @@ export interface RowSizeIndex {
   reset(sizes: ArrayLike<number>, length: number): void;
   add(row: number, delta: number): void;
   insert(row: number, size: number): void;
+  /** Insert several rows at once. Batched so a rebuilding index rebuilds once. */
+  insertMany(row: number, sizes: number[]): void;
   remove(row: number): void;
+  /** Remove several rows at once, for the same reason. */
+  removeMany(row: number, count: number): void;
   prefix(row: number): number;
   findRow(pos: number): number;
 }
@@ -94,9 +98,29 @@ class SizeIndex implements RowSizeIndex {
     this.reset(this.#mirror, this.#mirror.length);
   }
 
+  /**
+   * O(n) for the whole batch rather than per row.
+   *
+   * Inserting m rows one at a time meant m full rebuilds — pasting 2000 blocks
+   * into a 1000-block document took 43.8 ms that way, against 0.009 ms for the
+   * nested tree.
+   */
+  insertMany(row: number, sizes: number[]) {
+    if (!sizes.length) return;
+    this.#mirror.splice(row, 0, ...sizes);
+    this.reset(this.#mirror, this.#mirror.length);
+  }
+
   /** O(n), for the same reason. */
   remove(row: number) {
     this.#mirror.splice(row, 1);
+    this.reset(this.#mirror, this.#mirror.length);
+  }
+
+  /** O(n) for the whole batch, not per row. */
+  removeMany(row: number, count: number) {
+    if (count <= 0) return;
+    this.#mirror.splice(row, count);
     this.reset(this.#mirror, this.#mirror.length);
   }
 
@@ -247,6 +271,14 @@ class ChunkedSizeIndex implements RowSizeIndex {
 
     this.#shiftRowStart(c, 1);
     this.#treeAdd(c, size);
+  }
+
+  insertMany(row: number, sizes: number[]) {
+    for (let i = 0; i < sizes.length; i++) this.insert(row + i, sizes[i]);
+  }
+
+  removeMany(row: number, count: number) {
+    for (let i = 0; i < count; i++) this.remove(row);
   }
 
   /** O(CHUNK + log chunks): remove a row. */
@@ -563,10 +595,11 @@ export class ColumnarDocument {
     }
     if (fresh.length) this.#markRuns.splice(insertAtQuad * 4, 0, ...fresh);
 
-    // Incremental, so a chunked index never pays for a full rebuild.
-    for (let i = 0; i < count; i++) {
-      this.#sizes.insert(at + i, rowSize(this.#kind[at + i] as RowKind, this.#text[at + i]));
-    }
+    // Batched: a rebuilding index rebuilds once for the whole insert, not once
+    // per row.
+    const inserted: number[] = new Array(count);
+    for (let i = 0; i < count; i++) inserted[i] = rowSize(this.#kind[at + i] as RowKind, this.#text[at + i]);
+    this.#sizes.insertMany(at, inserted);
     this.version++;
   }
 
@@ -601,7 +634,7 @@ export class ColumnarDocument {
     }
     this.#attrs = attrs;
 
-    for (let i = 0; i < actual; i++) this.#sizes.remove(at);
+    this.#sizes.removeMany(at, actual);
     this.version++;
   }
 
