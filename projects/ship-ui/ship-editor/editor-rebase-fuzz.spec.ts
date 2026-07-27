@@ -6,7 +6,7 @@ import { EditorEngineService } from './editor-engine.service';
 import { diffFlat, logicalToPos, posToLogical } from './editor-flat-positions';
 import { normalizeInlineNodes } from './editor-ast.utils';
 import { EditorOp, applyOp, diffDocuments, invertOp, transformOp } from './editor-transactions';
-import { ASTDocument, LogicalPosition } from './editor.types';
+import { ASTBlockNode, ASTDocument, LogicalPosition } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import { BulletListBehavior, ListItemBehavior, ParagraphBehavior } from './standard-behaviors';
 
@@ -23,7 +23,7 @@ function mulberry32(seed: number) {
 type Rnd = () => number;
 const pick = (rnd: Rnd, n: number) => Math.floor(rnd() * n);
 
-const p = (text: string) => ({ type: 'paragraph', content: [{ type: 'text', text }] });
+const p = (text: string): ASTBlockNode => ({ type: 'paragraph', content: [{ type: 'text', text }] });
 const li = (text: string) => ({ type: 'list-item', content: [{ type: 'text', text }] });
 const ul = (...items: any[]) => ({ type: 'bullet-list', content: items });
 const hr = () => ({ type: 'hr', content: [] });

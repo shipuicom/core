@@ -245,7 +245,9 @@ describe('markdown ingest (I2)', () => {
 
 describe('sanitizeDocumentUrls (I3 — JSON value path)', () => {
   it('neutralizes dangerous href/src in a hostile AST and preserves safe ones', () => {
-    const hostile = [
+    // Deliberately untyped: this is arbitrary attacker-supplied JSON, not a
+    // document the editor's own types would ever vouch for.
+    const hostile: any[] = [
       { type: 'paragraph', content: [{ type: 'text', text: 'x', marks: [{ type: 'link', attrs: { href: 'javascript:alert(1)' } }] }] },
       { type: 'paragraph', content: [{ type: 'text', text: 'y', marks: [{ type: 'link', attrs: { href: 'https://ok.example' } }] }] },
       { type: 'image', attrs: { src: 'javascript:alert(2)' }, content: [] },

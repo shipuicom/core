@@ -156,7 +156,13 @@ export class ShipSortable implements OnInit, OnDestroy {
   /** Two-way bound list of tree nodes, used when `sortingMode` is `'tree'`. */
   treeItems = model<any[]>([]);
 
-  /** Enables touch-based dragging on touch devices. */
+  /**
+   * Enables touch-based dragging. Off by default and meant to be bound to an
+   * explicit "edit mode" toggle, the way iOS lists work: a plain touch always
+   * scrolls, and reordering only becomes possible once the user asks for it.
+   * Touch devices never fire the native drag events the mouse path relies on,
+   * so this is the only route to reordering on a phone.
+   */
   touchEnabled = input<boolean>(false);
   /** How a touch drag is initiated: `'longpress'`, `'handle'`, or `'none'`. */
   touchActivation = input<'longpress' | 'handle' | 'none'>('longpress');
@@ -190,6 +196,16 @@ export class ShipSortable implements OnInit, OnDestroy {
 
   #boundTouchMove = this.onTouchMove.bind(this);
   #boundTouchEnd = this.onTouchEnd.bind(this);
+  #boundTouchCancel = this.onTouchCancel.bind(this);
+
+  /** How close to a scrollable edge, in px, a drag has to get before it scrolls. */
+  #autoScrollThreshold = 56;
+  /** Scroll speed in px per frame once the drag is hard against an edge. */
+  #autoScrollMaxSpeed = 14;
+  #autoScrollFrame: number | null = null;
+  #autoScrollEl: HTMLElement | null = null;
+  #autoScrollSpeed = { x: 0, y: 0 };
+  #lastTouchPoint = { x: 0, y: 0 };
 
   draggingEffect = effect(() => {
     if (this.sortingMode() === 'tree') {
@@ -568,7 +584,7 @@ export class ShipSortable implements OnInit, OnDestroy {
 
       this.#document.addEventListener('touchmove', this.#boundTouchMove, { passive: false });
       this.#document.addEventListener('touchend', this.#boundTouchEnd, { passive: false });
-      this.#document.addEventListener('touchcancel', this.#boundTouchEnd, { passive: false });
+      this.#document.addEventListener('touchcancel', this.#boundTouchCancel, { passive: false });
 
       this.touchDragTimer = setTimeout(() => {
         this.startTouchDrag(touch, el);
@@ -578,6 +594,8 @@ export class ShipSortable implements OnInit, OnDestroy {
 
   startTouchDrag(touch: Touch, el: HTMLElement) {
     this.isTouchDragging = true;
+    this.#lastTouchPoint = { x: touch.clientX, y: touch.clientY };
+    this.#autoScrollEl = null;
 
     this.#sortableService.activeSource = this;
     this.#sortableService.activeDraggedElement = el;
@@ -632,7 +650,7 @@ export class ShipSortable implements OnInit, OnDestroy {
       this.touchStartCoordinates = { x: touch.clientX, y: touch.clientY };
       this.#document.addEventListener('touchmove', this.#boundTouchMove, { passive: false });
       this.#document.addEventListener('touchend', this.#boundTouchEnd, { passive: false });
-      this.#document.addEventListener('touchcancel', this.#boundTouchEnd, { passive: false });
+      this.#document.addEventListener('touchcancel', this.#boundTouchCancel, { passive: false });
     }
   }
 
@@ -654,13 +672,20 @@ export class ShipSortable implements OnInit, OnDestroy {
 
     e.preventDefault();
 
-    if (this.touchGhostEl) {
-      const x = clientX - this.touchOffset.x;
-      const y = clientY - this.touchOffset.y;
-      this.touchGhostEl.style.left = `${x}px`;
-      this.touchGhostEl.style.top = `${y}px`;
-    }
+    this.#lastTouchPoint = { x: clientX, y: clientY };
+    this.#moveGhostTo(clientX, clientY);
+    this.#updateDropTarget(clientX, clientY);
+    this.#updateAutoScroll(clientX, clientY);
+  }
 
+  #moveGhostTo(clientX: number, clientY: number) {
+    if (!this.touchGhostEl) return;
+
+    this.touchGhostEl.style.left = `${clientX - this.touchOffset.x}px`;
+    this.touchGhostEl.style.top = `${clientY - this.touchOffset.y}px`;
+  }
+
+  #updateDropTarget(clientX: number, clientY: number) {
     const elementUnderTouch = this.#document.elementFromPoint(clientX, clientY) as HTMLElement;
     let targetInstance: ShipSortable | null = null;
     if (elementUnderTouch) {
@@ -688,6 +713,126 @@ export class ShipSortable implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Holding a drag near the edge of the enclosing scroller keeps the list
+   * moving, the way a long iOS list does. Without it an item can only travel as
+   * far as the currently visible window.
+   */
+  #updateAutoScroll(clientX: number, clientY: number) {
+    this.#recomputeAutoScrollSpeed(clientX, clientY);
+
+    if (this.#autoScrollSpeed.x || this.#autoScrollSpeed.y) {
+      this.#startAutoScroll();
+    } else {
+      this.#stopAutoScroll();
+    }
+  }
+
+  #recomputeAutoScrollSpeed(clientX: number, clientY: number) {
+    const scroller = (this.#autoScrollEl ??= this.#findScrollableAncestor());
+    const view = this.#document.defaultView;
+
+    if (!scroller || !view) {
+      this.#autoScrollSpeed = { x: 0, y: 0 };
+      return;
+    }
+
+    const isRoot = scroller === this.#document.scrollingElement;
+    const bounds = isRoot
+      ? { top: 0, left: 0, bottom: view.innerHeight, right: view.innerWidth }
+      : scroller.getBoundingClientRect();
+
+    this.#autoScrollSpeed = {
+      x: this.#edgeSpeed(
+        clientX,
+        bounds.left,
+        bounds.right,
+        scroller.scrollLeft,
+        scroller.scrollWidth - scroller.clientWidth
+      ),
+      y: this.#edgeSpeed(
+        clientY,
+        bounds.top,
+        bounds.bottom,
+        scroller.scrollTop,
+        scroller.scrollHeight - scroller.clientHeight
+      ),
+    };
+  }
+
+  /** Ramps from nothing at the threshold to full speed at the edge, and stays at nothing once that end is reached. */
+  #edgeSpeed(position: number, start: number, end: number, offset: number, maxOffset: number): number {
+    const threshold = this.#autoScrollThreshold;
+    // Fractional layout leaves scrollHeight - clientHeight up to a pixel past
+    // the offset the element will actually accept, so an exact comparison never
+    // registers as "no room left" and the scroll spins against the end.
+    const epsilon = 1;
+
+    if (position < start + threshold && offset > epsilon) {
+      return -Math.ceil(this.#autoScrollMaxSpeed * Math.min(1, (start + threshold - position) / threshold));
+    }
+
+    if (position > end - threshold && offset < maxOffset - epsilon) {
+      return Math.ceil(this.#autoScrollMaxSpeed * Math.min(1, (position - (end - threshold)) / threshold));
+    }
+
+    return 0;
+  }
+
+  #findScrollableAncestor(): HTMLElement | null {
+    const view = this.#document.defaultView;
+    if (!view) return null;
+
+    let node: HTMLElement | null = this.#selfEl.nativeElement;
+    while (node) {
+      const style = view.getComputedStyle(node);
+      const scrollsY = /auto|scroll|overlay/.test(style.overflowY) && node.scrollHeight > node.clientHeight;
+      const scrollsX = /auto|scroll|overlay/.test(style.overflowX) && node.scrollWidth > node.clientWidth;
+
+      if (scrollsY || scrollsX) return node;
+      node = node.parentElement;
+    }
+
+    return this.#document.scrollingElement as HTMLElement | null;
+  }
+
+  #startAutoScroll() {
+    const view = this.#document.defaultView;
+    if (this.#autoScrollFrame !== null || !view) return;
+
+    const step = () => {
+      const scroller = this.#autoScrollEl;
+      const { x, y } = this.#autoScrollSpeed;
+
+      if (!scroller || !this.isTouchDragging || (!x && !y)) {
+        this.#autoScrollFrame = null;
+        return;
+      }
+
+      scroller.scrollBy(x, y);
+
+      // The list slides under a stationary finger, so the ghost and the
+      // insertion point both have to be recomputed from the same coordinates.
+      const { x: pointX, y: pointY } = this.#lastTouchPoint;
+      this.#moveGhostTo(pointX, pointY);
+      this.#updateDropTarget(pointX, pointY);
+      this.#recomputeAutoScrollSpeed(pointX, pointY);
+
+      this.#autoScrollFrame = view.requestAnimationFrame(step);
+    };
+
+    this.#autoScrollFrame = view.requestAnimationFrame(step);
+  }
+
+  #stopAutoScroll() {
+    const view = this.#document.defaultView;
+
+    if (this.#autoScrollFrame !== null && view) {
+      view.cancelAnimationFrame(this.#autoScrollFrame);
+    }
+    this.#autoScrollFrame = null;
+  }
+
   onTouchEnd(e: TouchEvent) {
     const wasDragging = this.isTouchDragging;
     this.cancelTouchDrag();
@@ -708,6 +853,27 @@ export class ShipSortable implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * The system can take a touch away mid-drag — an incoming call, or the browser
+   * claiming the gesture. That is an abort, not a drop, so tear the drag down and
+   * leave the list in the order it started in.
+   */
+  onTouchCancel() {
+    const wasDragging = this.isTouchDragging;
+    this.cancelTouchDrag();
+
+    if (!wasDragging) return;
+
+    this.isTouchDragging = false;
+
+    if (this.touchGhostEl) {
+      this.touchGhostEl.remove();
+      this.touchGhostEl = null;
+    }
+
+    this.dragEnd();
+  }
+
   cancelTouchDrag() {
     if (this.touchDragTimer) {
       clearTimeout(this.touchDragTimer);
@@ -715,9 +881,13 @@ export class ShipSortable implements OnInit, OnDestroy {
     }
     this.touchStartCoordinates = null;
 
+    this.#stopAutoScroll();
+    this.#autoScrollEl = null;
+    this.#autoScrollSpeed = { x: 0, y: 0 };
+
     this.#document.removeEventListener('touchmove', this.#boundTouchMove);
     this.#document.removeEventListener('touchend', this.#boundTouchEnd);
-    this.#document.removeEventListener('touchcancel', this.#boundTouchEnd);
+    this.#document.removeEventListener('touchcancel', this.#boundTouchCancel);
   }
 
   #clearTreeHoverClasses() {

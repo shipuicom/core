@@ -12,9 +12,9 @@ import {
   spliceInlineContent,
   transformOp,
 } from './editor-transactions';
-import { ASTDocument, ASTInlineNode } from './editor.types';
+import { ASTBlockNode, ASTDocument, ASTInlineNode } from './editor.types';
 
-const p = (text: string) => ({ type: 'paragraph', content: [{ type: 'text', text }] });
+const p = (text: string): ASTBlockNode => ({ type: 'paragraph', content: [{ type: 'text', text }] });
 const bold = (text: string): ASTInlineNode => ({ type: 'text', text, marks: [{ type: 'bold' }] });
 const plain = (text: string): ASTInlineNode => ({ type: 'text', text });
 const textOf = (doc: ASTDocument, i: number) => (doc[i].content as ASTInlineNode[]).map((n) => n.text).join('');

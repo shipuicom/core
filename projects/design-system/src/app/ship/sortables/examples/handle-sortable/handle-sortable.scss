@@ -4,6 +4,19 @@ sh-list {
   gap: 8px;
 }
 
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--base-10);
+}
+
 .list-item {
   display: flex;
   align-items: center;
@@ -33,6 +46,14 @@ sh-list {
   &:active {
     cursor: grabbing;
   }
+}
+
+// In edit mode the handle is the only thing a touch can grab, so make it read
+// as the active control rather than a passive affordance.
+.editing .drag-handle {
+  color: var(--primary-8);
+  background: var(--primary-3);
+  touch-action: none;
 }
 
 .content {

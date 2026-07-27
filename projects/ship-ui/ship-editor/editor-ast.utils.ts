@@ -779,22 +779,39 @@ export function executeInsertText(
   inlines: Map<string, BaseInlineBehavior>,
   blocks: Map<string, BaseBlockBehavior>
 ): TransactionResult {
-  const newDoc = structuredClone(doc);
-  const block = newDoc[sel.start.blockIndex];
-  if (!block) return { doc: newDoc, selectionShift: sel };
+  // Copy only the path to the caret rather than structuredClone(doc). Everything
+  // off that path is untouched here, so it can stay shared with the previous
+  // document. Deep-cloning to insert one character measured ~3 ms on a
+  // 1000-block document against ~0.0002 ms for this.
+  //
+  // Safe because this function mutates nothing outside the copied path, and the
+  // one place that mutates a `marks` array in place (applyMarkToContent) is
+  // reached only through callers that still clone first.
+  const blockIndex = sel.start.blockIndex;
+  const source = doc[blockIndex];
+  if (!source) return { doc, selectionShift: sel };
+
+  const newDoc = doc.slice();
+  const block: ASTBlockNode = { ...source };
+  newDoc[blockIndex] = block;
 
   let content: ASTInlineNode[];
-  let inlineIndex = sel.start.inlineIndex;
-  let offset = sel.start.offset;
+  const inlineIndex = sel.start.inlineIndex;
+  const offset = sel.start.offset;
 
   const behavior = blocks.get(block.type);
   const itemIdx = sel.start.itemIndex ?? 0;
 
   if (behavior?.category === 'container') {
-    const item = block.content[itemIdx] as ASTBlockNode;
-    content = item.content as ASTInlineNode[];
+    const items = (block.content as ASTBlockNode[]).slice();
+    const item: ASTBlockNode = { ...(items[itemIdx] as ASTBlockNode) };
+    content = (item.content as ASTInlineNode[]).slice();
+    item.content = content;
+    items[itemIdx] = item;
+    block.content = items;
   } else {
-    content = block.content as ASTInlineNode[];
+    content = (block.content as ASTInlineNode[]).slice();
+    block.content = content;
   }
 
   const node = content[inlineIndex];
@@ -812,7 +829,13 @@ export function executeInsertText(
         return { doc: newDoc, selectionShift: { start: newPos, end: newPos, isCollapsed: true } };
       }
     }
-    node.text = node.text.slice(0, offset) + text + node.text.slice(offset);
+    // The previous document still references the original node — and the undo
+    // stack holds on to it — so replace rather than mutate.
+    content[inlineIndex] = {
+      ...node,
+      text: node.text.slice(0, offset) + text + node.text.slice(offset),
+      ...(node.marks ? { marks: node.marks.slice() } : {}),
+    };
   } else {
     content.push({ type: 'text', text });
   }

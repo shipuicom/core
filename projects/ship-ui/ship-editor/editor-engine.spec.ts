@@ -8,7 +8,7 @@ import { ASTBlockNode, ASTDocument, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import * as B from './standard-behaviors';
 
-const p = (text: string) => ({ type: 'paragraph', content: [{ type: 'text', text }] });
+const p = (text: string): ASTBlockNode => ({ type: 'paragraph', content: [{ type: 'text', text }] });
 const textOf = (doc: ASTDocument, i: number, item?: number) => {
   const block = doc[i];
   const content = (item !== undefined ? (block.content as ASTBlockNode[])[item].content : block.content) as any[];

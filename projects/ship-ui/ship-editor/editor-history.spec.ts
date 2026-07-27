@@ -4,11 +4,11 @@ import { Injector, runInInjectionContext } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { EditorEngineService } from './editor-engine.service';
 import { applyOp, diffDocuments, fragLen, invertOp } from './editor-transactions';
-import { ASTDocument, LogicalSelection } from './editor.types';
+import { ASTBlockNode, ASTDocument, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import { BoldBehavior, HeadingBehavior, ImageBehavior, ParagraphBehavior } from './standard-behaviors';
 
-const p = (text: string) => ({ type: 'paragraph', content: [{ type: 'text', text }] });
+const p = (text: string): ASTBlockNode => ({ type: 'paragraph', content: [{ type: 'text', text }] });
 const textOf = (doc: ASTDocument, i: number) => (doc[i].content as any[]).map((n) => n.text).join('');
 
 describe('Invertible editor history', () => {
@@ -69,6 +69,76 @@ describe('Invertible editor history', () => {
       expect(JSON.stringify(forward)).toBe(JSON.stringify(newDoc));
       const back = applyOp(forward, invertOp(op));
       expect(JSON.stringify(back)).toBe(JSON.stringify(oldDoc));
+    });
+  });
+
+  describe('document immutability across edits', () => {
+    // insertText path-copies rather than deep-cloning the document, so the
+    // previous document must still be observably untouched — the undo stack and
+    // the last emitted value both hold references to it.
+    it('leaves the previous document untouched when typing', () => {
+      const before: ASTDocument = [p('one'), p('two'), p('three')];
+      arrange(before);
+      const snapshot = JSON.parse(JSON.stringify(before));
+
+      caret(1, 3);
+      engine.insertText('X');
+
+      expect(textOf(engine.document(), 1)).toBe('twoX');
+      // The array we handed in, and every node reachable from it, is unchanged.
+      expect(before).toEqual(snapshot);
+    });
+
+    it('shares untouched blocks by reference instead of copying them', () => {
+      const before: ASTDocument = [p('one'), p('two'), p('three')];
+      arrange(before);
+      caret(1, 3);
+      engine.insertText('X');
+
+      const after = engine.document();
+      expect(after[0]).toBe(before[0]);
+      expect(after[2]).toBe(before[2]);
+      expect(after[1]).not.toBe(before[1]);
+    });
+
+    it('does not corrupt the previous document when typing repeatedly', () => {
+      arrange([p('one'), p('two')]);
+      const original = engine.document();
+      const snapshot = JSON.parse(JSON.stringify(original));
+
+      caret(1, 3);
+      engine.insertText('a');
+      caret(1, 4);
+      engine.insertText('b');
+      caret(1, 5);
+      engine.insertText('c');
+
+      expect(textOf(engine.document(), 1)).toBe('twoabc');
+      expect(original).toEqual(snapshot);
+
+      engine.undo();
+      engine.undo();
+      engine.undo();
+      expect(textOf(engine.document(), 1)).toBe('two');
+    });
+
+    it('keeps marks isolated when typing inside a marked run', () => {
+      const marked: ASTDocument = [
+        { type: 'paragraph', content: [{ type: 'text', text: 'bold', marks: [{ type: 'bold' }] }] },
+      ];
+      arrange(marked);
+      const snapshot = JSON.parse(JSON.stringify(marked));
+
+      caret(0, 2);
+      engine.insertText('X');
+
+      expect(textOf(engine.document(), 0)).toBe('boXld');
+      expect(marked).toEqual(snapshot);
+      // The mutated node must not share its marks array with the original.
+      const nextNode = (engine.document()[0].content as any[])[0];
+      const prevNode = (marked[0].content as any[])[0];
+      expect(nextNode.marks).not.toBe(prevNode.marks);
+      expect(nextNode.marks).toEqual(prevNode.marks);
     });
   });
 
