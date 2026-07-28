@@ -73,8 +73,10 @@ function makeEngine(): EditorEngineService {
   return engine;
 }
 
-const caretSel = (blockIndex: number, offset: number) =>
-  ({ start: { blockIndex, inlineIndex: 0, offset }, end: { blockIndex, inlineIndex: 0, offset }, isCollapsed: true }) as any;
+const caretSel = (doc: ASTDocument, blockIndex: number, offset: number) => {
+  const at = logicalToPos(doc, { blockIndex, inlineIndex: 0, offset });
+  return { from: at, to: at };
+};
 
 function randomBaseDoc(rnd: Rnd): ASTDocument {
   const blocks: any[] = [];
@@ -221,7 +223,7 @@ describe('fuzz layer 2: engine rebase marker oracle', () => {
         const len = blockText(doc[bi]).length;
         const at = pick(rnd, len + 1);
         if (rnd() < 0.5 && l < LOCAL.length) {
-          engine.selection.live.set(caretSel(bi, at));
+          engine.selection.live.set(caretSel(doc, bi, at));
           engine.insertText(LOCAL[l++]);
         } else if (r < REMOTE.length) {
           engine.applyRemoteOperation({
@@ -273,7 +275,7 @@ describe('fuzz layer 2: engine rebase marker oracle', () => {
       for (let step = 0; step < 5 && l < LOCAL.length; step++) {
         const doc = engine.document();
         const bi = pick(rnd, doc.length);
-        engine.selection.live.set(caretSel(bi, pick(rnd, blockText(doc[bi]).length + 1)));
+        engine.selection.live.set(caretSel(doc, bi, pick(rnd, blockText(doc[bi]).length + 1)));
         engine.insertText(LOCAL[l++]);
       }
 
@@ -320,22 +322,21 @@ describe('fuzz layer 3: engine chaos invariants', () => {
         const at = pick(rnd, len + 1);
         const roll = rnd();
         if (roll < 0.4) {
-          engine.selection.live.set(caretSel(bi, at));
+          engine.selection.live.set(caretSel(doc, bi, at));
           engine.insertText('x');
         } else if (roll < 0.6) {
-          engine.selection.live.set(caretSel(bi, at));
+          engine.selection.live.set(caretSel(doc, bi, at));
           engine.handleEnter();
         } else if (roll < 0.8) {
-          engine.selection.live.set(caretSel(bi, at));
+          engine.selection.live.set(caretSel(doc, bi, at));
           engine.handleBackspace();
         } else if (len >= 2) {
           const from = pick(rnd, len - 1);
           const to = from + 1 + pick(rnd, len - from - 1);
           engine.selection.live.set({
-            start: { blockIndex: bi, inlineIndex: 0, offset: from },
-            end: { blockIndex: bi, inlineIndex: 0, offset: to },
-            isCollapsed: false,
-          } as any);
+            from: logicalToPos(doc, { blockIndex: bi, inlineIndex: 0, offset: from }),
+            to: logicalToPos(doc, { blockIndex: bi, inlineIndex: 0, offset: to }),
+          });
           engine.deleteRange();
         }
       };

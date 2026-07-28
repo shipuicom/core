@@ -94,7 +94,7 @@ describe('ACCEPTANCE: backspace-merge cursor mapping', () => {
     expect(charAt(oldDoc, bystander)).toBe('l');
     const flatBefore = logicalToPos(oldDoc, bystander);
 
-    engine.selection.live.set({ start: lp(1, 0), end: lp(1, 0), isCollapsed: true } as any);
+    engine.selection.live.set({ from: logicalToPos(oldDoc, lp(1, 0)), to: logicalToPos(oldDoc, lp(1, 0)) });
     engine.handleBackspace();
     const newDoc = engine.document();
     expect(newDoc).toHaveLength(1);
@@ -115,7 +115,7 @@ describe('ACCEPTANCE: backspace-merge cursor mapping', () => {
   it('CONTRAST: the typed BlockSplice for the same merge cannot recover the cursor', () => {
     const oldDoc = [p('hello'), p('world')] as ASTDocument;
     engine.document.set(oldDoc);
-    engine.selection.live.set({ start: lp(1, 0), end: lp(1, 0), isCollapsed: true } as any);
+    engine.selection.live.set({ from: logicalToPos(oldDoc, lp(1, 0)), to: logicalToPos(oldDoc, lp(1, 0)) });
     engine.handleBackspace();
 
     const tx = engine.lastTransaction()!;
@@ -136,7 +136,7 @@ describe('ACCEPTANCE: backspace-merge cursor mapping', () => {
     const bystander = lp(0, 8);
     const flatBefore = logicalToPos(oldDoc, bystander);
 
-    engine.selection.live.set({ start: lp(0, 5), end: lp(0, 5), isCollapsed: true } as any);
+    engine.selection.live.set({ from: logicalToPos(oldDoc, lp(0, 5)), to: logicalToPos(oldDoc, lp(0, 5)) });
     engine.handleEnter();
     const newDoc = engine.document();
     expect(newDoc).toHaveLength(2);

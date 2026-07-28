@@ -3,8 +3,9 @@
 import { Injector, runInInjectionContext } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { EditorEngineService } from './editor-engine.service';
+import { logicalToPos, posToLogical } from './editor-flat-positions';
 import { htmlToAst } from './editor-serializers';
-import { ASTBlockNode, ASTDocument, LogicalSelection } from './editor.types';
+import { ASTBlockNode, ASTDocument, LogicalPosition } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import * as B from './standard-behaviors';
 
@@ -18,17 +19,22 @@ const textOf = (doc: ASTDocument, i: number, item?: number) => {
 describe('EditorEngine integration', () => {
   let engine: EditorEngineService;
 
+  // Selections are flat positions; these helpers convert the tree-shaped
+  // coordinates the tests are written in.
+  const flat = (pos: { blockIndex: number; itemIndex?: number; inlineIndex?: number; offset: number }) =>
+    logicalToPos(engine.document(), { inlineIndex: 0, ...pos } as LogicalPosition);
   const caret = (blockIndex: number, offset: number, extra: { itemIndex?: number; inlineIndex?: number } = {}) => {
-    const pos = { blockIndex, inlineIndex: extra.inlineIndex ?? 0, offset, ...(extra.itemIndex !== undefined ? { itemIndex: extra.itemIndex } : {}) };
-    engine.selection.live.set({ start: pos, end: pos, isCollapsed: true } as LogicalSelection);
+    const at = flat({ blockIndex, offset, ...extra });
+    engine.selection.live.set({ from: at, to: at });
   };
   const range = (from: [number, number], to: [number, number]) => {
     engine.selection.live.set({
-      start: { blockIndex: from[0], inlineIndex: 0, offset: from[1] },
-      end: { blockIndex: to[0], inlineIndex: 0, offset: to[1] },
-      isCollapsed: false,
-    } as LogicalSelection);
+      from: flat({ blockIndex: from[0], offset: from[1] }),
+      to: flat({ blockIndex: to[0], offset: to[1] }),
+    });
   };
+  /** Tree-shaped view of the live caret, for assertions written in tree coordinates. */
+  const caretLp = () => posToLogical(engine.document(), engine.selection.active()!.from)!;
   const html = () => engine.serialize('html');
 
   beforeEach(() => {
@@ -169,7 +175,7 @@ describe('EditorEngine integration', () => {
       caret(0, 0, { itemIndex: 1 });
       engine.handleEnter();
       expect(html()).toBe('<ul><li>one</li></ul><p><br></p>');
-      expect(engine.selection.active()?.start.blockIndex).toBe(1);
+      expect(caretLp().blockIndex).toBe(1);
     });
 
     it('Backspace at the start of an item outdents it to a paragraph', () => {
@@ -201,10 +207,9 @@ describe('EditorEngine integration', () => {
       engine.document.set(listDoc());
 
       engine.selection.live.set({
-        start: { blockIndex: 0, inlineIndex: 0, offset: 3 },
-        end: { blockIndex: 1, itemIndex: 1, inlineIndex: 0, offset: 4 },
-        isCollapsed: false,
-      } as LogicalSelection);
+        from: flat({ blockIndex: 0, offset: 3 }),
+        to: flat({ blockIndex: 1, itemIndex: 1, offset: 4 }),
+      });
       engine.deleteRange();
       expect(html()).toBe('<p>bef two</p><ul><li>item three</li></ul><p>after</p>');
     });
@@ -212,10 +217,9 @@ describe('EditorEngine integration', () => {
     it('typing over the selection replaces it (the reported bug) without nuking the list', () => {
       engine.document.set(listDoc());
       engine.selection.live.set({
-        start: { blockIndex: 0, inlineIndex: 0, offset: 3 },
-        end: { blockIndex: 1, itemIndex: 0, inlineIndex: 0, offset: 5 },
-        isCollapsed: false,
-      } as LogicalSelection);
+        from: flat({ blockIndex: 0, offset: 3 }),
+        to: flat({ blockIndex: 1, itemIndex: 0, offset: 5 }),
+      });
       engine.insertText('X');
       expect(html()).toBe('<p>befXone</p><ul><li>item two</li><li>item three</li></ul><p>after</p>');
     });
@@ -223,10 +227,9 @@ describe('EditorEngine integration', () => {
     it('consuming the whole list (into the last item end) removes the now-empty list', () => {
       engine.document.set(listDoc());
       engine.selection.live.set({
-        start: { blockIndex: 0, inlineIndex: 0, offset: 3 },
-        end: { blockIndex: 1, itemIndex: 2, inlineIndex: 0, offset: 10 },
-        isCollapsed: false,
-      } as LogicalSelection);
+        from: flat({ blockIndex: 0, offset: 3 }),
+        to: flat({ blockIndex: 1, itemIndex: 2, offset: 10 }),
+      });
       engine.deleteRange();
       expect(html()).toBe('<p>bef</p><p>after</p>');
     });
@@ -234,10 +237,9 @@ describe('EditorEngine integration', () => {
     it('drops intermediate blocks between the paragraph and the list', () => {
       engine.document.set([p('start'), p('middle'), listDoc()[1], p('end')] as ASTDocument);
       engine.selection.live.set({
-        start: { blockIndex: 0, inlineIndex: 0, offset: 2 },
-        end: { blockIndex: 2, itemIndex: 0, inlineIndex: 0, offset: 4 },
-        isCollapsed: false,
-      } as LogicalSelection);
+        from: flat({ blockIndex: 0, offset: 2 }),
+        to: flat({ blockIndex: 2, itemIndex: 0, offset: 4 }),
+      });
       engine.deleteRange();
       expect(html()).toBe('<p>st one</p><ul><li>item two</li><li>item three</li></ul><p>end</p>');
     });
@@ -249,7 +251,7 @@ describe('EditorEngine integration', () => {
       caret(0, 5);
       engine.handleEnter();
       expect(html()).toBe('<p>hello</p><p> world</p>');
-      expect(engine.selection.active()?.start.blockIndex).toBe(1);
+      expect(caretLp().blockIndex).toBe(1);
     });
 
     it('creates an empty paragraph when splitting at the end', () => {
@@ -304,7 +306,7 @@ describe('EditorEngine integration', () => {
       engine.handleBackspace();
       expect(html()).toBe('<p>helloworld</p>');
 
-      expect(engine.selection.active()?.start.offset).toBe(5);
+      expect(caretLp().offset).toBe(5);
     });
 
     it('downgrades a heading to paragraph at block 0 start (fallbackType)', () => {
@@ -783,7 +785,7 @@ describe('EditorEngine integration', () => {
       caret(0, 0);
       expect(engine.handleEscapeHatch()).toBe(true);
       expect(engine.document().map((b) => b.type)).toEqual(['paragraph', 'code-block']);
-      expect(engine.selection.active()?.start.blockIndex).toBe(0);
+      expect(caretLp().blockIndex).toBe(0);
     });
 
     it('does nothing when the first block is an empty paragraph', () => {
@@ -796,9 +798,9 @@ describe('EditorEngine integration', () => {
       engine.document.set([p('prev'), p('here')]);
       caret(1, 0);
       expect(engine.handleEscapeHatch()).toBe(true);
-      const sel = engine.selection.active()!;
-      expect(sel.start.blockIndex).toBe(0);
-      expect(sel.start.offset).toBe(4);
+      const lp = caretLp();
+      expect(lp.blockIndex).toBe(0);
+      expect(lp.offset).toBe(4);
     });
   });
 

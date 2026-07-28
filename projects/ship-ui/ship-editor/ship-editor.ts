@@ -21,6 +21,7 @@ import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings'
 import { BaseBlockBehavior, BaseInlineBehavior, SlashCommand } from './editor-behaviors';
 import { EditorEngineService } from './editor-engine.service';
 import { SanitizeOption, normalizeDocument, sanitizeDocumentUrls } from './editor-sanitize';
+import { logicalToPos, posToLogical } from './editor-flat-positions';
 import { htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
 import { ShipEditorContextualToolbar, ContextualActionExtras } from './sh-editor-contextual-toolbar';
 import { ShipEditorImageResize } from './sh-editor-image-resize';
@@ -363,7 +364,8 @@ export class ShipEditor implements ControlValueAccessor {
       const domSel = window.getSelection();
       const collapsed = !domSel || domSel.rangeCount === 0 || domSel.getRangeAt(0).collapsed;
       const sel = this.selection.active();
-      const block = sel && this.engine.document()[sel.start.blockIndex];
+      const lp = sel ? posToLogical(this.engine.document(), sel.from) : null;
+      const block = lp ? this.engine.document()[lp.blockIndex] : null;
       if (collapsed && block && this.engine.blocks.get(block.type)?.category !== 'void') {
         this.engine.clearBlockSelection();
       }
@@ -576,16 +578,15 @@ export class ShipEditor implements ControlValueAccessor {
     const start = this.mapDOMToLogical(container, tr.startContainer, tr.startOffset);
     const end = this.mapDOMToLogical(container, tr.endContainer, tr.endOffset);
     if (!start || !end || start.blockIndex !== end.blockIndex) return false;
-    const collapsed =
-      start.inlineIndex === end.inlineIndex && start.offset === end.offset;
-    this.selection.live.set({ start, end, isCollapsed: collapsed });
+    const doc = this.engine.document();
+    this.selection.live.set({ from: logicalToPos(doc, start), to: logicalToPos(doc, end) });
     return true;
   }
 
   #handleDelete(event: InputEvent, direction: 'backward' | 'forward') {
     const sel = this.selection.active();
 
-    if (sel && !sel.isCollapsed) {
+    if (sel && sel.from !== sel.to) {
       this.engine.deleteRange();
       return;
     }
@@ -595,15 +596,15 @@ export class ShipEditor implements ControlValueAccessor {
       const container = this.surface().nativeElement;
       const start = this.mapDOMToLogical(container, tr.startContainer, tr.startOffset);
       const end = this.mapDOMToLogical(container, tr.endContainer, tr.endOffset);
-      const sameBlockRange =
-        start &&
-        end &&
-        start.blockIndex === end.blockIndex &&
-        !(start.inlineIndex === end.inlineIndex && start.offset === end.offset);
-      if (sameBlockRange) {
-        this.selection.live.set({ start, end, isCollapsed: false });
-        this.engine.deleteRange();
-        return;
+      if (start && end && start.blockIndex === end.blockIndex) {
+        const doc = this.engine.document();
+        const from = logicalToPos(doc, start);
+        const to = logicalToPos(doc, end);
+        if (from !== to) {
+          this.selection.live.set({ from, to });
+          this.engine.deleteRange();
+          return;
+        }
       }
     }
     if (direction === 'backward') this.engine.handleBackspace();
@@ -668,7 +669,9 @@ export class ShipEditor implements ControlValueAccessor {
       ? startLogical
       : this.mapDOMToLogical(container, range.endContainer, range.endOffset);
     if (startLogical && endLogical) {
-      this.selection.live.set({ start: startLogical, end: endLogical, isCollapsed: range.collapsed });
+      const doc = this.engine.document();
+      const from = logicalToPos(doc, startLogical);
+      this.selection.live.set({ from, to: range.collapsed ? from : logicalToPos(doc, endLogical) });
     }
   }
 
@@ -747,8 +750,8 @@ export class ShipEditor implements ControlValueAccessor {
           const content = targetBlock.content as ASTInlineNode[];
           const lastIdx = before ? Math.max(0, content.length - 1) : 0;
           const offset = before ? (content[lastIdx]?.text.length ?? 0) : 0;
-          const pos: LogicalPosition = { blockIndex: targetIdx, inlineIndex: lastIdx, offset };
-          this.selection.live.set({ start: pos, end: pos, isCollapsed: true });
+          const from = logicalToPos(this.engine.document(), { blockIndex: targetIdx, inlineIndex: lastIdx, offset });
+          this.selection.live.set({ from, to: from });
           this.#render();
         }
         return;
@@ -1051,7 +1054,8 @@ export class ShipEditor implements ControlValueAccessor {
       pos = { blockIndex: idx - 1, inlineIndex: lastIdx, offset: content[lastIdx]?.text.length ?? 0 };
     }
     if (!pos) return;
-    this.selection.live.set({ start: pos, end: pos, isCollapsed: true });
+    const from = logicalToPos(doc, pos);
+    this.selection.live.set({ from, to: from });
     this.#render();
   }
 
@@ -1072,6 +1076,14 @@ export class ShipEditor implements ControlValueAccessor {
   private restoreDOMSelection(sel: LogicalSelection) {
     const container = this.surface().nativeElement;
     if (typeof window === 'undefined') return;
+
+    // The DOM is tree-shaped, so the flat selection is translated back to a
+    // tree position here — the one place that still needs the shape.
+    const doc = this.engine.document();
+    const isCollapsed = sel.from === sel.to;
+    const startLp = posToLogical(doc, sel.from);
+    const endLp = isCollapsed ? startLp : posToLogical(doc, sel.to);
+    if (!startLp) return;
 
     try {
       const range = document.createRange();
@@ -1112,14 +1124,14 @@ export class ShipEditor implements ControlValueAccessor {
         }
       };
 
-      const start = getPos(sel.start);
+      const start = getPos(startLp);
       if (start) {
 
         range.setStart(start.node, start.offset);
 
-        if (sel.isCollapsed) range.collapse(true);
+        if (isCollapsed || !endLp) range.collapse(true);
         else {
-          const end = getPos(sel.end);
+          const end = getPos(endLp);
           if (end) range.setEnd(end.node, end.offset);
         }
         const domSel = window.getSelection();

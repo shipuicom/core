@@ -12,7 +12,7 @@ import {
   ListItemBehavior,
   ParagraphBehavior,
 } from './standard-behaviors';
-import { ASTDocument, ASTMark, LogicalSelection } from './editor.types';
+import { ASTDocument, ASTMark, TreeSelection } from './editor.types';
 
 class HighlightBehavior extends BaseInlineBehavior {
   readonly type = 'highlight';
@@ -89,7 +89,7 @@ describe('cross-block toggleMark', () => {
     { type: 'paragraph', content: [{ type: 'text', text: 'world' }] },
   ];
 
-  const spanSel = (): LogicalSelection => ({
+  const spanSel = (): TreeSelection => ({
     start: { blockIndex: 0, inlineIndex: 0, offset: 2 },
     end: { blockIndex: 1, inlineIndex: 0, offset: 3 },
     isCollapsed: false,

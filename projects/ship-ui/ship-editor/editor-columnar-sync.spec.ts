@@ -4,8 +4,8 @@ import { Injector, runInInjectionContext } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { EditorEngineService } from './editor-engine.service';
 import { fromColumnar, toColumnar } from './editor-columnar';
-import { docSize } from './editor-flat-positions';
-import { ASTBlockNode, ASTDocument, LogicalSelection } from './editor.types';
+import { docSize, logicalToPos } from './editor-flat-positions';
+import { ASTBlockNode, ASTDocument } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import { BulletListBehavior, HeadingBehavior, ImageBehavior, ListItemBehavior, ParagraphBehavior } from './standard-behaviors';
 
@@ -20,12 +20,10 @@ const p = (text: string): ASTBlockNode => ({ type: 'paragraph', content: [{ type
 describe('columnar stays in step with the document', () => {
   let engine: EditorEngineService;
 
-  const caret = (blockIndex: number, offset: number) =>
-    engine.selection.live.set({
-      start: { blockIndex, inlineIndex: 0, offset },
-      end: { blockIndex, inlineIndex: 0, offset },
-      isCollapsed: true,
-    } as LogicalSelection);
+  const caret = (blockIndex: number, offset: number) => {
+    const at = logicalToPos(engine.document(), { blockIndex, inlineIndex: 0, offset });
+    engine.selection.live.set({ from: at, to: at });
+  };
 
   const expectInSync = (label: string) => {
     const live = engine.columnar;

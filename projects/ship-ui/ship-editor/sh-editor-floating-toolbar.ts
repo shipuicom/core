@@ -24,7 +24,7 @@ export class ShipEditorFloatingToolbar {
     const sel = this.editor().selection.active();
     const rect = this.editor().selection.domRect();
 
-    return !!(sel && !sel.isCollapsed && rect && rect.width > 0);
+    return !!(sel && sel.from !== sel.to && rect && rect.width > 0);
   });
 
   top = computed(() => {

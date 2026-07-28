@@ -17,6 +17,11 @@ export interface ASTBlockNode {
 
 export type ASTDocument = ASTBlockNode[];
 
+/**
+ * Tree-shaped position: block → item → inline run → offset. The DOM genuinely
+ * has this shape, so it survives as the boundary type where DOM nodes are
+ * mapped to and from document positions.
+ */
 export interface LogicalPosition {
   blockIndex: number;
   itemIndex?: number;
@@ -24,7 +29,22 @@ export interface LogicalPosition {
   offset: number;
 }
 
+/**
+ * A selection as two flat character positions in the document's position space
+ * (the space `logicalToPos`/`posToLogical` define, where a text block costs
+ * 2 + its length and a void block costs 1). `from <= to`; collapsed when equal.
+ */
 export interface LogicalSelection {
+  from: number;
+  to: number;
+}
+
+/**
+ * Tree-shaped selection, kept only for the mutation primitives that still
+ * navigate the nested AST. Shrinks away as they move onto the columnar
+ * document.
+ */
+export interface TreeSelection {
   start: LogicalPosition;
   end: LogicalPosition;
   isCollapsed: boolean;
@@ -32,7 +52,7 @@ export interface LogicalSelection {
 
 export interface TransactionResult {
   doc: ASTDocument;
-  selectionShift?: LogicalSelection;
+  selectionShift?: TreeSelection;
 }
 
 export type BlockCategory = 'void' | 'container' | 'text';

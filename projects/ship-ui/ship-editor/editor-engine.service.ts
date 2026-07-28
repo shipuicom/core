@@ -17,7 +17,7 @@ import { diffFlat, logicalToPos, posToLogical } from './editor-flat-positions';
 import { ColumnarDocument, toColumnar } from './editor-columnar';
 import { applyOpToColumnar } from './editor-columnar-ops';
 import { EditorOp, EditorTransaction, applyOp, diffDocuments, invertOp, spliceInlineContent, transformOp } from './editor-transactions';
-import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalPosition, LogicalSelection, TransactionResult } from './editor.types';
+import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalPosition, LogicalSelection, TransactionResult, TreeSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 
 @Injectable()
@@ -46,6 +46,28 @@ export class EditorEngineService {
     if (op) applyOpToColumnar(this.#columnar, op);
     else this.#columnar = toColumnar(this.document());
   }
+
+  // -------------------------------------------------------------------------
+  // Selection is flat {from, to}. The mutation primitives still navigate the
+  // nested AST, so flat positions are translated to tree shape at their
+  // boundary and back. These conversions disappear as the primitives move
+  // onto the columnar document.
+  // -------------------------------------------------------------------------
+
+  #lpOf(doc: ASTDocument, pos: number): LogicalPosition {
+    return posToLogical(doc, pos) ?? { blockIndex: 0, inlineIndex: 0, offset: 0 };
+  }
+
+  #toTreeSel(doc: ASTDocument, sel: LogicalSelection): TreeSelection {
+    const start = this.#lpOf(doc, sel.from);
+    const isCollapsed = sel.from === sel.to;
+    return { start, end: isCollapsed ? start : this.#lpOf(doc, sel.to), isCollapsed };
+  }
+
+  #toFlatSel(doc: ASTDocument, sel: TreeSelection): LogicalSelection {
+    const from = logicalToPos(doc, sel.start);
+    return { from, to: sel.isCollapsed ? from : logicalToPos(doc, sel.end) };
+  }
   readonly blocks = new Map<string, BaseBlockBehavior>();
   readonly inlines = new Map<string, BaseInlineBehavior>();
 
@@ -60,9 +82,8 @@ export class EditorEngineService {
   readonly canRedo = computed(() => this.#redoStack().length > 0);
 
   readonly pendingMarks = signal<{
-    blockIndex: number;
-    itemIndex: number;
-    charOffset: number;
+    /** Flat caret position the marks were staged at. */
+    pos: number;
     marks: ASTMark[];
   } | null>(null);
 
@@ -90,31 +111,9 @@ export class EditorEngineService {
     return content.map((n) => n.text ?? '').join('');
   }
 
-  #logicalAtChar(ref: LogicalPosition, targetChar: number): LogicalPosition {
-    const block = this.document()[ref.blockIndex];
-    const content = (
-      ref.itemIndex !== undefined && block && this.blocks.get(block.type)?.category === 'container'
-        ? ((block.content as ASTBlockNode[])[ref.itemIndex]?.content ?? [])
-        : (block?.content ?? [])
-    ) as ASTInlineNode[];
-    let remaining = Math.max(0, targetChar);
-    for (let i = 0; i < content.length; i++) {
-      const len = content[i].text?.length ?? 0;
-      if (remaining <= len) return { blockIndex: ref.blockIndex, itemIndex: ref.itemIndex, inlineIndex: i, offset: remaining };
-      remaining -= len;
-    }
-    const last = Math.max(0, content.length - 1);
-    return { blockIndex: ref.blockIndex, itemIndex: ref.itemIndex, inlineIndex: last, offset: content[last]?.text?.length ?? 0 };
-  }
-
-  #pendingAt(pos: LogicalPosition): ASTMark[] | null {
+  #pendingAt(pos: number): ASTMark[] | null {
     const pending = this.pendingMarks();
-    if (!pending) return null;
-    const matches =
-      pending.blockIndex === pos.blockIndex &&
-      pending.itemIndex === (pos.itemIndex ?? 0) &&
-      pending.charOffset === this.#charOffsetOf(pos);
-    return matches ? pending.marks : null;
+    return pending && pending.pos === pos ? pending.marks : null;
   }
 
   register(behavior: BaseBlockBehavior | BaseInlineBehavior) {
@@ -122,11 +121,12 @@ export class EditorEngineService {
     else this.inlines.set(behavior.type, behavior);
   }
 
-  dispatchWithTruncation(mutation: (draft: ASTDocument, sel: LogicalSelection) => TransactionResult | void | null) {
-    const currentSel = this.selection.active();
-    if (!currentSel) return;
+  dispatchWithTruncation(mutation: (draft: ASTDocument, sel: TreeSelection) => TransactionResult | void | null) {
+    const flatSel = this.selection.active();
+    if (!flatSel) return;
 
     const oldDoc = this.document();
+    const currentSel = this.#toTreeSel(oldDoc, flatSel);
     let targetDoc = oldDoc;
     let targetSel = currentSel;
 
@@ -139,25 +139,25 @@ export class EditorEngineService {
     const result = mutation(targetDoc, targetSel);
     if (result) {
       this.document.set(result.doc);
-      if (result.selectionShift) this.selection.live.set(result.selectionShift);
-      this.#commit(oldDoc, result.doc, currentSel);
+      if (result.selectionShift) this.selection.live.set(this.#toFlatSel(result.doc, result.selectionShift));
+      this.#commit(oldDoc, result.doc, flatSel);
     } else if (!currentSel.isCollapsed) {
 
       this.document.set(targetDoc);
-      this.selection.live.set(targetSel);
-      this.#commit(oldDoc, targetDoc, currentSel);
+      this.selection.live.set(this.#toFlatSel(targetDoc, targetSel));
+      this.#commit(oldDoc, targetDoc, flatSel);
     }
   }
 
   handleEscapeHatch(): boolean {
-    const currentSel = this.selection.active();
-    if (currentSel) {
+    const flatSel = this.selection.active();
+    if (flatSel) {
       const oldDoc = this.document();
-      const result = handleEscapeHatch(oldDoc, currentSel, this.blocks);
+      const result = handleEscapeHatch(oldDoc, this.#toTreeSel(oldDoc, flatSel), this.blocks);
       if (result) {
         this.document.set(result.doc);
-        if (result.selectionShift) this.selection.live.set(result.selectionShift);
-        this.#commit(oldDoc, result.doc, currentSel);
+        if (result.selectionShift) this.selection.live.set(this.#toFlatSel(result.doc, result.selectionShift));
+        this.#commit(oldDoc, result.doc, flatSel);
         return true;
       }
     }
@@ -174,7 +174,7 @@ export class EditorEngineService {
 
   insertText(text: string) {
     const sel = this.selection.active();
-    const pending = sel?.isCollapsed ? this.#pendingAt(sel.start) : null;
+    const pending = sel && sel.from === sel.to ? this.#pendingAt(sel.from) : null;
     this.pendingMarks.set(null);
     this.dispatchWithTruncation((doc, s) => {
       const result = executeInsertText(doc, s, text, this.inlines, this.blocks);
@@ -215,13 +215,17 @@ export class EditorEngineService {
         marks: [] as ASTMark[],
       };
 
-    const block = doc[sel.start.blockIndex];
+    const isCollapsed = sel.from === sel.to;
+    const start = this.#lpOf(doc, sel.from);
+    const end = isCollapsed ? start : this.#lpOf(doc, sel.to);
+
+    const block = doc[start.blockIndex];
     if (!block) return { blockType: null, blockAttrs: null, marks: [] as ASTMark[] };
 
     const behavior = this.blocks.get(block.type);
     let content: ASTInlineNode[] | null = null;
     if (behavior?.category === 'container') {
-      const item = block.content[sel.start.itemIndex ?? 0] as ASTBlockNode | undefined;
+      const item = block.content[start.itemIndex ?? 0] as ASTBlockNode | undefined;
       content = item ? (item.content as ASTInlineNode[]) : null;
     } else if (behavior?.category !== 'void') {
       content = block.content as ASTInlineNode[];
@@ -229,21 +233,20 @@ export class EditorEngineService {
 
     let marks: ASTMark[] = [];
     if (content) {
-      const sameHolder =
-        sel.start.blockIndex === sel.end.blockIndex && (sel.start.itemIndex ?? 0) === (sel.end.itemIndex ?? 0);
-      if (!sel.isCollapsed && sameHolder) {
+      const sameHolder = start.blockIndex === end.blockIndex && (start.itemIndex ?? 0) === (end.itemIndex ?? 0);
+      if (!isCollapsed && sameHolder) {
 
-        const a = this.#charOffsetOf(sel.start);
-        const b = this.#charOffsetOf(sel.end);
+        const a = this.#charOffsetOf(start);
+        const b = this.#charOffsetOf(end);
         marks = this.#commonMarks(content, Math.min(a, b), Math.max(a, b));
       } else {
-        const inline = content[sel.start.inlineIndex] as ASTInlineNode | undefined;
+        const inline = content[start.inlineIndex] as ASTInlineNode | undefined;
         marks = inline?.marks ? [...inline.marks] : [];
       }
     }
 
-    if (sel.isCollapsed) {
-      const pending = this.#pendingAt(sel.start);
+    if (isCollapsed) {
+      const pending = this.#pendingAt(sel.from);
       if (pending) marks = structuredClone(pending);
     }
 
@@ -311,10 +314,12 @@ export class EditorEngineService {
 
   readonly slashState = computed<{ query: string; length: number } | null>(() => {
     const sel = this.selection.active();
-    if (!sel || !sel.isCollapsed) return null;
-    const block = this.document()[sel.start.blockIndex];
+    if (!sel || sel.from !== sel.to) return null;
+    const doc = this.document();
+    const start = this.#lpOf(doc, sel.from);
+    const block = doc[start.blockIndex];
     if (!block || this.blocks.get(block.type)?.category === 'void') return null;
-    const before = this.#contentTextAt(sel.start).slice(0, this.#charOffsetOf(sel.start));
+    const before = this.#contentTextAt(start).slice(0, this.#charOffsetOf(start));
     const m = /(?:^|\s)\/(\S*)$/.exec(before);
     return m ? { query: m[1], length: m[1].length + 1 } : null;
   });
@@ -331,9 +336,10 @@ export class EditorEngineService {
   applySlashCommand(cmd: SlashCommand) {
     const state = this.slashState();
     const sel = this.selection.active();
-    if (state && sel?.isCollapsed) {
-      const start = this.#logicalAtChar(sel.start, this.#charOffsetOf(sel.start) - state.length);
-      this.selection.live.set({ start, end: sel.start, isCollapsed: false });
+    if (state && sel && sel.from === sel.to) {
+      // Flat positions inside one text holder are contiguous, so the query is
+      // exactly the `length` positions before the caret.
+      this.selection.live.set({ from: sel.from - state.length, to: sel.from });
       this.deleteRange();
     }
     cmd.run({ engine: this });
@@ -346,8 +352,8 @@ export class EditorEngineService {
     const oldDoc = this.document();
     const result = toggleMark(oldDoc, sel, markType, attrs, this.blocks, 'add');
     this.document.set(result.doc);
-    if (result.selectionShift) this.selection.live.set(result.selectionShift);
-    this.#commit(oldDoc, result.doc, sel);
+    if (result.selectionShift) this.selection.live.set(this.#toFlatSel(result.doc, result.selectionShift));
+    this.#commit(oldDoc, result.doc, this.#toFlatSel(oldDoc, sel));
     return true;
   }
 
@@ -358,20 +364,15 @@ export class EditorEngineService {
     const oldDoc = this.document();
     const result = toggleMark(oldDoc, sel, markType, undefined, this.blocks, 'remove');
     this.document.set(result.doc);
-    if (result.selectionShift) this.selection.live.set(result.selectionShift);
-    this.#commit(oldDoc, result.doc, sel);
+    if (result.selectionShift) this.selection.live.set(this.#toFlatSel(result.doc, result.selectionShift));
+    this.#commit(oldDoc, result.doc, this.#toFlatSel(oldDoc, sel));
     return true;
   }
 
   insertTextWithMarks(text: string, marks: ASTMark[]) {
     const sel = this.selection.active();
-    if (!sel || !sel.isCollapsed) return;
-    this.pendingMarks.set({
-      blockIndex: sel.start.blockIndex,
-      itemIndex: sel.start.itemIndex ?? 0,
-      charOffset: this.#charOffsetOf(sel.start),
-      marks: structuredClone(marks),
-    });
+    if (!sel || sel.from !== sel.to) return;
+    this.pendingMarks.set({ pos: sel.from, marks: structuredClone(marks) });
     this.insertText(text);
   }
 
@@ -383,11 +384,12 @@ export class EditorEngineService {
   });
 
   selectBlock(index: number) {
-    const block = this.document()[index];
+    const doc = this.document();
+    const block = doc[index];
     if (!block || this.blocks.get(block.type)?.category !== 'void') return;
     this.pendingMarks.set(null);
-    const pos: LogicalPosition = { blockIndex: index, inlineIndex: 0, offset: 0 };
-    this.selection.live.set({ start: pos, end: pos, isCollapsed: true });
+    const pos = logicalToPos(doc, { blockIndex: index, inlineIndex: 0, offset: 0 });
+    this.selection.live.set({ from: pos, to: pos });
     this.selectedBlock.set(index);
   }
 
@@ -404,12 +406,13 @@ export class EditorEngineService {
     const sel = this.selection.active();
     if (!sel) return;
     const oldDoc = this.document();
+    const treeSel = this.#toTreeSel(oldDoc, sel);
     let doc = oldDoc;
-    let base = sel;
-    if (!sel.isCollapsed) {
-      const t = deleteRange(oldDoc, sel, this.blocks);
+    let base = treeSel;
+    if (!treeSel.isCollapsed) {
+      const t = deleteRange(oldDoc, treeSel, this.blocks);
       doc = t.doc;
-      base = t.selectionShift ?? sel;
+      base = t.selectionShift ?? treeSel;
     }
     const idx = base.start.blockIndex;
     const block = doc[idx];
@@ -467,8 +470,8 @@ export class EditorEngineService {
     this.document.set(newDoc);
     this.clearBlockSelection();
     const caretIdx = Math.min(idx, newDoc.length - 1);
-    const pos: LogicalPosition = { blockIndex: caretIdx, inlineIndex: 0, offset: 0 };
-    this.selection.live.set({ start: pos, end: pos, isCollapsed: true });
+    const pos = logicalToPos(newDoc, { blockIndex: caretIdx, inlineIndex: 0, offset: 0 });
+    this.selection.live.set({ from: pos, to: pos });
     this.#commit(oldDoc, newDoc, this.selection.active());
   }
 
@@ -493,9 +496,9 @@ export class EditorEngineService {
     if (!sel) return null;
     const direct = this.activeFormats().marks.find((m) => m.type === markType);
     if (direct) return structuredClone(direct);
-    if (!sel.isCollapsed) return null;
+    if (sel.from !== sel.to) return null;
 
-    const run = this.#expandToMarkRun(sel.start, markType);
+    const run = this.#expandToMarkRun(this.#lpOf(this.document(), sel.from), markType);
     if (!run) return null;
     const block = this.document()[run.start.blockIndex];
     const isContainer = this.blocks.get(block.type)?.category === 'container';
@@ -517,16 +520,17 @@ export class EditorEngineService {
     return null;
   }
 
-  #markTargetSelection(markType: string): LogicalSelection | null {
+  #markTargetSelection(markType: string): TreeSelection | null {
     const sel = this.selection.active();
     if (!sel) return null;
-    if (!sel.isCollapsed) return sel;
-    const run = this.#expandToMarkRun(sel.start, markType);
-    if (run) this.selection.live.set(run);
+    const doc = this.document();
+    if (sel.from !== sel.to) return this.#toTreeSel(doc, sel);
+    const run = this.#expandToMarkRun(this.#lpOf(doc, sel.from), markType);
+    if (run) this.selection.live.set(this.#toFlatSel(doc, run));
     return run;
   }
 
-  #expandToMarkRun(pos: LogicalPosition, markType: string): LogicalSelection | null {
+  #expandToMarkRun(pos: LogicalPosition, markType: string): TreeSelection | null {
     const block = this.document()[pos.blockIndex];
     if (!block) return null;
     const isContainer = this.blocks.get(block.type)?.category === 'container';
@@ -565,27 +569,22 @@ export class EditorEngineService {
     const currentSel = this.selection.active();
     if (!currentSel) return;
 
-    if (currentSel.isCollapsed) {
+    if (currentSel.from === currentSel.to) {
 
-      const base = this.#pendingAt(currentSel.start) ?? this.activeFormats().marks;
+      const base = this.#pendingAt(currentSel.from) ?? this.activeFormats().marks;
       const has = base.some((m) => m.type === markType);
       const marks = has
         ? base.filter((m) => m.type !== markType)
         : [...base, { type: markType, ...(attrs ? { attrs } : {}) } as ASTMark];
-      this.pendingMarks.set({
-        blockIndex: currentSel.start.blockIndex,
-        itemIndex: currentSel.start.itemIndex ?? 0,
-        charOffset: this.#charOffsetOf(currentSel.start),
-        marks: structuredClone(marks),
-      });
+      this.pendingMarks.set({ pos: currentSel.from, marks: structuredClone(marks) });
       return;
     }
 
     this.pendingMarks.set(null);
     const oldDoc = this.document();
-    const result = toggleMark(oldDoc, currentSel, markType, attrs, this.blocks);
+    const result = toggleMark(oldDoc, this.#toTreeSel(oldDoc, currentSel), markType, attrs, this.blocks);
     this.document.set(result.doc);
-    if (result.selectionShift) this.selection.live.set(result.selectionShift);
+    if (result.selectionShift) this.selection.live.set(this.#toFlatSel(result.doc, result.selectionShift));
     this.#commit(oldDoc, result.doc, currentSel);
   }
 
@@ -597,19 +596,11 @@ export class EditorEngineService {
     const currentSel = this.selection.active();
     if (!currentSel) return;
 
-    let targetDoc = this.document();
-    let targetSel = currentSel;
-    if (!currentSel.isCollapsed) {
-      const truncation = deleteRange(targetDoc, currentSel, this.blocks);
-      targetDoc = truncation.doc;
-      if (truncation.selectionShift) targetSel = truncation.selectionShift;
-    }
-
     const oldDoc = this.document();
-    const result = setBlockType(oldDoc, currentSel, type, this.blocks, attrs);
+    const result = setBlockType(oldDoc, this.#toTreeSel(oldDoc, currentSel), type, this.blocks, attrs);
     if (result) {
       this.document.set(result.doc);
-      if (result.selectionShift) this.selection.live.set(result.selectionShift);
+      if (result.selectionShift) this.selection.live.set(this.#toFlatSel(result.doc, result.selectionShift));
       this.#commit(oldDoc, result.doc, currentSel);
     }
   }
@@ -642,7 +633,7 @@ export class EditorEngineService {
     const undoOp = invertOp(tx.op);
     this.document.set(applyOp(this.document(), undoOp));
     this.#advanceColumnar(undoOp);
-    if (tx.selBefore) this.selection.live.set(structuredClone(tx.selBefore));
+    if (tx.selBefore) this.selection.live.set({ ...tx.selBefore });
     this.#redoStack.update((s) => [...s, tx]);
     this.version.update((v) => v + 1);
   }
@@ -654,7 +645,7 @@ export class EditorEngineService {
     this.#redoStack.set(stack.slice(0, -1));
     this.document.set(applyOp(this.document(), tx.op));
     this.#advanceColumnar(tx.op);
-    if (tx.selAfter) this.selection.live.set(structuredClone(tx.selAfter));
+    if (tx.selAfter) this.selection.live.set({ ...tx.selAfter });
     this.#undoStack.update((s) => [...s, tx]);
     this.version.update((v) => v + 1);
   }
@@ -667,13 +658,12 @@ export class EditorEngineService {
     this.document.set(newDoc);
     this.#advanceColumnar(op);
 
-    const mapLp = (lp: LogicalPosition | null | undefined): LogicalPosition | null =>
-      lp ? posToLogical(newDoc, map.map(logicalToPos(oldDoc, lp), -1)) : null;
+    // Selections are flat positions, so mapping them through a remote op is a
+    // direct StepMap lookup — no tree round-trip.
     const mapSel = (sel: LogicalSelection | null): LogicalSelection | null => {
       if (!sel) return null;
-      const start = mapLp(sel.start);
-      const end = sel.isCollapsed ? start : mapLp(sel.end);
-      return start && end ? { start, end, isCollapsed: sel.isCollapsed } : null;
+      const from = map.map(sel.from, -1);
+      return { from, to: sel.from === sel.to ? from : map.map(sel.to, -1) };
     };
 
     const live = mapSel(this.selection.active());
@@ -725,8 +715,8 @@ export class EditorEngineService {
     const tx: EditorTransaction = {
       baseVersion: this.version(),
       op,
-      selBefore: selBefore ? structuredClone(selBefore) : null,
-      selAfter: selAfter ? structuredClone(selAfter) : null,
+      selBefore: selBefore ? { ...selBefore } : null,
+      selAfter: selAfter ? { ...selAfter } : null,
     };
     this.#undoStack.update((s) => [...s, tx]);
     if (this.#redoStack().length) this.#redoStack.set([]);

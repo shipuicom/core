@@ -5,13 +5,13 @@ import {
   ASTInlineNode,
   ASTMark,
   LogicalPosition,
-  LogicalSelection,
+  TreeSelection,
   TransactionResult,
 } from './editor.types';
 
 export function handleEscapeHatch(
   doc: ASTDocument,
-  sel: LogicalSelection,
+  sel: TreeSelection,
   blocks: Map<string, BaseBlockBehavior>
 ): TransactionResult | null {
   if (!sel.isCollapsed) return null;
@@ -70,7 +70,7 @@ export function handleEscapeHatch(
 
 export function handleEnter(
   doc: ASTDocument,
-  sel: LogicalSelection,
+  sel: TreeSelection,
   blocks: Map<string, BaseBlockBehavior>
 ): TransactionResult {
 
@@ -232,7 +232,7 @@ export function handleEnter(
 
 export function handleBackspace(
   doc: ASTDocument,
-  sel: LogicalSelection,
+  sel: TreeSelection,
   blocks: Map<string, BaseBlockBehavior>
 ): TransactionResult {
 
@@ -501,7 +501,7 @@ export function handleBackspace(
 
 export function deleteRange(
   doc: ASTDocument,
-  sel: LogicalSelection,
+  sel: TreeSelection,
   blocks: Map<string, BaseBlockBehavior>
 ): TransactionResult {
   const newDoc = structuredClone(doc);
@@ -620,7 +620,7 @@ function toBlockOfType(
 
 export function setBlockType(
   doc: ASTDocument,
-  sel: LogicalSelection,
+  sel: TreeSelection,
   targetType: string,
   blocks: Map<string, BaseBlockBehavior>,
   attrs?: Record<string, any>
@@ -774,7 +774,7 @@ export function setBlockType(
 
 export function executeInsertText(
   doc: ASTDocument,
-  sel: LogicalSelection,
+  sel: TreeSelection,
   text: string,
   inlines: Map<string, BaseInlineBehavior>,
   blocks: Map<string, BaseBlockBehavior>
@@ -847,7 +847,7 @@ export function executeInsertText(
 
 export function deleteForward(
   doc: ASTDocument,
-  sel: LogicalSelection,
+  sel: TreeSelection,
   blocks: Map<string, BaseBlockBehavior>
 ): TransactionResult {
   if (!sel.isCollapsed) return deleteRange(doc, sel, blocks);
@@ -953,7 +953,7 @@ export function deleteForward(
 
 export function toggleMark(
   doc: ASTDocument,
-  sel: LogicalSelection,
+  sel: TreeSelection,
   markType: string,
   attrs?: Record<string, any>,
   blocks?: Map<string, BaseBlockBehavior>,
@@ -998,7 +998,7 @@ export function toggleMark(
     const startRes = resolveInlinePosition(items[startItemIdx].content as ASTInlineNode[], startChar);
     const endRes = resolveInlinePosition(items[endItemIdx].content as ASTInlineNode[], endChar);
 
-    const newSel: LogicalSelection = {
+    const newSel: TreeSelection = {
       start: {
         blockIndex: blockIdx,
         itemIndex: startItemIdx,
@@ -1027,7 +1027,7 @@ export function toggleMark(
   const startRes = resolveInlinePosition(block.content as ASTInlineNode[], startChar);
   const endRes = resolveInlinePosition(block.content as ASTInlineNode[], endChar);
 
-  const newSel: LogicalSelection = {
+  const newSel: TreeSelection = {
     start: { blockIndex: blockIdx, inlineIndex: startRes.inlineIndex, offset: startRes.offset },
     end: { blockIndex: blockIdx, inlineIndex: endRes.inlineIndex, offset: endRes.offset },
     isCollapsed: false,
@@ -1127,7 +1127,7 @@ interface MarkSegment {
 function collectBlockSegments(
   block: ASTBlockNode,
   role: 'start' | 'middle' | 'end',
-  sel: LogicalSelection,
+  sel: TreeSelection,
   blocks?: Map<string, BaseBlockBehavior>
 ): MarkSegment[] {
   const category = blocks?.get(block.type)?.category;
@@ -1157,7 +1157,7 @@ function collectBlockSegments(
 
 function toggleMarkAcrossBlocks(
   newDoc: ASTDocument,
-  sel: LogicalSelection,
+  sel: TreeSelection,
   markType: string,
   attrs: Record<string, any> | undefined,
   blocks?: Map<string, BaseBlockBehavior>,
@@ -1207,7 +1207,7 @@ function toggleMarkAcrossBlocks(
 
 export function insertFragment(
   doc: ASTDocument,
-  sel: LogicalSelection,
+  sel: TreeSelection,
   fragment: ASTDocument,
   blocks?: Map<string, BaseBlockBehavior>
 ): TransactionResult {

@@ -3,8 +3,9 @@
 import { Injector, runInInjectionContext } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { EditorEngineService } from './editor-engine.service';
+import { logicalToPos, posToLogical } from './editor-flat-positions';
 import { applyOp, diffDocuments, fragLen, invertOp } from './editor-transactions';
-import { ASTBlockNode, ASTDocument, LogicalSelection } from './editor.types';
+import { ASTBlockNode, ASTDocument, LogicalPosition } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import { BoldBehavior, BulletListBehavior, HeadingBehavior, ImageBehavior, ListItemBehavior, ParagraphBehavior } from './standard-behaviors';
 
@@ -14,20 +15,21 @@ const textOf = (doc: ASTDocument, i: number) => (doc[i].content as any[]).map((n
 describe('Invertible editor history', () => {
   let engine: EditorEngineService;
 
+  // Selections are flat; tests are written in tree coordinates and convert.
+  const flat = (pos: Partial<LogicalPosition> & { blockIndex: number; offset: number }) =>
+    logicalToPos(engine.document(), { inlineIndex: 0, ...pos });
   const caret = (blockIndex: number, offset: number, inlineIndex = 0) => {
-    engine.selection.live.set({
-      start: { blockIndex, inlineIndex, offset },
-      end: { blockIndex, inlineIndex, offset },
-      isCollapsed: true,
-    } as LogicalSelection);
+    const at = flat({ blockIndex, inlineIndex, offset });
+    engine.selection.live.set({ from: at, to: at });
   };
   const range = (from: [number, number, number], to: [number, number, number]) => {
     engine.selection.live.set({
-      start: { blockIndex: from[0], inlineIndex: from[1], offset: from[2] },
-      end: { blockIndex: to[0], inlineIndex: to[1], offset: to[2] },
-      isCollapsed: false,
-    } as LogicalSelection);
+      from: flat({ blockIndex: from[0], inlineIndex: from[1], offset: from[2] }),
+      to: flat({ blockIndex: to[0], inlineIndex: to[1], offset: to[2] }),
+    });
   };
+  /** Tree-shaped view of the live caret, for assertions written in tree coordinates. */
+  const caretLp = () => posToLogical(engine.document(), engine.selection.active()!.from)!;
 
   const arrange = (doc: ASTDocument) => engine.document.set(doc);
 
@@ -161,11 +163,11 @@ describe('Invertible editor history', () => {
       engine.undo();
       expect(textOf(engine.document(), 1)).toBe('two');
       expect(engine.document()).toHaveLength(3);
-      expect(engine.selection.active()?.start.offset).toBe(3);
+      expect(caretLp().offset).toBe(3);
 
       engine.redo();
       expect(textOf(engine.document(), 1)).toBe('twoX');
-      expect(engine.selection.active()?.start.offset).toBe(4);
+      expect(caretLp().offset).toBe(4);
     });
 
     it('Enter (block split) is invertible: 1 block -> 2 -> undo -> 1', () => {
@@ -358,8 +360,7 @@ describe('Invertible editor history', () => {
         removed: [],
         inserted: [{ type: 'text', text: '>>> ' }],
       });
-      const sel = engine.selection.active()!;
-      expect(sel.start.offset).toBe(12);
+      expect(caretLp().offset).toBe(12);
     });
 
     it('maps the caret EXACTLY through a remote coarse block merge', () => {
@@ -372,9 +373,9 @@ describe('Invertible editor history', () => {
         removed: [p('hello'), p('world')],
         inserted: [p('helloworld')],
       });
-      const sel = engine.selection.active()!;
-      expect(sel.start.blockIndex).toBe(0);
-      expect(sel.start.offset).toBe(8);
+      const lp = caretLp();
+      expect(lp.blockIndex).toBe(0);
+      expect(lp.offset).toBe(8);
     });
 
     it('tie regression: remote insert at the offset of a pending local char — undo removes the LOCAL one', () => {
@@ -408,9 +409,9 @@ describe('Invertible editor history', () => {
       expect(textOf(engine.document(), 1)).toBe('RR..a..');
       engine.undo();
       expect(textOf(engine.document(), 1)).toBe('RR....');
-      const sel = engine.selection.active()!;
-      expect(sel.start.blockIndex).toBe(1);
-      expect(sel.start.offset).toBe(4);
+      const lp = caretLp();
+      expect(lp.blockIndex).toBe(1);
+      expect(lp.offset).toBe(4);
     });
 
     it('a remote op that destroys a pending edit target drops that history entry', () => {
@@ -454,12 +455,10 @@ describe('Invertible editor history', () => {
 describe('pasting a fragment that contains containers', () => {
   let engine: EditorEngineService;
 
-  const caret = (blockIndex: number, offset: number, extra: Record<string, unknown> = {}) =>
-    engine.selection.live.set({
-      start: { blockIndex, inlineIndex: 0, offset, ...extra },
-      end: { blockIndex, inlineIndex: 0, offset, ...extra },
-      isCollapsed: true,
-    } as LogicalSelection);
+  const caret = (blockIndex: number, offset: number, extra: Record<string, unknown> = {}) => {
+    const at = logicalToPos(engine.document(), { blockIndex, inlineIndex: 0, offset, ...extra } as LogicalPosition);
+    engine.selection.live.set({ from: at, to: at });
+  };
 
   const ul = (...texts: string[]): ASTBlockNode => ({
     type: 'bullet-list',
@@ -559,12 +558,10 @@ describe('pasting into a list item', () => {
   const itemTexts = (block: ASTBlockNode) =>
     (block.content as ASTBlockNode[]).map((li) => (li.content as any[]).map((n) => n.text).join(''));
 
-  const caretInItem = (blockIndex: number, itemIndex: number, offset: number) =>
-    engine.selection.live.set({
-      start: { blockIndex, itemIndex, inlineIndex: 0, offset },
-      end: { blockIndex, itemIndex, inlineIndex: 0, offset },
-      isCollapsed: true,
-    } as LogicalSelection);
+  const caretInItem = (blockIndex: number, itemIndex: number, offset: number) => {
+    const at = logicalToPos(engine.document(), { blockIndex, itemIndex, inlineIndex: 0, offset });
+    engine.selection.live.set({ from: at, to: at });
+  };
 
   beforeEach(() => {
     const injector = Injector.create({
