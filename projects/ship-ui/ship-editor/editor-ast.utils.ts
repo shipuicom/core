@@ -1235,6 +1235,44 @@ export function insertFragment(
   const right = extractRight(targetContent, sel.start.inlineIndex, sel.start.offset);
   const fragClone = structuredClone(fragment);
 
+  // A fragment block whose content holds blocks rather than inline nodes - a
+  // pasted list, for instance - cannot be merged into the caret's text run. The
+  // merge path below assumes inline content throughout and would read `.text`
+  // off a block node. Split the target around the caret and drop the fragment
+  // in whole instead.
+  const holdsInline = (block: ASTBlockNode) => {
+    const content = block.content as unknown[] | undefined;
+    return !content || content.length === 0 || typeof (content[0] as ASTInlineNode)?.text === 'string';
+  };
+
+  if (!isContainer && fragClone.some((b) => !holdsInline(b))) {
+    const resultBlocks: ASTBlockNode[] = [];
+
+    const headHasText = left.length > 0 && !(left.length === 1 && left[0].text === '');
+    if (headHasText) resultBlocks.push({ ...block, content: normalizeInlineNodes(left) });
+
+    resultBlocks.push(...fragClone);
+
+    const tailHasText = right.length > 0 && !(right.length === 1 && right[0].text === '');
+    if (tailHasText) resultBlocks.push({ ...block, content: normalizeInlineNodes(right) });
+
+    if (resultBlocks.length === 0) resultBlocks.push({ type: 'paragraph', content: [{ type: 'text', text: '' }] });
+
+    newDoc.splice(blockIndex, 1, ...resultBlocks);
+
+    // Caret lands at the end of the last block that came from the fragment.
+    const fragEndIndex = blockIndex + (headHasText ? 1 : 0) + fragClone.length - 1;
+    const landed = newDoc[fragEndIndex];
+    if (landed && holdsInline(landed)) {
+      const content = landed.content as ASTInlineNode[];
+      const end = resolveInlinePosition(content, content.reduce((n, x) => n + (x.text?.length ?? 0), 0));
+      const pos = { blockIndex: fragEndIndex, inlineIndex: end.inlineIndex, offset: end.offset };
+      return { doc: newDoc, selectionShift: { start: pos, end: pos, isCollapsed: true } };
+    }
+    const pos = { blockIndex: fragEndIndex, inlineIndex: 0, offset: 0 };
+    return { doc: newDoc, selectionShift: { start: pos, end: pos, isCollapsed: true } };
+  }
+
   if (fragClone.length === 1) {
     const fragContent = fragClone[0].content as ASTInlineNode[];
     const merged = normalizeInlineNodes([...left, ...fragContent, ...right]);
@@ -1242,8 +1280,8 @@ export function insertFragment(
     if (targetItem) targetItem.content = merged.length ? merged : [{ type: 'text', text: '' }];
     else block.content = merged.length ? merged : [{ type: 'text', text: '' }];
 
-    const leftLen = left.reduce((s, n) => s + n.text.length, 0);
-    const fragLen = fragContent.reduce((s, n) => s + n.text.length, 0);
+    const leftLen = left.reduce((s, n) => s + (n.text?.length ?? 0), 0);
+    const fragLen = fragContent.reduce((s, n) => s + (n.text?.length ?? 0), 0);
     const totalOffset = leftLen + fragLen;
 
     const res = resolveInlinePosition(
@@ -1259,6 +1297,7 @@ export function insertFragment(
   const firstFragContent = fragClone[0].content as ASTInlineNode[];
   const lastFrag = fragClone[fragClone.length - 1];
   const lastFragContent = lastFrag.content as ASTInlineNode[];
+
 
   const headContent = normalizeInlineNodes([...left, ...firstFragContent]);
   const tailContent = normalizeInlineNodes([...lastFragContent, ...right]);
@@ -1279,7 +1318,7 @@ export function insertFragment(
     containerItems.splice(itemIdx + 1, 0, ...middleItems, tailItem);
 
     const lastInsertedItemIndex = itemIdx + middleItems.length + 1;
-    const lastFragLen = lastFragContent.reduce((s, n) => s + n.text.length, 0);
+    const lastFragLen = lastFragContent.reduce((s, n) => s + (n.text?.length ?? 0), 0);
 
     const endRes = resolveInlinePosition(tailItem.content as ASTInlineNode[], lastFragLen);
     const endPos = {
@@ -1312,7 +1351,7 @@ export function insertFragment(
 
     const lastInsertedIndex = blockIndex + resultBlocks.length - 1;
     const lastBlock = newDoc[lastInsertedIndex];
-    const lastFragLen = lastFragContent.reduce((s, n) => s + n.text.length, 0);
+    const lastFragLen = lastFragContent.reduce((s, n) => s + (n.text?.length ?? 0), 0);
 
     const endRes = resolveInlinePosition(lastBlock.content as ASTInlineNode[], lastFragLen);
     const endPos = { blockIndex: lastInsertedIndex, inlineIndex: endRes.inlineIndex, offset: endRes.offset };

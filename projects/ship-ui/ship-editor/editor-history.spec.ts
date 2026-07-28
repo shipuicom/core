@@ -6,7 +6,7 @@ import { EditorEngineService } from './editor-engine.service';
 import { applyOp, diffDocuments, fragLen, invertOp } from './editor-transactions';
 import { ASTBlockNode, ASTDocument, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
-import { BoldBehavior, HeadingBehavior, ImageBehavior, ParagraphBehavior } from './standard-behaviors';
+import { BoldBehavior, BulletListBehavior, HeadingBehavior, ImageBehavior, ListItemBehavior, ParagraphBehavior } from './standard-behaviors';
 
 const p = (text: string): ASTBlockNode => ({ type: 'paragraph', content: [{ type: 'text', text }] });
 const textOf = (doc: ASTDocument, i: number) => (doc[i].content as any[]).map((n) => n.text).join('');
@@ -449,5 +449,102 @@ describe('Invertible editor history', () => {
       expect(engine.document().some((b) => b.type === 'image')).toBe(false);
       expect(engine.selectedBlock()).toBeNull();
     });
+  });
+});
+describe('pasting a fragment that contains containers', () => {
+  let engine: EditorEngineService;
+
+  const caret = (blockIndex: number, offset: number, extra: Record<string, unknown> = {}) =>
+    engine.selection.live.set({
+      start: { blockIndex, inlineIndex: 0, offset, ...extra },
+      end: { blockIndex, inlineIndex: 0, offset, ...extra },
+      isCollapsed: true,
+    } as LogicalSelection);
+
+  const ul = (...texts: string[]): ASTBlockNode => ({
+    type: 'bullet-list',
+    content: texts.map((t) => ({ type: 'list-item', content: [{ type: 'text', text: t }] })),
+  });
+
+  beforeEach(() => {
+    const injector = Injector.create({
+      providers: [{ provide: EditorSelectionService, useValue: new EditorSelectionService() }],
+    });
+    engine = runInInjectionContext(injector, () => new EditorEngineService());
+    [new ParagraphBehavior(), new HeadingBehavior(), new ImageBehavior()].forEach((b) => engine.register(b));
+    engine.register(new BulletListBehavior());
+    engine.register(new ListItemBehavior());
+  });
+
+  // A pasted list is a container: its content holds list-item blocks, not inline
+  // nodes. The merge path assumed inline content throughout and read `.text` off
+  // a block node, which threw "Cannot read properties of undefined".
+  it('pastes a list into an empty paragraph without throwing', () => {
+    engine.document.set([p('')]);
+    caret(0, 0);
+
+    expect(() => engine.insertFragment([ul('one', 'two')])).not.toThrow();
+
+    const doc = engine.document();
+    expect(doc.some((b) => b.type === 'bullet-list')).toBe(true);
+    const list = doc.find((b) => b.type === 'bullet-list')!;
+    expect((list.content as ASTBlockNode[]).map((li) => (li.content as any[])[0].text)).toEqual(['one', 'two']);
+  });
+
+  it('splits the target paragraph around a pasted list', () => {
+    engine.document.set([p('beforeafter')]);
+    caret(0, 6);
+
+    engine.insertFragment([ul('item')]);
+
+    const doc = engine.document();
+    expect(doc.map((b) => b.type)).toEqual(['paragraph', 'bullet-list', 'paragraph']);
+    expect(textOf(doc, 0)).toBe('before');
+    expect(textOf(doc, 2)).toBe('after');
+  });
+
+  it('keeps text before the caret when pasting a list at the end of a paragraph', () => {
+    engine.document.set([p('keep')]);
+    caret(0, 4);
+
+    engine.insertFragment([ul('x')]);
+
+    const doc = engine.document();
+    expect(doc.map((b) => b.type)).toEqual(['paragraph', 'bullet-list']);
+    expect(textOf(doc, 0)).toBe('keep');
+  });
+
+  it('pastes a mixed fragment of paragraph, list and paragraph', () => {
+    engine.document.set([p('ab')]);
+    caret(0, 1);
+
+    engine.insertFragment([p('one'), ul('bullet'), p('two')]);
+
+    const doc = engine.document();
+    expect(doc.map((b) => b.type)).toEqual(['paragraph', 'paragraph', 'bullet-list', 'paragraph', 'paragraph']);
+    expect(textOf(doc, 0)).toBe('a');
+    expect(textOf(doc, 4)).toBe('b');
+  });
+
+  it('still merges a plain text fragment inline, rather than splitting', () => {
+    engine.document.set([p('ac')]);
+    caret(0, 1);
+
+    engine.insertFragment([p('b')]);
+
+    const doc = engine.document();
+    expect(doc).toHaveLength(1);
+    expect(textOf(doc, 0)).toBe('abc');
+  });
+
+  it('undoes a list paste back to the original document', () => {
+    engine.document.set([p('start')]);
+    caret(0, 5);
+    engine.insertFragment([ul('one')]);
+    expect(engine.document().length).toBeGreaterThan(1);
+
+    engine.undo();
+    expect(engine.document()).toHaveLength(1);
+    expect(textOf(engine.document(), 0)).toBe('start');
   });
 });
