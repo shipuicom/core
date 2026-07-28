@@ -243,11 +243,10 @@ test.describe('DOM ≡ AST invariant', () => {
       sel.addRange(range);
       document.dispatchEvent(new Event('selectionchange'));
       const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      // Selections are flat character positions; block 0's interior starts at
+      // position 1, so the char offset within it is `from - 1`.
       const s = comp.selection.active();
-      const content = comp.engine.document()[0].content;
-      let chars = s.start.offset;
-      for (let i = 0; i < s.start.inlineIndex; i++) chars += content[i].text.length;
-      return chars;
+      return s.from - 1;
     });
     expect(syncedOffset).toBe(6); // after "alpha\n", before "beta"
 
