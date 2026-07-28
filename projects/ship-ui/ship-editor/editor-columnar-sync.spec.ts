@@ -134,6 +134,100 @@ describe('columnar stays in step with the document', () => {
     expectInSync('after pasting a list');
   });
 
+  it('stays in sync while typing into marked text', () => {
+    engine.reset([
+      { type: 'paragraph', content: [
+        { type: 'text', text: 'plain ' },
+        { type: 'text', text: 'bold', marks: [{ type: 'bold' }] },
+        { type: 'text', text: ' tail' },
+      ] },
+    ] as ASTDocument);
+
+    caret(0, 8); // inside the bold run
+    engine.insertText('X');
+    expectInSync('after typing inside a bold run');
+
+    caret(0, 6); // at the run's left boundary
+    engine.insertText('Y');
+    expectInSync('after typing at the bold run boundary');
+
+    engine.undo();
+    expectInSync('after undoing marked typing');
+  });
+
+  it('stays in sync when pending marks land at the caret', () => {
+    engine.reset([p('hello')]);
+    caret(0, 5);
+    engine.insertTextWithMarks('!', [{ type: 'bold' }]);
+    expectInSync('after inserting text with staged marks');
+  });
+
+  it('stays in sync through a cross-block range delete into a list', () => {
+    engine.reset([
+      p('before'),
+      { type: 'bullet-list', content: [
+        { type: 'list-item', content: [{ type: 'text', text: 'one' }] },
+        { type: 'list-item', content: [{ type: 'text', text: 'two' }] },
+      ] },
+      p('after'),
+    ] as ASTDocument);
+
+    const doc = engine.document();
+    const from = logicalToPos(doc, { blockIndex: 0, inlineIndex: 0, offset: 3 });
+    const to = logicalToPos(doc, { blockIndex: 1, itemIndex: 0, inlineIndex: 0, offset: 2 });
+    engine.selection.live.set({ from, to });
+    engine.deleteRange();
+    expectInSync('after deleting across into the list');
+
+    engine.undo();
+    expectInSync('after undoing the cross-block delete');
+  });
+
+  it('stays in sync through setBlockType and toggleMark', () => {
+    engine.reset([p('title'), p('body text')]);
+    caret(0, 0);
+    engine.setBlockType('heading', { level: 2 });
+    expectInSync('after setBlockType');
+
+    const doc = engine.document();
+    engine.selection.live.set({
+      from: logicalToPos(doc, { blockIndex: 1, inlineIndex: 0, offset: 0 }),
+      to: logicalToPos(doc, { blockIndex: 1, inlineIndex: 0, offset: 4 }),
+    });
+    engine.toggleMark('bold');
+    expectInSync('after toggling bold on');
+    engine.undo();
+    expectInSync('after undoing the mark');
+  });
+
+  it('stays in sync when a remote marked insert lands inside a marked run', () => {
+    engine.reset([
+      { type: 'paragraph', content: [{ type: 'text', text: 'bold', marks: [{ type: 'bold' }] }] },
+    ] as ASTDocument);
+
+    engine.applyRemoteOperation({
+      kind: 'inline',
+      blockIndex: 0,
+      at: 2,
+      removed: [],
+      inserted: [{ type: 'text', text: 'X', marks: [{ type: 'bold' }] }],
+    });
+    expectInSync('after a remote marked insert mid-run');
+  });
+
+  it('stays in sync when a remote op removes a block before a list', () => {
+    engine.reset([
+      p('gone'),
+      { type: 'bullet-list', content: [
+        { type: 'list-item', content: [{ type: 'text', text: 'one' }] },
+        { type: 'list-item', content: [{ type: 'text', text: 'two' }] },
+      ] },
+    ] as ASTDocument);
+
+    engine.applyRemoteOperation({ kind: 'block', at: 0, removed: [p('gone')], inserted: [] });
+    expectInSync('after a remote removal before a container');
+  });
+
   it('stays in sync after a remote operation', () => {
     engine.reset([p('one'), p('two'), p('three')]);
     engine.applyRemoteOperation({

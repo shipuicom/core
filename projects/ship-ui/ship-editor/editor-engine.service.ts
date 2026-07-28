@@ -1,23 +1,24 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import {
-  deleteForward,
-  deleteRange,
-  executeInsertText,
-  handleBackspace,
-  handleEnter,
-  handleEscapeHatch,
-  insertFragment,
-  resolveInlinePosition,
-  setBlockType,
-  toggleMark,
-} from './editor-ast.utils';
+import { deleteRange, resolveInlinePosition } from './editor-ast.utils';
 import { BaseBlockBehavior, BaseInlineBehavior, SlashCommand } from './editor-behaviors';
 import { astToHtml, astToMarkdown } from './editor-serializers';
 import { diffFlat, logicalToPos, posToLogical } from './editor-flat-positions';
 import { ColumnarDocument, toColumnar } from './editor-columnar';
+import {
+  ColumnarMutation,
+  backspaceOp,
+  deleteForwardOp,
+  deleteRangeOp,
+  enterOp,
+  escapeHatchOp,
+  insertFragmentOp,
+  insertTextOp,
+  setBlockTypeOp,
+  toggleMarkOp,
+} from './editor-columnar-mutations';
 import { applyOpToColumnar } from './editor-columnar-ops';
-import { EditorOp, EditorTransaction, applyOp, diffDocuments, invertOp, spliceInlineContent, transformOp } from './editor-transactions';
-import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalPosition, LogicalSelection, TransactionResult, TreeSelection } from './editor.types';
+import { EditorOp, EditorTransaction, applyOp, diffDocuments, invertOp, transformOp } from './editor-transactions';
+import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalPosition, LogicalSelection, TreeSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 
 @Injectable()
@@ -27,24 +28,37 @@ export class EditorEngineService {
   readonly document = signal<ASTDocument>([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
 
   /**
-   * Columnar view of the same document, advanced by the op behind every change.
+   * Columnar form of the document — what the mutation primitives operate on.
    *
-   * Rebuilding it per edit would cost O(document); every mutation here already
-   * produces an `EditorOp`, so it is stepped forward instead. Nothing reads from
-   * it yet - it is maintained first so the invariant can be trusted before
-   * anything depends on it.
+   * The nested tree in `document()` is *derived* from it: each primitive
+   * mutates the columnar document and returns an `EditorOp`, which advances
+   * the tree (still needed for rendering and serialization). Rebuilding the
+   * columnar form per edit would cost O(document), so it is only rebuilt when
+   * someone replaces `document()` wholesale behind the engine's back —
+   * detected by remembering which tree the mirror was built from.
    */
   #columnar: ColumnarDocument = toColumnar(this.document());
+  /** The tree document `#columnar` currently corresponds to. */
+  #columnarFor: ASTDocument = this.document();
 
-  /** The columnar document. Kept in step with `document()`. */
+  /** The columnar document, resynced if `document()` was set externally. */
   get columnar(): ColumnarDocument {
+    this.#syncColumnar();
     return this.#columnar;
+  }
+
+  #syncColumnar() {
+    const doc = this.document();
+    if (this.#columnarFor === doc) return;
+    this.#columnar = toColumnar(doc);
+    this.#columnarFor = doc;
   }
 
   /** Advance columnar by an op, or rebuild when a document arrives wholesale. */
   #advanceColumnar(op: EditorOp | null) {
     if (op) applyOpToColumnar(this.#columnar, op);
     else this.#columnar = toColumnar(this.document());
+    this.#columnarFor = this.document();
   }
 
   // -------------------------------------------------------------------------
@@ -121,88 +135,67 @@ export class EditorEngineService {
     else this.inlines.set(behavior.type, behavior);
   }
 
-  dispatchWithTruncation(mutation: (draft: ASTDocument, sel: TreeSelection) => TransactionResult | void | null) {
-    const flatSel = this.selection.active();
-    if (!flatSel) return;
-
-    const oldDoc = this.document();
-    const currentSel = this.#toTreeSel(oldDoc, flatSel);
-    let targetDoc = oldDoc;
-    let targetSel = currentSel;
-
-    if (!currentSel.isCollapsed) {
-      const truncation = deleteRange(targetDoc, currentSel, this.blocks);
-      targetDoc = truncation.doc;
-      if (truncation.selectionShift) targetSel = truncation.selectionShift;
-    }
-
-    const result = mutation(targetDoc, targetSel);
-    if (result) {
-      this.document.set(result.doc);
-      if (result.selectionShift) this.selection.live.set(this.#toFlatSel(result.doc, result.selectionShift));
-      this.#commit(oldDoc, result.doc, flatSel);
-    } else if (!currentSel.isCollapsed) {
-
-      this.document.set(targetDoc);
-      this.selection.live.set(this.#toFlatSel(targetDoc, targetSel));
-      this.#commit(oldDoc, targetDoc, flatSel);
-    }
+  /**
+   * Apply a columnar mutation: the primitive has already advanced the
+   * columnar document, so only the tree and the history need the op.
+   */
+  #apply(mutation: ColumnarMutation | null, selBefore: LogicalSelection) {
+    if (!mutation) return;
+    this.document.set(applyOp(this.document(), mutation.op));
+    this.#columnarFor = this.document();
+    this.selection.live.set(mutation.selAfter);
+    const tx: EditorTransaction = {
+      baseVersion: this.version(),
+      op: mutation.op,
+      selBefore: { ...selBefore },
+      selAfter: { ...mutation.selAfter },
+    };
+    this.#undoStack.update((s) => [...s, tx]);
+    if (this.#redoStack().length) this.#redoStack.set([]);
+    this.version.update((v) => v + 1);
+    this.lastTransaction.set(tx);
   }
 
   handleEscapeHatch(): boolean {
-    const flatSel = this.selection.active();
-    if (flatSel) {
-      const oldDoc = this.document();
-      const result = handleEscapeHatch(oldDoc, this.#toTreeSel(oldDoc, flatSel), this.blocks);
-      if (result) {
-        this.document.set(result.doc);
-        if (result.selectionShift) this.selection.live.set(this.#toFlatSel(result.doc, result.selectionShift));
-        this.#commit(oldDoc, result.doc, flatSel);
-        return true;
-      }
-    }
-    return false;
+    const sel = this.selection.active();
+    if (!sel) return false;
+    const result = escapeHatchOp(this.columnar, sel, this.blocks);
+    if (!result) return false;
+    if (result.op) this.#apply(result as ColumnarMutation, sel);
+    else this.selection.live.set(result.selAfter);
+    return true;
   }
 
   handleEnter() {
-    this.dispatchWithTruncation((doc, sel) => handleEnter(doc, sel, this.blocks));
+    const sel = this.selection.active();
+    if (!sel) return;
+    this.#apply(enterOp(this.columnar, sel, this.blocks), sel);
   }
 
   handleBackspace() {
-    this.dispatchWithTruncation((doc, sel) => handleBackspace(doc, sel, this.blocks));
+    const sel = this.selection.active();
+    if (!sel) return;
+    this.#apply(backspaceOp(this.columnar, sel, this.blocks), sel);
   }
 
   insertText(text: string) {
     const sel = this.selection.active();
-    const pending = sel && sel.from === sel.to ? this.#pendingAt(sel.from) : null;
+    if (!sel) return;
+    const pending = sel.from === sel.to ? this.#pendingAt(sel.from) : null;
     this.pendingMarks.set(null);
-    this.dispatchWithTruncation((doc, s) => {
-      const result = executeInsertText(doc, s, text, this.inlines, this.blocks);
-      if (!result || !pending) return result;
-
-      const block = result.doc[s.start.blockIndex];
-      const isContainer = this.blocks.get(block.type)?.category === 'container';
-      const itemIdx = s.start.itemIndex ?? 0;
-      const holder = isContainer ? (block.content as ASTBlockNode[])[itemIdx] : block;
-      const content = holder.content as ASTInlineNode[];
-      let charStart = s.start.offset;
-      for (let i = 0; i < s.start.inlineIndex && i < content.length; i++) charStart += content[i].text?.length ?? 0;
-      holder.content = spliceInlineContent(content, charStart, text.length, [
-        { type: 'text', text, ...(pending.length ? { marks: pending } : {}) },
-      ]);
-      const resolved = resolveInlinePosition(holder.content as ASTInlineNode[], charStart + text.length);
-      const pos: LogicalPosition = { blockIndex: s.start.blockIndex, ...resolved };
-      if (isContainer) pos.itemIndex = itemIdx;
-      return { doc: result.doc, selectionShift: { start: pos, end: pos, isCollapsed: true } };
-    });
+    this.#apply(insertTextOp(this.columnar, sel, text, this.blocks, this.inlines, pending), sel);
   }
 
   deleteRange() {
-    this.dispatchWithTruncation((doc, sel) => deleteRange(doc, sel, this.blocks));
+    const sel = this.selection.active();
+    if (!sel) return;
+    this.#apply(deleteRangeOp(this.columnar, sel, this.blocks), sel);
   }
 
   deleteForward() {
-    this.dispatchWithTruncation((doc, sel) => deleteForward(doc, sel, this.blocks));
+    const sel = this.selection.active();
+    if (!sel) return;
+    this.#apply(deleteForwardOp(this.columnar, sel, this.blocks), sel);
   }
 
   readonly activeFormats = computed(() => {
@@ -349,11 +342,7 @@ export class EditorEngineService {
     const sel = this.#markTargetSelection(markType);
     if (!sel) return false;
     this.pendingMarks.set(null);
-    const oldDoc = this.document();
-    const result = toggleMark(oldDoc, sel, markType, attrs, this.blocks, 'add');
-    this.document.set(result.doc);
-    if (result.selectionShift) this.selection.live.set(this.#toFlatSel(result.doc, result.selectionShift));
-    this.#commit(oldDoc, result.doc, this.#toFlatSel(oldDoc, sel));
+    this.#apply(toggleMarkOp(this.columnar, sel, markType, attrs, this.blocks, 'add'), sel);
     return true;
   }
 
@@ -361,11 +350,7 @@ export class EditorEngineService {
     const sel = this.#markTargetSelection(markType);
     if (!sel) return false;
     this.pendingMarks.set(null);
-    const oldDoc = this.document();
-    const result = toggleMark(oldDoc, sel, markType, undefined, this.blocks, 'remove');
-    this.document.set(result.doc);
-    if (result.selectionShift) this.selection.live.set(this.#toFlatSel(result.doc, result.selectionShift));
-    this.#commit(oldDoc, result.doc, this.#toFlatSel(oldDoc, sel));
+    this.#apply(toggleMarkOp(this.columnar, sel, markType, undefined, this.blocks, 'remove'), sel);
     return true;
   }
 
@@ -520,14 +505,16 @@ export class EditorEngineService {
     return null;
   }
 
-  #markTargetSelection(markType: string): TreeSelection | null {
+  #markTargetSelection(markType: string): LogicalSelection | null {
     const sel = this.selection.active();
     if (!sel) return null;
+    if (sel.from !== sel.to) return sel;
     const doc = this.document();
-    if (sel.from !== sel.to) return this.#toTreeSel(doc, sel);
     const run = this.#expandToMarkRun(this.#lpOf(doc, sel.from), markType);
-    if (run) this.selection.live.set(this.#toFlatSel(doc, run));
-    return run;
+    if (!run) return null;
+    const flat = this.#toFlatSel(doc, run);
+    this.selection.live.set(flat);
+    return flat;
   }
 
   #expandToMarkRun(pos: LogicalPosition, markType: string): TreeSelection | null {
@@ -581,28 +568,19 @@ export class EditorEngineService {
     }
 
     this.pendingMarks.set(null);
-    const oldDoc = this.document();
-    const result = toggleMark(oldDoc, this.#toTreeSel(oldDoc, currentSel), markType, attrs, this.blocks);
-    this.document.set(result.doc);
-    if (result.selectionShift) this.selection.live.set(this.#toFlatSel(result.doc, result.selectionShift));
-    this.#commit(oldDoc, result.doc, currentSel);
+    this.#apply(toggleMarkOp(this.columnar, currentSel, markType, attrs, this.blocks), currentSel);
   }
 
   insertFragment(fragment: ASTDocument) {
-    this.dispatchWithTruncation((doc, sel) => insertFragment(doc, sel, fragment, this.blocks));
+    const sel = this.selection.active();
+    if (!sel) return;
+    this.#apply(insertFragmentOp(this.columnar, sel, fragment, this.blocks), sel);
   }
 
   setBlockType(type: string, attrs?: any) {
-    const currentSel = this.selection.active();
-    if (!currentSel) return;
-
-    const oldDoc = this.document();
-    const result = setBlockType(oldDoc, this.#toTreeSel(oldDoc, currentSel), type, this.blocks, attrs);
-    if (result) {
-      this.document.set(result.doc);
-      if (result.selectionShift) this.selection.live.set(this.#toFlatSel(result.doc, result.selectionShift));
-      this.#commit(oldDoc, result.doc, currentSel);
-    }
+    const sel = this.selection.active();
+    if (!sel) return;
+    this.#apply(setBlockTypeOp(this.columnar, sel, type, this.blocks, attrs), sel);
   }
 
   serialize(format: 'html' | 'json' | 'markdown'): any {
@@ -631,6 +609,7 @@ export class EditorEngineService {
     if (!tx) return;
     this.#undoStack.set(stack.slice(0, -1));
     const undoOp = invertOp(tx.op);
+    this.#syncColumnar();
     this.document.set(applyOp(this.document(), undoOp));
     this.#advanceColumnar(undoOp);
     if (tx.selBefore) this.selection.live.set({ ...tx.selBefore });
@@ -643,6 +622,7 @@ export class EditorEngineService {
     const tx = stack[stack.length - 1];
     if (!tx) return;
     this.#redoStack.set(stack.slice(0, -1));
+    this.#syncColumnar();
     this.document.set(applyOp(this.document(), tx.op));
     this.#advanceColumnar(tx.op);
     if (tx.selAfter) this.selection.live.set({ ...tx.selAfter });
@@ -652,6 +632,7 @@ export class EditorEngineService {
 
   applyRemoteOperation(op: EditorOp) {
     const oldDoc = this.document();
+    this.#syncColumnar();
     const newDoc = applyOp(oldDoc, op);
     const map = diffFlat(oldDoc, newDoc);
     if (!map) return;
@@ -710,7 +691,11 @@ export class EditorEngineService {
   #commit(oldDoc: ASTDocument, newDoc: ASTDocument, selBefore: LogicalSelection | null) {
     const op = diffDocuments(oldDoc, newDoc);
     if (!op) return;
-    this.#advanceColumnar(op);
+    // These paths (reset, DOM reconciliation, block-level UI ops) replace the
+    // tree wholesale, so the columnar mirror is rebuilt rather than advanced —
+    // it may not have been in step with `oldDoc` if the document signal was
+    // set directly.
+    this.#advanceColumnar(null);
     const selAfter = this.selection.active();
     const tx: EditorTransaction = {
       baseVersion: this.version(),

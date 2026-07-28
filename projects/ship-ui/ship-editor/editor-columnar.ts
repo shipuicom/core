@@ -485,6 +485,15 @@ export class ColumnarDocument {
     return this.#markRuns;
   }
 
+  /**
+   * Quad index range `[from, to)` of a row's mark runs — the public face of the
+   * binary search, so readers outside the class stay bounded by the row's runs
+   * rather than scanning every run in the document.
+   */
+  runRangeOf(row: number): [number, number] {
+    return this.#rowRunRange(row);
+  }
+
   // -------------------------------------------------------------------------
   // Interning
   // -------------------------------------------------------------------------
@@ -627,6 +636,14 @@ export class ColumnarDocument {
     }
     this.#rows -= actual;
 
+    // Parent pointers still reference pre-removal indices. A parent past the
+    // removed range shifts down with its row; a parent inside it is gone, so
+    // the child becomes a root rather than pointing at an unrelated row.
+    for (let row = 0; row < this.#rows; row++) {
+      if (this.#parent[row] >= at + actual) this.#parent[row] -= actual;
+      else if (this.#parent[row] >= at) this.#parent[row] = -1;
+    }
+
     const attrs = new Map<number, Record<string, unknown>>();
     for (const [row, value] of this.#attrs) {
       if (row >= at && row < at + actual) continue;
@@ -638,13 +655,43 @@ export class ColumnarDocument {
     this.version++;
   }
 
-  /** Replace a row's mark runs wholesale, in place — no full-array rebuild. */
+  /**
+   * Replace a row's mark runs wholesale, in place — no full-array rebuild.
+   *
+   * Ranges carrying the same mark are merged when they overlap or touch, and
+   * empty ranges are dropped, so callers can layer additions over existing
+   * coverage without the row accumulating duplicate runs — an insert into a
+   * marked run plus an explicit range for the inserted text is one run.
+   */
   setMarks(row: number, runs: { start: number; end: number; mark: ASTMark }[]): void {
     const [from, to] = this.#rowRunRange(row);
-    const replacement: number[] = [];
-    for (const run of [...runs].sort((a, b) => a.start - b.start)) {
-      replacement.push(row, run.start, run.end, this.markId(run.mark));
+
+    const byId = new Map<number, { start: number; end: number }[]>();
+    for (const run of runs) {
+      if (run.end <= run.start) continue;
+      const id = this.markId(run.mark);
+      let list = byId.get(id);
+      if (!list) byId.set(id, (list = []));
+      list.push({ start: run.start, end: run.end });
     }
+    const merged: { start: number; end: number; id: number }[] = [];
+    for (const [id, list] of byId) {
+      list.sort((a, b) => a.start - b.start);
+      let current = list[0];
+      for (let i = 1; i < list.length; i++) {
+        const next = list[i];
+        if (next.start <= current.end) current.end = Math.max(current.end, next.end);
+        else {
+          merged.push({ start: current.start, end: current.end, id });
+          current = next;
+        }
+      }
+      merged.push({ start: current.start, end: current.end, id });
+    }
+    merged.sort((a, b) => a.start - b.start);
+
+    const replacement: number[] = [];
+    for (const run of merged) replacement.push(row, run.start, run.end, run.id);
     this.#markRuns.splice(from * 4, (to - from) * 4, ...replacement);
     this.version++;
   }
