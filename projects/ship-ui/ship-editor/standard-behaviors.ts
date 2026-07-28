@@ -9,6 +9,19 @@ import {
 import { ALLOWED_ALIGN, SAFE_STYLE_PROPS, escapeAttr, isSafeUrl, safeStyleString } from './editor-sanitize';
 import { ASTBlockNode, ASTMark } from './editor.types';
 
+/**
+ * Attributes for a parsed block, leaving out values the element does not set.
+ *
+ * `el.style.textAlign` is `''` when unset, so writing it in unconditionally gave
+ * every paragraph and heading an attrs object holding an empty string - carried
+ * in memory and in every serialised document for no information.
+ */
+function blockAttrs(base: Record<string, unknown>, align: string): Record<string, unknown> | undefined {
+  const attrs = { ...base };
+  if (align) attrs['align'] = align;
+  return Object.keys(attrs).length ? attrs : undefined;
+}
+
 function alignStyle(align: unknown): string {
   return typeof align === 'string' && ALLOWED_ALIGN.has(align) ? ` style="text-align: ${align}"` : '';
 }
@@ -22,7 +35,7 @@ export class ParagraphBehavior extends BaseBlockBehavior {
 
   parseDOM(el: HTMLElement) {
     return ['p', 'div'].includes(el.tagName.toLowerCase())
-      ? { type: this.type, attrs: { align: el.style.textAlign }, content: [] }
+      ? { type: this.type, attrs: blockAttrs({}, el.style.textAlign), content: [] }
       : null;
   }
   renderHTML(block: ASTBlockNode, contentHtml: string) {
@@ -49,7 +62,7 @@ export class HeadingBehavior extends BaseBlockBehavior {
   parseDOM(el: HTMLElement) {
     const match = el.tagName.toLowerCase().match(/^h([1-6])$/);
     return match
-      ? { type: this.type, attrs: { level: parseInt(match[1], 10), align: el.style.textAlign }, content: [] }
+      ? { type: this.type, attrs: blockAttrs({ level: parseInt(match[1], 10) }, el.style.textAlign), content: [] }
       : null;
   }
   renderHTML(block: ASTBlockNode, contentHtml: string) {
