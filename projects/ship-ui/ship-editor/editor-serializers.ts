@@ -118,8 +118,14 @@ export function parseDOMToAST(
 
 const TAG_SENTINEL = '\u0001';
 
+/**
+ * Identity of a mark for open/close bookkeeping.
+ *
+ * Most marks carry no attributes, so the common case avoids `JSON.stringify`
+ * entirely — this runs several times per marked node, once per render.
+ */
 function markKey(mark: ASTMark): string {
-  return JSON.stringify({ t: mark.type, a: mark.attrs ?? null });
+  return mark.attrs ? `${mark.type}\u0000${JSON.stringify(mark.attrs)}` : mark.type;
 }
 
 function serializeInlineRuns(
@@ -132,26 +138,33 @@ function serializeInlineRuns(
   const open: { key: string; close: string }[] = [];
 
   for (const node of nodes) {
-    const wanted = (node.marks ?? [])
-      .filter((m) => tagsFor(m))
-      .slice()
-      .sort((a, b) => rank(a.type) - rank(b.type));
-    const wantedKeys = new Set(wanted.map(markKey));
+    // Resolve each mark's tags and key once. Previously `tagsFor` ran twice per
+    // mark — once to filter, once to emit — and each call re-rendered the mark
+    // against a sentinel.
+    const wanted: { mark: ASTMark; key: string; tags: { open: string; close: string } }[] = [];
+    for (const mark of node.marks ?? []) {
+      const tags = tagsFor(mark);
+      if (tags) wanted.push({ mark, key: markKey(mark), tags });
+    }
+    wanted.sort((a, b) => rank(a.mark.type) - rank(b.mark.type));
 
     let keep = 0;
-    while (keep < open.length && wantedKeys.has(open[keep].key)) keep++;
+    while (keep < open.length && wanted.some((w) => w.key === open[keep].key)) keep++;
 
     for (let i = open.length - 1; i >= keep; i--) out += open[i].close;
     open.length = keep;
 
-    const openKeys = new Set(open.map((o) => o.key));
-    for (const mark of wanted) {
-      const key = markKey(mark);
-      if (openKeys.has(key)) continue;
-      const tags = tagsFor(mark)!;
-      out += tags.open;
-      open.push({ key, close: tags.close });
-      openKeys.add(key);
+    for (const entry of wanted) {
+      let already = false;
+      for (const o of open) {
+        if (o.key === entry.key) {
+          already = true;
+          break;
+        }
+      }
+      if (already) continue;
+      out += entry.tags.open;
+      open.push({ key: entry.key, close: entry.tags.close });
     }
 
     out += escape(node.text || '');
@@ -161,12 +174,29 @@ function serializeInlineRuns(
   return out;
 }
 
+/**
+ * Mark ordering, memoised on the behavior registry.
+ *
+ * The registry only changes at `register()` time, but this rebuilt a Map of
+ * every registered type once per block — and once per list item on top of that.
+ */
+const rankerCache = new WeakMap<Map<string, BaseInlineBehavior>, (type: string) => number>();
+
 function markRanker(inlines: Map<string, BaseInlineBehavior>): (type: string) => number {
+  const cached = rankerCache.get(inlines);
+  if (cached && rankerCacheSize.get(inlines) === inlines.size) return cached;
+
   const order = new Map<string, number>();
   let i = 0;
   for (const type of inlines.keys()) order.set(type, i++);
-  return (type) => order.get(type) ?? Number.MAX_SAFE_INTEGER;
+  const ranker = (type: string) => order.get(type) ?? Number.MAX_SAFE_INTEGER;
+  rankerCache.set(inlines, ranker);
+  rankerCacheSize.set(inlines, inlines.size);
+  return ranker;
 }
+
+/** Guards the memo against a registry that gained behaviors after first use. */
+const rankerCacheSize = new WeakMap<Map<string, BaseInlineBehavior>, number>();
 
 function tagSplitter(render: ((text: string) => string) | undefined): { open: string; close: string } | null {
   if (!render) return null;
@@ -193,7 +223,17 @@ export function renderInlineHTML(
     rank
   );
 
-  if (softBreaks && nodes.some((n) => n.text) && nodes.map((n) => n.text).join('').endsWith('\n')) {
+  // Look at the last character directly rather than joining the whole block's
+  // text just to test its final byte.
+  let lastChar = '';
+  for (let i = nodes.length - 1; i >= 0; i--) {
+    const text = nodes[i].text;
+    if (text) {
+      lastChar = text[text.length - 1];
+      break;
+    }
+  }
+  if (softBreaks && lastChar === '\n') {
 
     return `${out}<br ${PAD_BREAK_ATTR}="">`;
   }
