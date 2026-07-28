@@ -1233,7 +1233,7 @@ export function insertFragment(
 
   const left = extractLeft(targetContent, sel.start.inlineIndex, sel.start.offset);
   const right = extractRight(targetContent, sel.start.inlineIndex, sel.start.offset);
-  const fragClone = structuredClone(fragment);
+  let fragClone = structuredClone(fragment);
 
   // A fragment block whose content holds blocks rather than inline nodes - a
   // pasted list, for instance - cannot be merged into the caret's text run. The
@@ -1244,6 +1244,23 @@ export function insertFragment(
     const content = block.content as unknown[] | undefined;
     return !content || content.length === 0 || typeof (content[0] as ASTInlineNode)?.text === 'string';
   };
+
+  // Pasting into a list: a container in the fragment cannot become one item, so
+  // expand it into the items it holds. Without this its child blocks were fed
+  // to normalizeInlineNodes, which merges runs with `last.text += node.text` -
+  // undefined + undefined, so the item's text became the string "NaN".
+  if (isContainer) {
+    const flattenToInline = (nodes: ASTBlockNode[]): ASTBlockNode[] => {
+      const out: ASTBlockNode[] = [];
+      for (const node of nodes) {
+        if (holdsInline(node)) out.push(node);
+        else out.push(...flattenToInline(node.content as ASTBlockNode[]));
+      }
+      return out;
+    };
+    const flattened = flattenToInline(fragClone);
+    fragClone = flattened.length ? flattened : [{ type: 'paragraph', content: [{ type: 'text', text: '' }] }];
+  }
 
   if (!isContainer && fragClone.some((b) => !holdsInline(b))) {
     const resultBlocks: ASTBlockNode[] = [];

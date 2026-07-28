@@ -548,3 +548,81 @@ describe('pasting a fragment that contains containers', () => {
     expect(textOf(engine.document(), 0)).toBe('start');
   });
 });
+
+describe('pasting into a list item', () => {
+  let engine: EditorEngineService;
+
+  const ul = (...texts: string[]): ASTBlockNode => ({
+    type: 'bullet-list',
+    content: texts.map((t) => ({ type: 'list-item', content: [{ type: 'text', text: t }] })),
+  });
+  const itemTexts = (block: ASTBlockNode) =>
+    (block.content as ASTBlockNode[]).map((li) => (li.content as any[]).map((n) => n.text).join(''));
+
+  const caretInItem = (blockIndex: number, itemIndex: number, offset: number) =>
+    engine.selection.live.set({
+      start: { blockIndex, itemIndex, inlineIndex: 0, offset },
+      end: { blockIndex, itemIndex, inlineIndex: 0, offset },
+      isCollapsed: true,
+    } as LogicalSelection);
+
+  beforeEach(() => {
+    const injector = Injector.create({
+      providers: [{ provide: EditorSelectionService, useValue: new EditorSelectionService() }],
+    });
+    engine = runInInjectionContext(injector, () => new EditorEngineService());
+    [new ParagraphBehavior(), new HeadingBehavior(), new ImageBehavior()].forEach((b) => engine.register(b));
+    engine.register(new BulletListBehavior());
+    engine.register(new ListItemBehavior());
+  });
+
+  // normalizeInlineNodes merges runs with `last.text += node.text`. Feeding it
+  // block nodes made that undefined + undefined, so the item's text became the
+  // string "NaN" — corrupt content rather than a crash.
+  it('never produces NaN text when a list is pasted into a list item', () => {
+    engine.document.set([ul('target')]);
+    caretInItem(0, 0, 6);
+
+    engine.insertFragment([ul('one', 'two')]);
+
+    const texts = itemTexts(engine.document()[0]);
+    for (const t of texts) {
+      expect(t, `item text: ${t}`).not.toContain('NaN');
+      expect(typeof t).toBe('string');
+    }
+  });
+
+  it('flattens a pasted list into the target list rather than nesting it', () => {
+    engine.document.set([ul('a', 'b')]);
+    caretInItem(0, 0, 1);
+
+    engine.insertFragment([ul('X', 'Y')]);
+
+    const doc = engine.document();
+    expect(doc).toHaveLength(1);
+    expect(doc[0].type).toBe('bullet-list');
+    expect(itemTexts(doc[0]).join('|')).not.toContain('NaN');
+    // The pasted items land inside the target list, not as a nested one.
+    expect((doc[0].content as ASTBlockNode[]).every((li) => li.type === 'list-item')).toBe(true);
+  });
+
+  it('survives repeated pastes into the same list without corrupting text', () => {
+    engine.document.set([ul('seed')]);
+    for (let i = 0; i < 10; i++) {
+      caretInItem(0, 0, 0);
+      engine.insertFragment([ul(`p${i}`)]);
+    }
+    const texts = itemTexts(engine.document()[0]);
+    expect(texts.join('|')).not.toContain('NaN');
+    expect(texts.every((t) => typeof t === 'string')).toBe(true);
+  });
+
+  it('still pastes plain text into a list item inline', () => {
+    engine.document.set([ul('ac')]);
+    caretInItem(0, 0, 1);
+
+    engine.insertFragment([p('b')]);
+
+    expect(itemTexts(engine.document()[0])[0]).toBe('abc');
+  });
+});
