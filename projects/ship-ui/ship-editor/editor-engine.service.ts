@@ -14,6 +14,8 @@ import {
 import { BaseBlockBehavior, BaseInlineBehavior, SlashCommand } from './editor-behaviors';
 import { astToHtml, astToMarkdown } from './editor-serializers';
 import { diffFlat, logicalToPos, posToLogical } from './editor-flat-positions';
+import { ColumnarDocument, toColumnar } from './editor-columnar';
+import { applyOpToColumnar } from './editor-columnar-ops';
 import { EditorOp, EditorTransaction, applyOp, diffDocuments, invertOp, spliceInlineContent, transformOp } from './editor-transactions';
 import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalPosition, LogicalSelection, TransactionResult } from './editor.types';
 import { EditorSelectionService } from './selection.service';
@@ -23,6 +25,27 @@ export class EditorEngineService {
   readonly selection = inject(EditorSelectionService);
 
   readonly document = signal<ASTDocument>([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
+
+  /**
+   * Columnar view of the same document, advanced by the op behind every change.
+   *
+   * Rebuilding it per edit would cost O(document); every mutation here already
+   * produces an `EditorOp`, so it is stepped forward instead. Nothing reads from
+   * it yet - it is maintained first so the invariant can be trusted before
+   * anything depends on it.
+   */
+  #columnar: ColumnarDocument = toColumnar(this.document());
+
+  /** The columnar document. Kept in step with `document()`. */
+  get columnar(): ColumnarDocument {
+    return this.#columnar;
+  }
+
+  /** Advance columnar by an op, or rebuild when a document arrives wholesale. */
+  #advanceColumnar(op: EditorOp | null) {
+    if (op) applyOpToColumnar(this.#columnar, op);
+    else this.#columnar = toColumnar(this.document());
+  }
   readonly blocks = new Map<string, BaseBlockBehavior>();
   readonly inlines = new Map<string, BaseInlineBehavior>();
 
@@ -616,7 +639,9 @@ export class EditorEngineService {
     const tx = stack[stack.length - 1];
     if (!tx) return;
     this.#undoStack.set(stack.slice(0, -1));
-    this.document.set(applyOp(this.document(), invertOp(tx.op)));
+    const undoOp = invertOp(tx.op);
+    this.document.set(applyOp(this.document(), undoOp));
+    this.#advanceColumnar(undoOp);
     if (tx.selBefore) this.selection.live.set(structuredClone(tx.selBefore));
     this.#redoStack.update((s) => [...s, tx]);
     this.version.update((v) => v + 1);
@@ -628,6 +653,7 @@ export class EditorEngineService {
     if (!tx) return;
     this.#redoStack.set(stack.slice(0, -1));
     this.document.set(applyOp(this.document(), tx.op));
+    this.#advanceColumnar(tx.op);
     if (tx.selAfter) this.selection.live.set(structuredClone(tx.selAfter));
     this.#undoStack.update((s) => [...s, tx]);
     this.version.update((v) => v + 1);
@@ -639,6 +665,7 @@ export class EditorEngineService {
     const map = diffFlat(oldDoc, newDoc);
     if (!map) return;
     this.document.set(newDoc);
+    this.#advanceColumnar(op);
 
     const mapLp = (lp: LogicalPosition | null | undefined): LogicalPosition | null =>
       lp ? posToLogical(newDoc, map.map(logicalToPos(oldDoc, lp), -1)) : null;
@@ -693,6 +720,7 @@ export class EditorEngineService {
   #commit(oldDoc: ASTDocument, newDoc: ASTDocument, selBefore: LogicalSelection | null) {
     const op = diffDocuments(oldDoc, newDoc);
     if (!op) return;
+    this.#advanceColumnar(op);
     const selAfter = this.selection.active();
     const tx: EditorTransaction = {
       baseVersion: this.version(),
