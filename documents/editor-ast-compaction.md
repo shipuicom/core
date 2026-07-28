@@ -829,3 +829,60 @@ migration is in progress.
 - **The rendering path.** I only measured the model. Whether `ship-editor.ts`
   can render from ranges without re-materialising inline nodes is the open
   question that decides whether step 5 is worth it.
+
+## Implemented: flat selection + columnar mutation primitives (branch `editor-columnar-model`, cont.)
+
+The migration the audit called for has landed in three commits:
+
+1. **`LogicalSelection` is flat `{ from, to }`** — two integers in the position
+   space `logicalToPos`/`StepMap` define. Remote-op selection mapping is now a
+   direct `map.map(sel.from, -1)`; the tree round-trip per position is gone.
+   A `TreeSelection` type survives only for the tree primitives.
+2. **Primitives run on the columnar document**
+   (`editor-columnar-mutations.ts`). Each mutates `ColumnarDocument` in place
+   and returns an `EditorOp` + the flat selection after; the engine applies the
+   op to the tree (still needed for rendering) — the tree is now *derived*.
+   Ops come from diffing only the touched span of top-level blocks with the
+   existing `diffDocuments`, so op shapes — and undo/rebase/collab semantics —
+   are unchanged while diff cost stops scaling with the document.
+3. **Reads and the DOM boundary are columnar.** `activeFormats`, `slashState`,
+   mark-run expansion and the metrics read rows/runs. `ship-editor.ts` maps
+   DOM ↔ `{ blockIndex, itemIndex?, charOffset }` ↔ flat position; the
+   per-position inline-run walks are gone.
+
+### Traps found (in addition to the ones above)
+
+- **The row-size index and the position space disagree inside containers.**
+  `startOf` counts a container's *closing* token before its children (a row's
+  size must be contiguous for the Fenwick), but in the token stream it comes
+  after them — every row nested `depth` deep is skewed by exactly `depth`.
+  `pointAt`/`flatPosAt` correct for it. Anything converting positions to rows
+  by raw `posToRow`/`startOf` arithmetic inside a container is off by one.
+- **`removeRows` never shifted surviving parent pointers**, so removing any
+  block before a list orphaned the list's items. Invisible until something
+  actually removed rows before a container (remote block removals, cross-block
+  deletes). Fixed in the class; pinned by a sync-spec case.
+- **`applyOpToColumnar` duplicated mark coverage** when a marked insert landed
+  inside a marked run — `insertText` extends the spanning run *and* the
+  fragment's explicit range was layered on top. `setMarks` now merges
+  same-mark overlaps so layering is safe for every caller.
+
+### What remains before the tree can go
+
+- `editor-ast.utils.ts` still holds the tree primitives, reachable only via
+  the span-scoped `viaTree` delegation (backspace-at-start physics, Enter
+  strategies, paste, setBlockType, toggleMark, escape hatch) and
+  `insertImage`. Burn these down branch by branch into row operations; each is
+  independently testable behind the unchanged op interface.
+- The engine's tree (`document()`) is still what renders and serializes.
+  Deleting it needs `patchDOM`/serializers to render from rows.
+- `sel.from + text.length`-style deltas and the span diff both assume
+  normalized (adjacent same-mark merged) content; tree content is normalized
+  in practice, and the sync spec now covers marked typing, pending marks,
+  cross-block deletes into lists, remote removals before containers, and
+  marked remote inserts mid-run.
+
+Verified: 667 unit tests, clean build, 19/19 Playwright e2e (real Chromium,
+including CDP IME), and a scripted browser check asserting DOM ≡ model after
+typing, Enter, Backspace-merge, undo/redo, pasting text and lists, and editing
+after a container.
