@@ -31,6 +31,9 @@ import { ASTBlockNode, ASTDocument, ASTInlineNode, LogicalPosition, LogicalSelec
 import { EditorSelectionService } from './selection.service';
 import * as Behaviors from './standard-behaviors';
 
+/** A value the editor's metrics line can display. */
+export type ShipEditorMetric = 'words' | 'characters' | 'blocks' | 'format';
+
 function blockPlainText(block: ASTBlockNode): string {
   const parts: string[] = [];
   const walk = (nodes: any[]) => {
@@ -95,8 +98,14 @@ export class ShipEditor implements ControlValueAccessor {
   /** Placeholder text shown when the editor is empty. */
   placeholder = input<string>('');
 
-  /** When `true`, displays live character and word count metrics. */
+  /** When `true`, displays the metrics line beneath the editor. */
   showMetrics = input(false);
+
+  /**
+   * Which metrics the line shows, in order. A metric left out is not displayed
+   * and not calculated.
+   */
+  metrics = input<readonly ShipEditorMetric[]>(['words', 'characters', 'format']);
 
   /** When `true`, enables dragging image edges to resize them inline. */
   imageEdgeResize = input(false);
@@ -113,11 +122,86 @@ export class ShipEditor implements ControlValueAccessor {
   keybindings = inject(ShipA11yKeybindingsService, { optional: true });
 
   readonly #plainText = computed(() => this.engine.document().map(blockPlainText).join('\n'));
-  readonly charCount = computed(() => this.#plainText().replace(/\n/g, '').length);
-  readonly wordCount = computed(() => {
-    const t = this.#plainText().trim();
-    return t ? t.split(/\s+/).length : 0;
+
+  /**
+   * Characters and words in one pass over the AST.
+   *
+   * Building the document as a string to measure it allocated the whole text,
+   * then a second copy to strip newlines, then an array of every word. Nothing
+   * here is read unless a metric that needs it is switched on, so a disabled
+   * stat costs nothing.
+   */
+  readonly #counts = computed(() => {
+    let characters = 0;
+    let words = 0;
+    let inWord = false;
+
+    const consume = (text: string) => {
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const isSpace = ch === ' ' || ch === '\n' || ch === '\t' || ch === '\r' || ch === '\f' || ch === '\v';
+        if (ch !== '\n') characters++;
+        if (isSpace) inWord = false;
+        else if (!inWord) {
+          inWord = true;
+          words++;
+        }
+      }
+    };
+
+    const walk = (nodes: any[]) => {
+      for (const node of nodes) {
+        if (typeof node?.text === 'string') consume(node.text);
+        else if (Array.isArray(node?.content)) {
+          walk(node.content);
+          inWord = false;
+        }
+      }
+    };
+
+    for (const block of this.engine.document()) {
+      walk((block.content as any[]) ?? []);
+      inWord = false;
+    }
+    return { characters, words };
   });
+
+  readonly charCount = computed(() => this.#counts().characters);
+  readonly wordCount = computed(() => this.#counts().words);
+  readonly blockCount = computed(() => this.engine.document().length);
+
+  /**
+   * The stats line, assembled from only the metrics that are switched on.
+   *
+   * Each count is read inside its own branch, so a metric that is not listed is
+   * never computed - on a large document that is the difference between walking
+   * the whole AST per keystroke and doing nothing.
+   */
+  readonly metricsText = computed(() => {
+    if (!this.showMetrics()) return '';
+    const parts: string[] = [];
+    // Follows the caller's order, and only reads the count it is about to show.
+    for (const metric of this.metrics()) {
+      if (metric === 'words') parts.push(`${this.wordCount()} words`);
+      else if (metric === 'characters') parts.push(`${this.charCount()} characters`);
+      else if (metric === 'blocks') parts.push(`${this.blockCount()} blocks`);
+      else if (metric === 'format') parts.push(this.format().toUpperCase());
+    }
+    return parts.join(' · ');
+  });
+
+  /**
+   * Count on demand rather than continuously.
+   *
+   * The signals above recompute whenever the document changes, which is every
+   * keystroke. Leave `showMetrics` off and call this when a count is actually
+   * wanted - on a button, on blur, when a panel opens - and the document is
+   * walked once at that moment instead of on every key.
+   */
+  measure(): { words: number; characters: number; blocks: number } {
+    const { words, characters } = this.#counts();
+    return { words, characters, blocks: this.engine.document().length };
+  }
 
   readonly showPlaceholder = computed(() => {
     if (!this.placeholder() || this.viewMode() === 'code') return false;
