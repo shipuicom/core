@@ -3,7 +3,7 @@ import { deleteRange, resolveInlinePosition } from './editor-ast.utils';
 import { BaseBlockBehavior, BaseInlineBehavior, SlashCommand } from './editor-behaviors';
 import { astToHtml, astToMarkdown } from './editor-serializers';
 import { diffFlat, logicalToPos, posToLogical } from './editor-flat-positions';
-import { ColumnarDocument, toColumnar } from './editor-columnar';
+import { ColumnarDocument, RowKind, toColumnar } from './editor-columnar';
 import {
   ColumnarMutation,
   backspaceOp,
@@ -11,8 +11,11 @@ import {
   deleteRangeOp,
   enterOp,
   escapeHatchOp,
+  flatPosAt,
   insertFragmentOp,
   insertTextOp,
+  pointAt,
+  rootRowOf,
   setBlockTypeOp,
   toggleMarkOp,
 } from './editor-columnar-mutations';
@@ -101,30 +104,6 @@ export class EditorEngineService {
     marks: ASTMark[];
   } | null>(null);
 
-  #charOffsetOf(pos: LogicalPosition): number {
-    const block = this.document()[pos.blockIndex];
-    if (!block) return pos.offset;
-    const content = (
-      pos.itemIndex !== undefined && this.blocks.get(block.type)?.category === 'container'
-        ? ((block.content as ASTBlockNode[])[pos.itemIndex]?.content ?? [])
-        : block.content
-    ) as ASTInlineNode[];
-    let chars = 0;
-    for (let i = 0; i < pos.inlineIndex && i < content.length; i++) chars += content[i].text?.length ?? 0;
-    return chars + pos.offset;
-  }
-
-  #contentTextAt(pos: LogicalPosition): string {
-    const block = this.document()[pos.blockIndex];
-    if (!block) return '';
-    const content = (
-      pos.itemIndex !== undefined && this.blocks.get(block.type)?.category === 'container'
-        ? ((block.content as ASTBlockNode[])[pos.itemIndex]?.content ?? [])
-        : block.content
-    ) as ASTInlineNode[];
-    return content.map((n) => n.text ?? '').join('');
-  }
-
   #pendingAt(pos: number): ASTMark[] | null {
     const pending = this.pendingMarks();
     return pending && pending.pos === pos ? pending.marks : null;
@@ -199,7 +178,7 @@ export class EditorEngineService {
   }
 
   readonly activeFormats = computed(() => {
-    const doc = this.document();
+    this.document();
     const sel = this.selection.active();
     if (!sel)
       return {
@@ -208,33 +187,22 @@ export class EditorEngineService {
         marks: [] as ASTMark[],
       };
 
+    const cd = this.columnar;
+    if (!cd.rows) return { blockType: null, blockAttrs: null, marks: [] as ASTMark[] };
+
     const isCollapsed = sel.from === sel.to;
-    const start = this.#lpOf(doc, sel.from);
-    const end = isCollapsed ? start : this.#lpOf(doc, sel.to);
-
-    const block = doc[start.blockIndex];
-    if (!block) return { blockType: null, blockAttrs: null, marks: [] as ASTMark[] };
-
-    const behavior = this.blocks.get(block.type);
-    let content: ASTInlineNode[] | null = null;
-    if (behavior?.category === 'container') {
-      const item = block.content[start.itemIndex ?? 0] as ASTBlockNode | undefined;
-      content = item ? (item.content as ASTInlineNode[]) : null;
-    } else if (behavior?.category !== 'void') {
-      content = block.content as ASTInlineNode[];
-    }
+    const a = pointAt(cd, sel.from);
+    const root = rootRowOf(cd, a.row);
+    const blockType = cd.typeOf(root);
+    const blockAttrs = (cd.attrsOf(root) as Record<string, any> | undefined) ?? null;
 
     let marks: ASTMark[] = [];
-    if (content) {
-      const sameHolder = start.blockIndex === end.blockIndex && (start.itemIndex ?? 0) === (end.itemIndex ?? 0);
-      if (!isCollapsed && sameHolder) {
-
-        const a = this.#charOffsetOf(start);
-        const b = this.#charOffsetOf(end);
-        marks = this.#commonMarks(content, Math.min(a, b), Math.max(a, b));
+    if (cd.kindOf(a.row) === RowKind.Text) {
+      const b = isCollapsed ? a : pointAt(cd, sel.to);
+      if (!isCollapsed && b.row === a.row && b.offset > a.offset) {
+        marks = this.#marksCovering(cd, a.row, a.offset, b.offset);
       } else {
-        const inline = content[start.inlineIndex] as ASTInlineNode | undefined;
-        marks = inline?.marks ? [...inline.marks] : [];
+        marks = this.#marksAtCaret(cd, a.row, a.offset);
       }
     }
 
@@ -243,26 +211,41 @@ export class EditorEngineService {
       if (pending) marks = structuredClone(pending);
     }
 
-    return { blockType: block.type, blockAttrs: block.attrs ?? null, marks };
+    return { blockType, blockAttrs, marks };
   });
 
-  #commonMarks(content: ASTInlineNode[], startChar: number, endChar: number): ASTMark[] {
-    if (endChar <= startChar) return [];
-    const key = (m: ASTMark) => JSON.stringify({ t: m.type, a: m.attrs ?? null });
-    const overlapping: ASTInlineNode[] = [];
-    let at = 0;
-    for (const node of content) {
-      const len = node.text?.length ?? 0;
-      if (at < endChar && at + len > startChar) overlapping.push(node);
-      at += len;
+  /** Marks the run before the caret carries — the boundary belongs to the earlier run. */
+  #marksAtCaret(cd: ColumnarDocument, row: number, offset: number): ASTMark[] {
+    if (cd.textOf(row).length === 0) return [];
+    const seen = new Set<string>();
+    const out: ASTMark[] = [];
+    for (const mark of cd.marksAt(row, offset > 0 ? offset - 1 : 0)) {
+      const key = JSON.stringify({ t: mark.type, a: mark.attrs ?? null });
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(structuredClone(mark));
     }
-    if (overlapping.length === 0) return [];
-    let common = overlapping[0].marks ? [...overlapping[0].marks] : [];
-    for (let i = 1; i < overlapping.length && common.length; i++) {
-      const set = new Set((overlapping[i].marks ?? []).map(key));
-      common = common.filter((m) => set.has(key(m)));
+    return out;
+  }
+
+  /** Marks covering every character of `[from, to)` in a row. */
+  #marksCovering(cd: ColumnarDocument, row: number, from: number, to: number): ASTMark[] {
+    const [qFrom, qTo] = cd.runRangeOf(row);
+    const quads = cd.markRuns;
+    const out: ASTMark[] = [];
+    const seen = new Set<string>();
+    for (let q = qFrom; q < qTo; q++) {
+      // Runs are normalized per mark, so full coverage of a contiguous range
+      // means a single run spans it.
+      if (quads[q * 4 + 1] <= from && quads[q * 4 + 2] >= to) {
+        const mark = cd.markDefs[quads[q * 4 + 3]];
+        const key = JSON.stringify({ t: mark.type, a: mark.attrs ?? null });
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push(structuredClone(mark));
+      }
     }
-    return structuredClone(common);
+    return out;
   }
 
   isActive(action: string, attrs?: Record<string, any>): boolean {
@@ -308,11 +291,12 @@ export class EditorEngineService {
   readonly slashState = computed<{ query: string; length: number } | null>(() => {
     const sel = this.selection.active();
     if (!sel || sel.from !== sel.to) return null;
-    const doc = this.document();
-    const start = this.#lpOf(doc, sel.from);
-    const block = doc[start.blockIndex];
-    if (!block || this.blocks.get(block.type)?.category === 'void') return null;
-    const before = this.#contentTextAt(start).slice(0, this.#charOffsetOf(start));
+    this.document();
+    const cd = this.columnar;
+    if (!cd.rows) return null;
+    const p = pointAt(cd, sel.from);
+    if (cd.kindOf(p.row) !== RowKind.Text) return null;
+    const before = cd.textOf(p.row).slice(0, p.offset);
     const m = /(?:^|\s)\/(\S*)$/.exec(before);
     return m ? { query: m[1], length: m[1].length + 1 } : null;
   });
@@ -369,11 +353,11 @@ export class EditorEngineService {
   });
 
   selectBlock(index: number) {
-    const doc = this.document();
-    const block = doc[index];
+    const block = this.document()[index];
     if (!block || this.blocks.get(block.type)?.category !== 'void') return;
     this.pendingMarks.set(null);
-    const pos = logicalToPos(doc, { blockIndex: index, inlineIndex: 0, offset: 0 });
+    const cd = this.columnar;
+    const pos = cd.startOf(cd.rowOfTopLevel(index));
     this.selection.live.set({ from: pos, to: pos });
     this.selectedBlock.set(index);
   }
@@ -455,7 +439,10 @@ export class EditorEngineService {
     this.document.set(newDoc);
     this.clearBlockSelection();
     const caretIdx = Math.min(idx, newDoc.length - 1);
-    const pos = logicalToPos(newDoc, { blockIndex: caretIdx, inlineIndex: 0, offset: 0 });
+    const cd = this.columnar;
+    const start = cd.startOf(cd.rowOfTopLevel(caretIdx));
+    const p = pointAt(cd, start);
+    const pos = cd.kindOf(p.row) === RowKind.Void ? cd.startOf(p.row) : flatPosAt(cd, p.row, 0);
     this.selection.live.set({ from: pos, to: pos });
     this.#commit(oldDoc, newDoc, this.selection.active());
   }
@@ -483,24 +470,19 @@ export class EditorEngineService {
     if (direct) return structuredClone(direct);
     if (sel.from !== sel.to) return null;
 
-    const run = this.#expandToMarkRun(this.#lpOf(this.document(), sel.from), markType);
+    const run = this.#expandToMarkRun(sel.from, markType);
     if (!run) return null;
-    const block = this.document()[run.start.blockIndex];
-    const isContainer = this.blocks.get(block.type)?.category === 'container';
-    const content = (
-      isContainer ? ((block.content as ASTBlockNode[])[run.start.itemIndex ?? 0]?.content ?? []) : block.content
-    ) as ASTInlineNode[];
+    const cd = this.columnar;
+    const p = pointAt(cd, run.from);
+    const startChar = p.offset;
+    const endChar = pointAt(cd, run.to).offset;
 
-    const startChar = this.#charOffsetOf(run.start);
-    const endChar = this.#charOffsetOf(run.end);
-    let at = 0;
-    for (const node of content) {
-      const len = node.text?.length ?? 0;
-      if (at < endChar && at + len > startChar) {
-        const mark = node.marks?.find((m) => m.type === markType);
-        if (mark) return structuredClone(mark);
-      }
-      at += len;
+    const [qFrom, qTo] = cd.runRangeOf(p.row);
+    const quads = cd.markRuns;
+    for (let q = qFrom; q < qTo; q++) {
+      const mark = cd.markDefs[quads[q * 4 + 3]];
+      if (mark.type !== markType) continue;
+      if (quads[q * 4 + 1] < endChar && quads[q * 4 + 2] > startChar) return structuredClone(mark);
     }
     return null;
   }
@@ -509,47 +491,38 @@ export class EditorEngineService {
     const sel = this.selection.active();
     if (!sel) return null;
     if (sel.from !== sel.to) return sel;
-    const doc = this.document();
-    const run = this.#expandToMarkRun(this.#lpOf(doc, sel.from), markType);
+    const run = this.#expandToMarkRun(sel.from, markType);
     if (!run) return null;
-    const flat = this.#toFlatSel(doc, run);
-    this.selection.live.set(flat);
-    return flat;
+    this.selection.live.set(run);
+    return run;
   }
 
-  #expandToMarkRun(pos: LogicalPosition, markType: string): TreeSelection | null {
-    const block = this.document()[pos.blockIndex];
-    if (!block) return null;
-    const isContainer = this.blocks.get(block.type)?.category === 'container';
-    const itemIdx = pos.itemIndex ?? 0;
-    const content = (isContainer ? ((block.content as ASTBlockNode[])[itemIdx]?.content ?? []) : block.content) as ASTInlineNode[];
-    const caretChar = this.#charOffsetOf(pos);
+  /**
+   * The contiguous span of `markType` coverage around a caret, in flat
+   * positions. Runs of the same type merge across differing attrs — a caret
+   * inside one link expands over an adjacent link too, matching how the marks
+   * behave as one visual run.
+   */
+  #expandToMarkRun(pos: number, markType: string): LogicalSelection | null {
+    const cd = this.columnar;
+    if (!cd.rows) return null;
+    const p = pointAt(cd, pos);
+    if (cd.kindOf(p.row) !== RowKind.Text) return null;
 
-    const runs: [number, number][] = [];
-    let at = 0;
-    for (const node of content) {
-      const len = node.text?.length ?? 0;
-      const marked = node.marks?.some((m) => m.type === markType) ?? false;
-      if (marked && len > 0) {
-        const last = runs[runs.length - 1];
-        if (last && last[1] === at) last[1] = at + len;
-        else runs.push([at, at + len]);
-      }
-      at += len;
+    const [qFrom, qTo] = cd.runRangeOf(p.row);
+    const quads = cd.markRuns;
+    const intervals: [number, number][] = [];
+    for (let q = qFrom; q < qTo; q++) {
+      if (cd.markDefs[quads[q * 4 + 3]].type !== markType) continue;
+      const start = quads[q * 4 + 1];
+      const end = quads[q * 4 + 2];
+      const last = intervals[intervals.length - 1];
+      if (last && start <= last[1]) last[1] = Math.max(last[1], end);
+      else intervals.push([start, end]);
     }
-    const run = runs.find(([s, e]) => caretChar >= s && caretChar <= e);
+    const run = intervals.find(([s, e]) => p.offset >= s && p.offset <= e);
     if (!run) return null;
-
-    const resolve = (char: number) => resolveInlinePosition(content, char);
-    const s = resolve(run[0]);
-    const e = resolve(run[1]);
-    const mk = (r: { inlineIndex: number; offset: number }): LogicalPosition => ({
-      blockIndex: pos.blockIndex,
-      ...(isContainer ? { itemIndex: itemIdx } : {}),
-      inlineIndex: r.inlineIndex,
-      offset: r.offset,
-    });
-    return { start: mk(s), end: mk(e), isCollapsed: false };
+    return { from: flatPosAt(cd, p.row, run[0]), to: flatPosAt(cd, p.row, run[1]) };
   }
 
   toggleMark(markType: string, attrs?: Record<string, any>) {

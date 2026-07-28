@@ -87,10 +87,64 @@ export function pointAt(cd: ColumnarDocument, pos: number): RowPoint {
   return { row, offset: Math.max(0, Math.min(offset, cd.textOf(row).length)) };
 }
 
-function rootOf(cd: ColumnarDocument, row: number): number {
+/** The flat position of a character offset within a text row. */
+export function flatPosAt(cd: ColumnarDocument, row: number, offset: number): number {
+  return interiorStart(cd, row) + offset;
+}
+
+export function rootRowOf(cd: ColumnarDocument, row: number): number {
   let r = row;
   while (cd.parentOf(r) !== -1) r = cd.parentOf(r);
   return r;
+}
+
+function rootOf(cd: ColumnarDocument, row: number): number {
+  return rootRowOf(cd, row);
+}
+
+/**
+ * DOM-boundary addressing: the DOM is block → item → character, so the
+ * boundary converts through that shape once on the way in and once on the way
+ * out. `charOffset` clamps to the holder's length; `itemIndex` past the last
+ * item resolves to the last item.
+ */
+export interface BlockPoint {
+  blockIndex: number;
+  itemIndex?: number;
+  charOffset: number;
+}
+
+/** Flat position of a character in a top-level block (or one of its items). */
+export function flatPosOfBlockChar(cd: ColumnarDocument, point: BlockPoint): number {
+  const root = cd.rowOfTopLevel(point.blockIndex);
+  if (root >= cd.rows) return cd.size;
+  if (cd.kindOf(root) === RowKind.Void) return cd.startOf(root);
+
+  let row = root;
+  if (cd.kindOf(root) === RowKind.Container) {
+    const end = root + spanOfRoot(cd, root);
+    let seen = -1;
+    row = root + 1;
+    for (let r = root + 1; r < end; r++) {
+      if (cd.parentOf(r) !== root) continue;
+      row = r;
+      seen++;
+      if (seen === (point.itemIndex ?? 0)) break;
+    }
+  }
+  if (cd.kindOf(row) === RowKind.Void) return cd.startOf(row);
+  return flatPosAt(cd, row, Math.max(0, Math.min(point.charOffset, cd.textOf(row).length)));
+}
+
+/** Inverse: the block/item/character a flat position addresses. */
+export function blockPointAt(cd: ColumnarDocument, pos: number): BlockPoint {
+  const p = pointAt(cd, pos);
+  const root = rootRowOf(cd, p.row);
+  const blockIndex = topIndexOf(cd, root);
+  if (p.row === root) return { blockIndex, charOffset: p.offset };
+  let itemIndex = 0;
+  for (let r = root + 1; r < p.row; r++) if (cd.parentOf(r) === root) itemIndex++;
+  return { blockIndex, itemIndex, charOffset: p.offset };
 }
 
 function topIndexOf(cd: ColumnarDocument, rootRow: number): number {

@@ -21,14 +21,15 @@ import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings'
 import { BaseBlockBehavior, BaseInlineBehavior, SlashCommand } from './editor-behaviors';
 import { EditorEngineService } from './editor-engine.service';
 import { SanitizeOption, normalizeDocument, sanitizeDocumentUrls } from './editor-sanitize';
-import { logicalToPos, posToLogical } from './editor-flat-positions';
+import { RowKind } from './editor-columnar';
+import { BlockPoint, blockPointAt, flatPosOfBlockChar } from './editor-columnar-mutations';
 import { htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
 import { ShipEditorContextualToolbar, ContextualActionExtras } from './sh-editor-contextual-toolbar';
 import { ShipEditorImageResize } from './sh-editor-image-resize';
 import { ShipEditorImagePopover } from './sh-editor-image-popover';
 import { ShipEditorLinkPopover } from './sh-editor-link-popover';
 import { ShipEditorSlashMenu } from './sh-editor-slash-menu';
-import { ASTBlockNode, ASTDocument, ASTInlineNode, LogicalPosition, LogicalSelection } from './editor.types';
+import { ASTBlockNode, ASTDocument, ASTInlineNode, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import * as Behaviors from './standard-behaviors';
 
@@ -364,8 +365,9 @@ export class ShipEditor implements ControlValueAccessor {
       const domSel = window.getSelection();
       const collapsed = !domSel || domSel.rangeCount === 0 || domSel.getRangeAt(0).collapsed;
       const sel = this.selection.active();
-      const lp = sel ? posToLogical(this.engine.document(), sel.from) : null;
-      const block = lp ? this.engine.document()[lp.blockIndex] : null;
+      const cd = this.engine.columnar;
+      const bp = sel && cd.rows ? blockPointAt(cd, sel.from) : null;
+      const block = bp ? this.engine.document()[bp.blockIndex] : null;
       if (collapsed && block && this.engine.blocks.get(block.type)?.category !== 'void') {
         this.engine.clearBlockSelection();
       }
@@ -575,11 +577,11 @@ export class ShipEditor implements ControlValueAccessor {
     const tr = event.getTargetRanges?.()[0];
     if (!tr) return false;
     const container = this.surface().nativeElement;
-    const start = this.mapDOMToLogical(container, tr.startContainer, tr.startOffset);
-    const end = this.mapDOMToLogical(container, tr.endContainer, tr.endOffset);
+    const start = this.mapDOMToPoint(container, tr.startContainer, tr.startOffset);
+    const end = this.mapDOMToPoint(container, tr.endContainer, tr.endOffset);
     if (!start || !end || start.blockIndex !== end.blockIndex) return false;
-    const doc = this.engine.document();
-    this.selection.live.set({ from: logicalToPos(doc, start), to: logicalToPos(doc, end) });
+    const cd = this.engine.columnar;
+    this.selection.live.set({ from: flatPosOfBlockChar(cd, start), to: flatPosOfBlockChar(cd, end) });
     return true;
   }
 
@@ -594,12 +596,12 @@ export class ShipEditor implements ControlValueAccessor {
     const tr = event.getTargetRanges?.()[0];
     if (tr) {
       const container = this.surface().nativeElement;
-      const start = this.mapDOMToLogical(container, tr.startContainer, tr.startOffset);
-      const end = this.mapDOMToLogical(container, tr.endContainer, tr.endOffset);
+      const start = this.mapDOMToPoint(container, tr.startContainer, tr.startOffset);
+      const end = this.mapDOMToPoint(container, tr.endContainer, tr.endOffset);
       if (start && end && start.blockIndex === end.blockIndex) {
-        const doc = this.engine.document();
-        const from = logicalToPos(doc, start);
-        const to = logicalToPos(doc, end);
+        const cd = this.engine.columnar;
+        const from = flatPosOfBlockChar(cd, start);
+        const to = flatPosOfBlockChar(cd, end);
         if (from !== to) {
           this.selection.live.set({ from, to });
           this.engine.deleteRange();
@@ -664,14 +666,14 @@ export class ShipEditor implements ControlValueAccessor {
       return;
     }
     this.selection.updateRect(container);
-    const startLogical = this.mapDOMToLogical(container, range.startContainer, range.startOffset);
-    const endLogical = range.collapsed
-      ? startLogical
-      : this.mapDOMToLogical(container, range.endContainer, range.endOffset);
-    if (startLogical && endLogical) {
-      const doc = this.engine.document();
-      const from = logicalToPos(doc, startLogical);
-      this.selection.live.set({ from, to: range.collapsed ? from : logicalToPos(doc, endLogical) });
+    const startPoint = this.mapDOMToPoint(container, range.startContainer, range.startOffset);
+    const endPoint = range.collapsed
+      ? startPoint
+      : this.mapDOMToPoint(container, range.endContainer, range.endOffset);
+    if (startPoint && endPoint) {
+      const cd = this.engine.columnar;
+      const from = flatPosOfBlockChar(cd, startPoint);
+      this.selection.live.set({ from, to: range.collapsed ? from : flatPosOfBlockChar(cd, endPoint) });
     }
   }
 
@@ -747,10 +749,8 @@ export class ShipEditor implements ControlValueAccessor {
         this.engine.clearBlockSelection();
         const targetBlock = this.engine.document()[targetIdx];
         if (targetBlock && this.engine.blocks.get(targetBlock.type)?.category !== 'void') {
-          const content = targetBlock.content as ASTInlineNode[];
-          const lastIdx = before ? Math.max(0, content.length - 1) : 0;
-          const offset = before ? (content[lastIdx]?.text.length ?? 0) : 0;
-          const from = logicalToPos(this.engine.document(), { blockIndex: targetIdx, inlineIndex: lastIdx, offset });
+          const edge = before ? Number.MAX_SAFE_INTEGER : 0;
+          const from = flatPosOfBlockChar(this.engine.columnar, { blockIndex: targetIdx, itemIndex: edge, charOffset: edge });
           this.selection.live.set({ from, to: from });
           this.#render();
         }
@@ -984,18 +984,22 @@ export class ShipEditor implements ControlValueAccessor {
     return index;
   }
 
-  private mapDOMToLogical(container: HTMLElement, node: Node, offset: number): LogicalPosition | null {
+  /**
+   * DOM node/offset → block, item, character. The DOM genuinely has that
+   * shape, so this is the one place positions are tree-shaped; the result is
+   * converted to a flat position by `flatPosOfBlockChar` at every call site.
+   */
+  private mapDOMToPoint(container: HTMLElement, node: Node, offset: number): BlockPoint | null {
     let blockEl: HTMLElement | null = node.nodeType === Node.ELEMENT_NODE ? (node as HTMLElement) : node.parentElement;
     while (blockEl && blockEl.parentElement !== container) blockEl = blockEl.parentElement;
     if (!blockEl || blockEl.parentElement !== container) return null;
 
     const blockIndex = this.#indexInParent(blockEl);
-    const blockAst = this.engine.document()[blockIndex];
-    if (!blockAst) return { blockIndex, inlineIndex: 0, offset: 0 };
+    const cd = this.engine.columnar;
+    const root = cd.rowOfTopLevel(blockIndex);
+    if (root >= cd.rows) return { blockIndex, charOffset: 0 };
 
-    const behavior = this.engine.blocks.get(blockAst.type);
-
-    if (behavior?.category === 'container') {
+    if (cd.kindOf(root) === RowKind.Container) {
       let liEl: HTMLElement | null = node.nodeType === Node.ELEMENT_NODE ? (node as HTMLElement) : node.parentElement;
       while (liEl && liEl.tagName.toLowerCase() !== 'li' && liEl !== blockEl) {
         liEl = liEl.parentElement;
@@ -1011,50 +1015,24 @@ export class ShipEditor implements ControlValueAccessor {
         else targetEl = liEl;
       }
 
-      const charOffset = this.#domCharOffset(targetEl, node, offset);
-
-      const itemAst = blockAst.content[itemIndex] as ASTBlockNode | undefined;
-      if (!itemAst) return { blockIndex, itemIndex, inlineIndex: 0, offset: charOffset };
-
-      let remaining = charOffset;
-      for (let i = 0; i < itemAst.content.length; i++) {
-        const inline = itemAst.content[i] as ASTInlineNode;
-        if (remaining <= inline.text.length) return { blockIndex, itemIndex, inlineIndex: i, offset: remaining };
-        remaining -= inline.text.length;
-      }
-
-      const lastIdx = Math.max(0, itemAst.content.length - 1);
-      const lastInline = itemAst.content[lastIdx] as ASTInlineNode | undefined;
-      return { blockIndex, itemIndex, inlineIndex: lastIdx, offset: lastInline ? lastInline.text.length : 0 };
+      return { blockIndex, itemIndex, charOffset: this.#domCharOffset(targetEl, node, offset) };
     }
 
-    const charOffset = this.#domCharOffset(blockEl, node, offset);
-
-    let remaining = charOffset;
-    for (let i = 0; i < blockAst.content.length; i++) {
-      const inline = blockAst.content[i] as ASTInlineNode;
-      if (remaining <= inline.text.length) return { blockIndex, inlineIndex: i, offset: remaining };
-      remaining -= inline.text.length;
-    }
-
-    const lastIdx = Math.max(0, blockAst.content.length - 1);
-    const lastInline = blockAst.content[lastIdx] as ASTInlineNode | undefined;
-    return { blockIndex, inlineIndex: lastIdx, offset: lastInline ? lastInline.text.length : 0 };
+    return { blockIndex, charOffset: this.#domCharOffset(blockEl, node, offset) };
   }
 
   #placeCaretBesideBlock(idx: number) {
     const doc = this.engine.document();
     const editable = (i: number) =>
       i >= 0 && i < doc.length && this.engine.blocks.get(doc[i]?.type)?.category !== 'void';
-    let pos: LogicalPosition | null = null;
-    if (editable(idx + 1)) pos = { blockIndex: idx + 1, inlineIndex: 0, offset: 0 };
+    const cd = this.engine.columnar;
+    let from: number | null = null;
+    if (editable(idx + 1)) from = flatPosOfBlockChar(cd, { blockIndex: idx + 1, charOffset: 0 });
     else if (editable(idx - 1)) {
-      const content = (doc[idx - 1].content ?? []) as ASTInlineNode[];
-      const lastIdx = Math.max(0, content.length - 1);
-      pos = { blockIndex: idx - 1, inlineIndex: lastIdx, offset: content[lastIdx]?.text.length ?? 0 };
+      const edge = Number.MAX_SAFE_INTEGER;
+      from = flatPosOfBlockChar(cd, { blockIndex: idx - 1, itemIndex: edge, charOffset: edge });
     }
-    if (!pos) return;
-    const from = logicalToPos(doc, pos);
+    if (from === null) return;
     this.selection.live.set({ from, to: from });
     this.#render();
   }
@@ -1077,61 +1055,47 @@ export class ShipEditor implements ControlValueAccessor {
     const container = this.surface().nativeElement;
     if (typeof window === 'undefined') return;
 
-    // The DOM is tree-shaped, so the flat selection is translated back to a
-    // tree position here — the one place that still needs the shape.
-    const doc = this.engine.document();
+    // The DOM is tree-shaped, so the flat selection is translated back to
+    // block/item/character here — the one place that needs the shape.
+    const cd = this.engine.columnar;
+    if (!cd.rows) return;
     const isCollapsed = sel.from === sel.to;
-    const startLp = posToLogical(doc, sel.from);
-    const endLp = isCollapsed ? startLp : posToLogical(doc, sel.to);
-    if (!startLp) return;
+    const startBp = blockPointAt(cd, sel.from);
+    const endBp = isCollapsed ? startBp : blockPointAt(cd, sel.to);
 
     try {
       const range = document.createRange();
-      const getPos = (pos: LogicalPosition) => {
-        const blockEl = container.children[pos.blockIndex];
+      const getPos = (bp: BlockPoint) => {
+        const blockEl = container.children[bp.blockIndex];
         if (!blockEl) return null;
 
-        const behavior = this.engine.blocks.get(this.engine.document()[pos.blockIndex]?.type);
+        const blockAst = this.engine.document()[bp.blockIndex];
+        const behavior = this.engine.blocks.get(blockAst?.type);
 
         if (behavior?.category === 'void') return null;
 
-        const blockAst = this.engine.document()[pos.blockIndex];
-
         if (behavior?.category === 'container') {
-          const itemIdx = pos.itemIndex ?? 0;
-          const liEl = blockEl.children[itemIdx];
+          const liEl = blockEl.children[bp.itemIndex ?? 0];
           if (!liEl) return { node: blockEl, offset: 0 };
-
-          const itemAst = blockAst?.content[itemIdx] as ASTBlockNode | undefined;
-          let targetChar = pos.offset;
-          if (itemAst) {
-            for (let i = 0; i < pos.inlineIndex; i++) {
-              targetChar += (itemAst.content[i] as ASTInlineNode).text.length;
-            }
-          }
-
-          return this.#domPosAtChar(liEl as HTMLElement, targetChar);
-        } else {
-          let targetChar = pos.offset;
-          for (let i = 0; i < pos.inlineIndex; i++) targetChar += (blockAst?.content[i] as ASTInlineNode).text.length;
-
-          if (behavior?.resolveDOMPosition && blockAst) {
-            const result = behavior.resolveDOMPosition(blockEl as HTMLElement, blockAst, targetChar);
-            if (result) return result;
-          }
-
-          return this.#domPosAtChar(blockEl as HTMLElement, targetChar);
+          return this.#domPosAtChar(liEl as HTMLElement, bp.charOffset);
         }
+
+        if (behavior?.resolveDOMPosition && blockAst) {
+          const result = behavior.resolveDOMPosition(blockEl as HTMLElement, blockAst, bp.charOffset);
+          if (result) return result;
+        }
+
+        return this.#domPosAtChar(blockEl as HTMLElement, bp.charOffset);
       };
 
-      const start = getPos(startLp);
+      const start = getPos(startBp);
       if (start) {
 
         range.setStart(start.node, start.offset);
 
-        if (isCollapsed || !endLp) range.collapse(true);
+        if (isCollapsed) range.collapse(true);
         else {
-          const end = getPos(endLp);
+          const end = getPos(endBp);
           if (end) range.setEnd(end.node, end.offset);
         }
         const domSel = window.getSelection();
