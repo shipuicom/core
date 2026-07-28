@@ -132,11 +132,18 @@ export class ShipEditor implements ControlValueAccessor {
    * stat costs nothing.
    */
   readonly #counts = computed(() => {
+    // Reads the columnar document rather than walking the AST: one string per
+    // row, already flattened, instead of a recursive descent through inline
+    // nodes. `version` is what changes on every edit, so it is the dependency.
+    this.engine.version();
+    const cd = this.engine.columnar;
+
     let characters = 0;
     let words = 0;
-    let inWord = false;
 
-    const consume = (text: string) => {
+    for (let row = 0; row < cd.rows; row++) {
+      const text = cd.textOf(row);
+      let inWord = false;
       for (let i = 0; i < text.length; i++) {
         const ch = text[i];
         const isSpace = ch === ' ' || ch === '\n' || ch === '\t' || ch === '\r' || ch === '\f' || ch === '\v';
@@ -147,28 +154,20 @@ export class ShipEditor implements ControlValueAccessor {
           words++;
         }
       }
-    };
-
-    const walk = (nodes: any[]) => {
-      for (const node of nodes) {
-        if (typeof node?.text === 'string') consume(node.text);
-        else if (Array.isArray(node?.content)) {
-          walk(node.content);
-          inWord = false;
-        }
-      }
-    };
-
-    for (const block of this.engine.document()) {
-      walk((block.content as any[]) ?? []);
-      inWord = false;
     }
     return { characters, words };
   });
 
   readonly charCount = computed(() => this.#counts().characters);
   readonly wordCount = computed(() => this.#counts().words);
-  readonly blockCount = computed(() => this.engine.document().length);
+  /** Top-level blocks. Container rows hold their children, so only roots count. */
+  readonly blockCount = computed(() => {
+    this.engine.version();
+    const cd = this.engine.columnar;
+    let count = 0;
+    for (let row = 0; row < cd.rows; row++) if (cd.parentOf(row) === -1) count++;
+    return count;
+  });
 
   /**
    * The stats line, assembled from only the metrics that are switched on.
