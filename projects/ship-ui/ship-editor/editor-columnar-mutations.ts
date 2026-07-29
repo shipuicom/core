@@ -1,6 +1,6 @@
 import { deleteForward, deleteRange, executeInsertText, handleBackspace, handleEnter, handleEscapeHatch, insertFragment, resolveInlinePosition, setBlockType, toggleMark } from './editor-ast.utils';
 import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
-import { ColumnarDocument, RowKind } from './editor-columnar';
+import { ColumnarDocument, ColumnarRowInput, RowKind } from './editor-columnar';
 import { rowsForBlocks } from './editor-columnar-ops';
 import { logicalToPos } from './editor-flat-positions';
 import { EditorOp, diffDocuments } from './editor-transactions';
@@ -976,7 +976,136 @@ export function insertFragmentOp(
   const b = pointAt(cd, sel.to);
   const baseTop = topIndexOf(cd, rootOf(cd, a.row));
   const lastTop = topIndexOf(cd, rootOf(cd, b.row));
-  return viaTree(cd, sel, baseTop, lastTop - baseTop + 1, blocks, true, (doc, s) => insertFragment(doc, s, fragment, blocks));
+
+  const holdsInline = (block: ASTBlockNode) => {
+    const content = block.content as unknown[] | undefined;
+    return !content || content.length === 0 || typeof (content[0] as ASTInlineNode)?.text === 'string';
+  };
+  const nodesOf = (block: ASTBlockNode) =>
+    (block.content as ASTInlineNode[])?.length ? (block.content as ASTInlineNode[]) : [{ type: 'text', text: '' } as ASTInlineNode];
+
+  return withSpanOp(cd, baseTop, lastTop - baseTop + 1, () => {
+    if (sel.from !== sel.to) deleteRangeRows(cd, a, b);
+    const p = pointAt(cd, sel.from);
+    const root = rootOf(cd, p.row);
+    const top = topIndexOf(cd, root);
+    const fragClone = structuredClone(fragment) as ASTDocument;
+
+    if (cd.kindOf(p.row) !== RowKind.Text) {
+      // Caret resolved onto a void: the fragment lands after it, whole.
+      const at = root + spanOfRoot(cd, root);
+      cd.insertRows(at, rowsForBlocks(fragClone, at));
+      const landedTop = top + fragClone.length;
+      return caretSel(flatPosOfBlockChar(cd, { blockIndex: landedTop, itemIndex: Number.MAX_SAFE_INTEGER, charOffset: Number.MAX_SAFE_INTEGER }));
+    }
+
+    // Pasting into a list item: containers in the fragment expand into the
+    // inline-holding blocks they contain, which become items.
+    if (cd.parentOf(p.row) !== -1) {
+      const flatten = (nodes: ASTBlockNode[]): ASTBlockNode[] =>
+        nodes.flatMap((n) => (holdsInline(n) ? [n] : flatten(n.content as ASTBlockNode[])));
+      let flat = flatten(fragClone);
+      if (!flat.length) flat = [emptyParagraph()];
+
+      if (flat.length === 1) {
+        const m = inlineToTextRuns(nodesOf(flat[0]));
+        spliceRowText(cd, p.row, p.offset, 0, m.text, m.runs);
+        return caretSel(sel.from + m.text.length);
+      }
+
+      const tailText = cd.textOf(p.row).slice(p.offset);
+      const tailRuns = clipRuns(cd, p.row, p.offset, Infinity);
+      const first = inlineToTextRuns(nodesOf(flat[0]));
+      spliceRowText(cd, p.row, p.offset, cd.textOf(p.row).length - p.offset, '', []);
+      if (first.text) spliceRowText(cd, p.row, p.offset, 0, first.text, first.runs);
+
+      const inputs: ColumnarRowInput[] = [];
+      for (let i = 1; i < flat.length - 1; i++) {
+        const m = inlineToTextRuns(nodesOf(flat[i]));
+        inputs.push({ type: 'list-item', kind: RowKind.Text, text: m.text, marks: m.runs, parent: root, depth: 1 });
+      }
+      const last = inlineToTextRuns(nodesOf(flat[flat.length - 1]));
+      inputs.push({
+        type: 'list-item',
+        kind: RowKind.Text,
+        text: last.text + tailText,
+        marks: [...last.runs, ...shiftRuns(tailRuns, last.text.length)],
+        parent: root,
+        depth: 1,
+      });
+      cd.insertRows(p.row + 1, inputs);
+      return caretSel(flatPosAt(cd, p.row + inputs.length, last.text.length));
+    }
+
+    // Caret in a top-level text block.
+    if (fragClone.some((block) => !holdsInline(block))) {
+      // Structural fragment (lists, voids): split the block around the caret
+      // and drop the fragment in whole.
+      const left = inlineNodesOf(cd, root, 0, p.offset);
+      const right = inlineNodesOf(cd, root, p.offset, Infinity);
+      const type = cd.typeOf(root);
+      const attrs = cd.attrsOf(root);
+      const headHas = left.some((n) => n.text.length > 0);
+      const tailHas = right.some((n) => n.text.length > 0);
+      const out: ASTBlockNode[] = [];
+      if (headHas) out.push({ type, ...(attrs ? { attrs: structuredClone(attrs) } : {}), content: left });
+      out.push(...fragClone);
+      if (tailHas) out.push({ type, ...(attrs ? { attrs: structuredClone(attrs) } : {}), content: right });
+      if (!out.length) out.push(emptyParagraph());
+      replaceRoots(cd, top, 1, out);
+
+      const landedTop = top + (headHas ? 1 : 0) + fragClone.length - 1;
+      const landed = fragClone[fragClone.length - 1];
+      if (holdsInline(landed)) {
+        return caretSel(flatPosOfBlockChar(cd, { blockIndex: landedTop, charOffset: Number.MAX_SAFE_INTEGER }));
+      }
+      return caretSel(flatPosOfBlockChar(cd, { blockIndex: landedTop, charOffset: 0 }));
+    }
+
+    if (fragClone.length === 1) {
+      const m = inlineToTextRuns(nodesOf(fragClone[0]));
+      spliceRowText(cd, root, p.offset, 0, m.text, m.runs);
+      return caretSel(sel.from + m.text.length);
+    }
+
+    // Multi-block inline fragment: the head keeps this block's type, middles
+    // keep their own, and the tail takes the last fragment block's type.
+    const len = cd.textOf(root).length;
+    const tailText = cd.textOf(root).slice(p.offset);
+    const tailRuns = clipRuns(cd, root, p.offset, Infinity);
+    const first = inlineToTextRuns(nodesOf(fragClone[0]));
+    spliceRowText(cd, root, p.offset, len - p.offset, '', []);
+    if (first.text) spliceRowText(cd, root, p.offset, 0, first.text, first.runs);
+    const headHas = p.offset + first.text.length > 0;
+
+    const inputs: ColumnarRowInput[] = [];
+    for (let i = 1; i < fragClone.length - 1; i++) {
+      const block = fragClone[i];
+      const m = inlineToTextRuns(nodesOf(block));
+      inputs.push({ type: block.type, kind: RowKind.Text, text: m.text, marks: m.runs, attrs: block.attrs });
+    }
+    const lastBlock = fragClone[fragClone.length - 1];
+    const last = inlineToTextRuns(nodesOf(lastBlock));
+    const tailFull = last.text + tailText;
+    if (tailFull.length > 0) {
+      inputs.push({
+        type: lastBlock.type,
+        kind: RowKind.Text,
+        text: tailFull,
+        marks: [...last.runs, ...shiftRuns(tailRuns, last.text.length)],
+        attrs: lastBlock.attrs,
+      });
+    }
+    cd.insertRows(root + 1, inputs);
+    if (!headHas) cd.removeRows(root, 1);
+
+    const finalCount = (headHas ? 1 : 0) + inputs.length;
+    if (!finalCount) {
+      replaceRoots(cd, top, 1, [emptyParagraph()]);
+      return caretSel(flatPosOfBlockChar(cd, { blockIndex: top, charOffset: 0 }));
+    }
+    return caretSel(flatPosOfBlockChar(cd, { blockIndex: top + finalCount - 1, charOffset: last.text.length }));
+  });
 }
 
 /** Change the selected blocks' type, with the tree primitive's full physics. */
