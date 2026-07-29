@@ -885,16 +885,36 @@ accidental and unreachable through the UI (void selection is intercepted by
 a void row no longer turn the void into a text-holding block — they no-op,
 no-op, and insert after the void respectively.
 
-### What remains before the tree can go entirely
+### The tree is gone: columnar is the only live model
 
-- The engine's tree (`document()`) is still what renders and serializes.
-  Deleting it needs `patchDOM` and the serializers to render from rows; until
-  then the tree is a render model derived from ops.
-- `sel.from + text.length`-style deltas and the span diff both assume
-  normalized (adjacent same-mark merged) content; tree content is normalized
-  in practice, and the sync spec covers marked typing, pending marks,
-  cross-block deletes into lists, remote removals before containers, and
-  marked remote inserts mid-run.
+`document()` is now a computed that materializes the AST from columnar on
+demand, cached per version — nothing on the typing path reads it, so a
+document that is only being edited never materializes a tree. Rendering and
+HTML serialization run from rows through one per-block HTML cache invalidated
+by op-driven dirty hints: an inline op re-renders exactly one block, a
+structural op splices the cache so the shifted suffix stays reusable, and the
+CVA's per-keystroke `serialize('html')` re-serializes one block. Writes enter
+via `load()` (no transaction) or `reset()` (undoable); DOM reconciliation goes
+through `replaceBlock`. The behavior contract (`renderHTML(block, inner)`)
+still receives AST nodes — materialized transiently per block, never retained.
+
+Remaining tree materializations, all off the typing path: markdown
+serialization, reset diffing, and remote ops — `diffFlat`'s association
+semantics (deliberately not `stepMapFromOp`'s; they disagree on 7.5% of
+positions) still need old and new trees per remote op. A span-scoped StepMap
+with identical semantics is the recorded follow-up if collab throughput ever
+matters; it must be validated against the diffFlat oracle before swapping.
+
+A trap this step surfaced: the component's render effect had always *tracked*
+the live selection (restoreDOMSelection reads it), masked by the old
+document-identity guard bailing before the render. With the guard gone, every
+selection change re-rendered and clobbered the DOM selection — the fix runs
+the render untracked, keyed on `version` alone.
+
+With no independent tree to drift from, the sync spec now pins the columnar
+document's internal consistency — Fenwick starts, mark runs, parent pointers —
+against a fresh rebuild of its own materialized content after every mutation
+path. The DOM ≡ model invariant is carried by the Playwright suite.
 
 Verified: 667 unit tests, clean build, 19/19 Playwright e2e (real Chromium,
 including CDP IME), and a scripted browser check asserting DOM ≡ model after
