@@ -366,16 +366,40 @@ export class ShipEditor implements ControlValueAccessor {
   onSurfaceMouseDown(event: MouseEvent) {
     if (this.readonly()) return;
     const surface = this.surface().nativeElement;
-    const target = event.target as HTMLElement;
-    if (target.tagName === 'IMG' && target.parentElement === surface) {
-      const idx = this.#indexInParent(target);
-      if (idx >= 0) {
-
+    // Clicking any void block (image, hr, ...) selects it as a block — the
+    // highlight is the affordance for copying, cutting, and pasting over it.
+    let el: HTMLElement | null = event.target as HTMLElement;
+    while (el && el.parentElement !== surface) el = el.parentElement;
+    if (el && el.parentElement === surface) {
+      const idx = this.#indexInParent(el);
+      const cd = this.engine.columnar;
+      const row = cd.rowOfTopLevel(idx);
+      if (row < cd.rows && this.engine.blocks.get(cd.typeOf(row))?.category === 'void') {
         this.engine.selectBlock(idx);
         return;
       }
     }
     this.engine.clearBlockSelection();
+  }
+
+  /** With a void block selected, copy serializes that block to the clipboard. */
+  onCopy(event: ClipboardEvent) {
+    const idx = this.engine.selectedBlock();
+    if (idx === null || !event.clipboardData) return;
+    event.preventDefault();
+    event.clipboardData.setData('text/html', this.engine.renderBlockHtml(idx));
+    event.clipboardData.setData('text/plain', '');
+  }
+
+  onCut(event: ClipboardEvent) {
+    if (this.readonly()) return;
+    const idx = this.engine.selectedBlock();
+    if (idx === null || !event.clipboardData) return;
+    event.preventDefault();
+    event.clipboardData.setData('text/html', this.engine.renderBlockHtml(idx));
+    event.clipboardData.setData('text/plain', '');
+    this.engine.deleteSelectedBlock();
+    this.#render();
   }
 
   onDragStart(event: DragEvent) {
@@ -692,7 +716,11 @@ export class ShipEditor implements ControlValueAccessor {
       return;
     }
 
-    this.engine.insertFragment(fragment);
+    if (this.engine.selectedBlock() !== null) {
+      this.engine.replaceSelectedBlock(fragment);
+    } else {
+      this.engine.insertFragment(fragment);
+    }
     this.#render();
   }
 

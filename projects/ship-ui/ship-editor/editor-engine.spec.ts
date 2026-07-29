@@ -804,6 +804,22 @@ describe('EditorEngine integration', () => {
     });
   });
 
+  describe('void block copy/paste', () => {
+    it('pasting over a selected void replaces it, caret after the fragment', () => {
+      engine.load([p('a'), { type: 'hr', content: [] }, p('b')] as ASTDocument);
+      engine.selectBlock(1);
+      expect(engine.selectedBlock()).toBe(1);
+      engine.replaceSelectedBlock([p('x'), p('y')]);
+      expect(html()).toBe('<p>a</p><p>x</p><p>y</p><p>b</p>');
+      expect(engine.selectedBlock()).toBeNull();
+      const lp = caretLp();
+      expect(lp.blockIndex).toBe(2);
+      expect(lp.offset).toBe(1);
+      engine.undo();
+      expect(html()).toBe('<p>a</p><hr><p>b</p>');
+    });
+  });
+
   describe('insertFragment (paste)', () => {
     it('collapses the selection after the pasted content even when it equals the selection', () => {
       engine.load([p('hello')]);

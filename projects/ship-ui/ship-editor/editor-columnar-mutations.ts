@@ -1332,6 +1332,16 @@ export function replaceBlocksOp(
   });
 }
 
+/** Replace one top-level block with a pasted fragment; caret after its end. */
+export function replaceBlockWithFragmentOp(cd: ColumnarDocument, index: number, fragment: ASTDocument): ColumnarMutation | null {
+  if (!fragment.length || index < 0 || index >= countTops(cd)) return null;
+  return withSpanOp(cd, index, 1, () => {
+    replaceRoots(cd, index, 1, structuredClone(fragment));
+    const edge = Number.MAX_SAFE_INTEGER;
+    return caretSel(flatPosOfBlockChar(cd, { blockIndex: index + fragment.length - 1, itemIndex: edge, charOffset: edge }));
+  });
+}
+
 /** Delete a top-level block; an emptied document becomes one empty paragraph. */
 export function deleteBlockOp(cd: ColumnarDocument, index: number): ColumnarMutation | null {
   const tops = countTops(cd);

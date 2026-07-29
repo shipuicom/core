@@ -15,6 +15,7 @@ import {
   flatPosAt,
   insertImageOp,
   insertFragmentOp,
+  replaceBlockWithFragmentOp,
   insertTextOp,
   pointAt,
   remoteStepMap,
@@ -449,6 +450,17 @@ export class EditorEngineService {
     const sel = this.selection.active() ?? { from: 0, to: 0 };
     this.#apply(replaceBlocksOp(cd, lo, hi - lo + 1, span, sel), sel);
     if (this.selectedBlock() === from && isVoid) this.selectBlock(insertAt);
+  }
+
+  /** Paste over a selected void block: the fragment replaces it. */
+  replaceSelectedBlock(fragment: ASTDocument) {
+    const idx = this.selectedBlock();
+    if (idx === null) return;
+    const sel = this.selection.active() ?? { from: 0, to: 0 };
+    const mutation = replaceBlockWithFragmentOp(this.columnar, idx, fragment);
+    if (!mutation) return;
+    this.clearBlockSelection();
+    this.#apply(mutation, sel);
   }
 
   deleteSelectedBlock() {

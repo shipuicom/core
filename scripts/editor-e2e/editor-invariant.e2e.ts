@@ -217,6 +217,47 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('void blocks: click selects an hr, copy serializes it, paste replaces it', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.reset([
+        { type: 'paragraph', content: [{ type: 'text', text: 'above' }] },
+        { type: 'hr', content: [] },
+        { type: 'paragraph', content: [{ type: 'text', text: 'below' }] },
+      ]);
+    });
+    await expect(page.locator('.sh-editor-content > p').first()).toHaveText('above');
+
+    // Click the hr: it becomes the selected block (the visual helper).
+    await page.locator('.sh-editor-content > hr').click();
+    await expect(page.locator('.sh-editor-content > hr.sh-editor-block-selected')).toHaveCount(1);
+
+    // Copy with the block selected puts the block's HTML on the clipboard.
+    const copied = await page.evaluate(() => {
+      const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+      const dt = new DataTransfer();
+      const evt = new ClipboardEvent('copy', { clipboardData: dt, bubbles: true, cancelable: true });
+      surface.dispatchEvent(evt);
+      return { html: dt.getData('text/html'), prevented: evt.defaultPrevented };
+    });
+    expect(copied.prevented).toBe(true);
+    expect(copied.html).toBe('<hr>');
+
+    // Pasting with the hr selected replaces it.
+    await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const dt = new DataTransfer();
+      dt.setData('text/html', '<p>middle</p>');
+      comp.onPaste(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+    });
+    const ast = await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document());
+    expect(ast.map((b: any) => b.type)).toEqual(['paragraph', 'paragraph', 'paragraph']);
+    expect(ast[1].content[0].text).toBe('middle');
+    await expectInvariant(page, 'after pasting over a selected hr');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('typing storm: text, Enter, Backspace, Delete, arrows', async ({ page }) => {
     const { errors } = await openEditor(page);
     const rnd = mulberry32(1);
