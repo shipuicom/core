@@ -1109,6 +1109,44 @@ export function insertFragmentOp(
 }
 
 /**
+ * Insert an image (with a trailing paragraph) at the selection, replacing the
+ * selection first when it is a range. An empty paragraph at the caret is
+ * replaced rather than kept above the image.
+ */
+export function insertImageOp(
+  cd: ColumnarDocument,
+  sel: LogicalSelection,
+  blocks: Map<string, BaseBlockBehavior>,
+  attrs: Record<string, unknown>
+): (ColumnarMutation & { blockIndex: number }) | null {
+  const a = pointAt(cd, sel.from);
+  const b = pointAt(cd, sel.to);
+  const baseTop = topIndexOf(cd, rootOf(cd, a.row));
+  const lastTop = topIndexOf(cd, rootOf(cd, b.row));
+
+  let blockIndex = 0;
+  const mutation = withSpanOp(cd, baseTop, lastTop - baseTop + 1, () => {
+    if (sel.from !== sel.to) deleteRangeRows(cd, a, b);
+    const p = pointAt(cd, sel.from);
+    const root = rootOf(cd, p.row);
+    const top = topIndexOf(cd, root);
+    const image: ASTBlockNode = { type: 'image', attrs: { ...attrs }, content: [] };
+
+    const emptyPara = cd.typeOf(root) === 'paragraph' && cd.kindOf(root) !== RowKind.Container && cd.textOf(root) === '';
+    if (emptyPara) {
+      replaceRoots(cd, top, 1, [image, emptyParagraph()]);
+      blockIndex = top;
+    } else {
+      const at = root + spanOfRoot(cd, root);
+      cd.insertRows(at, rowsForBlocks([image, emptyParagraph()], at));
+      blockIndex = top + 1;
+    }
+    return caretSel(cd.startOf(cd.rowOfTopLevel(blockIndex)));
+  });
+  return mutation ? { ...mutation, blockIndex } : null;
+}
+
+/**
  * Change the selected blocks' type, mirroring the tree primitive's physics:
  * toggling back to paragraph when everything already matches, wrapping into /
  * unwrapping from containers, flattening into and exploding out of code

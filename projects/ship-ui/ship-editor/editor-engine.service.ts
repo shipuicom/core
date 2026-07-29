@@ -1,5 +1,4 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { deleteRange, resolveInlinePosition } from './editor-ast.utils';
 import { BaseBlockBehavior, BaseInlineBehavior, SlashCommand } from './editor-behaviors';
 import { astToHtml, astToMarkdown } from './editor-serializers';
 import { diffFlat, logicalToPos, posToLogical } from './editor-flat-positions';
@@ -12,6 +11,7 @@ import {
   enterOp,
   escapeHatchOp,
   flatPosAt,
+  insertImageOp,
   insertFragmentOp,
   insertTextOp,
   pointAt,
@@ -21,7 +21,7 @@ import {
 } from './editor-columnar-mutations';
 import { applyOpToColumnar } from './editor-columnar-ops';
 import { EditorOp, EditorTransaction, applyOp, diffDocuments, invertOp, transformOp } from './editor-transactions';
-import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalPosition, LogicalSelection, TreeSelection } from './editor.types';
+import { ASTBlockNode, ASTDocument, ASTMark, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 
 @Injectable()
@@ -64,27 +64,6 @@ export class EditorEngineService {
     this.#columnarFor = this.document();
   }
 
-  // -------------------------------------------------------------------------
-  // Selection is flat {from, to}. The mutation primitives still navigate the
-  // nested AST, so flat positions are translated to tree shape at their
-  // boundary and back. These conversions disappear as the primitives move
-  // onto the columnar document.
-  // -------------------------------------------------------------------------
-
-  #lpOf(doc: ASTDocument, pos: number): LogicalPosition {
-    return posToLogical(doc, pos) ?? { blockIndex: 0, inlineIndex: 0, offset: 0 };
-  }
-
-  #toTreeSel(doc: ASTDocument, sel: LogicalSelection): TreeSelection {
-    const start = this.#lpOf(doc, sel.from);
-    const isCollapsed = sel.from === sel.to;
-    return { start, end: isCollapsed ? start : this.#lpOf(doc, sel.to), isCollapsed };
-  }
-
-  #toFlatSel(doc: ASTDocument, sel: TreeSelection): LogicalSelection {
-    const from = logicalToPos(doc, sel.start);
-    return { from, to: sel.isCollapsed ? from : logicalToPos(doc, sel.end) };
-  }
   readonly blocks = new Map<string, BaseBlockBehavior>();
   readonly inlines = new Map<string, BaseInlineBehavior>();
 
@@ -366,39 +345,14 @@ export class EditorEngineService {
     if (this.selectedBlock() !== null) this.selectedBlock.set(null);
   }
 
-  #isTextBlockEmpty(block: ASTBlockNode): boolean {
-    const c = block.content as ASTInlineNode[];
-    return c.length === 0 || (c.length === 1 && c[0].text === '');
-  }
 
   insertImage(attrs: Record<string, unknown>) {
     const sel = this.selection.active();
     if (!sel) return;
-    const oldDoc = this.document();
-    const treeSel = this.#toTreeSel(oldDoc, sel);
-    let doc = oldDoc;
-    let base = treeSel;
-    if (!treeSel.isCollapsed) {
-      const t = deleteRange(oldDoc, treeSel, this.blocks);
-      doc = t.doc;
-      base = t.selectionShift ?? treeSel;
-    }
-    const idx = base.start.blockIndex;
-    const block = doc[idx];
-    const image: ASTBlockNode = { type: 'image', attrs: { ...attrs }, content: [] };
-    const trailing: ASTBlockNode = { type: 'paragraph', content: [{ type: 'text', text: '' }] };
-    const newDoc = [...doc];
-    let imageIdx: number;
-    if (block && block.type === 'paragraph' && this.#isTextBlockEmpty(block)) {
-      newDoc.splice(idx, 1, image, trailing);
-      imageIdx = idx;
-    } else {
-      newDoc.splice(idx + 1, 0, image, trailing);
-      imageIdx = idx + 1;
-    }
-    this.document.set(newDoc);
-    this.selectBlock(imageIdx);
-    this.#commit(oldDoc, newDoc, sel);
+    const mutation = insertImageOp(this.columnar, sel, this.blocks, attrs);
+    if (!mutation) return;
+    this.#apply(mutation, sel);
+    this.selectBlock(mutation.blockIndex);
   }
 
   updateSelectedImage(attrs: Record<string, unknown>) {
