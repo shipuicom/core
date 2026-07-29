@@ -867,18 +867,32 @@ The migration the audit called for has landed in three commits:
   fragment's explicit range was layered on top. `setMarks` now merges
   same-mark overlaps so layering is safe for every caller.
 
-### What remains before the tree can go
+### The burn-down landed: no tree primitives remain
 
-- `editor-ast.utils.ts` still holds the tree primitives, reachable only via
-  the span-scoped `viaTree` delegation (backspace-at-start physics, Enter
-  strategies, paste, setBlockType, toggleMark, escape hatch) and
-  `insertImage`. Burn these down branch by branch into row operations; each is
-  independently testable behind the unchanged op interface.
+Every `viaTree` delegation was ported to native row operations and the shim
+deleted. `editor-ast.utils.ts` went from **1,428 lines to 41** — what survives
+is `normalizeInlineNodes` (the op format and serializers normalize inline
+fragments) and `resolveInlinePosition` (used by the fragment-level position
+maths). The `TreeSelection`/`TransactionResult` types are gone. Backspace,
+forward-delete, Enter, range deletion (including void endpoints), paste,
+setBlockType, toggleMark, the escape hatch, and image insertion are all row
+operations in `editor-columnar-mutations.ts`, with ops still derived from the
+span diff so history/rebase semantics are unchanged.
+
+Three deliberate divergences from the old tree code, all in branches that were
+accidental and unreachable through the UI (void selection is intercepted by
+`selectedBlock`): typing, forward-delete, and paste with a caret resolved onto
+a void row no longer turn the void into a text-holding block — they no-op,
+no-op, and insert after the void respectively.
+
+### What remains before the tree can go entirely
+
 - The engine's tree (`document()`) is still what renders and serializes.
-  Deleting it needs `patchDOM`/serializers to render from rows.
+  Deleting it needs `patchDOM` and the serializers to render from rows; until
+  then the tree is a render model derived from ops.
 - `sel.from + text.length`-style deltas and the span diff both assume
   normalized (adjacent same-mark merged) content; tree content is normalized
-  in practice, and the sync spec now covers marked typing, pending marks,
+  in practice, and the sync spec covers marked typing, pending marks,
   cross-block deletes into lists, remote removals before containers, and
   marked remote inserts mid-run.
 
