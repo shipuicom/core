@@ -188,3 +188,36 @@ All five editor components use `OnPush`; the template has no method calls beyond
 signal reads; `editor-sanitize.ts` regexes are all module-level constants; and
 `sh-editor-image-resize.ts` correctly hoists `getComputedStyle` out of its
 `mousemove` handler.
+
+## Scale test: 10,000 blocks (post-columnar)
+
+Measured on the live demo editor, median per operation:
+
+| | 1k blocks | 10k blocks |
+|---|---|---|
+| keypress (full cycle) | ~2.5 ms | ~19 ms |
+| Enter / undo | ~3 ms | ~24 / ~2 ms |
+| selection move | 1.3 ms | 0.7 ms |
+
+Fixes that got there:
+- **Structural ops splice the DOM.** A block op used to dirty the whole
+  suffix and re-render every element after the caret (~1.8 s per Enter at
+  10k). Render hints now carry the op shape; the suffix shifts untouched.
+- **Inline edits patch text data in place** instead of replacing the block
+  element, and the caret restore skips `addRange` when the DOM selection
+  already matches. Replacing the element + addRange forced a full-flow
+  layout (~15 ms at 10k).
+- The demo page no longer renders the full serialized value per keystroke.
+
+**The remaining floor is the browser, not the editor.** A forced layout
+after a one-character text change, with no editor code involved, measures
+1.2 ms at 1k, 3.4 ms at 3k, 14.5 ms at 10k blocks — linear in flow size.
+`content-visibility: auto` measured *worse* (~80 ms/keystroke: containment
+bookkeeping beats the savings when the caret keeps forcing rendering).
+
+**Vim-scale (60k+ lines) therefore needs viewport virtualization**: render
+only the blocks in and around the viewport, keyed off scroll position. The
+columnar model is built for it — row starts are O(log n) via the Fenwick,
+so viewport→row-range is a lookup, and patchDOM's hint machinery already
+renders arbitrary block windows. The DOM ≡ model invariant would become
+"DOM ≡ the visible window of the model".
