@@ -339,6 +339,19 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(domCode).toBe('start' + snippet);
     await expectInvariant(page, 'after code paste');
 
+    // A mid-line copy: the first line's indent is eaten by the selection
+    // anchor while the rest keep their source-file depth — the common
+    // indentation is stripped so the base lines up with the first line.
+    await page.evaluate(() => {
+      (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset([
+        { type: 'code-block', content: [{ type: 'text', text: '' }] },
+      ]);
+    });
+    await expect(page.locator('.sh-editor-content > pre')).toHaveCount(1);
+    await caretInCode(0);
+    await pasteBoth('if (this.navDebug) {\n\t\t\tconst paths = [];\n\t\t\t\tdeep();\n\t\t}');
+    expect(await astTextOf(0)).toBe('if (this.navDebug) {\n\tconst paths = [];\n\t\tdeep();\n}');
+
     // Windows line endings normalize.
     await page.evaluate(() => {
       (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset([
@@ -347,8 +360,8 @@ test.describe('DOM ≡ AST invariant', () => {
     });
     await expect(page.locator('.sh-editor-content > pre')).toHaveCount(1);
     await caretInCode(0);
-    await pasteBoth('a\r\n\tb');
-    expect(await astTextOf(0)).toBe('a\n\tb');
+    await pasteBoth('a();\r\nb();');
+    expect(await astTextOf(0)).toBe('a();\nb();');
 
     // One undo removes the whole paste.
     await page.keyboard.press('ControlOrMeta+z');

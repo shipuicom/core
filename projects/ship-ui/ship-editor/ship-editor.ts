@@ -25,7 +25,7 @@ import { SanitizeOption, normalizeDocument, sanitizeDocumentUrls } from './edito
 import { RowKind } from './editor-columnar';
 import { BlockPoint, blockPointAt, flatPosOfBlockChar, fragmentPlainText, pointAt, sliceDocument } from './editor-columnar-mutations';
 import { BlockHeightMap } from './editor-viewport';
-import { astToHtml, htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
+import { astToHtml, dedentPastedCode, htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
 import { ShipEditorContextualToolbar, ContextualActionExtras } from './sh-editor-contextual-toolbar';
 import { ShipEditorImageResize } from './sh-editor-image-resize';
 import { ShipEditorImagePopover } from './sh-editor-image-popover';
@@ -816,7 +816,7 @@ export class ShipEditor implements ControlValueAccessor {
     // carries the code verbatim, so it goes in as literal text: one
     // transaction, range replacement and caret placement included.
     if (plainText && this.#pasteKeepsWhitespace()) {
-      this.engine.insertText(plainText.replace(/\r\n?/g, '\n'));
+      this.engine.insertText(dedentPastedCode(plainText.replace(/\r\n?/g, '\n')));
       this.#render();
       return;
     }

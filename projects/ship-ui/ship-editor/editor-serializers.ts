@@ -302,6 +302,41 @@ export function astToMarkdown(
     .trim();
 }
 
+/**
+ * Copying code mid-line captures the first line from the selection anchor —
+ * no leading whitespace — while every following line keeps its full
+ * source-file indentation. Pasted verbatim, the first line sits flush and
+ * the rest arrive over-indented by the snippet's original nesting depth.
+ *
+ * When that shape is detected (unindented first line, common leading
+ * whitespace on the rest), the common prefix is stripped: relative structure
+ * survives and the base lines up with the first line. Snippets whose first
+ * line carries its own indentation are self-consistent and pass through
+ * untouched. The prefix is compared as a string, so mixed tabs/spaces never
+ * get half-converted.
+ */
+export function dedentPastedCode(text: string): string {
+  const lines = text.split('\n');
+  if (lines.length < 2 || /^[\t ]/.test(lines[0])) return text;
+
+  let prefix: string | null = null;
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue; // blank lines don't vote
+    const leading = /^[\t ]*/.exec(lines[i])![0];
+    if (prefix === null) prefix = leading;
+    else {
+      let k = 0;
+      while (k < prefix.length && k < leading.length && prefix[k] === leading[k]) k++;
+      prefix = prefix.slice(0, k);
+    }
+    if (!prefix) return text; // a flush line — nothing common to strip
+  }
+  if (!prefix) return text;
+
+  const common = prefix;
+  return lines.map((line, i) => (i > 0 && line.startsWith(common) ? line.slice(common.length) : line)).join('\n');
+}
+
 export function htmlToAst(
   html: string,
   blocks: Map<string, BaseBlockBehavior>,
