@@ -255,6 +255,22 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(ast.map((b: any) => b.type)).toEqual(['paragraph', 'paragraph', 'paragraph']);
     expect(ast[1].content[0].text).toBe('middle');
     await expectInvariant(page, 'after pasting over a selected hr');
+
+    // A void inside a text selection range gets the in-selection highlight.
+    await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.reset([
+        { type: 'paragraph', content: [{ type: 'text', text: 'above' }] },
+        { type: 'hr', content: [] },
+        { type: 'paragraph', content: [{ type: 'text', text: 'below' }] },
+      ]);
+    });
+    await expect(page.locator('.sh-editor-content > hr')).toHaveCount(1);
+    await page.locator('.sh-editor-content > p').first().click();
+    await page.keyboard.press('ControlOrMeta+a');
+    await expect(page.locator('.sh-editor-content > hr.sh-editor-void-in-selection')).toHaveCount(1);
+    await page.keyboard.press('ArrowRight'); // collapse the selection
+    await expect(page.locator('.sh-editor-content > hr.sh-editor-void-in-selection')).toHaveCount(0);
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 

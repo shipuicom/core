@@ -309,6 +309,31 @@ export class ShipEditor implements ControlValueAccessor {
       this.#selectVoidBlockDOM(el);
     });
 
+    // Voids inside the live selection range get a highlight the native
+    // selection cannot paint.
+    effect(() => {
+      const sel = this.selection.active();
+      this.engine.version();
+      if (!this.#viewReady()) return;
+      const container = this.surface().nativeElement;
+      container.querySelectorAll('.sh-editor-void-in-selection').forEach((el) => {
+        el.classList.remove('sh-editor-void-in-selection');
+        if (!el.className) el.removeAttribute('class');
+      });
+      if (!sel || sel.from === sel.to) return;
+      const cd = this.engine.columnar;
+      let top = -1;
+      for (let row = 0; row < cd.rows; row++) {
+        if (cd.parentOf(row) !== -1) continue;
+        top++;
+        if (cd.kindOf(row) !== RowKind.Void) continue;
+        const start = cd.startOf(row);
+        if (sel.from <= start && start + 1 <= sel.to) {
+          container.children[top]?.classList.add('sh-editor-void-in-selection');
+        }
+      }
+    });
+
     afterNextRender(() => this.#viewReady.set(true));
   }
 

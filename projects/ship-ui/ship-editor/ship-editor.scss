@@ -186,9 +186,13 @@ sh-editor {
     }
 
     hr {
+      // A taller box with the rule centered in it: the line stays 1px but the
+      // click target for selecting the block is comfortable.
       border: none;
-      border-top: 1px solid var(--editor-border-color);
-      margin: #{p2r(24)} 0;
+      height: #{p2r(16)};
+      margin: #{p2r(16)} 0;
+      background: linear-gradient(var(--editor-border-color), var(--editor-border-color)) center / 100% 1px no-repeat;
+      cursor: pointer;
     }
 
     ul,
@@ -412,6 +416,16 @@ sh-editor {
   outline: 2px solid var(--primary-9);
   outline-offset: 2px;
   border-radius: var(--shape-1);
+}
+
+// A void block sitting inside the live text selection: the native selection
+// paints no highlight over voids, so they looked unselected while being part
+// of the range.
+.sh-editor-void-in-selection {
+  outline: 2px solid var(--primary-7);
+  outline-offset: 2px;
+  border-radius: var(--shape-1);
+  background: var(--primary-4);
 }
 
 .sh-editor-resize-frame {
