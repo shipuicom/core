@@ -25,7 +25,7 @@ import { SanitizeOption, normalizeDocument, sanitizeDocumentUrls } from './edito
 import { RowKind } from './editor-columnar';
 import { BlockPoint, blockPointAt, flatPosOfBlockChar, fragmentPlainText, pointAt, sliceDocument } from './editor-columnar-mutations';
 import { BlockHeightMap } from './editor-viewport';
-import { astToHtml, dedentPastedCode, htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
+import { alignStyledCode, astToHtml, dedentPastedCode, htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
 import { ShipEditorContextualToolbar, ContextualActionExtras } from './sh-editor-contextual-toolbar';
 import { ShipEditorImageResize } from './sh-editor-image-resize';
 import { ShipEditorImagePopover } from './sh-editor-image-popover';
@@ -810,13 +810,20 @@ export class ShipEditor implements ControlValueAccessor {
     const html = clipboard.getData('text/html');
     const plainText = clipboard.getData('text/plain');
 
-    // Pasting into a whitespace-preserving block (code): code editors put
-    // styled markup on the clipboard, and parsing that HTML collapses the
-    // whitespace — line breaks and indentation vanish. The plain-text flavor
-    // carries the code verbatim, so it goes in as literal text: one
-    // transaction, range replacement and caret placement included.
-    if (plainText && this.#pasteKeepsWhitespace()) {
-      this.engine.insertText(dedentPastedCode(plainText.replace(/\r\n?/g, '\n')));
+    // Pasting into a whitespace-preserving block (code): parsing the
+    // clipboard's HTML flavor collapses whitespace — line breaks and
+    // indentation vanish — while the plain-text flavor carries the code
+    // verbatim but no coloring. Take the text from text/plain, then ride the
+    // HTML flavor's marks (the source editor's syntax colors) on top of it
+    // where the two flavors' characters align; if they don't, plain text
+    // wins. Either way it is one transaction, range replacement and caret
+    // placement included.
+    const codeTargetType = plainText ? this.#pasteWhitespaceTargetType() : null;
+    if (plainText && codeTargetType) {
+      const text = dedentPastedCode(plainText.replace(/\r\n?/g, '\n'));
+      const styled = html ? alignStyledCode(text, htmlToAst(html, this.engine.blocks, this.engine.inlines, this.sanitize())) : null;
+      if (styled) this.engine.insertFragment([{ type: codeTargetType, content: styled }]);
+      else this.engine.insertText(text);
       this.#render();
       return;
     }
@@ -847,21 +854,23 @@ export class ShipEditor implements ControlValueAccessor {
   }
 
   /**
-   * True when the paste target is a single whitespace-preserving text block
-   * (a code block): the caret — or the whole selection — sits inside one row
-   * whose behavior declares `preserveWhitespace`. A selection reaching into
-   * other blocks falls back to the fragment path.
+   * The type of the paste target when it is a single whitespace-preserving
+   * text block (a code block): the caret — or the whole selection — sits
+   * inside one row whose behavior declares `preserveWhitespace`. Null when
+   * the selection reaches into other blocks, which fall back to the
+   * fragment path.
    */
-  #pasteKeepsWhitespace(): boolean {
-    if (this.engine.selectedBlock() !== null) return false;
+  #pasteWhitespaceTargetType(): string | null {
+    if (this.engine.selectedBlock() !== null) return null;
     const sel = this.selection.active();
-    if (!sel) return false;
+    if (!sel) return null;
     const cd = this.engine.columnar;
-    if (!cd.rows) return false;
+    if (!cd.rows) return null;
     const a = pointAt(cd, Math.min(sel.from, sel.to));
-    if (cd.kindOf(a.row) !== RowKind.Text) return false;
-    if (sel.from !== sel.to && pointAt(cd, Math.max(sel.from, sel.to)).row !== a.row) return false;
-    return this.engine.blocks.get(cd.typeOf(a.row))?.preserveWhitespace === true;
+    if (cd.kindOf(a.row) !== RowKind.Text) return null;
+    if (sel.from !== sel.to && pointAt(cd, Math.max(sel.from, sel.to)).row !== a.row) return null;
+    const type = cd.typeOf(a.row);
+    return this.engine.blocks.get(type)?.preserveWhitespace === true ? type : null;
   }
 
   onDOMBlur() {

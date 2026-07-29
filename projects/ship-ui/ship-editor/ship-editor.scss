@@ -157,6 +157,9 @@ sh-editor {
       padding: #{p2r(12)} #{p2r(16)};
       margin: #{p2r(16)} 0;
       overflow-x: auto;
+      // Browsers default to 8-column tabs; pasted tab-indented code reads
+      // twice as deep as in its source editor without this.
+      tab-size: 4;
       min-height: #{p2r(50)};
       border: 2px solid transparent;
       transition:

@@ -333,10 +333,17 @@ test.describe('DOM ≡ AST invariant', () => {
     const snippet = '\nfunction demo() {\n\tif (ok) {\n\t\treturn 1;\n\t}\n}';
     await pasteBoth(snippet);
 
-    // The code block keeps every break and tab verbatim, styles dropped.
+    // The code block keeps every break and tab verbatim…
     expect(await astTextOf(0)).toBe('start' + snippet);
     const domCode = await page.locator('.sh-editor-content > pre > code').textContent();
     expect(domCode).toBe('start' + snippet);
+    // …and the source editor's syntax coloring rides along as style marks.
+    const pastedJson = await page.evaluate(() =>
+      JSON.stringify((window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.serialize('json')[0])
+    );
+    // The CSS parser normalizes the hex to rgb().
+    expect(pastedJson).toContain('rgb(86, 156, 214)');
+    await expect(page.locator('.sh-editor-content > pre span[style*="rgb(86, 156, 214)"]').first()).toBeVisible();
     await expectInvariant(page, 'after code paste');
 
     // A mid-line copy: the first line's indent is eaten by the selection

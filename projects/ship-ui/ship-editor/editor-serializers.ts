@@ -337,6 +337,70 @@ export function dedentPastedCode(text: string): string {
   return lines.map((line, i) => (i > 0 && line.startsWith(common) ? line.slice(common.length) : line)).join('\n');
 }
 
+/**
+ * Syntax coloring for pasted code. The clipboard's two flavors split the
+ * truth: text/plain carries the whitespace exactly (breaks, tabs), while
+ * text/html carries the source editor's coloring — as parsed inline marks —
+ * but mangles whitespace (nbsp runs, per-line divs, collapsed tabs).
+ *
+ * This rides the marks on the plain text by aligning the two streams over
+ * their non-whitespace characters, which must match one for one. Whitespace
+ * carries no marks — syntax coloring on a space isn't visible anyway — and
+ * any disagreement between the flavors returns null so the caller pastes
+ * plain rather than miscolored.
+ */
+export function alignStyledCode(text: string, styled: ASTDocument): ASTInlineNode[] | null {
+  const chars: string[] = [];
+  const charMarks: (ASTMark[] | undefined)[] = [];
+  const visit = (blocks: ASTDocument) => {
+    for (const block of blocks) {
+      const content = (block.content ?? []) as (ASTInlineNode | ASTBlockNode)[];
+      if (!content.length) continue;
+      if (typeof (content[0] as ASTInlineNode).text === 'string') {
+        for (const node of content as ASTInlineNode[]) {
+          for (const ch of node.text ?? '') {
+            if (/\s/.test(ch)) continue;
+            chars.push(ch);
+            charMarks.push(node.marks);
+          }
+        }
+      } else {
+        visit(content as ASTBlockNode[]);
+      }
+    }
+  };
+  visit(styled);
+
+  const keyOf = (marks: ASTMark[] | undefined) =>
+    (marks ?? []).map((m) => `${m.type} ${JSON.stringify(m.attrs ?? null)}`).join('');
+
+  const out: ASTInlineNode[] = [];
+  let cursor = 0;
+  let currentKey: string | null = null;
+  const push = (ch: string, marks: ASTMark[] | undefined) => {
+    const key = keyOf(marks);
+    if (currentKey === key && out.length) {
+      out[out.length - 1].text += ch;
+      return;
+    }
+    const node: ASTInlineNode = { type: 'text', text: ch };
+    if (marks?.length) node.marks = structuredClone(marks);
+    out.push(node);
+    currentKey = key;
+  };
+
+  for (const ch of text) {
+    if (/\s/.test(ch)) {
+      push(ch, undefined);
+    } else {
+      if (cursor >= chars.length || chars[cursor] !== ch) return null;
+      push(ch, charMarks[cursor]);
+      cursor++;
+    }
+  }
+  return cursor === chars.length ? out : null;
+}
+
 export function htmlToAst(
   html: string,
   blocks: Map<string, BaseBlockBehavior>,
