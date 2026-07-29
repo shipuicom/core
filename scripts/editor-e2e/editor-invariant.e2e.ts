@@ -274,6 +274,126 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('code block: pasting editor-styled code keeps line breaks and indentation', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    const astTextOf = (i: number) =>
+      page.evaluate(
+        (idx) =>
+          (window as any).ng
+            .getComponent(document.querySelector('sh-editor')!)
+            .engine.blockAt(idx)
+            .content.map((n: any) => n.text)
+            .join(''),
+        i
+      );
+    const caretInCode = async (offset: number) => {
+      await page.evaluate((off) => {
+        const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+        surface.focus();
+        // An empty code block renders <pre><code><br></code></pre> — no text
+        // node to anchor in; the caret sits on the <code> element instead.
+        const pre = surface.querySelector('pre')!;
+        const text = document.createTreeWalker(pre, NodeFilter.SHOW_TEXT).nextNode();
+        const range = document.createRange();
+        range.setStart(text ?? pre.querySelector('code')!, text ? off : 0);
+        range.collapse(true);
+        const sel = window.getSelection()!;
+        sel.removeAllRanges();
+        sel.addRange(range);
+        document.dispatchEvent(new Event('selectionchange'));
+      }, offset);
+    };
+    // Both clipboard flavors, the way a code editor writes them: styled HTML
+    // (one div per line, spans per token — whitespace-hostile) plus the
+    // verbatim plain text. The plain flavor must win inside a code block.
+    const pasteBoth = (plain: string) =>
+      page.evaluate((text) => {
+        const html =
+          '<div style="color:#d4d4d4;background-color:#1e1e1e;font-family:Menlo">' +
+          text
+            .split('\n')
+            .map((line) => `<div><span style="color:#569cd6">${line.replace(/\t/g, '&nbsp;&nbsp;')}</span></div>`)
+            .join('') +
+          '</div>';
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        const dt = new DataTransfer();
+        dt.setData('text/html', html);
+        dt.setData('text/plain', text);
+        comp.onPaste(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+      }, plain);
+
+    await page.evaluate(() => {
+      (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset([
+        { type: 'code-block', content: [{ type: 'text', text: 'start' }] },
+      ]);
+    });
+    await expect(page.locator('.sh-editor-content > pre')).toHaveCount(1);
+    await caretInCode(5); // end of "start"
+
+    const snippet = '\nfunction demo() {\n\tif (ok) {\n\t\treturn 1;\n\t}\n}';
+    await pasteBoth(snippet);
+
+    // The code block keeps every break and tab verbatim, styles dropped.
+    expect(await astTextOf(0)).toBe('start' + snippet);
+    const domCode = await page.locator('.sh-editor-content > pre > code').textContent();
+    expect(domCode).toBe('start' + snippet);
+    await expectInvariant(page, 'after code paste');
+
+    // Windows line endings normalize.
+    await page.evaluate(() => {
+      (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset([
+        { type: 'code-block', content: [{ type: 'text', text: '' }] },
+      ]);
+    });
+    await expect(page.locator('.sh-editor-content > pre')).toHaveCount(1);
+    await caretInCode(0);
+    await pasteBoth('a\r\n\tb');
+    expect(await astTextOf(0)).toBe('a\n\tb');
+
+    // One undo removes the whole paste.
+    await page.keyboard.press('ControlOrMeta+z');
+    expect(await astTextOf(0)).toBe('');
+
+    // Regression guard: a paragraph still takes the parsed-fragment path —
+    // the styled HTML becomes blocks, not verbatim text.
+    await page.evaluate(() => {
+      (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset([
+        { type: 'paragraph', content: [{ type: 'text', text: 'plain' }] },
+      ]);
+    });
+    // Scoped to the first editor — the showcase mounts a second one with its
+    // own paragraphs, which would satisfy an unscoped count while this
+    // editor's render is still pending.
+    await expect(page.locator('sh-editor').first().locator('.sh-editor-content > p')).toHaveCount(1);
+    await page.evaluate(() => {
+      const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+      surface.focus();
+      const text = document.createTreeWalker(surface.querySelector('p')!, NodeFilter.SHOW_TEXT).nextNode()!;
+      const range = document.createRange();
+      range.setStart(text, 5);
+      range.collapse(true);
+      const sel = window.getSelection()!;
+      sel.removeAllRanges();
+      sel.addRange(range);
+      document.dispatchEvent(new Event('selectionchange'));
+    });
+    await pasteBoth('x\ny');
+    // The fragment path parsed the HTML flavor — however it shapes the
+    // result, the verbatim plain text (with its literal line break) must not
+    // have been inserted.
+    const paraTexts = await page.evaluate(() =>
+      (window as any).ng
+        .getComponent(document.querySelector('sh-editor')!)
+        .engine.document()
+        .map((b: any) => (b.content ?? []).map((n: any) => n.text ?? '').join(''))
+    );
+    expect(paraTexts.join('|')).toContain('x');
+    expect(paraTexts.join('|')).toContain('y');
+    expect(paraTexts.some((t: string) => t.includes('\n'))).toBe(false);
+    await expectInvariant(page, 'after paragraph paste of styled lines');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('typing storm: text, Enter, Backspace, Delete, arrows', async ({ page }) => {
     const { errors } = await openEditor(page);
     const rnd = mulberry32(1);

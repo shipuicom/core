@@ -23,7 +23,7 @@ import { BaseBlockBehavior, BaseInlineBehavior, SlashCommand } from './editor-be
 import { EditorEngineService, RenderHint } from './editor-engine.service';
 import { SanitizeOption, normalizeDocument, sanitizeDocumentUrls } from './editor-sanitize';
 import { RowKind } from './editor-columnar';
-import { BlockPoint, blockPointAt, flatPosOfBlockChar, fragmentPlainText, sliceDocument } from './editor-columnar-mutations';
+import { BlockPoint, blockPointAt, flatPosOfBlockChar, fragmentPlainText, pointAt, sliceDocument } from './editor-columnar-mutations';
 import { BlockHeightMap } from './editor-viewport';
 import { astToHtml, htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
 import { ShipEditorContextualToolbar, ContextualActionExtras } from './sh-editor-contextual-toolbar';
@@ -810,6 +810,17 @@ export class ShipEditor implements ControlValueAccessor {
     const html = clipboard.getData('text/html');
     const plainText = clipboard.getData('text/plain');
 
+    // Pasting into a whitespace-preserving block (code): code editors put
+    // styled markup on the clipboard, and parsing that HTML collapses the
+    // whitespace — line breaks and indentation vanish. The plain-text flavor
+    // carries the code verbatim, so it goes in as literal text: one
+    // transaction, range replacement and caret placement included.
+    if (plainText && this.#pasteKeepsWhitespace()) {
+      this.engine.insertText(plainText.replace(/\r\n?/g, '\n'));
+      this.#render();
+      return;
+    }
+
     let fragment: ASTDocument;
 
     if (html) {
@@ -833,6 +844,24 @@ export class ShipEditor implements ControlValueAccessor {
       this.engine.insertFragment(fragment);
     }
     this.#render();
+  }
+
+  /**
+   * True when the paste target is a single whitespace-preserving text block
+   * (a code block): the caret — or the whole selection — sits inside one row
+   * whose behavior declares `preserveWhitespace`. A selection reaching into
+   * other blocks falls back to the fragment path.
+   */
+  #pasteKeepsWhitespace(): boolean {
+    if (this.engine.selectedBlock() !== null) return false;
+    const sel = this.selection.active();
+    if (!sel) return false;
+    const cd = this.engine.columnar;
+    if (!cd.rows) return false;
+    const a = pointAt(cd, Math.min(sel.from, sel.to));
+    if (cd.kindOf(a.row) !== RowKind.Text) return false;
+    if (sel.from !== sel.to && pointAt(cd, Math.max(sel.from, sel.to)).row !== a.row) return false;
+    return this.engine.blocks.get(cd.typeOf(a.row))?.preserveWhitespace === true;
   }
 
   onDOMBlur() {
