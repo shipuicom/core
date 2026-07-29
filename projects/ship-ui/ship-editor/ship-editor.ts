@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   DOCUMENT,
+  DestroyRef,
   ElementRef,
   HostListener,
   ViewEncapsulation,
@@ -19,11 +20,12 @@ import {
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { BaseBlockBehavior, BaseInlineBehavior, SlashCommand } from './editor-behaviors';
-import { EditorEngineService } from './editor-engine.service';
+import { EditorEngineService, RenderHint } from './editor-engine.service';
 import { SanitizeOption, normalizeDocument, sanitizeDocumentUrls } from './editor-sanitize';
 import { RowKind } from './editor-columnar';
-import { BlockPoint, blockPointAt, flatPosOfBlockChar } from './editor-columnar-mutations';
-import { htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
+import { BlockPoint, blockPointAt, flatPosOfBlockChar, fragmentPlainText, sliceDocument } from './editor-columnar-mutations';
+import { BlockHeightMap } from './editor-viewport';
+import { astToHtml, htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
 import { ShipEditorContextualToolbar, ContextualActionExtras } from './sh-editor-contextual-toolbar';
 import { ShipEditorImageResize } from './sh-editor-image-resize';
 import { ShipEditorImagePopover } from './sh-editor-image-popover';
@@ -35,6 +37,13 @@ import * as Behaviors from './standard-behaviors';
 
 /** A value the editor's metrics line can display. */
 export type ShipEditorMetric = 'words' | 'characters' | 'blocks' | 'format';
+
+/** `'auto'` virtualizes past this many top-level blocks. */
+const VIRTUAL_AUTO_THRESHOLD = 1000;
+/** Pixels of content kept mounted beyond each viewport edge. */
+const VIRTUAL_OVERSCAN_PX = 600;
+/** Height assumed for a block the DOM has never laid out. */
+const VIRTUAL_DEFAULT_BLOCK_PX = 36;
 
 @Component({
   selector: 'sh-editor',
@@ -99,6 +108,14 @@ export class ShipEditor implements ControlValueAccessor {
 
   /** Two-way bound editor content, serialized according to `format`. */
   value = model<string | ASTDocument | null>(null);
+
+  /**
+   * Viewport virtualization: only blocks in and around the visible viewport
+   * exist in the DOM, with padding standing in for the rest. `'auto'` (the
+   * default) switches it on past `VIRTUAL_AUTO_THRESHOLD` top-level blocks;
+   * `true`/`false` force it.
+   */
+  virtualization = input<boolean | 'auto'>('auto');
 
   readonly viewMode = signal<'design' | 'code'>('design');
 
@@ -208,6 +225,27 @@ export class ShipEditor implements ControlValueAccessor {
 
   #dragBlockIndex: number | null = null;
 
+  // -------------------------------------------------------------------------
+  // Virtualization state. When active, the surface's children are blocks
+  // [#winStart, #winEnd) and inline padding stands in for everything else.
+  // When inactive, #winStart is 0 and #winEnd tracks the block count, so all
+  // DOM↔block index translation below is uniform.
+  // -------------------------------------------------------------------------
+
+  #destroyRef = inject(DestroyRef);
+  #virtualOn = false;
+  #winStart = 0;
+  #winEnd = 0;
+  #heights: BlockHeightMap | null = null;
+  #basePadTop = 0;
+  #basePadBottom = 0;
+  /** The scrollable ancestor, or null when the document itself scrolls. */
+  #scrollerEl: HTMLElement | null = null;
+  #scrollHooked = false;
+  #scrollScheduled = false;
+  /** A virtual select-all: the logical selection spans the whole document while the DOM shows the window. */
+  #virtualSelectAll = false;
+
   readonly dropIndicator = signal<{ top: number } | null>(null);
   onChange: any = () => {};
   onTouched: any = () => {};
@@ -303,7 +341,7 @@ export class ShipEditor implements ControlValueAccessor {
         this.engine.clearBlockSelection();
         return;
       }
-      const el = container.children[idx] as HTMLElement | undefined;
+      const el = container.children[idx - this.#winStart] as HTMLElement | undefined;
       if (!el) return;
       el.classList.add('sh-editor-block-selected');
       this.#selectVoidBlockDOM(el);
@@ -329,12 +367,14 @@ export class ShipEditor implements ControlValueAccessor {
         if (cd.kindOf(row) !== RowKind.Void) continue;
         const start = cd.startOf(row);
         if (sel.from <= start && start + 1 <= sel.to) {
-          container.children[top]?.classList.add('sh-editor-void-in-selection');
+          container.children[top - this.#winStart]?.classList.add('sh-editor-void-in-selection');
         }
       }
     });
 
     afterNextRender(() => this.#viewReady.set(true));
+
+    this.#destroyRef.onDestroy(() => this.#unhookScroll());
   }
 
   /** Toggles between the design view and the raw source (code) view, syncing content in both directions. */
@@ -399,7 +439,7 @@ export class ShipEditor implements ControlValueAccessor {
     let el: HTMLElement | null = event.target as HTMLElement;
     while (el && el.parentElement !== surface) el = el.parentElement;
     if (el && el.parentElement === surface) {
-      const idx = this.#indexInParent(el);
+      const idx = this.#winStart + this.#indexInParent(el);
       const cd = this.engine.columnar;
       const row = cd.rowOfTopLevel(idx);
       if (row < cd.rows && this.engine.blocks.get(cd.typeOf(row))?.category === 'void') {
@@ -413,21 +453,55 @@ export class ShipEditor implements ControlValueAccessor {
   /** With a void block selected, copy serializes that block to the clipboard. */
   onCopy(event: ClipboardEvent) {
     const idx = this.engine.selectedBlock();
-    if (idx === null || !event.clipboardData) return;
-    event.preventDefault();
-    event.clipboardData.setData('text/html', this.engine.renderBlockHtml(idx));
-    event.clipboardData.setData('text/plain', '');
+    if (idx !== null && event.clipboardData) {
+      event.preventDefault();
+      event.clipboardData.setData('text/html', this.engine.renderBlockHtml(idx));
+      event.clipboardData.setData('text/plain', '');
+      return;
+    }
+    this.#copyRangeFromModel(event, false);
   }
 
   onCut(event: ClipboardEvent) {
     if (this.readonly()) return;
     const idx = this.engine.selectedBlock();
-    if (idx === null || !event.clipboardData) return;
+    if (idx !== null && event.clipboardData) {
+      event.preventDefault();
+      event.clipboardData.setData('text/html', this.engine.renderBlockHtml(idx));
+      event.clipboardData.setData('text/plain', '');
+      this.engine.deleteSelectedBlock();
+      this.#render();
+      return;
+    }
+    this.#copyRangeFromModel(event, true);
+  }
+
+  /**
+   * When the logical selection reaches beyond the mounted window, the native
+   * copy of the partial DOM would silently truncate the clipboard — serialize
+   * the selected span from the model instead. Fully mounted selections keep
+   * the native path.
+   */
+  #copyRangeFromModel(event: ClipboardEvent, cut: boolean) {
+    if (!this.#virtualOn || !event.clipboardData) return;
+    const sel = this.selection.active();
+    if (!sel || sel.from === sel.to) return;
+    const cd = this.engine.columnar;
+    if (!cd.rows) return;
+    const from = Math.min(sel.from, sel.to);
+    const to = Math.max(sel.from, sel.to);
+    const first = blockPointAt(cd, from).blockIndex;
+    const last = blockPointAt(cd, to).blockIndex;
+    if (first >= this.#winStart && last < this.#winEnd) return;
+
     event.preventDefault();
-    event.clipboardData.setData('text/html', this.engine.renderBlockHtml(idx));
-    event.clipboardData.setData('text/plain', '');
-    this.engine.deleteSelectedBlock();
-    this.#render();
+    const fragment = sliceDocument(cd, { from, to });
+    event.clipboardData.setData('text/html', astToHtml(fragment, this.engine.blocks, this.engine.inlines));
+    event.clipboardData.setData('text/plain', fragmentPlainText(fragment));
+    if (cut) {
+      this.engine.deleteRange();
+      this.#render();
+    }
   }
 
   onDragStart(event: DragEvent) {
@@ -435,7 +509,7 @@ export class ShipEditor implements ControlValueAccessor {
     const surface = this.surface().nativeElement;
     const target = event.target as HTMLElement;
     if (target.tagName === 'IMG' && target.parentElement === surface) {
-      const idx = this.#indexInParent(target);
+      const idx = this.#winStart + this.#indexInParent(target);
       if (idx >= 0) {
         this.#dragBlockIndex = idx;
         this.engine.selectBlock(idx);
@@ -491,10 +565,10 @@ export class ShipEditor implements ControlValueAccessor {
     const bodyTop = body.getBoundingClientRect().top;
     for (let i = 0; i < children.length; i++) {
       const rect = children[i].getBoundingClientRect();
-      if (clientY < rect.top + rect.height / 2) return { gap: i, top: rect.top - bodyTop };
+      if (clientY < rect.top + rect.height / 2) return { gap: this.#winStart + i, top: rect.top - bodyTop };
     }
     const last = children[children.length - 1].getBoundingClientRect();
-    return { gap: children.length, top: last.bottom - bodyTop };
+    return { gap: this.#winStart + children.length, top: last.bottom - bodyTop };
   }
 
   onBeforeInput(event: InputEvent) {
@@ -663,7 +737,7 @@ export class ShipEditor implements ControlValueAccessor {
     let el: HTMLElement | null =
       node.nodeType === Node.ELEMENT_NODE ? (node as HTMLElement) : node.parentElement;
     while (el && el.parentElement !== container) el = el.parentElement;
-    return el && el.parentElement === container ? this.#indexInParent(el) : -1;
+    return el && el.parentElement === container ? this.#winStart + this.#indexInParent(el) : -1;
   }
 
   #caretAtBlockEdge(idx: number, forward: boolean): boolean {
@@ -672,7 +746,7 @@ export class ShipEditor implements ControlValueAccessor {
     if (!sel || sel.rangeCount === 0) return false;
     const range = sel.getRangeAt(0);
     if (!range.collapsed) return false;
-    const blockEl = this.surface().nativeElement.children[idx] as HTMLElement | undefined;
+    const blockEl = this.surface().nativeElement.children[idx - this.#winStart] as HTMLElement | undefined;
     if (!blockEl) return false;
     const clone = range.cloneRange();
     clone.selectNodeContents(blockEl);
@@ -683,7 +757,7 @@ export class ShipEditor implements ControlValueAccessor {
 
   #reconcileBlockFromDOM(index: number) {
     const container = this.surface().nativeElement;
-    const blockEl = container.children[index] as HTMLElement | undefined;
+    const blockEl = container.children[index - this.#winStart] as HTMLElement | undefined;
     if (!blockEl) return;
     const temp = this.#document.createElement('div');
     temp.appendChild(blockEl.cloneNode(true));
@@ -702,6 +776,15 @@ export class ShipEditor implements ControlValueAccessor {
     if (!container.contains(range.commonAncestorContainer)) {
       this.selection.domRect.set(null);
       return;
+    }
+    if (this.#virtualSelectAll) {
+      // The DOM can only show the mounted slice of a select-all; keep the
+      // full-document logical selection until the user makes a new one.
+      if (range.startContainer === container && range.endContainer === container) {
+        this.selection.updateRect(container);
+        return;
+      }
+      this.#virtualSelectAll = false;
     }
     this.selection.updateRect(container);
     const startPoint = this.mapDOMToPoint(container, range.startContainer, range.startOffset, 'start');
@@ -821,6 +904,28 @@ export class ShipEditor implements ControlValueAccessor {
       }
     }
 
+    // Select-all in a virtualized document: the DOM holds only the window, so
+    // the native selection cannot span the document. The logical selection
+    // becomes the whole document; the DOM paints the mounted slice of it.
+    if (
+      this.#virtualOn &&
+      (event.metaKey || event.ctrlKey) &&
+      !event.altKey &&
+      !event.shiftKey &&
+      event.key.toLowerCase() === 'a'
+    ) {
+      event.preventDefault();
+      this.selection.live.set({ from: 0, to: this.engine.columnar.size });
+      this.#virtualSelectAll = true;
+      const container = this.surface().nativeElement;
+      const range = this.#document.createRange();
+      range.selectNodeContents(container);
+      const domSel = window.getSelection();
+      domSel?.removeAllRanges();
+      domSel?.addRange(range);
+      return;
+    }
+
     // Ordinary typing cannot match an editor shortcut — every one of them
     // requires ctrlOrCmd — so skip the ~20 keybinding parses this block performs
     // for each plain character. A bare single-character binding is excluded by
@@ -868,6 +973,10 @@ export class ShipEditor implements ControlValueAccessor {
     this.selection.suppress();
     this.patchDOM();
     const sel = this.selection.active();
+    if (sel && this.#virtualOn && sel.from === sel.to) {
+      this.#virtualSelectAll = false;
+      this.#scrollCaretIntoView(sel.from);
+    }
     if (sel) this.restoreDOMSelection(sel);
     this.selection.unsuppress();
   }
@@ -884,6 +993,22 @@ export class ShipEditor implements ControlValueAccessor {
     const container = this.surface().nativeElement;
     const hints = this.engine.consumeRenderHints();
     const count = this.engine.blockCount();
+
+    const wantVirtual = this.#shouldVirtualize(count);
+    if (wantVirtual !== this.#virtualOn) {
+      this.#virtualOn = wantVirtual;
+      if (wantVirtual) this.#activateVirtual(container);
+      else this.#deactivateVirtual(container);
+      // Either direction, the DOM must be rebuilt from scratch.
+      hints.length = 0;
+      hints.push({ kind: 'all' });
+    }
+
+    if (this.#virtualOn) {
+      this.#patchVirtual(container, hints, count);
+      return;
+    }
+    this.#winEnd = count;
 
     let full = false;
     for (const hint of hints) {
@@ -933,6 +1058,254 @@ export class ShipEditor implements ControlValueAccessor {
         }
       }
       while (container.children.length > count) container.lastElementChild?.remove();
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Virtualization: the windowed render path.
+  // -------------------------------------------------------------------------
+
+  #shouldVirtualize(count: number): boolean {
+    if (typeof window === 'undefined') return false;
+    const mode = this.virtualization();
+    return mode === true || (mode === 'auto' && count > VIRTUAL_AUTO_THRESHOLD);
+  }
+
+  #activateVirtual(container: HTMLElement) {
+    const style = getComputedStyle(container);
+    this.#basePadTop = parseFloat(style.paddingTop) || 0;
+    this.#basePadBottom = parseFloat(style.paddingBottom) || 0;
+    this.#scrollerEl = this.#findScrollContainer(container);
+    // Window splices swap spacer padding for real blocks above the viewport.
+    // The browser's scroll anchoring reads that as content movement and
+    // "corrects" scrollTop, which re-triggers an update at the new position —
+    // a permanent oscillation. Anchoring is ours to manage here.
+    container.style.overflowAnchor = 'none';
+    this.#heights = null;
+    if (!this.#scrollHooked) {
+      (this.#scrollerEl ?? window).addEventListener('scroll', this.#onViewportChange, { passive: true });
+      window.addEventListener('resize', this.#onViewportChange, { passive: true });
+      this.#scrollHooked = true;
+    }
+  }
+
+  #deactivateVirtual(container: HTMLElement) {
+    this.#unhookScroll();
+    container.style.paddingTop = '';
+    container.style.paddingBottom = '';
+    container.style.overflowAnchor = '';
+    this.#heights = null;
+    this.#winStart = 0;
+    this.#winEnd = 0;
+    this.#virtualSelectAll = false;
+  }
+
+  #unhookScroll() {
+    if (!this.#scrollHooked) return;
+    (this.#scrollerEl ?? window).removeEventListener('scroll', this.#onViewportChange);
+    window.removeEventListener('resize', this.#onViewportChange);
+    this.#scrollHooked = false;
+  }
+
+  #findScrollContainer(el: HTMLElement): HTMLElement | null {
+    for (let node = el.parentElement; node; node = node.parentElement) {
+      const overflowY = getComputedStyle(node).overflowY;
+      if (overflowY === 'auto' || overflowY === 'scroll') return node;
+    }
+    return null;
+  }
+
+  readonly #onViewportChange = () => {
+    if (this.#scrollScheduled || !this.#virtualOn) return;
+    this.#scrollScheduled = true;
+    requestAnimationFrame(() => {
+      this.#scrollScheduled = false;
+      if (!this.#virtualOn || !this.#viewReady()) return;
+      this.#updateVirtualWindow(false);
+    });
+  };
+
+  /** The viewport's edges in client coordinates. */
+  #viewportEdges(): { top: number; bottom: number } {
+    if (this.#scrollerEl) {
+      const rect = this.#scrollerEl.getBoundingClientRect();
+      return { top: rect.top, bottom: rect.bottom };
+    }
+    return { top: 0, bottom: window.innerHeight };
+  }
+
+  #adjustScroll(delta: number) {
+    if (delta === 0) return;
+    const el = this.#scrollerEl ?? (this.#document.scrollingElement as HTMLElement | null);
+    if (el) el.scrollTop += delta;
+  }
+
+  #patchVirtual(container: HTMLElement, hints: RenderHint[], count: number) {
+    let structural = false;
+    let rebuildHeights = this.#heights === null;
+    for (const hint of hints) {
+      if (hint.kind === 'all') {
+        structural = true;
+        rebuildHeights = true;
+      } else if (hint.kind === 'splice') {
+        structural = true;
+        if (!rebuildHeights) this.#heights!.splice(hint.at, hint.remove, hint.insert);
+      }
+    }
+    if (rebuildHeights || this.#heights!.count !== count) {
+      this.#heights = new BlockHeightMap(count, this.#heights?.estimate ?? VIRTUAL_DEFAULT_BLOCK_PX);
+      structural = true;
+    }
+    if (structural) this.#virtualSelectAll = false;
+
+    if (!structural) {
+      for (const hint of hints) {
+        if (hint.kind !== 'block') continue;
+        if (hint.index < this.#winStart || hint.index >= this.#winEnd) continue;
+        const el = container.children[hint.index - this.#winStart] as HTMLElement | undefined;
+        if (!el) {
+          structural = true;
+          break;
+        }
+        const html = this.engine.renderBlockHtml(hint.index);
+        if (el.outerHTML !== html) {
+          const next = this.#htmlToElement(html);
+          if (next && !this.#patchTextInPlace(el, next)) el.replaceWith(next);
+          else if (!next) structural = true;
+        }
+      }
+    }
+
+    this.#updateVirtualWindow(structural);
+  }
+
+  /**
+   * Bring the DOM window in line with the scroll viewport.
+   *
+   * `force` rebuilds the whole window from the model (structural edits, mode
+   * flips); otherwise the window's edges are spliced — surviving children,
+   * including the caret's element, are never touched. After reconciliation
+   * the mounted run is measured (offsetTop deltas, so margins and collapse
+   * are inside the numbers) and the paddings are recomputed.
+   */
+  #updateVirtualWindow(force: boolean) {
+    const container = this.surface().nativeElement;
+    const heights = this.#heights;
+    const count = this.engine.blockCount();
+    if (!heights) return;
+
+    if (count === 0) {
+      container.replaceChildren();
+      this.#setVirtualPadding(container, 0, 0);
+      this.#winStart = this.#winEnd = 0;
+      return;
+    }
+
+    // Block 0's theoretical top in client coordinates: the current inline
+    // padding already contains prefix(#winStart), so the base padding alone
+    // offsets from the surface's border box.
+    const origin = container.getBoundingClientRect().top + this.#basePadTop;
+    const { top: vpTop, bottom: vpBottom } = this.#viewportEdges();
+    const ds = heights.indexAt(vpTop - VIRTUAL_OVERSCAN_PX - origin);
+    const de = Math.min(count, heights.indexAt(vpBottom + VIRTUAL_OVERSCAN_PX - origin) + 1);
+
+    const prevStart = this.#winStart;
+    const overlapStart = Math.max(ds, prevStart);
+    const overlapEnd = Math.min(de, this.#winEnd);
+    const mismatch = container.children.length !== this.#winEnd - prevStart;
+
+    const renderRange = (from: number, to: number): DocumentFragment => {
+      const fragment = this.#document.createDocumentFragment();
+      for (let i = from; i < to; i++) {
+        const el = this.#htmlToElement(this.engine.renderBlockHtml(i));
+        if (el) fragment.appendChild(el);
+      }
+      return fragment;
+    };
+
+    const rebuilt = force || mismatch || overlapEnd <= overlapStart;
+    if (rebuilt) {
+      container.replaceChildren(renderRange(ds, de));
+    } else if (ds !== prevStart || de !== this.#winEnd) {
+      this.#dropDOMSelectionIfUnmounting(container, ds, de);
+      for (let i = prevStart; i < overlapStart; i++) container.firstElementChild?.remove();
+      for (let i = overlapEnd; i < this.#winEnd; i++) container.lastElementChild?.remove();
+      if (ds < overlapStart) container.insertBefore(renderRange(ds, overlapStart), container.firstChild);
+      if (de > overlapEnd) container.appendChild(renderRange(overlapEnd, de));
+    }
+
+    this.#winStart = ds;
+    this.#winEnd = de;
+
+    // Anchor: when blocks are prepended, their estimate→measured correction
+    // must not shift the content the user is looking at.
+    const anchorPrefixBefore = rebuilt ? 0 : heights.prefixHeight(overlapStart);
+    const children = container.children;
+    for (let k = 0; k < children.length; k++) {
+      const el = children[k] as HTMLElement;
+      const next = children[k + 1] as HTMLElement | undefined;
+      const height = next ? next.offsetTop - el.offsetTop : el.offsetHeight;
+      if (height > 0) heights.measure(ds + k, height);
+    }
+    this.#setVirtualPadding(container, heights.prefixHeight(ds), heights.total() - heights.prefixHeight(de));
+    if (!rebuilt && ds < prevStart) {
+      // Sub-pixel drift must not feed back into the scroll position: an
+      // adjustment fires a scroll event, which schedules another update.
+      const shift = heights.prefixHeight(overlapStart) - anchorPrefixBefore;
+      if (Math.abs(shift) >= 1) this.#adjustScroll(shift);
+    }
+  }
+
+  #setVirtualPadding(container: HTMLElement, top: number, bottom: number) {
+    container.style.paddingTop = `${this.#basePadTop + Math.max(0, top)}px`;
+    container.style.paddingBottom = `${this.#basePadBottom + Math.max(0, bottom)}px`;
+  }
+
+  /**
+   * Removing an element holding a DOM selection endpoint makes the browser
+   * re-anchor the selection at the container, which the selectionchange sync
+   * would read as a real caret move. The logical selection is the source of
+   * truth here — drop the DOM one before pulling its nodes out.
+   */
+  #dropDOMSelectionIfUnmounting(container: HTMLElement, ds: number, de: number) {
+    if (typeof window === 'undefined') return;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    if (!container.contains(range.commonAncestorContainer)) return;
+    const staysMounted = (node: Node): boolean => {
+      let el: HTMLElement | null = node.nodeType === Node.ELEMENT_NODE ? (node as HTMLElement) : node.parentElement;
+      while (el && el !== container && el.parentElement !== container) el = el.parentElement;
+      if (!el || el === container) return true; // container-anchored — survives
+      const index = this.#winStart + this.#indexInParent(el);
+      return index >= ds && index < de;
+    };
+    if (!staysMounted(range.startContainer) || !staysMounted(range.endContainer)) sel.removeAllRanges();
+  }
+
+  /**
+   * Keep the caret's block inside the viewport after an edit: without this,
+   * typing at the window's edge (or undo jumping far away) would leave the
+   * caret in an unmounted — hence invisible — block.
+   */
+  #scrollCaretIntoView(pos: number) {
+    const heights = this.#heights;
+    const cd = this.engine.columnar;
+    if (!heights || !cd.rows) return;
+    const { blockIndex } = blockPointAt(cd, pos);
+    const container = this.surface().nativeElement;
+    const origin = container.getBoundingClientRect().top + this.#basePadTop;
+    const top = origin + heights.prefixHeight(blockIndex);
+    const bottom = top + heights.heightOf(blockIndex);
+    const { top: vpTop, bottom: vpBottom } = this.#viewportEdges();
+    let delta = 0;
+    if (top < vpTop) delta = top - vpTop;
+    else if (bottom > vpBottom) delta = Math.min(bottom - vpBottom, top - vpTop);
+    if (delta !== 0) {
+      this.#adjustScroll(delta);
+      this.#updateVirtualWindow(false);
+    } else if (blockIndex < this.#winStart || blockIndex >= this.#winEnd) {
+      this.#updateVirtualWindow(false);
     }
   }
 
@@ -1088,18 +1461,20 @@ export class ShipEditor implements ControlValueAccessor {
     if (node === container) {
       const count = this.engine.blockCount();
       if (count === 0) return null;
+      // `offset` counts DOM children — window-relative when virtualized.
+      const winEnd = this.#virtualOn ? this.#winEnd : count;
       if (bias === 'end' && offset > 0) {
         const edge = Number.MAX_SAFE_INTEGER;
-        return { blockIndex: Math.min(offset, count) - 1, itemIndex: edge, charOffset: edge };
+        return { blockIndex: Math.min(this.#winStart + offset, winEnd) - 1, itemIndex: edge, charOffset: edge };
       }
-      return { blockIndex: Math.min(offset, count - 1), charOffset: 0 };
+      return { blockIndex: Math.min(this.#winStart + offset, winEnd - 1), charOffset: 0 };
     }
 
     let blockEl: HTMLElement | null = node.nodeType === Node.ELEMENT_NODE ? (node as HTMLElement) : node.parentElement;
     while (blockEl && blockEl.parentElement !== container) blockEl = blockEl.parentElement;
     if (!blockEl || blockEl.parentElement !== container) return null;
 
-    const blockIndex = this.#indexInParent(blockEl);
+    const blockIndex = this.#winStart + this.#indexInParent(blockEl);
     const cd = this.engine.columnar;
     const root = cd.rowOfTopLevel(blockIndex);
     if (root >= cd.rows) return { blockIndex, charOffset: 0 };
@@ -1165,13 +1540,27 @@ export class ShipEditor implements ControlValueAccessor {
     const cd = this.engine.columnar;
     if (!cd.rows) return;
     const isCollapsed = sel.from === sel.to;
-    const startBp = blockPointAt(cd, sel.from);
-    const endBp = isCollapsed ? startBp : blockPointAt(cd, sel.to);
+    let startBp = blockPointAt(cd, sel.from);
+    let endBp = isCollapsed ? startBp : blockPointAt(cd, sel.to);
+
+    if (this.#virtualOn) {
+      if (isCollapsed) {
+        // An off-window caret has no element to sit in; the logical selection
+        // stays authoritative and the DOM selection is simply not painted.
+        if (startBp.blockIndex < this.#winStart || startBp.blockIndex >= this.#winEnd) return;
+      } else {
+        const start = this.#clampToWindow(startBp, 'start');
+        const end = this.#clampToWindow(endBp, 'end');
+        if (!start || !end) return;
+        startBp = start;
+        endBp = end;
+      }
+    }
 
     try {
       const range = document.createRange();
       const getPos = (bp: BlockPoint) => {
-        const blockEl = container.children[bp.blockIndex];
+        const blockEl = container.children[bp.blockIndex - this.#winStart];
         if (!blockEl) return null;
 
         const row = cd.rowOfTopLevel(bp.blockIndex);
@@ -1223,5 +1612,22 @@ export class ShipEditor implements ControlValueAccessor {
     } catch (e) {
       console.warn('[sh-editor] restoreDOMSelection failed:', e);
     }
+  }
+
+  /**
+   * Clamp a range endpoint to the mounted window so the visible part of a
+   * selection spanning off-window content still paints. Returns null when the
+   * whole selection lies outside the window.
+   */
+  #clampToWindow(bp: BlockPoint, edge: 'start' | 'end'): BlockPoint | null {
+    if (this.#winEnd <= this.#winStart) return null;
+    if (bp.blockIndex < this.#winStart) {
+      return edge === 'start' ? { blockIndex: this.#winStart, charOffset: 0 } : null;
+    }
+    if (bp.blockIndex >= this.#winEnd) {
+      const max = Number.MAX_SAFE_INTEGER;
+      return edge === 'end' ? { blockIndex: this.#winEnd - 1, itemIndex: max, charOffset: max } : null;
+    }
+    return bp;
   }
 }
