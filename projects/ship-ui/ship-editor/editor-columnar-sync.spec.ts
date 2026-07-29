@@ -12,12 +12,14 @@ import { BulletListBehavior, HeadingBehavior, ImageBehavior, ListItemBehavior, P
 const p = (text: string): ASTBlockNode => ({ type: 'paragraph', content: [{ type: 'text', text }] });
 
 /**
- * The engine advances its columnar document by the op behind each change rather
- * than rebuilding it. If that ever diverges from the tree the drift is silent —
- * positions quietly point at the wrong places — so every mutation path is
- * checked against a fresh rebuild.
+ * The columnar document is the only live model; the nested tree is derived
+ * from it on demand. What can still drift silently is the columnar document's
+ * own bookkeeping — the Fenwick size index, mark-run boundaries, and parent
+ * pointers — against the content it holds. Every mutation path is therefore
+ * checked against a from-scratch rebuild of its own materialized content:
+ * sizes, row starts, parents, and the round-trip must all agree.
  */
-describe('columnar stays in step with the document', () => {
+describe('columnar stays internally consistent through every mutation path', () => {
   let engine: EditorEngineService;
 
   const caret = (blockIndex: number, offset: number) => {

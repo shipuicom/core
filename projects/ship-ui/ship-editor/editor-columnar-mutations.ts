@@ -161,6 +161,11 @@ function countTops(cd: ColumnarDocument): number {
   return n;
 }
 
+/** Number of top-level blocks. */
+export function topLevelCount(cd: ColumnarDocument): number {
+  return countTops(cd);
+}
+
 // ---------------------------------------------------------------------------
 // Materialization — AST fragments read out of the columnar document
 // ---------------------------------------------------------------------------
@@ -1294,5 +1299,35 @@ export function toggleMarkOp(
       cd.setMarks(seg.row, next);
     }
     return { from: sel.from, to: sel.to };
+  });
+}
+
+/**
+ * Replace `count` top-level blocks at `at` with `newBlocks`, as one op. The
+ * caller supplies the selection afterwards — these are block-level UI
+ * operations (drag reorder, image edits, DOM reconciliation) that leave the
+ * caret where it was.
+ */
+export function replaceBlocksOp(
+  cd: ColumnarDocument,
+  at: number,
+  count: number,
+  newBlocks: ASTBlockNode[],
+  selAfter: LogicalSelection
+): ColumnarMutation | null {
+  return withSpanOp(cd, at, count, () => {
+    replaceRoots(cd, at, count, newBlocks);
+    return selAfter;
+  });
+}
+
+/** Delete a top-level block; an emptied document becomes one empty paragraph. */
+export function deleteBlockOp(cd: ColumnarDocument, index: number): ColumnarMutation | null {
+  const tops = countTops(cd);
+  if (index < 0 || index >= tops) return null;
+  return withSpanOp(cd, index, 1, () => {
+    replaceRoots(cd, index, 1, tops === 1 ? [emptyParagraph()] : []);
+    const caretTop = Math.min(index, countTops(cd) - 1);
+    return caretSel(flatPosOfBlockChar(cd, { blockIndex: caretTop, charOffset: 0 }));
   });
 }

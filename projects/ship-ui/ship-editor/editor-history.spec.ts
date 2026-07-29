@@ -31,7 +31,7 @@ describe('Invertible editor history', () => {
   /** Tree-shaped view of the live caret, for assertions written in tree coordinates. */
   const caretLp = () => posToLogical(engine.document(), engine.selection.active()!.from)!;
 
-  const arrange = (doc: ASTDocument) => engine.document.set(doc);
+  const arrange = (doc: ASTDocument) => engine.load(doc);
 
   beforeEach(() => {
 
@@ -91,16 +91,23 @@ describe('Invertible editor history', () => {
       expect(before).toEqual(snapshot);
     });
 
-    it('shares untouched blocks by reference instead of copying them', () => {
+    it('never mutates the caller\'s document, and caches the materialized view per version', () => {
       const before: ASTDocument = [p('one'), p('two'), p('three')];
+      const snapshot = JSON.parse(JSON.stringify(before));
       arrange(before);
       caret(1, 3);
       engine.insertText('X');
 
-      const after = engine.document();
-      expect(after[0]).toBe(before[0]);
-      expect(after[2]).toBe(before[2]);
-      expect(after[1]).not.toBe(before[1]);
+      // The input was converted to rows on load; edits never touch it.
+      expect(before).toEqual(snapshot);
+      // The derived tree is stable until the next change…
+      expect(engine.document()).toBe(engine.document());
+      const cached = engine.document();
+      expect(textOf(cached, 1)).toBe('twoX');
+      // …and a new one appears after an edit.
+      caret(0, 3);
+      engine.insertText('Y');
+      expect(engine.document()).not.toBe(cached);
     });
 
     it('does not corrupt the previous document when typing repeatedly', () => {
@@ -240,13 +247,11 @@ describe('Invertible editor history', () => {
       expect(textOf(engine.document(), 0)).toBe('original');
     });
 
-    it('commitDocument (IME reconcile path) records an undoable transaction', () => {
+    it('replaceBlock (IME reconcile path) records an undoable transaction', () => {
       arrange([p('hello'), p('world')]);
       caret(1, 5);
 
-      const doc = [...engine.document()];
-      doc[1] = p('world你好');
-      engine.commitDocument(doc);
+      engine.replaceBlock(1, p('world你好'));
       expect(textOf(engine.document(), 1)).toBe('world你好');
 
       engine.undo();
@@ -257,7 +262,7 @@ describe('Invertible editor history', () => {
 
     it('a no-op mutation records nothing', () => {
       arrange([p('static')]);
-      engine.commitDocument([...engine.document()]);
+      engine.replaceBlock(0, p('static'));
       expect(engine.canUndo()).toBe(false);
       expect(engine.lastTransaction()).toBeNull();
     });
@@ -479,7 +484,7 @@ describe('pasting a fragment that contains containers', () => {
   // nodes. The merge path assumed inline content throughout and read `.text` off
   // a block node, which threw "Cannot read properties of undefined".
   it('pastes a list into an empty paragraph without throwing', () => {
-    engine.document.set([p('')]);
+    engine.load([p('')]);
     caret(0, 0);
 
     expect(() => engine.insertFragment([ul('one', 'two')])).not.toThrow();
@@ -491,7 +496,7 @@ describe('pasting a fragment that contains containers', () => {
   });
 
   it('splits the target paragraph around a pasted list', () => {
-    engine.document.set([p('beforeafter')]);
+    engine.load([p('beforeafter')]);
     caret(0, 6);
 
     engine.insertFragment([ul('item')]);
@@ -503,7 +508,7 @@ describe('pasting a fragment that contains containers', () => {
   });
 
   it('keeps text before the caret when pasting a list at the end of a paragraph', () => {
-    engine.document.set([p('keep')]);
+    engine.load([p('keep')]);
     caret(0, 4);
 
     engine.insertFragment([ul('x')]);
@@ -514,7 +519,7 @@ describe('pasting a fragment that contains containers', () => {
   });
 
   it('pastes a mixed fragment of paragraph, list and paragraph', () => {
-    engine.document.set([p('ab')]);
+    engine.load([p('ab')]);
     caret(0, 1);
 
     engine.insertFragment([p('one'), ul('bullet'), p('two')]);
@@ -526,7 +531,7 @@ describe('pasting a fragment that contains containers', () => {
   });
 
   it('still merges a plain text fragment inline, rather than splitting', () => {
-    engine.document.set([p('ac')]);
+    engine.load([p('ac')]);
     caret(0, 1);
 
     engine.insertFragment([p('b')]);
@@ -537,7 +542,7 @@ describe('pasting a fragment that contains containers', () => {
   });
 
   it('undoes a list paste back to the original document', () => {
-    engine.document.set([p('start')]);
+    engine.load([p('start')]);
     caret(0, 5);
     engine.insertFragment([ul('one')]);
     expect(engine.document().length).toBeGreaterThan(1);
@@ -577,7 +582,7 @@ describe('pasting into a list item', () => {
   // block nodes made that undefined + undefined, so the item's text became the
   // string "NaN" — corrupt content rather than a crash.
   it('never produces NaN text when a list is pasted into a list item', () => {
-    engine.document.set([ul('target')]);
+    engine.load([ul('target')]);
     caretInItem(0, 0, 6);
 
     engine.insertFragment([ul('one', 'two')]);
@@ -590,7 +595,7 @@ describe('pasting into a list item', () => {
   });
 
   it('flattens a pasted list into the target list rather than nesting it', () => {
-    engine.document.set([ul('a', 'b')]);
+    engine.load([ul('a', 'b')]);
     caretInItem(0, 0, 1);
 
     engine.insertFragment([ul('X', 'Y')]);
@@ -604,7 +609,7 @@ describe('pasting into a list item', () => {
   });
 
   it('survives repeated pastes into the same list without corrupting text', () => {
-    engine.document.set([ul('seed')]);
+    engine.load([ul('seed')]);
     for (let i = 0; i < 10; i++) {
       caretInItem(0, 0, 0);
       engine.insertFragment([ul(`p${i}`)]);
@@ -615,7 +620,7 @@ describe('pasting into a list item', () => {
   });
 
   it('still pastes plain text into a list item inline', () => {
-    engine.document.set([ul('ac')]);
+    engine.load([ul('ac')]);
     caretInItem(0, 0, 1);
 
     engine.insertFragment([p('b')]);

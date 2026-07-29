@@ -213,7 +213,7 @@ describe('fuzz layer 2: engine rebase marker oracle', () => {
     for (let seed = 1; seed <= 80 * SCALE; seed++) {
       const rnd = mulberry32(seed * 7919);
       const engine = makeEngine();
-      engine.document.set([p('....'), p('....'), p('....')] as ASTDocument);
+      engine.load([p('....'), p('....'), p('....')] as ASTDocument);
       let l = 0;
       let r = 0;
 
@@ -268,7 +268,7 @@ describe('fuzz layer 2: engine rebase marker oracle', () => {
     for (let seed = 1; seed <= 40 * SCALE; seed++) {
       const rnd = mulberry32(seed * 31337);
       const engine = makeEngine();
-      engine.document.set([p('....'), p('....')] as ASTDocument);
+      engine.load([p('....'), p('....')] as ASTDocument);
       let l = 0;
       let r = 0;
 
@@ -311,7 +311,7 @@ describe('fuzz layer 3: engine chaos invariants', () => {
     for (let seed = 1; seed <= 60 * SCALE; seed++) {
       const rnd = mulberry32(seed * 104729);
       const engine = makeEngine();
-      engine.document.set([p('alpha0'), p('bravo1'), ul(li('itemA'), li('itemB')), p('delta3')] as ASTDocument);
+      engine.load([p('alpha0'), p('bravo1'), ul(li('itemA'), li('itemB')), p('delta3')] as ASTDocument);
 
       const localAction = () => {
         const doc = engine.document();

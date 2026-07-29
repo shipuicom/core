@@ -88,7 +88,7 @@ describe('ACCEPTANCE: backspace-merge cursor mapping', () => {
 
   it('a cursor in block 2 lands on the SAME character after a real backspace merge', () => {
     const oldDoc = [p('hello'), p('world')] as ASTDocument;
-    engine.document.set(oldDoc);
+    engine.load(oldDoc);
 
     const bystander = lp(1, 3);
     expect(charAt(oldDoc, bystander)).toBe('l');
@@ -114,7 +114,7 @@ describe('ACCEPTANCE: backspace-merge cursor mapping', () => {
 
   it('CONTRAST: the typed BlockSplice for the same merge cannot recover the cursor', () => {
     const oldDoc = [p('hello'), p('world')] as ASTDocument;
-    engine.document.set(oldDoc);
+    engine.load(oldDoc);
     engine.selection.live.set({ from: logicalToPos(oldDoc, lp(1, 0)), to: logicalToPos(oldDoc, lp(1, 0)) });
     engine.handleBackspace();
 
@@ -132,7 +132,7 @@ describe('ACCEPTANCE: backspace-merge cursor mapping', () => {
 
   it('Enter (split) maps a trailing cursor into the new block', () => {
     const oldDoc = [p('helloworld')] as ASTDocument;
-    engine.document.set(oldDoc);
+    engine.load(oldDoc);
     const bystander = lp(0, 8);
     const flatBefore = logicalToPos(oldDoc, bystander);
 

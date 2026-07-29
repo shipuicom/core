@@ -29,27 +29,12 @@ import { ShipEditorImageResize } from './sh-editor-image-resize';
 import { ShipEditorImagePopover } from './sh-editor-image-popover';
 import { ShipEditorLinkPopover } from './sh-editor-link-popover';
 import { ShipEditorSlashMenu } from './sh-editor-slash-menu';
-import { ASTBlockNode, ASTDocument, ASTInlineNode, LogicalSelection } from './editor.types';
+import { ASTDocument, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import * as Behaviors from './standard-behaviors';
 
 /** A value the editor's metrics line can display. */
 export type ShipEditorMetric = 'words' | 'characters' | 'blocks' | 'format';
-
-function blockPlainText(block: ASTBlockNode): string {
-  const parts: string[] = [];
-  const walk = (nodes: any[]) => {
-    for (const n of nodes) {
-      if (typeof n?.text === 'string') parts.push(n.text);
-      else if (Array.isArray(n?.content)) {
-        walk(n.content);
-        parts.push('\n');
-      }
-    }
-  };
-  walk((block.content as any[]) ?? []);
-  return parts.join('');
-}
 
 @Component({
   selector: 'sh-editor',
@@ -123,7 +108,6 @@ export class ShipEditor implements ControlValueAccessor {
   public selection = inject(EditorSelectionService);
   keybindings = inject(ShipA11yKeybindingsService, { optional: true });
 
-  readonly #plainText = computed(() => this.engine.document().map(blockPlainText).join('\n'));
 
   /**
    * Characters and words in one pass over the AST.
@@ -201,22 +185,23 @@ export class ShipEditor implements ControlValueAccessor {
    */
   measure(): { words: number; characters: number; blocks: number } {
     const { words, characters } = this.#counts();
-    return { words, characters, blocks: this.engine.document().length };
+    return { words, characters, blocks: this.engine.blockCount() };
   }
 
   readonly showPlaceholder = computed(() => {
     if (!this.placeholder() || this.viewMode() === 'code') return false;
-    const doc = this.engine.document();
-    if (doc.length !== 1) return false;
-    const only = doc[0];
-    return this.engine.blocks.get(only.type)?.category !== 'void' && this.#plainText() === '';
+    this.engine.version();
+    const cd = this.engine.columnar;
+    if (this.engine.blockCount() !== 1) return false;
+    if (this.engine.blocks.get(cd.typeOf(0))?.category === 'void') return false;
+    for (let row = 0; row < cd.rows; row++) if (cd.textOf(row) !== '') return false;
+    return true;
   });
 
   #isWritingFromDOM = false;
 
   #composing = false;
 
-  #lastRenderedDoc: ASTDocument | null = null;
   #isInternalValueUpdate = false;
 
   #viewReady = signal(false);
@@ -275,8 +260,12 @@ export class ShipEditor implements ControlValueAccessor {
     });
 
     effect(() => {
-      const doc = this.engine.document();
+      this.engine.version();
       const format = this.format();
+      const ready = this.#viewReady();
+      // Everything below runs untracked: #render reads the live selection to
+      // restore the DOM caret, and tracking it would re-render (and clobber
+      // the DOM selection) on every selection change.
       untracked(() => {
         const serialized = this.engine.serialize(format);
         if (this.value() !== serialized) {
@@ -284,22 +273,20 @@ export class ShipEditor implements ControlValueAccessor {
           this.value.set(serialized);
           this.onChange(serialized);
         }
+
+        if (this.#isWritingFromDOM) {
+          this.#isWritingFromDOM = false;
+          return;
+        }
+
+        if (!ready) return;
+        this.#render();
       });
-
-      if (this.#isWritingFromDOM) {
-        this.#isWritingFromDOM = false;
-        return;
-      }
-
-      if (doc === this.#lastRenderedDoc) return;
-
-      if (!this.#viewReady()) return;
-      this.#render();
     });
 
     effect(() => {
       const idx = this.engine.selectedBlock();
-      const doc = this.engine.document();
+      this.engine.version();
       if (!this.#viewReady()) return;
       const container = this.surface().nativeElement;
       container
@@ -307,8 +294,9 @@ export class ShipEditor implements ControlValueAccessor {
         .forEach((el) => el.classList.remove('sh-editor-block-selected'));
       if (idx === null) return;
 
-      const block = doc[idx];
-      if (!block || this.engine.blocks.get(block.type)?.category !== 'void') {
+      const cd = this.engine.columnar;
+      const row = cd.rowOfTopLevel(idx);
+      if (row >= cd.rows || this.engine.blocks.get(cd.typeOf(row))?.category !== 'void') {
         this.engine.clearBlockSelection();
         return;
       }
@@ -324,8 +312,9 @@ export class ShipEditor implements ControlValueAccessor {
   /** Toggles between the design view and the raw source (code) view, syncing content in both directions. */
   toggleSourceView() {
     if (this.viewMode() === 'design') {
-      const doc = this.engine.document();
-      this.sourceDraft.set(this.format() === 'json' ? JSON.stringify(doc, null, 2) : String(this.engine.serialize(this.format())));
+      this.sourceDraft.set(
+        this.format() === 'json' ? JSON.stringify(this.engine.serialize('json'), null, 2) : String(this.engine.serialize(this.format()))
+      );
       this.viewMode.set('code');
     } else {
       const draft = this.sourceDraft();
@@ -367,8 +356,8 @@ export class ShipEditor implements ControlValueAccessor {
       const sel = this.selection.active();
       const cd = this.engine.columnar;
       const bp = sel && cd.rows ? blockPointAt(cd, sel.from) : null;
-      const block = bp ? this.engine.document()[bp.blockIndex] : null;
-      if (collapsed && block && this.engine.blocks.get(block.type)?.category !== 'void') {
+      const row = bp ? cd.rowOfTopLevel(bp.blockIndex) : cd.rows;
+      if (collapsed && row < cd.rows && this.engine.blocks.get(cd.typeOf(row))?.category !== 'void') {
         this.engine.clearBlockSelection();
       }
     }
@@ -648,11 +637,8 @@ export class ShipEditor implements ControlValueAccessor {
     temp.appendChild(blockEl.cloneNode(true));
     const parsed = parseDOMToAST(temp, this.engine.blocks, this.engine.inlines);
     if (!parsed.length) return;
-    const doc = [...this.engine.document()];
-    doc[index] = parsed[0];
     this.#isWritingFromDOM = true;
-
-    this.engine.commitDocument(doc);
+    this.engine.replaceBlock(index, parsed[0]);
   }
 
   #syncLogicalSelectionFromDOM() {
@@ -745,10 +731,11 @@ export class ShipEditor implements ControlValueAccessor {
       if (event.key === 'ArrowLeft' || event.key === 'ArrowUp' || event.key === 'ArrowRight' || event.key === 'ArrowDown') {
         event.preventDefault();
         const before = event.key === 'ArrowLeft' || event.key === 'ArrowUp';
-        const targetIdx = before ? Math.max(0, selectedIdx - 1) : Math.min(this.engine.document().length - 1, selectedIdx + 1);
+        const cd = this.engine.columnar;
+        const targetIdx = before ? Math.max(0, selectedIdx - 1) : Math.min(this.engine.blockCount() - 1, selectedIdx + 1);
         this.engine.clearBlockSelection();
-        const targetBlock = this.engine.document()[targetIdx];
-        if (targetBlock && this.engine.blocks.get(targetBlock.type)?.category !== 'void') {
+        const targetRow = cd.rowOfTopLevel(targetIdx);
+        if (targetRow < cd.rows && this.engine.blocks.get(cd.typeOf(targetRow))?.category !== 'void') {
           const edge = before ? Number.MAX_SAFE_INTEGER : 0;
           const from = flatPosOfBlockChar(this.engine.columnar, { blockIndex: targetIdx, itemIndex: edge, charOffset: edge });
           this.selection.live.set({ from, to: from });
@@ -765,10 +752,11 @@ export class ShipEditor implements ControlValueAccessor {
       const forward = event.key === 'ArrowRight' || event.key === 'ArrowDown';
       const blockIdx = this.#currentBlockIndex();
       const targetIdx = forward ? blockIdx + 1 : blockIdx - 1;
-      const targetBlock = blockIdx >= 0 ? this.engine.document()[targetIdx] : undefined;
+      const cd = this.engine.columnar;
+      const targetRow = blockIdx >= 0 && targetIdx >= 0 ? cd.rowOfTopLevel(targetIdx) : cd.rows;
       if (
-        targetBlock &&
-        this.engine.blocks.get(targetBlock.type)?.category === 'void' &&
+        targetRow < cd.rows &&
+        this.engine.blocks.get(cd.typeOf(targetRow))?.category === 'void' &&
         this.#caretAtBlockEdge(blockIdx, forward)
       ) {
         event.preventDefault();
@@ -821,41 +809,31 @@ export class ShipEditor implements ControlValueAccessor {
   }
 
   #render() {
-    const doc = this.engine.document();
     this.selection.suppress();
-    this.patchDOM(doc);
+    this.patchDOM();
     const sel = this.selection.active();
     if (sel) this.restoreDOMSelection(sel);
     this.selection.unsuppress();
-    this.#lastRenderedDoc = doc;
   }
 
-  private patchDOM(doc: ASTDocument) {
+  /**
+   * Patch only the blocks the engine marked dirty since the last render.
+   *
+   * An inline op dirties exactly one block; a structural op dirties its index
+   * and everything after (indices shift). Clean blocks are never visited, so a
+   * keystroke touches one element — and the HTML comes from the engine's
+   * per-block cache, which serialize() shares.
+   */
+  private patchDOM() {
     const container = this.surface().nativeElement;
-    const previous = this.#lastRenderedDoc;
+    const dirty = this.engine.consumeRenderDirty();
+    const count = this.engine.blockCount();
 
-    doc.forEach((block, index) => {
-      const behavior = this.engine.blocks.get(block.type);
-      if (!behavior) return;
+    for (let i = 0; i < count; i++) {
+      const existingEl = container.children[i] as HTMLElement | undefined;
+      if (existingEl && i < dirty.from && !dirty.blocks.has(i)) continue;
 
-      // A block that kept its identity cannot have changed. The mutation
-      // primitives path-copy, so typing gives a new object only to the block
-      // under the caret — without this, every keystroke rebuilt the HTML for the
-      // whole document and asked the browser to serialise each existing element
-      // back to a string just to compare (0.91 ms of outerHTML alone at 1000
-      // blocks, before the rendering itself).
-      //
-      // Conservative by construction: a missed match only costs a re-render,
-      // never a stale one. Structural edits shift indices, so everything after
-      // an insertion re-renders — correct, just less of a saving.
-      if (previous && previous[index] === block && container.children[index]) return;
-
-      const newHTML =
-        behavior.category === 'container'
-          ? this.renderContainerBlock(block, behavior)
-          : behavior.renderHTML(block, this.renderInlineContent(block.content as any, !behavior.preserveWhitespace));
-      const existingEl = container.children[index] as HTMLElement;
-
+      const newHTML = this.engine.renderBlockHtml(i);
       if (!existingEl) {
         const el = this.#htmlToElement(newHTML);
         if (el) container.appendChild(el);
@@ -863,32 +841,15 @@ export class ShipEditor implements ControlValueAccessor {
         const el = this.#htmlToElement(newHTML);
         if (el) existingEl.replaceWith(el);
       }
-    });
+    }
 
-    while (container.children.length > doc.length) container.lastElementChild?.remove();
+    while (container.children.length > count) container.lastElementChild?.remove();
   }
 
   #htmlToElement(html: string): Element | null {
     const wrapper = this.#document.createElement('div');
     wrapper.innerHTML = html;
     return wrapper.firstElementChild;
-  }
-
-  private renderInlineContent(nodes: ASTInlineNode[], softBreaks = true): string {
-
-    return renderInlineHTML(nodes, this.engine.inlines, softBreaks);
-  }
-
-  private renderContainerBlock(block: ASTBlockNode, behavior: BaseBlockBehavior): string {
-    const childrenHtml = (block.content as ASTBlockNode[])
-      .map((child) => {
-        const childBehavior = this.engine.blocks.get(child.type);
-        if (!childBehavior) return '';
-        const innerHtml = this.renderInlineContent(child.content as ASTInlineNode[], !childBehavior.preserveWhitespace);
-        return childBehavior.renderHTML(child, innerHtml);
-      })
-      .join('');
-    return behavior.renderHTML(block, childrenHtml);
   }
 
   #domCharOffset(root: Node, node: Node, offset: number): number {
@@ -1022,10 +983,10 @@ export class ShipEditor implements ControlValueAccessor {
   }
 
   #placeCaretBesideBlock(idx: number) {
-    const doc = this.engine.document();
-    const editable = (i: number) =>
-      i >= 0 && i < doc.length && this.engine.blocks.get(doc[i]?.type)?.category !== 'void';
     const cd = this.engine.columnar;
+    const count = this.engine.blockCount();
+    const editable = (i: number) =>
+      i >= 0 && i < count && this.engine.blocks.get(cd.typeOf(cd.rowOfTopLevel(i)))?.category !== 'void';
     let from: number | null = null;
     if (editable(idx + 1)) from = flatPosOfBlockChar(cd, { blockIndex: idx + 1, charOffset: 0 });
     else if (editable(idx - 1)) {
@@ -1069,8 +1030,8 @@ export class ShipEditor implements ControlValueAccessor {
         const blockEl = container.children[bp.blockIndex];
         if (!blockEl) return null;
 
-        const blockAst = this.engine.document()[bp.blockIndex];
-        const behavior = this.engine.blocks.get(blockAst?.type);
+        const row = cd.rowOfTopLevel(bp.blockIndex);
+        const behavior = row < cd.rows ? this.engine.blocks.get(cd.typeOf(row)) : undefined;
 
         if (behavior?.category === 'void') return null;
 
@@ -1080,8 +1041,9 @@ export class ShipEditor implements ControlValueAccessor {
           return this.#domPosAtChar(liEl as HTMLElement, bp.charOffset);
         }
 
-        if (behavior?.resolveDOMPosition && blockAst) {
-          const result = behavior.resolveDOMPosition(blockEl as HTMLElement, blockAst, bp.charOffset);
+        if (behavior?.resolveDOMPosition) {
+          const blockAst = this.engine.blockAt(bp.blockIndex);
+          const result = blockAst ? behavior.resolveDOMPosition(blockEl as HTMLElement, blockAst, bp.charOffset) : null;
           if (result) return result;
         }
 

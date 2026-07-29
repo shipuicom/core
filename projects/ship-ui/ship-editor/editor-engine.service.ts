@@ -1,11 +1,13 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, Signal, computed, inject, signal } from '@angular/core';
 import { BaseBlockBehavior, BaseInlineBehavior, SlashCommand } from './editor-behaviors';
 import { astToHtml, astToMarkdown } from './editor-serializers';
 import { diffFlat, logicalToPos, posToLogical } from './editor-flat-positions';
-import { ColumnarDocument, RowKind, toColumnar } from './editor-columnar';
+import { ColumnarDocument, RowKind, fromColumnar, toColumnar } from './editor-columnar';
 import {
   ColumnarMutation,
   backspaceOp,
+  blockFromRow,
+  deleteBlockOp,
   deleteForwardOp,
   deleteRangeOp,
   enterOp,
@@ -15,9 +17,11 @@ import {
   insertFragmentOp,
   insertTextOp,
   pointAt,
+  replaceBlocksOp,
   rootRowOf,
   setBlockTypeOp,
   toggleMarkOp,
+  topLevelCount,
 } from './editor-columnar-mutations';
 import { applyOpToColumnar } from './editor-columnar-ops';
 import { EditorOp, EditorTransaction, applyOp, diffDocuments, invertOp, transformOp } from './editor-transactions';
@@ -28,40 +32,92 @@ import { EditorSelectionService } from './selection.service';
 export class EditorEngineService {
   readonly selection = inject(EditorSelectionService);
 
-  readonly document = signal<ASTDocument>([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
-
   /**
-   * Columnar form of the document — what the mutation primitives operate on.
-   *
-   * The nested tree in `document()` is *derived* from it: each primitive
-   * mutates the columnar document and returns an `EditorOp`, which advances
-   * the tree (still needed for rendering and serialization). Rebuilding the
-   * columnar form per edit would cost O(document), so it is only rebuilt when
-   * someone replaces `document()` wholesale behind the engine's back —
-   * detected by remembering which tree the mirror was built from.
+   * The document. Columnar is the only live model: every mutation is a row
+   * operation on it, and the op each mutation returns feeds history and
+   * collaboration. There is no maintained nested tree any more.
    */
-  #columnar: ColumnarDocument = toColumnar(this.document());
-  /** The tree document `#columnar` currently corresponds to. */
-  #columnarFor: ASTDocument = this.document();
+  #columnar: ColumnarDocument = toColumnar([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
 
-  /** The columnar document, resynced if `document()` was set externally. */
   get columnar(): ColumnarDocument {
-    this.#syncColumnar();
     return this.#columnar;
   }
 
-  #syncColumnar() {
-    const doc = this.document();
-    if (this.#columnarFor === doc) return;
+  /**
+   * The nested AST, materialized from the columnar document on demand and
+   * cached per version. Nothing on the editing path reads this — rendering
+   * and serialization run from rows — so a document that is only being typed
+   * into never materializes a tree. External readers (and specs) get the
+   * familiar shape at the cost of one `fromColumnar` per version read.
+   */
+  readonly document: Signal<ASTDocument> = computed(() => {
+    this.version();
+    return fromColumnar(this.#columnar);
+  });
+
+  /** Replace the content wholesale without recording a transaction. */
+  load(doc: ASTDocument) {
     this.#columnar = toColumnar(doc);
-    this.#columnarFor = doc;
+    this.#markAllDirty();
+    this.version.update((v) => v + 1);
   }
 
-  /** Advance columnar by an op, or rebuild when a document arrives wholesale. */
-  #advanceColumnar(op: EditorOp | null) {
-    if (op) applyOpToColumnar(this.#columnar, op);
-    else this.#columnar = toColumnar(this.document());
-    this.#columnarFor = this.document();
+  // -------------------------------------------------------------------------
+  // Render bookkeeping: which top-level blocks changed since the DOM last
+  // looked, plus a per-block HTML cache shared by patchDOM and serialize.
+  // -------------------------------------------------------------------------
+
+  #htmlCache: (string | undefined)[] = [];
+  #dirtyBlocks = new Set<number>();
+  /** Suffix threshold: indices at or past this shifted structurally. */
+  #dirtyFrom = 0;
+
+  #noteOp(op: EditorOp) {
+    if (op.kind === 'inline') {
+      this.#dirtyBlocks.add(op.blockIndex);
+      this.#htmlCache[op.blockIndex] = undefined;
+    } else {
+      this.#dirtyFrom = Math.min(this.#dirtyFrom, op.at);
+      // The suffix shifts but its content is unchanged; splicing keeps those
+      // blocks' rendered HTML reusable at their new indices.
+      this.#htmlCache.splice(op.at, op.removed.length, ...new Array<string | undefined>(op.inserted.length).fill(undefined));
+    }
+  }
+
+  #markAllDirty() {
+    this.#dirtyFrom = 0;
+    this.#dirtyBlocks.clear();
+    this.#htmlCache = [];
+  }
+
+  /** Blocks the DOM must re-check, consumed by the render pass. */
+  consumeRenderDirty(): { blocks: Set<number>; from: number } {
+    const out = { blocks: this.#dirtyBlocks, from: this.#dirtyFrom };
+    this.#dirtyBlocks = new Set();
+    this.#dirtyFrom = Number.MAX_SAFE_INTEGER;
+    return out;
+  }
+
+  /** Rendered HTML of one top-level block, from the cache when clean. */
+  renderBlockHtml(index: number): string {
+    const cached = this.#htmlCache[index];
+    if (cached !== undefined) return cached;
+    const block = this.blockAt(index);
+    const html = block ? astToHtml([block], this.blocks, this.inlines) : '';
+    this.#htmlCache[index] = html;
+    return html;
+  }
+
+  /** One top-level block, materialized transiently. */
+  blockAt(index: number): ASTBlockNode | null {
+    const cd = this.#columnar;
+    const row = cd.rowOfTopLevel(index);
+    return row < cd.rows ? blockFromRow(cd, row) : null;
+  }
+
+  /** Number of top-level blocks. */
+  blockCount(): number {
+    return topLevelCount(this.#columnar);
   }
 
   readonly blocks = new Map<string, BaseBlockBehavior>();
@@ -99,8 +155,7 @@ export class EditorEngineService {
    */
   #apply(mutation: ColumnarMutation | null, selBefore: LogicalSelection) {
     if (!mutation) return;
-    this.document.set(applyOp(this.document(), mutation.op));
-    this.#columnarFor = this.document();
+    this.#noteOp(mutation.op);
     this.selection.live.set(mutation.selAfter);
     const tx: EditorTransaction = {
       baseVersion: this.version(),
@@ -157,7 +212,7 @@ export class EditorEngineService {
   }
 
   readonly activeFormats = computed(() => {
-    this.document();
+    this.version();
     const sel = this.selection.active();
     if (!sel)
       return {
@@ -270,7 +325,7 @@ export class EditorEngineService {
   readonly slashState = computed<{ query: string; length: number } | null>(() => {
     const sel = this.selection.active();
     if (!sel || sel.from !== sel.to) return null;
-    this.document();
+    this.version();
     const cd = this.columnar;
     if (!cd.rows) return null;
     const p = pointAt(cd, sel.from);
@@ -328,15 +383,17 @@ export class EditorEngineService {
 
   readonly selectedBlockNode = computed(() => {
     const i = this.selectedBlock();
-    return i !== null ? (this.document()[i] ?? null) : null;
+    if (i === null) return null;
+    this.version();
+    return this.blockAt(i);
   });
 
   selectBlock(index: number) {
-    const block = this.document()[index];
-    if (!block || this.blocks.get(block.type)?.category !== 'void') return;
-    this.pendingMarks.set(null);
     const cd = this.columnar;
-    const pos = cd.startOf(cd.rowOfTopLevel(index));
+    const row = cd.rowOfTopLevel(index);
+    if (row >= cd.rows || this.blocks.get(cd.typeOf(row))?.category !== 'void') return;
+    this.pendingMarks.set(null);
+    const pos = cd.startOf(row);
     this.selection.live.set({ from: pos, to: pos });
     this.selectedBlock.set(index);
   }
@@ -358,47 +415,41 @@ export class EditorEngineService {
   updateSelectedImage(attrs: Record<string, unknown>) {
     const idx = this.selectedBlock();
     if (idx === null) return;
-    const oldDoc = this.document();
-    const block = oldDoc[idx];
-    if (!block || this.blocks.get(block.type)?.category !== 'void') return;
-    const newDoc = [...oldDoc];
-    newDoc[idx] = { ...block, attrs: { ...(block.attrs ?? {}), ...attrs } };
-    this.document.set(newDoc);
-    this.#commit(oldDoc, newDoc, this.selection.active());
+    const cd = this.columnar;
+    const row = cd.rowOfTopLevel(idx);
+    if (row >= cd.rows || this.blocks.get(cd.typeOf(row))?.category !== 'void') return;
+    const patched = blockFromRow(cd, row);
+    patched.attrs = { ...(patched.attrs ?? {}), ...attrs };
+    const sel = this.selection.active() ?? { from: 0, to: 0 };
+    this.#apply(replaceBlocksOp(cd, idx, 1, [patched], sel), sel);
   }
 
   moveBlock(from: number, to: number) {
-    const oldDoc = this.document();
-    if (from < 0 || from >= oldDoc.length || to < 0 || to > oldDoc.length) return;
+    const cd = this.columnar;
+    const count = this.blockCount();
+    if (from < 0 || from >= count || to < 0 || to > count) return;
     if (to === from || to === from + 1) return;
-    const block = oldDoc[from];
-    const newDoc = [...oldDoc];
-    newDoc.splice(from, 1);
     const insertAt = to > from ? to - 1 : to;
-    newDoc.splice(insertAt, 0, block);
-    this.document.set(newDoc);
-    if (this.selectedBlock() === from && this.blocks.get(block.type)?.category === 'void') {
-      this.selectBlock(insertAt);
-    }
-    this.#commit(oldDoc, newDoc, this.selection.active());
+    const lo = Math.min(from, insertAt);
+    const hi = Math.max(from, insertAt);
+    const span: ASTBlockNode[] = [];
+    for (let i = lo; i <= hi; i++) span.push(this.blockAt(i)!);
+    const [moved] = span.splice(from - lo, 1);
+    span.splice(insertAt - lo, 0, moved);
+    const isVoid = this.blocks.get(cd.typeOf(cd.rowOfTopLevel(from)))?.category === 'void';
+    const sel = this.selection.active() ?? { from: 0, to: 0 };
+    this.#apply(replaceBlocksOp(cd, lo, hi - lo + 1, span, sel), sel);
+    if (this.selectedBlock() === from && isVoid) this.selectBlock(insertAt);
   }
 
   deleteSelectedBlock() {
     const idx = this.selectedBlock();
     if (idx === null) return;
-    const oldDoc = this.document();
-    if (!oldDoc[idx]) return;
-    let newDoc = oldDoc.filter((_, i) => i !== idx);
-    if (newDoc.length === 0) newDoc = [{ type: 'paragraph', content: [{ type: 'text', text: '' }] }];
-    this.document.set(newDoc);
+    const sel = this.selection.active() ?? { from: 0, to: 0 };
+    const mutation = deleteBlockOp(this.columnar, idx);
+    if (!mutation) return;
     this.clearBlockSelection();
-    const caretIdx = Math.min(idx, newDoc.length - 1);
-    const cd = this.columnar;
-    const start = cd.startOf(cd.rowOfTopLevel(caretIdx));
-    const p = pointAt(cd, start);
-    const pos = cd.kindOf(p.row) === RowKind.Void ? cd.startOf(p.row) : flatPosAt(cd, p.row, 0);
-    this.selection.live.set({ from: pos, to: pos });
-    this.#commit(oldDoc, newDoc, this.selection.active());
+    this.#apply(mutation, sel);
   }
 
   applyStyle(patch: Record<string, string | null | undefined>) {
@@ -412,7 +463,7 @@ export class EditorEngineService {
   }
 
   readonly currentStyle = computed<Record<string, string>>(() => {
-    this.document();
+    this.version();
     this.selection.active();
     return (this.markAtSelection('style')?.attrs as Record<string, string>) ?? {};
   });
@@ -511,23 +562,40 @@ export class EditorEngineService {
   }
 
   serialize(format: 'html' | 'json' | 'markdown'): any {
-    if (format === 'json') return structuredClone(this.document());
+    if (format === 'json') return fromColumnar(this.#columnar);
     if (format === 'markdown') return astToMarkdown(this.document(), this.blocks, this.inlines);
-    return astToHtml(this.document(), this.blocks, this.inlines);
+    // HTML assembles from the per-block cache, so a keystroke re-serializes
+    // one block, not the document.
+    const count = this.blockCount();
+    let out = '';
+    for (let i = 0; i < count; i++) out += this.renderBlockHtml(i);
+    return out;
   }
 
   reset(doc: ASTDocument) {
-
     const oldDoc = this.document();
-    this.document.set(doc);
-    this.#commit(oldDoc, doc, null);
+    this.#columnar = toColumnar(doc);
+    this.#markAllDirty();
+    const op = diffDocuments(oldDoc, doc);
+    if (op) {
+      const selAfter = this.selection.active();
+      const tx: EditorTransaction = {
+        baseVersion: this.version(),
+        op,
+        selBefore: null,
+        selAfter: selAfter ? { ...selAfter } : null,
+      };
+      this.#undoStack.update((s) => [...s, tx]);
+      if (this.#redoStack().length) this.#redoStack.set([]);
+      this.lastTransaction.set(tx);
+    }
+    this.version.update((v) => v + 1);
   }
 
-  commitDocument(newDoc: ASTDocument) {
-    const oldDoc = this.document();
-    const selBefore = this.selection.active();
-    this.document.set(newDoc);
-    this.#commit(oldDoc, newDoc, selBefore);
+  /** Replace one top-level block in place (DOM reconciliation after IME). */
+  replaceBlock(index: number, block: ASTBlockNode) {
+    const sel = this.selection.active() ?? { from: 0, to: 0 };
+    this.#apply(replaceBlocksOp(this.columnar, index, 1, [block], sel), sel);
   }
 
   undo() {
@@ -536,9 +604,8 @@ export class EditorEngineService {
     if (!tx) return;
     this.#undoStack.set(stack.slice(0, -1));
     const undoOp = invertOp(tx.op);
-    this.#syncColumnar();
-    this.document.set(applyOp(this.document(), undoOp));
-    this.#advanceColumnar(undoOp);
+    applyOpToColumnar(this.#columnar, undoOp);
+    this.#noteOp(undoOp);
     if (tx.selBefore) this.selection.live.set({ ...tx.selBefore });
     this.#redoStack.update((s) => [...s, tx]);
     this.version.update((v) => v + 1);
@@ -549,22 +616,24 @@ export class EditorEngineService {
     const tx = stack[stack.length - 1];
     if (!tx) return;
     this.#redoStack.set(stack.slice(0, -1));
-    this.#syncColumnar();
-    this.document.set(applyOp(this.document(), tx.op));
-    this.#advanceColumnar(tx.op);
+    applyOpToColumnar(this.#columnar, tx.op);
+    this.#noteOp(tx.op);
     if (tx.selAfter) this.selection.live.set({ ...tx.selAfter });
     this.#undoStack.update((s) => [...s, tx]);
     this.version.update((v) => v + 1);
   }
 
   applyRemoteOperation(op: EditorOp) {
+    // The StepMap keeps diffFlat's association semantics exactly (it disagrees
+    // with stepMapFromOp on 7.5% of positions), which needs the old and new
+    // trees — materialized here; remote ops are the one path that still pays
+    // for a tree. A span-scoped equivalent is the follow-up optimization.
     const oldDoc = this.document();
-    this.#syncColumnar();
     const newDoc = applyOp(oldDoc, op);
     const map = diffFlat(oldDoc, newDoc);
     if (!map) return;
-    this.document.set(newDoc);
-    this.#advanceColumnar(op);
+    applyOpToColumnar(this.#columnar, op);
+    this.#noteOp(op);
 
     // Selections are flat positions, so mapping them through a remote op is a
     // direct StepMap lookup — no tree round-trip.
@@ -615,24 +684,4 @@ export class EditorEngineService {
     this.version.update((v) => v + 1);
   }
 
-  #commit(oldDoc: ASTDocument, newDoc: ASTDocument, selBefore: LogicalSelection | null) {
-    const op = diffDocuments(oldDoc, newDoc);
-    if (!op) return;
-    // These paths (reset, DOM reconciliation, block-level UI ops) replace the
-    // tree wholesale, so the columnar mirror is rebuilt rather than advanced —
-    // it may not have been in step with `oldDoc` if the document signal was
-    // set directly.
-    this.#advanceColumnar(null);
-    const selAfter = this.selection.active();
-    const tx: EditorTransaction = {
-      baseVersion: this.version(),
-      op,
-      selBefore: selBefore ? { ...selBefore } : null,
-      selAfter: selAfter ? { ...selAfter } : null,
-    };
-    this.#undoStack.update((s) => [...s, tx]);
-    if (this.#redoStack().length) this.#redoStack.set([]);
-    this.version.update((v) => v + 1);
-    this.lastTransaction.set(tx);
-  }
 }
