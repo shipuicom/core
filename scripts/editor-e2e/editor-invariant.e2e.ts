@@ -145,6 +145,75 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(ast).toHaveLength(2);
     expect(ast[1].content.map((n: any) => n.text).join('')).toBe('worlZZ');
     await expectInvariant(page, 'after last-char paste');
+
+    // ── Reported shapes: pasting inside a quote, and into the last item of a
+    // trailing list (plain text and clipboard HTML). ──
+    const load = (doc: unknown) =>
+      page.evaluate((d) => {
+        (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset(d);
+      }, doc);
+    const caretIn = (blockSelector: string, offset: number) =>
+      page.evaluate(
+        ({ selector, off }) => {
+          const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+          surface.focus();
+          const el = surface.querySelector(selector)!;
+          const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+          const text = walker.nextNode()!;
+          const range = document.createRange();
+          range.setStart(text, off);
+          range.collapse(true);
+          const sel = window.getSelection()!;
+          sel.removeAllRanges();
+          sel.addRange(range);
+          document.dispatchEvent(new Event('selectionchange'));
+        },
+        { selector: blockSelector, off: offset }
+      );
+    const pasteHtml = (html: string) =>
+      page.evaluate((h) => {
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        const dt = new DataTransfer();
+        dt.setData('text/html', h);
+        comp.onPaste(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+      }, html);
+
+    await load([{ type: 'quote', content: [{ type: 'text', text: 'quoted' }] }]);
+    await caretIn('blockquote', 3);
+    await pastePlain('XX');
+    ast = await astOf();
+    expect(ast[0].content.map((n: any) => n.text).join('')).toBe('quoXXted');
+    await expectInvariant(page, 'after paste inside a quote');
+
+    await load([{ type: 'quote', content: [{ type: 'text', text: 'quoted' }] }]);
+    await caretIn('blockquote', 3);
+    await pasteHtml('<ul><li>a</li></ul>');
+    ast = await astOf();
+    expect(ast.map((b: any) => b.type)).toEqual(['quote', 'bullet-list', 'quote']);
+    await expectInvariant(page, 'after pasting a list into a quote');
+
+    const trailingList = [
+      { type: 'paragraph', content: [{ type: 'text', text: 'top' }] },
+      { type: 'bullet-list', content: [
+        { type: 'list-item', content: [{ type: 'text', text: 'one' }] },
+        { type: 'list-item', content: [{ type: 'text', text: 'two' }] },
+      ] },
+    ];
+    await load(trailingList);
+    await caretIn('ul li:last-child', 1);
+    await pastePlain('XX');
+    ast = await astOf();
+    expect(ast[1].content[1].content.map((n: any) => n.text).join('')).toBe('tXXwo');
+    await expectInvariant(page, 'after paste into a trailing list item');
+
+    await load(trailingList);
+    await page.locator('.sh-editor-content > p').first().click();
+    await page.keyboard.press('ControlOrMeta+a');
+    await pastePlain('gone');
+    ast = await astOf();
+    expect(ast).toHaveLength(1);
+    expect(ast[0].content.map((n: any) => n.text).join('')).toBe('gone');
+    await expectInvariant(page, 'after select-all paste over a trailing list');
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
