@@ -1108,19 +1108,171 @@ export function insertFragmentOp(
   });
 }
 
-/** Change the selected blocks' type, with the tree primitive's full physics. */
+/**
+ * Change the selected blocks' type, mirroring the tree primitive's physics:
+ * toggling back to paragraph when everything already matches, wrapping into /
+ * unwrapping from containers, flattening into and exploding out of code
+ * blocks, and stashing content through void conversions.
+ */
 export function setBlockTypeOp(
   cd: ColumnarDocument,
   sel: LogicalSelection,
-  type: string,
+  targetType: string,
   blocks: Map<string, BaseBlockBehavior>,
   attrs?: Record<string, any>
 ): ColumnarMutation | null {
+  const targetBehavior = blocks.get(targetType);
+  if (!targetBehavior) return null;
+
   const a = pointAt(cd, sel.from);
   const b = pointAt(cd, sel.to);
-  const baseTop = topIndexOf(cd, rootOf(cd, a.row));
-  const lastTop = topIndexOf(cd, rootOf(cd, b.row));
-  return viaTree(cd, sel, baseTop, lastTop - baseTop + 1, blocks, false, (doc, s) => setBlockType(doc, s, type, blocks, attrs));
+  const startTop = topIndexOf(cd, rootOf(cd, a.row));
+  const endTop = topIndexOf(cd, rootOf(cd, b.row));
+  const count = endTop - startTop + 1;
+
+  const roots: number[] = [];
+  {
+    let row = cd.rowOfTopLevel(startTop);
+    for (let i = 0; i < count && row < cd.rows; i++) {
+      roots.push(row);
+      row += spanOfRoot(cd, row);
+    }
+  }
+
+  const attrsMatch = (row: number) =>
+    attrs ? Object.entries(attrs).every(([k, v]) => (cd.attrsOf(row) as any)?.[k] === v) : true;
+  const allMatch = roots.every((r) => cd.typeOf(r) === targetType && attrsMatch(r));
+  const finalType = allMatch ? 'paragraph' : targetType;
+  const finalBehavior = blocks.get(finalType);
+
+  if (finalBehavior?.category === 'container') {
+    if (allMatch) {
+      // Unwrap: every container in the range explodes into paragraphs.
+      const out: ASTBlockNode[] = [];
+      for (const r of roots) {
+        if (cd.kindOf(r) === RowKind.Container) {
+          for (const c of childrenOf(cd, r)) out.push({ type: 'paragraph', content: inlineNodesOf(cd, c) });
+        } else out.push(blockFromRow(cd, r));
+      }
+      return withSpanOp(cd, startTop, count, () => {
+        replaceRoots(cd, startTop, count, out);
+        return {
+          from: flatPosOfBlockChar(cd, { blockIndex: startTop, charOffset: 0 }),
+          to: flatPosOfBlockChar(cd, { blockIndex: startTop + out.length - 1, charOffset: 0 }),
+        };
+      });
+    }
+    // Wrap the whole range into one container.
+    const items: ASTBlockNode[] = [];
+    for (const r of roots) {
+      const kind = cd.kindOf(r);
+      if (kind === RowKind.Void) {
+        const stashed = cd.attrsOf(r)?.['stashed'] as { content?: ASTInlineNode[] } | undefined;
+        if (stashed?.content) items.push({ type: 'list-item', content: structuredClone(stashed.content) });
+      } else if (kind === RowKind.Container) {
+        for (const c of childrenOf(cd, r)) items.push(blockFromRow(cd, c));
+      } else {
+        items.push({ type: 'list-item', content: inlineNodesOf(cd, r) });
+      }
+    }
+    return withSpanOp(cd, startTop, count, () => {
+      replaceRoots(cd, startTop, count, [{ type: finalType, ...(attrs ? { attrs } : {}), content: items }]);
+      return caretSel(flatPosOfBlockChar(cd, { blockIndex: startTop, itemIndex: 0, charOffset: 0 }));
+    });
+  }
+
+  if (finalType === 'code-block') {
+    // Flatten the range into one code block, one line per holder.
+    const parts: string[] = [];
+    for (const r of roots) {
+      const kind = cd.kindOf(r);
+      if (kind === RowKind.Container) parts.push(childrenOf(cd, r).map((c) => cd.textOf(c)).join('\n'));
+      else if (kind === RowKind.Void) parts.push('');
+      else parts.push(cd.textOf(r));
+    }
+    const rawText = parts.join('\n');
+    return withSpanOp(cd, startTop, count, () => {
+      replaceRoots(cd, startTop, count, [{ type: 'code-block', content: [{ type: 'text', text: rawText }] }]);
+      return caretSel(flatPosOfBlockChar(cd, { blockIndex: startTop, charOffset: rawText.length }));
+    });
+  }
+
+  if (allMatch && targetType === 'code-block') {
+    // Explode a code block back into one paragraph per line.
+    const out: ASTBlockNode[] = [];
+    for (const r of roots) {
+      for (const line of cd.textOf(r).split('\n')) {
+        out.push({ type: 'paragraph', content: [{ type: 'text', text: line }] });
+      }
+    }
+    return withSpanOp(cd, startTop, count, () => {
+      replaceRoots(cd, startTop, count, out);
+      return caretSel(flatPosOfBlockChar(cd, { blockIndex: startTop, charOffset: 0 }));
+    });
+  }
+
+  // Per-block conversion, stashing through void targets.
+  const finalAttrs = allMatch ? undefined : attrs;
+  const finalIsVoid = finalBehavior?.category === 'void';
+  const finalIsText = finalBehavior?.category === 'text';
+  const toTarget = (srcType: string, srcAttrs: Record<string, unknown> | undefined, content: ASTInlineNode[]): ASTBlockNode => {
+    if (finalIsVoid) {
+      return {
+        type: finalType,
+        attrs: {
+          ...(finalAttrs ?? {}),
+          stashed: { type: srcType, attrs: srcAttrs ? structuredClone(srcAttrs) : undefined, content: structuredClone(content) },
+        },
+        content: [],
+      };
+    }
+    return { type: finalType, ...(finalAttrs ? { attrs: finalAttrs } : {}), content: structuredClone(content) };
+  };
+
+  const out: ASTBlockNode[] = [];
+  for (const r of roots) {
+    const category = blocks.get(cd.typeOf(r))?.category;
+    if (category === 'container' && finalType !== cd.typeOf(r)) {
+      for (const c of childrenOf(cd, r)) out.push(toTarget(cd.typeOf(c), cd.attrsOf(c), inlineNodesOf(cd, c)));
+    } else if (category === 'text') {
+      out.push(toTarget(cd.typeOf(r), cd.attrsOf(r), inlineNodesOf(cd, r)));
+    } else if (category === 'void' && finalIsText) {
+      const stashed = cd.attrsOf(r)?.['stashed'] as { content?: ASTInlineNode[] } | undefined;
+      out.push({
+        type: finalType,
+        ...(finalAttrs ? { attrs: finalAttrs } : {}),
+        content: stashed?.content ? structuredClone(stashed.content) : [{ type: 'text', text: '' }],
+      });
+    } else {
+      out.push(blockFromRow(cd, r));
+    }
+  }
+
+  // The selection keeps its block/character shape, dropped onto the new blocks.
+  const bpFrom = blockPointAt(cd, sel.from);
+  const bpTo = sel.from === sel.to ? bpFrom : blockPointAt(cd, sel.to);
+  return withSpanOp(cd, startTop, count, () => {
+    replaceRoots(cd, startTop, count, out);
+    const from = flatPosOfBlockChar(cd, { blockIndex: bpFrom.blockIndex, charOffset: bpFrom.charOffset });
+    const to = sel.from === sel.to ? from : flatPosOfBlockChar(cd, { blockIndex: bpTo.blockIndex, charOffset: bpTo.charOffset });
+    return { from, to };
+  });
+}
+
+/** Merged `[start, end)` intervals of one mark type over a row. */
+function typeIntervals(cd: ColumnarDocument, row: number, markType: string): [number, number][] {
+  const [qFrom, qTo] = cd.runRangeOf(row);
+  const quads = cd.markRuns;
+  const out: [number, number][] = [];
+  for (let q = qFrom; q < qTo; q++) {
+    if (cd.markDefs[quads[q * 4 + 3]].type !== markType) continue;
+    const start = quads[q * 4 + 1];
+    const end = quads[q * 4 + 2];
+    const last = out[out.length - 1];
+    if (last && start <= last[1]) last[1] = Math.max(last[1], end);
+    else out.push([start, end]);
+  }
+  return out;
 }
 
 /** Toggle (or force) a mark over the selected range. */
@@ -1137,5 +1289,49 @@ export function toggleMarkOp(
   const b = pointAt(cd, sel.to);
   const baseTop = topIndexOf(cd, rootOf(cd, a.row));
   const lastTop = topIndexOf(cd, rootOf(cd, b.row));
-  return viaTree(cd, sel, baseTop, lastTop - baseTop + 1, blocks, false, (doc, s) => toggleMark(doc, s, markType, attrs, blocks, force));
+
+  // The text rows the range crosses, with the local extent in each.
+  const segments: { row: number; s: number; e: number }[] = [];
+  for (let r = a.row; r <= b.row; r++) {
+    if (cd.kindOf(r) !== RowKind.Text) continue;
+    segments.push({
+      row: r,
+      s: r === a.row ? a.offset : 0,
+      e: r === b.row ? b.offset : cd.textOf(r).length,
+    });
+  }
+
+  const active = segments.filter((seg) => seg.e > seg.s);
+  const fullyMarked = (seg: { row: number; s: number; e: number }) =>
+    typeIntervals(cd, seg.row, markType).some(([s, e]) => s <= seg.s && e >= seg.e);
+  const allMarked = active.length > 0 && active.every(fullyMarked);
+  const mode: 'add' | 'remove' = force ?? (allMarked ? 'remove' : 'add');
+
+  return withSpanOp(cd, baseTop, lastTop - baseTop + 1, () => {
+    const mark: ASTMark = { type: markType };
+    if (attrs && Object.keys(attrs).length > 0) mark.attrs = attrs;
+
+    for (const seg of active) {
+      const runs = runsOfRow(cd, seg.row);
+      const next: Run[] = [];
+      for (const run of runs) {
+        if (run.mark.type !== markType) {
+          next.push(run);
+          continue;
+        }
+        if (mode === 'add' && !force) {
+          // A plain toggle keeps existing same-type coverage (and its attrs);
+          // only the gaps gain the new mark.
+          next.push(run);
+          continue;
+        }
+        // Remove — or force-add, which replaces attrs — subtracts the range.
+        if (run.start < seg.s) next.push({ start: run.start, end: Math.min(run.end, seg.s), mark: run.mark });
+        if (run.end > seg.e) next.push({ start: Math.max(run.start, seg.e), end: run.end, mark: run.mark });
+      }
+      if (mode === 'add') next.push({ start: seg.s, end: seg.e, mark: cloneMark(mark) });
+      cd.setMarks(seg.row, next);
+    }
+    return { from: sel.from, to: sel.to };
+  });
 }
