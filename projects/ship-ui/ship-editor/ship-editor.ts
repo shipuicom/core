@@ -289,9 +289,12 @@ export class ShipEditor implements ControlValueAccessor {
       this.engine.version();
       if (!this.#viewReady()) return;
       const container = this.surface().nativeElement;
-      container
-        .querySelectorAll('.sh-editor-block-selected')
-        .forEach((el) => el.classList.remove('sh-editor-block-selected'));
+      container.querySelectorAll('.sh-editor-block-selected').forEach((el) => {
+        el.classList.remove('sh-editor-block-selected');
+        // An emptied class attribute would make the element's outerHTML
+        // diverge from the render cache and defeat its equality check.
+        if (!el.className) el.removeAttribute('class');
+      });
       if (idx === null) return;
 
       const cd = this.engine.columnar;

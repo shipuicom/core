@@ -818,6 +818,18 @@ describe('EditorEngine integration', () => {
       engine.undo();
       expect(html()).toBe('<p>a</p><hr><p>b</p>');
     });
+
+    it('pasting an identical void over itself deselects and moves the caret after it', () => {
+      engine.load([p('a'), { type: 'hr', content: [] }, p('b')] as ASTDocument);
+      engine.selectBlock(1);
+      engine.replaceSelectedBlock([{ type: 'hr', content: [] }] as ASTDocument);
+      expect(html()).toBe('<p>a</p><hr><p>b</p>');
+      expect(engine.selectedBlock()).toBeNull();
+      expect(engine.canUndo()).toBe(false);
+      // A second paste now lands after the hr instead of replacing it.
+      engine.insertFragment([{ type: 'hr', content: [] }] as ASTDocument);
+      expect(html()).toBe('<p>a</p><hr><hr><p>b</p>');
+    });
   });
 
   describe('insertFragment (paste)', () => {

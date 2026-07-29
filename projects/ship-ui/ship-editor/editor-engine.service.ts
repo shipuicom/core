@@ -457,10 +457,11 @@ export class EditorEngineService {
     const idx = this.selectedBlock();
     if (idx === null) return;
     const sel = this.selection.active() ?? { from: 0, to: 0 };
-    const mutation = replaceBlockWithFragmentOp(this.columnar, idx, fragment);
-    if (!mutation) return;
+    const result = replaceBlockWithFragmentOp(this.columnar, idx, fragment);
+    if (!result) return;
     this.clearBlockSelection();
-    this.#apply(mutation, sel);
+    if (result.op) this.#apply(result as ColumnarMutation, sel);
+    else this.selection.live.set(result.selAfter);
   }
 
   deleteSelectedBlock() {

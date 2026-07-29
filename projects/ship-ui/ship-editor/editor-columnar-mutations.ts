@@ -1333,13 +1333,22 @@ export function replaceBlocksOp(
 }
 
 /** Replace one top-level block with a pasted fragment; caret after its end. */
-export function replaceBlockWithFragmentOp(cd: ColumnarDocument, index: number, fragment: ASTDocument): ColumnarMutation | null {
+export function replaceBlockWithFragmentOp(
+  cd: ColumnarDocument,
+  index: number,
+  fragment: ASTDocument
+): ColumnarMutation | { op: null; selAfter: LogicalSelection } | null {
   if (!fragment.length || index < 0 || index >= countTops(cd)) return null;
-  return withSpanOp(cd, index, 1, () => {
+  let selAfter: LogicalSelection | null = null;
+  const mutation = withSpanOp(cd, index, 1, () => {
     replaceRoots(cd, index, 1, structuredClone(fragment));
     const edge = Number.MAX_SAFE_INTEGER;
-    return caretSel(flatPosOfBlockChar(cd, { blockIndex: index + fragment.length - 1, itemIndex: edge, charOffset: edge }));
+    return (selAfter = caretSel(flatPosOfBlockChar(cd, { blockIndex: index + fragment.length - 1, itemIndex: edge, charOffset: edge })));
   });
+  if (mutation) return mutation;
+  // Pasting a copy of the block over itself (hr onto hr) nets no op; the
+  // block still deselects and the caret lands after it.
+  return selAfter ? { op: null, selAfter } : null;
 }
 
 /** Delete a top-level block; an emptied document becomes one empty paragraph. */
