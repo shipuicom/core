@@ -335,6 +335,92 @@ export function topLevelBlocks(cd: ColumnarDocument, topIndex: number, count: nu
   return out;
 }
 
+/**
+ * The document fragment a flat selection covers, materialized as AST blocks
+ * with the boundary blocks trimmed to the selection's character offsets.
+ *
+ * Exists for clipboard serialization when the DOM cannot provide it: a
+ * virtualized window mounts only a slice of the document, so a native copy of
+ * the DOM selection would silently truncate the clipboard.
+ */
+export function sliceDocument(cd: ColumnarDocument, sel: LogicalSelection): ASTDocument {
+  if (!cd.rows || sel.from === sel.to) return [];
+  const from = Math.min(sel.from, sel.to);
+  const to = Math.max(sel.from, sel.to);
+  const a = pointAt(cd, from);
+  const b = pointAt(cd, to);
+  const rootA = rootRowOf(cd, a.row);
+  const rootB = rootRowOf(cd, b.row);
+
+  const textBlock = (row: number, lo: number, hi: number): ASTBlockNode => {
+    const attrs = cd.attrsOf(row);
+    return {
+      type: cd.typeOf(row),
+      ...(attrs ? { attrs: structuredClone(attrs) } : {}),
+      content: inlineNodesOf(cd, row, lo, hi),
+    };
+  };
+
+  const out: ASTBlockNode[] = [];
+  for (let root = rootA; root <= rootB; root += spanOfRoot(cd, root)) {
+    const kind = cd.kindOf(root);
+    // A selection ending on a block's opening boundary selects none of it.
+    if (root === rootB && root !== rootA && to <= cd.startOf(root) + (kind === RowKind.Void ? 0 : 1)) break;
+
+    if (kind === RowKind.Void) {
+      out.push(blockFromRow(cd, root));
+      continue;
+    }
+
+    if (kind === RowKind.Text) {
+      // A selection starting past a block's last character selects none of it.
+      if (root === rootA && root !== rootB && a.offset >= cd.textOf(root).length) continue;
+      const lo = root === rootA ? a.offset : 0;
+      const hi = root === rootB ? b.offset : Infinity;
+      out.push(textBlock(root, lo, hi));
+      continue;
+    }
+
+    // Container: keep the covered items, trimming the boundary items' text.
+    // `pointAt` never lands on a container row itself, so the endpoints
+    // address child rows when they fall inside this container.
+    const kids = childrenOf(cd, root);
+    const firstOrd = root === rootA ? childOrdinal(cd, root, a.row) : 0;
+    const lastOrd = root === rootB ? childOrdinal(cd, root, b.row) : kids.length - 1;
+    const items: ASTBlockNode[] = [];
+    for (let i = firstOrd; i <= lastOrd && i < kids.length; i++) {
+      const row = kids[i];
+      if (cd.kindOf(row) !== RowKind.Text) {
+        items.push(blockFromRow(cd, row));
+        continue;
+      }
+      const lo = root === rootA && row === a.row ? a.offset : 0;
+      const hi = root === rootB && row === b.row ? b.offset : Infinity;
+      items.push(textBlock(row, lo, hi));
+    }
+    if (!items.length) continue;
+    const rootAttrs = cd.attrsOf(root);
+    out.push({ type: cd.typeOf(root), ...(rootAttrs ? { attrs: structuredClone(rootAttrs) } : {}), content: items });
+  }
+  return out;
+}
+
+/** Plain-text projection of a sliced fragment, blocks separated by blank lines. */
+export function fragmentPlainText(fragment: ASTDocument): string {
+  const textOfBlock = (block: ASTBlockNode): string => {
+    const content = (block.content ?? []) as (ASTInlineNode | ASTBlockNode)[];
+    if (!content.length) return '';
+    if (typeof (content[0] as ASTInlineNode).text === 'string') {
+      return (content as ASTInlineNode[]).map((n) => n.text ?? '').join('');
+    }
+    return (content as ASTBlockNode[]).map(textOfBlock).join('\n');
+  };
+  return fragment
+    .map(textOfBlock)
+    .filter((t) => t.length > 0)
+    .join('\n\n');
+}
+
 // ---------------------------------------------------------------------------
 // Row-level mutation helpers
 // ---------------------------------------------------------------------------
