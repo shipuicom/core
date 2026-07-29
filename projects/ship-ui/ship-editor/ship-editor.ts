@@ -873,33 +873,103 @@ export class ShipEditor implements ControlValueAccessor {
   }
 
   /**
-   * Patch only the blocks the engine marked dirty since the last render.
+   * Replay the engine's render hints against the DOM.
    *
-   * An inline op dirties exactly one block; a structural op dirties its index
-   * and everything after (indices shift). Clean blocks are never visited, so a
-   * keystroke touches one element — and the HTML comes from the engine's
-   * per-block cache, which serialize() shares.
+   * An inline op re-renders exactly one element; a structural op is a DOM
+   * splice — remove the replaced elements, insert the new ones, and the
+   * suffix shifts in place without being touched. Anything unexpected falls
+   * back to a full reconciliation pass.
    */
   private patchDOM() {
     const container = this.surface().nativeElement;
-    const dirty = this.engine.consumeRenderDirty();
+    const hints = this.engine.consumeRenderHints();
     const count = this.engine.blockCount();
 
-    for (let i = 0; i < count; i++) {
-      const existingEl = container.children[i] as HTMLElement | undefined;
-      if (existingEl && i < dirty.from && !dirty.blocks.has(i)) continue;
-
-      const newHTML = this.engine.renderBlockHtml(i);
-      if (!existingEl) {
-        const el = this.#htmlToElement(newHTML);
-        if (el) container.appendChild(el);
-      } else if (existingEl.outerHTML !== newHTML) {
-        const el = this.#htmlToElement(newHTML);
-        if (el) existingEl.replaceWith(el);
+    let full = false;
+    for (const hint of hints) {
+      if (hint.kind === 'all') {
+        full = true;
+        break;
       }
+      if (hint.kind === 'block') {
+        const el = container.children[hint.index] as HTMLElement | undefined;
+        if (!el) {
+          full = true;
+          break;
+        }
+        const html = this.engine.renderBlockHtml(hint.index);
+        if (el.outerHTML !== html) {
+          const next = this.#htmlToElement(html);
+          // Prefer patching text data into the existing nodes: replacing the
+          // caret's element forces the browser to re-canonicalize the
+          // selection over the whole editing host, which measured ~15ms per
+          // keystroke at 10k blocks. A character-data change keeps layout
+          // incremental and the caret's text node alive.
+          if (next && !this.#patchTextInPlace(el, next)) el.replaceWith(next);
+          else if (!next) full = true;
+        }
+      } else {
+        for (let i = 0; i < hint.remove; i++) container.children[hint.at]?.remove();
+        const before = container.children[hint.at] ?? null;
+        for (let i = 0; i < hint.insert; i++) {
+          const next = this.#htmlToElement(this.engine.renderBlockHtml(hint.at + i));
+          if (next) container.insertBefore(next, before);
+          else full = true;
+        }
+      }
+      if (full) break;
     }
 
-    while (container.children.length > count) container.lastElementChild?.remove();
+    if (full || container.children.length !== count) {
+      for (let i = 0; i < count; i++) {
+        const el = container.children[i] as HTMLElement | undefined;
+        const html = this.engine.renderBlockHtml(i);
+        if (!el) {
+          const next = this.#htmlToElement(html);
+          if (next) container.appendChild(next);
+        } else if (el.outerHTML !== html) {
+          const next = this.#htmlToElement(html);
+          if (next) el.replaceWith(next);
+        }
+      }
+      while (container.children.length > count) container.lastElementChild?.remove();
+    }
+  }
+
+  /**
+   * If `el` and `next` have identical element structure and attributes and
+   * differ only in text data, copy the text into `el`'s existing nodes and
+   * report true. Any structural difference reports false, and the caller
+   * replaces the element wholesale.
+   */
+  #patchTextInPlace(el: Element, next: Element): boolean {
+    const sameShape = (a: Node, b: Node): boolean => {
+      if (a.nodeType !== b.nodeType) return false;
+      if (a.nodeType === Node.ELEMENT_NODE) {
+        const ea = a as Element;
+        const eb = b as Element;
+        if (ea.tagName !== eb.tagName || ea.attributes.length !== eb.attributes.length) return false;
+        for (const attr of Array.from(eb.attributes)) {
+          if (ea.getAttribute(attr.name) !== attr.value) return false;
+        }
+        if (a.childNodes.length !== b.childNodes.length) return false;
+        for (let i = 0; i < a.childNodes.length; i++) {
+          if (!sameShape(a.childNodes[i], b.childNodes[i])) return false;
+        }
+      }
+      return true;
+    };
+    if (!sameShape(el, next)) return false;
+
+    const copyText = (a: Node, b: Node) => {
+      if (a.nodeType === Node.TEXT_NODE) {
+        if (a.textContent !== b.textContent) a.textContent = b.textContent;
+        return;
+      }
+      for (let i = 0; i < a.childNodes.length; i++) copyText(a.childNodes[i], b.childNodes[i]);
+    };
+    copyText(el, next);
+    return true;
   }
 
   #htmlToElement(html: string): Element | null {
@@ -1135,6 +1205,18 @@ export class ShipEditor implements ControlValueAccessor {
           if (end) range.setEnd(end.node, end.offset);
         }
         const domSel = window.getSelection();
+        // addRange re-canonicalizes the selection over the whole editing
+        // host; skip it when the DOM selection already matches.
+        if (
+          domSel &&
+          domSel.rangeCount === 1 &&
+          domSel.anchorNode === range.startContainer &&
+          domSel.anchorOffset === range.startOffset &&
+          domSel.focusNode === range.endContainer &&
+          domSel.focusOffset === range.endOffset
+        ) {
+          return;
+        }
         domSel?.removeAllRanges();
         domSel?.addRange(range);
       }

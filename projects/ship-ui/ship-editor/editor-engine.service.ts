@@ -30,6 +30,12 @@ import { EditorOp, EditorTransaction, diffDocuments, invertOp, transformOp } fro
 import { ASTBlockNode, ASTDocument, ASTMark, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 
+/** What the DOM must do to catch up with one op. */
+export type RenderHint =
+  | { kind: 'all' }
+  | { kind: 'block'; index: number }
+  | { kind: 'splice'; at: number; remove: number; insert: number };
+
 @Injectable()
 export class EditorEngineService {
   readonly selection = inject(EditorSelectionService);
@@ -65,23 +71,24 @@ export class EditorEngineService {
   }
 
   // -------------------------------------------------------------------------
-  // Render bookkeeping: which top-level blocks changed since the DOM last
-  // looked, plus a per-block HTML cache shared by patchDOM and serialize.
+  // Render bookkeeping: the ops since the DOM last looked, expressed as
+  // render hints, plus a per-block HTML cache shared by patchDOM and
+  // serialize. A structural op is a DOM *splice* — the suffix shifts without
+  // being touched — which is what keeps Enter O(1) instead of re-rendering
+  // every block after the caret.
   // -------------------------------------------------------------------------
 
   #htmlCache: (string | undefined)[] = [];
   #mdCache: (string | undefined)[] = [];
-  #dirtyBlocks = new Set<number>();
-  /** Suffix threshold: indices at or past this shifted structurally. */
-  #dirtyFrom = 0;
+  #renderHints: RenderHint[] = [{ kind: 'all' }];
 
   #noteOp(op: EditorOp) {
     if (op.kind === 'inline') {
-      this.#dirtyBlocks.add(op.blockIndex);
+      this.#renderHints.push({ kind: 'block', index: op.blockIndex });
       this.#htmlCache[op.blockIndex] = undefined;
       this.#mdCache[op.blockIndex] = undefined;
     } else {
-      this.#dirtyFrom = Math.min(this.#dirtyFrom, op.at);
+      this.#renderHints.push({ kind: 'splice', at: op.at, remove: op.removed.length, insert: op.inserted.length });
       // The suffix shifts but its content is unchanged; splicing keeps those
       // blocks' rendered output reusable at their new indices.
       const blanks = () => new Array<string | undefined>(op.inserted.length).fill(undefined);
@@ -91,17 +98,15 @@ export class EditorEngineService {
   }
 
   #markAllDirty() {
-    this.#dirtyFrom = 0;
-    this.#dirtyBlocks.clear();
+    this.#renderHints = [{ kind: 'all' }];
     this.#htmlCache = [];
     this.#mdCache = [];
   }
 
-  /** Blocks the DOM must re-check, consumed by the render pass. */
-  consumeRenderDirty(): { blocks: Set<number>; from: number } {
-    const out = { blocks: this.#dirtyBlocks, from: this.#dirtyFrom };
-    this.#dirtyBlocks = new Set();
-    this.#dirtyFrom = Number.MAX_SAFE_INTEGER;
+  /** The ops since the last render, as hints; consumed by the render pass. */
+  consumeRenderHints(): RenderHint[] {
+    const out = this.#renderHints;
+    this.#renderHints = [];
     return out;
   }
 
