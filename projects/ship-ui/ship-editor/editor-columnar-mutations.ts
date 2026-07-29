@@ -516,50 +516,62 @@ function insertionMarks(cd: ColumnarDocument, row: number, offset: number, inlin
 }
 
 /**
- * Delete `[a, b)` where both points are text rows, mutating rows in place.
- * Returns false when an endpoint needs the tree fallback (void endpoints).
+ * Delete `[a, b)`, mutating rows in place.
+ *
+ * Text endpoints merge: the start holder keeps its head and receives the end
+ * holder's tail. A void start point means the void itself is inside the range
+ * and is consumed — the end holder keeps its tail in place. A void end point
+ * consumes the void (matching the tree primitive, which spliced the end block
+ * out).
  */
-function deleteRangeRows(cd: ColumnarDocument, a: RowPoint, b: RowPoint): boolean {
-  if (cd.kindOf(a.row) !== RowKind.Text || cd.kindOf(b.row) !== RowKind.Text) return false;
-
+function deleteRangeRows(cd: ColumnarDocument, a: RowPoint, b: RowPoint): void {
   if (a.row === b.row) {
-    if (b.offset > a.offset) spliceRowText(cd, a.row, a.offset, b.offset - a.offset, '', []);
-    return true;
+    if (cd.kindOf(a.row) === RowKind.Text && b.offset > a.offset) {
+      spliceRowText(cd, a.row, a.offset, b.offset - a.offset, '', []);
+    }
+    return;
   }
 
-  // Capture the tail of the end row before any rows move.
-  const bText = cd.textOf(b.row);
-  const tailText = bText.slice(b.offset);
-  const tailRuns: Run[] = runsOfRow(cd, b.row)
-    .filter((r) => r.end > b.offset)
-    .map((r) => ({ start: Math.max(0, r.start - b.offset), end: r.end - b.offset, mark: cloneMark(r.mark) }));
-
+  const aIsText = cd.kindOf(a.row) === RowKind.Text;
+  const bIsText = cd.kindOf(b.row) === RowKind.Text;
   const rootA = rootOf(cd, a.row);
   const rootB = rootOf(cd, b.row);
 
-  // Truncate the start row.
-  spliceRowText(cd, a.row, a.offset, cd.textOf(a.row).length - a.offset, '', []);
+  // Capture the tail of the end row before any rows move.
+  const tailText = bIsText ? cd.textOf(b.row).slice(b.offset) : '';
+  const tailRuns = bIsText ? clipRuns(cd, b.row, b.offset, Infinity) : [];
 
-  if (rootA === rootB) {
-    // Between two items of the same container: drop the rows in between and
-    // the end row, then append its tail.
-    cd.removeRows(a.row + 1, b.row - a.row);
-  } else {
-    // Does the end container keep any items past the end row?
-    const endSpanEnd = rootB + spanOfRoot(cd, rootB);
-    const survivors = rootB !== b.row && b.row + 1 < endSpanEnd;
-    if (survivors) {
-      // Keep the end container's row; drop its consumed items, everything
-      // between the roots, and the start root's trailing rows.
-      cd.removeRows(rootB + 1, b.row - rootB);
-      cd.removeRows(a.row + 1, rootB - a.row - 1);
-    } else {
+  if (aIsText) {
+    // Truncate the start row, then drop everything through the end point.
+    spliceRowText(cd, a.row, a.offset, cd.textOf(a.row).length - a.offset, '', []);
+
+    if (rootA === rootB) {
       cd.removeRows(a.row + 1, b.row - a.row);
+    } else {
+      const endSpanEnd = rootB + spanOfRoot(cd, rootB);
+      const survivors = bIsText && rootB !== b.row && b.row + 1 < endSpanEnd;
+      if (survivors) {
+        // Keep the end container's row; drop its consumed items, everything
+        // between the roots, and the start root's trailing rows.
+        cd.removeRows(rootB + 1, b.row - rootB);
+        cd.removeRows(a.row + 1, rootB - a.row - 1);
+      } else {
+        cd.removeRows(a.row + 1, b.row - a.row);
+      }
     }
+    if (tailText) spliceRowText(cd, a.row, a.offset, 0, tailText, tailRuns);
+    return;
   }
 
-  if (tailText) spliceRowText(cd, a.row, a.offset, 0, tailText, tailRuns);
-  return true;
+  // The start point sits on a void: the void is consumed with the range, and
+  // the end holder keeps its own tail rather than merging anywhere.
+  if (bIsText) {
+    cd.deleteText(b.row, 0, b.offset);
+    if (rootB !== b.row && b.row > rootB + 1) cd.removeRows(rootB + 1, b.row - rootB - 1);
+    cd.removeRows(a.row, rootB - a.row);
+  } else {
+    cd.removeRows(a.row, b.row - a.row + 1);
+  }
 }
 
 /**
@@ -578,22 +590,21 @@ export function insertTextOp(
   const a = pointAt(cd, sel.from);
   const b = pointAt(cd, sel.to);
   const isCollapsed = sel.from === sel.to;
+
+  // Text cannot land on a void row.
+  if (isCollapsed && cd.kindOf(a.row) !== RowKind.Text) return null;
+
   const baseTop = topIndexOf(cd, rootOf(cd, a.row));
   const lastTop = topIndexOf(cd, rootOf(cd, b.row));
-
-  if (cd.kindOf(a.row) !== RowKind.Text || cd.kindOf(b.row) !== RowKind.Text) {
-    // Void endpoints — rare; keep the tree primitives' exact behaviour.
-    return viaTree(cd, sel, baseTop, lastTop - baseTop + 1, blocks, true, (doc, s) => executeInsertText(doc, s, text, inlines, blocks));
-  }
 
   return withSpanOp(cd, baseTop, lastTop - baseTop + 1, () => {
     if (!isCollapsed) deleteRangeRows(cd, a, b);
     const p = pointAt(cd, sel.from);
+    if (cd.kindOf(p.row) !== RowKind.Text) return caretSel(sel.from);
     const marks = pendingMarks ?? insertionMarks(cd, p.row, p.offset, inlines);
     const textRuns: Run[] = marks.map((mark) => ({ start: 0, end: text.length, mark }));
     spliceRowText(cd, p.row, p.offset, 0, text, textRuns);
-    const caret = sel.from + text.length;
-    return { from: caret, to: caret };
+    return caretSel(sel.from + text.length);
   });
 }
 
@@ -605,13 +616,9 @@ export function deleteRangeOp(cd: ColumnarDocument, sel: LogicalSelection, block
   const baseTop = topIndexOf(cd, rootOf(cd, a.row));
   const lastTop = topIndexOf(cd, rootOf(cd, b.row));
 
-  if (cd.kindOf(a.row) !== RowKind.Text || cd.kindOf(b.row) !== RowKind.Text) {
-    return viaTree(cd, sel, baseTop, lastTop - baseTop + 1, blocks, false, (doc, s) => deleteRange(doc, s, blocks));
-  }
-
   return withSpanOp(cd, baseTop, lastTop - baseTop + 1, () => {
     deleteRangeRows(cd, a, b);
-    return { from: sel.from, to: sel.from };
+    return caretSel(sel.from);
   });
 }
 
@@ -834,7 +841,100 @@ export function enterOp(cd: ColumnarDocument, sel: LogicalSelection, blocks: Map
   const b = pointAt(cd, sel.to);
   const baseTop = topIndexOf(cd, rootOf(cd, a.row));
   const lastTop = topIndexOf(cd, rootOf(cd, b.row));
-  return viaTree(cd, sel, baseTop, lastTop - baseTop + 1, blocks, true, (doc, s) => handleEnter(doc, s, blocks));
+
+  return withSpanOp(cd, baseTop, lastTop - baseTop + 1, () => {
+    if (sel.from !== sel.to) deleteRangeRows(cd, a, b);
+    const p = pointAt(cd, sel.from);
+    const root = rootOf(cd, p.row);
+    const top = topIndexOf(cd, root);
+    const behavior = blocks.get(cd.typeOf(root));
+    if (!behavior) return caretSel(sel.from);
+    const physics = behavior.enterPhysics;
+
+    if (behavior.category === 'void' || physics.strategy === 'insert-default-below') {
+      const type = physics.defaultSplitTarget || 'paragraph';
+      const at = root + spanOfRoot(cd, root);
+      cd.insertRows(at, [{ type, kind: RowKind.Text, text: '' }]);
+      return caretSel(flatPosAt(cd, at, 0));
+    }
+
+    if (behavior.category === 'container') {
+      const spanEnd = root + spanOfRoot(cd, root);
+      const itemIdx = childOrdinal(cd, root, p.row);
+
+      if (cd.textOf(p.row).length === 0) {
+        // Enter on an empty item exits the list at that point.
+        if (spanEnd - root === 2) {
+          replaceRoots(cd, top, 1, [emptyParagraph()]);
+          return caretSel(flatPosOfBlockChar(cd, { blockIndex: top, charOffset: 0 }));
+        }
+        const isLast = p.row === spanEnd - 1;
+        cd.removeRows(p.row, 1);
+        if (isLast) {
+          const at = root + spanOfRoot(cd, root);
+          cd.insertRows(at, [{ type: 'paragraph', kind: RowKind.Text, text: '' }]);
+          return caretSel(flatPosAt(cd, at, 0));
+        }
+        if (itemIdx === 0) {
+          cd.insertRows(root, [{ type: 'paragraph', kind: RowKind.Text, text: '' }]);
+          return caretSel(flatPosAt(cd, root, 0));
+        }
+        // middle: [left items] empty paragraph [right items in a fresh container]
+        const container = captureRow(cd, root);
+        const currentEnd = root + spanOfRoot(cd, root);
+        const right: CapturedRow[] = [];
+        for (let r = p.row; r < currentEnd; r++) right.push(captureRow(cd, r));
+        cd.removeRows(p.row, currentEnd - p.row);
+        const at = root + spanOfRoot(cd, root);
+        cd.insertRows(at, [
+          { type: 'paragraph', kind: RowKind.Text, text: '' },
+          { type: container.type, kind: RowKind.Container, attrs: container.attrs },
+          ...right.map((it) => ({ type: it.type, kind: RowKind.Text, text: it.text, marks: it.runs, attrs: it.attrs, parent: at + 1, depth: 1 })),
+        ]);
+        return caretSel(flatPosAt(cd, at, 0));
+      }
+
+      // Split the item at the caret.
+      const tail = cd.textOf(p.row).slice(p.offset);
+      const tailRuns = clipRuns(cd, p.row, p.offset, Infinity);
+      spliceRowText(cd, p.row, p.offset, cd.textOf(p.row).length - p.offset, '', []);
+      cd.insertRows(p.row + 1, [{ type: 'list-item', kind: RowKind.Text, text: tail, marks: tailRuns, parent: root, depth: 1 }]);
+      return caretSel(flatPosAt(cd, p.row + 1, 0));
+    }
+
+    // Text block.
+    const len = cd.textOf(root).length;
+    const isAtEnd = p.offset === len;
+
+    if (physics.strategy === 'breakout' && isAtEnd) {
+      const type = physics.defaultSplitTarget || 'paragraph';
+      cd.insertRows(root + 1, [{ type, kind: RowKind.Text, text: '' }]);
+      return caretSel(flatPosAt(cd, root + 1, 0));
+    }
+
+    if (physics.strategy === 'newline') {
+      const text = cd.textOf(root);
+      if (isAtEnd && text.endsWith('\n')) {
+        // Double Enter at the end breaks out: drop the trailing newline.
+        cd.deleteText(root, len - 1, 1);
+        const type = physics.defaultSplitTarget || 'paragraph';
+        cd.insertRows(root + 1, [{ type, kind: RowKind.Text, text: '' }]);
+        return caretSel(flatPosAt(cd, root + 1, 0));
+      }
+      const lastLine = text.slice(0, p.offset).split('\n').pop() ?? '';
+      const injected = '\n' + (/^[ \t]*/.exec(lastLine)?.[0] ?? '');
+      spliceRowText(cd, root, p.offset, 0, injected, []);
+      return caretSel(sel.from + injected.length);
+    }
+
+    // split-self: the tail becomes a new block of the same type and attrs.
+    const tail = cd.textOf(root).slice(p.offset);
+    const tailRuns = clipRuns(cd, root, p.offset, Infinity);
+    const attrs = cd.attrsOf(root);
+    spliceRowText(cd, root, p.offset, len - p.offset, '', []);
+    cd.insertRows(root + 1, [{ type: cd.typeOf(root), kind: RowKind.Text, text: tail, marks: tailRuns, attrs: attrs ? structuredClone(attrs) : undefined }]);
+    return caretSel(flatPosAt(cd, root + 1, 0));
+  });
 }
 
 /** ArrowUp/Left at a block start: hop above the block or inject a paragraph. */
