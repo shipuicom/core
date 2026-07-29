@@ -566,8 +566,8 @@ export class ShipEditor implements ControlValueAccessor {
     const tr = event.getTargetRanges?.()[0];
     if (!tr) return false;
     const container = this.surface().nativeElement;
-    const start = this.mapDOMToPoint(container, tr.startContainer, tr.startOffset);
-    const end = this.mapDOMToPoint(container, tr.endContainer, tr.endOffset);
+    const start = this.mapDOMToPoint(container, tr.startContainer, tr.startOffset, 'start');
+    const end = this.mapDOMToPoint(container, tr.endContainer, tr.endOffset, 'end');
     if (!start || !end || start.blockIndex !== end.blockIndex) return false;
     const cd = this.engine.columnar;
     this.selection.live.set({ from: flatPosOfBlockChar(cd, start), to: flatPosOfBlockChar(cd, end) });
@@ -585,8 +585,8 @@ export class ShipEditor implements ControlValueAccessor {
     const tr = event.getTargetRanges?.()[0];
     if (tr) {
       const container = this.surface().nativeElement;
-      const start = this.mapDOMToPoint(container, tr.startContainer, tr.startOffset);
-      const end = this.mapDOMToPoint(container, tr.endContainer, tr.endOffset);
+      const start = this.mapDOMToPoint(container, tr.startContainer, tr.startOffset, 'start');
+      const end = this.mapDOMToPoint(container, tr.endContainer, tr.endOffset, 'end');
       if (start && end && start.blockIndex === end.blockIndex) {
         const cd = this.engine.columnar;
         const from = flatPosOfBlockChar(cd, start);
@@ -652,10 +652,10 @@ export class ShipEditor implements ControlValueAccessor {
       return;
     }
     this.selection.updateRect(container);
-    const startPoint = this.mapDOMToPoint(container, range.startContainer, range.startOffset);
+    const startPoint = this.mapDOMToPoint(container, range.startContainer, range.startOffset, 'start');
     const endPoint = range.collapsed
       ? startPoint
-      : this.mapDOMToPoint(container, range.endContainer, range.endOffset);
+      : this.mapDOMToPoint(container, range.endContainer, range.endOffset, 'end');
     if (startPoint && endPoint) {
       const cd = this.engine.columnar;
       const from = flatPosOfBlockChar(cd, startPoint);
@@ -949,8 +949,26 @@ export class ShipEditor implements ControlValueAccessor {
    * DOM node/offset → block, item, character. The DOM genuinely has that
    * shape, so this is the one place positions are tree-shaped; the result is
    * converted to a flat position by `flatPosOfBlockChar` at every call site.
+   *
+   * A boundary can sit on the container itself — Cmd+A anchors the range at
+   * `(surface, 0)..(surface, childCount)`, and dragging past the last line
+   * ends there too. That offset counts blocks, not characters, and which
+   * block it means depends on which end is being mapped: as a start it is the
+   * beginning of block `offset`, as an end it is the end of block
+   * `offset - 1`. Returning null here left the live selection stale, so
+   * pasting over a select-all landed at the old caret.
    */
-  private mapDOMToPoint(container: HTMLElement, node: Node, offset: number): BlockPoint | null {
+  private mapDOMToPoint(container: HTMLElement, node: Node, offset: number, bias: 'start' | 'end'): BlockPoint | null {
+    if (node === container) {
+      const count = this.engine.blockCount();
+      if (count === 0) return null;
+      if (bias === 'end' && offset > 0) {
+        const edge = Number.MAX_SAFE_INTEGER;
+        return { blockIndex: Math.min(offset, count) - 1, itemIndex: edge, charOffset: edge };
+      }
+      return { blockIndex: Math.min(offset, count - 1), charOffset: 0 };
+    }
+
     let blockEl: HTMLElement | null = node.nodeType === Node.ELEMENT_NODE ? (node as HTMLElement) : node.parentElement;
     while (blockEl && blockEl.parentElement !== container) blockEl = blockEl.parentElement;
     if (!blockEl || blockEl.parentElement !== container) return null;

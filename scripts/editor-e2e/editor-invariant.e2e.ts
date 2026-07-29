@@ -92,6 +92,62 @@ async function openEditor(page: Page) {
 }
 
 test.describe('DOM ≡ AST invariant', () => {
+  test('paste replaces a select-all and a container-anchored last-char selection', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    const astOf = () =>
+      page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document());
+    const pastePlain = (text: string) =>
+      page.evaluate((t) => {
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        const dt = new DataTransfer();
+        dt.setData('text/plain', t);
+        comp.onPaste(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+      }, text);
+    const reset = async () => {
+      await page.evaluate(() => {
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        comp.engine.reset([
+          { type: 'paragraph', content: [{ type: 'text', text: 'hello' }] },
+          { type: 'paragraph', content: [{ type: 'text', text: 'world' }] },
+        ]);
+      });
+      await expect(page.locator('.sh-editor-content > p').first()).toHaveText('hello');
+    };
+
+    // ── Select-all (real keyboard: the range anchors on the surface element,
+    // not on text nodes) then paste: the fragment must REPLACE everything. ──
+    await reset();
+    await page.locator('.sh-editor-content > p').first().click();
+    await page.keyboard.press('ControlOrMeta+a');
+    await pastePlain('replaced');
+    let ast = await astOf();
+    expect(ast).toHaveLength(1);
+    expect(ast[0].content.map((n: any) => n.text).join('')).toBe('replaced');
+    await expectInvariant(page, 'after select-all paste');
+
+    // ── A selection of the last character whose END sits on the container
+    // (what dragging past the last line produces). ──
+    await reset();
+    await page.evaluate(() => {
+      const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+      surface.focus();
+      const last = surface.querySelectorAll('p')[1].firstChild!; // "world"
+      const range = document.createRange();
+      range.setStart(last, 4); // before the final "d"
+      range.setEnd(surface, 2); // container-anchored end, past the last block
+      const sel = window.getSelection()!;
+      sel.removeAllRanges();
+      sel.addRange(range);
+      document.dispatchEvent(new Event('selectionchange'));
+    });
+    await pastePlain('ZZ');
+    ast = await astOf();
+    expect(ast).toHaveLength(2);
+    expect(ast[1].content.map((n: any) => n.text).join('')).toBe('worlZZ');
+    await expectInvariant(page, 'after last-char paste');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('typing storm: text, Enter, Backspace, Delete, arrows', async ({ page }) => {
     const { errors } = await openEditor(page);
     const rnd = mulberry32(1);
