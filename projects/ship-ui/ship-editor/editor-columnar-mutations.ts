@@ -1058,8 +1058,10 @@ export function insertFragmentOp(
       return caretTo(caretSel(flatPosOfBlockChar(cd, { blockIndex: landedTop, itemIndex: Number.MAX_SAFE_INTEGER, charOffset: Number.MAX_SAFE_INTEGER })));
     }
 
-    // Pasting into a list item: containers in the fragment expand into the
-    // inline-holding blocks they contain, which become items.
+    // Pasting into a list item. Three shapes, three fates: inline content
+    // merges into the item; a fragment made of this list's own kind splices
+    // in as items; anything else is block content that does not belong
+    // inside a list — it lands after the containing list, whole.
     if (cd.parentOf(p.row) !== -1) {
       const flatten = (nodes: ASTBlockNode[]): ASTBlockNode[] =>
         nodes.flatMap((n) => (holdsInline(n) ? [n] : flatten(n.content as ASTBlockNode[])));
@@ -1070,6 +1072,15 @@ export function insertFragmentOp(
         const m = inlineToTextRuns(nodesOf(flat[0]));
         spliceRowText(cd, p.row, p.offset, 0, m.text, m.runs);
         return caretTo(caretSel(sel.from + m.text.length));
+      }
+
+      const sameKind = fragClone.every((block) => !holdsInline(block) && block.type === cd.typeOf(root));
+      if (!sameKind) {
+        const at = root + spanOfRoot(cd, root);
+        cd.insertRows(at, rowsForBlocks(fragClone, at));
+        const landedTop = top + fragClone.length;
+        const edge = Number.MAX_SAFE_INTEGER;
+        return caretTo(caretSel(flatPosOfBlockChar(cd, { blockIndex: landedTop, itemIndex: edge, charOffset: edge })));
       }
 
       const tailText = cd.textOf(p.row).slice(p.offset);

@@ -206,6 +206,26 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(ast[1].content[1].content.map((n: any) => n.text).join('')).toBe('tXXwo');
     await expectInvariant(page, 'after paste into a trailing list item');
 
+    // Block content pasted with the caret in the last list item lands AFTER
+    // the list, not inside it as extra items…
+    await load(trailingList);
+    await caretIn('ul li:last-child', 3);
+    await pasteHtml('<p>after one</p><p>after two</p>');
+    ast = await astOf();
+    expect(ast.map((b: any) => b.type)).toEqual(['paragraph', 'bullet-list', 'paragraph', 'paragraph']);
+    expect(ast[1].content).toHaveLength(2); // items untouched
+    expect(ast[3].content.map((n: any) => n.text).join('')).toBe('after two');
+    await expectInvariant(page, 'after block paste into a trailing list item');
+
+    // …while a list of the same kind still merges into the list.
+    await load(trailingList);
+    await caretIn('ul li:last-child', 3);
+    await pasteHtml('<ul><li>merged</li></ul>');
+    ast = await astOf();
+    expect(ast.map((b: any) => b.type)).toEqual(['paragraph', 'bullet-list']);
+    expect(ast[1].content.map((item: any) => item.content.map((n: any) => n.text).join(''))).toEqual(['one', 'twomerged']);
+    await expectInvariant(page, 'after same-kind list paste into a list item');
+
     await load(trailingList);
     await page.locator('.sh-editor-content > p').first().click();
     await page.keyboard.press('ControlOrMeta+a');
