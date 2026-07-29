@@ -1,5 +1,5 @@
 import { JsonPipe, UpperCasePipe } from '@angular/common';
-import { afterRenderEffect, ChangeDetectionStrategy, Component, effect, ElementRef, signal, untracked, viewChild } from '@angular/core';
+import { afterRenderEffect, ChangeDetectionStrategy, Component, computed, effect, ElementRef, signal, untracked, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { form, FormField } from '@angular/forms/signals';
 import { ShipButton } from '@ship-ui/core/ship-button';
@@ -180,6 +180,19 @@ class HighlightBehavior extends BaseInlineBehavior {
   sizeField = form(this.sizeModel);
 
   editorValue = signal<string | ASTDocument | null>(this.initialHtml);
+
+  /**
+   * The raw-output panel renders on every keystroke; on large documents the
+   * full serialized value is tens of kilobytes, and re-rendering it into the
+   * <pre> dominated typing latency. Preview a bounded slice instead.
+   */
+  rawPreview = computed(() => {
+    const value = this.editorValue();
+    const text = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+    if (!text) return '';
+    const LIMIT = 2000;
+    return text.length > LIMIT ? text.slice(0, LIMIT) + `\n… (${text.length - LIMIT} more characters)` : text;
+  });
 
   persist = signal(false);
   #storageKey = 'ship:editor:showcase';
