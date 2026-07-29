@@ -515,7 +515,7 @@ export function insertTextOp(
   blocks: Map<string, BaseBlockBehavior>,
   inlines: Map<string, BaseInlineBehavior>,
   pendingMarks: ASTMark[] | null
-): ColumnarMutation | null {
+): ColumnarMutation | { op: null; selAfter: LogicalSelection } | null {
   const a = pointAt(cd, sel.from);
   const b = pointAt(cd, sel.to);
   const isCollapsed = sel.from === sel.to;
@@ -526,15 +526,20 @@ export function insertTextOp(
   const baseTop = topIndexOf(cd, rootOf(cd, a.row));
   const lastTop = topIndexOf(cd, rootOf(cd, b.row));
 
-  return withSpanOp(cd, baseTop, lastTop - baseTop + 1, () => {
+  let selAfter: LogicalSelection | null = null;
+  const mutation = withSpanOp(cd, baseTop, lastTop - baseTop + 1, () => {
     if (!isCollapsed) deleteRangeRows(cd, a, b);
     const p = pointAt(cd, sel.from);
-    if (cd.kindOf(p.row) !== RowKind.Text) return caretSel(sel.from);
+    if (cd.kindOf(p.row) !== RowKind.Text) return (selAfter = caretSel(sel.from));
     const marks = pendingMarks ?? insertionMarks(cd, p.row, p.offset, inlines);
     const textRuns: Run[] = marks.map((mark) => ({ start: 0, end: text.length, mark }));
     spliceRowText(cd, p.row, p.offset, 0, text, textRuns);
-    return caretSel(sel.from + text.length);
+    return (selAfter = caretSel(sel.from + text.length));
   });
+  if (mutation) return mutation;
+  // Typing over a selection that equals the text nets out to no op, but the
+  // selection still collapses to the caret after it.
+  return !isCollapsed && selAfter ? { op: null, selAfter } : null;
 }
 
 /** Delete the selected range. */
@@ -899,7 +904,7 @@ export function insertFragmentOp(
   sel: LogicalSelection,
   fragment: ASTDocument,
   blocks: Map<string, BaseBlockBehavior>
-): ColumnarMutation | null {
+): ColumnarMutation | { op: null; selAfter: LogicalSelection } | null {
   if (!fragment.length) return null;
   const a = pointAt(cd, sel.from);
   const b = pointAt(cd, sel.to);
@@ -913,7 +918,9 @@ export function insertFragmentOp(
   const nodesOf = (block: ASTBlockNode) =>
     (block.content as ASTInlineNode[])?.length ? (block.content as ASTInlineNode[]) : [{ type: 'text', text: '' } as ASTInlineNode];
 
-  return withSpanOp(cd, baseTop, lastTop - baseTop + 1, () => {
+  let selAfter: LogicalSelection | null = null;
+  const caretTo = (pos: LogicalSelection): LogicalSelection => (selAfter = pos);
+  const mutation = withSpanOp(cd, baseTop, lastTop - baseTop + 1, () => {
     if (sel.from !== sel.to) deleteRangeRows(cd, a, b);
     const p = pointAt(cd, sel.from);
     const root = rootOf(cd, p.row);
@@ -925,7 +932,7 @@ export function insertFragmentOp(
       const at = root + spanOfRoot(cd, root);
       cd.insertRows(at, rowsForBlocks(fragClone, at));
       const landedTop = top + fragClone.length;
-      return caretSel(flatPosOfBlockChar(cd, { blockIndex: landedTop, itemIndex: Number.MAX_SAFE_INTEGER, charOffset: Number.MAX_SAFE_INTEGER }));
+      return caretTo(caretSel(flatPosOfBlockChar(cd, { blockIndex: landedTop, itemIndex: Number.MAX_SAFE_INTEGER, charOffset: Number.MAX_SAFE_INTEGER })));
     }
 
     // Pasting into a list item: containers in the fragment expand into the
@@ -939,7 +946,7 @@ export function insertFragmentOp(
       if (flat.length === 1) {
         const m = inlineToTextRuns(nodesOf(flat[0]));
         spliceRowText(cd, p.row, p.offset, 0, m.text, m.runs);
-        return caretSel(sel.from + m.text.length);
+        return caretTo(caretSel(sel.from + m.text.length));
       }
 
       const tailText = cd.textOf(p.row).slice(p.offset);
@@ -963,7 +970,7 @@ export function insertFragmentOp(
         depth: 1,
       });
       cd.insertRows(p.row + 1, inputs);
-      return caretSel(flatPosAt(cd, p.row + inputs.length, last.text.length));
+      return caretTo(caretSel(flatPosAt(cd, p.row + inputs.length, last.text.length)));
     }
 
     // Caret in a top-level text block.
@@ -983,18 +990,17 @@ export function insertFragmentOp(
       if (!out.length) out.push(emptyParagraph());
       replaceRoots(cd, top, 1, out);
 
+      // The caret lands after the END of the last pasted element — for a
+      // container that is the end of its last item.
       const landedTop = top + (headHas ? 1 : 0) + fragClone.length - 1;
-      const landed = fragClone[fragClone.length - 1];
-      if (holdsInline(landed)) {
-        return caretSel(flatPosOfBlockChar(cd, { blockIndex: landedTop, charOffset: Number.MAX_SAFE_INTEGER }));
-      }
-      return caretSel(flatPosOfBlockChar(cd, { blockIndex: landedTop, charOffset: 0 }));
+      const edge = Number.MAX_SAFE_INTEGER;
+      return caretTo(caretSel(flatPosOfBlockChar(cd, { blockIndex: landedTop, itemIndex: edge, charOffset: edge })));
     }
 
     if (fragClone.length === 1) {
       const m = inlineToTextRuns(nodesOf(fragClone[0]));
       spliceRowText(cd, root, p.offset, 0, m.text, m.runs);
-      return caretSel(sel.from + m.text.length);
+      return caretTo(caretSel(sel.from + m.text.length));
     }
 
     // Multi-block inline fragment: the head keeps this block's type, middles
@@ -1031,10 +1037,14 @@ export function insertFragmentOp(
     const finalCount = (headHas ? 1 : 0) + inputs.length;
     if (!finalCount) {
       replaceRoots(cd, top, 1, [emptyParagraph()]);
-      return caretSel(flatPosOfBlockChar(cd, { blockIndex: top, charOffset: 0 }));
+      return caretTo(caretSel(flatPosOfBlockChar(cd, { blockIndex: top, charOffset: 0 })));
     }
-    return caretSel(flatPosOfBlockChar(cd, { blockIndex: top + finalCount - 1, charOffset: last.text.length }));
+    return caretTo(caretSel(flatPosOfBlockChar(cd, { blockIndex: top + finalCount - 1, charOffset: last.text.length })));
   });
+  if (mutation) return mutation;
+  // Pasting a copy of the selection over itself nets out to no op; the
+  // selection still collapses to a caret after the pasted content.
+  return sel.from !== sel.to && selAfter ? { op: null, selAfter } : null;
 }
 
 /**

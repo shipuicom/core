@@ -202,7 +202,10 @@ export class EditorEngineService {
     if (!sel) return;
     const pending = sel.from === sel.to ? this.#pendingAt(sel.from) : null;
     this.pendingMarks.set(null);
-    this.#apply(insertTextOp(this.columnar, sel, text, this.blocks, this.inlines, pending), sel);
+    const result = insertTextOp(this.columnar, sel, text, this.blocks, this.inlines, pending);
+    if (!result) return;
+    if (result.op) this.#apply(result as ColumnarMutation, sel);
+    else this.selection.live.set(result.selAfter);
   }
 
   deleteRange() {
@@ -558,7 +561,12 @@ export class EditorEngineService {
   insertFragment(fragment: ASTDocument) {
     const sel = this.selection.active();
     if (!sel) return;
-    this.#apply(insertFragmentOp(this.columnar, sel, fragment, this.blocks), sel);
+    const result = insertFragmentOp(this.columnar, sel, fragment, this.blocks);
+    if (!result) return;
+    if (result.op) this.#apply(result as ColumnarMutation, sel);
+    // Replacing a selection with identical content is a no-op for the
+    // document, but the selection still collapses after the pasted content.
+    else this.selection.live.set(result.selAfter);
   }
 
   setBlockType(type: string, attrs?: any) {

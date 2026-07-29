@@ -805,6 +805,35 @@ describe('EditorEngine integration', () => {
   });
 
   describe('insertFragment (paste)', () => {
+    it('collapses the selection after the pasted content even when it equals the selection', () => {
+      engine.load([p('hello')]);
+      range([0, 0], [0, 5]);
+      engine.insertFragment([p('hello')]);
+      // Identity paste: no document change, no transaction — but the caret
+      // must land after the pasted content, not stay selected.
+      expect(engine.canUndo()).toBe(false);
+      expect(engine.selection.active()).toEqual({ from: 6, to: 6 });
+      engine.insertText('!');
+      expect(html()).toBe('<p>hello!</p>');
+    });
+
+    it('puts the caret at the end of a pasted list', () => {
+      engine.load([p('ab')]);
+      caret(0, 1);
+      engine.insertFragment([
+        { type: 'bullet-list', content: [
+          { type: 'list-item', content: [{ type: 'text', text: 'one' }] },
+          { type: 'list-item', content: [{ type: 'text', text: 'two' }] },
+        ] },
+      ] as ASTDocument);
+      const lp = caretLp();
+      expect(lp.blockIndex).toBe(1);
+      expect(lp.itemIndex).toBe(1);
+      expect(lp.offset).toBe(3);
+      engine.insertText('!');
+      expect(html()).toBe('<p>a</p><ul><li>one</li><li>two!</li></ul><p>b</p>');
+    });
+
     it('pastes multiple blocks into an empty document', () => {
       engine.load([p('')]);
       caret(0, 0);
