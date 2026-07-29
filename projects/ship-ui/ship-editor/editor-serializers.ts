@@ -261,6 +261,35 @@ export function astToHtml(
     .join('');
 }
 
+/**
+ * One block's markdown, including its trailing separator. The document form
+ * is the concatenation of these, trimmed — split out so callers can cache
+ * per block.
+ */
+export function blockToMarkdown(
+  block: ASTBlockNode,
+  blocks: Map<string, BaseBlockBehavior>,
+  inlines: Map<string, BaseInlineBehavior>
+): string {
+  const behavior = blocks.get(block.type);
+  if (!behavior) return '';
+
+  const innerMd =
+    behavior.category === 'container'
+      ? astToMarkdown(block.content as ASTDocument, blocks, inlines)
+      : serializeInlineRuns(
+          block.content as ASTInlineNode[],
+          (mark) => {
+            const inline = inlines.get(mark.type);
+            return inline?.renderMarkdown ? tagSplitter((t) => inline.renderMarkdown!(mark, t)) : null;
+          },
+          (t) => t,
+          markRanker(inlines)
+        );
+
+  return behavior.renderMarkdown ? behavior.renderMarkdown(block, innerMd) : `${innerMd}\n\n`;
+}
+
 export function astToMarkdown(
   doc: ASTDocument,
   blocks: Map<string, BaseBlockBehavior>,
@@ -268,25 +297,7 @@ export function astToMarkdown(
 ): string {
   if (!doc || doc.length === 0) return '';
   return doc
-    .map((block) => {
-      const behavior = blocks.get(block.type);
-      if (!behavior) return '';
-
-      const innerMd =
-        behavior.category === 'container'
-          ? astToMarkdown(block.content as ASTDocument, blocks, inlines)
-          : serializeInlineRuns(
-              block.content as ASTInlineNode[],
-              (mark) => {
-                const inline = inlines.get(mark.type);
-                return inline?.renderMarkdown ? tagSplitter((t) => inline.renderMarkdown!(mark, t)) : null;
-              },
-              (t) => t,
-              markRanker(inlines)
-            );
-
-      return behavior.renderMarkdown ? behavior.renderMarkdown(block, innerMd) : `${innerMd}\n\n`;
-    })
+    .map((block) => blockToMarkdown(block, blocks, inlines))
     .join('')
     .trim();
 }

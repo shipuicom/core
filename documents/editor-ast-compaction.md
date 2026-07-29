@@ -898,12 +898,27 @@ via `load()` (no transaction) or `reset()` (undoable); DOM reconciliation goes
 through `replaceBlock`. The behavior contract (`renderHTML(block, inner)`)
 still receives AST nodes — materialized transiently per block, never retained.
 
-Remaining tree materializations, all off the typing path: markdown
-serialization, reset diffing, and remote ops — `diffFlat`'s association
-semantics (deliberately not `stepMapFromOp`'s; they disagree on 7.5% of
-positions) still need old and new trees per remote op. A span-scoped StepMap
-with identical semantics is the recorded follow-up if collab throughput ever
-matters; it must be validated against the diffFlat oracle before swapping.
+No internal path materializes a tree any more:
+
+- **Remote ops** use `remoteStepMap` (editor-columnar-mutations.ts), which
+  reproduces `diffFlat`'s association semantics exactly — deliberately not
+  `stepMapFromOp`'s, which disagrees on 7.5% of mapped positions — while
+  materializing only the blocks the op touches. diffFlat pairs blocks by index
+  from both ends; every pair before the op site is the same block, and every
+  pair counted from the ends beyond the op's reach is the same block at
+  tail-alignment, so its loops can start at the op site and slide outward only
+  when replaced content equals its neighbours. Pinned by
+  editor-remote-map.spec.ts: 400 fuzz iterations plus directed tie cases
+  (identical-block chains, periodic text, void targets — note `applyOp`
+  treats a void's empty content as inline content and will splice into it)
+  against the materialize-and-diff oracle.
+- **Markdown serialization** assembles from a per-block cache
+  (`blockToMarkdown`), invalidated by the same dirty hints as the HTML cache.
+- **Reset** trims the equal prefix/suffix block-by-block against columnar
+  (transient single-block materialization) and diffs only the changed span.
+
+`fromColumnar` now runs only for external readers: the `document()` computed,
+`serialize('json')` (where the AST is the requested output), and `blockAt`.
 
 A trap this step surfaced: the component's render effect had always *tracked*
 the live selection (restoreDOMSelection reads it), masked by the old

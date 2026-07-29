@@ -1,12 +1,12 @@
 import { Injectable, Signal, computed, inject, signal } from '@angular/core';
 import { BaseBlockBehavior, BaseInlineBehavior, SlashCommand } from './editor-behaviors';
-import { astToHtml, astToMarkdown } from './editor-serializers';
-import { diffFlat, logicalToPos, posToLogical } from './editor-flat-positions';
+import { astToHtml, blockToMarkdown } from './editor-serializers';
 import { ColumnarDocument, RowKind, fromColumnar, toColumnar } from './editor-columnar';
 import {
   ColumnarMutation,
   backspaceOp,
   blockFromRow,
+  blockPointAt,
   deleteBlockOp,
   deleteForwardOp,
   deleteRangeOp,
@@ -17,6 +17,7 @@ import {
   insertFragmentOp,
   insertTextOp,
   pointAt,
+  remoteStepMap,
   replaceBlocksOp,
   rootRowOf,
   setBlockTypeOp,
@@ -24,7 +25,7 @@ import {
   topLevelCount,
 } from './editor-columnar-mutations';
 import { applyOpToColumnar } from './editor-columnar-ops';
-import { EditorOp, EditorTransaction, applyOp, diffDocuments, invertOp, transformOp } from './editor-transactions';
+import { EditorOp, EditorTransaction, diffDocuments, invertOp, transformOp } from './editor-transactions';
 import { ASTBlockNode, ASTDocument, ASTMark, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 
@@ -68,6 +69,7 @@ export class EditorEngineService {
   // -------------------------------------------------------------------------
 
   #htmlCache: (string | undefined)[] = [];
+  #mdCache: (string | undefined)[] = [];
   #dirtyBlocks = new Set<number>();
   /** Suffix threshold: indices at or past this shifted structurally. */
   #dirtyFrom = 0;
@@ -76,11 +78,14 @@ export class EditorEngineService {
     if (op.kind === 'inline') {
       this.#dirtyBlocks.add(op.blockIndex);
       this.#htmlCache[op.blockIndex] = undefined;
+      this.#mdCache[op.blockIndex] = undefined;
     } else {
       this.#dirtyFrom = Math.min(this.#dirtyFrom, op.at);
       // The suffix shifts but its content is unchanged; splicing keeps those
-      // blocks' rendered HTML reusable at their new indices.
-      this.#htmlCache.splice(op.at, op.removed.length, ...new Array<string | undefined>(op.inserted.length).fill(undefined));
+      // blocks' rendered output reusable at their new indices.
+      const blanks = () => new Array<string | undefined>(op.inserted.length).fill(undefined);
+      this.#htmlCache.splice(op.at, op.removed.length, ...blanks());
+      this.#mdCache.splice(op.at, op.removed.length, ...blanks());
     }
   }
 
@@ -88,6 +93,7 @@ export class EditorEngineService {
     this.#dirtyFrom = 0;
     this.#dirtyBlocks.clear();
     this.#htmlCache = [];
+    this.#mdCache = [];
   }
 
   /** Blocks the DOM must re-check, consumed by the render pass. */
@@ -563,20 +569,54 @@ export class EditorEngineService {
 
   serialize(format: 'html' | 'json' | 'markdown'): any {
     if (format === 'json') return fromColumnar(this.#columnar);
-    if (format === 'markdown') return astToMarkdown(this.document(), this.blocks, this.inlines);
-    // HTML assembles from the per-block cache, so a keystroke re-serializes
-    // one block, not the document.
+    // HTML and markdown assemble from per-block caches, so a keystroke
+    // re-serializes one block, not the document.
     const count = this.blockCount();
     let out = '';
+    if (format === 'markdown') {
+      for (let i = 0; i < count; i++) out += this.#blockMarkdown(i);
+      return out.trim();
+    }
     for (let i = 0; i < count; i++) out += this.renderBlockHtml(i);
     return out;
   }
 
+  #blockMarkdown(index: number): string {
+    const cached = this.#mdCache[index];
+    if (cached !== undefined) return cached;
+    const block = this.blockAt(index);
+    const md = block ? blockToMarkdown(block, this.blocks, this.inlines) : '';
+    this.#mdCache[index] = md;
+    return md;
+  }
+
   reset(doc: ASTDocument) {
-    const oldDoc = this.document();
+    // Trim the equal prefix and suffix block-by-block against the columnar
+    // content (each old block materialized transiently), then let
+    // diffDocuments shape the op for just the span that differs — including
+    // its single-text-block inline downgrade.
+    const oldCount = this.blockCount();
+    const key = (block: ASTBlockNode | null) => JSON.stringify(block);
+    let startTrim = 0;
+    const minLen = Math.min(oldCount, doc.length);
+    while (startTrim < minLen && key(this.blockAt(startTrim)) === key(doc[startTrim])) startTrim++;
+    let endOld = oldCount;
+    let endNew = doc.length;
+    while (endOld > startTrim && endNew > startTrim && key(this.blockAt(endOld - 1)) === key(doc[endNew - 1])) {
+      endOld--;
+      endNew--;
+    }
+
+    let op: EditorOp | null = null;
+    if (!(startTrim === endOld && startTrim === endNew)) {
+      const oldMid: ASTBlockNode[] = [];
+      for (let i = startTrim; i < endOld; i++) oldMid.push(this.blockAt(i)!);
+      const mid = diffDocuments(oldMid, doc.slice(startTrim, endNew));
+      if (mid) op = mid.kind === 'block' ? { ...mid, at: mid.at + startTrim } : { ...mid, blockIndex: mid.blockIndex + startTrim };
+    }
+
     this.#columnar = toColumnar(doc);
     this.#markAllDirty();
-    const op = diffDocuments(oldDoc, doc);
     if (op) {
       const selAfter = this.selection.active();
       const tx: EditorTransaction = {
@@ -624,15 +664,16 @@ export class EditorEngineService {
   }
 
   applyRemoteOperation(op: EditorOp) {
-    // The StepMap keeps diffFlat's association semantics exactly (it disagrees
-    // with stepMapFromOp on 7.5% of positions), which needs the old and new
-    // trees — materialized here; remote ops are the one path that still pays
-    // for a tree. A span-scoped equivalent is the follow-up optimization.
-    const oldDoc = this.document();
-    const newDoc = applyOp(oldDoc, op);
-    const map = diffFlat(oldDoc, newDoc);
+    // remoteStepMap reproduces diffFlat's association semantics exactly
+    // (deliberately not stepMapFromOp's — they disagree on 7.5% of mapped
+    // positions) while materializing only the blocks the op touches; the
+    // fuzz spec holds it to the materialize-and-diff oracle.
+    const cd = this.#columnar;
+    const map = remoteStepMap(cd, op);
     if (!map) return;
-    applyOpToColumnar(this.#columnar, op);
+    const selBlock = this.selectedBlock();
+    const selBlockStart = selBlock !== null ? cd.startOf(cd.rowOfTopLevel(selBlock)) : null;
+    applyOpToColumnar(cd, op);
     this.#noteOp(op);
 
     // Selections are flat positions, so mapping them through a remote op is a
@@ -646,11 +687,11 @@ export class EditorEngineService {
     const live = mapSel(this.selection.active());
     if (live) this.selection.live.set(live);
 
-    const selBlock = this.selectedBlock();
-    if (selBlock !== null) {
-      const lp = posToLogical(newDoc, map.map(logicalToPos(oldDoc, { blockIndex: selBlock, inlineIndex: 0, offset: 0 }), 1));
-      const stillVoid = lp != null && this.blocks.get(newDoc[lp.blockIndex]?.type)?.category === 'void';
-      this.selectedBlock.set(stillVoid ? lp!.blockIndex : null);
+    if (selBlockStart !== null) {
+      const blockIndex = blockPointAt(cd, map.map(selBlockStart, 1)).blockIndex;
+      const row = cd.rowOfTopLevel(blockIndex);
+      const stillVoid = row < cd.rows && this.blocks.get(cd.typeOf(row))?.category === 'void';
+      this.selectedBlock.set(stillVoid ? blockIndex : null);
     }
 
     this.#undoStack.update((stack) => {

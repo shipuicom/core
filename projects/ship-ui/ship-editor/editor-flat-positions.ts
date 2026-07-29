@@ -242,7 +242,7 @@ function sharedChars(a: ASTInlineNode[], b: ASTInlineNode[], forward: boolean): 
 }
 
 /** How many leading tokens two blocks share, and whether that covers both entirely. */
-function sharedPrefix(a: ASTBlockNode, b: ASTBlockNode): { tokens: number; whole: boolean } {
+export function sharedPrefix(a: ASTBlockNode, b: ASTBlockNode): { tokens: number; whole: boolean } {
   if (a === b) return { tokens: nodeSize(a), whole: true };
   // The opening token is `o:type:attrs`, so both have to match before anything
   // inside the block can.
@@ -282,7 +282,7 @@ function sharedPrefix(a: ASTBlockNode, b: ASTBlockNode): { tokens: number; whole
 }
 
 /** How many trailing tokens two blocks share, and whether that covers both entirely. */
-function sharedSuffix(a: ASTBlockNode, b: ASTBlockNode): { tokens: number; whole: boolean } {
+export function sharedSuffix(a: ASTBlockNode, b: ASTBlockNode): { tokens: number; whole: boolean } {
   if (a === b) return { tokens: nodeSize(a), whole: true };
   // Walking backwards the first token is `c:type`, which carries no attrs — so
   // two blocks can share a suffix while differing in their attributes.

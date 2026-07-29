@@ -1,7 +1,8 @@
 import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
 import { ColumnarDocument, ColumnarRowInput, RowKind } from './editor-columnar';
 import { rowsForBlocks } from './editor-columnar-ops';
-import { EditorOp, diffDocuments } from './editor-transactions';
+import { StepMap, docSize, sharedPrefix, sharedSuffix } from './editor-flat-positions';
+import { EditorOp, diffDocuments, fragLen, spliceInlineContent } from './editor-transactions';
 import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalSelection } from './editor.types';
 
 /**
@@ -1330,4 +1331,91 @@ export function deleteBlockOp(cd: ColumnarDocument, index: number): ColumnarMuta
     const caretTop = Math.min(index, countTops(cd) - 1);
     return caretSel(flatPosOfBlockChar(cd, { blockIndex: caretTop, charOffset: 0 }));
   });
+}
+
+/**
+ * The StepMap a remote op produces, with diffFlat's exact association
+ * semantics, computed against the columnar document without materializing the
+ * whole tree.
+ *
+ * diffFlat compares the old and new documents pairwise by block index from
+ * both ends. Every pair before the op site is the same block, and every pair
+ * counted from the ends beyond the op's reach is the same block at
+ * tail-alignment — those contribute their whole sizes without comparison. The
+ * loops below start where diffFlat's trimming could first stop: at the op
+ * site, materializing blocks lazily and sliding onward exactly as diffFlat
+ * would when replaced content equals its neighbours. Do NOT replace this with
+ * stepMapFromOp — the two disagree on 7.5% of mapped positions (association
+ * at insertion boundaries), and the fuzz spec holds this to the diffFlat
+ * oracle.
+ */
+export function remoteStepMap(cd: ColumnarDocument, op: EditorOp): StepMap | null {
+  const tops = countTops(cd);
+  const rootRows: number[] = [];
+  for (let r = 0; r < cd.rows; r++) if (cd.parentOf(r) === -1) rootRows.push(r);
+
+  const memo = new Map<number, ASTBlockNode>();
+  const oldAt = (i: number): ASTBlockNode => {
+    let block = memo.get(i);
+    if (!block) {
+      block = blockFromRow(cd, rootRows[i]);
+      memo.set(i, block);
+    }
+    return block;
+  };
+  const startOfTop = (i: number): number => (i >= tops ? cd.size : cd.startOf(rootRows[i]));
+
+  let at: number;
+  let removedCount: number;
+  let inserted: ASTBlockNode[];
+  if (op.kind === 'inline') {
+    if (op.blockIndex < 0 || op.blockIndex >= tops) return null;
+    // applyOp only no-ops on container content; a void's empty content passes
+    // its isInlineContent check and gains the fragment.
+    if (cd.kindOf(rootRows[op.blockIndex]) === RowKind.Container) return null;
+    at = op.blockIndex;
+    removedCount = 1;
+    const oldBlock = oldAt(at);
+    const content = spliceInlineContent(oldBlock.content as ASTInlineNode[], op.at, fragLen(op.removed), op.inserted);
+    inserted = [{ ...oldBlock, content }];
+  } else {
+    at = Math.min(Math.max(0, op.at), tops);
+    removedCount = Math.max(0, Math.min(op.removed.length, tops - at));
+    inserted = op.inserted;
+  }
+  const insertedCount = inserted.length;
+
+  const lenA = cd.size;
+  const lenB = lenA - (startOfTop(at + removedCount) - startOfTop(at)) + docSize(inserted);
+  const oldLen = tops;
+  const newLen = tops - removedCount + insertedCount;
+  const newAt = (i: number): ASTBlockNode =>
+    i < at ? oldAt(i) : i < at + insertedCount ? inserted[i - at] : oldAt(i - insertedCount + removedCount);
+
+  // Longest common prefix, in tokens; pairs before the op site match wholly.
+  let start = startOfTop(at);
+  for (let i = at; i < oldLen && i < newLen; i++) {
+    const shared = sharedPrefix(oldAt(i), newAt(i));
+    start += shared.tokens;
+    if (!shared.whole) break;
+  }
+  if (start > lenA) start = lenA;
+  if (start > lenB) start = lenB;
+
+  // Longest common suffix; pairs past the op's reach match wholly at
+  // tail-alignment, contributing everything after the removed span.
+  const tailCount = oldLen - (at + removedCount);
+  let suffix = lenA - startOfTop(at + removedCount);
+  const maxSuffix = Math.min(lenA - start, lenB - start);
+  for (let i = tailCount; i < oldLen && i < newLen; i++) {
+    const shared = sharedSuffix(oldAt(oldLen - 1 - i), newAt(newLen - 1 - i));
+    suffix += shared.tokens;
+    if (!shared.whole) break;
+  }
+  if (suffix > maxSuffix) suffix = maxSuffix;
+
+  const endA = lenA - suffix;
+  const endB = lenB - suffix;
+  if (start === endA && start === endB) return null;
+  return new StepMap([[start, endA - start, endB - start]]);
 }
