@@ -39,22 +39,6 @@ export interface LogicalSelection {
   to: number;
 }
 
-/**
- * Tree-shaped selection, kept only for the mutation primitives that still
- * navigate the nested AST. Shrinks away as they move onto the columnar
- * document.
- */
-export interface TreeSelection {
-  start: LogicalPosition;
-  end: LogicalPosition;
-  isCollapsed: boolean;
-}
-
-export interface TransactionResult {
-  doc: ASTDocument;
-  selectionShift?: TreeSelection;
-}
-
 export type BlockCategory = 'void' | 'container' | 'text';
 
 export interface BlockBehaviorManifest {

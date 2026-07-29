@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 
 import { describe, expect, it } from 'vitest';
-import { toggleMark } from './editor-ast.utils';
+import { fromColumnar, toColumnar } from './editor-columnar';
+import { toggleMarkOp } from './editor-columnar-mutations';
+import { logicalToPos } from './editor-flat-positions';
 import { astToHtml, astToMarkdown, htmlToAst } from './editor-serializers';
 import { BaseInlineBehavior } from './editor-behaviors';
 import {
@@ -12,7 +14,7 @@ import {
   ListItemBehavior,
   ParagraphBehavior,
 } from './standard-behaviors';
-import { ASTDocument, ASTMark, TreeSelection } from './editor.types';
+import { ASTDocument, ASTMark } from './editor.types';
 
 class HighlightBehavior extends BaseInlineBehavior {
   readonly type = 'highlight';
@@ -89,49 +91,38 @@ describe('cross-block toggleMark', () => {
     { type: 'paragraph', content: [{ type: 'text', text: 'world' }] },
   ];
 
-  const spanSel = (): TreeSelection => ({
-    start: { blockIndex: 0, inlineIndex: 0, offset: 2 },
-    end: { blockIndex: 1, inlineIndex: 0, offset: 3 },
-    isCollapsed: false,
-  });
+  // The columnar toggle mutates in place and returns the op; the resulting
+  // document is read back out of the columnar form.
+  const toggle = (doc: ASTDocument, sel: { s: [number, number]; e: [number, number] }, markType: string): ASTDocument => {
+    const cd = toColumnar(doc);
+    const from = logicalToPos(doc, { blockIndex: sel.s[0], inlineIndex: 0, offset: sel.s[1] });
+    const to = logicalToPos(doc, { blockIndex: sel.e[0], inlineIndex: 0, offset: sel.e[1] });
+    toggleMarkOp(cd, { from, to }, markType, undefined, blocks);
+    return fromColumnar(cd);
+  };
+
+  const span = { s: [0, 2] as [number, number], e: [1, 3] as [number, number] };
 
   it('applies the mark to the affected range in every block in the span', () => {
-    const res = toggleMark(twoParas(), spanSel(), 'bold', undefined, blocks);
-    expect(marked(res.doc, 'bold')).toEqual(['llo', 'wor']);
+    expect(marked(toggle(twoParas(), span, 'bold'), 'bold')).toEqual(['llo', 'wor']);
   });
 
   it('toggles OFF only when the whole span already has the mark', () => {
-    const on = toggleMark(twoParas(), spanSel(), 'bold', undefined, blocks);
-    const off = toggleMark(on.doc, spanSel(), 'bold', undefined, blocks);
-    expect(marked(off.doc, 'bold')).toEqual(['', '']);
+    const on = toggle(twoParas(), span, 'bold');
+    expect(marked(toggle(on, span, 'bold'), 'bold')).toEqual(['', '']);
   });
 
   it('ADDS across the whole span when only part of it is already marked', () => {
-
-    const pre = toggleMark(
-      twoParas(),
-      { start: { blockIndex: 0, inlineIndex: 0, offset: 2 }, end: { blockIndex: 0, inlineIndex: 0, offset: 5 }, isCollapsed: false },
-      'bold',
-      undefined,
-      blocks
-    );
-    const res = toggleMark(pre.doc, spanSel(), 'bold', undefined, blocks);
-    expect(marked(res.doc, 'bold')).toEqual(['llo', 'wor']);
+    const pre = toggle(twoParas(), { s: [0, 2], e: [0, 5] }, 'bold');
+    expect(marked(toggle(pre, span, 'bold'), 'bold')).toEqual(['llo', 'wor']);
   });
 
   it('is mark-agnostic — works for the custom highlight mark', () => {
-    const res = toggleMark(twoParas(), spanSel(), 'highlight', undefined, blocks);
-    expect(marked(res.doc, 'highlight')).toEqual(['llo', 'wor']);
+    expect(marked(toggle(twoParas(), span, 'highlight'), 'highlight')).toEqual(['llo', 'wor']);
   });
 
   it('single-block selection is unaffected (regression guard)', () => {
-    const res = toggleMark(
-      twoParas(),
-      { start: { blockIndex: 0, inlineIndex: 0, offset: 0 }, end: { blockIndex: 0, inlineIndex: 0, offset: 5 }, isCollapsed: false },
-      'bold',
-      undefined,
-      blocks
-    );
-    expect(marked(res.doc, 'bold')).toEqual(['hello', '']);
+    const res = toggle(twoParas(), { s: [0, 0], e: [0, 5] }, 'bold');
+    expect(marked(res, 'bold')).toEqual(['hello', '']);
   });
 });

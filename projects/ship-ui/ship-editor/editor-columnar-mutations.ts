@@ -1,10 +1,8 @@
-import { deleteForward, deleteRange, executeInsertText, handleBackspace, handleEnter, handleEscapeHatch, insertFragment, resolveInlinePosition, setBlockType, toggleMark } from './editor-ast.utils';
 import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
 import { ColumnarDocument, ColumnarRowInput, RowKind } from './editor-columnar';
 import { rowsForBlocks } from './editor-columnar-ops';
-import { logicalToPos } from './editor-flat-positions';
 import { EditorOp, diffDocuments } from './editor-transactions';
-import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalPosition, LogicalSelection, TransactionResult, TreeSelection } from './editor.types';
+import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalSelection } from './editor.types';
 
 /**
  * Mutation primitives over the columnar document.
@@ -21,13 +19,10 @@ import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalPosition, Log
  * whole document — bounded to the couple of blocks a primitive touches, so its
  * cost no longer scales with the document.
  *
- * Two tiers of implementation coexist here deliberately:
- * - the typing path (insert text, delete a character, delete a range between
- *   text rows) mutates rows directly;
- * - structural branches with intricate physics (backspace-at-start,
- *   Enter strategies, pasting, block-type changes, mark toggling) delegate to
- *   the existing tree primitives over a *materialized span* via `viaTree`,
- *   which keeps their behaviour bit-for-bit while the branches are ported.
+ * Every primitive is implemented as row operations: text edits splice one
+ * row's string and recompute its mark runs; structural physics (splits,
+ * merges, outdents, wraps) remove and insert rows. AST fragments appear only
+ * where the op format itself needs them.
  */
 
 export interface ColumnarMutation {
@@ -408,78 +403,6 @@ function withSpanOp(cd: ColumnarDocument, baseTop: number, count: number, mutate
   const after = topLevelBlocks(cd, baseTop, newCount);
   const op = diffDocuments(before, after);
   return op ? { op: shiftOp(op, baseTop), selAfter } : null;
-}
-
-// ---------------------------------------------------------------------------
-// Tree-primitive delegation over a materialized span
-// ---------------------------------------------------------------------------
-
-/** Tree position of a row point, relative to a span starting at `baseTop`. */
-function lpInSpan(cd: ColumnarDocument, span: ASTBlockNode[], baseTop: number, point: RowPoint): LogicalPosition {
-  const root = rootOf(cd, point.row);
-  const blockIndex = topIndexOf(cd, root) - baseTop;
-  const block = span[blockIndex];
-  if (!block) return { blockIndex: Math.max(0, blockIndex), inlineIndex: 0, offset: 0 };
-
-  if (point.row === root) {
-    if (cd.kindOf(root) !== RowKind.Text) return { blockIndex, inlineIndex: 0, offset: 0 };
-    return { blockIndex, ...resolveInlinePosition(block.content as ASTInlineNode[], point.offset) };
-  }
-  let itemIndex = 0;
-  for (let r = root + 1; r < point.row; r++) if (cd.parentOf(r) === root) itemIndex++;
-  const item = (block.content as ASTBlockNode[])[itemIndex];
-  const content = (item?.content ?? []) as ASTInlineNode[];
-  return { blockIndex, itemIndex, ...resolveInlinePosition(content, point.offset) };
-}
-
-/**
- * Delegate to a tree primitive over a materialized span of top-level blocks.
- *
- * The span is read out of the columnar document, the existing primitive runs
- * on it (optionally preceded by range truncation, mirroring the engine's old
- * dispatch), the result is written back as rows, and the op is the span diff.
- * Exact behavioural parity while a branch awaits a native columnar port.
- */
-function viaTree(
-  cd: ColumnarDocument,
-  sel: LogicalSelection,
-  baseTop: number,
-  count: number,
-  blocks: Map<string, BaseBlockBehavior>,
-  truncate: boolean,
-  mutation: (doc: ASTDocument, sel: TreeSelection) => TransactionResult | void | null
-): ColumnarMutation | null {
-  const before = topLevelBlocks(cd, baseTop, count);
-  const a = pointAt(cd, sel.from);
-  const isCollapsed = sel.from === sel.to;
-  const start = lpInSpan(cd, before, baseTop, a);
-  const end = isCollapsed ? start : lpInSpan(cd, before, baseTop, pointAt(cd, sel.to));
-  const treeSel: TreeSelection = { start, end, isCollapsed };
-
-  let doc: ASTDocument = before;
-  let s = treeSel;
-  if (truncate && !isCollapsed) {
-    const truncation = deleteRange(doc, s, blocks);
-    doc = truncation.doc;
-    if (truncation.selectionShift) s = truncation.selectionShift;
-  }
-
-  const result = mutation(doc, s);
-  if (!result && !(truncate && !isCollapsed)) return null;
-  const finalDoc = result ? result.doc : doc;
-  const shift = result ? (result.selectionShift ?? s) : s;
-
-  const op = diffDocuments(before, finalDoc);
-  if (!op) return null;
-
-  replaceRoots(cd, baseTop, count, finalDoc);
-
-  // The shift is relative to the span; its flat position is the span's start
-  // plus the offset within the materialized result.
-  const spanStart = cd.startOf(cd.rowOfTopLevel(baseTop));
-  const from = spanStart + logicalToPos(finalDoc, shift.start);
-  const to = shift.isCollapsed ? from : spanStart + logicalToPos(finalDoc, shift.end);
-  return { op: shiftOp(op, baseTop), selAfter: { from, to } };
 }
 
 // ---------------------------------------------------------------------------
