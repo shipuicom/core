@@ -434,6 +434,21 @@ export function fragmentPlainText(fragment: ASTDocument): string {
  * inserted text carries exactly `textRuns` — merged with same-mark neighbours.
  * Rows without any marks skip all of that.
  */
+/**
+ * The indentation step a code block already uses: a tab if any line indents
+ * with one, otherwise the width of the shallowest space indent (clamped to a
+ * sane range), defaulting to two spaces for a block with no indentation yet.
+ */
+export function indentUnitOf(text: string): string {
+  for (const line of text.split('\n')) {
+    const leading = /^[ \t]*/.exec(line)![0];
+    if (!leading || leading.length === line.length) continue; // unindented or blank
+    if (leading.includes('\t')) return '\t';
+    return ' '.repeat(Math.min(Math.max(leading.length, 2), 8));
+  }
+  return '  ';
+}
+
 function spliceRowText(cd: ColumnarDocument, row: number, at: number, removeLen: number, text: string, textRuns: Run[]): void {
   const oldRuns = runsOfRow(cd, row);
   if (removeLen > 0) cd.deleteText(row, at, removeLen);
@@ -619,8 +634,23 @@ export function insertTextOp(
     if (cd.kindOf(p.row) !== RowKind.Text) return (selAfter = caretSel(sel.from));
     const marks = pendingMarks ?? insertionMarks(cd, p.row, p.offset, inlines);
     const textRuns: Run[] = marks.map((mark) => ({ start: 0, end: text.length, mark }));
-    spliceRowText(cd, p.row, p.offset, 0, text, textRuns);
-    return (selAfter = caretSel(sel.from + text.length));
+
+    // Typing a closer on an otherwise-empty line of a whitespace-preserving
+    // block outdents that line one unit — the counterpart of Enter's
+    // opener bump. The removal and the insert are one splice, so the
+    // transaction (and its undo) stays whole.
+    let drop = 0;
+    if (isCollapsed && text.length === 1 && '})]'.includes(text) && blocks.get(cd.typeOf(p.row))?.preserveWhitespace) {
+      const rowText = cd.textOf(p.row);
+      const lineStart = rowText.lastIndexOf('\n', p.offset - 1) + 1;
+      const linePrefix = rowText.slice(lineStart, p.offset);
+      if (linePrefix.length > 0 && /^[ \t]+$/.test(linePrefix)) {
+        const unit = indentUnitOf(rowText);
+        drop = linePrefix.endsWith(unit) ? unit.length : 1;
+      }
+    }
+    spliceRowText(cd, p.row, p.offset - drop, drop, text, textRuns);
+    return (selAfter = caretSel(sel.from - drop + text.length));
   });
   if (mutation) return mutation;
   // Typing over a selection that equals the text nets out to no op, but the
@@ -934,15 +964,22 @@ export function enterOp(cd: ColumnarDocument, sel: LogicalSelection, blocks: Map
 
     if (physics.strategy === 'newline') {
       const text = cd.textOf(root);
-      if (isAtEnd && text.endsWith('\n')) {
-        // Double Enter at the end breaks out: drop the trailing newline.
-        cd.deleteText(root, len - 1, 1);
+      // Double Enter at the end breaks out: the last line being empty —
+      // whitespace included, since auto-indent leaves the caret on an
+      // indented blank line — drops that line and exits the block.
+      const trailingBlank = isAtEnd ? /\n[ \t]*$/.exec(text) : null;
+      if (trailingBlank) {
+        cd.deleteText(root, trailingBlank.index, text.length - trailingBlank.index);
         const type = physics.defaultSplitTarget || 'paragraph';
         cd.insertRows(root + 1, [{ type, kind: RowKind.Text, text: '' }]);
         return caretSel(flatPosAt(cd, root + 1, 0));
       }
       const lastLine = text.slice(0, p.offset).split('\n').pop() ?? '';
-      const injected = '\n' + (/^[ \t]*/.exec(lastLine)?.[0] ?? '');
+      // The new line inherits the current line's indentation; in a
+      // whitespace-preserving block a trailing opener (or colon) deepens it
+      // by one unit — the "nothing crazy" auto-indent.
+      const bump = behavior.preserveWhitespace && /[{[(:][ \t]*$/.test(lastLine) ? indentUnitOf(text) : '';
+      const injected = '\n' + (/^[ \t]*/.exec(lastLine)?.[0] ?? '') + bump;
       spliceRowText(cd, root, p.offset, 0, injected, []);
       return caretSel(sel.from + injected.length);
     }
