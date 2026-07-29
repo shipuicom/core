@@ -246,6 +246,9 @@ export class ShipEditor implements ControlValueAccessor {
   /** A virtual select-all: the logical selection spans the whole document while the DOM shows the window. */
   #virtualSelectAll = false;
 
+  /** The element the last render targeted; a different one means the view was re-created. */
+  #lastSurface: HTMLElement | null = null;
+
   readonly dropIndicator = signal<{ top: number } | null>(null);
   onChange: any = () => {};
   onTouched: any = () => {};
@@ -301,6 +304,11 @@ export class ShipEditor implements ControlValueAccessor {
       this.engine.version();
       const format = this.format();
       const ready = this.#viewReady();
+      // Also track the surface element itself: an in-place view re-creation
+      // (dev HMR swapping the template) replaces it with a fresh, empty
+      // element without any model change — the element's identity is the
+      // only signal that anything happened.
+      if (ready) this.surface();
       // Everything below runs untracked: #render reads the live selection to
       // restore the DOM caret, and tracking it would re-render (and clobber
       // the DOM selection) on every selection change.
@@ -1032,6 +1040,17 @@ export class ShipEditor implements ControlValueAccessor {
     const hints = this.engine.consumeRenderHints();
     const count = this.engine.blockCount();
 
+    if (container !== this.#lastSurface) {
+      // Fresh template DOM — the first render, or a view re-created in place
+      // (dev HMR replaces the template under a surviving component instance).
+      // Nothing previously rendered survives, whatever the hints claim, and
+      // per-element state has to be re-applied.
+      this.#lastSurface = container;
+      hints.length = 0;
+      hints.push({ kind: 'all' });
+      if (this.#virtualOn) container.style.overflowAnchor = 'none';
+    }
+
     const wantVirtual = this.#shouldVirtualize(count);
     if (wantVirtual !== this.#virtualOn) {
       this.#virtualOn = wantVirtual;
@@ -1669,3 +1688,4 @@ export class ShipEditor implements ControlValueAccessor {
     return bp;
   }
 }
+
