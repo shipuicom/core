@@ -1,7 +1,7 @@
-# Editor handover: columnar migration done, virtualization next
+# Editor handover: virtualization done — the editor is vim-scale
 
 Branch: `editor-columnar-model` (main repo, no worktree). All work committed,
-tree clean, 674 unit tests + 21 Playwright e2e green at time of writing.
+tree clean, 692 unit tests + 25 Playwright e2e green at time of writing.
 
 ## Architecture as it stands
 
@@ -19,13 +19,38 @@ tree clean, 674 unit tests + 21 Playwright e2e green at time of writing.
   the touched span of top-level blocks with `diffDocuments`. Primitives with
   a possible identity outcome (insertText, insertFragment,
   replaceBlockWithFragment) return `{ op: null, selAfter }` so the selection
-  still collapses after the content.
+  still collapses after the content. `sliceDocument`/`fragmentPlainText`
+  materialize the fragment a flat selection covers (boundary blocks trimmed)
+  — clipboard serialization when the DOM can't provide it.
 - **Rendering**: engine keeps a per-block HTML cache + `RenderHint` queue
   (`block` = re-render one element, `splice` = DOM splice with untouched
   suffix, `all` = full pass). `serialize('html'|'markdown')` assembles from
   per-block caches; `serialize('json')` = `fromColumnar`. The component's
   `patchDOM` replays hints; inline edits patch **text data in place** and the
   caret restore skips `addRange` when the DOM selection already matches.
+- **Viewport virtualization** (`editor-viewport.ts` + the virtual block in
+  `ship-editor.ts`): past 1000 top-level blocks (`virtualization` input:
+  `'auto' | boolean`) the surface mounts only `[#winStart, #winEnd)` —
+  viewport ± 600px overscan — with inline padding standing in for the rest.
+  - `BlockHeightMap`: measured pixel heights (offsetTop deltas → margins and
+    collapse included) + a rolling-average estimate that **locks after 32
+    measurements**; scroll↔block mapping via a lazily rebuilt prefix array.
+  - `patchDOM` dispatches: below threshold the old path runs byte-identical
+    (`#winStart` pinned 0). Virtualized, `block` hints patch in place (typing
+    path untouched); structural hints splice the height map and rebuild the
+    window from the HTML cache. Scrolling splices only window edges, so
+    surviving elements (and the caret) are never replaced.
+  - All DOM↔block translation goes through `#winStart` (mapDOMToPoint incl.
+    container-anchored offsets, caret restore, reconciliation, drop targets,
+    void effects).
+  - Selection: off-window caret paints nothing (logical selection stays
+    authoritative); ranges clamp to the window; after each edit
+    `#scrollCaretIntoView` keeps the caret visible. Cmd+A → logical
+    whole-document selection, mounted slice painted, `#virtualSelectAll` flag
+    guards the selectionchange sync; copy/cut spanning past the window
+    serializes from the model. Before unmounting a DOM-selection endpoint the
+    DOM selection is dropped (`removeAllRanges`) so the sync can't misread
+    the browser's re-anchor as a caret move.
 - **DOM boundary** (`ship-editor.ts`): `mapDOMToPoint` → `BlockPoint`
   `{ blockIndex, itemIndex?, charOffset }` (bias-aware: container-anchored
   range boundaries from Cmd+A map to start-of-block[k] / end-of-block[k-1]);
@@ -34,11 +59,10 @@ tree clean, 674 unit tests + 21 Playwright e2e green at time of writing.
   semantics exactly (NOT `stepMapFromOp`'s — they disagree on 7.5% of mapped
   positions) while materializing only touched blocks. Oracle-fuzzed in
   `editor-remote-map.spec.ts`.
-- `editor-ast.utils.ts` is 41 lines: `normalizeInlineNodes` +
-  `resolveInlinePosition` only. `TreeSelection`/`TransactionResult` are gone.
 - Voids (hr/image): click-select any void (highlight = affordance), copy/cut
   serialize the block, paste over a selected void replaces it. Voids inside a
-  text selection get `.sh-editor-void-in-selection`.
+  text selection get `.sh-editor-void-in-selection`. All verified working at
+  depth under virtualization.
 
 ## Invariants & safety nets
 
@@ -47,11 +71,32 @@ tree clean, 674 unit tests + 21 Playwright e2e green at time of writing.
 - `editor-remote-map.spec.ts`: remoteStepMap ≡ materialize+diffFlat oracle
   (400 fuzz + directed ties: identical-block chains, periodic text, voids —
   note `applyOp` treats a void's empty content as inline and splices into it).
-- e2e (`scripts/editor-e2e/`, 21 specs): DOM ≡ AST under real Chromium input,
-  incl. CDP IME, select-all paste, void copy/paste, in-selection highlight.
+- `editor-viewport.spec.ts`: height map splice/prefix/indexAt/estimate-lock.
+  `editor-slice.spec.ts`: sliceDocument trims/marks/containers/voids.
+- e2e (`scripts/editor-e2e/`, 25 specs): DOM ≡ AST under real Chromium input
+  (21 original), plus `editor-virtual.e2e.ts`: DOM ≡ **mounted window** of
+  the AST located via per-block index stamps, window follows scroll across
+  3k blocks, typing/Enter/undo at depth, model-side select-all copy, small
+  docs stay fully mounted.
 
 ## Traps (hard-won; do not rediscover)
 
+- **Native scroll anchoring vs window splices**: swapping spacer padding for
+  real blocks above the viewport reads to Chrome as content movement; its
+  anchoring "corrects" scrollTop, which re-triggers a window update at the
+  new position — a **permanent oscillation** (~2 states, one flip per rAF)
+  that intermittently unmounted the caret's block mid-typing. Fix:
+  `overflow-anchor: none` on the surface while virtualized (what CDK virtual
+  scroll does). Symptom to recognize: unexplained scrollTop jumps ≈ one
+  window's pixel span, caret dying after the first keystroke, e2e flaky
+  ~40%. Diagnosed by hammering a probe spec logging scrollTop + window
+  bounds per keystroke.
+- **The height estimate must not drift**: a rolling average that keeps
+  moving re-prices every unmeasured block at once → padding moves → content
+  shifts under a fixed scrollTop → window oscillates. The average locks
+  after 32 measurements (`ESTIMATE_LOCK_AFTER`); measured heights stay live.
+  Scroll-anchor compensation (prepend case) skips sub-pixel shifts, or it
+  feeds back through the scroll event.
 - **Position-space skew inside containers**: the Fenwick counts a container's
   closing token before its children; tree space puts it after. `pointAt`/
   `flatPosAt` correct by `depth`. Raw `posToRow`/`startOf` arithmetic inside
@@ -65,63 +110,51 @@ tree clean, 674 unit tests + 21 Playwright e2e green at time of writing.
   outerHTML equality — remove the attribute when it empties.
 - Dev server (`ng serve design-system --port 4206`, from a shell): restart
   before trusting browser/e2e results (stale-HMR). Hidden Browser-pane
-  timers get throttled — use MessageChannel yields in injected test scripts,
-  and don't mistake harness stalls for app hangs (this cost hours twice).
+  timers get throttled — rAF-based probes stall **and the virtualization
+  scroll handler is rAF-coalesced, so window updates freeze in a hidden
+  pane** (correct for real tabs, confusing in the harness). Use
+  MessageChannel yields in injected scripts; take a screenshot to front the
+  pane before expecting rAF-driven behavior.
+- On the `/editors` demo the scroll container is `<main>`, not the window —
+  `window.scrollTo` does nothing there. `#findScrollContainer` walks
+  ancestors for `overflow-y: auto|scroll`, falls back to the document.
 - Copy-then-paste over the same selection is an identity edit — invisible by
   design; test paste with content that differs from the selection.
 - `stepMapFromOp` must never replace diffFlat semantics (7.5% divergence).
 
-## Performance state (median, live demo editor)
+## Performance state (live demo editor, virtualized)
 
-| | 1k blocks | 10k blocks |
+| | 10k blocks before | 10k blocks now |
 |---|---|---|
-| keypress | ~2.5 ms | ~19 ms |
-| Enter / undo | ~3 ms | ~24 / ~2 ms |
-| selection move | 1.3 ms | 0.7 ms |
+| initial render | ~1.7 s | ~25 ms |
+| keypress (median) | ~19 ms | ~5 ms |
+| Enter | ~24 ms | ~4 ms |
+| undo | ~2 ms | ~2 ms |
+| mounted DOM nodes | 10k blocks | ~52 blocks |
 
-The 10k keypress floor is **Chrome's layout of the flow itself**: a forced
-layout after a one-character change measures 1.2/3.4/14.5 ms at 1k/3k/10k
-with no editor code involved. `content-visibility: auto` measured worse
-(~80 ms). Engine-side costs are sub-millisecond throughout.
+The old 10k keypress floor was Chrome laying out the whole flow; with ~52
+blocks mounted it is gone, and cost no longer scales with document length —
+60k behaves like 10k. The remaining ~5 ms is dominated by the value-serialize
+effect (concatenating 10k cached block strings per keystroke) and the demo's
+metrics counters (O(rows) text scan when `showMetrics` is on) — both
+candidates below.
 
-## THE TASK AHEAD: viewport virtualization (vim-scale, 60k+ lines)
+## Possible next steps (none blocking)
 
-Goal: only blocks in and around the viewport exist in the DOM; everything
-else is virtual. This removes the layout floor and the load-time full render
-(1.7 s at 10k today).
-
-Why the architecture is ready for it:
-
-- Row starts/sizes are O(log n) via the Fenwick → viewport(scrollTop,height)
-  → block range is a lookup (needs a pixel-height model, see below).
-- `patchDOM` is already hint-driven and renders arbitrary block indices from
-  the per-block HTML cache.
-- Selection is flat; `flatPosOfBlockChar`/`blockPointAt` don't care whether
-  an element is mounted.
-
-Design sketch / decisions to make:
-
-1. **Height model**: measured heights per top-level block (cache actual
-   heights after render; estimate unmeasured ones, e.g. rolling average) in a
-   Fenwick over pixels for scroll↔block mapping. Top/bottom spacer divs (or
-   padding) stand in for unmounted ranges.
-2. **Window management**: mount [firstVisible − overscan, lastVisible +
-   overscan]; on scroll, splice edges (the hint machinery generalizes).
-   `#indexInParent` and `container.children[i]` become window-relative —
-   introduce an explicit `domIndex = blockIndex - windowStart` at the
-   boundary (mapDOMToPoint, patchDOM, restoreDOMSelection, the highlight
-   effects, drop-indicator math).
-3. **Selection/caret off-window**: restoreDOMSelection must no-op (or scroll
-   to caret) when the caret block is unmounted; typing always happens in the
-   window. Cmd+A + copy must still produce the full document's clipboard
-   content — the native copy of a partial DOM won't; intercept copy when the
-   selection spans off-window content and serialize from the model
-   (`onCopy` already exists for the void path).
-4. **The e2e invariant** becomes DOM ≡ visible window of the model; the
-   suite needs a helper that scrolls a block into view before asserting.
-5. Keep it **opt-in or threshold-based** (e.g. virtualize beyond N blocks)
-   to avoid destabilizing small documents; spacers + contenteditable quirks
-   (caret at window edges, drag-scroll) need real-browser testing throughout.
+1. **Defer value serialization**: the component's value-sync effect calls
+   `engine.serialize(format)` every version tick — O(blocks) string concat
+   per keystroke even though every block is cached. Debounce to idle or make
+   `value` pull-based; biggest remaining keypress win at 60k+.
+2. **Decoration re-application on remount**: a void inside the live selection
+   that scrolls out and back in loses `.sh-editor-void-in-selection` until
+   the next render (elements rebuild from the cache, classes are effect-
+   applied). Cosmetic; re-apply decorations in `#updateVirtualWindow` if it
+   ever matters.
+3. **`rowOfTopLevel`/`topLevelCount` are O(rows) scans** — fine at 60k
+   (tens of µs, a handful of calls per keystroke), but an index would drop
+   them to O(1) if profiling ever surfaces them.
+4. Drag-to-reorder across the window edge (drag auto-scroll) was out of
+   scope; dropping is window-local today.
 
 ## Verify workflow (all four, from repo root)
 
@@ -133,6 +166,8 @@ Design sketch / decisions to make:
    `/editors` (Examples tab). Synthetic keydowns don't reach handlers;
    dispatch `beforeinput`/`paste` events or call engine methods.
 4. `EDITOR_E2E_PORT=4206 npx playwright test -c scripts/editor-e2e/playwright.config.ts`
+   (run the suite 2–3×; the virtualization flake class above was only
+   visible under repetition).
 
 Conventions: concise bullet-style replies; commit in coherent units with
 explanatory messages; **never** add a Co-Authored-By trailer.
