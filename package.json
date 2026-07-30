@@ -44,7 +44,7 @@
     "mcp:update": "cd mcp-server && bun run scan.ts",
     "mcp:start": "cd mcp-server && bun run index.ts",
     "serve:ssr:design-system": "bun scripts/serve-design-system.ts",
-    "test:editor": "vitest run projects/ship-ui/ship-editor/",
+    "test:editor": "ng test ship-ui --watch=false --include='**/ship-editor/**/*.spec.ts'",
     "test:e2e:editor": "playwright test -c scripts/editor-e2e/playwright.config.ts"
   },
   "private": true,

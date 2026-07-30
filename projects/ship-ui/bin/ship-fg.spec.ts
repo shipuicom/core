@@ -5,8 +5,12 @@ import { mkdtempSync, writeFileSync, rmSync, existsSync, readFileSync } from 'fs
 import { tmpdir } from 'os';
 import { join, resolve } from 'path';
 
-const projectRoot = resolve(__dirname, '../../..');
-const cli = resolve(__dirname, 'ship-fg.ts');
+// Anchored to the runner's working directory, which is the workspace root.
+// Neither __dirname nor import.meta.url survives the bundling the test runner
+// does — both collapse to the workspace root — so deriving these paths from the
+// module's own location silently pointed them outside the repo.
+const projectRoot = process.cwd();
+const cli = resolve(projectRoot, 'projects/ship-ui/bin/ship-fg.ts');
 const src = resolve(projectRoot, 'projects/design-system/src');
 
 let workDir: string;

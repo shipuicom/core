@@ -118,8 +118,14 @@ export function parseDOMToAST(
 
 const TAG_SENTINEL = '\u0001';
 
+/**
+ * Identity of a mark for open/close bookkeeping.
+ *
+ * Most marks carry no attributes, so the common case avoids `JSON.stringify`
+ * entirely — this runs several times per marked node, once per render.
+ */
 function markKey(mark: ASTMark): string {
-  return JSON.stringify({ t: mark.type, a: mark.attrs ?? null });
+  return mark.attrs ? `${mark.type}\u0000${JSON.stringify(mark.attrs)}` : mark.type;
 }
 
 function serializeInlineRuns(
@@ -132,26 +138,33 @@ function serializeInlineRuns(
   const open: { key: string; close: string }[] = [];
 
   for (const node of nodes) {
-    const wanted = (node.marks ?? [])
-      .filter((m) => tagsFor(m))
-      .slice()
-      .sort((a, b) => rank(a.type) - rank(b.type));
-    const wantedKeys = new Set(wanted.map(markKey));
+    // Resolve each mark's tags and key once. Previously `tagsFor` ran twice per
+    // mark — once to filter, once to emit — and each call re-rendered the mark
+    // against a sentinel.
+    const wanted: { mark: ASTMark; key: string; tags: { open: string; close: string } }[] = [];
+    for (const mark of node.marks ?? []) {
+      const tags = tagsFor(mark);
+      if (tags) wanted.push({ mark, key: markKey(mark), tags });
+    }
+    wanted.sort((a, b) => rank(a.mark.type) - rank(b.mark.type));
 
     let keep = 0;
-    while (keep < open.length && wantedKeys.has(open[keep].key)) keep++;
+    while (keep < open.length && wanted.some((w) => w.key === open[keep].key)) keep++;
 
     for (let i = open.length - 1; i >= keep; i--) out += open[i].close;
     open.length = keep;
 
-    const openKeys = new Set(open.map((o) => o.key));
-    for (const mark of wanted) {
-      const key = markKey(mark);
-      if (openKeys.has(key)) continue;
-      const tags = tagsFor(mark)!;
-      out += tags.open;
-      open.push({ key, close: tags.close });
-      openKeys.add(key);
+    for (const entry of wanted) {
+      let already = false;
+      for (const o of open) {
+        if (o.key === entry.key) {
+          already = true;
+          break;
+        }
+      }
+      if (already) continue;
+      out += entry.tags.open;
+      open.push({ key: entry.key, close: entry.tags.close });
     }
 
     out += escape(node.text || '');
@@ -161,12 +174,29 @@ function serializeInlineRuns(
   return out;
 }
 
+/**
+ * Mark ordering, memoised on the behavior registry.
+ *
+ * The registry only changes at `register()` time, but this rebuilt a Map of
+ * every registered type once per block — and once per list item on top of that.
+ */
+const rankerCache = new WeakMap<Map<string, BaseInlineBehavior>, (type: string) => number>();
+
 function markRanker(inlines: Map<string, BaseInlineBehavior>): (type: string) => number {
+  const cached = rankerCache.get(inlines);
+  if (cached && rankerCacheSize.get(inlines) === inlines.size) return cached;
+
   const order = new Map<string, number>();
   let i = 0;
   for (const type of inlines.keys()) order.set(type, i++);
-  return (type) => order.get(type) ?? Number.MAX_SAFE_INTEGER;
+  const ranker = (type: string) => order.get(type) ?? Number.MAX_SAFE_INTEGER;
+  rankerCache.set(inlines, ranker);
+  rankerCacheSize.set(inlines, inlines.size);
+  return ranker;
 }
+
+/** Guards the memo against a registry that gained behaviors after first use. */
+const rankerCacheSize = new WeakMap<Map<string, BaseInlineBehavior>, number>();
 
 function tagSplitter(render: ((text: string) => string) | undefined): { open: string; close: string } | null {
   if (!render) return null;
@@ -193,7 +223,17 @@ export function renderInlineHTML(
     rank
   );
 
-  if (softBreaks && nodes.some((n) => n.text) && nodes.map((n) => n.text).join('').endsWith('\n')) {
+  // Look at the last character directly rather than joining the whole block's
+  // text just to test its final byte.
+  let lastChar = '';
+  for (let i = nodes.length - 1; i >= 0; i--) {
+    const text = nodes[i].text;
+    if (text) {
+      lastChar = text[text.length - 1];
+      break;
+    }
+  }
+  if (softBreaks && lastChar === '\n') {
 
     return `${out}<br ${PAD_BREAK_ATTR}="">`;
   }
@@ -221,6 +261,35 @@ export function astToHtml(
     .join('');
 }
 
+/**
+ * One block's markdown, including its trailing separator. The document form
+ * is the concatenation of these, trimmed — split out so callers can cache
+ * per block.
+ */
+export function blockToMarkdown(
+  block: ASTBlockNode,
+  blocks: Map<string, BaseBlockBehavior>,
+  inlines: Map<string, BaseInlineBehavior>
+): string {
+  const behavior = blocks.get(block.type);
+  if (!behavior) return '';
+
+  const innerMd =
+    behavior.category === 'container'
+      ? astToMarkdown(block.content as ASTDocument, blocks, inlines)
+      : serializeInlineRuns(
+          block.content as ASTInlineNode[],
+          (mark) => {
+            const inline = inlines.get(mark.type);
+            return inline?.renderMarkdown ? tagSplitter((t) => inline.renderMarkdown!(mark, t)) : null;
+          },
+          (t) => t,
+          markRanker(inlines)
+        );
+
+  return behavior.renderMarkdown ? behavior.renderMarkdown(block, innerMd) : `${innerMd}\n\n`;
+}
+
 export function astToMarkdown(
   doc: ASTDocument,
   blocks: Map<string, BaseBlockBehavior>,
@@ -228,27 +297,108 @@ export function astToMarkdown(
 ): string {
   if (!doc || doc.length === 0) return '';
   return doc
-    .map((block) => {
-      const behavior = blocks.get(block.type);
-      if (!behavior) return '';
-
-      const innerMd =
-        behavior.category === 'container'
-          ? astToMarkdown(block.content as ASTDocument, blocks, inlines)
-          : serializeInlineRuns(
-              block.content as ASTInlineNode[],
-              (mark) => {
-                const inline = inlines.get(mark.type);
-                return inline?.renderMarkdown ? tagSplitter((t) => inline.renderMarkdown!(mark, t)) : null;
-              },
-              (t) => t,
-              markRanker(inlines)
-            );
-
-      return behavior.renderMarkdown ? behavior.renderMarkdown(block, innerMd) : `${innerMd}\n\n`;
-    })
+    .map((block) => blockToMarkdown(block, blocks, inlines))
     .join('')
     .trim();
+}
+
+/**
+ * Copying code mid-line captures the first line from the selection anchor —
+ * no leading whitespace — while every following line keeps its full
+ * source-file indentation. Pasted verbatim, the first line sits flush and
+ * the rest arrive over-indented by the snippet's original nesting depth.
+ *
+ * When that shape is detected (unindented first line, common leading
+ * whitespace on the rest), the common prefix is stripped: relative structure
+ * survives and the base lines up with the first line. Snippets whose first
+ * line carries its own indentation are self-consistent and pass through
+ * untouched. The prefix is compared as a string, so mixed tabs/spaces never
+ * get half-converted.
+ */
+export function dedentPastedCode(text: string): string {
+  const lines = text.split('\n');
+  if (lines.length < 2 || /^[\t ]/.test(lines[0])) return text;
+
+  let prefix: string | null = null;
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue; // blank lines don't vote
+    const leading = /^[\t ]*/.exec(lines[i])![0];
+    if (prefix === null) prefix = leading;
+    else {
+      let k = 0;
+      while (k < prefix.length && k < leading.length && prefix[k] === leading[k]) k++;
+      prefix = prefix.slice(0, k);
+    }
+    if (!prefix) return text; // a flush line — nothing common to strip
+  }
+  if (!prefix) return text;
+
+  const common = prefix;
+  return lines.map((line, i) => (i > 0 && line.startsWith(common) ? line.slice(common.length) : line)).join('\n');
+}
+
+/**
+ * Syntax coloring for pasted code. The clipboard's two flavors split the
+ * truth: text/plain carries the whitespace exactly (breaks, tabs), while
+ * text/html carries the source editor's coloring — as parsed inline marks —
+ * but mangles whitespace (nbsp runs, per-line divs, collapsed tabs).
+ *
+ * This rides the marks on the plain text by aligning the two streams over
+ * their non-whitespace characters, which must match one for one. Whitespace
+ * carries no marks — syntax coloring on a space isn't visible anyway — and
+ * any disagreement between the flavors returns null so the caller pastes
+ * plain rather than miscolored.
+ */
+export function alignStyledCode(text: string, styled: ASTDocument): ASTInlineNode[] | null {
+  const chars: string[] = [];
+  const charMarks: (ASTMark[] | undefined)[] = [];
+  const visit = (blocks: ASTDocument) => {
+    for (const block of blocks) {
+      const content = (block.content ?? []) as (ASTInlineNode | ASTBlockNode)[];
+      if (!content.length) continue;
+      if (typeof (content[0] as ASTInlineNode).text === 'string') {
+        for (const node of content as ASTInlineNode[]) {
+          for (const ch of node.text ?? '') {
+            if (/\s/.test(ch)) continue;
+            chars.push(ch);
+            charMarks.push(node.marks);
+          }
+        }
+      } else {
+        visit(content as ASTBlockNode[]);
+      }
+    }
+  };
+  visit(styled);
+
+  const keyOf = (marks: ASTMark[] | undefined) =>
+    (marks ?? []).map((m) => `${m.type} ${JSON.stringify(m.attrs ?? null)}`).join('');
+
+  const out: ASTInlineNode[] = [];
+  let cursor = 0;
+  let currentKey: string | null = null;
+  const push = (ch: string, marks: ASTMark[] | undefined) => {
+    const key = keyOf(marks);
+    if (currentKey === key && out.length) {
+      out[out.length - 1].text += ch;
+      return;
+    }
+    const node: ASTInlineNode = { type: 'text', text: ch };
+    if (marks?.length) node.marks = structuredClone(marks);
+    out.push(node);
+    currentKey = key;
+  };
+
+  for (const ch of text) {
+    if (/\s/.test(ch)) {
+      push(ch, undefined);
+    } else {
+      if (cursor >= chars.length || chars[cursor] !== ch) return null;
+      push(ch, charMarks[cursor]);
+      cursor++;
+    }
+  }
+  return cursor === chars.length ? out : null;
 }
 
 export function htmlToAst(

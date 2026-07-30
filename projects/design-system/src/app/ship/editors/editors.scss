@@ -19,6 +19,17 @@
   margin: 0 auto;
 }
 
+// The 5,000-block demo scrolls inside the editor body: the toolbar and the
+// metrics footer stay pinned while the virtualized window follows the scroll.
+.virtual-demo ::ng-deep sh-editor {
+  .sh-editor-container {
+    max-height: 560px;
+  }
+  .sh-editor-body {
+    overflow-y: auto;
+  }
+}
+
 .editor-controls {
   display: flex;
   flex-wrap: wrap;

@@ -1,4 +1,14 @@
-<sh-list [shSortable]="manager">
+<div class="toolbar">
+  <span class="hint">
+    {{ isEditing() ? 'Drag the handles to reorder' : 'Tap Edit to reorder by touch' }}
+  </span>
+
+  <button shButton variant="outlined" size="small" (click)="toggleEditing()">
+    {{ isEditing() ? 'Done' : 'Edit' }}
+  </button>
+</div>
+
+<sh-list [shSortable]="manager" [touchEnabled]="isEditing()" touchActivation="handle" [class.editing]="isEditing()">
   @for (item of items(); track item) {
     <div class="list-item" draggable="true">
       <div class="drag-handle" sort-handle>

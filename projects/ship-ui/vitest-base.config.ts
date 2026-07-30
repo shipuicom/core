@@ -32,6 +32,8 @@ export default defineConfig({
   plugins: [shipUiPathsPlugin()],
   test: {
     environment: 'jsdom',
-    setupFiles: [resolve(__dirname, 'vitest-setup.ts')],
+    // No TestBed setup file here on purpose: @angular/build:unit-test injects its
+    // own initTestEnvironment. Calling it again with a different platform throws
+    // NG0400 and takes down every spec file.
   },
 });

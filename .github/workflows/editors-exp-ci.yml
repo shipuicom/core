@@ -4,12 +4,14 @@ on:
   push:
     branches: [main]
     paths:
-      - 'projects/design-system/src/app/ship/editors-exp/**'
+      - 'projects/ship-ui/ship-editor/**'
+      - 'projects/design-system/src/app/ship/editors/**'
       - 'scripts/editor-e2e/**'
       - '.github/workflows/editors-exp-ci.yml'
   pull_request:
     paths:
-      - 'projects/design-system/src/app/ship/editors-exp/**'
+      - 'projects/ship-ui/ship-editor/**'
+      - 'projects/design-system/src/app/ship/editors/**'
       - 'scripts/editor-e2e/**'
       - '.github/workflows/editors-exp-ci.yml'
   schedule:
@@ -38,8 +40,10 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: Run editors-exp suite
-        run: npx vitest run projects/design-system/src/app/ship/editors-exp/ --reporter=verbose
+      # ng test, not bare vitest: the component specs import path-mapped
+      # subpackages (@ship-ui/core/*) that only the Angular builder resolves.
+      - name: Run editor suite
+        run: npx ng test ship-ui --watch=false
 
   # ──────────────────────────────────────────────────────────────────────────
   # Typecheck — vitest transpiles without type-checking, so type errors only
@@ -83,6 +87,14 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
+      # index.html links /ship.css, which the font generator writes into the
+      # (gitignored) public dir. Without it the dev server 404s the
+      # stylesheet and every spec fails its console-error assertion. The
+      # generator itself (bin/ship-fg.mjs) is a gitignored build artifact,
+      # so bundle it from source first.
+      - name: Generate ship.css
+        run: bun run build:cli && bun run gen:font
+
       - name: Run editor e2e suite
         run: npx playwright test -c scripts/editor-e2e/playwright.config.ts
 
@@ -106,4 +118,4 @@ jobs:
       - name: Run rebase fuzz at 10x scale
         env:
           FUZZ_SCALE: '10'
-        run: npx vitest run projects/design-system/src/app/ship/editors-exp/editor-rebase-fuzz.spec.ts --reporter=verbose
+        run: npx ng test ship-ui --watch=false --include='**/editor-rebase-fuzz.spec.ts'

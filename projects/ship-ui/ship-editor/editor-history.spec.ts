@@ -3,33 +3,35 @@
 import { Injector, runInInjectionContext } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { EditorEngineService } from './editor-engine.service';
+import { logicalToPos, posToLogical } from './editor-flat-positions';
 import { applyOp, diffDocuments, fragLen, invertOp } from './editor-transactions';
-import { ASTDocument, LogicalSelection } from './editor.types';
+import { ASTBlockNode, ASTDocument, LogicalPosition } from './editor.types';
 import { EditorSelectionService } from './selection.service';
-import { BoldBehavior, HeadingBehavior, ImageBehavior, ParagraphBehavior } from './standard-behaviors';
+import { BoldBehavior, BulletListBehavior, HeadingBehavior, ImageBehavior, ListItemBehavior, ParagraphBehavior } from './standard-behaviors';
 
-const p = (text: string) => ({ type: 'paragraph', content: [{ type: 'text', text }] });
+const p = (text: string): ASTBlockNode => ({ type: 'paragraph', content: [{ type: 'text', text }] });
 const textOf = (doc: ASTDocument, i: number) => (doc[i].content as any[]).map((n) => n.text).join('');
 
 describe('Invertible editor history', () => {
   let engine: EditorEngineService;
 
+  // Selections are flat; tests are written in tree coordinates and convert.
+  const flat = (pos: Partial<LogicalPosition> & { blockIndex: number; offset: number }) =>
+    logicalToPos(engine.document(), { inlineIndex: 0, ...pos });
   const caret = (blockIndex: number, offset: number, inlineIndex = 0) => {
-    engine.selection.live.set({
-      start: { blockIndex, inlineIndex, offset },
-      end: { blockIndex, inlineIndex, offset },
-      isCollapsed: true,
-    } as LogicalSelection);
+    const at = flat({ blockIndex, inlineIndex, offset });
+    engine.selection.live.set({ from: at, to: at });
   };
   const range = (from: [number, number, number], to: [number, number, number]) => {
     engine.selection.live.set({
-      start: { blockIndex: from[0], inlineIndex: from[1], offset: from[2] },
-      end: { blockIndex: to[0], inlineIndex: to[1], offset: to[2] },
-      isCollapsed: false,
-    } as LogicalSelection);
+      from: flat({ blockIndex: from[0], inlineIndex: from[1], offset: from[2] }),
+      to: flat({ blockIndex: to[0], inlineIndex: to[1], offset: to[2] }),
+    });
   };
+  /** Tree-shaped view of the live caret, for assertions written in tree coordinates. */
+  const caretLp = () => posToLogical(engine.document(), engine.selection.active()!.from)!;
 
-  const arrange = (doc: ASTDocument) => engine.document.set(doc);
+  const arrange = (doc: ASTDocument) => engine.load(doc);
 
   beforeEach(() => {
 
@@ -72,6 +74,83 @@ describe('Invertible editor history', () => {
     });
   });
 
+  describe('document immutability across edits', () => {
+    // insertText path-copies rather than deep-cloning the document, so the
+    // previous document must still be observably untouched — the undo stack and
+    // the last emitted value both hold references to it.
+    it('leaves the previous document untouched when typing', () => {
+      const before: ASTDocument = [p('one'), p('two'), p('three')];
+      arrange(before);
+      const snapshot = JSON.parse(JSON.stringify(before));
+
+      caret(1, 3);
+      engine.insertText('X');
+
+      expect(textOf(engine.document(), 1)).toBe('twoX');
+      // The array we handed in, and every node reachable from it, is unchanged.
+      expect(before).toEqual(snapshot);
+    });
+
+    it('never mutates the caller\'s document, and caches the materialized view per version', () => {
+      const before: ASTDocument = [p('one'), p('two'), p('three')];
+      const snapshot = JSON.parse(JSON.stringify(before));
+      arrange(before);
+      caret(1, 3);
+      engine.insertText('X');
+
+      // The input was converted to rows on load; edits never touch it.
+      expect(before).toEqual(snapshot);
+      // The derived tree is stable until the next change…
+      expect(engine.document()).toBe(engine.document());
+      const cached = engine.document();
+      expect(textOf(cached, 1)).toBe('twoX');
+      // …and a new one appears after an edit.
+      caret(0, 3);
+      engine.insertText('Y');
+      expect(engine.document()).not.toBe(cached);
+    });
+
+    it('does not corrupt the previous document when typing repeatedly', () => {
+      arrange([p('one'), p('two')]);
+      const original = engine.document();
+      const snapshot = JSON.parse(JSON.stringify(original));
+
+      caret(1, 3);
+      engine.insertText('a');
+      caret(1, 4);
+      engine.insertText('b');
+      caret(1, 5);
+      engine.insertText('c');
+
+      expect(textOf(engine.document(), 1)).toBe('twoabc');
+      expect(original).toEqual(snapshot);
+
+      engine.undo();
+      engine.undo();
+      engine.undo();
+      expect(textOf(engine.document(), 1)).toBe('two');
+    });
+
+    it('keeps marks isolated when typing inside a marked run', () => {
+      const marked: ASTDocument = [
+        { type: 'paragraph', content: [{ type: 'text', text: 'bold', marks: [{ type: 'bold' }] }] },
+      ];
+      arrange(marked);
+      const snapshot = JSON.parse(JSON.stringify(marked));
+
+      caret(0, 2);
+      engine.insertText('X');
+
+      expect(textOf(engine.document(), 0)).toBe('boXld');
+      expect(marked).toEqual(snapshot);
+      // The mutated node must not share its marks array with the original.
+      const nextNode = (engine.document()[0].content as any[])[0];
+      const prevNode = (marked[0].content as any[])[0];
+      expect(nextNode.marks).not.toBe(prevNode.marks);
+      expect(nextNode.marks).toEqual(prevNode.marks);
+    });
+  });
+
   describe('engine transactions', () => {
     it('typing commits a char-level op, and undo/redo round-trip text + selection', () => {
       arrange([p('one'), p('two'), p('three')]);
@@ -91,11 +170,11 @@ describe('Invertible editor history', () => {
       engine.undo();
       expect(textOf(engine.document(), 1)).toBe('two');
       expect(engine.document()).toHaveLength(3);
-      expect(engine.selection.active()?.start.offset).toBe(3);
+      expect(caretLp().offset).toBe(3);
 
       engine.redo();
       expect(textOf(engine.document(), 1)).toBe('twoX');
-      expect(engine.selection.active()?.start.offset).toBe(4);
+      expect(caretLp().offset).toBe(4);
     });
 
     it('Enter (block split) is invertible: 1 block -> 2 -> undo -> 1', () => {
@@ -168,13 +247,11 @@ describe('Invertible editor history', () => {
       expect(textOf(engine.document(), 0)).toBe('original');
     });
 
-    it('commitDocument (IME reconcile path) records an undoable transaction', () => {
+    it('replaceBlock (IME reconcile path) records an undoable transaction', () => {
       arrange([p('hello'), p('world')]);
       caret(1, 5);
 
-      const doc = [...engine.document()];
-      doc[1] = p('world你好');
-      engine.commitDocument(doc);
+      engine.replaceBlock(1, p('world你好'));
       expect(textOf(engine.document(), 1)).toBe('world你好');
 
       engine.undo();
@@ -185,7 +262,7 @@ describe('Invertible editor history', () => {
 
     it('a no-op mutation records nothing', () => {
       arrange([p('static')]);
-      engine.commitDocument([...engine.document()]);
+      engine.replaceBlock(0, p('static'));
       expect(engine.canUndo()).toBe(false);
       expect(engine.lastTransaction()).toBeNull();
     });
@@ -288,8 +365,7 @@ describe('Invertible editor history', () => {
         removed: [],
         inserted: [{ type: 'text', text: '>>> ' }],
       });
-      const sel = engine.selection.active()!;
-      expect(sel.start.offset).toBe(12);
+      expect(caretLp().offset).toBe(12);
     });
 
     it('maps the caret EXACTLY through a remote coarse block merge', () => {
@@ -302,9 +378,9 @@ describe('Invertible editor history', () => {
         removed: [p('hello'), p('world')],
         inserted: [p('helloworld')],
       });
-      const sel = engine.selection.active()!;
-      expect(sel.start.blockIndex).toBe(0);
-      expect(sel.start.offset).toBe(8);
+      const lp = caretLp();
+      expect(lp.blockIndex).toBe(0);
+      expect(lp.offset).toBe(8);
     });
 
     it('tie regression: remote insert at the offset of a pending local char — undo removes the LOCAL one', () => {
@@ -338,9 +414,9 @@ describe('Invertible editor history', () => {
       expect(textOf(engine.document(), 1)).toBe('RR..a..');
       engine.undo();
       expect(textOf(engine.document(), 1)).toBe('RR....');
-      const sel = engine.selection.active()!;
-      expect(sel.start.blockIndex).toBe(1);
-      expect(sel.start.offset).toBe(4);
+      const lp = caretLp();
+      expect(lp.blockIndex).toBe(1);
+      expect(lp.offset).toBe(4);
     });
 
     it('a remote op that destroys a pending edit target drops that history entry', () => {
@@ -379,5 +455,176 @@ describe('Invertible editor history', () => {
       expect(engine.document().some((b) => b.type === 'image')).toBe(false);
       expect(engine.selectedBlock()).toBeNull();
     });
+  });
+});
+describe('pasting a fragment that contains containers', () => {
+  let engine: EditorEngineService;
+
+  const caret = (blockIndex: number, offset: number, extra: Record<string, unknown> = {}) => {
+    const at = logicalToPos(engine.document(), { blockIndex, inlineIndex: 0, offset, ...extra } as LogicalPosition);
+    engine.selection.live.set({ from: at, to: at });
+  };
+
+  const ul = (...texts: string[]): ASTBlockNode => ({
+    type: 'bullet-list',
+    content: texts.map((t) => ({ type: 'list-item', content: [{ type: 'text', text: t }] })),
+  });
+
+  beforeEach(() => {
+    const injector = Injector.create({
+      providers: [{ provide: EditorSelectionService, useValue: new EditorSelectionService() }],
+    });
+    engine = runInInjectionContext(injector, () => new EditorEngineService());
+    [new ParagraphBehavior(), new HeadingBehavior(), new ImageBehavior()].forEach((b) => engine.register(b));
+    engine.register(new BulletListBehavior());
+    engine.register(new ListItemBehavior());
+  });
+
+  // A pasted list is a container: its content holds list-item blocks, not inline
+  // nodes. The merge path assumed inline content throughout and read `.text` off
+  // a block node, which threw "Cannot read properties of undefined".
+  it('pastes a list into an empty paragraph without throwing', () => {
+    engine.load([p('')]);
+    caret(0, 0);
+
+    expect(() => engine.insertFragment([ul('one', 'two')])).not.toThrow();
+
+    const doc = engine.document();
+    expect(doc.some((b) => b.type === 'bullet-list')).toBe(true);
+    const list = doc.find((b) => b.type === 'bullet-list')!;
+    expect((list.content as ASTBlockNode[]).map((li) => (li.content as any[])[0].text)).toEqual(['one', 'two']);
+  });
+
+  it('splits the target paragraph around a pasted list', () => {
+    engine.load([p('beforeafter')]);
+    caret(0, 6);
+
+    engine.insertFragment([ul('item')]);
+
+    const doc = engine.document();
+    expect(doc.map((b) => b.type)).toEqual(['paragraph', 'bullet-list', 'paragraph']);
+    expect(textOf(doc, 0)).toBe('before');
+    expect(textOf(doc, 2)).toBe('after');
+  });
+
+  it('keeps text before the caret when pasting a list at the end of a paragraph', () => {
+    engine.load([p('keep')]);
+    caret(0, 4);
+
+    engine.insertFragment([ul('x')]);
+
+    const doc = engine.document();
+    expect(doc.map((b) => b.type)).toEqual(['paragraph', 'bullet-list']);
+    expect(textOf(doc, 0)).toBe('keep');
+  });
+
+  it('pastes a mixed fragment of paragraph, list and paragraph', () => {
+    engine.load([p('ab')]);
+    caret(0, 1);
+
+    engine.insertFragment([p('one'), ul('bullet'), p('two')]);
+
+    const doc = engine.document();
+    expect(doc.map((b) => b.type)).toEqual(['paragraph', 'paragraph', 'bullet-list', 'paragraph', 'paragraph']);
+    expect(textOf(doc, 0)).toBe('a');
+    expect(textOf(doc, 4)).toBe('b');
+  });
+
+  it('still merges a plain text fragment inline, rather than splitting', () => {
+    engine.load([p('ac')]);
+    caret(0, 1);
+
+    engine.insertFragment([p('b')]);
+
+    const doc = engine.document();
+    expect(doc).toHaveLength(1);
+    expect(textOf(doc, 0)).toBe('abc');
+  });
+
+  it('undoes a list paste back to the original document', () => {
+    engine.load([p('start')]);
+    caret(0, 5);
+    engine.insertFragment([ul('one')]);
+    expect(engine.document().length).toBeGreaterThan(1);
+
+    engine.undo();
+    expect(engine.document()).toHaveLength(1);
+    expect(textOf(engine.document(), 0)).toBe('start');
+  });
+});
+
+describe('pasting into a list item', () => {
+  let engine: EditorEngineService;
+
+  const ul = (...texts: string[]): ASTBlockNode => ({
+    type: 'bullet-list',
+    content: texts.map((t) => ({ type: 'list-item', content: [{ type: 'text', text: t }] })),
+  });
+  const itemTexts = (block: ASTBlockNode) =>
+    (block.content as ASTBlockNode[]).map((li) => (li.content as any[]).map((n) => n.text).join(''));
+
+  const caretInItem = (blockIndex: number, itemIndex: number, offset: number) => {
+    const at = logicalToPos(engine.document(), { blockIndex, itemIndex, inlineIndex: 0, offset });
+    engine.selection.live.set({ from: at, to: at });
+  };
+
+  beforeEach(() => {
+    const injector = Injector.create({
+      providers: [{ provide: EditorSelectionService, useValue: new EditorSelectionService() }],
+    });
+    engine = runInInjectionContext(injector, () => new EditorEngineService());
+    [new ParagraphBehavior(), new HeadingBehavior(), new ImageBehavior()].forEach((b) => engine.register(b));
+    engine.register(new BulletListBehavior());
+    engine.register(new ListItemBehavior());
+  });
+
+  // normalizeInlineNodes merges runs with `last.text += node.text`. Feeding it
+  // block nodes made that undefined + undefined, so the item's text became the
+  // string "NaN" — corrupt content rather than a crash.
+  it('never produces NaN text when a list is pasted into a list item', () => {
+    engine.load([ul('target')]);
+    caretInItem(0, 0, 6);
+
+    engine.insertFragment([ul('one', 'two')]);
+
+    const texts = itemTexts(engine.document()[0]);
+    for (const t of texts) {
+      expect(t, `item text: ${t}`).not.toContain('NaN');
+      expect(typeof t).toBe('string');
+    }
+  });
+
+  it('flattens a pasted list into the target list rather than nesting it', () => {
+    engine.load([ul('a', 'b')]);
+    caretInItem(0, 0, 1);
+
+    engine.insertFragment([ul('X', 'Y')]);
+
+    const doc = engine.document();
+    expect(doc).toHaveLength(1);
+    expect(doc[0].type).toBe('bullet-list');
+    expect(itemTexts(doc[0]).join('|')).not.toContain('NaN');
+    // The pasted items land inside the target list, not as a nested one.
+    expect((doc[0].content as ASTBlockNode[]).every((li) => li.type === 'list-item')).toBe(true);
+  });
+
+  it('survives repeated pastes into the same list without corrupting text', () => {
+    engine.load([ul('seed')]);
+    for (let i = 0; i < 10; i++) {
+      caretInItem(0, 0, 0);
+      engine.insertFragment([ul(`p${i}`)]);
+    }
+    const texts = itemTexts(engine.document()[0]);
+    expect(texts.join('|')).not.toContain('NaN');
+    expect(texts.every((t) => typeof t === 'string')).toBe(true);
+  });
+
+  it('still pastes plain text into a list item inline', () => {
+    engine.load([ul('ac')]);
+    caretInItem(0, 0, 1);
+
+    engine.insertFragment([p('b')]);
+
+    expect(itemTexts(engine.document()[0])[0]).toBe('abc');
   });
 });

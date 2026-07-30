@@ -6,7 +6,7 @@ import { EditorEngineService } from './editor-engine.service';
 import { diffFlat, logicalToPos, posToLogical } from './editor-flat-positions';
 import { normalizeInlineNodes } from './editor-ast.utils';
 import { EditorOp, applyOp, diffDocuments, invertOp, transformOp } from './editor-transactions';
-import { ASTDocument, LogicalPosition } from './editor.types';
+import { ASTBlockNode, ASTDocument, LogicalPosition } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import { BulletListBehavior, ListItemBehavior, ParagraphBehavior } from './standard-behaviors';
 
@@ -23,7 +23,7 @@ function mulberry32(seed: number) {
 type Rnd = () => number;
 const pick = (rnd: Rnd, n: number) => Math.floor(rnd() * n);
 
-const p = (text: string) => ({ type: 'paragraph', content: [{ type: 'text', text }] });
+const p = (text: string): ASTBlockNode => ({ type: 'paragraph', content: [{ type: 'text', text }] });
 const li = (text: string) => ({ type: 'list-item', content: [{ type: 'text', text }] });
 const ul = (...items: any[]) => ({ type: 'bullet-list', content: items });
 const hr = () => ({ type: 'hr', content: [] });
@@ -73,8 +73,10 @@ function makeEngine(): EditorEngineService {
   return engine;
 }
 
-const caretSel = (blockIndex: number, offset: number) =>
-  ({ start: { blockIndex, inlineIndex: 0, offset }, end: { blockIndex, inlineIndex: 0, offset }, isCollapsed: true }) as any;
+const caretSel = (doc: ASTDocument, blockIndex: number, offset: number) => {
+  const at = logicalToPos(doc, { blockIndex, inlineIndex: 0, offset });
+  return { from: at, to: at };
+};
 
 function randomBaseDoc(rnd: Rnd): ASTDocument {
   const blocks: any[] = [];
@@ -211,7 +213,7 @@ describe('fuzz layer 2: engine rebase marker oracle', () => {
     for (let seed = 1; seed <= 80 * SCALE; seed++) {
       const rnd = mulberry32(seed * 7919);
       const engine = makeEngine();
-      engine.document.set([p('....'), p('....'), p('....')] as ASTDocument);
+      engine.load([p('....'), p('....'), p('....')] as ASTDocument);
       let l = 0;
       let r = 0;
 
@@ -221,7 +223,7 @@ describe('fuzz layer 2: engine rebase marker oracle', () => {
         const len = blockText(doc[bi]).length;
         const at = pick(rnd, len + 1);
         if (rnd() < 0.5 && l < LOCAL.length) {
-          engine.selection.live.set(caretSel(bi, at));
+          engine.selection.live.set(caretSel(doc, bi, at));
           engine.insertText(LOCAL[l++]);
         } else if (r < REMOTE.length) {
           engine.applyRemoteOperation({
@@ -266,14 +268,14 @@ describe('fuzz layer 2: engine rebase marker oracle', () => {
     for (let seed = 1; seed <= 40 * SCALE; seed++) {
       const rnd = mulberry32(seed * 31337);
       const engine = makeEngine();
-      engine.document.set([p('....'), p('....')] as ASTDocument);
+      engine.load([p('....'), p('....')] as ASTDocument);
       let l = 0;
       let r = 0;
 
       for (let step = 0; step < 5 && l < LOCAL.length; step++) {
         const doc = engine.document();
         const bi = pick(rnd, doc.length);
-        engine.selection.live.set(caretSel(bi, pick(rnd, blockText(doc[bi]).length + 1)));
+        engine.selection.live.set(caretSel(doc, bi, pick(rnd, blockText(doc[bi]).length + 1)));
         engine.insertText(LOCAL[l++]);
       }
 
@@ -309,7 +311,7 @@ describe('fuzz layer 3: engine chaos invariants', () => {
     for (let seed = 1; seed <= 60 * SCALE; seed++) {
       const rnd = mulberry32(seed * 104729);
       const engine = makeEngine();
-      engine.document.set([p('alpha0'), p('bravo1'), ul(li('itemA'), li('itemB')), p('delta3')] as ASTDocument);
+      engine.load([p('alpha0'), p('bravo1'), ul(li('itemA'), li('itemB')), p('delta3')] as ASTDocument);
 
       const localAction = () => {
         const doc = engine.document();
@@ -320,22 +322,21 @@ describe('fuzz layer 3: engine chaos invariants', () => {
         const at = pick(rnd, len + 1);
         const roll = rnd();
         if (roll < 0.4) {
-          engine.selection.live.set(caretSel(bi, at));
+          engine.selection.live.set(caretSel(doc, bi, at));
           engine.insertText('x');
         } else if (roll < 0.6) {
-          engine.selection.live.set(caretSel(bi, at));
+          engine.selection.live.set(caretSel(doc, bi, at));
           engine.handleEnter();
         } else if (roll < 0.8) {
-          engine.selection.live.set(caretSel(bi, at));
+          engine.selection.live.set(caretSel(doc, bi, at));
           engine.handleBackspace();
         } else if (len >= 2) {
           const from = pick(rnd, len - 1);
           const to = from + 1 + pick(rnd, len - from - 1);
           engine.selection.live.set({
-            start: { blockIndex: bi, inlineIndex: 0, offset: from },
-            end: { blockIndex: bi, inlineIndex: 0, offset: to },
-            isCollapsed: false,
-          } as any);
+            from: logicalToPos(doc, { blockIndex: bi, inlineIndex: 0, offset: from }),
+            to: logicalToPos(doc, { blockIndex: bi, inlineIndex: 0, offset: to }),
+          });
           engine.deleteRange();
         }
       };

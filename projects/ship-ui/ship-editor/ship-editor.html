@@ -12,6 +12,8 @@
           (focus)="onDOMFocus()"
           (keydown)="onKeyDown($event)"
           (paste)="onPaste($event)"
+          (copy)="onCopy($event)"
+          (cut)="onCut($event)"
           (beforeinput)="onBeforeInput($event)"
           (mousedown)="onSurfaceMouseDown($event)"
           (dragstart)="onDragStart($event)"
@@ -41,9 +43,7 @@
       <sh-editor-contextual-toolbar [surface]="surface" [extras]="contextualActions()" />
       <sh-editor-image-resize [surface]="surface" [readonly]="readonly()" [edgeHandles]="imageEdgeResize()" />
       <sh-editor-slash-menu [commands]="slashCommands()" />
-      @if (showMetrics()) {
-        <div class="sh-editor-stats">
-          {{ wordCount() }} words · {{ charCount() }} characters · {{ format().toUpperCase() }}
-        </div>
+      @if (showMetrics() && metricsText()) {
+        <div class="sh-editor-stats">{{ metricsText() }}</div>
       }
     </div>

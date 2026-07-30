@@ -7,8 +7,10 @@
 html,
 body,
 app-root {
-  width: 100vw;
-  min-height: 100vh;
+  // 100vw/100vh resolve to the largest viewport, which on mobile is taller and
+  // wider than what is actually visible while the browser chrome is showing.
+  width: 100%;
+  min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--base-2);

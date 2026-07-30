@@ -92,6 +92,348 @@ async function openEditor(page: Page) {
 }
 
 test.describe('DOM ≡ AST invariant', () => {
+  test('paste replaces a select-all and a container-anchored last-char selection', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    const astOf = () =>
+      page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document());
+    const pastePlain = (text: string) =>
+      page.evaluate((t) => {
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        const dt = new DataTransfer();
+        dt.setData('text/plain', t);
+        comp.onPaste(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+      }, text);
+    const reset = async () => {
+      await page.evaluate(() => {
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        comp.engine.reset([
+          { type: 'paragraph', content: [{ type: 'text', text: 'hello' }] },
+          { type: 'paragraph', content: [{ type: 'text', text: 'world' }] },
+        ]);
+      });
+      await expect(page.locator('.sh-editor-content > p').first()).toHaveText('hello');
+    };
+
+    // ── Select-all (real keyboard: the range anchors on the surface element,
+    // not on text nodes) then paste: the fragment must REPLACE everything. ──
+    await reset();
+    await page.locator('.sh-editor-content > p').first().click();
+    await page.keyboard.press('ControlOrMeta+a');
+    await pastePlain('replaced');
+    let ast = await astOf();
+    expect(ast).toHaveLength(1);
+    expect(ast[0].content.map((n: any) => n.text).join('')).toBe('replaced');
+    await expectInvariant(page, 'after select-all paste');
+
+    // ── A selection of the last character whose END sits on the container
+    // (what dragging past the last line produces). ──
+    await reset();
+    await page.evaluate(() => {
+      const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+      surface.focus();
+      const last = surface.querySelectorAll('p')[1].firstChild!; // "world"
+      const range = document.createRange();
+      range.setStart(last, 4); // before the final "d"
+      range.setEnd(surface, 2); // container-anchored end, past the last block
+      const sel = window.getSelection()!;
+      sel.removeAllRanges();
+      sel.addRange(range);
+      document.dispatchEvent(new Event('selectionchange'));
+    });
+    await pastePlain('ZZ');
+    ast = await astOf();
+    expect(ast).toHaveLength(2);
+    expect(ast[1].content.map((n: any) => n.text).join('')).toBe('worlZZ');
+    await expectInvariant(page, 'after last-char paste');
+
+    // ── Reported shapes: pasting inside a quote, and into the last item of a
+    // trailing list (plain text and clipboard HTML). ──
+    const load = (doc: unknown) =>
+      page.evaluate((d) => {
+        (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset(d);
+      }, doc);
+    const caretIn = (blockSelector: string, offset: number) =>
+      page.evaluate(
+        ({ selector, off }) => {
+          const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+          surface.focus();
+          const el = surface.querySelector(selector)!;
+          const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+          const text = walker.nextNode()!;
+          const range = document.createRange();
+          range.setStart(text, off);
+          range.collapse(true);
+          const sel = window.getSelection()!;
+          sel.removeAllRanges();
+          sel.addRange(range);
+          document.dispatchEvent(new Event('selectionchange'));
+        },
+        { selector: blockSelector, off: offset }
+      );
+    const pasteHtml = (html: string) =>
+      page.evaluate((h) => {
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        const dt = new DataTransfer();
+        dt.setData('text/html', h);
+        comp.onPaste(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+      }, html);
+
+    await load([{ type: 'quote', content: [{ type: 'text', text: 'quoted' }] }]);
+    await caretIn('blockquote', 3);
+    await pastePlain('XX');
+    ast = await astOf();
+    expect(ast[0].content.map((n: any) => n.text).join('')).toBe('quoXXted');
+    await expectInvariant(page, 'after paste inside a quote');
+
+    await load([{ type: 'quote', content: [{ type: 'text', text: 'quoted' }] }]);
+    await caretIn('blockquote', 3);
+    await pasteHtml('<ul><li>a</li></ul>');
+    ast = await astOf();
+    expect(ast.map((b: any) => b.type)).toEqual(['quote', 'bullet-list', 'quote']);
+    await expectInvariant(page, 'after pasting a list into a quote');
+
+    const trailingList = [
+      { type: 'paragraph', content: [{ type: 'text', text: 'top' }] },
+      { type: 'bullet-list', content: [
+        { type: 'list-item', content: [{ type: 'text', text: 'one' }] },
+        { type: 'list-item', content: [{ type: 'text', text: 'two' }] },
+      ] },
+    ];
+    await load(trailingList);
+    await caretIn('ul li:last-child', 1);
+    await pastePlain('XX');
+    ast = await astOf();
+    expect(ast[1].content[1].content.map((n: any) => n.text).join('')).toBe('tXXwo');
+    await expectInvariant(page, 'after paste into a trailing list item');
+
+    // Block content pasted with the caret in the last list item lands AFTER
+    // the list, not inside it as extra items…
+    await load(trailingList);
+    await caretIn('ul li:last-child', 3);
+    await pasteHtml('<p>after one</p><p>after two</p>');
+    ast = await astOf();
+    expect(ast.map((b: any) => b.type)).toEqual(['paragraph', 'bullet-list', 'paragraph', 'paragraph']);
+    expect(ast[1].content).toHaveLength(2); // items untouched
+    expect(ast[3].content.map((n: any) => n.text).join('')).toBe('after two');
+    await expectInvariant(page, 'after block paste into a trailing list item');
+
+    // …while a list of the same kind still merges into the list.
+    await load(trailingList);
+    await caretIn('ul li:last-child', 3);
+    await pasteHtml('<ul><li>merged</li></ul>');
+    ast = await astOf();
+    expect(ast.map((b: any) => b.type)).toEqual(['paragraph', 'bullet-list']);
+    expect(ast[1].content.map((item: any) => item.content.map((n: any) => n.text).join(''))).toEqual(['one', 'twomerged']);
+    await expectInvariant(page, 'after same-kind list paste into a list item');
+
+    await load(trailingList);
+    await page.locator('.sh-editor-content > p').first().click();
+    await page.keyboard.press('ControlOrMeta+a');
+    await pastePlain('gone');
+    ast = await astOf();
+    expect(ast).toHaveLength(1);
+    expect(ast[0].content.map((n: any) => n.text).join('')).toBe('gone');
+    await expectInvariant(page, 'after select-all paste over a trailing list');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
+  test('void blocks: click selects an hr, copy serializes it, paste replaces it', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.reset([
+        { type: 'paragraph', content: [{ type: 'text', text: 'above' }] },
+        { type: 'hr', content: [] },
+        { type: 'paragraph', content: [{ type: 'text', text: 'below' }] },
+      ]);
+    });
+    await expect(page.locator('.sh-editor-content > p').first()).toHaveText('above');
+
+    // Click the hr: it becomes the selected block (the visual helper).
+    await page.locator('.sh-editor-content > hr').click();
+    await expect(page.locator('.sh-editor-content > hr.sh-editor-block-selected')).toHaveCount(1);
+
+    // Copy with the block selected puts the block's HTML on the clipboard.
+    const copied = await page.evaluate(() => {
+      const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+      const dt = new DataTransfer();
+      const evt = new ClipboardEvent('copy', { clipboardData: dt, bubbles: true, cancelable: true });
+      surface.dispatchEvent(evt);
+      return { html: dt.getData('text/html'), prevented: evt.defaultPrevented };
+    });
+    expect(copied.prevented).toBe(true);
+    expect(copied.html).toBe('<hr>');
+
+    // Pasting with the hr selected replaces it.
+    await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const dt = new DataTransfer();
+      dt.setData('text/html', '<p>middle</p>');
+      comp.onPaste(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+    });
+    const ast = await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document());
+    expect(ast.map((b: any) => b.type)).toEqual(['paragraph', 'paragraph', 'paragraph']);
+    expect(ast[1].content[0].text).toBe('middle');
+    await expectInvariant(page, 'after pasting over a selected hr');
+
+    // A void inside a text selection range gets the in-selection highlight.
+    await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      comp.engine.reset([
+        { type: 'paragraph', content: [{ type: 'text', text: 'above' }] },
+        { type: 'hr', content: [] },
+        { type: 'paragraph', content: [{ type: 'text', text: 'below' }] },
+      ]);
+    });
+    await expect(page.locator('.sh-editor-content > hr')).toHaveCount(1);
+    await page.locator('.sh-editor-content > p').first().click();
+    await page.keyboard.press('ControlOrMeta+a');
+    await expect(page.locator('.sh-editor-content > hr.sh-editor-void-in-selection')).toHaveCount(1);
+    await page.keyboard.press('ArrowRight'); // collapse the selection
+    await expect(page.locator('.sh-editor-content > hr.sh-editor-void-in-selection')).toHaveCount(0);
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
+  test('code block: pasting editor-styled code keeps line breaks and indentation', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    const astTextOf = (i: number) =>
+      page.evaluate(
+        (idx) =>
+          (window as any).ng
+            .getComponent(document.querySelector('sh-editor')!)
+            .engine.blockAt(idx)
+            .content.map((n: any) => n.text)
+            .join(''),
+        i
+      );
+    const caretInCode = async (offset: number) => {
+      await page.evaluate((off) => {
+        const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+        surface.focus();
+        // An empty code block renders <pre><code><br></code></pre> — no text
+        // node to anchor in; the caret sits on the <code> element instead.
+        const pre = surface.querySelector('pre')!;
+        const text = document.createTreeWalker(pre, NodeFilter.SHOW_TEXT).nextNode();
+        const range = document.createRange();
+        range.setStart(text ?? pre.querySelector('code')!, text ? off : 0);
+        range.collapse(true);
+        const sel = window.getSelection()!;
+        sel.removeAllRanges();
+        sel.addRange(range);
+        document.dispatchEvent(new Event('selectionchange'));
+      }, offset);
+    };
+    // Both clipboard flavors, the way a code editor writes them: styled HTML
+    // (one div per line, spans per token — whitespace-hostile) plus the
+    // verbatim plain text. The plain flavor must win inside a code block.
+    const pasteBoth = (plain: string) =>
+      page.evaluate((text) => {
+        const html =
+          '<div style="color:#d4d4d4;background-color:#1e1e1e;font-family:Menlo">' +
+          text
+            .split('\n')
+            .map((line) => `<div><span style="color:#569cd6">${line.replace(/\t/g, '&nbsp;&nbsp;')}</span></div>`)
+            .join('') +
+          '</div>';
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        const dt = new DataTransfer();
+        dt.setData('text/html', html);
+        dt.setData('text/plain', text);
+        comp.onPaste(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+      }, plain);
+
+    await page.evaluate(() => {
+      (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset([
+        { type: 'code-block', content: [{ type: 'text', text: 'start' }] },
+      ]);
+    });
+    await expect(page.locator('.sh-editor-content > pre')).toHaveCount(1);
+    await caretInCode(5); // end of "start"
+
+    const snippet = '\nfunction demo() {\n\tif (ok) {\n\t\treturn 1;\n\t}\n}';
+    await pasteBoth(snippet);
+
+    // The code block keeps every break and tab verbatim…
+    expect(await astTextOf(0)).toBe('start' + snippet);
+    const domCode = await page.locator('.sh-editor-content > pre > code').textContent();
+    expect(domCode).toBe('start' + snippet);
+    // …and the source editor's syntax coloring rides along as style marks.
+    const pastedJson = await page.evaluate(() =>
+      JSON.stringify((window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.serialize('json')[0])
+    );
+    // The CSS parser normalizes the hex to rgb().
+    expect(pastedJson).toContain('rgb(86, 156, 214)');
+    await expect(page.locator('.sh-editor-content > pre span[style*="rgb(86, 156, 214)"]').first()).toBeVisible();
+    await expectInvariant(page, 'after code paste');
+
+    // A mid-line copy: the first line's indent is eaten by the selection
+    // anchor while the rest keep their source-file depth — the common
+    // indentation is stripped so the base lines up with the first line.
+    await page.evaluate(() => {
+      (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset([
+        { type: 'code-block', content: [{ type: 'text', text: '' }] },
+      ]);
+    });
+    await expect(page.locator('.sh-editor-content > pre')).toHaveCount(1);
+    await caretInCode(0);
+    await pasteBoth('if (this.navDebug) {\n\t\t\tconst paths = [];\n\t\t\t\tdeep();\n\t\t}');
+    expect(await astTextOf(0)).toBe('if (this.navDebug) {\n\tconst paths = [];\n\t\tdeep();\n}');
+
+    // Windows line endings normalize.
+    await page.evaluate(() => {
+      (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset([
+        { type: 'code-block', content: [{ type: 'text', text: '' }] },
+      ]);
+    });
+    await expect(page.locator('.sh-editor-content > pre')).toHaveCount(1);
+    await caretInCode(0);
+    await pasteBoth('a();\r\nb();');
+    expect(await astTextOf(0)).toBe('a();\nb();');
+
+    // One undo removes the whole paste.
+    await page.keyboard.press('ControlOrMeta+z');
+    expect(await astTextOf(0)).toBe('');
+
+    // Regression guard: a paragraph still takes the parsed-fragment path —
+    // the styled HTML becomes blocks, not verbatim text.
+    await page.evaluate(() => {
+      (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset([
+        { type: 'paragraph', content: [{ type: 'text', text: 'plain' }] },
+      ]);
+    });
+    // Scoped to the first editor — the showcase mounts a second one with its
+    // own paragraphs, which would satisfy an unscoped count while this
+    // editor's render is still pending.
+    await expect(page.locator('sh-editor').first().locator('.sh-editor-content > p')).toHaveCount(1);
+    await page.evaluate(() => {
+      const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+      surface.focus();
+      const text = document.createTreeWalker(surface.querySelector('p')!, NodeFilter.SHOW_TEXT).nextNode()!;
+      const range = document.createRange();
+      range.setStart(text, 5);
+      range.collapse(true);
+      const sel = window.getSelection()!;
+      sel.removeAllRanges();
+      sel.addRange(range);
+      document.dispatchEvent(new Event('selectionchange'));
+    });
+    await pasteBoth('x\ny');
+    // The fragment path parsed the HTML flavor — however it shapes the
+    // result, the verbatim plain text (with its literal line break) must not
+    // have been inserted.
+    const paraTexts = await page.evaluate(() =>
+      (window as any).ng
+        .getComponent(document.querySelector('sh-editor')!)
+        .engine.document()
+        .map((b: any) => (b.content ?? []).map((n: any) => n.text ?? '').join(''))
+    );
+    expect(paraTexts.join('|')).toContain('x');
+    expect(paraTexts.join('|')).toContain('y');
+    expect(paraTexts.some((t: string) => t.includes('\n'))).toBe(false);
+    await expectInvariant(page, 'after paragraph paste of styled lines');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('typing storm: text, Enter, Backspace, Delete, arrows', async ({ page }) => {
     const { errors } = await openEditor(page);
     const rnd = mulberry32(1);
@@ -243,11 +585,10 @@ test.describe('DOM ≡ AST invariant', () => {
       sel.addRange(range);
       document.dispatchEvent(new Event('selectionchange'));
       const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      // Selections are flat character positions; block 0's interior starts at
+      // position 1, so the char offset within it is `from - 1`.
       const s = comp.selection.active();
-      const content = comp.engine.document()[0].content;
-      let chars = s.start.offset;
-      for (let i = 0; i < s.start.inlineIndex; i++) chars += content[i].text.length;
-      return chars;
+      return s.from - 1;
     });
     expect(syncedOffset).toBe(6); // after "alpha\n", before "beta"
 

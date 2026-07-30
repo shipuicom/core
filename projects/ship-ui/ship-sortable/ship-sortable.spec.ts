@@ -49,6 +49,13 @@ if (typeof document !== 'undefined') {
         </div>
       }
     </div>
+
+    <!-- No touch inputs bound: exercises the directive's own defaults. -->
+    <div #list4 id="list4" [shSortable]="list4Items">
+      @for (item of list4Items(); track item) {
+        <div class="item" draggable="true">{{ item }}</div>
+      }
+    </div>
   `,
   standalone: true,
   imports: [ShipSortable],
@@ -57,6 +64,7 @@ class TestHostComponent {
   list1Items = signal(['A', 'B', 'C']);
   list2Items = signal(['D', 'E', 'F']);
   list3Items = signal(['G', 'H', 'I']);
+  list4Items = signal(['J', 'K', 'L']);
 
   list1TouchEnabled = signal(false);
   list1TouchActivation = signal<'longpress' | 'handle' | 'none'>('longpress');
@@ -72,6 +80,7 @@ class TestHostComponent {
   sortable1 = viewChild.required('list1', { read: ShipSortable });
   sortable2 = viewChild.required('list2', { read: ShipSortable });
   sortable3 = viewChild.required('list3', { read: ShipSortable });
+  sortable4 = viewChild.required('list4', { read: ShipSortable });
 
   onSortDrop1(event: ShipDropEvent) {
     this.dropEvent1 = event;
@@ -92,6 +101,7 @@ describe('ShipSortable', () => {
   let sortable1: ShipSortable;
   let sortable2: ShipSortable;
   let sortable3: ShipSortable;
+  let sortable4: ShipSortable;
   let sortableService: ShipSortableService;
 
   beforeEach(async () => {
@@ -108,6 +118,7 @@ describe('ShipSortable', () => {
     sortable1 = host.sortable1();
     sortable2 = host.sortable2();
     sortable3 = host.sortable3();
+    sortable4 = host.sortable4();
     sortableService = TestBed.inject(ShipSortableService);
   });
 
@@ -264,6 +275,7 @@ describe('ShipSortable', () => {
       sortable1.dragEnd();
       sortable2.dragEnd();
       sortable3.dragEnd();
+      sortable4.dragEnd();
     });
 
     function createMockTouchEvent(type: string, target: HTMLElement, clientX = 0, clientY = 0): TouchEvent {
@@ -285,7 +297,25 @@ describe('ShipSortable', () => {
       return event;
     }
 
-    it('should not initiate touch drag when touchEnabled is false (default)', async () => {
+    it('should not initiate touch drag until sorting is enabled (default)', async () => {
+      const list4El = fixture.nativeElement.querySelector('#list4');
+      const firstItem = list4El.querySelector('.item');
+
+      const touchStart = createMockTouchEvent('touchstart', firstItem, 100, 100);
+      firstItem.dispatchEvent(touchStart);
+      fixture.detectChanges();
+
+      vi.advanceTimersByTime(300);
+      fixture.detectChanges();
+
+      expect(sortable4.isTouchDragging).toBe(false);
+      expect(sortableService.activeSource).toBeNull();
+    });
+
+    it('should not initiate touch drag when touchEnabled is explicitly false', async () => {
+      host.list1TouchEnabled.set(false);
+      fixture.detectChanges();
+
       const list1El = fixture.nativeElement.querySelector('#list1');
       const firstItem = list1El.querySelector('.item');
 
@@ -296,6 +326,30 @@ describe('ShipSortable', () => {
       vi.advanceTimersByTime(300);
       fixture.detectChanges();
 
+      expect(sortable1.isTouchDragging).toBe(false);
+      expect(sortableService.activeSource).toBeNull();
+    });
+
+    it('should abort without reordering when the touch is cancelled mid-drag', async () => {
+      host.list1TouchEnabled.set(true);
+      host.list1TouchActivation.set('longpress');
+      fixture.detectChanges();
+
+      const list1El = fixture.nativeElement.querySelector('#list1');
+      const firstItem = list1El.querySelector('.item');
+      const dropSpy = vi.spyOn(sortable1, 'drop');
+
+      firstItem.dispatchEvent(createMockTouchEvent('touchstart', firstItem, 100, 100));
+      fixture.detectChanges();
+      vi.advanceTimersByTime(300);
+      fixture.detectChanges();
+
+      expect(sortable1.isTouchDragging).toBe(true);
+
+      document.dispatchEvent(createMockTouchEvent('touchcancel', firstItem, 100, 160));
+      fixture.detectChanges();
+
+      expect(dropSpy).not.toHaveBeenCalled();
       expect(sortable1.isTouchDragging).toBe(false);
       expect(sortableService.activeSource).toBeNull();
     });

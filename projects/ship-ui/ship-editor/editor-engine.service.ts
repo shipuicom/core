@@ -1,28 +1,137 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
-import {
-  deleteForward,
-  deleteRange,
-  executeInsertText,
-  handleBackspace,
-  handleEnter,
-  handleEscapeHatch,
-  insertFragment,
-  resolveInlinePosition,
-  setBlockType,
-  toggleMark,
-} from './editor-ast.utils';
+import { Injectable, Signal, computed, inject, signal } from '@angular/core';
 import { BaseBlockBehavior, BaseInlineBehavior, SlashCommand } from './editor-behaviors';
-import { astToHtml, astToMarkdown } from './editor-serializers';
-import { diffFlat, logicalToPos, posToLogical } from './editor-flat-positions';
-import { EditorOp, EditorTransaction, applyOp, diffDocuments, invertOp, spliceInlineContent, transformOp } from './editor-transactions';
-import { ASTBlockNode, ASTDocument, ASTInlineNode, ASTMark, LogicalPosition, LogicalSelection, TransactionResult } from './editor.types';
+import { astToHtml, blockToMarkdown } from './editor-serializers';
+import { ColumnarDocument, RowKind, fromColumnar, toColumnar } from './editor-columnar';
+import {
+  ColumnarMutation,
+  backspaceOp,
+  blockFromRow,
+  blockPointAt,
+  deleteBlockOp,
+  deleteForwardOp,
+  deleteRangeOp,
+  enterOp,
+  escapeHatchOp,
+  flatPosAt,
+  insertImageOp,
+  insertFragmentOp,
+  replaceBlockWithFragmentOp,
+  insertTextOp,
+  pointAt,
+  remoteStepMap,
+  replaceBlocksOp,
+  rootRowOf,
+  setBlockTypeOp,
+  toggleMarkOp,
+  topLevelCount,
+} from './editor-columnar-mutations';
+import { applyOpToColumnar } from './editor-columnar-ops';
+import { EditorOp, EditorTransaction, diffDocuments, invertOp, transformOp } from './editor-transactions';
+import { ASTBlockNode, ASTDocument, ASTMark, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
+
+/** What the DOM must do to catch up with one op. */
+export type RenderHint =
+  | { kind: 'all' }
+  | { kind: 'block'; index: number }
+  | { kind: 'splice'; at: number; remove: number; insert: number };
 
 @Injectable()
 export class EditorEngineService {
   readonly selection = inject(EditorSelectionService);
 
-  readonly document = signal<ASTDocument>([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
+  /**
+   * The document. Columnar is the only live model: every mutation is a row
+   * operation on it, and the op each mutation returns feeds history and
+   * collaboration. There is no maintained nested tree any more.
+   */
+  #columnar: ColumnarDocument = toColumnar([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
+
+  get columnar(): ColumnarDocument {
+    return this.#columnar;
+  }
+
+  /**
+   * The nested AST, materialized from the columnar document on demand and
+   * cached per version. Nothing on the editing path reads this — rendering
+   * and serialization run from rows — so a document that is only being typed
+   * into never materializes a tree. External readers (and specs) get the
+   * familiar shape at the cost of one `fromColumnar` per version read.
+   */
+  readonly document: Signal<ASTDocument> = computed(() => {
+    this.version();
+    return fromColumnar(this.#columnar);
+  });
+
+  /** Replace the content wholesale without recording a transaction. */
+  load(doc: ASTDocument) {
+    this.#columnar = toColumnar(doc);
+    this.#markAllDirty();
+    this.version.update((v) => v + 1);
+  }
+
+  // -------------------------------------------------------------------------
+  // Render bookkeeping: the ops since the DOM last looked, expressed as
+  // render hints, plus a per-block HTML cache shared by patchDOM and
+  // serialize. A structural op is a DOM *splice* — the suffix shifts without
+  // being touched — which is what keeps Enter O(1) instead of re-rendering
+  // every block after the caret.
+  // -------------------------------------------------------------------------
+
+  #htmlCache: (string | undefined)[] = [];
+  #mdCache: (string | undefined)[] = [];
+  #renderHints: RenderHint[] = [{ kind: 'all' }];
+
+  #noteOp(op: EditorOp) {
+    if (op.kind === 'inline') {
+      this.#renderHints.push({ kind: 'block', index: op.blockIndex });
+      this.#htmlCache[op.blockIndex] = undefined;
+      this.#mdCache[op.blockIndex] = undefined;
+    } else {
+      this.#renderHints.push({ kind: 'splice', at: op.at, remove: op.removed.length, insert: op.inserted.length });
+      // The suffix shifts but its content is unchanged; splicing keeps those
+      // blocks' rendered output reusable at their new indices.
+      const blanks = () => new Array<string | undefined>(op.inserted.length).fill(undefined);
+      this.#htmlCache.splice(op.at, op.removed.length, ...blanks());
+      this.#mdCache.splice(op.at, op.removed.length, ...blanks());
+    }
+  }
+
+  #markAllDirty() {
+    this.#renderHints = [{ kind: 'all' }];
+    this.#htmlCache = [];
+    this.#mdCache = [];
+  }
+
+  /** The ops since the last render, as hints; consumed by the render pass. */
+  consumeRenderHints(): RenderHint[] {
+    const out = this.#renderHints;
+    this.#renderHints = [];
+    return out;
+  }
+
+  /** Rendered HTML of one top-level block, from the cache when clean. */
+  renderBlockHtml(index: number): string {
+    const cached = this.#htmlCache[index];
+    if (cached !== undefined) return cached;
+    const block = this.blockAt(index);
+    const html = block ? astToHtml([block], this.blocks, this.inlines) : '';
+    this.#htmlCache[index] = html;
+    return html;
+  }
+
+  /** One top-level block, materialized transiently. */
+  blockAt(index: number): ASTBlockNode | null {
+    const cd = this.#columnar;
+    const row = cd.rowOfTopLevel(index);
+    return row < cd.rows ? blockFromRow(cd, row) : null;
+  }
+
+  /** Number of top-level blocks. */
+  blockCount(): number {
+    return topLevelCount(this.#columnar);
+  }
+
   readonly blocks = new Map<string, BaseBlockBehavior>();
   readonly inlines = new Map<string, BaseInlineBehavior>();
 
@@ -37,61 +146,14 @@ export class EditorEngineService {
   readonly canRedo = computed(() => this.#redoStack().length > 0);
 
   readonly pendingMarks = signal<{
-    blockIndex: number;
-    itemIndex: number;
-    charOffset: number;
+    /** Flat caret position the marks were staged at. */
+    pos: number;
     marks: ASTMark[];
   } | null>(null);
 
-  #charOffsetOf(pos: LogicalPosition): number {
-    const block = this.document()[pos.blockIndex];
-    if (!block) return pos.offset;
-    const content = (
-      pos.itemIndex !== undefined && this.blocks.get(block.type)?.category === 'container'
-        ? ((block.content as ASTBlockNode[])[pos.itemIndex]?.content ?? [])
-        : block.content
-    ) as ASTInlineNode[];
-    let chars = 0;
-    for (let i = 0; i < pos.inlineIndex && i < content.length; i++) chars += content[i].text?.length ?? 0;
-    return chars + pos.offset;
-  }
-
-  #contentTextAt(pos: LogicalPosition): string {
-    const block = this.document()[pos.blockIndex];
-    if (!block) return '';
-    const content = (
-      pos.itemIndex !== undefined && this.blocks.get(block.type)?.category === 'container'
-        ? ((block.content as ASTBlockNode[])[pos.itemIndex]?.content ?? [])
-        : block.content
-    ) as ASTInlineNode[];
-    return content.map((n) => n.text ?? '').join('');
-  }
-
-  #logicalAtChar(ref: LogicalPosition, targetChar: number): LogicalPosition {
-    const block = this.document()[ref.blockIndex];
-    const content = (
-      ref.itemIndex !== undefined && block && this.blocks.get(block.type)?.category === 'container'
-        ? ((block.content as ASTBlockNode[])[ref.itemIndex]?.content ?? [])
-        : (block?.content ?? [])
-    ) as ASTInlineNode[];
-    let remaining = Math.max(0, targetChar);
-    for (let i = 0; i < content.length; i++) {
-      const len = content[i].text?.length ?? 0;
-      if (remaining <= len) return { blockIndex: ref.blockIndex, itemIndex: ref.itemIndex, inlineIndex: i, offset: remaining };
-      remaining -= len;
-    }
-    const last = Math.max(0, content.length - 1);
-    return { blockIndex: ref.blockIndex, itemIndex: ref.itemIndex, inlineIndex: last, offset: content[last]?.text?.length ?? 0 };
-  }
-
-  #pendingAt(pos: LogicalPosition): ASTMark[] | null {
+  #pendingAt(pos: number): ASTMark[] | null {
     const pending = this.pendingMarks();
-    if (!pending) return null;
-    const matches =
-      pending.blockIndex === pos.blockIndex &&
-      pending.itemIndex === (pos.itemIndex ?? 0) &&
-      pending.charOffset === this.#charOffsetOf(pos);
-    return matches ? pending.marks : null;
+    return pending && pending.pos === pos ? pending.marks : null;
   }
 
   register(behavior: BaseBlockBehavior | BaseInlineBehavior) {
@@ -99,91 +161,73 @@ export class EditorEngineService {
     else this.inlines.set(behavior.type, behavior);
   }
 
-  dispatchWithTruncation(mutation: (draft: ASTDocument, sel: LogicalSelection) => TransactionResult | void | null) {
-    const currentSel = this.selection.active();
-    if (!currentSel) return;
-
-    const oldDoc = this.document();
-    let targetDoc = oldDoc;
-    let targetSel = currentSel;
-
-    if (!currentSel.isCollapsed) {
-      const truncation = deleteRange(targetDoc, currentSel, this.blocks);
-      targetDoc = truncation.doc;
-      if (truncation.selectionShift) targetSel = truncation.selectionShift;
-    }
-
-    const result = mutation(targetDoc, targetSel);
-    if (result) {
-      this.document.set(result.doc);
-      if (result.selectionShift) this.selection.live.set(result.selectionShift);
-      this.#commit(oldDoc, result.doc, currentSel);
-    } else if (!currentSel.isCollapsed) {
-
-      this.document.set(targetDoc);
-      this.selection.live.set(targetSel);
-      this.#commit(oldDoc, targetDoc, currentSel);
-    }
+  /**
+   * Apply a columnar mutation: the primitive has already advanced the
+   * columnar document, so only the tree and the history need the op.
+   */
+  #apply(mutation: ColumnarMutation | null, selBefore: LogicalSelection) {
+    if (!mutation) return;
+    this.#noteOp(mutation.op);
+    this.selection.live.set(mutation.selAfter);
+    const tx: EditorTransaction = {
+      baseVersion: this.version(),
+      op: mutation.op,
+      selBefore: { ...selBefore },
+      selAfter: { ...mutation.selAfter },
+    };
+    this.#undoStack.update((s) => [...s, tx]);
+    if (this.#redoStack().length) this.#redoStack.set([]);
+    this.version.update((v) => v + 1);
+    this.lastTransaction.set(tx);
   }
 
   handleEscapeHatch(): boolean {
-    const currentSel = this.selection.active();
-    if (currentSel) {
-      const oldDoc = this.document();
-      const result = handleEscapeHatch(oldDoc, currentSel, this.blocks);
-      if (result) {
-        this.document.set(result.doc);
-        if (result.selectionShift) this.selection.live.set(result.selectionShift);
-        this.#commit(oldDoc, result.doc, currentSel);
-        return true;
-      }
-    }
-    return false;
+    const sel = this.selection.active();
+    if (!sel) return false;
+    const result = escapeHatchOp(this.columnar, sel, this.blocks);
+    if (!result) return false;
+    if (result.op) this.#apply(result as ColumnarMutation, sel);
+    else this.selection.live.set(result.selAfter);
+    return true;
   }
 
   handleEnter() {
-    this.dispatchWithTruncation((doc, sel) => handleEnter(doc, sel, this.blocks));
+    const sel = this.selection.active();
+    if (!sel) return;
+    this.#apply(enterOp(this.columnar, sel, this.blocks), sel);
   }
 
   handleBackspace() {
-    this.dispatchWithTruncation((doc, sel) => handleBackspace(doc, sel, this.blocks));
+    const sel = this.selection.active();
+    if (!sel) return;
+    this.#apply(backspaceOp(this.columnar, sel, this.blocks), sel);
   }
 
   insertText(text: string) {
     const sel = this.selection.active();
-    const pending = sel?.isCollapsed ? this.#pendingAt(sel.start) : null;
+    if (!sel) return;
+    const pending = sel.from === sel.to ? this.#pendingAt(sel.from) : null;
     this.pendingMarks.set(null);
-    this.dispatchWithTruncation((doc, s) => {
-      const result = executeInsertText(doc, s, text, this.inlines, this.blocks);
-      if (!result || !pending) return result;
-
-      const block = result.doc[s.start.blockIndex];
-      const isContainer = this.blocks.get(block.type)?.category === 'container';
-      const itemIdx = s.start.itemIndex ?? 0;
-      const holder = isContainer ? (block.content as ASTBlockNode[])[itemIdx] : block;
-      const content = holder.content as ASTInlineNode[];
-      let charStart = s.start.offset;
-      for (let i = 0; i < s.start.inlineIndex && i < content.length; i++) charStart += content[i].text?.length ?? 0;
-      holder.content = spliceInlineContent(content, charStart, text.length, [
-        { type: 'text', text, ...(pending.length ? { marks: pending } : {}) },
-      ]);
-      const resolved = resolveInlinePosition(holder.content as ASTInlineNode[], charStart + text.length);
-      const pos: LogicalPosition = { blockIndex: s.start.blockIndex, ...resolved };
-      if (isContainer) pos.itemIndex = itemIdx;
-      return { doc: result.doc, selectionShift: { start: pos, end: pos, isCollapsed: true } };
-    });
+    const result = insertTextOp(this.columnar, sel, text, this.blocks, this.inlines, pending);
+    if (!result) return;
+    if (result.op) this.#apply(result as ColumnarMutation, sel);
+    else this.selection.live.set(result.selAfter);
   }
 
   deleteRange() {
-    this.dispatchWithTruncation((doc, sel) => deleteRange(doc, sel, this.blocks));
+    const sel = this.selection.active();
+    if (!sel) return;
+    this.#apply(deleteRangeOp(this.columnar, sel, this.blocks), sel);
   }
 
   deleteForward() {
-    this.dispatchWithTruncation((doc, sel) => deleteForward(doc, sel, this.blocks));
+    const sel = this.selection.active();
+    if (!sel) return;
+    this.#apply(deleteForwardOp(this.columnar, sel, this.blocks), sel);
   }
 
   readonly activeFormats = computed(() => {
-    const doc = this.document();
+    this.version();
     const sel = this.selection.active();
     if (!sel)
       return {
@@ -192,58 +236,65 @@ export class EditorEngineService {
         marks: [] as ASTMark[],
       };
 
-    const block = doc[sel.start.blockIndex];
-    if (!block) return { blockType: null, blockAttrs: null, marks: [] as ASTMark[] };
+    const cd = this.columnar;
+    if (!cd.rows) return { blockType: null, blockAttrs: null, marks: [] as ASTMark[] };
 
-    const behavior = this.blocks.get(block.type);
-    let content: ASTInlineNode[] | null = null;
-    if (behavior?.category === 'container') {
-      const item = block.content[sel.start.itemIndex ?? 0] as ASTBlockNode | undefined;
-      content = item ? (item.content as ASTInlineNode[]) : null;
-    } else if (behavior?.category !== 'void') {
-      content = block.content as ASTInlineNode[];
-    }
+    const isCollapsed = sel.from === sel.to;
+    const a = pointAt(cd, sel.from);
+    const root = rootRowOf(cd, a.row);
+    const blockType = cd.typeOf(root);
+    const blockAttrs = (cd.attrsOf(root) as Record<string, any> | undefined) ?? null;
 
     let marks: ASTMark[] = [];
-    if (content) {
-      const sameHolder =
-        sel.start.blockIndex === sel.end.blockIndex && (sel.start.itemIndex ?? 0) === (sel.end.itemIndex ?? 0);
-      if (!sel.isCollapsed && sameHolder) {
-
-        const a = this.#charOffsetOf(sel.start);
-        const b = this.#charOffsetOf(sel.end);
-        marks = this.#commonMarks(content, Math.min(a, b), Math.max(a, b));
+    if (cd.kindOf(a.row) === RowKind.Text) {
+      const b = isCollapsed ? a : pointAt(cd, sel.to);
+      if (!isCollapsed && b.row === a.row && b.offset > a.offset) {
+        marks = this.#marksCovering(cd, a.row, a.offset, b.offset);
       } else {
-        const inline = content[sel.start.inlineIndex] as ASTInlineNode | undefined;
-        marks = inline?.marks ? [...inline.marks] : [];
+        marks = this.#marksAtCaret(cd, a.row, a.offset);
       }
     }
 
-    if (sel.isCollapsed) {
-      const pending = this.#pendingAt(sel.start);
+    if (isCollapsed) {
+      const pending = this.#pendingAt(sel.from);
       if (pending) marks = structuredClone(pending);
     }
 
-    return { blockType: block.type, blockAttrs: block.attrs ?? null, marks };
+    return { blockType, blockAttrs, marks };
   });
 
-  #commonMarks(content: ASTInlineNode[], startChar: number, endChar: number): ASTMark[] {
-    if (endChar <= startChar) return [];
-    const key = (m: ASTMark) => JSON.stringify({ t: m.type, a: m.attrs ?? null });
-    const overlapping: ASTInlineNode[] = [];
-    let at = 0;
-    for (const node of content) {
-      const len = node.text?.length ?? 0;
-      if (at < endChar && at + len > startChar) overlapping.push(node);
-      at += len;
+  /** Marks the run before the caret carries — the boundary belongs to the earlier run. */
+  #marksAtCaret(cd: ColumnarDocument, row: number, offset: number): ASTMark[] {
+    if (cd.textOf(row).length === 0) return [];
+    const seen = new Set<string>();
+    const out: ASTMark[] = [];
+    for (const mark of cd.marksAt(row, offset > 0 ? offset - 1 : 0)) {
+      const key = JSON.stringify({ t: mark.type, a: mark.attrs ?? null });
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(structuredClone(mark));
     }
-    if (overlapping.length === 0) return [];
-    let common = overlapping[0].marks ? [...overlapping[0].marks] : [];
-    for (let i = 1; i < overlapping.length && common.length; i++) {
-      const set = new Set((overlapping[i].marks ?? []).map(key));
-      common = common.filter((m) => set.has(key(m)));
+    return out;
+  }
+
+  /** Marks covering every character of `[from, to)` in a row. */
+  #marksCovering(cd: ColumnarDocument, row: number, from: number, to: number): ASTMark[] {
+    const [qFrom, qTo] = cd.runRangeOf(row);
+    const quads = cd.markRuns;
+    const out: ASTMark[] = [];
+    const seen = new Set<string>();
+    for (let q = qFrom; q < qTo; q++) {
+      // Runs are normalized per mark, so full coverage of a contiguous range
+      // means a single run spans it.
+      if (quads[q * 4 + 1] <= from && quads[q * 4 + 2] >= to) {
+        const mark = cd.markDefs[quads[q * 4 + 3]];
+        const key = JSON.stringify({ t: mark.type, a: mark.attrs ?? null });
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push(structuredClone(mark));
+      }
     }
-    return structuredClone(common);
+    return out;
   }
 
   isActive(action: string, attrs?: Record<string, any>): boolean {
@@ -288,10 +339,13 @@ export class EditorEngineService {
 
   readonly slashState = computed<{ query: string; length: number } | null>(() => {
     const sel = this.selection.active();
-    if (!sel || !sel.isCollapsed) return null;
-    const block = this.document()[sel.start.blockIndex];
-    if (!block || this.blocks.get(block.type)?.category === 'void') return null;
-    const before = this.#contentTextAt(sel.start).slice(0, this.#charOffsetOf(sel.start));
+    if (!sel || sel.from !== sel.to) return null;
+    this.version();
+    const cd = this.columnar;
+    if (!cd.rows) return null;
+    const p = pointAt(cd, sel.from);
+    if (cd.kindOf(p.row) !== RowKind.Text) return null;
+    const before = cd.textOf(p.row).slice(0, p.offset);
     const m = /(?:^|\s)\/(\S*)$/.exec(before);
     return m ? { query: m[1], length: m[1].length + 1 } : null;
   });
@@ -308,9 +362,10 @@ export class EditorEngineService {
   applySlashCommand(cmd: SlashCommand) {
     const state = this.slashState();
     const sel = this.selection.active();
-    if (state && sel?.isCollapsed) {
-      const start = this.#logicalAtChar(sel.start, this.#charOffsetOf(sel.start) - state.length);
-      this.selection.live.set({ start, end: sel.start, isCollapsed: false });
+    if (state && sel && sel.from === sel.to) {
+      // Flat positions inside one text holder are contiguous, so the query is
+      // exactly the `length` positions before the caret.
+      this.selection.live.set({ from: sel.from - state.length, to: sel.from });
       this.deleteRange();
     }
     cmd.run({ engine: this });
@@ -320,11 +375,7 @@ export class EditorEngineService {
     const sel = this.#markTargetSelection(markType);
     if (!sel) return false;
     this.pendingMarks.set(null);
-    const oldDoc = this.document();
-    const result = toggleMark(oldDoc, sel, markType, attrs, this.blocks, 'add');
-    this.document.set(result.doc);
-    if (result.selectionShift) this.selection.live.set(result.selectionShift);
-    this.#commit(oldDoc, result.doc, sel);
+    this.#apply(toggleMarkOp(this.columnar, sel, markType, attrs, this.blocks, 'add'), sel);
     return true;
   }
 
@@ -332,23 +383,14 @@ export class EditorEngineService {
     const sel = this.#markTargetSelection(markType);
     if (!sel) return false;
     this.pendingMarks.set(null);
-    const oldDoc = this.document();
-    const result = toggleMark(oldDoc, sel, markType, undefined, this.blocks, 'remove');
-    this.document.set(result.doc);
-    if (result.selectionShift) this.selection.live.set(result.selectionShift);
-    this.#commit(oldDoc, result.doc, sel);
+    this.#apply(toggleMarkOp(this.columnar, sel, markType, undefined, this.blocks, 'remove'), sel);
     return true;
   }
 
   insertTextWithMarks(text: string, marks: ASTMark[]) {
     const sel = this.selection.active();
-    if (!sel || !sel.isCollapsed) return;
-    this.pendingMarks.set({
-      blockIndex: sel.start.blockIndex,
-      itemIndex: sel.start.itemIndex ?? 0,
-      charOffset: this.#charOffsetOf(sel.start),
-      marks: structuredClone(marks),
-    });
+    if (!sel || sel.from !== sel.to) return;
+    this.pendingMarks.set({ pos: sel.from, marks: structuredClone(marks) });
     this.insertText(text);
   }
 
@@ -356,15 +398,18 @@ export class EditorEngineService {
 
   readonly selectedBlockNode = computed(() => {
     const i = this.selectedBlock();
-    return i !== null ? (this.document()[i] ?? null) : null;
+    if (i === null) return null;
+    this.version();
+    return this.blockAt(i);
   });
 
   selectBlock(index: number) {
-    const block = this.document()[index];
-    if (!block || this.blocks.get(block.type)?.category !== 'void') return;
+    const cd = this.columnar;
+    const row = cd.rowOfTopLevel(index);
+    if (row >= cd.rows || this.blocks.get(cd.typeOf(row))?.category !== 'void') return;
     this.pendingMarks.set(null);
-    const pos: LogicalPosition = { blockIndex: index, inlineIndex: 0, offset: 0 };
-    this.selection.live.set({ start: pos, end: pos, isCollapsed: true });
+    const pos = cd.startOf(row);
+    this.selection.live.set({ from: pos, to: pos });
     this.selectedBlock.set(index);
   }
 
@@ -372,81 +417,66 @@ export class EditorEngineService {
     if (this.selectedBlock() !== null) this.selectedBlock.set(null);
   }
 
-  #isTextBlockEmpty(block: ASTBlockNode): boolean {
-    const c = block.content as ASTInlineNode[];
-    return c.length === 0 || (c.length === 1 && c[0].text === '');
-  }
 
   insertImage(attrs: Record<string, unknown>) {
     const sel = this.selection.active();
     if (!sel) return;
-    const oldDoc = this.document();
-    let doc = oldDoc;
-    let base = sel;
-    if (!sel.isCollapsed) {
-      const t = deleteRange(oldDoc, sel, this.blocks);
-      doc = t.doc;
-      base = t.selectionShift ?? sel;
-    }
-    const idx = base.start.blockIndex;
-    const block = doc[idx];
-    const image: ASTBlockNode = { type: 'image', attrs: { ...attrs }, content: [] };
-    const trailing: ASTBlockNode = { type: 'paragraph', content: [{ type: 'text', text: '' }] };
-    const newDoc = [...doc];
-    let imageIdx: number;
-    if (block && block.type === 'paragraph' && this.#isTextBlockEmpty(block)) {
-      newDoc.splice(idx, 1, image, trailing);
-      imageIdx = idx;
-    } else {
-      newDoc.splice(idx + 1, 0, image, trailing);
-      imageIdx = idx + 1;
-    }
-    this.document.set(newDoc);
-    this.selectBlock(imageIdx);
-    this.#commit(oldDoc, newDoc, sel);
+    const mutation = insertImageOp(this.columnar, sel, this.blocks, attrs);
+    if (!mutation) return;
+    this.#apply(mutation, sel);
+    this.selectBlock(mutation.blockIndex);
   }
 
   updateSelectedImage(attrs: Record<string, unknown>) {
     const idx = this.selectedBlock();
     if (idx === null) return;
-    const oldDoc = this.document();
-    const block = oldDoc[idx];
-    if (!block || this.blocks.get(block.type)?.category !== 'void') return;
-    const newDoc = [...oldDoc];
-    newDoc[idx] = { ...block, attrs: { ...(block.attrs ?? {}), ...attrs } };
-    this.document.set(newDoc);
-    this.#commit(oldDoc, newDoc, this.selection.active());
+    const cd = this.columnar;
+    const row = cd.rowOfTopLevel(idx);
+    if (row >= cd.rows || this.blocks.get(cd.typeOf(row))?.category !== 'void') return;
+    const patched = blockFromRow(cd, row);
+    patched.attrs = { ...(patched.attrs ?? {}), ...attrs };
+    const sel = this.selection.active() ?? { from: 0, to: 0 };
+    this.#apply(replaceBlocksOp(cd, idx, 1, [patched], sel), sel);
   }
 
   moveBlock(from: number, to: number) {
-    const oldDoc = this.document();
-    if (from < 0 || from >= oldDoc.length || to < 0 || to > oldDoc.length) return;
+    const cd = this.columnar;
+    const count = this.blockCount();
+    if (from < 0 || from >= count || to < 0 || to > count) return;
     if (to === from || to === from + 1) return;
-    const block = oldDoc[from];
-    const newDoc = [...oldDoc];
-    newDoc.splice(from, 1);
     const insertAt = to > from ? to - 1 : to;
-    newDoc.splice(insertAt, 0, block);
-    this.document.set(newDoc);
-    if (this.selectedBlock() === from && this.blocks.get(block.type)?.category === 'void') {
-      this.selectBlock(insertAt);
-    }
-    this.#commit(oldDoc, newDoc, this.selection.active());
+    const lo = Math.min(from, insertAt);
+    const hi = Math.max(from, insertAt);
+    const span: ASTBlockNode[] = [];
+    for (let i = lo; i <= hi; i++) span.push(this.blockAt(i)!);
+    const [moved] = span.splice(from - lo, 1);
+    span.splice(insertAt - lo, 0, moved);
+    const isVoid = this.blocks.get(cd.typeOf(cd.rowOfTopLevel(from)))?.category === 'void';
+    const sel = this.selection.active() ?? { from: 0, to: 0 };
+    this.#apply(replaceBlocksOp(cd, lo, hi - lo + 1, span, sel), sel);
+    if (this.selectedBlock() === from && isVoid) this.selectBlock(insertAt);
+  }
+
+  /** Paste over a selected void block: the fragment replaces it. */
+  replaceSelectedBlock(fragment: ASTDocument) {
+    const idx = this.selectedBlock();
+    if (idx === null) return;
+    const sel = this.selection.active() ?? { from: 0, to: 0 };
+    const result = replaceBlockWithFragmentOp(this.columnar, idx, fragment);
+    if (!result) return;
+    this.clearBlockSelection();
+    if (result.op) this.#apply(result as ColumnarMutation, sel);
+    else this.selection.live.set(result.selAfter);
   }
 
   deleteSelectedBlock() {
     const idx = this.selectedBlock();
     if (idx === null) return;
-    const oldDoc = this.document();
-    if (!oldDoc[idx]) return;
-    let newDoc = oldDoc.filter((_, i) => i !== idx);
-    if (newDoc.length === 0) newDoc = [{ type: 'paragraph', content: [{ type: 'text', text: '' }] }];
-    this.document.set(newDoc);
+    const sel = this.selection.active() ?? { from: 0, to: 0 };
+    const mutation = deleteBlockOp(this.columnar, idx);
+    if (!mutation) return;
     this.clearBlockSelection();
-    const caretIdx = Math.min(idx, newDoc.length - 1);
-    const pos: LogicalPosition = { blockIndex: caretIdx, inlineIndex: 0, offset: 0 };
-    this.selection.live.set({ start: pos, end: pos, isCollapsed: true });
-    this.#commit(oldDoc, newDoc, this.selection.active());
+    this.#apply(mutation, sel);
   }
 
   applyStyle(patch: Record<string, string | null | undefined>) {
@@ -460,7 +490,7 @@ export class EditorEngineService {
   }
 
   readonly currentStyle = computed<Record<string, string>>(() => {
-    this.document();
+    this.version();
     this.selection.active();
     return (this.markAtSelection('style')?.attrs as Record<string, string>) ?? {};
   });
@@ -470,26 +500,21 @@ export class EditorEngineService {
     if (!sel) return null;
     const direct = this.activeFormats().marks.find((m) => m.type === markType);
     if (direct) return structuredClone(direct);
-    if (!sel.isCollapsed) return null;
+    if (sel.from !== sel.to) return null;
 
-    const run = this.#expandToMarkRun(sel.start, markType);
+    const run = this.#expandToMarkRun(sel.from, markType);
     if (!run) return null;
-    const block = this.document()[run.start.blockIndex];
-    const isContainer = this.blocks.get(block.type)?.category === 'container';
-    const content = (
-      isContainer ? ((block.content as ASTBlockNode[])[run.start.itemIndex ?? 0]?.content ?? []) : block.content
-    ) as ASTInlineNode[];
+    const cd = this.columnar;
+    const p = pointAt(cd, run.from);
+    const startChar = p.offset;
+    const endChar = pointAt(cd, run.to).offset;
 
-    const startChar = this.#charOffsetOf(run.start);
-    const endChar = this.#charOffsetOf(run.end);
-    let at = 0;
-    for (const node of content) {
-      const len = node.text?.length ?? 0;
-      if (at < endChar && at + len > startChar) {
-        const mark = node.marks?.find((m) => m.type === markType);
-        if (mark) return structuredClone(mark);
-      }
-      at += len;
+    const [qFrom, qTo] = cd.runRangeOf(p.row);
+    const quads = cd.markRuns;
+    for (let q = qFrom; q < qTo; q++) {
+      const mark = cd.markDefs[quads[q * 4 + 3]];
+      if (mark.type !== markType) continue;
+      if (quads[q * 4 + 1] < endChar && quads[q * 4 + 2] > startChar) return structuredClone(mark);
     }
     return null;
   }
@@ -497,118 +522,146 @@ export class EditorEngineService {
   #markTargetSelection(markType: string): LogicalSelection | null {
     const sel = this.selection.active();
     if (!sel) return null;
-    if (!sel.isCollapsed) return sel;
-    const run = this.#expandToMarkRun(sel.start, markType);
-    if (run) this.selection.live.set(run);
+    if (sel.from !== sel.to) return sel;
+    const run = this.#expandToMarkRun(sel.from, markType);
+    if (!run) return null;
+    this.selection.live.set(run);
     return run;
   }
 
-  #expandToMarkRun(pos: LogicalPosition, markType: string): LogicalSelection | null {
-    const block = this.document()[pos.blockIndex];
-    if (!block) return null;
-    const isContainer = this.blocks.get(block.type)?.category === 'container';
-    const itemIdx = pos.itemIndex ?? 0;
-    const content = (isContainer ? ((block.content as ASTBlockNode[])[itemIdx]?.content ?? []) : block.content) as ASTInlineNode[];
-    const caretChar = this.#charOffsetOf(pos);
+  /**
+   * The contiguous span of `markType` coverage around a caret, in flat
+   * positions. Runs of the same type merge across differing attrs — a caret
+   * inside one link expands over an adjacent link too, matching how the marks
+   * behave as one visual run.
+   */
+  #expandToMarkRun(pos: number, markType: string): LogicalSelection | null {
+    const cd = this.columnar;
+    if (!cd.rows) return null;
+    const p = pointAt(cd, pos);
+    if (cd.kindOf(p.row) !== RowKind.Text) return null;
 
-    const runs: [number, number][] = [];
-    let at = 0;
-    for (const node of content) {
-      const len = node.text?.length ?? 0;
-      const marked = node.marks?.some((m) => m.type === markType) ?? false;
-      if (marked && len > 0) {
-        const last = runs[runs.length - 1];
-        if (last && last[1] === at) last[1] = at + len;
-        else runs.push([at, at + len]);
-      }
-      at += len;
+    const [qFrom, qTo] = cd.runRangeOf(p.row);
+    const quads = cd.markRuns;
+    const intervals: [number, number][] = [];
+    for (let q = qFrom; q < qTo; q++) {
+      if (cd.markDefs[quads[q * 4 + 3]].type !== markType) continue;
+      const start = quads[q * 4 + 1];
+      const end = quads[q * 4 + 2];
+      const last = intervals[intervals.length - 1];
+      if (last && start <= last[1]) last[1] = Math.max(last[1], end);
+      else intervals.push([start, end]);
     }
-    const run = runs.find(([s, e]) => caretChar >= s && caretChar <= e);
+    const run = intervals.find(([s, e]) => p.offset >= s && p.offset <= e);
     if (!run) return null;
-
-    const resolve = (char: number) => resolveInlinePosition(content, char);
-    const s = resolve(run[0]);
-    const e = resolve(run[1]);
-    const mk = (r: { inlineIndex: number; offset: number }): LogicalPosition => ({
-      blockIndex: pos.blockIndex,
-      ...(isContainer ? { itemIndex: itemIdx } : {}),
-      inlineIndex: r.inlineIndex,
-      offset: r.offset,
-    });
-    return { start: mk(s), end: mk(e), isCollapsed: false };
+    return { from: flatPosAt(cd, p.row, run[0]), to: flatPosAt(cd, p.row, run[1]) };
   }
 
   toggleMark(markType: string, attrs?: Record<string, any>) {
     const currentSel = this.selection.active();
     if (!currentSel) return;
 
-    if (currentSel.isCollapsed) {
+    if (currentSel.from === currentSel.to) {
 
-      const base = this.#pendingAt(currentSel.start) ?? this.activeFormats().marks;
+      const base = this.#pendingAt(currentSel.from) ?? this.activeFormats().marks;
       const has = base.some((m) => m.type === markType);
       const marks = has
         ? base.filter((m) => m.type !== markType)
         : [...base, { type: markType, ...(attrs ? { attrs } : {}) } as ASTMark];
-      this.pendingMarks.set({
-        blockIndex: currentSel.start.blockIndex,
-        itemIndex: currentSel.start.itemIndex ?? 0,
-        charOffset: this.#charOffsetOf(currentSel.start),
-        marks: structuredClone(marks),
-      });
+      this.pendingMarks.set({ pos: currentSel.from, marks: structuredClone(marks) });
       return;
     }
 
     this.pendingMarks.set(null);
-    const oldDoc = this.document();
-    const result = toggleMark(oldDoc, currentSel, markType, attrs, this.blocks);
-    this.document.set(result.doc);
-    if (result.selectionShift) this.selection.live.set(result.selectionShift);
-    this.#commit(oldDoc, result.doc, currentSel);
+    this.#apply(toggleMarkOp(this.columnar, currentSel, markType, attrs, this.blocks), currentSel);
   }
 
   insertFragment(fragment: ASTDocument) {
-    this.dispatchWithTruncation((doc, sel) => insertFragment(doc, sel, fragment, this.blocks));
+    const sel = this.selection.active();
+    if (!sel) return;
+    const result = insertFragmentOp(this.columnar, sel, fragment, this.blocks);
+    if (!result) return;
+    if (result.op) this.#apply(result as ColumnarMutation, sel);
+    // Replacing a selection with identical content is a no-op for the
+    // document, but the selection still collapses after the pasted content.
+    else this.selection.live.set(result.selAfter);
   }
 
   setBlockType(type: string, attrs?: any) {
-    const currentSel = this.selection.active();
-    if (!currentSel) return;
-
-    let targetDoc = this.document();
-    let targetSel = currentSel;
-    if (!currentSel.isCollapsed) {
-      const truncation = deleteRange(targetDoc, currentSel, this.blocks);
-      targetDoc = truncation.doc;
-      if (truncation.selectionShift) targetSel = truncation.selectionShift;
-    }
-
-    const oldDoc = this.document();
-    const result = setBlockType(oldDoc, currentSel, type, this.blocks, attrs);
-    if (result) {
-      this.document.set(result.doc);
-      if (result.selectionShift) this.selection.live.set(result.selectionShift);
-      this.#commit(oldDoc, result.doc, currentSel);
-    }
+    const sel = this.selection.active();
+    if (!sel) return;
+    this.#apply(setBlockTypeOp(this.columnar, sel, type, this.blocks, attrs), sel);
   }
 
   serialize(format: 'html' | 'json' | 'markdown'): any {
-    if (format === 'json') return structuredClone(this.document());
-    if (format === 'markdown') return astToMarkdown(this.document(), this.blocks, this.inlines);
-    return astToHtml(this.document(), this.blocks, this.inlines);
+    if (format === 'json') return fromColumnar(this.#columnar);
+    // HTML and markdown assemble from per-block caches, so a keystroke
+    // re-serializes one block, not the document.
+    const count = this.blockCount();
+    let out = '';
+    if (format === 'markdown') {
+      for (let i = 0; i < count; i++) out += this.#blockMarkdown(i);
+      return out.trim();
+    }
+    for (let i = 0; i < count; i++) out += this.renderBlockHtml(i);
+    return out;
+  }
+
+  #blockMarkdown(index: number): string {
+    const cached = this.#mdCache[index];
+    if (cached !== undefined) return cached;
+    const block = this.blockAt(index);
+    const md = block ? blockToMarkdown(block, this.blocks, this.inlines) : '';
+    this.#mdCache[index] = md;
+    return md;
   }
 
   reset(doc: ASTDocument) {
+    // Trim the equal prefix and suffix block-by-block against the columnar
+    // content (each old block materialized transiently), then let
+    // diffDocuments shape the op for just the span that differs — including
+    // its single-text-block inline downgrade.
+    const oldCount = this.blockCount();
+    const key = (block: ASTBlockNode | null) => JSON.stringify(block);
+    let startTrim = 0;
+    const minLen = Math.min(oldCount, doc.length);
+    while (startTrim < minLen && key(this.blockAt(startTrim)) === key(doc[startTrim])) startTrim++;
+    let endOld = oldCount;
+    let endNew = doc.length;
+    while (endOld > startTrim && endNew > startTrim && key(this.blockAt(endOld - 1)) === key(doc[endNew - 1])) {
+      endOld--;
+      endNew--;
+    }
 
-    const oldDoc = this.document();
-    this.document.set(doc);
-    this.#commit(oldDoc, doc, null);
+    let op: EditorOp | null = null;
+    if (!(startTrim === endOld && startTrim === endNew)) {
+      const oldMid: ASTBlockNode[] = [];
+      for (let i = startTrim; i < endOld; i++) oldMid.push(this.blockAt(i)!);
+      const mid = diffDocuments(oldMid, doc.slice(startTrim, endNew));
+      if (mid) op = mid.kind === 'block' ? { ...mid, at: mid.at + startTrim } : { ...mid, blockIndex: mid.blockIndex + startTrim };
+    }
+
+    this.#columnar = toColumnar(doc);
+    this.#markAllDirty();
+    if (op) {
+      const selAfter = this.selection.active();
+      const tx: EditorTransaction = {
+        baseVersion: this.version(),
+        op,
+        selBefore: null,
+        selAfter: selAfter ? { ...selAfter } : null,
+      };
+      this.#undoStack.update((s) => [...s, tx]);
+      if (this.#redoStack().length) this.#redoStack.set([]);
+      this.lastTransaction.set(tx);
+    }
+    this.version.update((v) => v + 1);
   }
 
-  commitDocument(newDoc: ASTDocument) {
-    const oldDoc = this.document();
-    const selBefore = this.selection.active();
-    this.document.set(newDoc);
-    this.#commit(oldDoc, newDoc, selBefore);
+  /** Replace one top-level block in place (DOM reconciliation after IME). */
+  replaceBlock(index: number, block: ASTBlockNode) {
+    const sel = this.selection.active() ?? { from: 0, to: 0 };
+    this.#apply(replaceBlocksOp(this.columnar, index, 1, [block], sel), sel);
   }
 
   undo() {
@@ -616,8 +669,10 @@ export class EditorEngineService {
     const tx = stack[stack.length - 1];
     if (!tx) return;
     this.#undoStack.set(stack.slice(0, -1));
-    this.document.set(applyOp(this.document(), invertOp(tx.op)));
-    if (tx.selBefore) this.selection.live.set(structuredClone(tx.selBefore));
+    const undoOp = invertOp(tx.op);
+    applyOpToColumnar(this.#columnar, undoOp);
+    this.#noteOp(undoOp);
+    if (tx.selBefore) this.selection.live.set({ ...tx.selBefore });
     this.#redoStack.update((s) => [...s, tx]);
     this.version.update((v) => v + 1);
   }
@@ -627,36 +682,42 @@ export class EditorEngineService {
     const tx = stack[stack.length - 1];
     if (!tx) return;
     this.#redoStack.set(stack.slice(0, -1));
-    this.document.set(applyOp(this.document(), tx.op));
-    if (tx.selAfter) this.selection.live.set(structuredClone(tx.selAfter));
+    applyOpToColumnar(this.#columnar, tx.op);
+    this.#noteOp(tx.op);
+    if (tx.selAfter) this.selection.live.set({ ...tx.selAfter });
     this.#undoStack.update((s) => [...s, tx]);
     this.version.update((v) => v + 1);
   }
 
   applyRemoteOperation(op: EditorOp) {
-    const oldDoc = this.document();
-    const newDoc = applyOp(oldDoc, op);
-    const map = diffFlat(oldDoc, newDoc);
+    // remoteStepMap reproduces diffFlat's association semantics exactly
+    // (deliberately not stepMapFromOp's — they disagree on 7.5% of mapped
+    // positions) while materializing only the blocks the op touches; the
+    // fuzz spec holds it to the materialize-and-diff oracle.
+    const cd = this.#columnar;
+    const map = remoteStepMap(cd, op);
     if (!map) return;
-    this.document.set(newDoc);
+    const selBlock = this.selectedBlock();
+    const selBlockStart = selBlock !== null ? cd.startOf(cd.rowOfTopLevel(selBlock)) : null;
+    applyOpToColumnar(cd, op);
+    this.#noteOp(op);
 
-    const mapLp = (lp: LogicalPosition | null | undefined): LogicalPosition | null =>
-      lp ? posToLogical(newDoc, map.map(logicalToPos(oldDoc, lp), -1)) : null;
+    // Selections are flat positions, so mapping them through a remote op is a
+    // direct StepMap lookup — no tree round-trip.
     const mapSel = (sel: LogicalSelection | null): LogicalSelection | null => {
       if (!sel) return null;
-      const start = mapLp(sel.start);
-      const end = sel.isCollapsed ? start : mapLp(sel.end);
-      return start && end ? { start, end, isCollapsed: sel.isCollapsed } : null;
+      const from = map.map(sel.from, -1);
+      return { from, to: sel.from === sel.to ? from : map.map(sel.to, -1) };
     };
 
     const live = mapSel(this.selection.active());
     if (live) this.selection.live.set(live);
 
-    const selBlock = this.selectedBlock();
-    if (selBlock !== null) {
-      const lp = posToLogical(newDoc, map.map(logicalToPos(oldDoc, { blockIndex: selBlock, inlineIndex: 0, offset: 0 }), 1));
-      const stillVoid = lp != null && this.blocks.get(newDoc[lp.blockIndex]?.type)?.category === 'void';
-      this.selectedBlock.set(stillVoid ? lp!.blockIndex : null);
+    if (selBlockStart !== null) {
+      const blockIndex = blockPointAt(cd, map.map(selBlockStart, 1)).blockIndex;
+      const row = cd.rowOfTopLevel(blockIndex);
+      const stillVoid = row < cd.rows && this.blocks.get(cd.typeOf(row))?.category === 'void';
+      this.selectedBlock.set(stillVoid ? blockIndex : null);
     }
 
     this.#undoStack.update((stack) => {
@@ -690,19 +751,4 @@ export class EditorEngineService {
     this.version.update((v) => v + 1);
   }
 
-  #commit(oldDoc: ASTDocument, newDoc: ASTDocument, selBefore: LogicalSelection | null) {
-    const op = diffDocuments(oldDoc, newDoc);
-    if (!op) return;
-    const selAfter = this.selection.active();
-    const tx: EditorTransaction = {
-      baseVersion: this.version(),
-      op,
-      selBefore: selBefore ? structuredClone(selBefore) : null,
-      selAfter: selAfter ? structuredClone(selAfter) : null,
-    };
-    this.#undoStack.update((s) => [...s, tx]);
-    if (this.#redoStack().length) this.#redoStack.set([]);
-    this.version.update((v) => v + 1);
-    this.lastTransaction.set(tx);
-  }
 }

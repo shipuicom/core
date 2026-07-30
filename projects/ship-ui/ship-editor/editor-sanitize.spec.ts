@@ -245,7 +245,9 @@ describe('markdown ingest (I2)', () => {
 
 describe('sanitizeDocumentUrls (I3 — JSON value path)', () => {
   it('neutralizes dangerous href/src in a hostile AST and preserves safe ones', () => {
-    const hostile = [
+    // Deliberately untyped: this is arbitrary attacker-supplied JSON, not a
+    // document the editor's own types would ever vouch for.
+    const hostile: any[] = [
       { type: 'paragraph', content: [{ type: 'text', text: 'x', marks: [{ type: 'link', attrs: { href: 'javascript:alert(1)' } }] }] },
       { type: 'paragraph', content: [{ type: 'text', text: 'y', marks: [{ type: 'link', attrs: { href: 'https://ok.example' } }] }] },
       { type: 'image', attrs: { src: 'javascript:alert(2)' }, content: [] },
@@ -338,5 +340,43 @@ describe('sanitize option (opt-out & allow-list extension)', () => {
 
     const attrExt = sanitizeHtmlToBody('<p data-id="1" onclick="x">t</p>', { attrs: { p: ['data-id'] } })!;
     expect(attrExt.innerHTML).toBe('<p data-id="1">t</p>');
+  });
+});
+describe('parsed blocks omit attributes the element does not set', () => {
+  // el.style.textAlign is '' when unset. Writing it in regardless gave every
+  // paragraph and heading an attrs object holding an empty string, carried in
+  // memory and in every serialised document.
+  it('a plain paragraph carries no align attribute', () => {
+    const { blocks, inlines } = makeMaps();
+    const doc = htmlToAst('<p>hello</p>', blocks, inlines);
+    expect(doc[0].attrs?.['align']).toBeUndefined();
+    expect(JSON.stringify(doc)).not.toContain('"align"');
+  });
+
+  it('a plain heading keeps its level but no align', () => {
+    const { blocks, inlines } = makeMaps();
+    const doc = htmlToAst('<h2>title</h2>', blocks, inlines);
+    expect(doc[0].attrs?.['level']).toBe(2);
+    expect(doc[0].attrs?.['align']).toBeUndefined();
+  });
+
+  it('an explicit alignment is still preserved', () => {
+    const { blocks, inlines } = makeMaps();
+    const doc = htmlToAst('<p style="text-align: center">x</p>', blocks, inlines);
+    expect(doc[0].attrs?.['align']).toBe('center');
+    expect(astToHtml(doc, blocks, inlines)).toContain('text-align: center');
+  });
+
+  it('an aligned heading keeps both level and align', () => {
+    const { blocks, inlines } = makeMaps();
+    const doc = htmlToAst('<h3 style="text-align: right">t</h3>', blocks, inlines);
+    expect(doc[0].attrs).toEqual({ level: 3, align: 'right' });
+  });
+
+  it('round-trips a plain document without introducing empty attrs', () => {
+    const { blocks, inlines } = makeMaps();
+    const doc = htmlToAst('<h1>a</h1><p>b</p>', blocks, inlines);
+    const back = htmlToAst(astToHtml(doc, blocks, inlines), blocks, inlines);
+    expect(JSON.stringify(back)).not.toContain('""');
   });
 });

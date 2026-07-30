@@ -10,8 +10,10 @@ $shipSidenav: true !default;
 
   sh-sidenav {
     --sidenav-width: #{p2r(280)};
+    // Deliberately viewport-relative: the host is often laid out inside a
+    // narrower grid column and is expected to span the full width regardless.
     --sidenav-wrap-w: 100vw;
-    --sidenav-wrap-h: 100vh;
+    --sidenav-wrap-h: 100dvh;
 
     display: flex;
     width: var(--sidenav-wrap-w);
@@ -58,7 +60,7 @@ $shipSidenav: true !default;
       border: var(--border-10);
       background-color: var(--base-1);
       border-radius: var(--shape-3);
-      height: calc(100vh - 2rem);
+      height: calc(var(--sidenav-wrap-h) - 2rem);
       box-shadow: var(--box-shadow-35);
     }
 
@@ -91,7 +93,7 @@ $shipSidenav: true !default;
         padding: 0;
 
         main {
-          height: 100vh;
+          height: var(--sidenav-wrap-h);
           border-radius: 0;
           border-width: 0 0 0 1px;
         }
@@ -120,6 +122,18 @@ $shipSidenav: true !default;
       .sidenav {
         position: fixed;
         z-index: 0;
+      }
+
+      // Closed, the sidenav is parked behind main-wrap where it and anything
+      // projected into it stay live scroll containers, competing with main for
+      // the same wheel and touch gestures. Taking the panel out of the pointer
+      // path leaves main as the only thing that scrolls, without disturbing the
+      // panel's own scroll position or how it paints while it is covered.
+      // Skipped mid-drag, when the panel is partly exposed and interactive.
+      &.closed:not(.is-dragging) {
+        .sidenav {
+          pointer-events: none;
+        }
       }
 
       .dragable {
@@ -168,7 +182,7 @@ $shipSidenav: true !default;
         z-index: 1;
         padding: 0;
         display: flex;
-        height: 100vh;
+        height: var(--sidenav-wrap-h);
         position: relative;
         flex-direction: column;
         transform: translateX(0);
