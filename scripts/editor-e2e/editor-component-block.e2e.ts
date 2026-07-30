@@ -154,6 +154,25 @@ test.describe('custom component blocks', () => {
     expect(errors).toEqual([]);
   });
 
+  test('dragging into the first of two adjacent blocks selects only that block', async ({ page }) => {
+    const { errors, surface } = await openEditor(page);
+    const intro = surface.locator('p', { hasText: 'Custom component blocks' });
+    await pad(page).scrollIntoViewIfNeeded();
+    await expect(intro).toBeInViewport();
+    const from = (await intro.boundingBox())!;
+    const to = (await counter(page).boundingBox())!;
+    // Real drag from the paragraph above into the middle of the first block.
+    // Without pointer clamping, Blink has no valid position inside or between
+    // the adjacent non-selectable islands and jumps the range past both.
+    await page.mouse.move(from.x + 40, from.y + 8);
+    await page.mouse.down();
+    await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 10 });
+    await page.mouse.up();
+    await expect(counter(page)).toHaveClass(/sh-editor-void-in-selection/);
+    await expect(pad(page)).not.toHaveClass(/sh-editor-void-in-selection/);
+    expect(errors).toEqual([]);
+  });
+
   test('a selection sweeping across the components paints the void highlight', async ({ page }) => {
     const { errors, surface } = await openEditor(page);
     const intro = surface.locator('p', { hasText: 'Custom component blocks' });

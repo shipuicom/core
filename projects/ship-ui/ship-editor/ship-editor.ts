@@ -485,6 +485,8 @@ export class ShipEditor implements ControlValueAccessor {
 
   onSurfaceMouseDown(event: MouseEvent) {
     if (this.readonly()) return;
+    this.#selectionDragAnchor = null;
+    this.#selectionDragOverVoid = null;
     const surface = this.surface().nativeElement;
     // Clicking any void block (image, hr, ...) selects it as a block — the
     // highlight is the affordance for copying, cutting, and pasting over it.
@@ -507,6 +509,56 @@ export class ShipEditor implements ControlValueAccessor {
       }
     }
     this.engine.clearBlockSelection();
+    // A drag-selection may be starting: remember its anchor so the moving end
+    // can be clamped when the pointer crosses a component block.
+    if (event.button === 0) {
+      const doc = this.#document as Document & { caretRangeFromPoint?: (x: number, y: number) => Range | null };
+      const range = doc.caretRangeFromPoint?.(event.clientX, event.clientY);
+      const point = range ? this.mapDOMToPoint(surface, range.startContainer, range.startOffset, 'start') : null;
+      this.#selectionDragAnchor = point ? flatPosOfBlockChar(this.engine.columnar, point) : null;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Pointer-driven selection over component blocks. Their wrappers are atomic,
+  // non-selectable islands, so a native drag-selection has no valid position
+  // inside them — and none *between* two adjacent ones. Blink then either
+  // collapses the range back to the text above or jumps it past every island
+  // to the next selectable text, which reads as "I dragged into the first
+  // block and both got selected". The pointer is the truth: while a drag is
+  // over a component block, the selection's moving end clamps to that block's
+  // boundary and the DOM-derived mapping stands down.
+  // ---------------------------------------------------------------------------
+
+  /** Flat anchor of a live pointer drag-selection, null when no drag. */
+  #selectionDragAnchor: number | null = null;
+  /** Component block index currently under the dragging pointer, if any. */
+  #selectionDragOverVoid: number | null = null;
+
+  onSurfaceMouseMove(event: MouseEvent) {
+    if (this.#selectionDragAnchor === null || event.buttons !== 1) return;
+    const surface = this.surface().nativeElement;
+    let el: HTMLElement | null = event.target as HTMLElement;
+    while (el && el.parentElement !== surface) el = el.parentElement;
+    const over =
+      el && el.parentElement === surface && this.#componentBehaviorFor(el) ? this.#winStart + this.#indexInParent(el) : null;
+    this.#selectionDragOverVoid = over;
+    if (over !== null) this.#applyVoidDragClamp();
+  }
+
+  #applyVoidDragClamp() {
+    const idx = this.#selectionDragOverVoid;
+    const anchor = this.#selectionDragAnchor;
+    if (idx === null || anchor === null) return;
+    const cd = this.engine.columnar;
+    const row = cd.rowOfTopLevel(idx);
+    if (row >= cd.rows) return;
+    const start = cd.startOf(row);
+    // Dragging down: anchor .. just past the hovered block. Dragging up: the
+    // hovered block's start .. anchor.
+    const next = anchor <= start ? { from: anchor, to: start + 1 } : { from: start, to: anchor };
+    const cur = this.selection.active();
+    if (!cur || cur.from !== next.from || cur.to !== next.to) this.selection.live.set(next);
   }
 
   /**
@@ -881,6 +933,12 @@ export class ShipEditor implements ControlValueAccessor {
     // A DOM selection living inside a component block belongs to the
     // component; the editor's logical selection stays where it was.
     if (this.#insideComponentBlock(range.commonAncestorContainer)) return;
+    // While a drag-selection hovers a component block, the pointer clamp owns
+    // the logical selection — the DOM range is Blink's over- or under-shoot.
+    if (this.#selectionDragOverVoid !== null) {
+      this.#applyVoidDragClamp();
+      return;
+    }
     if (this.#virtualSelectAll) {
       // The DOM can only show the mounted slice of a select-all; keep the
       // full-document logical selection until the user makes a new one.
@@ -989,6 +1047,9 @@ export class ShipEditor implements ControlValueAccessor {
     if (this.#composing) return;
     // Focus inside a component block: the component owns its whole keymap.
     if (this.#insideComponentBlock(event.target)) return;
+    // Keyboard input takes selection authority back from any finished drag.
+    this.#selectionDragAnchor = null;
+    this.#selectionDragOverVoid = null;
 
     const slash = this.slashMenu();
     if (slash?.isOpen()) {

@@ -421,6 +421,23 @@ sh-editor {
   border-radius: var(--shape-1);
 }
 
+// Selecting a void block wraps it in a real DOM range (that is what routes
+// copy/cut/paste and type-to-replace at it). Over a component block's UI text
+// that range would paint as a native text selection — suppress it by default.
+// Keyed on data-sh-block (the mount contract every component block carries,
+// whatever its renderHTML emits), not the default wrapper class. Editable
+// controls inside (an embedded editor, a textarea) keep their own text
+// selection; a component can opt other regions back in with user-select: text.
+.sh-editor-content > [data-sh-block] {
+  user-select: none;
+  -webkit-user-select: none;
+
+  :is(input, textarea, select, [contenteditable]:not([contenteditable='false'])) {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+}
+
 // A void block sitting inside the live text selection: the native selection
 // paints no highlight over voids, so they looked unselected while being part
 // of the range.
