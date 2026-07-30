@@ -63,6 +63,12 @@ export class MyComponent {
     { value: 'vscode', label: 'VS Code' },
   ];
 
+  theme = signal<'ship-dark' | 'ship-light'>('ship-dark');
+  themeOptions = [
+    { value: 'ship-dark', label: 'Ship Dark' },
+    { value: 'ship-light', label: 'Ship Light' },
+  ];
+
   source = signal(SAMPLE);
 
   /** 20,000 generated lines — well past the virtualization threshold. */

@@ -8,7 +8,7 @@
         [style.padding-bottom.px]="padBottom()"
         aria-hidden="true">
         @for (line of visibleLines(); track line.index) {
-          <div class="sh-code-gutter-line" [style.height.px]="lineHeight()">{{ line.index + 1 }}</div>
+          <div class="sh-code-gutter-line">{{ line.index + 1 }}</div>
         }
       </div>
     }
@@ -29,7 +29,7 @@
       }
 
       @for (line of visibleLines(); track line.index) {
-        <div class="sh-code-line" [style.height.px]="lineHeight()">@for (seg of line.segments; track $index) {<span [class]="seg.cls">{{ seg.text }}</span>}</div>
+        <div class="sh-code-line" [innerHTML]="line.html"></div>
       }
 
       @if (caretBox(); as box) {

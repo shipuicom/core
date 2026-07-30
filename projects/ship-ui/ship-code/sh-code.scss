@@ -52,6 +52,7 @@ sh-code {
   }
 
   .sh-code-gutter-line {
+    height: var(--shc-line-h, auto);
     line-height: inherit;
   }
 
@@ -67,31 +68,10 @@ sh-code {
 
   .sh-code-line {
     position: relative;
+    height: var(--shc-line-h, auto);
     z-index: 1;
     pointer-events: none;
   }
-
-  // Token classes (scope-classes.ts). Colors are CSS variables so a theme —
-  // or phase 1.7's VS Code theme resolver — can restyle without touching
-  // markup. Defaults are a restrained One-Dark-ish palette that reads on the
-  // ship dark and light backgrounds alike.
-  .sh-tok-comment { color: var(--code-tok-comment, #7d8590); font-style: italic; }
-  .sh-tok-string { color: var(--code-tok-string, #7ec699); }
-  .sh-tok-regexp { color: var(--code-tok-regexp, #56b6c2); }
-  .sh-tok-escape { color: var(--code-tok-escape, #56b6c2); }
-  .sh-tok-number { color: var(--code-tok-number, #d19a66); }
-  .sh-tok-constant { color: var(--code-tok-constant, #d19a66); }
-  .sh-tok-keyword { color: var(--code-tok-keyword, #c678dd); }
-  .sh-tok-operator { color: var(--code-tok-operator, #8fa1b3); }
-  .sh-tok-function { color: var(--code-tok-function, #61afef); }
-  .sh-tok-type { color: var(--code-tok-type, #e5c07b); }
-  .sh-tok-tag { color: var(--code-tok-tag, #e06c75); }
-  .sh-tok-attribute { color: var(--code-tok-attribute, #d19a66); }
-  .sh-tok-property { color: var(--code-tok-property, #e06c75); }
-  .sh-tok-parameter { color: var(--code-tok-parameter, #abb2bf); }
-  .sh-tok-variable { color: var(--code-tok-variable, #e06c75); }
-  .sh-tok-punctuation { color: var(--code-tok-punctuation, #8fa1b3); }
-  .sh-tok-invalid { color: var(--code-tok-invalid, #ffffff); background: var(--code-tok-invalid-bg, #e05252); }
 
   .sh-code-selection {
     position: absolute;

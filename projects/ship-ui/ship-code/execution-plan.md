@@ -89,14 +89,14 @@ Exhaustive TODO list for building `ship-code`. Each task follows TDD: write the 
 - [x] Test: VS Code maps `ctrlOrCmd+ArrowLeft` to `code.caret.moveWordLeft`
 
 ### 1.5 Action Registry
-- [ ] `core/actions.ts` — Define action handler registry
-- [ ] Test: register an action handler, dispatch by name, verify it runs
-- [ ] Test: dispatch unknown action returns false (no-op)
-- [ ] Test: action handler receives `(doc, selection)` and returns `{ doc, selection }`
-- [ ] Implement `registerAction`, `dispatchAction`
-- [ ] Register all caret movement actions (wire to selection functions from 1.3)
-- [ ] Test: dispatching `code.caret.moveRight` moves caret right
-- [ ] Test: dispatching `code.selection.selectAll` selects all
+- [x] `core/actions.ts` — action handler registry over `(doc, selection)` contexts (pure handlers, null = not applicable)
+- [x] Test: register an action handler, dispatch by name, verify it runs
+- [x] Test: dispatch unknown action returns false (no-op)
+- [x] Test: action handler receives `(doc, selection)` and returns `{ doc, selection }`
+- [x] Implement `registerAction`, `dispatchAction` (+ `hasAction`)
+- [x] Register all caret movement + selection actions (wired to the flat-motion functions)
+- [x] Test: dispatching `code.caret.moveRight` moves caret right
+- [x] Test: dispatching `code.selection.selectAll` selects all
 
 ### 1.6 TextMate Tokenization (vscode-textmate wrapper)
 - [x] `textmate/types.ts` — `CodeToken`, `TokenizerState`, `TokenizedLine`, `LanguageTokenizer`, `TokenizerEngine` (the swap point)
@@ -117,15 +117,17 @@ Exhaustive TODO list for building `ship-code`. Each task follows TDD: write the 
 - [x] `<sh-code>` wiring: `engine` + `language` inputs, token segments in the line renderer, background pump in 300-line slices behind the virtualization window, edit bookkeeping mirrors flat changes into the cache
 
 ### 1.7 Theme System
-- [ ] `themes/theme-resolver.ts` — Implement `resolveScope(scopes, theme): StyledToken`
-- [ ] Test: `keyword.control.ts` resolves to theme's keyword color
-- [ ] Test: more specific scope wins over general scope
-- [ ] Test: `fontStyle: 'italic'` is applied when theme specifies it
-- [ ] Test: unmatched scope falls back to default foreground
-- [ ] `themes/ship-dark.ts` — Export dark theme `tokenColors` array
-- [ ] `themes/ship-light.ts` — Export light theme `tokenColors` array
-- [ ] Test: `ship-dark` theme has rules for all major scope categories
-- [ ] Test: `ship-light` theme has rules for all major scope categories
+- [x] `themes/theme-resolver.ts` — `resolveScope(scopes, theme): StyledToken` (VS-Code-shaped `tokenColors`; segment-prefix matching, comma/array selectors, descendant selectors, depth → segment-count → rule-order specificity; cached per theme + stack)
+- [x] Test: `keyword.control.ts` resolves to theme's keyword color
+- [x] Test: more specific scope wins over general scope
+- [x] Test: `fontStyle: 'italic'` is applied when theme specifies it
+- [x] Test: unmatched scope falls back to default foreground
+- [x] `themes/ship-dark.ts` — Export dark theme `tokenColors` array
+- [x] `themes/ship-light.ts` — Export light theme `tokenColors` array
+- [x] Test: `ship-dark` theme has rules for all major scope categories
+- [x] Test: `ship-light` theme has rules for all major scope categories
+- [x] `<sh-code>` `theme` input (built-in name or theme object); resolved styles dedupe into per-instance style buckets (`t1…tn` classes + one generated stylesheet, Monaco-style) so the DOM carries two-character classes; line height moves to a host CSS var, unstyled runs render as bare text nodes, adjacent same-style segments merge
+- [x] Replaces 1.6's interim `scope-classes` palette in the component (the utility stays exported)
 
 ### 1.75 Columnar Core & Flat Selection (adopted from ship-editor's architecture)
 > The document's line array is the storage column; `core/line-index.ts` is the

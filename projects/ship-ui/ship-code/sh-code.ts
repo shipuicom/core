@@ -16,6 +16,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { BlockHeightMap } from '@ship-ui/core/ship-virtual-scroll';
 import {
   CodeDocument,
@@ -50,8 +51,10 @@ import { ShipCodeAction, ShipCodeKeymap, matchesShortcut } from './keymaps/keyma
 import { SUBLIME_KEYMAP } from './keymaps/sublime.keymap';
 import { VSCODE_KEYMAP } from './keymaps/vscode.keymap';
 import { IncrementalTokenizer } from './textmate/incremental';
-import { classForScopes } from './textmate/scope-classes';
 import { LanguageTokenizer, TokenizerEngine } from './textmate/types';
+import { SHIP_DARK } from './themes/ship-dark';
+import { SHIP_LIGHT } from './themes/ship-light';
+import { ShipCodeTheme, StyledToken, resolveScope } from './themes/theme-resolver';
 
 /** `'auto'` virtualizes past this many lines. */
 const VIRTUAL_AUTO_THRESHOLD = 1000;
@@ -59,6 +62,18 @@ const VIRTUAL_AUTO_THRESHOLD = 1000;
 const VIRTUAL_OVERSCAN_PX = 400;
 /** Line height assumed before the first real measurement. */
 const DEFAULT_LINE_PX = 20;
+
+let nextInstanceId = 1;
+
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/** Guard for theme colors interpolated into the bucket stylesheet. */
+function isSafeColor(value: string): boolean {
+  if (!value || value.length > 40) return false;
+  return /^#[0-9a-f]{3,8}$/i.test(value) || /^(rgb|hsl)a?\(\s*[\d.,%\s/]+\)$/i.test(value) || /^[a-z]+$/i.test(value);
+}
 
 interface HistoryEntry {
   readonly inverse: readonly FlatChange[];
@@ -81,6 +96,12 @@ interface HistoryEntry {
   encapsulation: ViewEncapsulation.None,
   templateUrl: './sh-code.html',
   styleUrl: './sh-code.scss',
+  host: {
+    '[style.--code-fg]': 'themeForeground()',
+    '[style.--code-bg]': 'themeBackground()',
+    '[style.--shc-line-h.px]': 'lineHeight()',
+    '[attr.data-shc]': 'uid',
+  },
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => ShipCode), multi: true }],
 })
 export class ShipCode implements ControlValueAccessor {
@@ -106,6 +127,19 @@ export class ShipCode implements ControlValueAccessor {
    * creates the engine and hands it in; without one, lines render plain.
    */
   engine = input<TokenizerEngine | Promise<TokenizerEngine> | null>(null);
+  /** Token theme: a built-in name or a full VS-Code-shaped theme object. */
+  theme = input<ShipCodeTheme | 'ship-dark' | 'ship-light'>('ship-dark');
+
+  readonly resolvedTheme = computed<ShipCodeTheme>(() => {
+    const theme = this.theme();
+    if (theme === 'ship-dark') return SHIP_DARK;
+    if (theme === 'ship-light') return SHIP_LIGHT;
+    return theme;
+  });
+
+  /** Theme-driven chrome colors, when the theme declares them. */
+  readonly themeForeground = computed(() => this.resolvedTheme().colors?.['editor.foreground'] ?? null);
+  readonly themeBackground = computed(() => this.resolvedTheme().colors?.['editor.background'] ?? null);
 
   readonly doc = signal<CodeDocument>(createDocument(''));
   readonly sel = signal<FlatSelection>(flatCaret(0));
@@ -127,6 +161,7 @@ export class ShipCode implements ControlValueAccessor {
   #isInternalValueUpdate = false;
   #dragSelecting = false;
   #destroyRef = inject(DestroyRef);
+  #sanitizer = inject(DomSanitizer);
 
   onChange: (value: string) => void = () => {};
   onTouched: () => void = () => {};
@@ -146,31 +181,102 @@ export class ShipCode implements ControlValueAccessor {
   readonly #tokensVersion = signal(0);
   #pumpScheduled = false;
 
-  /** The mounted slice of lines: absolute indices plus token segments. */
+  /**
+   * The mounted slice of lines: absolute indices plus each line's rendered
+   * HTML. Lines render through [innerHTML] — hand-built from escaped text and
+   * generated bucket classes — so a line's DOM is exactly its spans and text
+   * nodes, with no template anchor comments.
+   */
   readonly visibleLines = computed(() => {
     this.#tokensVersion();
+    const theme = this.resolvedTheme();
     const lines = this.doc().lines;
     const from = this.winStart();
     const to = this.winEnd();
-    const out: { index: number; segments: { text: string; cls: string }[] }[] = [];
+    const out: { index: number; html: SafeHtml }[] = [];
     for (let i = from; i < to && i < lines.length; i++) {
-      out.push({ index: i, segments: this.#segmentsFor(i, lines[i].text) });
+      out.push({ index: i, html: this.#sanitizer.bypassSecurityTrustHtml(this.#lineHtml(i, lines[i].text, theme)) });
     }
     return out;
   });
 
-  #segmentsFor(line: number, text: string): { text: string; cls: string }[] {
+  #lineHtml(line: number, text: string, theme: ShipCodeTheme): string {
     const tokens = this.#incremental?.tokensFor(line);
-    if (!tokens || tokens.length === 0) return text ? [{ text, cls: '' }] : [];
-    const segments: { text: string; cls: string }[] = [];
+    if (!tokens || tokens.length === 0) return escapeHtml(text);
+    const parts: { text: string; cls: string }[] = [];
+    // Merged push: adjacent runs resolving to the same bucket become one span.
+    const push = (t: string, cls: string) => {
+      if (!t) return;
+      const last = parts[parts.length - 1];
+      if (last && last.cls === cls) last.text += t;
+      else parts.push({ text: t, cls });
+    };
     let at = 0;
     for (const token of tokens) {
-      if (token.start > at) segments.push({ text: text.slice(at, token.start), cls: '' });
-      segments.push({ text: text.slice(token.start, token.end), cls: classForScopes(token.scopes) });
+      if (token.start > at) push(text.slice(at, token.start), '');
+      push(text.slice(token.start, token.end), this.#bucketFor(resolveScope(token.scopes, theme)));
       at = token.end;
     }
-    if (at < text.length) segments.push({ text: text.slice(at), cls: '' });
-    return segments;
+    if (at < text.length) push(text.slice(at), '');
+    return parts.map((p) => (p.cls ? `<span class="${p.cls}">${escapeHtml(p.text)}</span>` : escapeHtml(p.text))).join('');
+  }
+
+  // -------------------------------------------------------------------------
+  // Style buckets: every distinct resolved token style gets one short class
+  // (`t1`, `t2`, …) and a rule in a per-instance stylesheet — the DOM carries
+  // two-character classes instead of per-span inline styles or long semantic
+  // names, at exact theme fidelity (Monaco's mtk* approach).
+  // -------------------------------------------------------------------------
+
+  readonly uid = `shc${nextInstanceId++}`;
+  #bucketMap = new Map<string, string>();
+  #bucketCss: string[] = [];
+  #styleEl: HTMLStyleElement | null = null;
+
+  #bucketFor(styled: StyledToken): string {
+    // A token resolving to the theme's plain default needs no span at all —
+    // it renders as a bare text node and inherits.
+    if (
+      !styled.italic &&
+      !styled.bold &&
+      !styled.underline &&
+      (styled.foreground === '' || styled.foreground === (this.resolvedTheme().colors?.['editor.foreground'] ?? ''))
+    ) {
+      return '';
+    }
+    const key = `${styled.foreground}|${styled.italic ? 1 : 0}${styled.bold ? 1 : 0}${styled.underline ? 1 : 0}`;
+    let cls = this.#bucketMap.get(key);
+    if (cls !== undefined) return cls;
+    cls = `t${this.#bucketMap.size + 1}`;
+    this.#bucketMap.set(key, cls);
+    const decl = [
+      isSafeColor(styled.foreground) ? `color:${styled.foreground}` : '',
+      styled.italic ? 'font-style:italic' : '',
+      styled.bold ? 'font-weight:600' : '',
+      styled.underline ? 'text-decoration:underline' : '',
+    ]
+      .filter(Boolean)
+      .join(';');
+    if (decl) this.#bucketCss.push(`[data-shc="${this.uid}"] .${cls}{${decl}}`);
+    this.#syncBucketStyles();
+    return cls;
+  }
+
+  #syncBucketStyles() {
+    if (typeof document === 'undefined') return;
+    if (!this.#styleEl) {
+      this.#styleEl = document.createElement('style');
+      this.#styleEl.setAttribute('data-shc-style', this.uid);
+      document.head.appendChild(this.#styleEl);
+      this.#destroyRef.onDestroy(() => this.#styleEl?.remove());
+    }
+    this.#styleEl.textContent = this.#bucketCss.join('\n');
+  }
+
+  #resetBuckets() {
+    this.#bucketMap.clear();
+    this.#bucketCss = [];
+    this.#syncBucketStyles();
   }
 
   readonly padTop = computed(() => {
@@ -263,6 +369,12 @@ export class ShipCode implements ControlValueAccessor {
     effect(() => {
       const range = primaryFlat(this.sel());
       untracked(() => this.#scrollCaretIntoView(range.head));
+    });
+
+    // A theme swap invalidates every style bucket.
+    effect(() => {
+      this.resolvedTheme();
+      untracked(() => this.#resetBuckets());
     });
 
     // Engine + language → a bound tokenizer and a fresh incremental cache.
