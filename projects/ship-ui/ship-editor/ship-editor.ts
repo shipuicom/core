@@ -30,7 +30,7 @@ import { EditorEngineService, RenderHint } from './editor-engine.service';
 import { SanitizeOption, normalizeDocument, sanitizeDocumentUrls } from './editor-sanitize';
 import { RowKind } from './editor-columnar';
 import { BlockPoint, blockPointAt, flatPosOfBlockChar, fragmentPlainText, pointAt, sliceDocument } from './editor-columnar-mutations';
-import { BlockHeightMap } from './editor-viewport';
+import { BlockHeightMap } from '@ship-ui/core/ship-virtual-scroll';
 import { alignStyledCode, astToHtml, dedentPastedCode, htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
 import { ShipEditorContextualToolbar, ContextualActionExtras } from './sh-editor-contextual-toolbar';
 import { ShipEditorImageResize } from './sh-editor-image-resize';

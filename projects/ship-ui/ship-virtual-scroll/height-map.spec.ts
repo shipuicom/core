@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BlockHeightMap } from './editor-viewport';
+import { BlockHeightMap } from './height-map';
 
 describe('BlockHeightMap', () => {
   it('starts fully estimated with the default estimate', () => {

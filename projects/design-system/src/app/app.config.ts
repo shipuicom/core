@@ -60,6 +60,7 @@ export const appConfig: ApplicationConfig = {
         { id: 'dialogs', label: 'Dialogs', category: 'Components', data: { route: '/dialogs' } },
         { id: 'dividers', label: 'Dividers', category: 'Components', data: { route: '/dividers' } },
         { id: 'editors', label: 'Editor', category: 'Form Fields', data: { route: '/editors' } },
+        { id: 'code', label: 'Code Editor', category: 'Form Fields', data: { route: '/code' } },
         { id: 'event-cards', label: 'Event Cards', category: 'Components', data: { route: '/event-cards' } },
         { id: 'icons', label: 'Icons', category: 'Components', data: { route: '/icons' } },
         { id: 'kbds', label: 'Keyboard Keys', category: 'Components', data: { route: '/kbds' } },

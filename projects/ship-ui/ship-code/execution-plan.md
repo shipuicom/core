@@ -127,37 +127,43 @@ Exhaustive TODO list for building `ship-code`. Each task follows TDD: write the 
 - [ ] Test: `ship-dark` theme has rules for all major scope categories
 - [ ] Test: `ship-light` theme has rules for all major scope categories
 
+### 1.75 Columnar Core & Flat Selection (adopted from ship-editor's architecture)
+> The document's line array is the storage column; `core/line-index.ts` is the
+> prefix-sum index over it (flat offset ⇄ line/column, cached per document
+> identity). The selection is a flat `{anchor, head}` pair — ship-editor's
+> flat-selection shape — and edits are flat `{from, to, insert}` changes that
+> return their inverses (the history/rebase currency).
+- [x] `core/line-index.ts` — `LineIndex` prefix sums, `posOf`/`pointAt`/`lineAt`/`sliceText`, `indexFor` cache
+- [x] `core/flat-edit.ts` — `applyFlatChange(s)` with inverse changes, `mapFlatPos`/`mapThroughChanges`
+- [x] `core/flat-motion.ts` — flat caret motion (char/word/line/doc), goal-column vertical moves, select word/line/all
+- [x] Selection extension variants (`applyMotion` with `extend`; plain moves collapse to the range edge)
+- [x] `matchesShortcut` — framework-free chord matching for keymap specs
+- [x] Tests: line-index round-trips, change inversion, motion invariants, shortcut matching
+
 ### 1.8 View Layer
-- [ ] `view/editor-view.ts` — DOM rendering engine
-- [ ] Test (JSDOM): renders N `<div>` elements for N lines
-- [ ] Test (JSDOM): each line `<div>` contains a gutter and content area
+> Built directly into the `<sh-code>` component (signals templates render the
+> window; no separate view/ module). Virtualization uses the shared
+> `BlockHeightMap` from `@ship-ui/core/ship-virtual-scroll` — the same pixel
+> model ship-editor's virtualization runs on, in its own bundle so neither
+> editor pulls the other's code.
+- [x] Line rendering (plain text; tokenized spans arrive with 1.6/1.7)
 - [ ] Test (JSDOM): content area contains `<span>` elements matching token count
 - [ ] Test (JSDOM): token `<span>` elements have correct inline styles from theme
-- [ ] Implement line rendering with tokenized spans
-- [ ] `view/caret.ts` — Caret rendering
-- [ ] Implement blinking caret as absolutely positioned `<div>`
-- [ ] Implement caret position calculation from `CaretPosition` → pixel coordinates
-- [ ] `view/gutter.ts` — Line number gutter
-- [ ] Test (JSDOM): gutter shows correct line numbers
-- [ ] Test (JSDOM): active line number is highlighted
-- [ ] Implement gutter rendering
-- [ ] `view/input-handler.ts` — Hidden textarea input capture
-- [ ] Implement hidden `<textarea>` positioned behind content
-- [ ] Map keyboard events → action names via keymap + `ShipA11yKeybindingsService`
-- [ ] Map text input events → `insertText` transactions
-- [ ] Handle IME composition start/update/end
-- [ ] Handle paste events
-- [ ] `view/virtual-scroll.ts` — Viewport-aware line rendering
-- [ ] Implement: only render lines within visible viewport + buffer
-- [ ] Implement: recalculate on scroll, window resize
-- [ ] Test: 10000-line document only renders ~50 visible lines
+- [x] Blinking caret as absolutely positioned `<div>` (flat head → line/col → pixel box)
+- [x] Line number gutter, window-synchronized, sticky under horizontal scroll
+- [ ] Active line number highlighted
+- [x] Hidden `<textarea>` input capture (keydown → keymap actions, input → insertText, IME composition buffered, paste via textarea, copy/cut from the flat selection)
+- [x] Viewport-aware rendering: only lines within viewport + overscan exist in the DOM (`BlockHeightMap` window + spacer padding)
+- [x] Recalculate on scroll (rAF with hidden-document timeout fallback)
+- [x] Verified: 20,000-line document renders ~50 visible lines
 
 ### 1.9 Angular Component
-- [ ] `ship-code.ts` — Standalone Angular component `<sh-code>`
-- [ ] Inputs: `value`, `language`, `readonly`, `lineNumbers`, `theme`, `keymap`
-- [ ] Output: `valueChange`
-- [ ] Implement `ControlValueAccessor` (ngModel / reactive forms)
-- [ ] Wire inputs to core engine (document, tokenizer, theme, keymap)
+- [x] `sh-code.ts` — Standalone Angular component `<sh-code>`
+- [x] Inputs: `value`, `language`, `readonly`, `lineNumbers`, `keymap`, `virtualization` (theme arrives with 1.7)
+- [x] Output: `valueChange` (via `model()` two-way `value`)
+- [x] Implement `ControlValueAccessor` (ngModel / reactive forms)
+- [x] Editing: typing, Enter, Backspace/Delete, indent/outdent, delete/duplicate/move line, delete word, undo/redo (inverse-change history)
+- [ ] Wire tokenizer + theme once 1.6/1.7 land
 - [ ] Register active keymap into `ShipA11yKeybindingsService` on init
 - [ ] `ship-code.scss` — Styles
 - [ ] Editor container (monospace font via `--code-20`, background, border)

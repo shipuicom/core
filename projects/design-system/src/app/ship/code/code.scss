@@ -1,0 +1,32 @@
+@use '../showcase' as *;
+
+.code-demo {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(12);
+  width: 100%;
+}
+
+.code-controls {
+  display: flex;
+  align-items: center;
+  gap: p2r(16);
+
+  sh-select {
+    min-width: p2r(160);
+  }
+}
+
+.code-note {
+  margin: 0;
+  color: var(--base-10);
+  font-size: p2r(13);
+}
+
+sh-code.code-small {
+  max-height: p2r(320);
+}
+
+sh-code.code-big {
+  height: p2r(420);
+}

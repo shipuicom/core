@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ShipCodeAction, ShipCodeKeymap } from './keymap';
+import { ShipCodeAction, ShipCodeKeymap, matchesShortcut } from './keymap';
 import { SUBLIME_KEYMAP } from './sublime.keymap';
 import { VSCODE_KEYMAP } from './vscode.keymap';
 
@@ -79,5 +79,42 @@ describe('VS Code Keymap', () => {
     expect(VSCODE_KEYMAP['code.edit.undo']).toBe(SUBLIME_KEYMAP['code.edit.undo']);
     expect(VSCODE_KEYMAP['code.selection.selectAll']).toBe(SUBLIME_KEYMAP['code.selection.selectAll']);
     expect(VSCODE_KEYMAP['code.caret.moveLeft']).toBe(SUBLIME_KEYMAP['code.caret.moveLeft']);
+  });
+});
+
+describe('matchesShortcut', () => {
+  const ev = (key: string, mods: Partial<{ ctrl: boolean; meta: boolean; alt: boolean; shift: boolean }> = {}) => ({
+    key,
+    ctrlKey: !!mods.ctrl,
+    metaKey: !!mods.meta,
+    altKey: !!mods.alt,
+    shiftKey: !!mods.shift,
+  });
+
+  it('resolves ctrlOrCmd per platform', () => {
+    expect(matchesShortcut(ev('z', { meta: true }), 'ctrlOrCmd+z', true)).toBe(true);
+    expect(matchesShortcut(ev('z', { ctrl: true }), 'ctrlOrCmd+z', true)).toBe(false);
+    expect(matchesShortcut(ev('z', { ctrl: true }), 'ctrlOrCmd+z', false)).toBe(true);
+  });
+
+  it('requires named modifiers and rejects extras', () => {
+    expect(matchesShortcut(ev('ArrowLeft', { alt: true }), 'Alt+ArrowLeft', true)).toBe(true);
+    expect(matchesShortcut(ev('ArrowLeft'), 'Alt+ArrowLeft', true)).toBe(false);
+    expect(matchesShortcut(ev('ArrowLeft', { alt: true, meta: true }), 'Alt+ArrowLeft', true)).toBe(false);
+  });
+
+  it('supports alternative chords separated by comma', () => {
+    expect(matchesShortcut(ev('Home'), 'Home, ctrlOrCmd+ArrowLeft', true)).toBe(true);
+    expect(matchesShortcut(ev('ArrowLeft', { meta: true }), 'Home, ctrlOrCmd+ArrowLeft', true)).toBe(true);
+  });
+
+  it('shift chords match shifted letters', () => {
+    expect(matchesShortcut(ev('z', { meta: true, shift: true }), 'ctrlOrCmd+Shift+z', true)).toBe(true);
+    expect(matchesShortcut(ev('z', { meta: true }), 'ctrlOrCmd+Shift+z', true)).toBe(false);
+  });
+
+  it('punctuation keys ignore the shift state', () => {
+    expect(matchesShortcut(ev('/', { meta: true }), 'ctrlOrCmd+/', true)).toBe(true);
+    expect(matchesShortcut(ev('/', { meta: true, shift: true }), 'ctrlOrCmd+/', true)).toBe(true);
   });
 });

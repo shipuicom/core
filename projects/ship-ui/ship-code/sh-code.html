@@ -1,0 +1,63 @@
+<div class="sh-code-frame" [class.focused]="focused()" (mouseup)="onDocumentMouseUp()">
+  <div class="sh-code-scroller" #scroller>
+    @if (lineNumbers()) {
+      <div
+        class="sh-code-gutter"
+        [style.width.ch]="gutterDigits() + 1"
+        [style.padding-top.px]="padTop()"
+        [style.padding-bottom.px]="padBottom()"
+        aria-hidden="true">
+        @for (line of visibleLines(); track line.index) {
+          <div class="sh-code-gutter-line" [style.height.px]="lineHeight()">{{ line.index + 1 }}</div>
+        }
+      </div>
+    }
+
+    <div
+      class="sh-code-content"
+      [style.padding-top.px]="padTop()"
+      [style.padding-bottom.px]="padBottom()"
+      (mousedown)="onContentMouseDown($event)"
+      (mousemove)="onContentMouseMove($event)">
+      @for (rect of selectionRects(); track $index) {
+        <div
+          class="sh-code-selection"
+          [style.top.px]="rect.top"
+          [style.left.px]="rect.left"
+          [style.width.px]="rect.width"
+          [style.height.px]="rect.height"></div>
+      }
+
+      @for (line of visibleLines(); track line.index) {
+        <div class="sh-code-line" [style.height.px]="lineHeight()">{{ line.text }}</div>
+      }
+
+      @if (caretBox(); as box) {
+        <div
+          class="sh-code-caret"
+          [class.blinking]="focused()"
+          [style.top.px]="box.top"
+          [style.left.px]="box.left"
+          [style.height.px]="box.height"></div>
+      }
+
+      <span class="sh-code-probe" #probe aria-hidden="true">XXXXXXXXXX</span>
+    </div>
+  </div>
+
+  <textarea
+    #inputArea
+    class="sh-code-input"
+    autocapitalize="off"
+    autocomplete="off"
+    spellcheck="false"
+    [readonly]="readonly()"
+    (keydown)="onKeyDown($event)"
+    (input)="onInput()"
+    (compositionstart)="onCompositionStart()"
+    (compositionend)="onCompositionEnd()"
+    (copy)="onCopy($event)"
+    (cut)="onCut($event)"
+    (focus)="onFocus()"
+    (blur)="onBlur()"></textarea>
+</div>
