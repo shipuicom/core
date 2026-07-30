@@ -95,8 +95,13 @@ tree clean, 692 unit tests + 25 Playwright e2e green at time of writing.
   moving re-prices every unmeasured block at once → padding moves → content
   shifts under a fixed scrollTop → window oscillates. The average locks
   after 32 measurements (`ESTIMATE_LOCK_AFTER`); measured heights stay live.
-  Scroll-anchor compensation (prepend case) skips sub-pixel shifts, or it
-  feeds back through the scroll event.
+  Scroll-anchor compensation runs on EVERY window reconciliation (anchor =
+  first surviving block, or the scroll-chosen one on a rebuild) — prepends
+  only was not enough: a long jump into unmeasured varied-height content
+  re-prices the estimate mid-update and used to strand the viewport on
+  blank spacer. Sub-pixel shifts are skipped, or the adjustment feeds back
+  through the scroll event. Measuring is skipped for surfaces narrower than
+  60px (hidden tabs measure nonsense the estimate would lock onto).
 - **Position-space skew inside containers**: the Fenwick counts a container's
   closing token before its children; tree space puts it after. `pointAt`/
   `flatPosAt` correct by `depth`. Raw `posToRow`/`startOf` arithmetic inside
