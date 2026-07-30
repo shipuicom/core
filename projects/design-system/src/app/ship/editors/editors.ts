@@ -1,4 +1,4 @@
-import { JsonPipe, UpperCasePipe } from '@angular/common';
+import { UpperCasePipe } from '@angular/common';
 import { afterRenderEffect, ChangeDetectionStrategy, Component, computed, effect, ElementRef, signal, untracked, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { form, FormField } from '@angular/forms/signals';
@@ -64,7 +64,6 @@ class HighlightBehavior extends BaseInlineBehavior {
     ShipKbd,
     ShipTooltip,
     UpperCasePipe,
-    JsonPipe,
   ],
   templateUrl: './editors.html',
   styleUrl: './editors.scss',
