@@ -89,9 +89,11 @@ jobs:
 
       # index.html links /ship.css, which the font generator writes into the
       # (gitignored) public dir. Without it the dev server 404s the
-      # stylesheet and every spec fails its console-error assertion.
+      # stylesheet and every spec fails its console-error assertion. The
+      # generator itself (bin/ship-fg.mjs) is a gitignored build artifact,
+      # so bundle it from source first.
       - name: Generate ship.css
-        run: bun run gen:font
+        run: bun run build:cli && bun run gen:font
 
       - name: Run editor e2e suite
         run: npx playwright test -c scripts/editor-e2e/playwright.config.ts
