@@ -13,7 +13,7 @@ import {
   enterOp,
   escapeHatchOp,
   flatPosAt,
-  insertImageOp,
+  insertVoidBlockOp,
   insertFragmentOp,
   replaceBlockWithFragmentOp,
   insertTextOp,
@@ -419,9 +419,15 @@ export class EditorEngineService {
 
 
   insertImage(attrs: Record<string, unknown>) {
+    this.insertVoidBlock('image', attrs);
+  }
+
+  /** Insert a void block of `type` at the selection and select it. */
+  insertVoidBlock(type: string, attrs: Record<string, unknown> = {}) {
+    if (this.blocks.get(type)?.category !== 'void') return;
     const sel = this.selection.active();
     if (!sel) return;
-    const mutation = insertImageOp(this.columnar, sel, this.blocks, attrs);
+    const mutation = insertVoidBlockOp(this.columnar, sel, this.blocks, type, attrs);
     if (!mutation) return;
     this.#apply(mutation, sel);
     this.selectBlock(mutation.blockIndex);
@@ -429,14 +435,18 @@ export class EditorEngineService {
 
   updateSelectedImage(attrs: Record<string, unknown>) {
     const idx = this.selectedBlock();
-    if (idx === null) return;
+    if (idx !== null) this.updateBlockAttrs(idx, attrs);
+  }
+
+  /** Merge `attrs` into a void block's attrs as one undoable transaction. */
+  updateBlockAttrs(index: number, attrs: Record<string, unknown>) {
     const cd = this.columnar;
-    const row = cd.rowOfTopLevel(idx);
+    const row = cd.rowOfTopLevel(index);
     if (row >= cd.rows || this.blocks.get(cd.typeOf(row))?.category !== 'void') return;
     const patched = blockFromRow(cd, row);
     patched.attrs = { ...(patched.attrs ?? {}), ...attrs };
     const sel = this.selection.active() ?? { from: 0, to: 0 };
-    this.#apply(replaceBlocksOp(cd, idx, 1, [patched], sel), sel);
+    this.#apply(replaceBlocksOp(cd, index, 1, [patched], sel), sel);
   }
 
   moveBlock(from: number, to: number) {
@@ -471,11 +481,15 @@ export class EditorEngineService {
 
   deleteSelectedBlock() {
     const idx = this.selectedBlock();
-    if (idx === null) return;
+    if (idx !== null) this.deleteBlock(idx);
+  }
+
+  /** Delete one top-level block by index. */
+  deleteBlock(index: number) {
     const sel = this.selection.active() ?? { from: 0, to: 0 };
-    const mutation = deleteBlockOp(this.columnar, idx);
+    const mutation = deleteBlockOp(this.columnar, index);
     if (!mutation) return;
-    this.clearBlockSelection();
+    if (this.selectedBlock() === index) this.clearBlockSelection();
     this.#apply(mutation, sel);
   }
 

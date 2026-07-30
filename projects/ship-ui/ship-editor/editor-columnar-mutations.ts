@@ -1182,14 +1182,15 @@ export function insertFragmentOp(
 }
 
 /**
- * Insert an image (with a trailing paragraph) at the selection, replacing the
- * selection first when it is a range. An empty paragraph at the caret is
- * replaced rather than kept above the image.
+ * Insert a void block (with a trailing paragraph) at the selection, replacing
+ * the selection first when it is a range. An empty paragraph at the caret is
+ * replaced rather than kept above the block.
  */
-export function insertImageOp(
+export function insertVoidBlockOp(
   cd: ColumnarDocument,
   sel: LogicalSelection,
   blocks: Map<string, BaseBlockBehavior>,
+  type: string,
   attrs: Record<string, unknown>
 ): (ColumnarMutation & { blockIndex: number }) | null {
   const a = pointAt(cd, sel.from);
@@ -1203,15 +1204,15 @@ export function insertImageOp(
     const p = pointAt(cd, sel.from);
     const root = rootOf(cd, p.row);
     const top = topIndexOf(cd, root);
-    const image: ASTBlockNode = { type: 'image', attrs: { ...attrs }, content: [] };
+    const voidBlock: ASTBlockNode = { type, attrs: { ...attrs }, content: [] };
 
     const emptyPara = cd.typeOf(root) === 'paragraph' && cd.kindOf(root) !== RowKind.Container && cd.textOf(root) === '';
     if (emptyPara) {
-      replaceRoots(cd, top, 1, [image, emptyParagraph()]);
+      replaceRoots(cd, top, 1, [voidBlock, emptyParagraph()]);
       blockIndex = top;
     } else {
       const at = root + spanOfRoot(cd, root);
-      cd.insertRows(at, rowsForBlocks([image, emptyParagraph()], at));
+      cd.insertRows(at, rowsForBlocks([voidBlock, emptyParagraph()], at));
       blockIndex = top + 1;
     }
     return caretSel(cd.startOf(cd.rowOfTopLevel(blockIndex)));

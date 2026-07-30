@@ -91,6 +91,10 @@ const TAG_ATTRS: Record<string, string[]> = {
   pre: ['language'],
 
   br: ['data-sh-pad'],
+
+  // Custom component blocks serialize as a neutral div wrapper; the payload
+  // is inert JSON in a data attribute.
+  div: ['data-sh-block', 'data-sh-attrs'],
 };
 
 function inertParseBody(html: string): HTMLElement | null {

@@ -16,13 +16,14 @@
           (cut)="onCut($event)"
           (beforeinput)="onBeforeInput($event)"
           (mousedown)="onSurfaceMouseDown($event)"
+          (click)="onSurfaceClick($event)"
           (dragstart)="onDragStart($event)"
           (dragover)="onDragOver($event)"
           (drop)="onDrop($event)"
           (dragend)="onDragEnd()"
           (dragleave)="onDragLeave($event)"
-          (compositionstart)="onCompositionStart()"
-          (compositionend)="onCompositionEnd()"></div>
+          (compositionstart)="onCompositionStart($event)"
+          (compositionend)="onCompositionEnd($event)"></div>
         @if (dropIndicator(); as di) {
           <div class="sh-editor-drop-indicator" [style.top.px]="di.top"></div>
         }

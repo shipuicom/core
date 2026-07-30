@@ -1,13 +1,19 @@
 import {
+  ApplicationRef,
   ChangeDetectionStrategy,
   Component,
+  ComponentRef,
   DOCUMENT,
   DestroyRef,
   ElementRef,
+  EnvironmentInjector,
   HostListener,
+  Injector,
   ViewEncapsulation,
+  WritableSignal,
   afterNextRender,
   computed,
+  createComponent,
   effect,
   forwardRef,
   inject,
@@ -31,6 +37,7 @@ import { ShipEditorImageResize } from './sh-editor-image-resize';
 import { ShipEditorImagePopover } from './sh-editor-image-popover';
 import { ShipEditorLinkPopover } from './sh-editor-link-popover';
 import { ShipEditorSlashMenu } from './sh-editor-slash-menu';
+import { BaseComponentBlockBehavior, SHIP_EDITOR_BLOCK_CONTEXT, ShipEditorBlockContext } from './sh-editor-component-block';
 import { ASTDocument, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import * as Behaviors from './standard-behaviors';
@@ -44,6 +51,16 @@ const VIRTUAL_AUTO_THRESHOLD = 1000;
 const VIRTUAL_OVERSCAN_PX = 600;
 /** Height assumed for a block the DOM has never laid out. */
 const VIRTUAL_DEFAULT_BLOCK_PX = 36;
+
+/** Elements whose clicks belong to a component block, never to fall-through selection. */
+const INTERACTIVE_TAGS = new Set([
+  'a', 'button', 'input', 'textarea', 'select', 'option', 'label', 'summary', 'details',
+  'video', 'audio', 'iframe', 'embed', 'object', 'canvas',
+]);
+const INTERACTIVE_ROLES = new Set([
+  'button', 'link', 'checkbox', 'radio', 'textbox', 'searchbox', 'combobox', 'listbox', 'option',
+  'menuitem', 'menuitemcheckbox', 'menuitemradio', 'slider', 'switch', 'tab', 'spinbutton',
+]);
 
 @Component({
   selector: 'sh-editor',
@@ -249,6 +266,29 @@ export class ShipEditor implements ControlValueAccessor {
   /** The element the last render targeted; a different one means the view was re-created. */
   #lastSurface: HTMLElement | null = null;
 
+  // -------------------------------------------------------------------------
+  // Custom component blocks: live Angular components mounted inside void-block
+  // wrapper elements. Keyed by the wrapper, so the render pipeline can keep a
+  // wrapper (and the component's state) alive across patches and destroy the
+  // component the moment its wrapper leaves the DOM.
+  // -------------------------------------------------------------------------
+
+  #appRef = inject(ApplicationRef);
+  #envInjector = inject(EnvironmentInjector);
+  #injector = inject(Injector);
+
+  #componentBlocks = new Map<
+    HTMLElement,
+    {
+      ref: ComponentRef<unknown>;
+      type: string;
+      index: WritableSignal<number>;
+      attrs: WritableSignal<Record<string, unknown>>;
+      /** The wrapper's data-sh-attrs at last sync — change detector for the attrs signal. */
+      lastAttrsJson: string;
+    }
+  >();
+
   readonly dropIndicator = signal<{ top: number } | null>(null);
   onChange: any = () => {};
   onTouched: any = () => {};
@@ -382,7 +422,11 @@ export class ShipEditor implements ControlValueAccessor {
 
     afterNextRender(() => this.#viewReady.set(true));
 
-    this.#destroyRef.onDestroy(() => this.#unhookScroll());
+    this.#destroyRef.onDestroy(() => {
+      this.#unhookScroll();
+      for (const entry of this.#componentBlocks.values()) entry.ref.destroy();
+      this.#componentBlocks.clear();
+    });
   }
 
   /** Toggles between the design view and the raw source (code) view, syncing content in both directions. */
@@ -447,6 +491,13 @@ export class ShipEditor implements ControlValueAccessor {
     let el: HTMLElement | null = event.target as HTMLElement;
     while (el && el.parentElement !== surface) el = el.parentElement;
     if (el && el.parentElement === surface) {
+      // Component blocks are interactive — clicks pass through to the
+      // component instead of selecting the block. Selection happens via
+      // keyboard navigation or the component calling its context's select().
+      if (this.#componentBehaviorFor(el)) {
+        this.engine.clearBlockSelection();
+        return;
+      }
       const idx = this.#winStart + this.#indexInParent(el);
       const cd = this.engine.columnar;
       const row = cd.rowOfTopLevel(idx);
@@ -458,8 +509,40 @@ export class ShipEditor implements ControlValueAccessor {
     this.engine.clearBlockSelection();
   }
 
+  /**
+   * Click fall-through for component blocks: a click that reaches this
+   * handler unconsumed and didn't land on anything interactive selects the
+   * block. Components keep real interactions — native/ARIA interactive
+   * elements are exempt, and a component's own click handler can call
+   * `stopPropagation()` (or `preventDefault()`) to keep the click entirely.
+   */
+  onSurfaceClick(event: MouseEvent) {
+    if (this.readonly() || event.defaultPrevented) return;
+    const surface = this.surface().nativeElement;
+    let el: HTMLElement | null = event.target as HTMLElement;
+    while (el && el.parentElement !== surface) el = el.parentElement;
+    if (!el || !this.#componentBehaviorFor(el)) return;
+    if (this.#interactiveWithin(event.target as HTMLElement, el)) return;
+    this.engine.selectBlock(this.#winStart + this.#indexInParent(el));
+  }
+
+  /** True when anything on the path from `target` up to `wrapper` is interactive. */
+  #interactiveWithin(target: HTMLElement | null, wrapper: HTMLElement): boolean {
+    for (let el: HTMLElement | null = target; el && el !== wrapper; el = el.parentElement) {
+      if (INTERACTIVE_TAGS.has(el.tagName.toLowerCase())) return true;
+      if (el.isContentEditable) return true;
+      const tabindex = el.getAttribute('tabindex');
+      if (tabindex !== null && Number(tabindex) >= 0) return true;
+      const role = el.getAttribute('role');
+      if (role && INTERACTIVE_ROLES.has(role)) return true;
+      if (el.onclick) return true;
+    }
+    return false;
+  }
+
   /** With a void block selected, copy serializes that block to the clipboard. */
   onCopy(event: ClipboardEvent) {
+    if (this.#insideComponentBlock(event.target)) return;
     const idx = this.engine.selectedBlock();
     if (idx !== null && event.clipboardData) {
       event.preventDefault();
@@ -472,6 +555,7 @@ export class ShipEditor implements ControlValueAccessor {
 
   onCut(event: ClipboardEvent) {
     if (this.readonly()) return;
+    if (this.#insideComponentBlock(event.target)) return;
     const idx = this.engine.selectedBlock();
     if (idx !== null && event.clipboardData) {
       event.preventDefault();
@@ -514,6 +598,9 @@ export class ShipEditor implements ControlValueAccessor {
 
   onDragStart(event: DragEvent) {
     if (this.readonly()) return;
+    // Drags that start inside a component block (a slider, an internal DnD)
+    // belong to the component.
+    if (this.#insideComponentBlock(event.target)) return;
     const surface = this.surface().nativeElement;
     const target = event.target as HTMLElement;
     if (target.tagName === 'IMG' && target.parentElement === surface) {
@@ -582,6 +669,8 @@ export class ShipEditor implements ControlValueAccessor {
   onBeforeInput(event: InputEvent) {
     if (this.readonly()) return;
     if (this.#composing) return;
+    // Typing inside a component block edits the component, not the document.
+    if (this.#insideComponentBlock(event.target)) return;
 
     if (this.engine.selectedBlock() !== null) {
       event.preventDefault();
@@ -680,11 +769,13 @@ export class ShipEditor implements ControlValueAccessor {
     if (mutated) this.#render();
   }
 
-  onCompositionStart() {
+  onCompositionStart(event?: CompositionEvent) {
+    if (event && this.#insideComponentBlock(event.target)) return;
     this.#composing = true;
   }
 
-  onCompositionEnd() {
+  onCompositionEnd(event?: CompositionEvent) {
+    if (event && this.#insideComponentBlock(event.target)) return;
     this.#composing = false;
 
     this.#reconcileCaretBlockFromDOM();
@@ -767,6 +858,8 @@ export class ShipEditor implements ControlValueAccessor {
     const container = this.surface().nativeElement;
     const blockEl = container.children[index - this.#winStart] as HTMLElement | undefined;
     if (!blockEl) return;
+    // A component block's DOM is Angular's, not the model's — never parse it back.
+    if (this.#componentBehaviorFor(blockEl)) return;
     const temp = this.#document.createElement('div');
     temp.appendChild(blockEl.cloneNode(true));
     const parsed = parseDOMToAST(temp, this.engine.blocks, this.engine.inlines);
@@ -785,6 +878,9 @@ export class ShipEditor implements ControlValueAccessor {
       this.selection.domRect.set(null);
       return;
     }
+    // A DOM selection living inside a component block belongs to the
+    // component; the editor's logical selection stays where it was.
+    if (this.#insideComponentBlock(range.commonAncestorContainer)) return;
     if (this.#virtualSelectAll) {
       // The DOM can only show the mounted slice of a select-all; keep the
       // full-document logical selection until the user makes a new one.
@@ -808,6 +904,8 @@ export class ShipEditor implements ControlValueAccessor {
 
   onPaste(event: ClipboardEvent) {
     if (this.readonly()) return;
+    // Pasting into a component block's own inputs is the component's business.
+    if (this.#insideComponentBlock(event.target)) return;
     event.preventDefault();
 
     this.#syncLogicalSelectionFromDOM();
@@ -889,6 +987,8 @@ export class ShipEditor implements ControlValueAccessor {
   onKeyDown(event: KeyboardEvent) {
     if (this.readonly()) return;
     if (this.#composing) return;
+    // Focus inside a component block: the component owns its whole keymap.
+    if (this.#insideComponentBlock(event.target)) return;
 
     const slash = this.slashMenu();
     if (slash?.isOpen()) {
@@ -925,6 +1025,11 @@ export class ShipEditor implements ControlValueAccessor {
           const from = flatPosOfBlockChar(this.engine.columnar, { blockIndex: targetIdx, itemIndex: edge, charOffset: edge });
           this.selection.live.set({ from, to: from });
           this.#render();
+        } else if (targetRow < cd.rows) {
+          // The neighbor is another void (stacked components, image over hr):
+          // selection hops block to block instead of being dropped. At the
+          // document edge the same block simply stays selected.
+          this.engine.selectBlock(targetIdx);
         }
         return;
       }
@@ -1015,6 +1120,142 @@ export class ShipEditor implements ControlValueAccessor {
     }
   }
 
+  /** The behavior when `el` is a custom component block's wrapper element. */
+  #componentBehaviorFor(el: Element | null | undefined): BaseComponentBlockBehavior | null {
+    const type = (el as HTMLElement | null)?.dataset?.['shBlock'];
+    if (!type) return null;
+    const behavior = this.engine.blocks.get(type);
+    return behavior instanceof BaseComponentBlockBehavior ? behavior : null;
+  }
+
+  /**
+   * True when `target` sits inside a custom component block. Those blocks own
+   * their interior completely — every key, click, clipboard and composition
+   * event belongs to the component (an embedded editor keeps its whole
+   * keymap), so the editor's handlers bail out on this test.
+   */
+  #insideComponentBlock(target: EventTarget | Node | null): boolean {
+    if (!(target instanceof Node)) return false;
+    const container = this.surface().nativeElement;
+    if (!container.contains(target)) return false;
+    let el: HTMLElement | null = target.nodeType === Node.ELEMENT_NODE ? (target as HTMLElement) : target.parentElement;
+    while (el && el !== container && el.parentElement !== container) el = el.parentElement;
+    return !!el && el !== container && !!this.#componentBehaviorFor(el);
+  }
+
+  #parseWrapperAttrs(raw: string): Record<string, unknown> {
+    if (!raw) return {};
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  /**
+   * Bring live components in line with the mounted wrappers: destroy refs
+   * whose wrapper left the DOM, mount components into wrappers that appeared,
+   * and refresh each survivor's index and attrs signals. Runs after every DOM
+   * patch, including virtualization window moves.
+   */
+  #syncComponentBlocks() {
+    if (typeof window === 'undefined') return;
+    for (const [el, entry] of this.#componentBlocks) {
+      if (!el.isConnected) {
+        entry.ref.destroy();
+        this.#componentBlocks.delete(el);
+      }
+    }
+    const children = this.surface().nativeElement.children;
+    for (let i = 0; i < children.length; i++) {
+      const el = children[i] as HTMLElement;
+      const behavior = this.#componentBehaviorFor(el);
+      if (!behavior) continue;
+      const index = this.#winStart + i;
+      const entry = this.#componentBlocks.get(el);
+      if (!entry) {
+        this.#mountComponentBlock(el, behavior, index);
+        continue;
+      }
+      if (entry.index() !== index) entry.index.set(index);
+      const raw = el.dataset['shAttrs'] ?? '';
+      if (raw !== entry.lastAttrsJson) {
+        entry.lastAttrsJson = raw;
+        entry.attrs.set(this.#parseWrapperAttrs(raw));
+      }
+    }
+  }
+
+  #mountComponentBlock(el: HTMLElement, behavior: BaseComponentBlockBehavior, index: number) {
+    const rawAttrs = el.dataset['shAttrs'] ?? '';
+    const indexSig = signal(index);
+    const attrsSig = signal(this.#parseWrapperAttrs(rawAttrs));
+    const ctx: ShipEditorBlockContext = {
+      attrs: attrsSig.asReadonly(),
+      index: indexSig.asReadonly(),
+      selected: computed(() => this.engine.selectedBlock() === indexSig()),
+      readonly: this.readonly,
+      updateAttrs: (patch) => {
+        this.engine.updateBlockAttrs(indexSig(), patch);
+        this.#render();
+      },
+      select: () => this.engine.selectBlock(indexSig()),
+      remove: () => {
+        this.engine.deleteBlock(indexSig());
+        this.#render();
+      },
+    };
+    // Angular applies the component's static host class by *replacing* the
+    // host element's class attribute — put the behavior-rendered classes back
+    // afterwards.
+    const renderedClasses = el.className;
+    const ref = createComponent(behavior.component, {
+      environmentInjector: this.#envInjector,
+      elementInjector: Injector.create({
+        providers: [{ provide: SHIP_EDITOR_BLOCK_CONTEXT, useValue: ctx }],
+        parent: this.#injector,
+      }),
+      hostElement: el,
+    });
+    for (const c of renderedClasses.split(/\s+/)) if (c) el.classList.add(c);
+    this.#appRef.attachView(ref.hostView);
+    ref.changeDetectorRef.detectChanges();
+    this.#componentBlocks.set(el, { ref, type: behavior.type, index: indexSig, attrs: attrsSig, lastAttrsJson: rawAttrs });
+  }
+
+  /**
+   * A live component block never has its wrapper replaced by the HTML differ
+   * — Angular owns the wrapper's interior, and outerHTML comparisons against
+   * the behavior's empty wrapper would tear the component down on every
+   * render. Sync the freshly rendered wrapper's own attributes onto the live
+   * element instead. False means `el` hosts no live component (or the block
+   * changed type, in which case the component is destroyed here) and the
+   * caller's replacement path should run.
+   */
+  #patchComponentBlockInPlace(el: HTMLElement, html: string): boolean {
+    const entry = this.#componentBlocks.get(el);
+    if (!entry) return false;
+    const next = this.#htmlToElement(html) as HTMLElement | null;
+    if (!next || next.dataset?.['shBlock'] !== entry.type) {
+      entry.ref.destroy();
+      this.#componentBlocks.delete(el);
+      return false;
+    }
+    // Copy attributes additively — Angular host bindings may have put their
+    // own classes and attributes on the wrapper, and removing those would
+    // break the component.
+    for (const attr of Array.from(next.attributes)) {
+      if (attr.name === 'class') {
+        next.classList.forEach((c) => el.classList.add(c));
+      } else if (el.getAttribute(attr.name) !== attr.value) {
+        el.setAttribute(attr.name, attr.value);
+      }
+    }
+    if (!next.dataset['shAttrs'] && el.dataset['shAttrs']) delete el.dataset['shAttrs'];
+    return true;
+  }
+
   #render() {
     this.selection.suppress();
     this.patchDOM();
@@ -1023,7 +1264,10 @@ export class ShipEditor implements ControlValueAccessor {
       this.#virtualSelectAll = false;
       this.#scrollCaretIntoView(sel.from);
     }
-    if (sel) this.restoreDOMSelection(sel);
+    // While focus lives inside a component block (its updateAttrs triggered
+    // this render), repainting the editor's DOM selection would steal the
+    // component's focus mid-interaction.
+    if (sel && !this.#insideComponentBlock(this.#document.activeElement)) this.restoreDOMSelection(sel);
     this.selection.unsuppress();
   }
 
@@ -1080,7 +1324,9 @@ export class ShipEditor implements ControlValueAccessor {
           break;
         }
         const html = this.engine.renderBlockHtml(hint.index);
-        if (el.outerHTML !== html) {
+        if (this.#patchComponentBlockInPlace(el, html)) {
+          // Live component wrapper synced in place; its interior is Angular's.
+        } else if (el.outerHTML !== html) {
           const next = this.#htmlToElement(html);
           // Prefer patching text data into the existing nodes: replacing the
           // caret's element forces the browser to re-canonicalize the
@@ -1091,9 +1337,27 @@ export class ShipEditor implements ControlValueAccessor {
           else if (!next) full = true;
         }
       } else {
-        for (let i = 0; i < hint.remove; i++) container.children[hint.at]?.remove();
-        const before = container.children[hint.at] ?? null;
-        for (let i = 0; i < hint.insert; i++) {
+        // Where the splice overlaps itself (blocks replaced in position),
+        // reconcile element-wise: a live component wrapper survives an attrs
+        // update (replaceBlocksOp is structural) instead of being torn down.
+        const overlap = Math.min(hint.remove, hint.insert);
+        for (let i = 0; i < overlap; i++) {
+          const el = container.children[hint.at + i] as HTMLElement | undefined;
+          if (!el) {
+            full = true;
+            break;
+          }
+          const html = this.engine.renderBlockHtml(hint.at + i);
+          if (this.#patchComponentBlockInPlace(el, html)) continue;
+          if (el.outerHTML !== html) {
+            const next = this.#htmlToElement(html);
+            if (next) el.replaceWith(next);
+            else full = true;
+          }
+        }
+        for (let i = overlap; i < hint.remove; i++) container.children[hint.at + overlap]?.remove();
+        const before = container.children[hint.at + overlap] ?? null;
+        for (let i = overlap; i < hint.insert; i++) {
           const next = this.#htmlToElement(this.engine.renderBlockHtml(hint.at + i));
           if (next) container.insertBefore(next, before);
           else full = true;
@@ -1109,6 +1373,8 @@ export class ShipEditor implements ControlValueAccessor {
         if (!el) {
           const next = this.#htmlToElement(html);
           if (next) container.appendChild(next);
+        } else if (this.#patchComponentBlockInPlace(el, html)) {
+          // Live component wrapper synced in place.
         } else if (el.outerHTML !== html) {
           const next = this.#htmlToElement(html);
           if (next) el.replaceWith(next);
@@ -1116,6 +1382,8 @@ export class ShipEditor implements ControlValueAccessor {
       }
       while (container.children.length > count) container.lastElementChild?.remove();
     }
+
+    this.#syncComponentBlocks();
   }
 
   // -------------------------------------------------------------------------
@@ -1225,7 +1493,9 @@ export class ShipEditor implements ControlValueAccessor {
           break;
         }
         const html = this.engine.renderBlockHtml(hint.index);
-        if (el.outerHTML !== html) {
+        if (this.#patchComponentBlockInPlace(el, html)) {
+          // Live component wrapper synced in place.
+        } else if (el.outerHTML !== html) {
           const next = this.#htmlToElement(html);
           if (next && !this.#patchTextInPlace(el, next)) el.replaceWith(next);
           else if (!next) structural = true;
@@ -1255,6 +1525,7 @@ export class ShipEditor implements ControlValueAccessor {
       container.replaceChildren();
       this.#setVirtualPadding(container, 0, 0);
       this.#winStart = this.#winEnd = 0;
+      this.#syncComponentBlocks();
       return;
     }
 
@@ -1268,14 +1539,26 @@ export class ShipEditor implements ControlValueAccessor {
     const de = Math.min(count, heights.indexAt(vpBottom + VIRTUAL_OVERSCAN_PX - origin) + 1);
 
     const prevStart = this.#winStart;
+    const prevEnd = this.#winEnd;
     const overlapStart = Math.max(ds, prevStart);
     const overlapEnd = Math.min(de, this.#winEnd);
     const mismatch = container.children.length !== this.#winEnd - prevStart;
 
+    // A window rebuild would tear down live component blocks with it; keep a
+    // handle on the outgoing children so same-type wrappers can be carried
+    // into the new window instead of remounted.
+    const prevChildren = this.#componentBlocks.size ? (Array.from(container.children) as HTMLElement[]) : null;
+
     const renderRange = (from: number, to: number): DocumentFragment => {
       const fragment = this.#document.createDocumentFragment();
       for (let i = from; i < to; i++) {
-        const el = this.#htmlToElement(this.engine.renderBlockHtml(i));
+        const html = this.engine.renderBlockHtml(i);
+        const prev = prevChildren && i >= prevStart && i < prevEnd ? prevChildren[i - prevStart] : undefined;
+        if (prev && this.#componentBlocks.has(prev) && this.#patchComponentBlockInPlace(prev, html)) {
+          fragment.appendChild(prev);
+          continue;
+        }
+        const el = this.#htmlToElement(html);
         if (el) fragment.appendChild(el);
       }
       return fragment;
@@ -1324,6 +1607,8 @@ export class ShipEditor implements ControlValueAccessor {
     // update.
     const shift = heights.prefixHeight(anchor) - anchorPrefixBefore;
     if (Math.abs(shift) >= 1) this.#adjustScroll(shift);
+
+    this.#syncComponentBlocks();
   }
 
   #setVirtualPadding(container: HTMLElement, top: number, bottom: number) {
