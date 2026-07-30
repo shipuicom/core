@@ -1295,9 +1295,16 @@ export class ShipEditor implements ControlValueAccessor {
     this.#winStart = ds;
     this.#winEnd = de;
 
-    // Anchor: when blocks are prepended, their estimate→measured correction
-    // must not shift the content the user is looking at.
-    const anchorPrefixBefore = rebuilt ? 0 : heights.prefixHeight(overlapStart);
+    // Anchor: measuring re-prices blocks — prepended ones go from estimate
+    // to measured, and pre-lock the rolling average re-prices everything
+    // unmeasured — which moves the padding and with it all content relative
+    // to the unchanged scrollTop. Without compensation a long jump into
+    // unmeasured territory can leave the viewport showing nothing but
+    // spacer. The anchor is the first surviving block (or, on a rebuilt
+    // window, the block the scroll position chose): whatever the re-pricing
+    // does, that block must keep its intended position on screen.
+    const anchor = rebuilt ? ds : overlapStart;
+    const anchorPrefixBefore = heights.prefixHeight(anchor);
     // A degenerate layout — a hidden tab, a not-yet-sized pane — reports
     // nonsense: text wrapped in a zero-width surface measures enormous
     // heights, and the estimate would lock onto them. Measure real layouts
@@ -1312,12 +1319,11 @@ export class ShipEditor implements ControlValueAccessor {
       }
     }
     this.#setVirtualPadding(container, heights.prefixHeight(ds), heights.total() - heights.prefixHeight(de));
-    if (!rebuilt && ds < prevStart) {
-      // Sub-pixel drift must not feed back into the scroll position: an
-      // adjustment fires a scroll event, which schedules another update.
-      const shift = heights.prefixHeight(overlapStart) - anchorPrefixBefore;
-      if (Math.abs(shift) >= 1) this.#adjustScroll(shift);
-    }
+    // The ≥1px guard keeps sub-pixel drift from feeding back into the scroll
+    // position: an adjustment fires a scroll event, which schedules another
+    // update.
+    const shift = heights.prefixHeight(anchor) - anchorPrefixBefore;
+    if (Math.abs(shift) >= 1) this.#adjustScroll(shift);
   }
 
   #setVirtualPadding(container: HTMLElement, top: number, bottom: number) {

@@ -320,17 +320,20 @@
           </div>
 
           <p>
-            This editor loads <strong>5,000 blocks</strong> up front. Past 1,000 top-level blocks the editor
-            virtualizes the viewport: only the blocks in and around the visible area exist in the DOM
-            (~50 elements), with spacer padding standing in for the rest — so load time, typing and Enter stay
-            flat no matter how long the document grows. Scroll the panel below; select-all + copy still
-            serializes the entire document from the model.
+            This editor loads <strong>5,000 blocks</strong> up front — headings, both list kinds, code blocks,
+            quotes, callouts, images, horizontal rules, and paragraphs full of inline marks (bold, links,
+            colors, highlight). Past 1,000 top-level blocks the editor virtualizes the viewport: only the
+            blocks in and around the visible area exist in the DOM (~50 elements), with spacer padding
+            standing in for the rest — so load time, typing and Enter stay flat no matter how long the
+            document grows. Scroll the panel below; select-all + copy still serializes the entire document
+            from the model.
           </p>
 
           <sh-editor
             [(value)]="hugeDocValue"
             [format]="hugeFormat()"
             [readonly]="hugeReadonly()"
+            [behaviors]="customBehaviors"
             [showMetrics]="hugeShowMetrics()"
             [metrics]="['blocks', 'words', 'characters', 'format']"
             [imageUpload]="demoImageUpload"

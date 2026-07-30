@@ -193,6 +193,48 @@ test.describe('viewport virtualization', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('long jumps through varied-height content keep the viewport filled', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    // Strongly varied heights: tall code blocks and headings between the
+    // paragraphs. A long jump lands in unmeasured territory, where the
+    // estimate re-prices on measure — without scroll-anchor compensation the
+    // window used to land below the viewport, leaving it blank.
+    await page.evaluate((n) => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const doc = Array.from({ length: n }, (_, i) => {
+        if (i % 8 === 0) {
+          return {
+            type: 'code-block',
+            content: [{ type: 'text', text: `Block ${i}\nfunction demo() {\n\treturn ${i};\n}\n// filler\n// filler` }],
+          };
+        }
+        if (i % 13 === 0) {
+          return { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: `Block ${i} heading` }] };
+        }
+        return { type: 'paragraph', content: [{ type: 'text', text: `Block ${i} with a line of prose` }] };
+      });
+      comp.engine.reset(doc);
+    }, BLOCKS);
+    await expect.poll(() => page.evaluate(() => document.querySelector('.sh-editor-content')!.children.length)).toBeGreaterThan(0);
+
+    const viewportFilled = () =>
+      page.evaluate(() => {
+        const surface = document.querySelector('.sh-editor-content')!;
+        const vp = document.querySelector('main')!.getBoundingClientRect();
+        return Array.from(surface.children).some((el) => {
+          const rect = el.getBoundingClientRect();
+          return rect.bottom > vp.top && rect.top < vp.bottom;
+        });
+      });
+
+    for (const fraction of [0.4, 0.85, 0.1]) {
+      await scrollEditorTo(page, fraction);
+      await expect.poll(viewportFilled, { message: `viewport filled after jump to ${fraction}` }).toBe(true);
+      await expectWindowInvariant(page, `varied heights @ ${fraction}`);
+    }
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('select-all copies the whole document from the model, not the mounted slice', async ({ page }) => {
     const { errors } = await openEditor(page);
     await loadBigDoc(page, BLOCKS);
