@@ -11,6 +11,53 @@ import { BaseComponentBlockBehavior, SHIP_EDITOR_BLOCK_CONTEXT, SlashCommand, Sl
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'demo-counter-block' },
+  styles: `
+    :host {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 12px 0;
+      padding: 12px;
+      border: 1px dashed var(--base-8);
+      border-radius: var(--shape-2);
+      background: var(--base-3);
+    }
+    .demo-block-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--base-10);
+      user-select: none;
+    }
+    .demo-counter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    strong {
+      min-width: 32px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+    .demo-spacer {
+      flex: 1;
+    }
+    button {
+      padding: 4px 10px;
+      border: 1px solid var(--base-8);
+      border-radius: var(--shape-1);
+      background: var(--base-1);
+      color: inherit;
+      cursor: pointer;
+    }
+    button:hover:not(:disabled) {
+      background: var(--base-4);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  `,
   template: `
     <span class="demo-block-label">Counter widget · stored in attrs</span>
     <div class="demo-counter-row">
@@ -57,6 +104,35 @@ export class CounterBlockBehavior extends BaseComponentBlockBehavior {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'demo-code-pad-block' },
+  styles: `
+    :host {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 12px 0;
+      padding: 12px;
+      border: 1px dashed var(--base-8);
+      border-radius: var(--shape-2);
+      background: var(--base-3);
+    }
+    .demo-block-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--base-10);
+      user-select: none;
+    }
+    textarea {
+      width: 100%;
+      resize: vertical;
+      font: var(--code-20, monospace);
+      padding: 8px;
+      border: 1px solid var(--base-8);
+      border-radius: var(--shape-1);
+      background: var(--base-1);
+      color: var(--base-12);
+    }
+  `,
   template: `
     <span class="demo-block-label">Code pad · every key stays in here — Escape selects the block</span>
     <textarea
