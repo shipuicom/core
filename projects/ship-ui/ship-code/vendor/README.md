@@ -33,3 +33,29 @@ rm -rf package vscode-textmate-<version>.tgz
 ```
 
 Then update the version in this README.
+
+## TextMate grammars (`../grammars/*.json`)
+
+Vendored from the VS Code repository (`microsoft/vscode`, `main`), from
+`extensions/<lang>/syntaxes/`:
+
+- `typescript.json` ← `typescript-basics/syntaxes/TypeScript.tmLanguage.json`
+- `html.json` ← `html/syntaxes/html.tmLanguage.json`
+- `css.json` ← `css/syntaxes/css.tmLanguage.json`
+- `json.json` ← `json/syntaxes/JSON.tmLanguage.json`
+
+Licenses: the grammars ship under the licenses noted in each file's
+`information_for_contributors` header (MIT-licensed upstream sources,
+distributed by VS Code under MIT). After updating a JSON, regenerate the
+bundler-facing `.grammar.ts` modules:
+
+```bash
+cd projects/ship-ui/ship-code/grammars
+for lang in typescript html css json; do node -e "
+const fs = require('fs');
+const parsed = JSON.parse(fs.readFileSync('$lang.json', 'utf8'));
+fs.writeFileSync('$lang.grammar.ts',
+  '// Generated from $lang.json (vendored VS Code grammar) — regenerate, do not edit.\n' +
+  'const grammar = ' + JSON.stringify(parsed) + ' as object;\nexport default grammar;\n');
+"; done
+```

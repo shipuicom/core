@@ -29,7 +29,7 @@
       }
 
       @for (line of visibleLines(); track line.index) {
-        <div class="sh-code-line" [style.height.px]="lineHeight()">{{ line.text }}</div>
+        <div class="sh-code-line" [style.height.px]="lineHeight()">@for (seg of line.segments; track $index) {<span [class]="seg.cls">{{ seg.text }}</span>}</div>
       }
 
       @if (caretBox(); as box) {

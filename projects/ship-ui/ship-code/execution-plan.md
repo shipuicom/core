@@ -99,22 +99,22 @@ Exhaustive TODO list for building `ship-code`. Each task follows TDD: write the 
 - [ ] Test: dispatching `code.selection.selectAll` selects all
 
 ### 1.6 TextMate Tokenization (vscode-textmate wrapper)
-- [ ] `textmate/vscode-engine.ts` — Implement `createVSCodeEngine(): Promise<TokenizerEngine>`
-- [ ] Load `onig.wasm`, init `vscode-oniguruma`, create `vscode-textmate` `Registry`
-- [ ] Test: tokenize `const x = 5;` with TypeScript grammar, verify `storage.type` scope on `const`
-- [ ] Test: tokenize `// comment`, verify `comment.line` scope
-- [ ] Test: tokenize multi-line string, verify scope stack continuity
-- [ ] Test: tokenize empty line returns empty token array
-- [ ] `grammars/registry.ts` — Language ID → scope name + grammar JSON mapping
-- [ ] Test: `getGrammar('typescript')` returns grammar with `scopeName: 'source.ts'`
-- [ ] Test: `getGrammar('unknown')` returns null
-- [ ] Copy VS Code TypeScript grammar JSON to `grammars/typescript.json`
-- [ ] Copy VS Code HTML grammar JSON to `grammars/html.json`
-- [ ] Copy VS Code CSS grammar JSON to `grammars/css.json`
-- [ ] Copy VS Code JSON grammar JSON to `grammars/json.json`
-- [ ] Implement incremental tokenization: cache `ruleStack` per line
-- [ ] Test: edit line 3, only lines 3+ are re-tokenized
-- [ ] Test: edit line 3, if scope stack stabilizes at line 5, lines 6+ are untouched
+- [x] `textmate/types.ts` — `CodeToken`, `TokenizerState`, `TokenizedLine`, `LanguageTokenizer`, `TokenizerEngine` (the swap point)
+- [x] `textmate/vscode-engine.ts` — `createVSCodeEngine({ wasm })`: caller supplies `onig.wasm` bytes (browser fetches the asset, tests read the vendored file), engine stays environment-free
+- [x] Load `onig.wasm`, init `vscode-oniguruma`, create `vscode-textmate` `Registry` (embedded-language requests route back through the grammar registry)
+- [x] Test: tokenize `const x = 5;` with TypeScript grammar, verify `storage.type` scope on `const`
+- [x] Test: tokenize `// comment`, verify `comment.line` scope
+- [x] Test: tokenize multi-line template string, verify scope stack continuity
+- [x] Test: tokenize empty line returns empty token array
+- [x] `grammars/registry.ts` — Language ID → scope name + lazily imported grammar (aliases: ts/js/tsx → typescript, scss → css); `registerGrammar` extension point
+- [x] Test: `getGrammar('typescript')` returns `scopeName: 'source.ts'`
+- [x] Test: `getGrammar('unknown')` returns null
+- [x] Vendor VS Code TypeScript/HTML/CSS/JSON grammars (`grammars/*.json` + generated `.grammar.ts` modules for code-split bundling; provenance in `vendor/README.md`)
+- [x] `textmate/incremental.ts` — per-line `ruleStack` cache with splice-aligned invalidation
+- [x] Test: edit line 3, only lines 3+ are re-tokenized
+- [x] Test: edit line 3, end state stabilizes → suffix revalidates with no tokenizer calls
+- [x] `textmate/scope-classes.ts` — scope → `sh-tok-*` class bridge (interim until 1.7's theme resolver), CSS-variable palette in `sh-code.scss`
+- [x] `<sh-code>` wiring: `engine` + `language` inputs, token segments in the line renderer, background pump in 300-line slices behind the virtualization window, edit bookkeeping mirrors flat changes into the cache
 
 ### 1.7 Theme System
 - [ ] `themes/theme-resolver.ts` — Implement `resolveScope(scopes, theme): StyledToken`

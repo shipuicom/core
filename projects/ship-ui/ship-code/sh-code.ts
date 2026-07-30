@@ -23,7 +23,7 @@ import {
   getText,
 } from './core/document';
 import { FlatChange, FlatPos, indexFor } from './core/line-index';
-import { applyFlatChanges, mapThroughChanges } from './core/flat-edit';
+import { applyFlatChange, applyFlatChanges, mapThroughChanges } from './core/flat-edit';
 import {
   FlatSelection,
   MotionResult,
@@ -49,6 +49,9 @@ import {
 import { ShipCodeAction, ShipCodeKeymap, matchesShortcut } from './keymaps/keymap';
 import { SUBLIME_KEYMAP } from './keymaps/sublime.keymap';
 import { VSCODE_KEYMAP } from './keymaps/vscode.keymap';
+import { IncrementalTokenizer } from './textmate/incremental';
+import { classForScopes } from './textmate/scope-classes';
+import { LanguageTokenizer, TokenizerEngine } from './textmate/types';
 
 /** `'auto'` virtualizes past this many lines. */
 const VIRTUAL_AUTO_THRESHOLD = 1000;
@@ -95,8 +98,14 @@ export class ShipCode implements ControlValueAccessor {
   lineNumbers = input(true);
   /** `'auto'` virtualizes past 1000 lines; `true`/`false` force it. */
   virtualization = input<boolean | 'auto'>('auto');
-  /** Language id, carried for the (future) tokenizer. */
+  /** Language id resolved against the grammar registry. */
   language = input<string>('');
+  /**
+   * Tokenizer engine (see `createVSCodeEngine`). The engine needs the
+   * `onig.wasm` binary, whose URL only the application knows — so the app
+   * creates the engine and hands it in; without one, lines render plain.
+   */
+  engine = input<TokenizerEngine | Promise<TokenizerEngine> | null>(null);
 
   readonly doc = signal<CodeDocument>(createDocument(''));
   readonly sel = signal<FlatSelection>(flatCaret(0));
@@ -129,15 +138,40 @@ export class ShipCode implements ControlValueAccessor {
     return mode === true || (mode === 'auto' && this.lineCount() > VIRTUAL_AUTO_THRESHOLD);
   });
 
-  /** The mounted slice of lines, with their absolute indices. */
+  // Tokenization: an incremental cache over the line column, advanced in
+  // background slices so a jump into deep, untokenized territory renders
+  // plain text immediately and colors in as the cache catches up.
+  readonly #tokenizer = signal<LanguageTokenizer | null>(null);
+  #incremental: IncrementalTokenizer | null = null;
+  readonly #tokensVersion = signal(0);
+  #pumpScheduled = false;
+
+  /** The mounted slice of lines: absolute indices plus token segments. */
   readonly visibleLines = computed(() => {
+    this.#tokensVersion();
     const lines = this.doc().lines;
     const from = this.winStart();
     const to = this.winEnd();
-    const out: { index: number; text: string }[] = [];
-    for (let i = from; i < to && i < lines.length; i++) out.push({ index: i, text: lines[i].text });
+    const out: { index: number; segments: { text: string; cls: string }[] }[] = [];
+    for (let i = from; i < to && i < lines.length; i++) {
+      out.push({ index: i, segments: this.#segmentsFor(i, lines[i].text) });
+    }
     return out;
   });
+
+  #segmentsFor(line: number, text: string): { text: string; cls: string }[] {
+    const tokens = this.#incremental?.tokensFor(line);
+    if (!tokens || tokens.length === 0) return text ? [{ text, cls: '' }] : [];
+    const segments: { text: string; cls: string }[] = [];
+    let at = 0;
+    for (const token of tokens) {
+      if (token.start > at) segments.push({ text: text.slice(at, token.start), cls: '' });
+      segments.push({ text: text.slice(token.start, token.end), cls: classForScopes(token.scopes) });
+      at = token.end;
+    }
+    if (at < text.length) segments.push({ text: text.slice(at), cls: '' });
+    return segments;
+  }
 
   readonly padTop = computed(() => {
     this.doc();
@@ -203,6 +237,10 @@ export class ShipCode implements ControlValueAccessor {
         const size = indexFor(doc).size;
         const range = primaryFlat(this.sel());
         this.sel.set(flatCaret(Math.min(range.head, size)));
+        // A wholesale document swap starts a fresh token cache.
+        const tokenizer = this.#tokenizer();
+        this.#incremental = tokenizer ? new IncrementalTokenizer(tokenizer) : null;
+        this.#tokensVersion.update((v) => v + 1);
         this.#updateWindow();
       });
     });
@@ -227,6 +265,29 @@ export class ShipCode implements ControlValueAccessor {
       untracked(() => this.#scrollCaretIntoView(range.head));
     });
 
+    // Engine + language → a bound tokenizer and a fresh incremental cache.
+    effect(() => {
+      const engine = this.engine();
+      const language = this.language();
+      untracked(() => {
+        this.#tokenizer.set(null);
+        this.#incremental = null;
+        this.#tokensVersion.update((v) => v + 1);
+        if (!engine || !language) return;
+        Promise.resolve(engine)
+          .then((e) => e.loadLanguage(language))
+          .then((tokenizer) => {
+            // Inputs may have moved on while the grammar loaded.
+            if (this.engine() !== engine || this.language() !== language) return;
+            this.#tokenizer.set(tokenizer);
+            this.#incremental = tokenizer ? new IncrementalTokenizer(tokenizer) : null;
+            this.#tokensVersion.update((v) => v + 1);
+            this.#pumpTokens();
+          })
+          .catch(() => this.#tokenizer.set(null));
+      });
+    });
+
     afterNextRender(() => {
       this.#measureMetrics();
       const scroller = this.scroller().nativeElement;
@@ -234,6 +295,33 @@ export class ShipCode implements ControlValueAccessor {
       this.#destroyRef.onDestroy(() => scroller.removeEventListener('scroll', this.#onScroll));
       this.#updateWindow();
     });
+  }
+
+  /** Advance the token cache to the window's end, in background slices. */
+  #pumpTokens() {
+    const incremental = this.#incremental;
+    if (!incremental) return;
+    const target = Math.min(this.winEnd(), this.lineCount()) - 1;
+    if (target < 0 || incremental.tokenizedUpTo > target) return;
+    const done = incremental.ensureUpTo(this.doc(), target, 300);
+    this.#tokensVersion.update((v) => v + 1);
+    if (!done && !this.#pumpScheduled) {
+      this.#pumpScheduled = true;
+      setTimeout(() => {
+        this.#pumpScheduled = false;
+        this.#pumpTokens();
+      }, 0);
+    }
+  }
+
+  /** Mirror one flat change into the token cache as a line splice. */
+  #noteTokenSplice(doc: CodeDocument, change: FlatChange) {
+    if (!this.#incremental) return;
+    const index = indexFor(doc);
+    const fromLine = index.pointAt(Math.min(change.from, change.to)).line;
+    const toLine = index.pointAt(Math.max(change.from, change.to)).line;
+    const insertedLines = 1 + (change.insert.match(/\n/g)?.length ?? 0);
+    this.#incremental.spliceLines(fromLine, toLine - fromLine + 1, insertedLines);
   }
 
   // -------------------------------------------------------------------------
@@ -273,12 +361,14 @@ export class ShipCode implements ControlValueAccessor {
     if (!this.#virtualOn()) {
       this.winStart.set(0);
       this.winEnd.set(count);
+      this.#pumpTokens();
       return;
     }
     const scroller = this.scroller?.()?.nativeElement;
     if (!scroller) {
       this.winStart.set(0);
       this.winEnd.set(Math.min(count, 100));
+      this.#pumpTokens();
       return;
     }
     const top = scroller.scrollTop;
@@ -287,6 +377,7 @@ export class ShipCode implements ControlValueAccessor {
     const to = Math.min(count, this.#heights.indexAt(bottom + VIRTUAL_OVERSCAN_PX) + 1);
     this.winStart.set(from);
     this.winEnd.set(to);
+    this.#pumpTokens();
   }
 
   #measureMetrics() {
@@ -319,12 +410,25 @@ export class ShipCode implements ControlValueAccessor {
   #applyChanges(changes: readonly FlatChange[], selAfter?: FlatSelection) {
     if (this.readonly() || changes.length === 0) return;
     const selBefore = this.sel();
-    const { doc, inverse } = applyFlatChanges(this.doc(), changes);
+    const { doc, inverse } = this.#applyWithTokenBookkeeping(changes);
     const mapped = selAfter ?? flatCaret(mapThroughChanges(primaryFlat(selBefore).head, changes));
     this.#history.push({ inverse, redo: [...changes], selBefore, selAfter: mapped });
     this.#redoStack = [];
     this.doc.set(doc);
     this.sel.set(mapped);
+  }
+
+  /** applyFlatChanges, mirroring each step into the token cache first. */
+  #applyWithTokenBookkeeping(changes: readonly FlatChange[]): { doc: CodeDocument; inverse: FlatChange[] } {
+    let doc = this.doc();
+    const inverse: FlatChange[] = [];
+    for (const change of changes) {
+      this.#noteTokenSplice(doc, change);
+      const result = applyFlatChange(doc, change);
+      doc = result.doc;
+      inverse.unshift(...result.inverse);
+    }
+    return { doc, inverse };
   }
 
   /** Replace the current selection with `text` (typing, paste, IME commit). */
@@ -352,7 +456,7 @@ export class ShipCode implements ControlValueAccessor {
   #undo() {
     const entry = this.#history.pop();
     if (!entry) return;
-    const { doc } = applyFlatChanges(this.doc(), entry.inverse);
+    const { doc } = this.#applyWithTokenBookkeeping(entry.inverse);
     this.#redoStack.push(entry);
     this.doc.set(doc);
     this.sel.set(entry.selBefore);
@@ -361,7 +465,7 @@ export class ShipCode implements ControlValueAccessor {
   #redo() {
     const entry = this.#redoStack.pop();
     if (!entry) return;
-    const { doc } = applyFlatChanges(this.doc(), entry.redo);
+    const { doc } = this.#applyWithTokenBookkeeping(entry.redo);
     this.#history.push(entry);
     this.doc.set(doc);
     this.sel.set(entry.selAfter);

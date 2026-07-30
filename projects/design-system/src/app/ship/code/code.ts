@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ShipCheckbox } from '@ship-ui/core/ship-checkbox';
-import { ShipCode } from '@ship-ui/core/ship-code';
+import { ShipCode, TokenizerEngine, createVSCodeEngine } from '@ship-ui/core/ship-code';
 import { ShipSelect } from '@ship-ui/core/ship-select';
 import { Highlight } from '../../previewer/highlight/highlight';
 import { Previewer } from '../../previewer/previewer';
@@ -50,6 +50,10 @@ export default class Code {
 export class MyComponent {
   source = signal('const x = 42;');
 }`;
+
+  /** The TextMate engine: oniguruma WASM served from assets, grammars lazy. Browser-only — SSR renders plain text. */
+  engine: Promise<TokenizerEngine> | null =
+    typeof window === 'undefined' ? null : createVSCodeEngine({ wasm: fetch('/assets/ship-code/onig.wasm') });
 
   readonly = signal(false);
   lineNumbers = signal(true);

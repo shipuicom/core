@@ -106,12 +106,22 @@
                 "glob": "components.json",
                 "input": "projects/ship-ui/assets/mcp",
                 "output": "/assets/mcp/"
+              },
+              {
+                "glob": "onig.wasm",
+                "input": "projects/ship-ui/ship-code/vendor/vscode-oniguruma",
+                "output": "/assets/ship-code/"
               }
             ],
             "stylePreprocessorOptions": {
-              "includePaths": ["projects/ship-ui/styles"]
+              "includePaths": [
+                "projects/ship-ui/styles"
+              ]
             },
-            "styles": ["projects/design-system/src/styles.scss", "node_modules/highlight.js/styles/github-dark.css"],
+            "styles": [
+              "projects/design-system/src/styles.scss",
+              "node_modules/highlight.js/styles/github-dark.css"
+            ],
             "scripts": [],
             "server": "projects/design-system/src/main.server.ts",
             "outputMode": "static",

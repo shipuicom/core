@@ -32,7 +32,9 @@
         [(value)]="source"
         [readonly]="readonly()"
         [lineNumbers]="lineNumbers()"
-        [keymap]="keymap()" />
+        [keymap]="keymap()"
+        [engine]="engine"
+        language="typescript" />
     </div>
   </app-previewer>
 
@@ -42,7 +44,7 @@
         {{ bigLineCount() }} lines in the model — only the viewport's window exists in the DOM. Scroll, jump with
         ctrl/cmd+End, and edit anywhere.
       </p>
-      <sh-code class="code-big" [(value)]="bigSource" [lineNumbers]="true" />
+      <sh-code class="code-big" [(value)]="bigSource" [lineNumbers]="true" [engine]="engine" language="typescript" />
     </div>
   </app-previewer>
 </div>
