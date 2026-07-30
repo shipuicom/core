@@ -7,6 +7,7 @@
   <button value="parts">Sub-components</button>
   <button value="styling">Styling</button>
   <button value="examples">Examples</button>
+  <button value="virtual">Virtualization</button>
 </sh-tabs>
 
 @let _activeTab = activeTab();
@@ -284,6 +285,82 @@
           <div class="editor-container">
             <sh-editor #externalEditor="shEditor"></sh-editor>
           </div>
+        </div>
+      </app-previewer>
+    </div>
+  } @else if (_activeTab === 'virtual') {
+    <div class="sandbox-example">
+      <app-previewer path="/editors" title="Virtualized 5,000-Block Document" class="no-space">
+        <div class="experimental-editor-container virtual-demo">
+          <div class="editor-controls">
+            <div class="control-group">
+              <sh-select color="primary" [options]="formatOptions" label="label" value="value" [isClearable]="false">
+                <label>Storage Format</label>
+                <input type="text" [(ngModel)]="hugeFormat" style="display: none" />
+              </sh-select>
+            </div>
+            <div class="control-group">
+              <sh-checkbox [(checked)]="hugeReadonly">Read Only</sh-checkbox>
+            </div>
+            <div class="control-group">
+              <sh-checkbox [(checked)]="hugeShowMetrics">Show Metrics</sh-checkbox>
+            </div>
+            <div class="control-group">
+              <sh-checkbox [(checked)]="hugeImageEdgeResize">Image Edge Handles</sh-checkbox>
+            </div>
+            <div class="control-group">
+              <sh-checkbox [(checked)]="hugeDocumentVariant">Document Canvas</sh-checkbox>
+            </div>
+            <div class="control-group control-group--end">
+              <button shButton (click)="resetHuge()">
+                <sh-icon size="small">arrow-counter-clockwise</sh-icon>
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <p>
+            This editor loads <strong>5,000 blocks</strong> up front. Past 1,000 top-level blocks the editor
+            virtualizes the viewport: only the blocks in and around the visible area exist in the DOM
+            (~50 elements), with spacer padding standing in for the rest — so load time, typing and Enter stay
+            flat no matter how long the document grows. Scroll the panel below; select-all + copy still
+            serializes the entire document from the model.
+          </p>
+
+          <sh-editor
+            [(value)]="hugeDocValue"
+            [format]="hugeFormat()"
+            [readonly]="hugeReadonly()"
+            [showMetrics]="hugeShowMetrics()"
+            [metrics]="['blocks', 'words', 'characters', 'format']"
+            [imageUpload]="demoImageUpload"
+            [imageEdgeResize]="hugeImageEdgeResize()"
+            [variant]="hugeDocumentVariant() ? 'document' : 'base'">
+            <sh-editor-toolbar position="top">
+              <button shEditorAction="undo" aria-label="Undo" shTooltip="Undo"><sh-icon>arrow-u-up-left</sh-icon></button>
+              <button shEditorAction="redo" aria-label="Redo" shTooltip="Redo"><sh-icon>arrow-u-up-right</sh-icon></button>
+              <div class="divider"></div>
+
+              <button shEditorAction="bold" aria-label="Bold" shTooltip="Bold"><sh-icon>text-b</sh-icon></button>
+              <button shEditorAction="italic" aria-label="Italic" shTooltip="Italic"><sh-icon>text-italic</sh-icon></button>
+              <button shEditorAction="underline" aria-label="Underline" shTooltip="Underline"><sh-icon>text-underline</sh-icon></button>
+              <button shEditorAction="strike" aria-label="Strikethrough" shTooltip="Strikethrough"><sh-icon>text-strikethrough</sh-icon></button>
+              <button shEditorAction="code" aria-label="Inline Code" shTooltip="Inline Code"><sh-icon>code</sh-icon></button>
+              <button shEditorAction="link" aria-label="Insert Link" shTooltip="Insert Link"><sh-icon>link</sh-icon></button>
+              <div class="divider"></div>
+
+              <button shEditorAction="heading" [shEditorActionAttrs]="{ level: 2 }" aria-label="Heading 2" shTooltip="Heading 2"><sh-icon>text-h-two</sh-icon></button>
+              <button shEditorAction="paragraph" aria-label="Normal text" shTooltip="Normal text"><sh-icon>paragraph</sh-icon></button>
+              <button shEditorAction="quote" aria-label="Quote" shTooltip="Quote"><sh-icon>quotes</sh-icon></button>
+              <button shEditorAction="code-block" aria-label="Code Block" shTooltip="Code Block"><sh-icon>code-block</sh-icon></button>
+              <div class="divider"></div>
+
+              <button shEditorAction="bullet-list" aria-label="Bullet List" shTooltip="Bullet List"><sh-icon>list-bullets</sh-icon></button>
+              <button shEditorAction="ordered-list" aria-label="Numbered List" shTooltip="Numbered List"><sh-icon>list-numbers</sh-icon></button>
+              <button shEditorAction="hr" aria-label="Horizontal Line" shTooltip="Horizontal Line"><sh-icon>minus</sh-icon></button>
+              <button shEditorAction="image" aria-label="Insert Image" shTooltip="Insert Image"><sh-icon>image</sh-icon></button>
+            </sh-editor-toolbar>
+          </sh-editor>
         </div>
       </app-previewer>
     </div>

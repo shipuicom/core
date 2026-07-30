@@ -72,7 +72,7 @@ class HighlightBehavior extends BaseInlineBehavior {
 })
 export default class Editors {
 
-  activeTab = signal<'overview' | 'api' | 'parts' | 'styling' | 'examples'>('overview');
+  activeTab = signal<'overview' | 'api' | 'parts' | 'styling' | 'examples' | 'virtual'>('overview');
 
   usageExample = `import { Component, signal } from '@angular/core';
 import { ShipEditor, ShipEditorToolbar, ShipEditorActionDirective } from '@ship-ui/core/ship-editor';
@@ -136,6 +136,23 @@ class HighlightBehavior extends BaseInlineBehavior {
   basicValue = signal(
     '<h2>Start here</h2><p>A <strong>basic</strong> editor — try <em>formatting</em>, headings, lists and links.</p><ul><li>Bold, italic, headings</li><li>Bullet lists</li></ul>'
   );
+
+  /**
+   * 5,000 blocks handed to the editor up front. Past 1,000 top-level blocks
+   * the editor virtualizes: only the viewport's window of blocks exists in
+   * the DOM, so this loads (and edits) as fast as a small document.
+   */
+  hugeDocValue = signal<string | ASTDocument | null>(buildHugeDocument());
+  hugeFormat = signal<'html' | 'json' | 'markdown'>('json');
+  hugeReadonly = signal(false);
+  hugeShowMetrics = signal(true);
+  hugeImageEdgeResize = signal(false);
+  hugeDocumentVariant = signal(false);
+
+  resetHuge() {
+    this.hugeFormat.set('json');
+    this.hugeDocValue.set(buildHugeDocument());
+  }
 
   demoImageUpload = async (file: File): Promise<string> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
@@ -307,4 +324,41 @@ class HighlightBehavior extends BaseInlineBehavior {
 
     }
   }
+}
+
+/**
+ * Exactly 5,000 top-level blocks with varied shapes and heights — headings,
+ * bullet lists, and paragraphs of different lengths — so the virtualized
+ * window exercises its measured-height model rather than a uniform grid.
+ * Deterministic on purpose: reloads always show the same document.
+ */
+function buildHugeDocument(): ASTDocument {
+  const sentences = [
+    'The window mounts only what the viewport can see.',
+    'Everything above and below is spacer padding, priced by measured block heights.',
+    'Scroll anywhere — the mapping from pixels to blocks is a binary search.',
+    'Typing here costs the same as in a ten-block document.',
+    'Select-all and copy still serialize the whole document from the model.',
+  ];
+  const doc: ASTDocument = [];
+  for (let i = 0; i < 5000; i++) {
+    if (i % 500 === 0) {
+      doc.push({ type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: `Chapter ${i / 500 + 1}` }] });
+    } else if (i % 125 === 0) {
+      doc.push({ type: 'heading', attrs: { level: 3 }, content: [{ type: 'text', text: `Section ${Math.floor(i / 125)}` }] });
+    } else if (i % 53 === 0) {
+      doc.push({
+        type: 'bullet-list',
+        content: [1, 2, 3].map((n) => ({
+          type: 'list-item',
+          content: [{ type: 'text', text: `Item ${n} of the list at block ${i}` }],
+        })),
+      });
+    } else {
+      const sentence = sentences[i % sentences.length];
+      const long = i % 7 === 0 ? ` ${sentences[(i + 2) % sentences.length]} ${sentences[(i + 4) % sentences.length]}` : '';
+      doc.push({ type: 'paragraph', content: [{ type: 'text', text: `Block ${i}. ${sentence}${long}` }] });
+    }
+  }
+  return doc;
 }

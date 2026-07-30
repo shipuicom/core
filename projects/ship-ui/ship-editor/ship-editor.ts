@@ -1261,7 +1261,8 @@ export class ShipEditor implements ControlValueAccessor {
     // Block 0's theoretical top in client coordinates: the current inline
     // padding already contains prefix(#winStart), so the base padding alone
     // offsets from the surface's border box.
-    const origin = container.getBoundingClientRect().top + this.#basePadTop;
+    const surfaceRect = container.getBoundingClientRect();
+    const origin = surfaceRect.top + this.#basePadTop;
     const { top: vpTop, bottom: vpBottom } = this.#viewportEdges();
     const ds = heights.indexAt(vpTop - VIRTUAL_OVERSCAN_PX - origin);
     const de = Math.min(count, heights.indexAt(vpBottom + VIRTUAL_OVERSCAN_PX - origin) + 1);
@@ -1297,12 +1298,18 @@ export class ShipEditor implements ControlValueAccessor {
     // Anchor: when blocks are prepended, their estimate→measured correction
     // must not shift the content the user is looking at.
     const anchorPrefixBefore = rebuilt ? 0 : heights.prefixHeight(overlapStart);
-    const children = container.children;
-    for (let k = 0; k < children.length; k++) {
-      const el = children[k] as HTMLElement;
-      const next = children[k + 1] as HTMLElement | undefined;
-      const height = next ? next.offsetTop - el.offsetTop : el.offsetHeight;
-      if (height > 0) heights.measure(ds + k, height);
+    // A degenerate layout — a hidden tab, a not-yet-sized pane — reports
+    // nonsense: text wrapped in a zero-width surface measures enormous
+    // heights, and the estimate would lock onto them. Measure real layouts
+    // only; the resize/scroll listeners re-measure once geometry exists.
+    if (surfaceRect.width >= 60) {
+      const children = container.children;
+      for (let k = 0; k < children.length; k++) {
+        const el = children[k] as HTMLElement;
+        const next = children[k + 1] as HTMLElement | undefined;
+        const height = next ? next.offsetTop - el.offsetTop : el.offsetHeight;
+        if (height > 0) heights.measure(ds + k, height);
+      }
     }
     this.#setVirtualPadding(container, heights.prefixHeight(ds), heights.total() - heights.prefixHeight(de));
     if (!rebuilt && ds < prevStart) {
