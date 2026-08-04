@@ -51,6 +51,28 @@ describe('value sync with a synchronous write-back subscriber', () => {
     expect(ed.value()).toBe('<p>normalized</p>');
   });
 
+  it('a programmatic write never fires onChange — the control stays pristine', async () => {
+    const ed = editor();
+    let calls = 0;
+    ed.registerOnChange(() => calls++);
+
+    // writeValue → doc reset → normalization write-back: all programmatic.
+    ed.writeValue('<p>from the form</p>');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(calls).toBe(0);
+
+    // A real edit still reports.
+    const at = ed.engine.columnar.startOf(0) + 1;
+    ed.selection.live.set({ from: at, to: at });
+    ed.engine.insertText('z');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(calls).toBeGreaterThan(0);
+  });
+
   it('still skips its own echo without a write-back subscriber', async () => {
     const ed = editor();
     const at = ed.engine.columnar.startOf(0) + 1;

@@ -61,6 +61,13 @@ export const SHIP_EDITOR_BLOCK_CONTEXT = new InjectionToken<ShipEditorBlockConte
  * round-trips through the `html` format (and is emitted verbatim for
  * `markdown`; parsing it back from markdown is not supported by default).
  * Override `renderHTML`/`parseDOM`/`renderMarkdown` for richer output.
+ *
+ * **Security — treat `attrs` as untrusted input.** Pasted or loaded HTML can
+ * instantiate any registered component block with arbitrary
+ * `data-sh-attrs`; the editor's sanitizer round-trips them as opaque JSON
+ * and cannot vet what they mean to your component. Validate types and
+ * ranges, allowlist URL schemes before using an attr as an `href`/`src`,
+ * and never feed attr values into `innerHTML`, style, or code evaluation.
  */
 export abstract class BaseComponentBlockBehavior extends BaseBlockBehavior {
   readonly category = 'void' as const;

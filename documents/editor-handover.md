@@ -79,6 +79,12 @@ tree clean, 692 unit tests + 25 Playwright e2e green at time of writing.
   3k blocks, typing/Enter/undo at depth, model-side select-all copy, small
   docs stay fully mounted.
 
+- Component-block `attrs` are untrusted: pasted/loaded HTML can instantiate
+  any registered block with arbitrary `data-sh-attrs`, and the sanitizer
+  round-trips them as opaque JSON by design. The contract (documented on
+  `BaseComponentBlockBehavior`) is that block authors validate attrs —
+  types/ranges checked, URL schemes allowlisted, never fed to `innerHTML`.
+
 ## Traps (hard-won; do not rediscover)
 
 - **Native scroll anchoring vs window splices**: swapping spacer padding for

@@ -274,6 +274,9 @@ export class ShipEditor implements ControlValueAccessor {
    */
   #echoValue: unknown = NO_ECHO;
 
+  /** True while the document change being flushed came from an external write. */
+  #externalApply = false;
+
   #viewReady = signal(false);
 
   #dragBlockIndex: number | null = null;
@@ -384,6 +387,7 @@ export class ShipEditor implements ControlValueAccessor {
       const isEcho = externalVal === this.#echoValue;
       this.#echoValue = NO_ECHO;
       if (isEcho) return;
+      this.#externalApply = true;
       const sanitize = this.sanitize();
       untracked(() => {
         if (!externalVal) this.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
@@ -419,8 +423,12 @@ export class ShipEditor implements ControlValueAccessor {
         if (this.value() !== serialized) {
           this.#echoValue = serialized;
           this.value.set(serialized);
-          this.onChange(serialized);
+          // Normalizing an external write is not a user change: a
+          // programmatic setValue must not mark the control dirty or emit
+          // valueChanges (the CVA contract). Only user-originated edits do.
+          if (!this.#externalApply) this.onChange(serialized);
         }
+        this.#externalApply = false;
 
         if (this.#isWritingFromDOM) {
           this.#isWritingFromDOM = false;
