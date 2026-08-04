@@ -31,17 +31,24 @@ export interface FlatRange {
   readonly goalColumn?: number;
 }
 
-/** The full selection: ranges, primary first. Single-range until multi-caret lands. */
+/**
+ * The full selection: one range per cursor, ascending and disjoint (see
+ * `flat-multi`, which owns that invariant), plus the index of the primary —
+ * the cursor the native caret follows and the only one scroll-into-view obeys.
+ * Absent `primary` means the first range, so a single-range selection can
+ * still be written as a bare `{ ranges: [...] }`.
+ */
 export interface FlatSelection {
   readonly ranges: readonly FlatRange[];
+  readonly primary?: number;
 }
 
-export const flatCaret = (pos: FlatPos): FlatSelection => ({ ranges: [{ anchor: pos, head: pos }] });
-export const flatRange = (anchor: FlatPos, head: FlatPos): FlatSelection => ({ ranges: [{ anchor, head }] });
+export const flatCaret = (pos: FlatPos): FlatSelection => ({ ranges: [{ anchor: pos, head: pos }], primary: 0 });
+export const flatRange = (anchor: FlatPos, head: FlatPos): FlatSelection => ({ ranges: [{ anchor, head }], primary: 0 });
 export const isFlatCollapsed = (range: FlatRange): boolean => range.anchor === range.head;
 export const flatOrdered = (range: FlatRange): { from: FlatPos; to: FlatPos } =>
   range.anchor <= range.head ? { from: range.anchor, to: range.head } : { from: range.head, to: range.anchor };
-export const primaryFlat = (sel: FlatSelection): FlatRange => sel.ranges[0];
+export const primaryFlat = (sel: FlatSelection): FlatRange => sel.ranges[sel.primary ?? 0] ?? sel.ranges[0];
 
 /** A motion result: the new head plus the goal column vertical motion keeps. */
 export interface MotionResult {

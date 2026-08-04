@@ -20,6 +20,8 @@ export const SUBLIME_KEYMAP: ShipCodeKeymap = {
   'code.selection.selectLine': 'ctrlOrCmd+l',
   'code.selection.addCaretAbove': 'ctrlOrCmd+Alt+ArrowUp',
   'code.selection.addCaretBelow': 'ctrlOrCmd+Alt+ArrowDown',
+  'code.selection.selectAllOccurrences': 'ctrlOrCmd+Shift+l',
+  'code.selection.collapseCarets': 'Escape',
   'code.edit.indent': 'Tab',
   'code.edit.outdent': 'Shift+Tab',
   'code.edit.undo': 'ctrlOrCmd+z',

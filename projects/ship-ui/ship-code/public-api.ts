@@ -8,6 +8,8 @@ export * from './themes/ship-light';
 export * from './core/line-index';
 export * from './core/flat-edit';
 export * from './core/flat-motion';
+export * from './core/flat-multi';
+export * from './core/line-move';
 export * from './textmate/types';
 export * from './textmate/vscode-engine';
 export * from './textmate/incremental';

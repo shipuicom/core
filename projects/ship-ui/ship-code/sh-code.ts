@@ -24,11 +24,24 @@ import {
   getText,
 } from './core/document';
 import { FlatChange, FlatPos, indexFor } from './core/line-index';
-import { applyFlatChange, applyFlatChanges, mapThroughChanges } from './core/flat-edit';
+import { applyFlatChangesBatched } from './core/flat-edit';
 import {
+  addFlatRange,
+  allOccurrences,
+  applyMotionAll,
+  collapseToPrimary,
+  fanOutEdit,
+  isMultiRange,
+  mapSelectionThroughChanges,
+  nextOccurrence,
+  normalizeSelection,
+  rangesInSpan,
+  setPrimaryRange,
+} from './core/flat-multi';
+import {
+  FlatRange,
   FlatSelection,
   MotionResult,
-  applyMotion,
   flatCaret,
   flatMoveDocEnd,
   flatMoveDocStart,
@@ -47,6 +60,7 @@ import {
   isFlatCollapsed,
   primaryFlat,
 } from './core/flat-motion';
+import { moveLines } from './core/line-move';
 import { ShipCodeAction, ShipCodeKeymap, matchesShortcut } from './keymaps/keymap';
 import { SUBLIME_KEYMAP } from './keymaps/sublime.keymap';
 import { VSCODE_KEYMAP } from './keymaps/vscode.keymap';
@@ -106,6 +120,7 @@ interface HistoryEntry {
 })
 export class ShipCode implements ControlValueAccessor {
   scroller = viewChild.required<ElementRef<HTMLElement>>('scroller');
+  caretLayer = viewChild<ElementRef<HTMLElement>>('caretLayer');
   inputArea = viewChild.required<ElementRef<HTMLTextAreaElement>>('inputArea');
   probe = viewChild.required<ElementRef<HTMLElement>>('probe');
 
@@ -117,6 +132,15 @@ export class ShipCode implements ControlValueAccessor {
   keymap = input<'sublime' | 'vscode' | ShipCodeKeymap>('sublime');
   /** Show the line-number gutter. */
   lineNumbers = input(true);
+  /**
+   * Multi-cursor gestures: Alt+click, add caret above/below, and the
+   * progressive Cmd/Ctrl+D and select-all-occurrences.
+   *
+   * On by default — a code surface is where people expect them. Turning it off
+   * only closes the ways a second cursor gets created; the selection model is
+   * the same either way, so a single cursor behaves identically.
+   */
+  multiCursor = input(true);
   /** `'auto'` virtualizes past 1000 lines; `true`/`false` force it. */
   virtualization = input<boolean | 'auto'>('auto');
   /** Language id resolved against the grammar registry. */
@@ -150,6 +174,9 @@ export class ShipCode implements ControlValueAccessor {
   readonly winEnd = signal(0);
   #heights = new BlockHeightMap(1, DEFAULT_LINE_PX);
   #scrollScheduled = false;
+  /** The element the scroll listener is currently bound to. */
+  #scrollHooked: HTMLElement | null = null;
+  readonly #viewReady = signal(false);
 
   // Text metrics, measured from the probe once the view exists.
   readonly charWidth = signal(8);
@@ -290,38 +317,72 @@ export class ShipCode implements ControlValueAccessor {
 
   readonly gutterDigits = computed(() => String(Math.max(1, this.lineCount())).length);
 
-  /** Caret paint box, when the caret's line is mounted. */
-  readonly caretBox = computed(() => {
-    const range = primaryFlat(this.sel());
-    const point = indexFor(this.doc()).pointAt(range.head);
-    if (point.line < this.winStart() || point.line >= this.winEnd()) return null;
-    return {
-      top: this.#heights.prefixHeight(point.line),
-      left: point.column * this.charWidth(),
-      height: this.lineHeight(),
-    };
+  /**
+   * The mounted window as a flat span — the slice of the document that has
+   * real DOM and is therefore the only slice worth painting.
+   */
+  readonly #windowSpan = computed(() => {
+    const index = indexFor(this.doc());
+    const first = this.winStart();
+    const last = Math.max(first, this.winEnd() - 1);
+    return { from: index.startOf(first), to: index.endOf(last) };
   });
 
-  /** Per-line selection rectangles for the primary range, window-clipped. */
-  readonly selectionRects = computed(() => {
-    const range = primaryFlat(this.sel());
-    if (isFlatCollapsed(range)) return [];
+  /**
+   * The cursors with anything on screen.
+   *
+   * Everything painted below starts here rather than from `sel().ranges`:
+   * select-all-occurrences can leave tens of thousands of cursors live, and a
+   * scroll frame must cost what the window costs, not what the selection does.
+   */
+  readonly #paintedRanges = computed(() => {
+    const span = this.#windowSpan();
+    return rangesInSpan(this.sel(), span.from, span.to);
+  });
+
+  /** Caret paint boxes — one per cursor whose head line is mounted. */
+  readonly caretBoxes = computed(() => {
     const index = indexFor(this.doc());
-    const { from, to } = flatOrdered(range);
-    const start = index.pointAt(from);
-    const end = index.pointAt(to);
+    const primary = primaryFlat(this.sel());
     const charW = this.charWidth();
     const lineH = this.lineHeight();
+    const boxes: { top: number; left: number; height: number; primary: boolean }[] = [];
+    for (const range of this.#paintedRanges()) {
+      const point = index.pointAt(range.head);
+      if (point.line < this.winStart() || point.line >= this.winEnd()) continue;
+      boxes.push({
+        top: this.#heights.prefixHeight(point.line),
+        left: point.column * charW,
+        height: lineH,
+        primary: range === primary,
+      });
+    }
+    return boxes;
+  });
+
+  /** Per-line selection rectangles for every mounted cursor, window-clipped. */
+  readonly selectionRects = computed(() => {
+    const index = indexFor(this.doc());
+    const lines = this.doc().lines;
+    const charW = this.charWidth();
+    const lineH = this.lineHeight();
+    const winStart = this.winStart();
+    const winEnd = this.winEnd();
     const rects: { top: number; left: number; width: number; height: number }[] = [];
-    const firstLine = Math.max(start.line, this.winStart());
-    const lastLine = Math.min(end.line, this.winEnd() - 1);
-    for (let line = firstLine; line <= lastLine; line++) {
-      const lineText = this.doc().lines[line].text;
-      const colFrom = line === start.line ? start.column : 0;
-      const colTo = line === end.line ? end.column : lineText.length;
-      // A fully swept line paints a newline stub so empty lines stay visible.
-      const width = Math.max((colTo - colFrom) * charW, colTo === colFrom ? charW * 0.5 : 0);
-      rects.push({ top: this.#heights.prefixHeight(line), left: colFrom * charW, width, height: lineH });
+    for (const range of this.#paintedRanges()) {
+      if (isFlatCollapsed(range)) continue;
+      const { from, to } = flatOrdered(range);
+      const start = index.pointAt(from);
+      const end = index.pointAt(to);
+      const firstLine = Math.max(start.line, winStart);
+      const lastLine = Math.min(end.line, winEnd - 1);
+      for (let line = firstLine; line <= lastLine; line++) {
+        const colFrom = line === start.line ? start.column : 0;
+        const colTo = line === end.line ? end.column : lines[line].text.length;
+        // A fully swept line paints a newline stub so empty lines stay visible.
+        const width = Math.max((colTo - colFrom) * charW, colTo === colFrom ? charW * 0.5 : 0);
+        rects.push({ top: this.#heights.prefixHeight(line), left: colFrom * charW, width, height: lineH });
+      }
     }
     return rects;
   });
@@ -365,10 +426,23 @@ export class ShipCode implements ControlValueAccessor {
       });
     });
 
-    // Keep the caret's line inside the window.
+    // Keep the caret's line inside the window, and restart the blink so the
+    // carets are solid the instant they move — the phase the whole layer
+    // shares is also the phase a newly opened cursor starts in.
     effect(() => {
-      const range = primaryFlat(this.sel());
-      untracked(() => this.#scrollCaretIntoView(range.head));
+      const sel = this.sel();
+      const range = primaryFlat(sel);
+      untracked(() => {
+        this.#scrollCaretIntoView(range.head);
+        this.#restartCaretBlink();
+      });
+    });
+
+    // Switching multi-cursor off mid-session must not strand the cursors that
+    // are already open.
+    effect(() => {
+      if (this.multiCursor()) return;
+      untracked(() => this.sel.set(collapseToPrimary(this.sel())));
     });
 
     // A theme swap invalidates every style bucket.
@@ -400,13 +474,38 @@ export class ShipCode implements ControlValueAccessor {
       });
     });
 
+    // Bind the scroll listener to whichever element is *currently* the
+    // scroller, rebinding if that element is ever replaced.
+    //
+    // Attaching once after the first render is not enough: the view can be
+    // re-created under a live component instance (dev HMR does exactly this —
+    // `sh-editor`'s render pass carries a `#lastSurface` guard for the same
+    // reason). The listener then sits on a detached element, the window never
+    // moves again, and virtualization only appears to work because moving the
+    // caret calls `#updateWindow` by another route.
+    effect(() => {
+      if (!this.#viewReady()) return;
+      const scroller = this.scroller().nativeElement;
+      untracked(() => this.#hookScroller(scroller));
+    });
+    this.#destroyRef.onDestroy(() => this.#scrollHooked?.removeEventListener('scroll', this.#onScroll));
+
     afterNextRender(() => {
       this.#measureMetrics();
-      const scroller = this.scroller().nativeElement;
-      scroller.addEventListener('scroll', this.#onScroll, { passive: true });
-      this.#destroyRef.onDestroy(() => scroller.removeEventListener('scroll', this.#onScroll));
+      this.#viewReady.set(true);
       this.#updateWindow();
     });
+  }
+
+  #hookScroller(scroller: HTMLElement) {
+    if (scroller === this.#scrollHooked) return;
+    this.#scrollHooked?.removeEventListener('scroll', this.#onScroll);
+    this.#scrollHooked = scroller;
+    scroller.addEventListener('scroll', this.#onScroll, { passive: true });
+    // A replaced view brings fresh metrics and a window computed against the
+    // element that just went away.
+    this.#measureMetrics();
+    this.#updateWindow();
   }
 
   /** Advance the token cache to the window's end, in background slices. */
@@ -426,14 +525,26 @@ export class ShipCode implements ControlValueAccessor {
     }
   }
 
-  /** Mirror one flat change into the token cache as a line splice. */
-  #noteTokenSplice(doc: CodeDocument, change: FlatChange) {
+  /**
+   * Mirror a batch of flat changes into the token cache as line splices.
+   *
+   * The changes address the original document, so they are replayed ascending
+   * with a running line delta — each splice only has to account for the ones
+   * already applied below it.
+   */
+  #noteTokenSplices(doc: CodeDocument, changes: readonly FlatChange[]) {
     if (!this.#incremental) return;
     const index = indexFor(doc);
-    const fromLine = index.pointAt(Math.min(change.from, change.to)).line;
-    const toLine = index.pointAt(Math.max(change.from, change.to)).line;
-    const insertedLines = 1 + (change.insert.match(/\n/g)?.length ?? 0);
-    this.#incremental.spliceLines(fromLine, toLine - fromLine + 1, insertedLines);
+    const ascending = [...changes].sort((a, b) => a.from - b.from);
+    let lineDelta = 0;
+    for (const change of ascending) {
+      const fromLine = index.pointAt(Math.min(change.from, change.to)).line;
+      const toLine = index.pointAt(Math.max(change.from, change.to)).line;
+      const removedLines = toLine - fromLine + 1;
+      const insertedLines = 1 + (change.insert.match(/\n/g)?.length ?? 0);
+      this.#incremental.spliceLines(fromLine + lineDelta, removedLines, insertedLines);
+      lineDelta += insertedLines - removedLines;
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -492,6 +603,18 @@ export class ShipCode implements ControlValueAccessor {
     this.#pumpTokens();
   }
 
+  /**
+   * Rewind the shared blink clock.
+   *
+   * There is one animation on the caret layer, so rewinding it puts every
+   * caret — including one added this tick — at the start of the same cycle.
+   */
+  #restartCaretBlink() {
+    const layer = this.caretLayer?.()?.nativeElement;
+    if (!layer?.getAnimations) return;
+    for (const animation of layer.getAnimations()) animation.currentTime = 0;
+  }
+
   #measureMetrics() {
     const probe = this.probe().nativeElement;
     const rect = probe.getBoundingClientRect();
@@ -523,46 +646,59 @@ export class ShipCode implements ControlValueAccessor {
     if (this.readonly() || changes.length === 0) return;
     const selBefore = this.sel();
     const { doc, inverse } = this.#applyWithTokenBookkeeping(changes);
-    const mapped = selAfter ?? flatCaret(mapThroughChanges(primaryFlat(selBefore).head, changes));
+    const mapped = selAfter ?? mapSelectionThroughChanges(selBefore, changes);
     this.#history.push({ inverse, redo: [...changes], selBefore, selAfter: mapped });
     this.#redoStack = [];
     this.doc.set(doc);
     this.sel.set(mapped);
   }
 
-  /** applyFlatChanges, mirroring each step into the token cache first. */
-  #applyWithTokenBookkeeping(changes: readonly FlatChange[]): { doc: CodeDocument; inverse: FlatChange[] } {
-    let doc = this.doc();
-    const inverse: FlatChange[] = [];
-    for (const change of changes) {
-      this.#noteTokenSplice(doc, change);
-      const result = applyFlatChange(doc, change);
-      doc = result.doc;
-      inverse.unshift(...result.inverse);
-    }
-    return { doc, inverse };
+  /** The batched apply, mirroring the whole batch into the token cache first. */
+  #applyWithTokenBookkeeping(changes: readonly FlatChange[]): { doc: CodeDocument; inverse: readonly FlatChange[] } {
+    const doc = this.doc();
+    this.#noteTokenSplices(doc, changes);
+    return applyFlatChangesBatched(doc, changes);
   }
 
-  /** Replace the current selection with `text` (typing, paste, IME commit). */
+  /**
+   * Run one edit per cursor as a single transaction — one history entry and
+   * one undo however many cursors are live.
+   */
+  #editEachCursor(edit: (range: FlatRange, index: number) => { change: FlatChange; at: FlatPos } | null) {
+    if (this.readonly()) return;
+    const out = fanOutEdit(this.sel(), (range, i) => {
+      const result = edit(range, i);
+      return result && { change: result.change, anchorAfter: result.at, headAfter: result.at };
+    });
+    if (out) this.#applyChanges(out.changes, out.selection);
+  }
+
+  /** Replace every cursor's selection with `text` (typing, paste, IME commit). */
   insertText(text: string) {
-    const { from, to } = flatOrdered(primaryFlat(this.sel()));
-    this.#applyChanges([{ from, to, insert: text }], flatCaret(from + text.length));
+    this.#editEachCursor((range) => {
+      const { from, to } = flatOrdered(range);
+      if (from === to && !text) return null;
+      return { change: { from, to, insert: text }, at: from + text.length };
+    });
   }
 
   #deleteBackward() {
-    const range = primaryFlat(this.sel());
-    const { from, to } = flatOrdered(range);
-    if (from !== to) return this.#applyChanges([{ from, to, insert: '' }], flatCaret(from));
-    if (from === 0) return;
-    this.#applyChanges([{ from: from - 1, to: from, insert: '' }], flatCaret(from - 1));
+    this.#editEachCursor((range) => {
+      const { from, to } = flatOrdered(range);
+      if (from !== to) return { change: { from, to, insert: '' }, at: from };
+      if (from === 0) return null;
+      return { change: { from: from - 1, to: from, insert: '' }, at: from - 1 };
+    });
   }
 
   #deleteForward() {
-    const range = primaryFlat(this.sel());
-    const { from, to } = flatOrdered(range);
-    if (from !== to) return this.#applyChanges([{ from, to, insert: '' }], flatCaret(from));
-    if (to >= indexFor(this.doc()).size) return;
-    this.#applyChanges([{ from, to: from + 1, insert: '' }], flatCaret(from));
+    const size = indexFor(this.doc()).size;
+    this.#editEachCursor((range) => {
+      const { from, to } = flatOrdered(range);
+      if (from !== to) return { change: { from, to, insert: '' }, at: from };
+      if (to >= size) return null;
+      return { change: { from, to: from + 1, insert: '' }, at: from };
+    });
   }
 
   #undo() {
@@ -616,11 +752,10 @@ export class ShipCode implements ControlValueAccessor {
     for (const [action, move] of Object.entries(motions)) {
       if (!matchesShortcut(motionEvent, keymap[action as ShipCodeAction], isMac)) continue;
       event.preventDefault();
-      const range = primaryFlat(this.sel());
-      const motion = move!(range.head, range.goalColumn);
       const horizontal = action === 'code.caret.moveLeft' || action === 'code.caret.moveRight';
       const collapseEdge = horizontal ? (action === 'code.caret.moveLeft' ? 'from' : 'to') : undefined;
-      this.sel.set(applyMotion(this.sel(), motion, event.shiftKey, collapseEdge as 'from' | 'to' | undefined));
+      // Every cursor moves, each from its own head; ones that collide merge.
+      this.sel.set(applyMotionAll(this.sel(), move!, event.shiftKey, collapseEdge as 'from' | 'to' | undefined));
       return;
     }
 
@@ -632,11 +767,34 @@ export class ShipCode implements ControlValueAccessor {
     }
     if (match('code.selection.selectWord')) {
       event.preventDefault();
-      return this.sel.set({ ranges: [flatSelectWord(this.doc(), primaryFlat(this.sel()).head)] });
+      return this.#selectWordOrAddNextOccurrence();
     }
     if (match('code.selection.selectLine')) {
       event.preventDefault();
-      return this.sel.set({ ranges: [flatSelectLine(this.doc(), primaryFlat(this.sel()).head)] });
+      // Each cursor takes its own line; cursors sharing one merge into it.
+      return this.sel.set(
+        normalizeSelection(
+          this.sel().ranges.map((range) => flatSelectLine(this.doc(), range.head)),
+          this.sel().primary ?? 0
+        )
+      );
+    }
+    if (match('code.selection.selectAllOccurrences')) {
+      event.preventDefault();
+      return this.#selectAllOccurrences();
+    }
+    if (match('code.selection.addCaretAbove')) {
+      event.preventDefault();
+      return this.#addCaret(-1);
+    }
+    if (match('code.selection.addCaretBelow')) {
+      event.preventDefault();
+      return this.#addCaret(1);
+    }
+    if (match('code.selection.collapseCarets')) {
+      if (!isMultiRange(this.sel())) return;
+      event.preventDefault();
+      return this.sel.set(collapseToPrimary(this.sel()));
     }
     if (match('code.edit.undo')) {
       event.preventDefault();
@@ -672,17 +830,19 @@ export class ShipCode implements ControlValueAccessor {
     }
     if (match('code.edit.deleteWordLeft')) {
       event.preventDefault();
-      const head = primaryFlat(this.sel()).head;
-      const target = flatMoveWordLeft(this.doc(), head).head;
-      if (target < head) this.#applyChanges([{ from: target, to: head, insert: '' }], flatCaret(target));
-      return;
+      return this.#editEachCursor((range) => {
+        const target = flatMoveWordLeft(this.doc(), range.head).head;
+        if (target >= range.head) return null;
+        return { change: { from: target, to: range.head, insert: '' }, at: target };
+      });
     }
     if (match('code.edit.deleteWordRight')) {
       event.preventDefault();
-      const head = primaryFlat(this.sel()).head;
-      const target = flatMoveWordRight(this.doc(), head).head;
-      if (target > head) this.#applyChanges([{ from: head, to: target, insert: '' }], flatCaret(head));
-      return;
+      return this.#editEachCursor((range) => {
+        const target = flatMoveWordRight(this.doc(), range.head).head;
+        if (target <= range.head) return null;
+        return { change: { from: range.head, to: target, insert: '' }, at: range.head };
+      });
     }
 
     if (event.key === 'Backspace') {
@@ -699,14 +859,34 @@ export class ShipCode implements ControlValueAccessor {
     }
   }
 
-  #indent(direction: 1 | -1) {
+  /**
+   * The distinct lines the cursors touch, ascending.
+   *
+   * Line-oriented commands dedupe through this: two cursors on one line must
+   * indent it once, not twice, and must not emit two overlapping changes.
+   */
+  #touchedLines(): number[] {
     const index = indexFor(this.doc());
-    const { from, to } = flatOrdered(primaryFlat(this.sel()));
-    const firstLine = index.pointAt(from).line;
-    const lastLine = index.pointAt(to).line;
-    if (direction === 1 && from === to) return this.insertText('  ');
+    const lines: number[] = [];
+    for (const range of this.sel().ranges) {
+      const { from, to } = flatOrdered(range);
+      const first = index.pointAt(from).line;
+      const last = index.pointAt(to).line;
+      for (let line = first; line <= last; line++) {
+        if (lines[lines.length - 1] !== line) lines.push(line);
+      }
+    }
+    return lines;
+  }
+
+  #indent(direction: 1 | -1) {
+    // Plain carets indent in place; the moment any cursor has a selection the
+    // gesture becomes line-oriented, which is what every editor does.
+    if (direction === 1 && this.sel().ranges.every(isFlatCollapsed)) return this.insertText('  ');
+
+    const index = indexFor(this.doc());
     const changes: FlatChange[] = [];
-    for (let line = firstLine; line <= lastLine; line++) {
+    for (const line of this.#touchedLines()) {
       const start = index.startOf(line);
       if (direction === 1) changes.push({ from: start, to: start, insert: '  ' });
       else {
@@ -718,42 +898,106 @@ export class ShipCode implements ControlValueAccessor {
     if (!changes.length) return;
     // Later changes first, so earlier offsets stay valid within one pass.
     changes.sort((a, b) => b.from - a.from);
-    const selAfter = { ranges: [{ anchor: mapThroughChanges(from, changes), head: mapThroughChanges(to, changes) }] };
-    this.#applyChanges(changes, selAfter);
+    this.#applyChanges(changes, mapSelectionThroughChanges(this.sel(), changes));
   }
 
   #deleteLine() {
     const index = indexFor(this.doc());
-    const line = index.pointAt(primaryFlat(this.sel()).head).line;
-    const from = index.startOf(line);
-    const to = line < index.lineCount - 1 ? index.startOf(line + 1) : index.size;
-    const realFrom = line === index.lineCount - 1 && line > 0 ? index.endOf(line - 1) : from;
-    this.#applyChanges([{ from: realFrom, to, insert: '' }], flatCaret(Math.min(realFrom, index.size)));
+    const lineCount = index.lineCount;
+    const changes: FlatChange[] = [];
+    for (const line of this.#touchedLines()) {
+      const to = line < lineCount - 1 ? index.startOf(line + 1) : index.size;
+      // The last line has no newline of its own, so it takes the one above it.
+      const from = line === lineCount - 1 && line > 0 ? index.endOf(line - 1) : index.startOf(line);
+      changes.push({ from, to, insert: '' });
+    }
+    if (!changes.length) return;
+    changes.sort((a, b) => b.from - a.from);
+    this.#applyChanges(changes, mapSelectionThroughChanges(this.sel(), changes));
   }
 
   #duplicateLine() {
     const index = indexFor(this.doc());
-    const line = index.pointAt(primaryFlat(this.sel()).head).line;
-    const text = this.doc().lines[line].text;
-    const at = index.endOf(line);
-    this.#applyChanges([{ from: at, to: at, insert: '\n' + text }]);
+    const changes: FlatChange[] = [];
+    for (const line of this.#touchedLines()) {
+      const at = index.endOf(line);
+      changes.push({ from: at, to: at, insert: '\n' + this.doc().lines[line].text });
+    }
+    if (!changes.length) return;
+    changes.sort((a, b) => b.from - a.from);
+    this.#applyChanges(changes);
   }
 
-  #moveLine(direction: -1 | 1) {
+  /**
+   * Cmd/Ctrl+D, progressive: select the word under the caret, then keep adding
+   * the next occurrence of what is already selected — the VS Code gesture.
+   *
+   * The search runs over the whole document, never the mounted window: the
+   * next occurrence is usually off-screen, which is the entire point.
+   */
+  #selectWordOrAddNextOccurrence() {
+    const sel = this.sel();
+    const primary = primaryFlat(sel);
+    if (isFlatCollapsed(primary) || !this.multiCursor()) {
+      return this.sel.set(setPrimaryRange(sel, flatSelectWord(this.doc(), primary.head)));
+    }
     const index = indexFor(this.doc());
-    const point = index.pointAt(primaryFlat(this.sel()).head);
-    const target = point.line + direction;
-    if (target < 0 || target >= index.lineCount) return;
-    const a = Math.min(point.line, target);
-    const b = Math.max(point.line, target);
-    const lineA = this.doc().lines[a].text;
-    const lineB = this.doc().lines[b].text;
-    const from = index.startOf(a);
-    const to = index.endOf(b);
-    this.#applyChanges(
-      [{ from, to, insert: `${lineB}\n${lineA}` }],
-      flatCaret(from + (direction === -1 ? 0 : lineB.length + 1) + point.column)
+    const { from, to } = flatOrdered(primary);
+    const needle = index.sliceText(from, to);
+    let searchFrom = 0;
+    for (const range of sel.ranges) searchFrom = Math.max(searchFrom, flatOrdered(range).to);
+    const found = nextOccurrence(getText(this.doc()), needle, searchFrom);
+    if (!found) return;
+    this.sel.set(addFlatRange(sel, { anchor: found.from, head: found.to }));
+  }
+
+  /** Cmd/Ctrl+Shift+L — a cursor on every occurrence of the current selection. */
+  #selectAllOccurrences() {
+    if (!this.multiCursor()) return;
+    const sel = this.sel();
+    const primary = primaryFlat(sel);
+    const index = indexFor(this.doc());
+    const seed = isFlatCollapsed(primary) ? flatSelectWord(this.doc(), primary.head) : primary;
+    const { from, to } = flatOrdered(seed);
+    const needle = index.sliceText(from, to);
+    if (!needle) return;
+    const found = allOccurrences(getText(this.doc()), needle);
+    if (!found.length) return;
+    const at = found.findIndex((occurrence) => occurrence.from === from);
+    this.sel.set(
+      normalizeSelection(
+        found.map((occurrence) => ({ anchor: occurrence.from, head: occurrence.to })),
+        at < 0 ? 0 : at
+      )
     );
+  }
+
+  /**
+   * Add a caret one line above or below, in the classic column.
+   *
+   * It grows from the cursor at the leading edge rather than from the primary,
+   * so holding the shortcut extends the column instead of oscillating.
+   */
+  #addCaret(direction: -1 | 1) {
+    if (!this.multiCursor()) return;
+    const sel = this.sel();
+    const edge = direction === -1 ? sel.ranges[0] : sel.ranges[sel.ranges.length - 1];
+    const motion = direction === -1
+      ? flatMoveUp(this.doc(), edge.head, edge.goalColumn)
+      : flatMoveDown(this.doc(), edge.head, edge.goalColumn);
+    // Already against the document edge: nothing to add.
+    if (motion.head === edge.head) return;
+    this.sel.set(addFlatRange(sel, { anchor: motion.head, head: motion.head, goalColumn: motion.goalColumn }));
+  }
+
+  /**
+   * Move the selected lines one slot up or down. A collapsed selection moves
+   * its own line; a multi-line selection moves the whole span as one unit,
+   * with the selection riding along so holding the shortcut keeps working.
+   */
+  #moveLine(direction: -1 | 1) {
+    const move = moveLines(this.doc(), this.sel(), direction);
+    if (move) this.#applyChanges(move.changes, move.selection);
   }
 
   // -------------------------------------------------------------------------
@@ -767,6 +1011,9 @@ export class ShipCode implements ControlValueAccessor {
 
   onCompositionStart() {
     this.#composing = true;
+    // IME composition has one preedit buffer and one caret to attach it to.
+    // Every editor collapses to a single cursor here rather than pretending.
+    this.sel.set(collapseToPrimary(this.sel()));
   }
 
   onCompositionEnd() {
@@ -781,20 +1028,57 @@ export class ShipCode implements ControlValueAccessor {
     area.value = '';
   }
 
+  /** Every cursor's text, joined by newlines — the shape paste reads back. */
+  #selectedText(): string {
+    const index = indexFor(this.doc());
+    const parts = this.sel().ranges.map((range) => {
+      const { from, to } = flatOrdered(range);
+      return index.sliceText(from, to);
+    });
+    return parts.some((part) => part !== '') ? parts.join('\n') : '';
+  }
+
   onCopy(event: ClipboardEvent) {
-    const { from, to } = flatOrdered(primaryFlat(this.sel()));
-    if (from === to || !event.clipboardData) return;
+    const text = this.#selectedText();
+    if (!text || !event.clipboardData) return;
     event.preventDefault();
-    event.clipboardData.setData('text/plain', indexFor(this.doc()).sliceText(from, to));
+    event.clipboardData.setData('text/plain', text);
   }
 
   onCut(event: ClipboardEvent) {
     if (this.readonly()) return;
-    const { from, to } = flatOrdered(primaryFlat(this.sel()));
-    if (from === to || !event.clipboardData) return;
+    const text = this.#selectedText();
+    if (!text || !event.clipboardData) return;
     event.preventDefault();
-    event.clipboardData.setData('text/plain', indexFor(this.doc()).sliceText(from, to));
-    this.#applyChanges([{ from, to, insert: '' }], flatCaret(from));
+    event.clipboardData.setData('text/plain', text);
+    this.#editEachCursor((range) => {
+      const { from, to } = flatOrdered(range);
+      if (from === to) return null;
+      return { change: { from, to, insert: '' }, at: from };
+    });
+  }
+
+  /**
+   * Paste, distributing across cursors when the shapes line up.
+   *
+   * A clipboard whose line count matches the cursor count came from a
+   * multi-cursor copy (here or in any other editor), so each cursor takes its
+   * own line. Anything else is inserted whole at every cursor.
+   */
+  onPaste(event: ClipboardEvent) {
+    if (this.readonly() || this.#composing) return;
+    const raw = event.clipboardData?.getData('text/plain');
+    if (raw === undefined || raw === '') return;
+    event.preventDefault();
+    const text = raw.replace(/\r\n?/g, '\n');
+    const lines = text.split('\n');
+    if (isMultiRange(this.sel()) && lines.length === this.sel().ranges.length) {
+      return this.#editEachCursor((range, i) => {
+        const { from, to } = flatOrdered(range);
+        return { change: { from, to, insert: lines[i] }, at: from + lines[i].length };
+      });
+    }
+    this.insertText(text);
   }
 
   onFocus() {
@@ -813,11 +1097,17 @@ export class ShipCode implements ControlValueAccessor {
     if (event.button !== 0) return;
     event.preventDefault();
     const pos = this.#posFromMouse(event);
-    if (event.detail >= 3) this.sel.set({ ranges: [flatSelectLine(this.doc(), pos)] });
-    else if (event.detail === 2) this.sel.set({ ranges: [flatSelectWord(this.doc(), pos)] });
-    else if (event.shiftKey) this.sel.set({ ranges: [{ anchor: primaryFlat(this.sel()).anchor, head: pos }] });
+    // Alt keeps the existing cursors and opens another; without it a click is
+    // a fresh single selection.
+    const add = event.altKey && this.multiCursor();
+    const set = (range: FlatRange) =>
+      this.sel.set(add ? addFlatRange(this.sel(), range) : normalizeSelection([range]));
+
+    if (event.detail >= 3) set(flatSelectLine(this.doc(), pos));
+    else if (event.detail === 2) set(flatSelectWord(this.doc(), pos));
+    else if (event.shiftKey) this.sel.set(setPrimaryRange(this.sel(), { anchor: primaryFlat(this.sel()).anchor, head: pos }));
     else {
-      this.sel.set(flatCaret(pos));
+      set({ anchor: pos, head: pos });
       this.#dragSelecting = true;
     }
     this.inputArea().nativeElement.focus({ preventScroll: true });
@@ -826,8 +1116,10 @@ export class ShipCode implements ControlValueAccessor {
   onContentMouseMove(event: MouseEvent) {
     if (!this.#dragSelecting || event.buttons !== 1) return;
     const pos = this.#posFromMouse(event);
+    // The drag owns the primary range — the cursor the mousedown just created,
+    // whether that was a plain click or an Alt+click adding to the set.
     const anchor = primaryFlat(this.sel()).anchor;
-    this.sel.set({ ranges: [{ anchor, head: pos }] });
+    this.sel.set(setPrimaryRange(this.sel(), { anchor, head: pos }));
   }
 
   onDocumentMouseUp() {
@@ -837,11 +1129,31 @@ export class ShipCode implements ControlValueAccessor {
   #posFromMouse(event: MouseEvent): FlatPos {
     const content = (event.currentTarget as HTMLElement).closest('.sh-code-content') ?? (event.currentTarget as HTMLElement);
     const rect = content.getBoundingClientRect();
+    // `rect.top` is the border box, and the top padding is exactly the window's
+    // prefix height — so this y is already in document coordinates.
     const y = event.clientY - rect.top;
-    const x = event.clientX - rect.left;
+    const x = event.clientX - this.#textOriginX(content, rect);
     const line = this.#heights.indexAt(y);
     const column = Math.max(0, Math.round(x / this.charWidth()));
     return indexFor(this.doc()).posOf({ line, column });
+  }
+
+  /**
+   * Client x of column 0.
+   *
+   * Carets and selection rects are positioned in content-box coordinates and
+   * shifted by the content's left padding in CSS. Hit-testing has to start from
+   * that same origin: measured from the border box instead, the padding reads
+   * as a character and change worth of text, so clicking the left half of the
+   * first character on a line lands the caret after it.
+   *
+   * A mounted line's own left edge *is* the content-box origin, so it is read
+   * from layout rather than kept in step with the stylesheet by hand.
+   */
+  #textOriginX(content: Element, rect: DOMRect): number {
+    const line = content.querySelector('.sh-code-line');
+    if (line) return line.getBoundingClientRect().left;
+    return rect.left + parseFloat(getComputedStyle(content).paddingLeft || '0');
   }
 }
 

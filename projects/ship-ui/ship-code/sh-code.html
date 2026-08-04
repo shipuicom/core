@@ -32,14 +32,16 @@
         <div class="sh-code-line" [innerHTML]="line.html"></div>
       }
 
-      @if (caretBox(); as box) {
-        <div
-          class="sh-code-caret"
-          [class.blinking]="focused()"
-          [style.top.px]="box.top"
-          [style.left.px]="box.left"
-          [style.height.px]="box.height"></div>
-      }
+      <div class="sh-code-caret-layer" [class.blinking]="focused()" #caretLayer>
+        @for (box of caretBoxes(); track $index) {
+          <div
+            class="sh-code-caret"
+            [class.secondary]="!box.primary"
+            [style.top.px]="box.top"
+            [style.left.px]="box.left"
+            [style.height.px]="box.height"></div>
+        }
+      </div>
 
       <span class="sh-code-probe" #probe aria-hidden="true">XXXXXXXXXX</span>
     </div>
@@ -58,6 +60,7 @@
     (compositionend)="onCompositionEnd()"
     (copy)="onCopy($event)"
     (cut)="onCut($event)"
+    (paste)="onPaste($event)"
     (focus)="onFocus()"
     (blur)="onBlur()"></textarea>
 </div>

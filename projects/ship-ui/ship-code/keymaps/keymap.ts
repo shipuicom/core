@@ -22,6 +22,8 @@ export type ShipCodeAction =
   | 'code.selection.selectLine'
   | 'code.selection.addCaretAbove'
   | 'code.selection.addCaretBelow'
+  | 'code.selection.selectAllOccurrences'
+  | 'code.selection.collapseCarets'
   | 'code.edit.indent'
   | 'code.edit.outdent'
   | 'code.edit.undo'

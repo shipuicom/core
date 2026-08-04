@@ -82,18 +82,37 @@ sh-code {
     z-index: 0;
   }
 
-  .sh-code-caret {
+  // One blink clock for every caret.
+  //
+  // Animating each caret element separately starts a fresh clock per element,
+  // so a cursor opened halfway through a blink cycle — or mounted later by the
+  // virtual window — blinks against the ones already on screen. Animating the
+  // layer instead means there is only ever one clock to be in phase with, and
+  // carets added to it inherit whatever phase it is currently in.
+  .sh-code-caret-layer {
     position: absolute;
-    width: 2px;
-    background: var(--code-caret);
+    inset: 0;
     pointer-events: none;
-    transform: translateX(#{p2r(12)});
     opacity: 0;
     z-index: 2;
 
     &.blinking {
       opacity: 1;
       animation: sh-code-caret-blink 1.1s steps(1) infinite;
+    }
+  }
+
+  .sh-code-caret {
+    position: absolute;
+    width: 2px;
+    background: var(--code-caret);
+    pointer-events: none;
+    transform: translateX(#{p2r(12)});
+
+    // Added cursors sit slightly back so the primary — the one the view
+    // scrolls to follow — stays findable in a column of a dozen carets.
+    &.secondary {
+      opacity: 0.65;
     }
   }
 
