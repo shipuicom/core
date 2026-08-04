@@ -295,18 +295,26 @@ test.describe('viewport virtualization', () => {
     // Scroll far away — the caret's block unmounts and its native range goes
     // with it — then come back. The block is mounted again, but on brand new
     // nodes that no selection points at until the window move repaints it.
+    //
     await scrollEditorTo(page, 0.05);
     await expect.poll(async () => (await mountedState(page)).mounted).toBeGreaterThan(5);
-    await scrollEditorTo(page, 0.5);
+
+    // Coming back is a convergence, not a jump: every mount re-measures blocks
+    // and re-prices the ones still estimated, which moves the content under a
+    // fixed scroll offset. Re-aim each time until the block is mounted again.
     await expect
-      .poll(() =>
-        page.evaluate(
-          (i) =>
-            Array.from(document.querySelector('.sh-editor-content')!.children).some((el) =>
-              (el.textContent ?? '').startsWith(`Block ${i} `)
-            ),
-          targetIndex
-        )
+      .poll(
+        async () => {
+          await scrollEditorTo(page, 0.5);
+          return page.evaluate(
+            (i) =>
+              Array.from(document.querySelector('.sh-editor-content')!.children).some((el) =>
+                (el.textContent ?? '').startsWith(`Block ${i} `)
+              ),
+            targetIndex
+          );
+        },
+        { message: 'the caret block is mounted again', timeout: 10_000 }
       )
       .toBe(true);
     await expect
