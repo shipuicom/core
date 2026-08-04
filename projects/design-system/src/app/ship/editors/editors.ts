@@ -131,6 +131,8 @@ class HighlightBehavior extends BaseInlineBehavior {
   imageEdgeResize = signal(false);
 
   documentVariant = signal(false);
+  /** Off by default in the component too — Alt+click opens an extra cursor. */
+  multiCursor = signal(false);
   placeholder = signal('Start typing something beautiful...');
 
   basicValue = signal(

@@ -189,3 +189,203 @@ test.describe('custom component blocks', () => {
     expect(errors).toEqual([]);
   });
 });
+
+/**
+ * Replacing a live component block with an ordinary one.
+ *
+ * A component block's wrapper *is* the Angular component's host element, so
+ * destroying the component takes the wrapper out of the DOM with it. The
+ * render pass then tried to swap that wrapper for the new block's element —
+ * but `replaceWith` on an already-detached node is a silent no-op, so the
+ * replacement was dropped: the DOM came out one element short, every later
+ * block shifted up, and because the child count still matched the block count
+ * the reconciler's own safety net never noticed. From there the DOM and the
+ * AST disagreed and clicks mapped to the wrong block.
+ */
+test.describe('component block replacement', () => {
+  /** The AST's block types beside the DOM's, in a directly comparable shape. */
+  function state(page: Page) {
+    return page.evaluate(() => {
+      const host = document.querySelector('sh-editor')!;
+      const comp = (window as any).ng.getComponent(host);
+      const surface = host.querySelector('.sh-editor-content')!;
+      const tagToType: Record<string, string> = {
+        H1: 'heading', H2: 'heading', H3: 'heading', P: 'paragraph',
+        UL: 'bullet-list', OL: 'ordered-list', BLOCKQUOTE: 'quote', HR: 'hr', PRE: 'code-block',
+      };
+      return {
+        astTypes: comp.engine.document().map((b: any) => b.type),
+        domTypes: Array.from(surface.children).map(
+          (el: any) => el.getAttribute('data-sh-block') ?? tagToType[el.tagName] ?? el.tagName
+        ),
+        astTexts: comp.engine.document().map((b: any) => (b.content ?? []).map((n: any) => n.text ?? '').join('')),
+      };
+    });
+  }
+
+  test('a new document replaces component blocks instead of dropping their elements', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    const before = await state(page);
+    expect(before.astTypes).toContain('demo-counter');
+    expect(before.domTypes).toEqual(before.astTypes);
+
+    // A document with plain paragraphs where the components used to be.
+    await page.evaluate(() => {
+      (window as any).ng
+        .getComponent(document.querySelector('sh-editor')!)
+        .value.set('<h1>T</h1><p>a</p><ul><li>x</li></ul><blockquote>q</blockquote><hr><p>b</p><p><br></p><p>c</p>');
+    });
+    await page.waitForTimeout(400);
+
+    const after = await state(page);
+    expect(after.astTypes).not.toContain('demo-counter');
+    expect(after.astTypes).not.toContain('demo-code-pad');
+    // The point: nothing left behind, nothing silently dropped.
+    expect(after.domTypes).toEqual(after.astTypes);
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
+  test('a slash command in an empty paragraph edits that paragraph, not another block', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    await page.evaluate(() => {
+      (window as any).ng
+        .getComponent(document.querySelector('sh-editor')!)
+        .value.set('<h1>Title</h1><p>intro</p><hr><p>lead in</p><p><br></p><p>tail</p>');
+    });
+    await page.waitForTimeout(400);
+
+    const target = await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const surface = document.querySelector('.sh-editor-content') as HTMLElement;
+      const idx = comp.engine
+        .document()
+        .findIndex((b: any) => b.type === 'paragraph' && (b.content ?? []).map((n: any) => n.text ?? '').join('') === '');
+      const range = document.createRange();
+      range.selectNodeContents(surface.children[idx] as HTMLElement);
+      range.collapse(true);
+      surface.focus();
+      const sel = window.getSelection()!;
+      sel.removeAllRanges();
+      sel.addRange(range);
+      document.dispatchEvent(new Event('selectionchange'));
+      return idx;
+    });
+
+    await page.keyboard.type('/code');
+    const typed = await state(page);
+    // The query must land in the block holding the caret. When the DOM and the
+    // AST disagree it maps elsewhere — into the heading, in the case that
+    // first surfaced this.
+    expect(typed.astTexts[target]).toBe('/code');
+    expect(typed.astTexts[0]).toBe('Title');
+
+    await expect
+      .poll(() =>
+        page.evaluate(() => !!(window as any).ng.getComponent(document.querySelector('sh-editor')!).slashMenu()?.isOpen())
+      )
+      .toBe(true);
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(400);
+
+    const after = await state(page);
+    // A block command converts the paragraph in place; the tail is untouched.
+    expect(after.astTypes[target]).toBe('code-block');
+    expect(after.astTexts[after.astTexts.length - 1]).toBe('tail');
+    expect(after.domTypes).toEqual(after.astTypes);
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+});
+
+/**
+ * Ending a drag-selection over a component block.
+ *
+ * Blink cannot put a selection endpoint inside a `contenteditable="false"`
+ * island, so the native range runs on to the end of the editing host. The
+ * logical selection is clamped to the component, but the native range is what
+ * the next `beforeinput` re-derives from once the drag state is released — so
+ * an unrepainted overshoot meant one keystroke deleted every block through the
+ * end of the document.
+ */
+test.describe('drag-selection ending on a component block', () => {
+  test('the painted range stops at the component, and typing spares what follows', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    await page.setViewportSize({ width: 1400, height: 1100 });
+    await page.waitForTimeout(300);
+
+    const boxes = await page.evaluate(() =>
+      Array.from(document.querySelector('.sh-editor-content')!.children).map((el: any) => {
+        const r = el.getBoundingClientRect();
+        return { x: r.x, y: r.y, w: r.width, h: r.height };
+      })
+    );
+    const typesBefore = await docTypes(page);
+    const counterIndex = typesBefore.indexOf('demo-counter');
+    expect(counterIndex).toBeGreaterThan(0);
+
+    // Sweep from the list down into the counter block.
+    await page.mouse.move(boxes[2].x + 20, boxes[2].y + 5);
+    await page.mouse.down();
+    await page.mouse.move(
+      boxes[counterIndex].x + boxes[counterIndex].w / 2,
+      boxes[counterIndex].y + boxes[counterIndex].h / 2,
+      { steps: 25 }
+    );
+    await page.mouse.up();
+    await page.waitForTimeout(300);
+
+    const painted = await page.evaluate((idx) => {
+      const surface = document.querySelector('.sh-editor-content')!;
+      const sel = window.getSelection()!;
+      const range = sel.rangeCount ? sel.getRangeAt(0) : null;
+      return Array.from(surface.children).map((el, i) => (range ? range.intersectsNode(el) : false)).slice(idx);
+    }, counterIndex);
+    // Nothing from the component onwards is inside the painted range.
+    expect(painted).toEqual(painted.map(() => false));
+
+    await page.keyboard.type('X');
+    await page.waitForTimeout(300);
+
+    const typesAfter = await docTypes(page);
+    // The selection reached the counter, so typing replaces it — but nothing
+    // past the drag's end may be touched. That over-reach was the data loss:
+    // one keystroke used to take every block through the end of the document.
+    expect(typesAfter).toContain('demo-code-pad');
+    expect(typesAfter[typesAfter.length - 1]).toBe('paragraph');
+    expect(typesAfter.length).toBeGreaterThan(3);
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
+  test('Backspace deletes the component the drag selected, and only that one', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    await page.setViewportSize({ width: 1400, height: 1100 });
+    await page.waitForTimeout(300);
+
+    const boxes = await page.evaluate(() =>
+      Array.from(document.querySelector('.sh-editor-content')!.children).map((el: any) => {
+        const r = el.getBoundingClientRect();
+        return { x: r.x, y: r.y, w: r.width, h: r.height };
+      })
+    );
+    const before = await docTypes(page);
+    const ci = before.indexOf('demo-counter');
+
+    await page.mouse.move(boxes[2].x + 20, boxes[2].y + 5);
+    await page.mouse.down();
+    await page.mouse.move(boxes[ci].x + boxes[ci].w / 2, boxes[ci].y + boxes[ci].h / 2, { steps: 25 });
+    await page.mouse.up();
+    await page.waitForTimeout(300);
+    // The block the drag reached is highlighted, so Backspace has to take it.
+    await expect(counter(page)).toHaveClass(/sh-editor-void-in-selection/);
+
+    await page.keyboard.press('Backspace');
+    await page.waitForTimeout(400);
+
+    const after = await docTypes(page);
+    expect(after).not.toContain('demo-counter');
+    // ...but the component *after* it was never selected and must survive: its
+    // start sits exactly on the range's exclusive end.
+    expect(after).toContain('demo-code-pad');
+    expect(after[after.length - 1]).toBe('paragraph');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+});

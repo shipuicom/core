@@ -70,6 +70,10 @@
           <li><code>sanitize</code> — <code>SanitizeOption</code>; scrub untrusted HTML against the allow-list (or extend it).</li>
           <li><code>imageUpload</code> — <code>(file) =&gt; Promise&lt;string&gt;</code>; resolve a picked file to its URL.</li>
           <li><code>imageEdgeResize</code> — opt in to the image mid-edge (one-axis) resize handles.</li>
+          <li>
+            <code>multiCursor</code> — opt in to Alt+click opening extra cursors. Every cursor edits as one undo step;
+            the browser paints only the first, so the rest are drawn by the editor.
+          </li>
           <li><code>contextualActions</code>, <code>slashCommands</code> — consumer-provided block actions and slash-menu entries.</li>
         </ul>
       </section>
@@ -132,6 +136,9 @@
               <sh-checkbox [(checked)]="documentVariant">Document Canvas</sh-checkbox>
             </div>
             <div class="control-group">
+              <sh-checkbox [(checked)]="multiCursor">Multi Cursor (Alt+click)</sh-checkbox>
+            </div>
+            <div class="control-group">
               <sh-checkbox [(checked)]="persist">Persist (localStorage)</sh-checkbox>
               <sh-icon size="small" class="control-hint" [shTooltip]="persistTip">info</sh-icon>
               @if (persist()) {
@@ -161,7 +168,7 @@
           <ng-template #hrTip>Horizontal Line <sh-kbd ctrlOrCmd shift>-</sh-kbd></ng-template>
           <ng-template #linkTip>Insert Link <sh-kbd ctrlOrCmd>K</sh-kbd></ng-template>
 
-          <sh-editor #mainEditor="shEditor" [(value)]="editorValue" [format]="format()" [readonly]="readonly()" [behaviors]="customBehaviors" [placeholder]="placeholder()" [showMetrics]="showMetrics()" [imageUpload]="demoImageUpload" [imageEdgeResize]="imageEdgeResize()" [variant]="documentVariant() ? 'document' : 'base'">
+          <sh-editor #mainEditor="shEditor" [(value)]="editorValue" [format]="format()" [readonly]="readonly()" [behaviors]="customBehaviors" [placeholder]="placeholder()" [showMetrics]="showMetrics()" [imageUpload]="demoImageUpload" [imageEdgeResize]="imageEdgeResize()" [multiCursor]="multiCursor()" [variant]="documentVariant() ? 'document' : 'base'">
             <sh-editor-toolbar position="top">
               <button shEditorAction="undo" aria-label="Undo" [shTooltip]="undoTip"><sh-icon>arrow-u-up-left</sh-icon></button>
               <button shEditorAction="redo" aria-label="Redo" [shTooltip]="redoTip"><sh-icon>arrow-u-up-right</sh-icon></button>

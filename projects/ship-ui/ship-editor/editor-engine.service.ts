@@ -13,7 +13,9 @@ import {
   enterOp,
   escapeHatchOp,
   flatPosAt,
+  flatPosOfBlockChar,
   insertVoidBlockOp,
+  moveBlockSpanOp,
   insertFragmentOp,
   replaceBlockWithFragmentOp,
   insertTextOp,
@@ -29,6 +31,7 @@ import { applyOpToColumnar } from './editor-columnar-ops';
 import { EditorOp, EditorTransaction, diffDocuments, invertOp, transformOp } from './editor-transactions';
 import { ASTBlockNode, ASTDocument, ASTMark, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
+import { shiftRange } from './editor-multi-selection';
 
 /** What the DOM must do to catch up with one op. */
 export type RenderHint =
@@ -88,7 +91,26 @@ export class EditorEngineService {
       this.#htmlCache[op.blockIndex] = undefined;
       this.#mdCache[op.blockIndex] = undefined;
     } else {
-      this.#renderHints.push({ kind: 'splice', at: op.at, remove: op.removed.length, insert: op.inserted.length });
+      // A `block` hint names its block by index, and that index is resolved
+      // against the AST when the DOM is painted rather than when the hint was
+      // recorded. A structural op renumbers everything after it, which leaves
+      // an already-queued hint unreplayable: hints are applied in order, so
+      // before the splice its index still addresses the old DOM but renders
+      // the new AST, and re-indexing it for the new AST would then address an
+      // element the splice has not created yet. Either way it repaints the
+      // wrong block and the splice inserts on top of the mess.
+      //
+      // Repaint everything instead. This only comes up for composite edits —
+      // a slash command deletes its query and then inserts a block — never
+      // for typing, which queues nothing but `block` hints.
+      const { at } = op;
+      const remove = op.removed.length;
+      const insert = op.inserted.length;
+      if (this.#renderHints.some((hint) => hint.kind === 'block' && hint.index >= at)) {
+        this.#renderHints = [{ kind: 'all' }];
+      } else {
+        this.#renderHints.push({ kind: 'splice', at, remove, insert });
+      }
       // The suffix shifts but its content is unchanged; splicing keeps those
       // blocks' rendered output reusable at their new indices.
       const blanks = () => new Array<string | undefined>(op.inserted.length).fill(undefined);
@@ -137,6 +159,9 @@ export class EditorEngineService {
 
   #undoStack = signal<EditorTransaction[]>([]);
   #redoStack = signal<EditorTransaction[]>([]);
+  /** Set while a multi-cursor edit is fanning out, so its transactions group. */
+  #group: number | null = null;
+  #groupSeq = 0;
 
   readonly version = signal(0);
 
@@ -174,6 +199,7 @@ export class EditorEngineService {
       op: mutation.op,
       selBefore: { ...selBefore },
       selAfter: { ...mutation.selAfter },
+      ...(this.#group === null ? {} : { groupId: this.#group }),
     };
     this.#undoStack.update((s) => [...s, tx]);
     if (this.#redoStack().length) this.#redoStack.set([]);
@@ -467,6 +493,45 @@ export class EditorEngineService {
     if (this.selectedBlock() === from && isVoid) this.selectBlock(insertAt);
   }
 
+  /**
+   * The top-level block span the current selection touches — the selected
+   * void block when there is one, otherwise every block the text selection
+   * reaches. A selection ending exactly at a block's start hasn't entered
+   * that block, mirroring `sh-code`'s line-span rule.
+   */
+  selectedBlockSpan(): { first: number; count: number } | null {
+    const selected = this.selectedBlock();
+    if (selected !== null) return { first: selected, count: 1 };
+    const sel = this.selection.active();
+    if (!sel) return null;
+    const cd = this.columnar;
+    const lo = Math.min(sel.from, sel.to);
+    const hi = Math.max(sel.from, sel.to);
+    const first = blockPointAt(cd, lo).blockIndex;
+    const rawLast = blockPointAt(cd, hi).blockIndex;
+    const startOfLast = flatPosOfBlockChar(cd, { blockIndex: rawLast, itemIndex: 0, charOffset: 0 });
+    const last = rawLast > first && hi === startOfLast ? rawLast - 1 : rawLast;
+    return { first, count: last - first + 1 };
+  }
+
+  /**
+   * Move the blocks the selection touches one slot up or down — the
+   * code-editor gesture over blocks. Reports whether anything moved so the
+   * caller can skip its re-render at the document's edges.
+   */
+  moveSelectedBlocks(direction: -1 | 1): boolean {
+    const span = this.selectedBlockSpan();
+    if (!span) return false;
+    const sel = this.selection.active() ?? { from: 0, to: 0 };
+    const mutation = moveBlockSpanOp(this.columnar, span.first, span.count, direction, sel);
+    if (!mutation) return false;
+    const selectedBefore = this.selectedBlock();
+    this.#apply(mutation, sel);
+    // A selected void block keeps its selection border on its new index.
+    if (selectedBefore !== null) this.selectBlock(selectedBefore + direction);
+    return true;
+  }
+
   /** Paste over a selected void block: the fragment replaces it. */
   replaceSelectedBlock(fragment: ASTDocument) {
     const idx = this.selectedBlock();
@@ -682,12 +747,21 @@ export class EditorEngineService {
     const stack = this.#undoStack();
     const tx = stack[stack.length - 1];
     if (!tx) return;
-    this.#undoStack.set(stack.slice(0, -1));
-    const undoOp = invertOp(tx.op);
-    applyOpToColumnar(this.#columnar, undoOp);
-    this.#noteOp(undoOp);
-    if (tx.selBefore) this.selection.live.set({ ...tx.selBefore });
-    this.#redoStack.update((s) => [...s, tx]);
+    // A multi-cursor edit left one transaction per cursor; they come back as
+    // one step, newest first so each op inverts against the document it saw.
+    const count = tx.groupId === undefined ? 1 : runLength(stack, tx.groupId);
+    const undone = stack.slice(stack.length - count);
+    this.#undoStack.set(stack.slice(0, stack.length - count));
+    for (let i = undone.length - 1; i >= 0; i--) {
+      const undoOp = invertOp(undone[i].op);
+      applyOpToColumnar(this.#columnar, undoOp);
+      this.#noteOp(undoOp);
+    }
+    const first = undone[0];
+    if (first.selBefore) this.selection.live.set({ ...first.selBefore });
+    if (count > 1) this.selection.secondary.set(secondaryOf(undone, 'selBefore', first.selBefore));
+    else this.selection.clearSecondary();
+    this.#redoStack.update((s) => [...s, ...undone]);
     this.version.update((v) => v + 1);
   }
 
@@ -695,12 +769,56 @@ export class EditorEngineService {
     const stack = this.#redoStack();
     const tx = stack[stack.length - 1];
     if (!tx) return;
-    this.#redoStack.set(stack.slice(0, -1));
-    applyOpToColumnar(this.#columnar, tx.op);
-    this.#noteOp(tx.op);
-    if (tx.selAfter) this.selection.live.set({ ...tx.selAfter });
-    this.#undoStack.update((s) => [...s, tx]);
+    const count = tx.groupId === undefined ? 1 : runLength(stack, tx.groupId);
+    // The redo stack holds the group in reverse; replay it in original order.
+    const group = stack.slice(stack.length - count);
+    this.#redoStack.set(stack.slice(0, stack.length - count));
+    for (const entry of group) {
+      applyOpToColumnar(this.#columnar, entry.op);
+      this.#noteOp(entry.op);
+    }
+    const last = group[group.length - 1];
+    if (last.selAfter) this.selection.live.set({ ...last.selAfter });
+    if (count > 1) this.selection.secondary.set(secondaryOf(group, 'selAfter', last.selAfter));
+    else this.selection.clearSecondary();
+    this.#undoStack.update((s) => [...s, ...group]);
     this.version.update((v) => v + 1);
+  }
+
+  /**
+   * Run `edit` once per cursor as a single undo step.
+   *
+   * Cursors are visited low to high and each one's range is shifted by the
+   * net size change the edits below it produced — so the edit always lands
+   * where the user's cursor actually is, and the post-images recorded on the
+   * way up stay valid because every later edit is above them.
+   */
+  runAtEveryCursor(edit: () => void) {
+    const ranges = this.selection.ranges();
+    if (ranges.length <= 1) return edit();
+
+    const group = ++this.#groupSeq;
+    const primary = this.selection.active();
+    const primaryAt = primary ? ranges.findIndex((r) => r.from <= primary.from && r.to >= primary.to) : 0;
+    this.#group = group;
+    try {
+      const after: LogicalSelection[] = [];
+      let delta = 0;
+      for (const range of ranges) {
+        const before = this.columnar.size;
+        this.selection.live.set(shiftRange(range, delta));
+        edit();
+        delta += this.columnar.size - before;
+        const now = this.selection.active();
+        if (now) after.push({ ...now });
+      }
+      if (!after.length) return;
+      const at = Math.min(Math.max(primaryAt, 0), after.length - 1);
+      this.selection.live.set({ ...after[at] });
+      this.selection.secondary.set(after.filter((_, i) => i !== at));
+    } finally {
+      this.#group = null;
+    }
   }
 
   applyRemoteOperation(op: EditorOp) {
@@ -765,4 +883,26 @@ export class EditorEngineService {
     this.version.update((v) => v + 1);
   }
 
+}
+
+/** How many transactions at the top of `stack` share `groupId`. */
+function runLength(stack: readonly EditorTransaction[], groupId: number): number {
+  let count = 0;
+  for (let i = stack.length - 1; i >= 0 && stack[i].groupId === groupId; i--) count++;
+  return count;
+}
+
+/** Every cursor position in a group except the one that becomes primary. */
+function secondaryOf(
+  group: readonly EditorTransaction[],
+  key: 'selBefore' | 'selAfter',
+  primary: LogicalSelection | null
+): LogicalSelection[] {
+  const out: LogicalSelection[] = [];
+  for (const tx of group) {
+    const sel = tx[key];
+    if (!sel || (primary && sel.from === primary.from && sel.to === primary.to)) continue;
+    out.push({ ...sel });
+  }
+  return out;
 }

@@ -40,6 +40,7 @@ import { ShipEditorSlashMenu } from './sh-editor-slash-menu';
 import { BaseComponentBlockBehavior, SHIP_EDITOR_BLOCK_CONTEXT, ShipEditorBlockContext } from './sh-editor-component-block';
 import { ASTDocument, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
+import { logicalRangesInSpan, normalizeLogical } from './editor-multi-selection';
 import * as Behaviors from './standard-behaviors';
 
 /** A value the editor's metrics line can display. */
@@ -51,6 +52,17 @@ const VIRTUAL_AUTO_THRESHOLD = 1000;
 const VIRTUAL_OVERSCAN_PX = 600;
 /** Height assumed for a block the DOM has never laid out. */
 const VIRTUAL_DEFAULT_BLOCK_PX = 36;
+
+/** CSS highlight registry name for secondary (non-native) selection ranges. */
+const SECONDARY_HIGHLIGHT = 'sh-editor-secondary';
+
+/** Keys that only arm a chord — pressing one is not an interaction with the document. */
+const MODIFIER_KEYS = new Set(['Shift', 'Control', 'Alt', 'Meta', 'CapsLock']);
+
+/** Keys that move the single native caret, ending multi-cursor mode. */
+const NAVIGATION_KEYS = new Set([
+  'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown',
+]);
 
 /** Elements whose clicks belong to a component block, never to fall-through selection. */
 const INTERACTIVE_TAGS = new Set([
@@ -85,6 +97,17 @@ export class ShipEditor implements ControlValueAccessor {
 
   /** When `true`, the editor is view-only and rejects all input, deletion, and paste. */
   readonly = input(false);
+  /**
+   * Alt+click to open a second cursor, editing every cursor as one undo step.
+   *
+   * Off by default. A rich-text surface is not where people reach for multiple
+   * cursors, and only the primary one is the browser's own — the rest are
+   * painted by the editor, so they miss the native affordances (a blinking
+   * caret of the platform's shape, IME, spellcheck) that this surface is
+   * otherwise careful to keep. Opt in where the document is structured enough
+   * to want it.
+   */
+  multiCursor = input(false);
   /** Serialization format of `value`: rich `html`, structured `json` AST, or `markdown`. */
   format = input<'html' | 'json' | 'markdown'>('html');
 
@@ -262,6 +285,17 @@ export class ShipEditor implements ControlValueAccessor {
   #scrollScheduled = false;
   /** A virtual select-all: the logical selection spans the whole document while the DOM shows the window. */
   #virtualSelectAll = false;
+  /**
+   * False while the logical selection has no DOM counterpart because its
+   * block sits outside the mounted window.
+   *
+   * Blink invents a selection at the top of the editing host when an edit
+   * arrives at a focused contenteditable that has none — so the DOM selection
+   * in this state is not the user's and must never be adopted. `true` in every
+   * other case, including a plain unfocused editor, so the ordinary sync path
+   * is untouched.
+   */
+  #domSelectionPainted = true;
 
   /** The element the last render targeted; a different one means the view was re-created. */
   #lastSurface: HTMLElement | null = null;
@@ -367,6 +401,33 @@ export class ShipEditor implements ControlValueAccessor {
 
         if (!ready) return;
         this.#render();
+      });
+    });
+
+    // The extra cursors are ours to paint, and nothing else will: the browser
+    // fires no event for them, so a change to the set has to repaint itself.
+    // Switching multi-cursor off mid-session drops them rather than stranding
+    // them somewhere the user can no longer reach.
+    effect(() => {
+      const enabled = this.multiCursor();
+      this.selection.secondary();
+      untracked(() => {
+        // Repaint either way: switching off has to take the drawn carets and
+        // the highlight down with the cursors, or they linger next to the
+        // restored native caret.
+        if (!enabled) this.selection.clearSecondary();
+        if (this.#viewReady()) this.#paintSecondaryCursors();
+      });
+    });
+
+    // Any selection move rewinds the shared blink clock, so the carets are
+    // solid the instant they land and a cursor opened mid-cycle starts in the
+    // same phase as the rest.
+    effect(() => {
+      this.selection.live();
+      this.selection.secondary();
+      untracked(() => {
+        if (this.#viewReady()) this.#restartCaretBlink();
       });
     });
 
@@ -484,6 +545,21 @@ export class ShipEditor implements ControlValueAccessor {
   }
 
   onSurfaceMouseDown(event: MouseEvent) {
+    // A click always establishes a real DOM selection, so the sync path can
+    // trust the DOM again even if a window move had unmounted the old caret.
+    this.#domSelectionPainted = true;
+    // A new gesture retires any under-painted selection left by a drag that
+    // ended on a component block.
+    this.#voidPaint = null;
+    // Alt+click opens another cursor: the current primary is demoted to a
+    // secondary and the click below establishes the new primary. A plain click
+    // is a fresh single selection.
+    if (event.altKey && this.multiCursor()) {
+      const primary = this.selection.active();
+      if (primary) this.selection.secondary.update((rest) => normalizeLogical([...rest, primary]));
+    } else {
+      this.selection.clearSecondary();
+    }
     if (this.readonly()) return;
     this.#selectionDragAnchor = null;
     this.#selectionDragOverVoid = null;
@@ -534,6 +610,16 @@ export class ShipEditor implements ControlValueAccessor {
   #selectionDragAnchor: number | null = null;
   /** Component block index currently under the dragging pointer, if any. */
   #selectionDragOverVoid: number | null = null;
+  /**
+   * A selection whose paint is deliberately shorter than the model.
+   *
+   * Blink cannot put a selection endpoint inside a component block, so a drag
+   * ending on one paints up to its boundary while the logical selection still
+   * covers the block. Recorded here so the DOM→logical sync can recognise its
+   * own under-paint and leave the model alone — otherwise the next edit reads
+   * the shorter range back and spares the very block the user selected.
+   */
+  #voidPaint: { start: Node; startOffset: number; end: Node; endOffset: number } | null = null;
 
   onSurfaceMouseMove(event: MouseEvent) {
     if (this.#selectionDragAnchor === null || event.buttons !== 1) return;
@@ -544,6 +630,62 @@ export class ShipEditor implements ControlValueAccessor {
       el && el.parentElement === surface && this.#componentBehaviorFor(el) ? this.#winStart + this.#indexInParent(el) : null;
     this.#selectionDragOverVoid = over;
     if (over !== null) this.#applyVoidDragClamp();
+  }
+
+  /**
+   * Bring the painted range back in line with the clamped logical selection
+   * when a drag ends over a component block.
+   *
+   * Blink cannot put a selection endpoint inside a `contenteditable="false"`
+   * island, so such a drag leaves the native range running on to the end of
+   * the editing host — every block past the component reads as selected.
+   * `#applyVoidDragClamp` already corrects the *logical* selection, but the
+   * native range is what the next `beforeinput` re-derives from once the drag
+   * state is cleared, so leaving it overshooting meant the next keystroke
+   * deleted every block through the end of the document.
+   */
+  #repaintAfterVoidDrag(voidIndex: number) {
+    if (typeof window === 'undefined') return;
+    const container = this.surface().nativeElement;
+    const voidEl = container.children[voidIndex - this.#winStart];
+    const domSel = window.getSelection();
+    if (!voidEl || !domSel || domSel.rangeCount === 0) return;
+    const cd = this.engine.columnar;
+    const row = cd.rowOfTopLevel(voidIndex);
+    if (row >= cd.rows) return;
+    const anchor = this.#selectionDragAnchor;
+    const draggingDown = anchor === null || anchor <= cd.startOf(row);
+    const range = domSel.getRangeAt(0).cloneRange();
+    this.selection.suppress();
+    try {
+      // The component's own highlight comes from the void-in-selection class,
+      // so the painted range stops at its boundary rather than trying to reach
+      // inside it.
+      if (draggingDown) range.setEndBefore(voidEl);
+      else range.setStartAfter(voidEl);
+      domSel.removeAllRanges();
+      domSel.addRange(range);
+      this.#voidPaint = {
+        start: range.startContainer,
+        startOffset: range.startOffset,
+        end: range.endContainer,
+        endOffset: range.endOffset,
+      };
+    } catch (e) {
+      console.warn('[sh-editor] void-drag repaint failed:', e);
+    }
+    this.selection.unsuppress();
+  }
+
+  /**
+   * A drag that ended over a component block leaves the native range
+   * overshooting; repaint it while the clamp's anchor is still around. The
+   * drag state itself is cleared by the next mousedown or keydown, so the
+   * clamp keeps asserting the logical selection until the user moves on.
+   */
+  @HostListener('document:mouseup')
+  onDocumentMouseUp() {
+    if (this.#selectionDragOverVoid !== null) this.#repaintAfterVoidDrag(this.#selectionDragOverVoid);
   }
 
   #applyVoidDragClamp() {
@@ -735,6 +877,7 @@ export class ShipEditor implements ControlValueAccessor {
       return;
     }
 
+    this.#ensureCaretPainted();
     this.#syncLogicalSelectionFromDOM();
 
     const format: Record<string, string> = {
@@ -745,6 +888,11 @@ export class ShipEditor implements ControlValueAccessor {
     };
 
     let mutated = true;
+    // `beforeinput` fires once, for the native range — which is the primary
+    // cursor. Every mutating intent is replayed at the other cursors here, as
+    // one undo step; the event's own target ranges describe the primary only,
+    // so they are skipped while fanning out.
+    const multi = this.selection.isMulti();
 
     switch (event.inputType) {
       case 'insertText':
@@ -753,36 +901,38 @@ export class ShipEditor implements ControlValueAccessor {
         event.preventDefault();
         if (!data) break;
 
-        this.#selectTargetRange(event);
-        this.engine.insertText(data);
+        this.#fanOut(() => {
+          if (!multi) this.#selectTargetRange(event);
+          this.engine.insertText(data);
+        });
         break;
       }
       case 'insertParagraph':
         event.preventDefault();
-        this.engine.handleEnter();
+        this.#fanOut(() => this.engine.handleEnter());
         break;
       case 'insertLineBreak':
         event.preventDefault();
-        this.engine.insertText('\n');
+        this.#fanOut(() => this.engine.insertText('\n'));
         break;
       case 'deleteContentBackward':
       case 'deleteWordBackward':
       case 'deleteSoftLineBackward':
       case 'deleteHardLineBackward':
         event.preventDefault();
-        this.#handleDelete(event, 'backward');
+        this.#fanOut(() => this.#handleDelete(event, 'backward', !multi));
         break;
       case 'deleteContentForward':
       case 'deleteWordForward':
       case 'deleteSoftLineForward':
       case 'deleteHardLineForward':
         event.preventDefault();
-        this.#handleDelete(event, 'forward');
+        this.#fanOut(() => this.#handleDelete(event, 'forward', !multi));
         break;
       case 'deleteByCut':
       case 'deleteContent':
         event.preventDefault();
-        this.engine.deleteRange();
+        this.#fanOut(() => this.engine.deleteRange());
         break;
       case 'insertFromPaste':
       case 'insertFromDrop':
@@ -809,7 +959,7 @@ export class ShipEditor implements ControlValueAccessor {
         const markType = format[event.inputType];
         if (markType && this.engine.inlines.has(markType)) {
           event.preventDefault();
-          this.engine.toggleMark(markType);
+          this.#fanOut(() => this.engine.toggleMark(markType));
           break;
         }
 
@@ -839,6 +989,12 @@ export class ShipEditor implements ControlValueAccessor {
     this.#syncLogicalSelectionFromDOM();
   }
 
+  /** Run an intent at every cursor when several are live, else just once. */
+  #fanOut(run: () => void) {
+    if (this.selection.isMulti()) this.engine.runAtEveryCursor(run);
+    else run();
+  }
+
   #selectTargetRange(event: InputEvent): boolean {
     const tr = event.getTargetRanges?.()[0];
     if (!tr) return false;
@@ -851,7 +1007,7 @@ export class ShipEditor implements ControlValueAccessor {
     return true;
   }
 
-  #handleDelete(event: InputEvent, direction: 'backward' | 'forward') {
+  #handleDelete(event: InputEvent, direction: 'backward' | 'forward', useTargetRange = true) {
     const sel = this.selection.active();
 
     if (sel && sel.from !== sel.to) {
@@ -859,7 +1015,7 @@ export class ShipEditor implements ControlValueAccessor {
       return;
     }
 
-    const tr = event.getTargetRanges?.()[0];
+    const tr = useTargetRange ? event.getTargetRanges?.()[0] : undefined;
     if (tr) {
       const container = this.surface().nativeElement;
       const start = this.mapDOMToPoint(container, tr.startContainer, tr.startOffset, 'start');
@@ -922,6 +1078,11 @@ export class ShipEditor implements ControlValueAccessor {
 
   #syncLogicalSelectionFromDOM() {
     if (typeof window === 'undefined') return;
+    // The caret's block is unmounted, so whatever the DOM reports is Blink's
+    // invention, not a selection the user made. The logical selection stays
+    // authoritative until `#ensureCaretPainted` (or a click) re-establishes a
+    // real one.
+    if (!this.#domSelectionPainted) return;
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
@@ -938,6 +1099,24 @@ export class ShipEditor implements ControlValueAccessor {
     if (this.#selectionDragOverVoid !== null) {
       this.#applyVoidDragClamp();
       return;
+    }
+    // Our own under-paint from a drag that ended on a component block: the
+    // range stops at the block's boundary but the logical selection owns the
+    // block, so adopting the range here would quietly drop it from the
+    // selection and spare it from the next edit. Any *other* range means the
+    // user has moved on, and the record goes.
+    if (this.#voidPaint) {
+      const painted = this.#voidPaint;
+      if (
+        range.startContainer === painted.start &&
+        range.startOffset === painted.startOffset &&
+        range.endContainer === painted.end &&
+        range.endOffset === painted.endOffset
+      ) {
+        this.selection.updateRect(container);
+        return;
+      }
+      this.#voidPaint = null;
     }
     if (this.#virtualSelectAll) {
       // The DOM can only show the mounted slice of a select-all; keep the
@@ -966,6 +1145,7 @@ export class ShipEditor implements ControlValueAccessor {
     if (this.#insideComponentBlock(event.target)) return;
     event.preventDefault();
 
+    this.#ensureCaretPainted();
     this.#syncLogicalSelectionFromDOM();
 
     const clipboard = event.clipboardData;
@@ -1050,6 +1230,10 @@ export class ShipEditor implements ControlValueAccessor {
     // Keyboard input takes selection authority back from any finished drag.
     this.#selectionDragAnchor = null;
     this.#selectionDragOverVoid = null;
+    // The keystroke is about to read or extend the DOM selection, so the caret
+    // has to exist there first. Bare modifier presses are not interactions —
+    // holding Shift must not yank the viewport back to the caret.
+    if (!MODIFIER_KEYS.has(event.key)) this.#ensureCaretPainted();
 
     const slash = this.slashMenu();
     if (slash?.isOpen()) {
@@ -1057,6 +1241,33 @@ export class ShipEditor implements ControlValueAccessor {
       if (event.key === 'ArrowUp') return event.preventDefault(), slash.move(-1);
       if (event.key === 'Enter' || event.key === 'Tab') return event.preventDefault(), slash.confirm();
       if (event.key === 'Escape') return event.preventDefault(), slash.close();
+    }
+
+    // Escape collapses back to one cursor; plain caret navigation ends
+    // multi-cursor mode too, since the browser only moves the native caret and
+    // leaving the others behind would strand them where the user is not.
+    if (this.selection.isMulti()) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.selection.clearSecondary();
+        this.#render();
+        return;
+      }
+      if (NAVIGATION_KEYS.has(event.key) && !event.altKey) this.selection.clearSecondary();
+    }
+
+    // Block reordering: the code-editor line-move gesture, in both flavors —
+    // Alt+Arrow (VS Code) and Cmd/Ctrl+Shift+Arrow (Sublime), the same pair
+    // `sh-code`'s keymap presets bind. Handled before the selected-block
+    // keys so a selected void block moves instead of navigating away.
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      const altMove = event.altKey && !event.shiftKey && !event.metaKey && !event.ctrlKey;
+      const sublimeMove = (event.metaKey || event.ctrlKey) && event.shiftKey && !event.altKey;
+      if (altMove || sublimeMove) {
+        event.preventDefault();
+        if (this.engine.moveSelectedBlocks(event.key === 'ArrowUp' ? -1 : 1)) this.#render();
+        return;
+      }
     }
 
     const selectedIdx = this.engine.selectedBlock();
@@ -1267,6 +1478,10 @@ export class ShipEditor implements ControlValueAccessor {
         this.#render();
       },
     };
+    // A behavior may render static fallback content inside the wrapper (a
+    // sheet block serializes its real <table> there); the live component
+    // supersedes it.
+    el.replaceChildren();
     // Angular applies the component's static host class by *replacing* the
     // host element's class attribute — put the behavior-rendered classes back
     // afterwards.
@@ -1299,8 +1514,17 @@ export class ShipEditor implements ControlValueAccessor {
     if (!entry) return false;
     const next = this.#htmlToElement(html) as HTMLElement | null;
     if (!next || next.dataset?.['shBlock'] !== entry.type) {
+      // The wrapper is the component's Angular host element, so destroying the
+      // component takes it out of the DOM too. The caller still has to put the
+      // replacement somewhere, and `replaceWith` on a detached node is a silent
+      // no-op — the block would just vanish, leaving the DOM one element short
+      // of the AST with every later block shifted up. Put the wrapper back
+      // where it was so the caller can replace it normally.
+      const parent = el.parentNode;
+      const before = el.nextSibling;
       entry.ref.destroy();
       this.#componentBlocks.delete(el);
+      if (parent && !el.isConnected) parent.insertBefore(el, before);
       return false;
     }
     // Copy attributes additively — Angular host bindings may have put their
@@ -1329,6 +1553,7 @@ export class ShipEditor implements ControlValueAccessor {
     // this render), repainting the editor's DOM selection would steal the
     // component's focus mid-interaction.
     if (sel && !this.#insideComponentBlock(this.#document.activeElement)) this.restoreDOMSelection(sel);
+    this.#paintSecondaryCursors();
     this.selection.unsuppress();
   }
 
@@ -1508,8 +1733,163 @@ export class ShipEditor implements ControlValueAccessor {
       this.#scrollScheduled = false;
       if (!this.#virtualOn || !this.#viewReady()) return;
       this.#updateVirtualWindow(false);
+      this.#repaintSelectionAfterWindowMove();
     });
   };
+
+  /**
+   * Re-project the logical selection after a window move that did not come
+   * through `#render`.
+   *
+   * Scrolling rebuilds or splices the mounted slice, and either way the
+   * native selection's nodes are gone — a rebuilt window replaces even the
+   * elements that stayed in range, and `#dropDOMSelectionIfUnmounting`
+   * clears ranges whose blocks left. The logical selection is untouched and
+   * still authoritative, so the caret must be painted back onto the new
+   * nodes; without this, scrolling silently loses the caret and the next
+   * keystroke has nowhere to land.
+   *
+   * Only repaints while the editor already owns focus: scrolling past an
+   * unfocused editor must never pull the selection away from whatever else
+   * holds it, and a focused component block owns its own selection.
+   */
+  #repaintSelectionAfterWindowMove() {
+    if (typeof window === 'undefined') return;
+    const sel = this.selection.active();
+    if (!sel) return;
+    const active = this.#document.activeElement;
+    if (!active || !this.surface().nativeElement.contains(active)) return;
+    if (this.#insideComponentBlock(active)) return;
+    this.selection.suppress();
+    this.restoreDOMSelection(sel);
+    this.#paintSecondaryCursors();
+    this.selection.unsuppress();
+  }
+
+  // -------------------------------------------------------------------------
+  // Secondary cursors.
+  //
+  // A contenteditable gets exactly one native selection range, so only the
+  // primary cursor is the browser's. The rest are painted by the editor:
+  // non-collapsed ones through the CSS Custom Highlight API (no DOM inserted,
+  // so the text nodes the editing path depends on stay untouched), collapsed
+  // ones as drawn carets.
+  //
+  // Only the mounted window can be painted — an off-window cursor has no nodes
+  // to point at — which is the same rule `restoreDOMSelection` already applies
+  // to the primary, and why this has to re-run on every window move.
+  // -------------------------------------------------------------------------
+
+  /**
+   * Drawn carets, in body coordinates — every cursor while several are live,
+   * the primary included.
+   *
+   * The native caret keeps a blink phase that nothing can read or align to, so
+   * a drawn caret can never be kept in step with it. Rather than show two
+   * cursors blinking against each other, the native one is hidden while
+   * multi-cursor is active (`.multi-cursor` sets `caret-color: transparent`)
+   * and all of them are drawn here, sharing one animation.
+   */
+  readonly drawnCarets = signal<{ top: number; left: number; height: number; primary: boolean }[]>([]);
+
+  #paintSecondaryCursors() {
+    if (typeof window === 'undefined') return;
+    if (!this.selection.secondary().length) {
+      if (this.drawnCarets().length) this.drawnCarets.set([]);
+      this.#setSecondaryHighlight([]);
+      return;
+    }
+    const container = this.surface().nativeElement;
+    const body = container.parentElement;
+    const cd = this.engine.columnar;
+    if (!body || !cd.rows) return;
+
+    const blockCount = this.engine.blockCount();
+    const winFrom = cd.startOf(cd.rowOfTopLevel(Math.min(this.#winStart, blockCount)));
+    const endBlock = Math.min(this.#winEnd, blockCount);
+    const winTo = endBlock >= blockCount ? cd.size : cd.startOf(cd.rowOfTopLevel(endBlock));
+
+    const primary = this.selection.active();
+    const isPrimary = (sel: LogicalSelection) => !!primary && sel.from === primary.from && sel.to === primary.to;
+
+    const bodyRect = body.getBoundingClientRect();
+    const carets: { top: number; left: number; height: number; primary: boolean }[] = [];
+    const ranges: Range[] = [];
+    for (const sel of logicalRangesInSpan(this.selection.ranges(), winFrom, winTo)) {
+      const range = this.#domRangeFor(sel);
+      if (!range) continue;
+      if (sel.from === sel.to) {
+        const rect = range.getBoundingClientRect();
+        carets.push({
+          top: rect.top - bodyRect.top,
+          left: rect.left - bodyRect.left,
+          height: rect.height || parseFloat(getComputedStyle(container).lineHeight) || 20,
+          primary: isPrimary(sel),
+        });
+      } else if (!isPrimary(sel)) {
+        // The primary's own range is already painted by the native selection.
+        ranges.push(range);
+      }
+    }
+    this.drawnCarets.set(carets);
+    this.#setSecondaryHighlight(ranges);
+  }
+
+  /**
+   * Rewind the shared blink clock so every caret is solid the moment the
+   * selection moves — and so a cursor opened mid-cycle starts in phase.
+   */
+  #restartCaretBlink() {
+    const body = this.surface().nativeElement.parentElement;
+    const layer = body?.querySelector('.sh-editor-caret-layer') as HTMLElement | null;
+    if (!layer?.getAnimations) return;
+    for (const animation of layer.getAnimations()) animation.currentTime = 0;
+  }
+
+  /**
+   * Publish the secondary selection ranges as a CSS highlight.
+   *
+   * The registry is global and keyed by name; one focused editor owns the
+   * name at a time, and an editor with no secondaries releases it.
+   */
+  #setSecondaryHighlight(ranges: Range[]) {
+    // Absent on the server and in jsdom, and on browsers without the API — in
+    // every one of those the extra selections simply do not paint, while the
+    // model, the editing behaviour and the drawn carets are unaffected.
+    if (typeof CSS === 'undefined' || typeof window === 'undefined') return;
+    const registry = (CSS as unknown as { highlights?: Map<string, unknown> }).highlights;
+    const ctor = (window as unknown as { Highlight?: new (...r: Range[]) => unknown }).Highlight;
+    if (!registry || !ctor) return;
+    if (!ranges.length) registry.delete(SECONDARY_HIGHLIGHT);
+    else registry.set(SECONDARY_HIGHLIGHT, new ctor(...ranges));
+  }
+
+  /**
+   * Put the caret back on real DOM before an interaction that will read or
+   * extend the DOM selection.
+   *
+   * Scrolling can carry the caret's block out of the mounted window, and a
+   * focused contenteditable with no DOM selection is exactly the state where
+   * Blink synthesizes one at the top of the editing host. Adopting that would
+   * silently move the caret into a block the user never chose and land the
+   * edit there. Scrolling the caret back into view first restores the
+   * invariant — and is what every editor does when you scroll away and type.
+   *
+   * Deliberately not called from `selectionchange`: merely scrolling past the
+   * caret must not yank the viewport back, only editing must.
+   */
+  #ensureCaretPainted() {
+    if (this.#domSelectionPainted || !this.#virtualOn) return;
+    const sel = this.selection.active();
+    if (!sel) return;
+    const active = this.#document.activeElement;
+    if (!active || !this.surface().nativeElement.contains(active)) return;
+    if (this.#insideComponentBlock(active)) return;
+    this.selection.suppress();
+    this.#scrollCaretIntoView(sel.from);
+    this.restoreDOMSelection(sel);
+    this.selection.unsuppress();
+  }
 
   /** The viewport's edges in client coordinates. */
   #viewportEdges(): { top: number; bottom: number } {
@@ -1947,6 +2327,74 @@ export class ShipEditor implements ControlValueAccessor {
     }
   }
 
+  /** The DOM node/offset a block point addresses, or null when it has none. */
+  #domPosFor(bp: BlockPoint): { node: Node; offset: number } | null {
+    const container = this.surface().nativeElement;
+    const cd = this.engine.columnar;
+    const blockEl = container.children[bp.blockIndex - this.#winStart];
+    if (!blockEl) return null;
+
+    const row = cd.rowOfTopLevel(bp.blockIndex);
+    const behavior = row < cd.rows ? this.engine.blocks.get(cd.typeOf(row)) : undefined;
+
+    if (behavior?.category === 'void') return null;
+
+    if (behavior?.category === 'container') {
+      const liEl = blockEl.children[bp.itemIndex ?? 0];
+      if (!liEl) return { node: blockEl, offset: 0 };
+      return this.#domPosAtChar(liEl as HTMLElement, bp.charOffset);
+    }
+
+    if (behavior?.resolveDOMPosition) {
+      const blockAst = this.engine.blockAt(bp.blockIndex);
+      const result = blockAst ? behavior.resolveDOMPosition(blockEl as HTMLElement, blockAst, bp.charOffset) : null;
+      if (result) return result;
+    }
+
+    return this.#domPosAtChar(blockEl as HTMLElement, bp.charOffset);
+  }
+
+  /**
+   * A DOM Range for a logical selection, or null when it has no mounted nodes.
+   * Used to paint secondary cursors, which never touch the native selection.
+   */
+  #domRangeFor(sel: LogicalSelection): Range | null {
+    const cd = this.engine.columnar;
+    if (!cd.rows || typeof document === 'undefined') return null;
+    const isCollapsed = sel.from === sel.to;
+    let startBp = blockPointAt(cd, sel.from);
+    let endBp = isCollapsed ? startBp : blockPointAt(cd, sel.to);
+
+    if (this.#virtualOn) {
+      if (isCollapsed) {
+        if (startBp.blockIndex < this.#winStart || startBp.blockIndex >= this.#winEnd) return null;
+      } else {
+        const start = this.#clampToWindow(startBp, 'start');
+        const end = this.#clampToWindow(endBp, 'end');
+        if (!start || !end) return null;
+        startBp = start;
+        endBp = end;
+      }
+    }
+
+    try {
+      const start = this.#domPosFor(startBp);
+      if (!start) return null;
+      const range = document.createRange();
+      range.setStart(start.node, start.offset);
+      if (isCollapsed) {
+        range.collapse(true);
+        return range;
+      }
+      const end = this.#domPosFor(endBp);
+      if (!end) return null;
+      range.setEnd(end.node, end.offset);
+      return range;
+    } catch {
+      return null;
+    }
+  }
+
   private restoreDOMSelection(sel: LogicalSelection) {
     const container = this.surface().nativeElement;
     if (typeof window === 'undefined') return;
@@ -1963,11 +2411,17 @@ export class ShipEditor implements ControlValueAccessor {
       if (isCollapsed) {
         // An off-window caret has no element to sit in; the logical selection
         // stays authoritative and the DOM selection is simply not painted.
-        if (startBp.blockIndex < this.#winStart || startBp.blockIndex >= this.#winEnd) return;
+        if (startBp.blockIndex < this.#winStart || startBp.blockIndex >= this.#winEnd) {
+          this.#domSelectionPainted = false;
+          return;
+        }
       } else {
         const start = this.#clampToWindow(startBp, 'start');
         const end = this.#clampToWindow(endBp, 'end');
-        if (!start || !end) return;
+        if (!start || !end) {
+          this.#domSelectionPainted = false;
+          return;
+        }
         startBp = start;
         endBp = end;
       }
@@ -1975,29 +2429,7 @@ export class ShipEditor implements ControlValueAccessor {
 
     try {
       const range = document.createRange();
-      const getPos = (bp: BlockPoint) => {
-        const blockEl = container.children[bp.blockIndex - this.#winStart];
-        if (!blockEl) return null;
-
-        const row = cd.rowOfTopLevel(bp.blockIndex);
-        const behavior = row < cd.rows ? this.engine.blocks.get(cd.typeOf(row)) : undefined;
-
-        if (behavior?.category === 'void') return null;
-
-        if (behavior?.category === 'container') {
-          const liEl = blockEl.children[bp.itemIndex ?? 0];
-          if (!liEl) return { node: blockEl, offset: 0 };
-          return this.#domPosAtChar(liEl as HTMLElement, bp.charOffset);
-        }
-
-        if (behavior?.resolveDOMPosition) {
-          const blockAst = this.engine.blockAt(bp.blockIndex);
-          const result = blockAst ? behavior.resolveDOMPosition(blockEl as HTMLElement, blockAst, bp.charOffset) : null;
-          if (result) return result;
-        }
-
-        return this.#domPosAtChar(blockEl as HTMLElement, bp.charOffset);
-      };
+      const getPos = (bp: BlockPoint) => this.#domPosFor(bp);
 
       const start = getPos(startBp);
       if (start) {
@@ -2020,10 +2452,12 @@ export class ShipEditor implements ControlValueAccessor {
           domSel.focusNode === range.endContainer &&
           domSel.focusOffset === range.endOffset
         ) {
+          this.#domSelectionPainted = true;
           return;
         }
         domSel?.removeAllRanges();
         domSel?.addRange(range);
+        this.#domSelectionPainted = true;
       }
     } catch (e) {
       console.warn('[sh-editor] restoreDOMSelection failed:', e);
