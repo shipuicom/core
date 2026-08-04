@@ -223,6 +223,14 @@ export const routes: Routes = [
         path: 'editors',
         loadComponent: () => import('./ship/editors/editors'),
       },
+      {
+        path: 'code',
+        loadComponent: () => import('./ship/code/code'),
+      },
+      {
+        path: 'sheet',
+        loadComponent: () => import('./ship/sheet/sheet'),
+      },
     ],
   },
 ];

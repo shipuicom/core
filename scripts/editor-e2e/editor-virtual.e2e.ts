@@ -268,4 +268,128 @@ test.describe('viewport virtualization', () => {
       .toBe(1);
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
+
+  test('a window move repaints the caret, so typing after a scroll still lands', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    await loadBigDoc(page, BLOCKS);
+    await scrollEditorTo(page, 0.5);
+    await expect.poll(async () => (await mountedState(page)).mounted).toBeGreaterThan(5);
+
+    // Click into a mounted block, then scroll — the window move tears down
+    // the nodes the native selection pointed at.
+    const targetIndex = await page.evaluate(() => {
+      const surface = document.querySelector('.sh-editor-content')!;
+      const el = surface.children[Math.floor(surface.children.length / 2)] as HTMLElement;
+      const index = Number(/^Block (\d+)\b/.exec(el.textContent ?? '')![1]);
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      (surface as HTMLElement).focus();
+      const sel = window.getSelection()!;
+      sel.removeAllRanges();
+      sel.addRange(range);
+      document.dispatchEvent(new Event('selectionchange'));
+      return index;
+    });
+
+    // Scroll far away — the caret's block unmounts and its native range goes
+    // with it — then come back. The block is mounted again, but on brand new
+    // nodes that no selection points at until the window move repaints it.
+    //
+    await scrollEditorTo(page, 0.05);
+    await expect.poll(async () => (await mountedState(page)).mounted).toBeGreaterThan(5);
+
+    // Coming back is a convergence, not a jump: every mount re-measures blocks
+    // and re-prices the ones still estimated, which moves the content under a
+    // fixed scroll offset. Re-aim each time until the block is mounted again.
+    await expect
+      .poll(
+        async () => {
+          await scrollEditorTo(page, 0.5);
+          return page.evaluate(
+            (i) =>
+              Array.from(document.querySelector('.sh-editor-content')!.children).some((el) =>
+                (el.textContent ?? '').startsWith(`Block ${i} `)
+              ),
+            targetIndex
+          );
+        },
+        { message: 'the caret block is mounted again', timeout: 10_000 }
+      )
+      .toBe(true);
+    await expect
+      .poll(() => page.evaluate(() => (window.getSelection()?.rangeCount ?? 0) > 0), {
+        message: 'caret repainted after the window moved back',
+      })
+      .toBe(true);
+
+    await page.keyboard.type(' TYPED');
+    const typed = await page.evaluate(
+      (i) =>
+        (window as any).ng
+          .getComponent(document.querySelector('sh-editor')!)
+          .engine.blockAt(i)
+          .content.map((n: any) => n.text)
+          .join(''),
+      targetIndex
+    );
+    expect(typed).toContain('TYPED');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
+  test('typing with the caret scrolled off-window lands in the caret block, not the top of the window', async ({
+    page,
+  }) => {
+    const { errors } = await openEditor(page);
+    await loadBigDoc(page, BLOCKS);
+    await scrollEditorTo(page, 0.5);
+    await expect.poll(async () => (await mountedState(page)).mounted).toBeGreaterThan(5);
+
+    const targetIndex = await page.evaluate(() => {
+      const surface = document.querySelector('.sh-editor-content')!;
+      const el = surface.children[Math.floor(surface.children.length / 2)] as HTMLElement;
+      const index = Number(/^Block (\d+)\b/.exec(el.textContent ?? '')![1]);
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      (surface as HTMLElement).focus();
+      const sel = window.getSelection()!;
+      sel.removeAllRanges();
+      sel.addRange(range);
+      document.dispatchEvent(new Event('selectionchange'));
+      return index;
+    });
+
+    // Scroll far away and *stay* there: the caret's block is unmounted and its
+    // native range is gone. A focused contenteditable with no DOM selection is
+    // exactly where Blink invents one at the top of the editing host — adopting
+    // that would land the edit in whichever block happens to be mounted first.
+    await scrollEditorTo(page, 0.05);
+    await expect
+      .poll(() =>
+        page.evaluate(
+          (i) =>
+            Array.from(document.querySelector('.sh-editor-content')!.children).every(
+              (el) => !(el.textContent ?? '').startsWith(`Block ${i} `)
+            ),
+          targetIndex
+        )
+      )
+      .toBe(true);
+
+    await page.keyboard.type(' TYPED');
+
+    const landed = await page.evaluate(() => {
+      const engine = (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine;
+      const hits: number[] = [];
+      for (let i = 0; i < engine.blockCount(); i++) {
+        const text = (engine.blockAt(i)?.content ?? []).map((n: any) => n.text ?? '').join('');
+        if (text.includes('TYPED')) hits.push(i);
+      }
+      return hits;
+    });
+    expect(landed, 'the edit belongs to the caret block and nowhere else').toEqual([targetIndex]);
+    await expectWindowInvariant(page, 'after typing with the caret off-window');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
 });

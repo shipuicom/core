@@ -554,6 +554,23 @@ function insertionMarks(cd: ColumnarDocument, row: number, offset: number, inlin
  * consumes the void (matching the tree primitive, which spliced the end block
  * out).
  */
+/**
+ * The row point a range's exclusive end addresses.
+ *
+ * A position on a block boundary belongs to the *next* row at offset 0. For a
+ * text row that is harmless — `deleteRangeRows` captures its tail and merges it
+ * back. A void row has no tail to keep, so it would be removed outright despite
+ * none of it lying inside the range. Ending one row earlier keeps the exclusive
+ * end exclusive: a selection reaching through one component must not also take
+ * the component that follows it.
+ */
+function rangeEndPoint(cd: ColumnarDocument, to: number): RowPoint {
+  const b = pointAt(cd, to);
+  if (b.offset !== 0 || cd.kindOf(b.row) === RowKind.Text || b.row === 0) return b;
+  const prev = b.row - 1;
+  return { row: prev, offset: cd.kindOf(prev) === RowKind.Text ? cd.textOf(prev).length : 1 };
+}
+
 function deleteRangeRows(cd: ColumnarDocument, a: RowPoint, b: RowPoint): void {
   if (a.row === b.row) {
     if (cd.kindOf(a.row) === RowKind.Text && b.offset > a.offset) {
@@ -618,8 +635,11 @@ export function insertTextOp(
   pendingMarks: ASTMark[] | null
 ): ColumnarMutation | { op: null; selAfter: LogicalSelection } | null {
   const a = pointAt(cd, sel.from);
-  const b = pointAt(cd, sel.to);
   const isCollapsed = sel.from === sel.to;
+  // Replacing a selection deletes it first, so the same exclusive-end rule as
+  // `deleteRangeOp` applies — typing over a range that reaches one component
+  // must not consume the component after it.
+  const b = isCollapsed ? pointAt(cd, sel.to) : rangeEndPoint(cd, sel.to);
 
   // Text cannot land on a void row.
   if (isCollapsed && cd.kindOf(a.row) !== RowKind.Text) return null;
@@ -662,7 +682,7 @@ export function insertTextOp(
 export function deleteRangeOp(cd: ColumnarDocument, sel: LogicalSelection, blocks: Map<string, BaseBlockBehavior>): ColumnarMutation | null {
   if (sel.from === sel.to) return null;
   const a = pointAt(cd, sel.from);
-  const b = pointAt(cd, sel.to);
+  const b = rangeEndPoint(cd, sel.to);
   const baseTop = topIndexOf(cd, rootOf(cd, a.row));
   const lastTop = topIndexOf(cd, rootOf(cd, b.row));
 
@@ -1182,14 +1202,15 @@ export function insertFragmentOp(
 }
 
 /**
- * Insert an image (with a trailing paragraph) at the selection, replacing the
- * selection first when it is a range. An empty paragraph at the caret is
- * replaced rather than kept above the image.
+ * Insert a void block (with a trailing paragraph) at the selection, replacing
+ * the selection first when it is a range. An empty paragraph at the caret is
+ * replaced rather than kept above the block.
  */
-export function insertImageOp(
+export function insertVoidBlockOp(
   cd: ColumnarDocument,
   sel: LogicalSelection,
   blocks: Map<string, BaseBlockBehavior>,
+  type: string,
   attrs: Record<string, unknown>
 ): (ColumnarMutation & { blockIndex: number }) | null {
   const a = pointAt(cd, sel.from);
@@ -1203,15 +1224,15 @@ export function insertImageOp(
     const p = pointAt(cd, sel.from);
     const root = rootOf(cd, p.row);
     const top = topIndexOf(cd, root);
-    const image: ASTBlockNode = { type: 'image', attrs: { ...attrs }, content: [] };
+    const voidBlock: ASTBlockNode = { type, attrs: { ...attrs }, content: [] };
 
     const emptyPara = cd.typeOf(root) === 'paragraph' && cd.kindOf(root) !== RowKind.Container && cd.textOf(root) === '';
     if (emptyPara) {
-      replaceRoots(cd, top, 1, [image, emptyParagraph()]);
+      replaceRoots(cd, top, 1, [voidBlock, emptyParagraph()]);
       blockIndex = top;
     } else {
       const at = root + spanOfRoot(cd, root);
-      cd.insertRows(at, rowsForBlocks([image, emptyParagraph()], at));
+      cd.insertRows(at, rowsForBlocks([voidBlock, emptyParagraph()], at));
       blockIndex = top + 1;
     }
     return caretSel(cd.startOf(cd.rowOfTopLevel(blockIndex)));
@@ -1463,6 +1484,53 @@ export function replaceBlocksOp(
   return withSpanOp(cd, at, count, () => {
     replaceRoots(cd, at, count, newBlocks);
     return selAfter;
+  });
+}
+
+/**
+ * Move the `count` top-level blocks at `first` one slot up or down, hopping
+ * the neighbouring block — the code-editor line-move gesture applied to
+ * blocks. Returns null when the span is already against that end.
+ *
+ * The selection is carried as block-relative points and re-flattened against
+ * the moved document, so it survives blocks of any size (a list with ten
+ * items, a void image) without the caller doing offset arithmetic.
+ */
+export function moveBlockSpanOp(
+  cd: ColumnarDocument,
+  first: number,
+  count: number,
+  direction: -1 | 1,
+  sel: LogicalSelection
+): ColumnarMutation | null {
+  const tops = countTops(cd);
+  if (count <= 0 || first < 0 || first + count > tops) return null;
+  if (direction === -1 ? first === 0 : first + count >= tops) return null;
+
+  // The rewritten window is the span plus the neighbour it swaps with.
+  const at = direction === -1 ? first - 1 : first;
+  const windowCount = count + 1;
+  const blocks = topLevelBlocks(cd, at, windowCount);
+  const reordered =
+    direction === -1 ? [...blocks.slice(1), blocks[0]] : [blocks[blocks.length - 1], ...blocks.slice(0, -1)];
+
+  const fromPoint = blockPointAt(cd, sel.from);
+  const toPoint = blockPointAt(cd, sel.to);
+
+  return withSpanOp(cd, at, windowCount, () => {
+    replaceRoots(cd, at, windowCount, reordered);
+    // Blocks inside the moved span shift by one slot; the neighbour it
+    // jumped over shifts the other way by the span's length.
+    const shifted = (point: BlockPoint): BlockPoint => {
+      const inSpan = point.blockIndex >= first && point.blockIndex < first + count;
+      if (inSpan) return { ...point, blockIndex: point.blockIndex + direction };
+      const isNeighbour = point.blockIndex === (direction === -1 ? first - 1 : first + count);
+      return isNeighbour ? { ...point, blockIndex: point.blockIndex - direction * count } : point;
+    };
+    return {
+      from: flatPosOfBlockChar(cd, shifted(fromPoint)),
+      to: flatPosOfBlockChar(cd, shifted(toPoint)),
+    };
   });
 }
 

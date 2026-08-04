@@ -29,6 +29,9 @@ async function readInvariant(page: Page) {
     // Read DOM text with soft breaks: a real <br> is a '\n' in the AST; a
     // padding <br> (data-sh-pad) is a zero-width caret shim.
     const domTextOf = (el: Element): string => {
+      // A custom component block's DOM is Angular UI, not document text; its
+      // AST content is empty by definition (void), so it reads as ''.
+      if (el.hasAttribute('data-sh-block')) return '';
       let out = '';
       const walk = (n: Node) => {
         if (n.nodeType === Node.TEXT_NODE) out += n.textContent ?? '';
@@ -976,11 +979,12 @@ test.describe('DOM ≡ AST invariant', () => {
     });
     await page.locator('.sh-editor-content > p').first().click();
 
-    // "/" opens the menu with every behavior-declared command.
+    // "/" opens the menu with every behavior-declared command (8 built-ins +
+    // the demo page's two custom component-block widgets).
     await page.keyboard.type('/');
     const menu = page.locator('.sh-editor-slash-menu');
     await expect(menu).toBeVisible();
-    await expect(menu.locator('button')).toHaveCount(10);
+    await expect(menu.locator('button')).toHaveCount(12);
 
     // Typing filters; keyword/label substring match.
     await page.keyboard.type('quote');

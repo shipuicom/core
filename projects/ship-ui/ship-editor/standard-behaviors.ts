@@ -34,6 +34,8 @@ export class ParagraphBehavior extends BaseBlockBehavior {
   override readonly keybinding = 'editor.paragraph';
 
   parseDOM(el: HTMLElement) {
+    // A div carrying data-sh-block belongs to a custom component behavior.
+    if (el.dataset?.['shBlock']) return null;
     return ['p', 'div'].includes(el.tagName.toLowerCase())
       ? { type: this.type, attrs: blockAttrs({}, el.style.textAlign), content: [] }
       : null;

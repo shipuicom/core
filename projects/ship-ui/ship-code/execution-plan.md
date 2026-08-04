@@ -89,75 +89,83 @@ Exhaustive TODO list for building `ship-code`. Each task follows TDD: write the 
 - [x] Test: VS Code maps `ctrlOrCmd+ArrowLeft` to `code.caret.moveWordLeft`
 
 ### 1.5 Action Registry
-- [ ] `core/actions.ts` — Define action handler registry
-- [ ] Test: register an action handler, dispatch by name, verify it runs
-- [ ] Test: dispatch unknown action returns false (no-op)
-- [ ] Test: action handler receives `(doc, selection)` and returns `{ doc, selection }`
-- [ ] Implement `registerAction`, `dispatchAction`
-- [ ] Register all caret movement actions (wire to selection functions from 1.3)
-- [ ] Test: dispatching `code.caret.moveRight` moves caret right
-- [ ] Test: dispatching `code.selection.selectAll` selects all
+- [x] `core/actions.ts` — action handler registry over `(doc, selection)` contexts (pure handlers, null = not applicable)
+- [x] Test: register an action handler, dispatch by name, verify it runs
+- [x] Test: dispatch unknown action returns false (no-op)
+- [x] Test: action handler receives `(doc, selection)` and returns `{ doc, selection }`
+- [x] Implement `registerAction`, `dispatchAction` (+ `hasAction`)
+- [x] Register all caret movement + selection actions (wired to the flat-motion functions)
+- [x] Test: dispatching `code.caret.moveRight` moves caret right
+- [x] Test: dispatching `code.selection.selectAll` selects all
 
 ### 1.6 TextMate Tokenization (vscode-textmate wrapper)
-- [ ] `textmate/vscode-engine.ts` — Implement `createVSCodeEngine(): Promise<TokenizerEngine>`
-- [ ] Load `onig.wasm`, init `vscode-oniguruma`, create `vscode-textmate` `Registry`
-- [ ] Test: tokenize `const x = 5;` with TypeScript grammar, verify `storage.type` scope on `const`
-- [ ] Test: tokenize `// comment`, verify `comment.line` scope
-- [ ] Test: tokenize multi-line string, verify scope stack continuity
-- [ ] Test: tokenize empty line returns empty token array
-- [ ] `grammars/registry.ts` — Language ID → scope name + grammar JSON mapping
-- [ ] Test: `getGrammar('typescript')` returns grammar with `scopeName: 'source.ts'`
-- [ ] Test: `getGrammar('unknown')` returns null
-- [ ] Copy VS Code TypeScript grammar JSON to `grammars/typescript.json`
-- [ ] Copy VS Code HTML grammar JSON to `grammars/html.json`
-- [ ] Copy VS Code CSS grammar JSON to `grammars/css.json`
-- [ ] Copy VS Code JSON grammar JSON to `grammars/json.json`
-- [ ] Implement incremental tokenization: cache `ruleStack` per line
-- [ ] Test: edit line 3, only lines 3+ are re-tokenized
-- [ ] Test: edit line 3, if scope stack stabilizes at line 5, lines 6+ are untouched
+- [x] `textmate/types.ts` — `CodeToken`, `TokenizerState`, `TokenizedLine`, `LanguageTokenizer`, `TokenizerEngine` (the swap point)
+- [x] `textmate/vscode-engine.ts` — `createVSCodeEngine({ wasm })`: caller supplies `onig.wasm` bytes (browser fetches the asset, tests read the vendored file), engine stays environment-free
+- [x] Load `onig.wasm`, init `vscode-oniguruma`, create `vscode-textmate` `Registry` (embedded-language requests route back through the grammar registry)
+- [x] Test: tokenize `const x = 5;` with TypeScript grammar, verify `storage.type` scope on `const`
+- [x] Test: tokenize `// comment`, verify `comment.line` scope
+- [x] Test: tokenize multi-line template string, verify scope stack continuity
+- [x] Test: tokenize empty line returns empty token array
+- [x] `grammars/registry.ts` — Language ID → scope name + lazily imported grammar (aliases: ts/js/tsx → typescript, scss → css); `registerGrammar` extension point
+- [x] Test: `getGrammar('typescript')` returns `scopeName: 'source.ts'`
+- [x] Test: `getGrammar('unknown')` returns null
+- [x] Vendor VS Code TypeScript/HTML/CSS/JSON grammars (`grammars/*.json` + generated `.grammar.ts` modules for code-split bundling; provenance in `vendor/README.md`)
+- [x] `textmate/incremental.ts` — per-line `ruleStack` cache with splice-aligned invalidation
+- [x] Test: edit line 3, only lines 3+ are re-tokenized
+- [x] Test: edit line 3, end state stabilizes → suffix revalidates with no tokenizer calls
+- [x] `textmate/scope-classes.ts` — scope → `sh-tok-*` class bridge (interim until 1.7's theme resolver), CSS-variable palette in `sh-code.scss`
+- [x] `<sh-code>` wiring: `engine` + `language` inputs, token segments in the line renderer, background pump in 300-line slices behind the virtualization window, edit bookkeeping mirrors flat changes into the cache
 
 ### 1.7 Theme System
-- [ ] `themes/theme-resolver.ts` — Implement `resolveScope(scopes, theme): StyledToken`
-- [ ] Test: `keyword.control.ts` resolves to theme's keyword color
-- [ ] Test: more specific scope wins over general scope
-- [ ] Test: `fontStyle: 'italic'` is applied when theme specifies it
-- [ ] Test: unmatched scope falls back to default foreground
-- [ ] `themes/ship-dark.ts` — Export dark theme `tokenColors` array
-- [ ] `themes/ship-light.ts` — Export light theme `tokenColors` array
-- [ ] Test: `ship-dark` theme has rules for all major scope categories
-- [ ] Test: `ship-light` theme has rules for all major scope categories
+- [x] `themes/theme-resolver.ts` — `resolveScope(scopes, theme): StyledToken` (VS-Code-shaped `tokenColors`; segment-prefix matching, comma/array selectors, descendant selectors, depth → segment-count → rule-order specificity; cached per theme + stack)
+- [x] Test: `keyword.control.ts` resolves to theme's keyword color
+- [x] Test: more specific scope wins over general scope
+- [x] Test: `fontStyle: 'italic'` is applied when theme specifies it
+- [x] Test: unmatched scope falls back to default foreground
+- [x] `themes/ship-dark.ts` — Export dark theme `tokenColors` array
+- [x] `themes/ship-light.ts` — Export light theme `tokenColors` array
+- [x] Test: `ship-dark` theme has rules for all major scope categories
+- [x] Test: `ship-light` theme has rules for all major scope categories
+- [x] `<sh-code>` `theme` input (built-in name or theme object); resolved styles dedupe into per-instance style buckets (`t1…tn` classes + one generated stylesheet, Monaco-style) so the DOM carries two-character classes; line height moves to a host CSS var, unstyled runs render as bare text nodes, adjacent same-style segments merge
+- [x] Replaces 1.6's interim `scope-classes` palette in the component (the utility stays exported)
+
+### 1.75 Columnar Core & Flat Selection (adopted from ship-editor's architecture)
+> The document's line array is the storage column; `core/line-index.ts` is the
+> prefix-sum index over it (flat offset ⇄ line/column, cached per document
+> identity). The selection is a flat `{anchor, head}` pair — ship-editor's
+> flat-selection shape — and edits are flat `{from, to, insert}` changes that
+> return their inverses (the history/rebase currency).
+- [x] `core/line-index.ts` — `LineIndex` prefix sums, `posOf`/`pointAt`/`lineAt`/`sliceText`, `indexFor` cache
+- [x] `core/flat-edit.ts` — `applyFlatChange(s)` with inverse changes, `mapFlatPos`/`mapThroughChanges`
+- [x] `core/flat-motion.ts` — flat caret motion (char/word/line/doc), goal-column vertical moves, select word/line/all
+- [x] Selection extension variants (`applyMotion` with `extend`; plain moves collapse to the range edge)
+- [x] `matchesShortcut` — framework-free chord matching for keymap specs
+- [x] Tests: line-index round-trips, change inversion, motion invariants, shortcut matching
 
 ### 1.8 View Layer
-- [ ] `view/editor-view.ts` — DOM rendering engine
-- [ ] Test (JSDOM): renders N `<div>` elements for N lines
-- [ ] Test (JSDOM): each line `<div>` contains a gutter and content area
+> Built directly into the `<sh-code>` component (signals templates render the
+> window; no separate view/ module). Virtualization uses the shared
+> `BlockHeightMap` from `@ship-ui/core/ship-virtual-scroll` — the same pixel
+> model ship-editor's virtualization runs on, in its own bundle so neither
+> editor pulls the other's code.
+- [x] Line rendering (plain text; tokenized spans arrive with 1.6/1.7)
 - [ ] Test (JSDOM): content area contains `<span>` elements matching token count
 - [ ] Test (JSDOM): token `<span>` elements have correct inline styles from theme
-- [ ] Implement line rendering with tokenized spans
-- [ ] `view/caret.ts` — Caret rendering
-- [ ] Implement blinking caret as absolutely positioned `<div>`
-- [ ] Implement caret position calculation from `CaretPosition` → pixel coordinates
-- [ ] `view/gutter.ts` — Line number gutter
-- [ ] Test (JSDOM): gutter shows correct line numbers
-- [ ] Test (JSDOM): active line number is highlighted
-- [ ] Implement gutter rendering
-- [ ] `view/input-handler.ts` — Hidden textarea input capture
-- [ ] Implement hidden `<textarea>` positioned behind content
-- [ ] Map keyboard events → action names via keymap + `ShipA11yKeybindingsService`
-- [ ] Map text input events → `insertText` transactions
-- [ ] Handle IME composition start/update/end
-- [ ] Handle paste events
-- [ ] `view/virtual-scroll.ts` — Viewport-aware line rendering
-- [ ] Implement: only render lines within visible viewport + buffer
-- [ ] Implement: recalculate on scroll, window resize
-- [ ] Test: 10000-line document only renders ~50 visible lines
+- [x] Blinking caret as absolutely positioned `<div>` (flat head → line/col → pixel box)
+- [x] Line number gutter, window-synchronized, sticky under horizontal scroll
+- [ ] Active line number highlighted
+- [x] Hidden `<textarea>` input capture (keydown → keymap actions, input → insertText, IME composition buffered, paste via textarea, copy/cut from the flat selection)
+- [x] Viewport-aware rendering: only lines within viewport + overscan exist in the DOM (`BlockHeightMap` window + spacer padding)
+- [x] Recalculate on scroll (rAF with hidden-document timeout fallback)
+- [x] Verified: 20,000-line document renders ~50 visible lines
 
 ### 1.9 Angular Component
-- [ ] `ship-code.ts` — Standalone Angular component `<sh-code>`
-- [ ] Inputs: `value`, `language`, `readonly`, `lineNumbers`, `theme`, `keymap`
-- [ ] Output: `valueChange`
-- [ ] Implement `ControlValueAccessor` (ngModel / reactive forms)
-- [ ] Wire inputs to core engine (document, tokenizer, theme, keymap)
+- [x] `sh-code.ts` — Standalone Angular component `<sh-code>`
+- [x] Inputs: `value`, `language`, `readonly`, `lineNumbers`, `keymap`, `virtualization` (theme arrives with 1.7)
+- [x] Output: `valueChange` (via `model()` two-way `value`)
+- [x] Implement `ControlValueAccessor` (ngModel / reactive forms)
+- [x] Editing: typing, Enter, Backspace/Delete, indent/outdent, delete/duplicate/move line, delete word, undo/redo (inverse-change history)
+- [ ] Wire tokenizer + theme once 1.6/1.7 land
 - [ ] Register active keymap into `ShipA11yKeybindingsService` on init
 - [ ] `ship-code.scss` — Styles
 - [ ] Editor container (monospace font via `--code-20`, background, border)

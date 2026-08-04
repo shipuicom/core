@@ -7,6 +7,7 @@
           class="sh-editor-content"
           [hidden]="viewMode() === 'code'"
           [class.readonly]="readonly()"
+          [class.multi-cursor]="selection.isMulti()"
           [attr.contenteditable]="!readonly()"
           (blur)="onDOMBlur()"
           (focus)="onDOMFocus()"
@@ -16,13 +17,27 @@
           (cut)="onCut($event)"
           (beforeinput)="onBeforeInput($event)"
           (mousedown)="onSurfaceMouseDown($event)"
+          (mousemove)="onSurfaceMouseMove($event)"
+          (click)="onSurfaceClick($event)"
           (dragstart)="onDragStart($event)"
           (dragover)="onDragOver($event)"
           (drop)="onDrop($event)"
           (dragend)="onDragEnd()"
           (dragleave)="onDragLeave($event)"
-          (compositionstart)="onCompositionStart()"
-          (compositionend)="onCompositionEnd()"></div>
+          (compositionstart)="onCompositionStart($event)"
+          (compositionend)="onCompositionEnd($event)"></div>
+        @if (drawnCarets().length) {
+          <div class="sh-editor-caret-layer">
+            @for (caret of drawnCarets(); track $index) {
+              <div
+                class="sh-editor-drawn-caret"
+                [class.secondary]="!caret.primary"
+                [style.top.px]="caret.top"
+                [style.left.px]="caret.left"
+                [style.height.px]="caret.height"></div>
+            }
+          </div>
+        }
         @if (dropIndicator(); as di) {
           <div class="sh-editor-drop-indicator" [style.top.px]="di.top"></div>
         }

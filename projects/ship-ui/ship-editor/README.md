@@ -41,3 +41,47 @@ non-standard extension.
 
 Implemented in `setBlockType` in [`editor-ast.utils.ts`](./editor-ast.utils.ts)
 (`toBlockOfType` helper + the void restore branches).
+
+## Custom component blocks (live Angular components as void blocks)
+
+A block can be a live Angular component — a map, a video player, an embedded
+code editor. Subclass `BaseComponentBlockBehavior`, point it at a component,
+and register it via the editor's `[behaviors]` input:
+
+```ts
+class MapBlockBehavior extends BaseComponentBlockBehavior {
+  readonly type = 'map';
+  readonly component = MapBlockComponent;   // any standalone component
+}
+```
+
+The component is mounted inside the block's wrapper element and injects
+`SHIP_EDITOR_BLOCK_CONTEXT` (a `ShipEditorBlockContext`): `attrs`, `index`,
+`selected` and `readonly` signals, plus `updateAttrs(patch)` (one undoable
+transaction), `select()` and `remove()`. **Attrs are the block's only
+persistent state** — they survive serialization, undo/redo and virtualization
+unmounts; anything the component wants to keep goes through `updateAttrs`.
+
+Interaction contract:
+
+- **Clicks**: interactive content (buttons, inputs, canvas, iframes, ARIA
+  roles, contenteditable) gets its clicks untouched. A click on nothing
+  interactive falls through and selects the block; a component's own click
+  handler can `stopPropagation()` to keep those too.
+- **Focus inside the component**: the editor intercepts *nothing* — keys,
+  shortcuts, clipboard, IME all belong to the component, so an embedded
+  editor keeps its whole keymap. Hand control back with `context.select()`
+  (bind it to Escape, or anything else).
+- **Block selected** (arrow navigation from adjacent text, click
+  fall-through, or `select()`): the standard void-block keybindings apply —
+  arrows navigate (hopping void-to-void), Backspace/Delete removes, Escape
+  returns the caret to the text. A cross-block text selection sweeping over
+  the block paints the void-in-selection highlight, exactly like images.
+
+Serialization defaults to a neutral wrapper —
+`<div data-sh-block="type" data-sh-attrs="…json…"></div>` — which round-trips
+through the `html` format (the default sanitizer allowlists these two
+attributes on `div`). `renderMarkdown` emits the same wrapper verbatim;
+parsing it back *from* markdown is not supported by default. Override
+`renderHTML`/`parseDOM`/`renderMarkdown` for richer output (a real `<video>`
+tag, say). Demo blocks: `projects/design-system/src/app/ship/editors/sh-editor-demo-blocks.ts`.

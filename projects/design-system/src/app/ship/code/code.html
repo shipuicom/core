@@ -1,0 +1,55 @@
+<h1>Code Editor</h1>
+<!-- @keywords: code, editor, syntax, monospace, virtualized, textmate -->
+
+<div class="overview-doc">
+  <section>
+    <h4>Overview</h4>
+    <p>
+      <code>&lt;sh-code&gt;</code> is a lightweight code editing surface — between a <code>&lt;textarea&gt;</code> and an
+      IDE. It shares its architecture with <code>&lt;sh-editor&gt;</code>: the document is a columnar line store with a
+      prefix-sum index, the selection is a flat <code>&#123;anchor, head&#125;</code> offset pair, and the viewport
+      virtualizes through the shared <code>BlockHeightMap</code> from
+      <code>&#64;ship-ui/core/ship-virtual-scroll</code> — without pulling any <code>ship-editor</code> code into your
+      bundle.
+    </p>
+    <app-highlight lang="ts" [content]="usageExample" />
+  </section>
+</div>
+
+<div class="sandbox-example">
+  <app-previewer path="/code" title="Editable surface" class="no-space">
+    <div class="code-demo">
+      <div class="code-controls">
+        <sh-checkbox [(checked)]="readonly">Read Only</sh-checkbox>
+        <sh-checkbox [(checked)]="lineNumbers">Line Numbers</sh-checkbox>
+        <sh-select color="primary" [options]="keymapOptions" label="label" value="value" [isClearable]="false">
+          <label>Keymap</label>
+          <input type="text" [(ngModel)]="keymap" style="display: none" />
+        </sh-select>
+        <sh-select color="primary" [options]="themeOptions" label="label" value="value" [isClearable]="false">
+          <label>Theme</label>
+          <input type="text" [(ngModel)]="theme" style="display: none" />
+        </sh-select>
+      </div>
+      <sh-code
+        class="code-small"
+        [(value)]="source"
+        [readonly]="readonly()"
+        [lineNumbers]="lineNumbers()"
+        [keymap]="keymap()"
+        [engine]="engine"
+        [theme]="theme()"
+        language="typescript" />
+    </div>
+  </app-previewer>
+
+  <app-previewer path="/code" title="Virtualized: 20,000 lines" class="no-space">
+    <div class="code-demo">
+      <p class="code-note">
+        {{ bigLineCount() }} lines in the model — only the viewport's window exists in the DOM. Scroll, jump with
+        ctrl/cmd+End, and edit anywhere.
+      </p>
+      <sh-code class="code-big" [(value)]="bigSource" [lineNumbers]="true" [engine]="engine" [theme]="theme()" language="typescript" />
+    </div>
+  </app-previewer>
+</div>

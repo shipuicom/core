@@ -24,6 +24,7 @@ import {
   ShipEditorToolbar,
 } from '@ship-ui/core/ship-editor';
 import { ShipEditorSelectionDebug } from './sh-editor-selection-debug';
+import { CodePadBlockBehavior, CounterBlockBehavior } from './sh-editor-demo-blocks';
 
 class HighlightBehavior extends BaseInlineBehavior {
   readonly type = 'highlight';
@@ -114,9 +115,9 @@ class HighlightBehavior extends BaseInlineBehavior {
 <!-- Opt in to image mid-edge (one-axis) resize handles -->
 <sh-editor [imageEdgeResize]="true" ...></sh-editor>`;
 
-  customBehaviors = [new HighlightBehavior()];
+  customBehaviors = [new HighlightBehavior(), new CounterBlockBehavior(), new CodePadBlockBehavior()];
 
-  initialHtml = `<h1>Ship WYSIWYG Editor</h1><p>Welcome! This is a <strong>config-driven</strong> rich-text editor designed to support flexible storage formats.</p><ul><li><strong>Two-way binding</strong> with <code>ControlValueAccessor</code></li><li>Instant conversion to <strong>HTML</strong>, <strong>Markdown</strong>, or <strong>JSON</strong></li><li>Sticky blur-toolbar, light/dark mode support, and word counting</li></ul><blockquote>"A beautiful interface makes editing content a delight."</blockquote><hr><p>Try changing the storage format below to see the serialized output update in real time!</p>`;
+  initialHtml = `<h1>Ship WYSIWYG Editor</h1><p>Welcome! This is a <strong>config-driven</strong> rich-text editor designed to support flexible storage formats.</p><ul><li><strong>Two-way binding</strong> with <code>ControlValueAccessor</code></li><li>Instant conversion to <strong>HTML</strong>, <strong>Markdown</strong>, or <strong>JSON</strong></li><li>Sticky blur-toolbar, light/dark mode support, and word counting</li></ul><blockquote>"A beautiful interface makes editing content a delight."</blockquote><hr><p>Custom <strong>component blocks</strong> render live Angular components as void blocks — interact with them directly, or arrow onto them from the text to select:</p><div data-sh-block="demo-counter" data-sh-attrs='{"count":3}'></div><div data-sh-block="demo-code-pad" data-sh-attrs='{"code":"function answer() {\\n  return 42;\\n}"}'></div><p>Try changing the storage format below to see the serialized output update in real time!</p>`;
 
   format = signal<'html' | 'json' | 'markdown'>('html');
   formatOptions = [
@@ -130,6 +131,8 @@ class HighlightBehavior extends BaseInlineBehavior {
   imageEdgeResize = signal(false);
 
   documentVariant = signal(false);
+  /** Off by default in the component too — Alt+click opens an extra cursor. */
+  multiCursor = signal(false);
   placeholder = signal('Start typing something beautiful...');
 
   basicValue = signal(

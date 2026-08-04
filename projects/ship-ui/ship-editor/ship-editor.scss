@@ -60,6 +60,32 @@ sh-editor {
     flex: 1;
   }
 
+  // Extra cursors. A contenteditable gets one native caret, and its blink
+  // phase is the browser's — unreadable and unalignable. So while several
+  // cursors are live the native caret is hidden and every one of them is drawn
+  // on the layer below, which carries the single animation they all share.
+  // A caret mounted mid-cycle inherits the layer's phase rather than starting
+  // its own.
+  .sh-editor-caret-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+    animation: sh-editor-caret-blink 1.1s steps(1) infinite;
+  }
+
+  .sh-editor-drawn-caret {
+    position: absolute;
+    width: #{p2r(2)};
+    background: var(--primary-9);
+    pointer-events: none;
+
+    // Added cursors sit slightly back so the primary stays findable.
+    &.secondary {
+      opacity: 0.7;
+    }
+  }
+
   .sh-editor-drop-indicator {
     position: absolute;
     left: #{p2r(20)};
@@ -82,6 +108,13 @@ sh-editor {
       background: var(--primary-9);
       transform: translateY(-50%);
     }
+  }
+
+  // Multi-cursor hides the browser's own caret; every caret is drawn instead,
+  // so they can all share one blink clock. Selection painting is unaffected —
+  // `caret-color` only governs the insertion caret.
+  .sh-editor-content.multi-cursor {
+    caret-color: transparent;
   }
 
   .sh-editor-content {
@@ -421,6 +454,23 @@ sh-editor {
   border-radius: var(--shape-1);
 }
 
+// Selecting a void block wraps it in a real DOM range (that is what routes
+// copy/cut/paste and type-to-replace at it). Over a component block's UI text
+// that range would paint as a native text selection — suppress it by default.
+// Keyed on data-sh-block (the mount contract every component block carries,
+// whatever its renderHTML emits), not the default wrapper class. Editable
+// controls inside (an embedded editor, a textarea) keep their own text
+// selection; a component can opt other regions back in with user-select: text.
+.sh-editor-content > [data-sh-block] {
+  user-select: none;
+  -webkit-user-select: none;
+
+  :is(input, textarea, select, [contenteditable]:not([contenteditable='false'])) {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+}
+
 // A void block sitting inside the live text selection: the native selection
 // paints no highlight over voids, so they looked unselected while being part
 // of the range.
@@ -513,5 +563,19 @@ sh-editor {
     align-self: stretch;
     margin: 2px 2px;
     background: rgb(from var(--base-1) r g b / 20%);
+  }
+}
+
+// Selection paint for the extra cursors. The native selection covers the
+// primary range only; these are published through the CSS Custom Highlight
+// API, which tints text without inserting any nodes — the editing path's
+// text nodes have to stay exactly as the model expects them.
+::highlight(sh-editor-secondary) {
+  background: var(--primary-4);
+}
+
+@keyframes sh-editor-caret-blink {
+  50% {
+    opacity: 0;
   }
 }

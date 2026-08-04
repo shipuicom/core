@@ -25,6 +25,15 @@ export interface EditorTransaction {
   op: EditorOp;
   selBefore: LogicalSelection | null;
   selAfter: LogicalSelection | null;
+  /**
+   * Marks the transactions a single multi-cursor edit produced.
+   *
+   * Each cursor still contributes its own op, so invert, transform and the
+   * whole rebase path keep seeing exactly the single splices they always
+   * have — grouping is a history concern only, and undo pops the run in one
+   * go. Absent for ordinary single-cursor edits.
+   */
+  groupId?: number;
 }
 
 export function fragLen(nodes: ASTInlineNode[]): number {

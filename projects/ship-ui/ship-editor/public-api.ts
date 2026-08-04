@@ -4,6 +4,7 @@ export * from './sh-editor-floating-toolbar';
 export * from './sh-editor-contextual-toolbar';
 export * from './sh-editor-action.directive';
 export * from './editor-behaviors';
+export * from './sh-editor-component-block';
 export * from './standard-behaviors';
 export * from './editor.types';
 export * from './editor-engine.service';
