@@ -93,6 +93,42 @@ async function expectWindowInvariant(page: Page, context: string) {
     .toBe('converged');
 }
 
+/**
+ * Scroll until `index` is mounted, steering by what is actually on screen.
+ *
+ * Aiming at a scroll fraction cannot do this reliably: mounting re-measures
+ * blocks and re-prices the ones still estimated, so the same fraction — or the
+ * same pixel offset — addresses a different window before and after a trip
+ * away. Reading the mounted range back and nudging toward the target closes
+ * the loop, so it converges wherever the height model has settled.
+ */
+async function scrollUntilBlockMounted(page: Page, index: number) {
+  await expect
+    .poll(
+      () =>
+        page.evaluate((i) => {
+          const main = document.querySelector('main')!;
+          const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+          const texts = Array.from(surface.children).map((el) => el.textContent ?? '');
+          const idxOf = (t: string) => Number(/^Block (\d+)\b/.exec(t)?.[1] ?? '-1');
+          const first = idxOf(texts[0] ?? '');
+          const last = idxOf(texts[texts.length - 1] ?? '');
+          if (first < 0 || last < 0) return false;
+          if (i >= first && i <= last) return true;
+          // The surface's own height stands in for the whole document — its
+          // padding is the unmounted content — so it says nothing about how
+          // tall a block is. Measure the mounted span instead.
+          const top = (surface.children[0] as HTMLElement).getBoundingClientRect().top;
+          const bottom = (surface.children[surface.children.length - 1] as HTMLElement).getBoundingClientRect().bottom;
+          const perBlock = Math.max(1, (bottom - top) / Math.max(1, last - first + 1));
+          main.scrollTop += (i - (first + last) / 2) * perBlock;
+          return false;
+        }, index),
+      { message: `block ${index} is mounted`, timeout: 15_000 }
+    )
+    .toBe(true);
+}
+
 test.describe('viewport virtualization', () => {
   test('a large document mounts only a window, with padding standing in for the rest', async ({ page }) => {
     const { errors } = await openEditor(page);
@@ -297,26 +333,19 @@ test.describe('viewport virtualization', () => {
     // nodes that no selection points at until the window move repaints it.
     //
     await scrollEditorTo(page, 0.05);
-    await expect.poll(async () => (await mountedState(page)).mounted).toBeGreaterThan(5);
-
-    // Coming back is a convergence, not a jump: every mount re-measures blocks
-    // and re-prices the ones still estimated, which moves the content under a
-    // fixed scroll offset. Re-aim each time until the block is mounted again.
     await expect
-      .poll(
-        async () => {
-          await scrollEditorTo(page, 0.5);
-          return page.evaluate(
-            (i) =>
-              Array.from(document.querySelector('.sh-editor-content')!.children).some((el) =>
-                (el.textContent ?? '').startsWith(`Block ${i} `)
-              ),
-            targetIndex
-          );
-        },
-        { message: 'the caret block is mounted again', timeout: 10_000 }
+      .poll(() =>
+        page.evaluate(
+          (i) =>
+            Array.from(document.querySelector('.sh-editor-content')!.children).every(
+              (el) => !(el.textContent ?? '').startsWith(`Block ${i} `)
+            ),
+          targetIndex
+        )
       )
       .toBe(true);
+
+    await scrollUntilBlockMounted(page, targetIndex);
     await expect
       .poll(() => page.evaluate(() => (window.getSelection()?.rangeCount ?? 0) > 0), {
         message: 'caret repainted after the window moved back',

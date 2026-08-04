@@ -189,12 +189,29 @@ test.describe('slash-command insert into a paragraph mid-document', () => {
     // Second entry is the demo component block; the first is the built-in code block.
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Enter');
-    await page.waitForTimeout(500);
+    // Wait for the insert to land rather than for a fixed delay — the block
+    // mounts an Angular component, so the render settles on its own schedule.
+    await expect
+      .poll(() => page.evaluate(() =>
+        (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document().map((b: any) => b.type)
+      ))
+      .toEqual(['paragraph', 'demo-code-pad', 'paragraph', 'paragraph']);
+
+    // The model and the screen have to agree — this is what actually broke.
+    // Polled, so a slow component mount reads as "not yet" rather than as a
+    // divergence; if the DOM never catches up, that is the bug itself.
+    await expect
+      .poll(async () => {
+        const s = await textState(page);
+        return JSON.stringify({ dom: s.domTexts, ast: s.astTexts });
+      }, { message: 'the DOM catches up with the model', timeout: 10_000 })
+      .toBe(JSON.stringify({
+        dom: ['Custom blocks:', '', '', 'Try changing'],
+        ast: ['Custom blocks:', '', '', 'Try changing'],
+      }));
 
     const after = await textState(page);
     expect(after.astTypes).toEqual(['paragraph', 'demo-code-pad', 'paragraph', 'paragraph']);
-    // The model and the screen have to agree — this is what actually broke.
-    expect(after.domTexts).toEqual(after.astTexts);
     // Nothing on screen still shows the slash query...
     expect(after.domTexts.join('')).not.toContain('/code');
     // ...and the paragraph that followed the caret is still there.
