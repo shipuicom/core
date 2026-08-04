@@ -227,6 +227,10 @@ export const routes: Routes = [
         path: 'code',
         loadComponent: () => import('./ship/code/code'),
       },
+      {
+        path: 'sheet',
+        loadComponent: () => import('./ship/sheet/sheet'),
+      },
     ],
   },
 ];

@@ -1,0 +1,33 @@
+@use '../showcase' as *;
+
+.sheet-demo {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(12);
+  width: 100%;
+}
+
+.sheet-note {
+  margin: 0;
+  color: var(--base-10);
+  font-size: p2r(13);
+}
+
+.sheet-tsv {
+  margin: 0;
+  padding: p2r(8) p2r(12);
+  border: 1px solid var(--base-4);
+  border-radius: var(--shape-2);
+  background: var(--base-2);
+  font: var(--code-20, 12px/1.6 monospace);
+  white-space: pre;
+  overflow: auto;
+}
+
+sh-sheet-view.sheet-small {
+  max-height: p2r(260);
+}
+
+sh-sheet-view.sheet-big {
+  height: p2r(420);
+}

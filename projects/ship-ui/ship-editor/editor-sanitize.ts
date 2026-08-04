@@ -76,6 +76,9 @@ const ALLOWED_TAGS = new Set([
   'blockquote', 'pre', 'code',
   'ul', 'ol', 'li', 'hr', 'img',
   'strong', 'b', 'em', 'i', 'u', 's', 'strike', 'del', 'a', 'mark',
+  // Tables survive as-is so a table-shaped block behavior (ship-sheet) can
+  // claim them — and so Excel/Google Sheets/Word pastes keep their grid.
+  'table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th', 'colgroup', 'col', 'caption',
 ]);
 
 const DROP_TAGS = new Set([
@@ -95,6 +98,13 @@ const TAG_ATTRS: Record<string, string[]> = {
   // Custom component blocks serialize as a neutral div wrapper; the payload
   // is inert JSON in a data attribute.
   div: ['data-sh-block', 'data-sh-attrs'],
+
+  // Table geometry rides the legacy dimension attributes — the style scrub
+  // drops width/height properties, and spreadsheet exports emit these anyway.
+  td: ['colspan', 'rowspan'],
+  th: ['colspan', 'rowspan'],
+  col: ['span', 'width'],
+  tr: ['height'],
 };
 
 function inertParseBody(html: string): HTMLElement | null {

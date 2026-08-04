@@ -1,0 +1,48 @@
+<h1>Sheet</h1>
+<!-- @keywords: sheet, table, spreadsheet, grid, cells, virtualized -->
+
+<div class="overview-doc">
+  <section>
+    <h4>Overview</h4>
+    <p>
+      <code>&lt;sh-sheet-view&gt;</code> is the read-only sheet surface: a columnar cell model in, a two-axis
+      virtualized grid out. Both axes run on the shared <code>BlockHeightMap</code> from
+      <code>&#64;ship-ui/core/ship-virtual-scroll</code> — the same pixel model that windows
+      <code>sh-editor</code> blocks and <code>sh-code</code> lines. Selection is a rectangle, copy-out writes TSV and
+      <code>&lt;table&gt;</code> clipboard flavors, and the document form is a real semantic table.
+    </p>
+    <app-highlight lang="ts" [content]="usageExample" />
+  </section>
+</div>
+
+<div class="sandbox-example">
+  <app-previewer path="/sheet" title="Viewer + selection" class="no-space">
+    <div class="sheet-demo">
+      <sh-sheet-view class="sheet-small" [sheet]="sample()" [(selection)]="sampleSelection" />
+      <p class="sheet-note">
+        Drag cells — Shift+click extends the range, Cmd/Ctrl+click adds another ({{ sampleRangeCount() }} selected).
+        Copy takes the active range as TSV:
+      </p>
+      <pre class="sheet-tsv">{{ sampleTsv() }}</pre>
+    </div>
+  </app-previewer>
+
+  <app-previewer path="/sheet" title="Virtualized: 10,000,000 cells" class="no-space">
+    <div class="sheet-demo">
+      <p class="sheet-note">
+        {{ bigCellCount().toLocaleString() }} cells in the model ({{ big().rows.toLocaleString() }} ×
+        {{ big().cols }}) — only the visible window exists in the DOM, on both axes.
+      </p>
+      <sh-sheet-view class="sheet-big" [sheet]="big()" [(selection)]="bigSelection" />
+    </div>
+  </app-previewer>
+
+  <app-previewer path="/sheet" title="As an editor block" class="no-space">
+    <div class="sheet-demo">
+      <sh-editor class="sheet-editor" [(value)]="editorValue" format="html" [behaviors]="sheetBehaviors">
+        <sh-editor-toolbar position="top"></sh-editor-toolbar>
+      </sh-editor>
+      <app-highlight lang="ts" [content]="blockExample" />
+    </div>
+  </app-previewer>
+</div>

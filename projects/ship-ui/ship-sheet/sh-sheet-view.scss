@@ -1,0 +1,118 @@
+@use 'helpers' as *;
+
+sh-sheet-view {
+  --shs-bg: var(--base-1);
+  --shs-fg: var(--base-12);
+  --shs-grid: var(--base-4);
+  --shs-head-bg: var(--base-2);
+  --shs-head-fg: var(--base-9);
+  --shs-selection: rgb(from var(--primary-9) r g b / 18%);
+  --shs-selection-border: var(--primary-9);
+  --shs-font: var(--body-10, 13px/1.5 system-ui, sans-serif);
+
+  display: block;
+  position: relative;
+  border: 1px solid var(--shs-grid);
+  border-radius: var(--shape-2);
+  background: var(--shs-bg);
+  overflow: hidden;
+
+  .shs-frame {
+    height: 100%;
+    outline: none;
+  }
+
+  .shs-scroller {
+    height: 100%;
+    max-height: inherit;
+    overflow: auto;
+    overflow-anchor: none;
+    font: var(--shs-font);
+    color: var(--shs-fg);
+  }
+
+  .shs-colhead {
+    position: sticky;
+    top: 0;
+    height: #{p2r(26)};
+    background: var(--shs-head-bg);
+    border-bottom: 1px solid var(--shs-grid);
+    z-index: 3;
+  }
+
+  .shs-corner {
+    position: sticky;
+    left: 0;
+    display: inline-block;
+    width: var(--shs-head-w);
+    height: 100%;
+    background: var(--shs-head-bg);
+    border-right: 1px solid var(--shs-grid);
+    z-index: 1;
+  }
+
+  .shs-ch {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--shs-head-fg);
+    font-size: 0.85em;
+    user-select: none;
+  }
+
+  .shs-body {
+    position: relative;
+    cursor: cell;
+  }
+
+  .shs-row {
+    position: relative;
+    width: 100%;
+  }
+
+  .shs-rh {
+    position: sticky;
+    left: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--shs-head-w);
+    height: 100%;
+    background: var(--shs-head-bg);
+    border-right: 1px solid var(--shs-grid);
+    border-bottom: 1px solid var(--shs-grid);
+    color: var(--shs-head-fg);
+    font-size: 0.85em;
+    user-select: none;
+    z-index: 2;
+  }
+
+  .shs-c {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 #{p2r(6)};
+    border-right: 1px solid var(--shs-grid);
+    border-bottom: 1px solid var(--shs-grid);
+    white-space: pre;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .shs-selection {
+    position: absolute;
+    background: var(--shs-selection);
+    pointer-events: none;
+    z-index: 1;
+
+    // The active range wears the border; added ranges are fill-only.
+    &.active {
+      border: 1px solid var(--shs-selection-border);
+    }
+  }
+}

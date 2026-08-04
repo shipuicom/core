@@ -1,0 +1,37 @@
+<div class="shs-frame" #frame tabindex="0" (copy)="onCopy($event)" (mouseup)="onMouseUp()">
+  <div class="shs-scroller" #scroller>
+    @if (headers()) {
+      <div class="shs-colhead" [style.width.px]="contentWidth()">
+        <span class="shs-corner"></span>
+        <span [innerHTML]="colHeadHtml()"></span>
+      </div>
+    }
+
+    <div
+      class="shs-body"
+      [style.width.px]="contentWidth()"
+      [style.padding-top.px]="padTop()"
+      [style.padding-bottom.px]="padBottom()"
+      (mousedown)="onBodyMouseDown($event)"
+      (mousemove)="onBodyMouseMove($event)">
+      @for (rect of selectionRects(); track $index) {
+        <div
+          class="shs-selection"
+          [class.active]="rect.active"
+          [style.top.px]="rect.top"
+          [style.left.px]="rect.left"
+          [style.width.px]="rect.width"
+          [style.height.px]="rect.height"></div>
+      }
+
+      @for (row of visibleRows(); track row.index) {
+        <div class="shs-row" [style.height.px]="row.height">
+          @if (headers()) {
+            <span class="shs-rh">{{ row.index + 1 }}</span>
+          }
+          <span [innerHTML]="row.html"></span>
+        </div>
+      }
+    </div>
+  </div>
+</div>
