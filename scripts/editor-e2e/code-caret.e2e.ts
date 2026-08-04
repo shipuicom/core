@@ -219,6 +219,29 @@ test.describe('sh-code caret hit-testing', () => {
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('a programmatic writeValue never fires onChange — the control stays pristine', async ({ page }) => {
+    const { errors } = await openCode(page);
+    const result = await page.evaluate(async () => {
+      const el = document.querySelector('sh-code') as HTMLElement;
+      const comp = (window as any).ng.getComponent(el);
+      let calls = 0;
+      comp.registerOnChange(() => calls++);
+      comp.writeValue('fresh\ncontent');
+      await new Promise((r) => setTimeout(r, 100));
+      (window as any).ng.applyChanges(comp);
+      const afterWrite = calls;
+      // A real edit still reports.
+      comp.sel.set({ ranges: [{ anchor: 0, head: 0 }], primary: 0 });
+      comp.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }));
+      await new Promise((r) => setTimeout(r, 100));
+      (window as any).ng.applyChanges(comp);
+      return { afterWrite, afterEdit: calls };
+    });
+    expect(result.afterWrite).toBe(0);
+    expect(result.afterEdit).toBeGreaterThan(0);
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
   test('a synchronous write-back from onChange is not dropped', async ({ page }) => {
     // A form subscriber normalizing in valueChanges writes back while the
     // editor's own update is still flushing; the external value must win.

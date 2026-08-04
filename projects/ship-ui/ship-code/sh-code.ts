@@ -198,6 +198,9 @@ export class ShipCode implements ControlValueAccessor {
    * value itself skips only our own echo.
    */
   #echoValue: unknown = NO_ECHO;
+
+  /** True while the document change being flushed came from an external write. */
+  #externalApply = false;
   #dragSelecting = false;
   #destroyRef = inject(DestroyRef);
   #sanitizer = inject(DomSanitizer);
@@ -409,6 +412,7 @@ export class ShipCode implements ControlValueAccessor {
       const isEcho = externalVal === this.#echoValue;
       this.#echoValue = NO_ECHO;
       if (isEcho) return;
+      this.#externalApply = true;
       untracked(() => {
         const doc = createDocument(externalVal ?? '');
         this.doc.set(doc);
@@ -434,8 +438,12 @@ export class ShipCode implements ControlValueAccessor {
         if (this.value() !== serialized) {
           this.#echoValue = serialized;
           this.value.set(serialized);
-          this.onChange(serialized);
+          // Normalizing an external write is not a user change: a
+          // programmatic setValue must not mark the control dirty or emit
+          // valueChanges (the CVA contract). Only user-originated edits do.
+          if (!this.#externalApply) this.onChange(serialized);
         }
+        this.#externalApply = false;
         this.#updateWindow();
       });
     });
