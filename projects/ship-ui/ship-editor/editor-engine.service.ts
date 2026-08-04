@@ -186,6 +186,16 @@ export class EditorEngineService {
     else this.inlines.set(behavior.type, behavior);
   }
 
+  unregister(behavior: BaseBlockBehavior | BaseInlineBehavior) {
+    // Identity-checked: swapping in a replacement of the same type must not
+    // have its registration deleted by the removal of the one it replaced.
+    if (behavior instanceof BaseBlockBehavior) {
+      if (this.blocks.get(behavior.type) === behavior) this.blocks.delete(behavior.type);
+    } else if (this.inlines.get(behavior.type) === behavior) {
+      this.inlines.delete(behavior.type);
+    }
+  }
+
   /**
    * Apply a columnar mutation: the primitive has already advanced the
    * columnar document, so only the tree and the history need the op.
@@ -276,6 +286,11 @@ export class EditorEngineService {
       const b = isCollapsed ? a : pointAt(cd, sel.to);
       if (!isCollapsed && b.row === a.row && b.offset > a.offset) {
         marks = this.#marksCovering(cd, a.row, a.offset, b.offset);
+      } else if (!isCollapsed && b.row > a.row) {
+        // A range spanning rows reports the marks covering ALL of it — the
+        // caret fallback would read the character before the selection and
+        // invert what the toolbar toggle then does.
+        marks = this.#marksCoveringRows(cd, a, b);
       } else {
         marks = this.#marksAtCaret(cd, a.row, a.offset);
       }
@@ -321,6 +336,23 @@ export class EditorEngineService {
       }
     }
     return out;
+  }
+
+  /** Marks covering every non-empty text segment of a multi-row range. */
+  #marksCoveringRows(cd: ColumnarDocument, a: { row: number; offset: number }, b: { row: number; offset: number }): ASTMark[] {
+    let acc: ASTMark[] | null = null;
+    for (let row = a.row; row <= b.row; row++) {
+      if (cd.kindOf(row) !== RowKind.Text) continue;
+      const from = row === a.row ? a.offset : 0;
+      const to = row === b.row ? b.offset : cd.textOf(row).length;
+      // Empty segments (an empty line, a range ending at offset 0) carry no
+      // marks and must not veto the intersection.
+      if (to <= from) continue;
+      const rowMarks = this.#marksCovering(cd, row, from, to);
+      acc = acc === null ? rowMarks : acc.filter((m) => rowMarks.some((r) => r.type === m.type));
+      if (acc.length === 0) return [];
+    }
+    return acc ?? [];
   }
 
   isActive(action: string, attrs?: Record<string, any>): boolean {

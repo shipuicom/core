@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   ViewEncapsulation,
   effect,
@@ -59,9 +60,17 @@ export class ShipEditorLinkPopover {
     });
 
     effect(() => {
-      if (!this.isOpen()) return;
+      // The retry loop is token-guarded: closing (or fast close/reopen) must
+      // cancel the timers in flight, or a stale loop steals the caret after
+      // the popover is gone — and two live loops fight over focus().
+      if (!this.isOpen()) {
+        this.#focusAttempt++;
+        return;
+      }
+      const attempt = ++this.#focusAttempt;
       let tries = 0;
       const tryFocus = () => {
+        if (attempt !== this.#focusAttempt) return;
         const el = this.urlInput()?.nativeElement;
         if (el && el.isConnected) {
           el.focus();
@@ -72,7 +81,11 @@ export class ShipEditorLinkPopover {
       };
       queueMicrotask(tryFocus);
     });
+    inject(DestroyRef).onDestroy(() => this.#focusAttempt++);
   }
+
+  /** Monotonic token; bumping it invalidates any focus-retry loop in flight. */
+  #focusAttempt = 0;
 
   #open() {
     const sel = this.selection.active();

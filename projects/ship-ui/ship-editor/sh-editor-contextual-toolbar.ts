@@ -27,7 +27,8 @@ export type ContextualActionExtras = Record<string, (ctx: ContextualActionCtx) =
 })
 export class ShipEditorContextualToolbar {
 
-  surface = input.required<HTMLElement>();
+  /** Maps an absolute block index to its mounted DOM element (window-aware). */
+  blockElAt = input.required<(idx: number) => HTMLElement | undefined>();
 
   extras = input<ContextualActionExtras>({});
 
@@ -58,7 +59,7 @@ export class ShipEditorContextualToolbar {
 
   #positionAnchor(idx: number) {
     const container = this.#selfRef.nativeElement.closest('.sh-editor-container') as HTMLElement | null;
-    const blockEl = this.surface().children[idx] as HTMLElement | undefined;
+    const blockEl = this.blockElAt()(idx);
     if (!container || !blockEl) return;
     const c = container.getBoundingClientRect();
     const r = blockEl.getBoundingClientRect();

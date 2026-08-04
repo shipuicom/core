@@ -68,6 +68,13 @@ export class ShipEditorSlashMenu {
       this.highlighted.set(0);
     });
 
+    // A dismissal is scoped to one slash session: once the state clears (the
+    // '/' deleted, a command run, the caret moved away), the next '/' with
+    // the same query — especially the bare-'/' empty query — opens again.
+    effect(() => {
+      if (this.engine.slashState() === null) this.#dismissedQuery.set(null);
+    });
+
     effect(() => {
       if (!this.isOpen()) return;
       this.engine.slashState();

@@ -73,7 +73,10 @@ export class HeadingBehavior extends BaseBlockBehavior {
     return `<h${level}${alignStyle(block.attrs?.['align'])}>${contentHtml || '<br>'}</h${level}>`;
   }
   override renderMarkdown(block: ASTBlockNode, contentMd: string) {
-    return `${'#'.repeat(block.attrs?.['level'] || 1)} ${contentMd}\n\n`;
+    // Clamped like renderHTML: a hostile `level` (-1, 1e9) in a JSON document
+    // must not throw out of `repeat` and take the whole value sync with it.
+    const level = Math.min(6, Math.max(1, parseInt(String(block.attrs?.['level'] ?? 1), 10) || 1));
+    return `${'#'.repeat(level)} ${contentMd}\n\n`;
   }
   override slashCommands(): SlashCommand[] {
     return [

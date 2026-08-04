@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fromColumnar, toColumnar } from './editor-columnar';
-import { flatPosOfBlockChar, insertFragmentOp } from './editor-columnar-mutations';
+import { enterOp, flatPosOfBlockChar, insertFragmentOp, insertVoidBlockOp } from './editor-columnar-mutations';
 import * as Behaviors from './standard-behaviors';
 import { BaseBlockBehavior } from './editor-behaviors';
 import { ASTBlockNode, ASTDocument } from './editor.types';
@@ -100,5 +100,73 @@ describe('insertFragmentOp into a list item', () => {
     insertFragmentOp(cd, { from: pos, to: pos }, [p('a'), { type: 'hr', content: [] }], blocks);
     expect(shape(cd).map((b) => b.type)).toEqual(['paragraph', 'bullet-list', 'paragraph', 'hr']);
     expect(shape(cd)[1].text).toEqual(['onemid', 'two', 'three']); // items untouched — 'a' went after the list
+  });
+});
+
+describe('pasting a fragment that ends in an empty block', () => {
+  it('lands the caret after the pasted text, not at the row start', () => {
+    // The trailing empty block adds no row, so the caret must ride the text
+    // that was actually inserted instead of pointing at offset 0.
+    const cd = toColumnar([p('xyz')]);
+    const end = flatPosOfBlockChar(cd, { blockIndex: 0, charOffset: 3 });
+    const mutation = insertFragmentOp(cd, { from: end, to: end }, [p('abc'), p('')], blocks)!;
+    expect(shape(cd)).toEqual([{ type: 'paragraph', text: 'xyzabc' }]);
+    expect(mutation.selAfter.from).toBe(flatPosOfBlockChar(cd, { blockIndex: 0, charOffset: 6 }));
+  });
+
+  it('lands the caret at the end of the last middle block when the tail is dropped', () => {
+    const cd = toColumnar([p('xyz')]);
+    const end = flatPosOfBlockChar(cd, { blockIndex: 0, charOffset: 3 });
+    const mutation = insertFragmentOp(cd, { from: end, to: end }, [p('abc'), p('mid'), p('')], blocks)!;
+    expect(shape(cd)).toEqual([
+      { type: 'paragraph', text: 'xyzabc' },
+      { type: 'paragraph', text: 'mid' },
+    ]);
+    expect(mutation.selAfter.from).toBe(flatPosOfBlockChar(cd, { blockIndex: 1, charOffset: 3 }));
+  });
+
+  it('keeps the caret between pasted text and the pre-existing tail', () => {
+    // The unchanged path: a real tail row still exists and the caret sits
+    // after the last block's own text, before the carried-over tail.
+    const cd = toColumnar([p('xyz')]);
+    const mid = flatPosOfBlockChar(cd, { blockIndex: 0, charOffset: 1 });
+    const mutation = insertFragmentOp(cd, { from: mid, to: mid }, [p('a'), p('b')], blocks)!;
+    expect(shape(cd)).toEqual([
+      { type: 'paragraph', text: 'xa' },
+      { type: 'paragraph', text: 'byz' },
+    ]);
+    expect(mutation.selAfter.from).toBe(flatPosOfBlockChar(cd, { blockIndex: 1, charOffset: 1 }));
+  });
+});
+
+describe('replacing a range that ends on a void boundary', () => {
+  // A selection reaching through to a void's leading boundary has not entered
+  // the void: replacing the range (Enter, paste, void insert) must leave the
+  // void alone, exactly as typing over the same selection does.
+  const docWithHr = (): ASTDocument => [p('abc'), { type: 'hr', content: [] }, p('x')];
+  const selToHrBoundary = (cd: ReturnType<typeof toColumnar>) => ({
+    from: flatPosOfBlockChar(cd, { blockIndex: 0, charOffset: 1 }),
+    to: cd.startOf(cd.rowOfTopLevel(1)),
+  });
+
+  it('Enter over the range keeps the following hr', () => {
+    const cd = toColumnar(docWithHr());
+    enterOp(cd, selToHrBoundary(cd), blocks);
+    expect(shape(cd).map((b) => b.type)).toEqual(['paragraph', 'paragraph', 'hr', 'paragraph']);
+    expect(shape(cd)[0].text).toBe('a');
+  });
+
+  it('pasting over the range keeps the following hr', () => {
+    const cd = toColumnar(docWithHr());
+    insertFragmentOp(cd, selToHrBoundary(cd), [p('XY')], blocks);
+    expect(shape(cd).map((b) => b.type)).toEqual(['paragraph', 'hr', 'paragraph']);
+    expect(shape(cd)[0].text).toBe('aXY');
+  });
+
+  it('inserting a void block over the range keeps the following hr', () => {
+    const cd = toColumnar(docWithHr());
+    const mutation = insertVoidBlockOp(cd, selToHrBoundary(cd), blocks, 'hr', {})!;
+    expect(shape(cd).map((b) => b.type)).toEqual(['paragraph', 'hr', 'paragraph', 'hr', 'paragraph']);
+    expect(mutation.blockIndex).toBe(1);
   });
 });

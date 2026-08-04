@@ -107,7 +107,7 @@ class SizeIndex implements RowSizeIndex {
    */
   insertMany(row: number, sizes: number[]) {
     if (!sizes.length) return;
-    this.#mirror.splice(row, 0, ...sizes);
+    spliceIn(this.#mirror, row, sizes);
     this.reset(this.#mirror, this.#mirror.length);
   }
 
@@ -325,6 +325,23 @@ class ChunkedSizeIndex implements RowSizeIndex {
 }
 
 /** Size of a row in the units the position maths uses. */
+/**
+ * `arr.splice(at, 0, ...items)` without the spread: each spread element is a
+ * call argument, and a very large paste (~100k rows or mark-run quads) blows
+ * the argument limit as a RangeError instead of inserting.
+ */
+function spliceIn<T>(arr: T[], at: number, items: readonly T[]): void {
+  if (!items.length) return;
+  const STEP = 32768;
+  if (items.length <= STEP) {
+    arr.splice(at, 0, ...items);
+    return;
+  }
+  const tail = arr.splice(at, arr.length - at);
+  for (let i = 0; i < items.length; i += STEP) arr.push(...items.slice(i, i + STEP));
+  for (let i = 0; i < tail.length; i += STEP) arr.push(...tail.slice(i, i + STEP));
+}
+
 function rowSize(kind: RowKind, text: string): number {
   if (kind === RowKind.Void) return 1;
   if (kind === RowKind.Text) return 2 + text.length;
@@ -458,7 +475,11 @@ export class ColumnarDocument {
    */
   rowToPos(row: number, offset: number): number {
     const start = this.#sizes.prefix(row);
-    return this.#kind[row] === RowKind.Void ? start : start + 1 + offset;
+    // `prefix` counts an enclosing container's closing token before the rows
+    // inside it, but in position space that token comes after the children —
+    // a row nested `depth` containers deep is skewed by exactly `depth`
+    // (mirrors `interiorStart` in editor-columnar-mutations).
+    return this.#kind[row] === RowKind.Void ? start : start + 1 - this.#depth[row] + offset;
   }
 
   /** O(log n): the row containing a document position. */
@@ -583,7 +604,7 @@ export class ColumnarDocument {
       this.#depth[row] = input.depth ?? 0;
       texts.push(input.text ?? '');
     }
-    this.#text.splice(at, 0, ...texts);
+    spliceIn(this.#text, at, texts);
 
     // Where the shifted runs begin — computed before the shift, so the new rows'
     // runs can be spliced straight into place.
@@ -602,7 +623,7 @@ export class ColumnarDocument {
         fresh.push(at + i, run.start, run.end, this.markId(run.mark));
       }
     }
-    if (fresh.length) this.#markRuns.splice(insertAtQuad * 4, 0, ...fresh);
+    if (fresh.length) spliceIn(this.#markRuns, insertAtQuad * 4, fresh);
 
     // Batched: a rebuilding index rebuilds once for the whole insert, not once
     // per row.

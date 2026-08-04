@@ -1249,4 +1249,56 @@ test.describe('DOM ≡ AST invariant', () => {
     expect((await readInvariant(page)).astTexts.join('')).not.toContain('你好');
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
+
+  test('modified arrows at the doc start never trigger the escape hatch', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    const result = await page.evaluate(() => {
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const engine = comp.engine;
+      // A non-paragraph first block: a bare ArrowUp at its start is the escape
+      // hatch (inject a paragraph above); a modified arrow must never be.
+      engine.reset([
+        { type: 'code-block', content: [{ type: 'text', text: 'code' }] },
+        { type: 'paragraph', content: [{ type: 'text', text: 'x' }] },
+      ]);
+      const at = engine.columnar.startOf(0) + 1; // block 0, char 0
+      comp.selection.live.set({ from: at, to: at });
+      const counts: number[] = [engine.blockCount()];
+      const press = (init: KeyboardEventInit) => {
+        comp.onKeyDown(new KeyboardEvent('keydown', { ...init, cancelable: true }));
+        counts.push(engine.blockCount());
+      };
+      press({ key: 'ArrowUp', shiftKey: true });
+      press({ key: 'ArrowLeft', shiftKey: true });
+      press({ key: 'ArrowUp', metaKey: true });
+      press({ key: 'ArrowLeft', altKey: true });
+      const sel = comp.selection.live();
+      const selAfterModified = { from: sel.from, to: sel.to };
+      press({ key: 'ArrowUp' }); // control: the bare arrow still escapes
+      return { counts, selAfterModified, at };
+    });
+    expect(result.counts.slice(0, 5)).toEqual([2, 2, 2, 2, 2]);
+    expect(result.selAfterModified).toEqual({ from: result.at, to: result.at });
+    expect(result.counts[5]).toBe(3);
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
+  test('toolbar actions dispatch from the keyboard (Enter and Space)', async ({ page }) => {
+    const { errors } = await openEditor(page);
+    await page.keyboard.press('ControlOrMeta+a');
+    const isBold = () =>
+      page.evaluate(() => {
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        return comp.engine.isActive('bold', {});
+      });
+    expect(await isBold()).toBe(false);
+    const bold = page.locator('button[aria-label="Bold"]').first();
+    await bold.focus();
+    await page.keyboard.press('Enter');
+    expect(await isBold()).toBe(true);
+    await page.keyboard.press(' ');
+    expect(await isBold()).toBe(false);
+    await expectInvariant(page, 'after keyboard toolbar toggles');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
 });

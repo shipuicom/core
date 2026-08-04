@@ -53,6 +53,9 @@ const VIRTUAL_OVERSCAN_PX = 600;
 /** Height assumed for a block the DOM has never laid out. */
 const VIRTUAL_DEFAULT_BLOCK_PX = 36;
 
+/** Sentinel: no internal `value` write is awaiting its echo. */
+const NO_ECHO: unknown = Symbol('no-echo');
+
 /** CSS highlight registry name for secondary (non-native) selection ranges. */
 const SECONDARY_HIGHLIGHT = 'sh-editor-secondary';
 
@@ -161,6 +164,9 @@ export class ShipEditor implements ControlValueAccessor {
 
   readonly sourceDraft = signal('');
 
+  /** Parse error of the source draft, blocking the flip back to design view. */
+  readonly sourceError = signal<string | null>(null);
+
   public engine = inject(EditorEngineService);
   public selection = inject(EditorSelectionService);
   keybindings = inject(ShipA11yKeybindingsService, { optional: true });
@@ -259,7 +265,14 @@ export class ShipEditor implements ControlValueAccessor {
 
   #composing = false;
 
-  #isInternalValueUpdate = false;
+  /**
+   * The exact value the last internal write pushed into `value()`. Effects
+   * coalesce, so a boolean "skip the next run" flag would also swallow an
+   * external write-back landing in the same flush (a subscriber calling
+   * writeValue synchronously from onChange); comparing against the written
+   * value itself skips only our own echo.
+   */
+  #echoValue: unknown = NO_ECHO;
 
   #viewReady = signal(false);
 
@@ -276,6 +289,14 @@ export class ShipEditor implements ControlValueAccessor {
   #virtualOn = false;
   #winStart = 0;
   #winEnd = 0;
+  /**
+   * DOM element of top-level block `idx`, accounting for the mounted window —
+   * the surface's children are window-relative, so absolute indexes must
+   * translate through here. Passed to overlay children (contextual toolbar,
+   * image resize) as an input; an arrow so it survives being handed around.
+   */
+  readonly blockElementAt = (idx: number): HTMLElement | undefined =>
+    this.surface().nativeElement.children[idx - this.#winStart] as HTMLElement | undefined;
   #heights: BlockHeightMap | null = null;
   #basePadTop = 0;
   #basePadBottom = 0;
@@ -348,14 +369,21 @@ export class ShipEditor implements ControlValueAccessor {
       new Behaviors.StyleBehavior(),
     ].forEach((b) => this.engine.register(b));
 
-    effect(() => this.behaviors().forEach((b) => this.engine.register(b)));
+    // Registrations follow the input: a swapped-out behavior is unregistered,
+    // not left parsing and serializing forever.
+    let priorBehaviors: readonly (BaseBlockBehavior | BaseInlineBehavior)[] = [];
+    effect(() => {
+      const next = this.behaviors();
+      for (const b of priorBehaviors) if (!next.includes(b)) this.engine.unregister(b);
+      next.forEach((b) => this.engine.register(b));
+      priorBehaviors = next;
+    });
 
     effect(() => {
       const externalVal = this.value();
-      if (this.#isInternalValueUpdate) {
-        this.#isInternalValueUpdate = false;
-        return;
-      }
+      const isEcho = externalVal === this.#echoValue;
+      this.#echoValue = NO_ECHO;
+      if (isEcho) return;
       const sanitize = this.sanitize();
       untracked(() => {
         if (!externalVal) this.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
@@ -389,7 +417,7 @@ export class ShipEditor implements ControlValueAccessor {
       untracked(() => {
         const serialized = this.engine.serialize(format);
         if (this.value() !== serialized) {
-          this.#isInternalValueUpdate = true;
+          this.#echoValue = serialized;
           this.value.set(serialized);
           this.onChange(serialized);
         }
@@ -487,6 +515,9 @@ export class ShipEditor implements ControlValueAccessor {
       this.#unhookScroll();
       for (const entry of this.#componentBlocks.values()) entry.ref.destroy();
       this.#componentBlocks.clear();
+      // Release the global highlight name: a painted Highlight would retain
+      // this editor's detached ranges and shadow the next editor's paint.
+      this.#setSecondaryHighlight([]);
     });
   }
 
@@ -500,19 +531,24 @@ export class ShipEditor implements ControlValueAccessor {
     } else {
       const draft = this.sourceDraft();
       if (this.format() === 'json') {
+        // Invalid JSON must not flip the view — that silently discards every
+        // edit in the draft. Stay in code view and surface the error instead.
         try {
           this.value.set(JSON.parse(draft));
-        } catch {
-
+        } catch (e) {
+          this.sourceError.set(e instanceof Error ? e.message : 'Invalid JSON');
+          return;
         }
       } else {
         this.value.set(draft);
       }
+      this.sourceError.set(null);
       this.viewMode.set('design');
     }
   }
 
   onSourceInput(event: Event) {
+    this.sourceError.set(null);
     this.sourceDraft.set((event.target as HTMLTextAreaElement).value);
   }
 
@@ -588,9 +624,18 @@ export class ShipEditor implements ControlValueAccessor {
     // A drag-selection may be starting: remember its anchor so the moving end
     // can be clamped when the pointer crosses a component block.
     if (event.button === 0) {
-      const doc = this.#document as Document & { caretRangeFromPoint?: (x: number, y: number) => Range | null };
+      const doc = this.#document as Document & {
+        caretRangeFromPoint?: (x: number, y: number) => Range | null;
+        caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null;
+      };
+      // Blink/WebKit expose caretRangeFromPoint; Firefox only has the standard
+      // caretPositionFromPoint — without the fallback the whole void-drag
+      // clamp below never engages there.
       const range = doc.caretRangeFromPoint?.(event.clientX, event.clientY);
-      const point = range ? this.mapDOMToPoint(surface, range.startContainer, range.startOffset, 'start') : null;
+      const caret = range
+        ? { node: range.startContainer, offset: range.startOffset }
+        : ((p) => (p ? { node: p.offsetNode, offset: p.offset } : null))(doc.caretPositionFromPoint?.(event.clientX, event.clientY));
+      const point = caret ? this.mapDOMToPoint(surface, caret.node, caret.offset, 'start') : null;
       this.#selectionDragAnchor = point ? flatPosOfBlockChar(this.engine.columnar, point) : null;
     }
   }
@@ -1386,7 +1431,16 @@ export class ShipEditor implements ControlValueAccessor {
       }
     }
 
-    if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+    if (
+      (event.key === 'ArrowUp' || event.key === 'ArrowLeft') &&
+      !event.shiftKey &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.altKey
+    ) {
+      // Modified arrows are selection/navigation gestures (Shift extends,
+      // Cmd jumps, Alt word-moves) — only a bare arrow may mutate the
+      // document by escaping out of the top of it.
       if (this.engine.handleEscapeHatch()) event.preventDefault();
       return;
     }

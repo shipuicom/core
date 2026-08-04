@@ -385,8 +385,14 @@ export function sliceDocument(cd: ColumnarDocument, sel: LogicalSelection): ASTD
     // `pointAt` never lands on a container row itself, so the endpoints
     // address child rows when they fall inside this container.
     const kids = childrenOf(cd, root);
-    const firstOrd = root === rootA ? childOrdinal(cd, root, a.row) : 0;
-    const lastOrd = root === rootB ? childOrdinal(cd, root, b.row) : kids.length - 1;
+    let firstOrd = root === rootA ? childOrdinal(cd, root, a.row) : 0;
+    let lastOrd = root === rootB ? childOrdinal(cd, root, b.row) : kids.length - 1;
+    // The same boundary rules as top-level text blocks: a selection starting
+    // at an item's very end takes none of it, and one ending at an item's
+    // offset 0 takes none of that item — no empty ghost items in the copy.
+    const sameItem = rootA === rootB && a.row === b.row;
+    if (root === rootA && !sameItem && cd.kindOf(a.row) === RowKind.Text && a.offset >= cd.textOf(a.row).length) firstOrd++;
+    if (root === rootB && !sameItem && cd.kindOf(b.row) === RowKind.Text && b.offset === 0) lastOrd--;
     const items: ASTBlockNode[] = [];
     for (let i = firstOrd; i <= lastOrd && i < kids.length; i++) {
       const row = kids[i];
@@ -908,7 +914,9 @@ export function deleteForwardOp(cd: ColumnarDocument, sel: LogicalSelection, blo
 /** Enter, with the block behaviors' enter physics. Replaces a range first. */
 export function enterOp(cd: ColumnarDocument, sel: LogicalSelection, blocks: Map<string, BaseBlockBehavior>): ColumnarMutation | null {
   const a = pointAt(cd, sel.from);
-  const b = pointAt(cd, sel.to);
+  // Same exclusive-end rule as `insertTextOp`: replacing a range that reaches
+  // through one component must not consume the component after it.
+  const b = sel.from === sel.to ? pointAt(cd, sel.to) : rangeEndPoint(cd, sel.to);
   const baseTop = topIndexOf(cd, rootOf(cd, a.row));
   const lastTop = topIndexOf(cd, rootOf(cd, b.row));
 
@@ -1050,7 +1058,9 @@ export function insertFragmentOp(
 ): ColumnarMutation | { op: null; selAfter: LogicalSelection } | null {
   if (!fragment.length) return null;
   const a = pointAt(cd, sel.from);
-  const b = pointAt(cd, sel.to);
+  // Same exclusive-end rule as `insertTextOp`: replacing a range that reaches
+  // through one component must not consume the component after it.
+  const b = sel.from === sel.to ? pointAt(cd, sel.to) : rangeEndPoint(cd, sel.to);
   const baseTop = topIndexOf(cd, rootOf(cd, a.row));
   const lastTop = topIndexOf(cd, rootOf(cd, b.row));
 
@@ -1193,7 +1203,12 @@ export function insertFragmentOp(
       replaceRoots(cd, top, 1, [emptyParagraph()]);
       return caretTo(caretSel(flatPosOfBlockChar(cd, { blockIndex: top, charOffset: 0 })));
     }
-    return caretTo(caretSel(flatPosOfBlockChar(cd, { blockIndex: top + finalCount - 1, charOffset: last.text.length })));
+    // A trailing empty fragment block adds no row, so the caret belongs at the
+    // end of the last row that actually holds pasted content — not at offset 0
+    // of whatever row sits where the tail would have been.
+    const caretOffset =
+      tailFull.length > 0 ? last.text.length : inputs.length ? (inputs[inputs.length - 1].text ?? '').length : p.offset + first.text.length;
+    return caretTo(caretSel(flatPosOfBlockChar(cd, { blockIndex: top + finalCount - 1, charOffset: caretOffset })));
   });
   if (mutation) return mutation;
   // Pasting a copy of the selection over itself nets out to no op; the
@@ -1214,7 +1229,9 @@ export function insertVoidBlockOp(
   attrs: Record<string, unknown>
 ): (ColumnarMutation & { blockIndex: number }) | null {
   const a = pointAt(cd, sel.from);
-  const b = pointAt(cd, sel.to);
+  // Same exclusive-end rule as `insertTextOp`: replacing a range that reaches
+  // through one component must not consume the component after it.
+  const b = sel.from === sel.to ? pointAt(cd, sel.to) : rangeEndPoint(cd, sel.to);
   const baseTop = topIndexOf(cd, rootOf(cd, a.row));
   const lastTop = topIndexOf(cd, rootOf(cd, b.row));
 

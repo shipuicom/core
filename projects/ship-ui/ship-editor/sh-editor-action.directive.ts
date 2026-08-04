@@ -33,4 +33,14 @@ export class ShipEditorActionDirective {
     event.preventDefault();
     this.editor().engine.dispatch(this.action(), this.attrs());
   }
+
+  // Mousedown alone leaves the control keyboard-dead: a focused toolbar
+  // button advertising aria-pressed must also react to Enter and Space.
+  // (Not `click` — that would double-dispatch after every mousedown.)
+  @HostListener('keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    this.editor().engine.dispatch(this.action(), this.attrs());
+  }
 }

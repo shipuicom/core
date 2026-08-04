@@ -321,6 +321,13 @@ sh-editor {
     tab-size: 2;
   }
 
+  .sh-editor-source-error {
+    padding: calc(var(--editor-p) / 2) var(--editor-p);
+    background: var(--editor-code-bg);
+    color: var(--error-8);
+    font: var(--code-20);
+  }
+
   .sh-editor-slash-menu {
     position: fixed;
     z-index: 100;

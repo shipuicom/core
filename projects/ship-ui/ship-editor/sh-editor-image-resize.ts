@@ -17,6 +17,9 @@ export class ShipEditorImageResize {
 
   surface = input.required<HTMLElement>();
 
+  /** Maps an absolute block index to its mounted DOM element (window-aware). */
+  blockElAt = input.required<(idx: number) => HTMLElement | undefined>();
+
   readonly = input(false);
 
   edgeHandles = input(false);
@@ -61,7 +64,7 @@ export class ShipEditorImageResize {
     event.stopPropagation();
     const idx = this.engine.selectedBlock();
     if (idx === null || this.readonly()) return;
-    const img = this.surface().children[idx] as HTMLElement | undefined;
+    const img = this.blockElAt()(idx);
     if (!img || img.tagName !== 'IMG') return;
 
     const r0 = img.getBoundingClientRect();
@@ -118,7 +121,7 @@ export class ShipEditorImageResize {
   }
 
   #position(idx: number) {
-    const el = this.surface().children[idx] as HTMLElement | undefined;
+    const el = this.blockElAt()(idx);
 
     if (this.readonly() || !el || el.tagName !== 'IMG' || el.classList.contains('sh-editor-img-theater')) {
       this.frame.set(null);

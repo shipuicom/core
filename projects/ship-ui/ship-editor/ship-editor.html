@@ -51,12 +51,15 @@
             [readonly]="readonly()"
             [value]="sourceDraft()"
             (input)="onSourceInput($event)"></textarea>
+          @if (sourceError(); as error) {
+            <div class="sh-editor-source-error" role="alert">{{ error }}</div>
+          }
         }
       </div>
       <sh-editor-link-popover [surface]="surface" />
       <sh-editor-image-popover [surface]="surface" [upload]="imageUpload()" />
-      <sh-editor-contextual-toolbar [surface]="surface" [extras]="contextualActions()" />
-      <sh-editor-image-resize [surface]="surface" [readonly]="readonly()" [edgeHandles]="imageEdgeResize()" />
+      <sh-editor-contextual-toolbar [blockElAt]="blockElementAt" [extras]="contextualActions()" />
+      <sh-editor-image-resize [blockElAt]="blockElementAt" [surface]="surface" [readonly]="readonly()" [edgeHandles]="imageEdgeResize()" />
       <sh-editor-slash-menu [commands]="slashCommands()" />
       @if (showMetrics() && metricsText()) {
         <div class="sh-editor-stats">{{ metricsText() }}</div>
