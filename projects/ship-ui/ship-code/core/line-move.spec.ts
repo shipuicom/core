@@ -95,6 +95,27 @@ describe('moveLines', () => {
     expect(run(withBlank, caretAt(withBlank, 2, 1), -1)?.text).toBe('a\nb\n');
   });
 
+  it('keeps a full-line sweep on the moved line after moving up', () => {
+    // Head at the next line's offset 0 — that line is excluded from the move,
+    // and the selection end must not follow it to its new position.
+    const result = run(DOC, rangeAt(DOC, [1, 0], [2, 0]), -1)!;
+    expect(result.text).toBe('two\none\nthree\nfour');
+    expect(result.selected).toBe('two\n');
+  });
+
+  it('keeps a full-line sweep on the moved lines after moving down', () => {
+    const result = run(DOC, rangeAt(DOC, [0, 0], [2, 0]), 1)!;
+    expect(result.text).toBe('three\none\ntwo\nfour');
+    expect(result.selected).toBe('one\ntwo\n');
+  });
+
+  it('clamps the sweep end when the moved line becomes the last', () => {
+    const SHORT = 'one\ntwo\nthree';
+    const result = run(SHORT, rangeAt(SHORT, [1, 0], [2, 0]), 1)!;
+    expect(result.text).toBe('one\nthree\ntwo');
+    expect(result.selected).toBe('two');
+  });
+
   it('preserves the goal column across the move', () => {
     const doc = createDocument(DOC);
     const sel: FlatSelection = { ranges: [{ anchor: 0, head: 0, goalColumn: 7 }] };

@@ -52,23 +52,32 @@ interface Match {
   segments: number;
 }
 
-/** Match one space-separated descendant selector against a scope stack. */
+/**
+ * Match one space-separated descendant selector against a scope stack.
+ *
+ * Matched right-to-left so the last part claims the DEEPEST scope it can,
+ * with the parts before it matching in order above it. Depth drives
+ * specificity, and VS Code credits a rule with its deepest applicable scope —
+ * scanning shallowest-first would score `string` at the outer scope and lose
+ * to any rule touching a mid-stack scope (`meta.embedded` in a template
+ * literal), coloring the token wrong.
+ */
 function selectorMatches(selector: string, scopes: readonly string[]): Match | null {
   const parts = selector.split(/\s+/).filter(Boolean);
   if (parts.length === 0) return null;
-  let from = 0;
   let match: Match | null = null;
-  for (const part of parts) {
+  let limit = scopes.length - 1;
+  for (let p = parts.length - 1; p >= 0; p--) {
     let found = -1;
-    for (let i = from; i < scopes.length; i++) {
-      if (segmentMatches(part, scopes[i])) {
+    for (let i = limit; i >= 0; i--) {
+      if (segmentMatches(parts[p], scopes[i])) {
         found = i;
         break;
       }
     }
     if (found < 0) return null;
-    match = { depth: found, segments: part.split('.').length };
-    from = found + 1;
+    if (match === null) match = { depth: found, segments: parts[p].split('.').length };
+    limit = found - 1;
   }
   return match;
 }

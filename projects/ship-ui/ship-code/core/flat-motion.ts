@@ -56,12 +56,38 @@ export interface MotionResult {
   readonly goalColumn?: number;
 }
 
-export function flatMoveRight(doc: CodeDocument, pos: FlatPos): MotionResult {
-  return { head: Math.min(pos + 1, indexFor(doc).size) };
+const isHighSurrogate = (code: number) => code >= 0xd800 && code <= 0xdbff;
+const isLowSurrogate = (code: number) => code >= 0xdc00 && code <= 0xdfff;
+
+/**
+ * How many code units one horizontal step covers at `pos`: 2 across a
+ * surrogate pair, else 1. Flat positions are UTF-16 code-unit offsets, and a
+ * caret (or a one-character delete) must never land between the halves of an
+ * astral character — that strands a lone surrogate in the document.
+ */
+export function flatStepRight(doc: CodeDocument, pos: FlatPos): number {
+  const point = indexFor(doc).pointAt(pos);
+  const text = doc.lines[point.line].text;
+  return isHighSurrogate(text.charCodeAt(point.column)) && isLowSurrogate(text.charCodeAt(point.column + 1)) ? 2 : 1;
 }
 
-export function flatMoveLeft(_doc: CodeDocument, pos: FlatPos): MotionResult {
-  return { head: Math.max(pos - 1, 0) };
+export function flatStepLeft(doc: CodeDocument, pos: FlatPos): number {
+  const point = indexFor(doc).pointAt(pos);
+  const text = doc.lines[point.line].text;
+  return point.column >= 2 && isLowSurrogate(text.charCodeAt(point.column - 1)) && isHighSurrogate(text.charCodeAt(point.column - 2))
+    ? 2
+    : 1;
+}
+
+export function flatMoveRight(doc: CodeDocument, pos: FlatPos): MotionResult {
+  const size = indexFor(doc).size;
+  if (pos >= size) return { head: size };
+  return { head: Math.min(pos + flatStepRight(doc, pos), size) };
+}
+
+export function flatMoveLeft(doc: CodeDocument, pos: FlatPos): MotionResult {
+  if (pos <= 0) return { head: 0 };
+  return { head: Math.max(pos - flatStepLeft(doc, pos), 0) };
 }
 
 export function flatMoveUp(doc: CodeDocument, pos: FlatPos, goalColumn?: number): MotionResult {

@@ -138,7 +138,9 @@ export interface FlatChange {
  */
 export function mapFlatPos(pos: FlatPos, change: FlatChange): FlatPos {
   const insertLen = change.insert.length;
-  if (pos <= change.from) return pos;
+  // Strictly before, not at: a position at the change site associates right —
+  // a caret at column 0 rides an indent insert instead of being left behind.
+  if (pos < change.from) return pos;
   if (pos >= change.to) return pos - (change.to - change.from) + insertLen;
   return change.from + insertLen;
 }

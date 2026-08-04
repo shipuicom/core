@@ -36,6 +36,15 @@ describe('action registry', () => {
     expect(dispatchAction('test.spec.noop', ctx('x'))).toBe(false);
   });
 
+  it('a motion dispatch moves every cursor, not just the primary', () => {
+    // The registry is the extension surface: it must behave like the keyboard
+    // path, which moves all cursors — not silently collapse a multi-cursor.
+    const doc = createDocument('aaa\nbbb');
+    const selection = { ranges: [{ anchor: 0, head: 0 }, { anchor: 4, head: 4 }], primary: 0 };
+    const result = dispatchAction('code.caret.moveRight', { doc, selection }) as ActionContext;
+    expect(result.selection.ranges.map((r) => r.head)).toEqual([1, 5]);
+  });
+
   it("dispatching 'code.caret.moveRight' moves the caret right", () => {
     const result = dispatchAction('code.caret.moveRight', ctx('hello', 2)) as ActionContext;
     expect(primaryFlat(result.selection)).toEqual({ anchor: 3, head: 3, goalColumn: undefined });

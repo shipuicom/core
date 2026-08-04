@@ -109,11 +109,16 @@ describe('flat changes', () => {
   it('maps positions through changes association-right', () => {
     const change = { from: 2, to: 5, insert: 'ab' };
     expect(mapFlatPos(1, change)).toBe(1);
-    expect(mapFlatPos(2, change)).toBe(2);
+    expect(mapFlatPos(2, change)).toBe(4); // at the change site → rides after the insert
     expect(mapFlatPos(4, change)).toBe(4); // inside the deleted span → change start + insert
     expect(mapFlatPos(5, change)).toBe(4);
     expect(mapFlatPos(9, change)).toBe(8);
     expect(mapThroughChanges(9, [change, { from: 0, to: 0, insert: 'x' }])).toBe(9);
+  });
+
+  it('a caret at a pure-insert point rides right with the insert', () => {
+    // Tab-indent at column 0: the caret must end up after the inserted spaces.
+    expect(mapFlatPos(0, { from: 0, to: 0, insert: '  ' })).toBe(2);
   });
 });
 
@@ -125,6 +130,17 @@ describe('flat caret motion', () => {
     expect(flatMoveRight(doc, 16).head).toBe(16); // clamped at doc end
     expect(flatMoveLeft(doc, 6).head).toBe(5);
     expect(flatMoveLeft(doc, 0).head).toBe(0);
+  });
+
+  it('horizontal motion steps over a surrogate pair as one character', () => {
+    // '😀' is two UTF-16 code units; the caret must never land between them.
+    const doc = createDocument('a😀b\nc');
+    expect(flatMoveRight(doc, 1).head).toBe(3);
+    expect(flatMoveLeft(doc, 3).head).toBe(1);
+    // Plain characters and the newline still step by one.
+    expect(flatMoveRight(doc, 3).head).toBe(4);
+    expect(flatMoveRight(doc, 4).head).toBe(5); // over the newline
+    expect(flatMoveLeft(doc, 5).head).toBe(4);
   });
 
   it('vertical motion clamps to shorter lines but keeps the goal column', () => {

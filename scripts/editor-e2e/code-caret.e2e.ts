@@ -189,4 +189,61 @@ test.describe('sh-code caret hit-testing', () => {
     expect(result.winStart).toBeGreaterThan(100);
     for (const probe of result.probes) expect(probe.got).toBe(probe.expected);
   });
+
+  test('delete-line over the last two lines removes them cleanly, undo restores', async ({ page }) => {
+    // The last line has no newline of its own and borrows the one above it —
+    // deleting it together with its neighbour once emitted overlapping changes
+    // that reordered the document instead of shrinking it.
+    const { errors } = await openCode(page);
+    const result = await page.evaluate(() => {
+      const el = document.querySelector('sh-code') as HTMLElement;
+      const comp = (window as any).ng.getComponent(el);
+      const texts = () => comp.doc().lines.map((l: any) => l.text);
+      const before: string[] = texts();
+      const n = before.length;
+      let start = 0;
+      for (let i = 0; i < n - 2; i++) start += before[i].length + 1;
+      const size = start + before[n - 2].length + 1 + before[n - 1].length;
+      comp.sel.set({ ranges: [{ anchor: start, head: size }], primary: 0 });
+
+      const isMac = /Mac|iP/.test(navigator.platform);
+      const chord = (key: string) =>
+        new KeyboardEvent('keydown', { key, shiftKey: key === 'k', metaKey: isMac, ctrlKey: !isMac, cancelable: true });
+      comp.onKeyDown(chord('k'));
+      const after: string[] = texts();
+      comp.onKeyDown(chord('z'));
+      return { before, after, restored: texts() as string[] };
+    });
+    expect(result.after).toEqual(result.before.slice(0, -2));
+    expect(result.restored).toEqual(result.before);
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
+
+  test('a synchronous write-back from onChange is not dropped', async ({ page }) => {
+    // A form subscriber normalizing in valueChanges writes back while the
+    // editor's own update is still flushing; the external value must win.
+    const { errors } = await openCode(page);
+    const result = await page.evaluate(async () => {
+      const el = document.querySelector('sh-code') as HTMLElement;
+      const comp = (window as any).ng.getComponent(el);
+      let writes = 0;
+      comp.registerOnChange(() => {
+        if (writes++ === 0) comp.writeValue('normalized');
+      });
+      comp.sel.set({ ranges: [{ anchor: 0, head: 0 }], primary: 0 });
+      const isMac = /Mac|iP/.test(navigator.platform);
+      comp.onKeyDown(new KeyboardEvent('keydown', { key: 'k', shiftKey: true, metaKey: isMac, ctrlKey: !isMac, cancelable: true }));
+      await new Promise((r) => setTimeout(r, 100));
+      (window as any).ng.applyChanges(comp);
+      return {
+        writes,
+        text: comp.doc().lines.map((l: any) => l.text).join('\n'),
+        value: comp.value(),
+      };
+    });
+    expect(result.writes).toBeGreaterThan(0);
+    expect(result.text).toBe('normalized');
+    expect(result.value).toBe('normalized');
+    expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
+  });
 });

@@ -66,8 +66,20 @@ describe('VS Code Keymap', () => {
     assertKeymapComplete(VSCODE_KEYMAP, 'VSCODE_KEYMAP');
   });
 
-  it('should map ctrlOrCmd+ArrowLeft to code.caret.moveWordLeft (differs from Sublime)', () => {
-    expect(VSCODE_KEYMAP['code.caret.moveWordLeft']).toBe('ctrlOrCmd+ArrowLeft');
+  it('cmd+ArrowLeft reaches line start on mac — never word motion', () => {
+    // The regression: a ctrlOrCmd word binding double-bound Cmd+Left with the
+    // inherited line-start chord, and word motion won the match order.
+    const ev = { key: 'ArrowLeft', metaKey: true, ctrlKey: false, altKey: false, shiftKey: false };
+    expect(matchesShortcut(ev, VSCODE_KEYMAP['code.caret.moveLineStart'], true)).toBe(true);
+    expect(matchesShortcut(ev, VSCODE_KEYMAP['code.caret.moveWordLeft'], true)).toBe(false);
+  });
+
+  it('word motion is Alt+Arrow on mac and Ctrl+Arrow elsewhere', () => {
+    const alt = { key: 'ArrowLeft', metaKey: false, ctrlKey: false, altKey: true, shiftKey: false };
+    expect(matchesShortcut(alt, VSCODE_KEYMAP['code.caret.moveWordLeft'], true)).toBe(true);
+    const ctrl = { key: 'ArrowLeft', metaKey: false, ctrlKey: true, altKey: false, shiftKey: false };
+    expect(matchesShortcut(ctrl, VSCODE_KEYMAP['code.caret.moveWordLeft'], false)).toBe(true);
+    expect(matchesShortcut(ctrl, VSCODE_KEYMAP['code.caret.moveLineStart'], false)).toBe(false);
   });
 
   it('should map Alt+ArrowUp to code.edit.moveLineUp (differs from Sublime)', () => {

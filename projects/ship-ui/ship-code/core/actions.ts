@@ -9,9 +9,9 @@
 // applicable", leaving the context untouched).
 
 import { CodeDocument } from './document';
+import { applyMotionAll } from './flat-multi';
 import {
   FlatSelection,
-  applyMotion,
   flatMoveDocEnd,
   flatMoveDocStart,
   flatMoveDown,
@@ -65,12 +65,15 @@ export function hasAction(name: string): boolean {
 
 type Motion = (doc: CodeDocument, pos: number, goal?: number) => { head: number; goalColumn?: number };
 
+// Every cursor moves, not just the primary: a registry dispatch must behave
+// exactly like the keyboard path, which routes through `applyMotionAll` —
+// anything else silently collapses a live multi-cursor to one caret.
 const motion =
   (move: Motion, collapseEdge?: 'from' | 'to'): ActionHandler =>
-  ({ doc, selection }) => {
-    const range = primaryFlat(selection);
-    return { doc, selection: applyMotion(selection, move(doc, range.head, range.goalColumn), false, collapseEdge) };
-  };
+  ({ doc, selection }) => ({
+    doc,
+    selection: applyMotionAll(selection, (pos, goal) => move(doc, pos, goal), false, collapseEdge),
+  });
 
 registerAction('code.caret.moveLeft', motion(flatMoveLeft, 'from'));
 registerAction('code.caret.moveRight', motion(flatMoveRight, 'to'));

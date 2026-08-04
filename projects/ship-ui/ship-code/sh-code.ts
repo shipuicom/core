@@ -57,6 +57,8 @@ import {
   flatSelectAll,
   flatSelectLine,
   flatSelectWord,
+  flatStepLeft,
+  flatStepRight,
   isFlatCollapsed,
   primaryFlat,
 } from './core/flat-motion';
@@ -78,6 +80,9 @@ const VIRTUAL_OVERSCAN_PX = 400;
 const DEFAULT_LINE_PX = 20;
 
 let nextInstanceId = 1;
+
+/** Sentinel: no internal `value` write is awaiting its echo. */
+const NO_ECHO: unknown = Symbol('no-echo');
 
 function escapeHtml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -185,7 +190,14 @@ export class ShipCode implements ControlValueAccessor {
   #history: HistoryEntry[] = [];
   #redoStack: HistoryEntry[] = [];
   #composing = false;
-  #isInternalValueUpdate = false;
+  /**
+   * The exact value the last internal write pushed into `value()`. Effects
+   * coalesce, so a boolean "skip the next run" flag would also swallow an
+   * external write-back landing in the same flush (a subscriber calling
+   * writeValue synchronously from onChange); comparing against the written
+   * value itself skips only our own echo.
+   */
+  #echoValue: unknown = NO_ECHO;
   #dragSelecting = false;
   #destroyRef = inject(DestroyRef);
   #sanitizer = inject(DomSanitizer);
@@ -377,6 +389,9 @@ export class ShipCode implements ControlValueAccessor {
       const firstLine = Math.max(start.line, winStart);
       const lastLine = Math.min(end.line, winEnd - 1);
       for (let line = firstLine; line <= lastLine; line++) {
+        // A selection ending exactly at a line's column 0 holds nothing on
+        // that line — skip it, or the newline stub paints a phantom sliver.
+        if (line === end.line && line !== start.line && end.column === 0) continue;
         const colFrom = line === start.line ? start.column : 0;
         const colTo = line === end.line ? end.column : lines[line].text.length;
         // A fully swept line paints a newline stub so empty lines stay visible.
@@ -391,10 +406,9 @@ export class ShipCode implements ControlValueAccessor {
     // External value → document.
     effect(() => {
       const externalVal = this.value();
-      if (this.#isInternalValueUpdate) {
-        this.#isInternalValueUpdate = false;
-        return;
-      }
+      const isEcho = externalVal === this.#echoValue;
+      this.#echoValue = NO_ECHO;
+      if (isEcho) return;
       untracked(() => {
         const doc = createDocument(externalVal ?? '');
         this.doc.set(doc);
@@ -418,7 +432,7 @@ export class ShipCode implements ControlValueAccessor {
       untracked(() => {
         const serialized = getText(doc);
         if (this.value() !== serialized) {
-          this.#isInternalValueUpdate = true;
+          this.#echoValue = serialized;
           this.value.set(serialized);
           this.onChange(serialized);
         }
@@ -470,7 +484,14 @@ export class ShipCode implements ControlValueAccessor {
             this.#tokensVersion.update((v) => v + 1);
             this.#pumpTokens();
           })
-          .catch(() => this.#tokenizer.set(null));
+          .catch(() => {
+            // Same staleness guard as the success path: a slow-failing load
+            // for a previous language must not null a newer tokenizer.
+            if (this.engine() !== engine || this.language() !== language) return;
+            this.#tokenizer.set(null);
+            this.#incremental = null;
+            this.#tokensVersion.update((v) => v + 1);
+          });
       });
     });
 
@@ -489,6 +510,8 @@ export class ShipCode implements ControlValueAccessor {
       untracked(() => this.#hookScroller(scroller));
     });
     this.#destroyRef.onDestroy(() => this.#scrollHooked?.removeEventListener('scroll', this.#onScroll));
+    // A component destroyed mid-drag must not leave window listeners behind.
+    this.#destroyRef.onDestroy(() => this.#onDragUp());
 
     afterNextRender(() => {
       this.#measureMetrics();
@@ -687,7 +710,9 @@ export class ShipCode implements ControlValueAccessor {
       const { from, to } = flatOrdered(range);
       if (from !== to) return { change: { from, to, insert: '' }, at: from };
       if (from === 0) return null;
-      return { change: { from: from - 1, to: from, insert: '' }, at: from - 1 };
+      // Step over a whole surrogate pair — deleting one half strands the other.
+      const target = from - flatStepLeft(this.doc(), from);
+      return { change: { from: target, to: from, insert: '' }, at: target };
     });
   }
 
@@ -697,7 +722,7 @@ export class ShipCode implements ControlValueAccessor {
       const { from, to } = flatOrdered(range);
       if (from !== to) return { change: { from, to, insert: '' }, at: from };
       if (to >= size) return null;
-      return { change: { from, to: from + 1, insert: '' }, at: from };
+      return { change: { from, to: from + flatStepRight(this.doc(), from), insert: '' }, at: from };
     });
   }
 
@@ -731,7 +756,7 @@ export class ShipCode implements ControlValueAccessor {
   }
 
   onKeyDown(event: KeyboardEvent) {
-    if (this.readonly() || this.#composing) return;
+    if (this.#composing) return;
     const isMac = typeof navigator !== 'undefined' && /Mac|iP/.test(navigator.platform);
     const keymap = this.#resolvedKeymap();
 
@@ -796,6 +821,10 @@ export class ShipCode implements ControlValueAccessor {
       event.preventDefault();
       return this.sel.set(collapseToPrimary(this.sel()));
     }
+    // Readonly still navigates and selects — arrows, Home/End, select-all,
+    // even extra carets — it only stops here, where the document mutates.
+    if (this.readonly()) return;
+
     if (match('code.edit.undo')) {
       event.preventDefault();
       return this.#undo();
@@ -905,11 +934,19 @@ export class ShipCode implements ControlValueAccessor {
     const index = indexFor(this.doc());
     const lineCount = index.lineCount;
     const changes: FlatChange[] = [];
-    for (const line of this.#touchedLines()) {
-      const to = line < lineCount - 1 ? index.startOf(line + 1) : index.size;
+    // Consecutive lines collapse into one run: per-line changes would overlap
+    // at the document end, where the last line borrows the newline above it.
+    const lines = this.#touchedLines();
+    for (let i = 0; i < lines.length; i++) {
+      let j = i;
+      while (j + 1 < lines.length && lines[j + 1] === lines[j] + 1) j++;
+      const first = lines[i];
+      const last = lines[j];
+      const to = last < lineCount - 1 ? index.startOf(last + 1) : index.size;
       // The last line has no newline of its own, so it takes the one above it.
-      const from = line === lineCount - 1 && line > 0 ? index.endOf(line - 1) : index.startOf(line);
+      const from = last === lineCount - 1 && first > 0 ? index.endOf(first - 1) : index.startOf(first);
       changes.push({ from, to, insert: '' });
+      i = j;
     }
     if (!changes.length) return;
     changes.sort((a, b) => b.from - a.from);
@@ -1109,25 +1146,34 @@ export class ShipCode implements ControlValueAccessor {
     else {
       set({ anchor: pos, head: pos });
       this.#dragSelecting = true;
+      // The drag tracks on the window, not the content element: element-bound
+      // moves stop at the editor's border, stranding the selection the moment
+      // the pointer leaves — and the scroll-into-view effect on the moving
+      // head is what auto-scrolls a drag past the viewport edge.
+      window.addEventListener('mousemove', this.#onDragMove);
+      window.addEventListener('mouseup', this.#onDragUp);
     }
     this.inputArea().nativeElement.focus({ preventScroll: true });
   }
 
-  onContentMouseMove(event: MouseEvent) {
+  readonly #onDragMove = (event: MouseEvent) => {
     if (!this.#dragSelecting || event.buttons !== 1) return;
     const pos = this.#posFromMouse(event);
     // The drag owns the primary range — the cursor the mousedown just created,
     // whether that was a plain click or an Alt+click adding to the set.
     const anchor = primaryFlat(this.sel()).anchor;
     this.sel.set(setPrimaryRange(this.sel(), { anchor, head: pos }));
-  }
+  };
 
-  onDocumentMouseUp() {
+  readonly #onDragUp = () => {
     this.#dragSelecting = false;
-  }
+    if (typeof window === 'undefined') return;
+    window.removeEventListener('mousemove', this.#onDragMove);
+    window.removeEventListener('mouseup', this.#onDragUp);
+  };
 
   #posFromMouse(event: MouseEvent): FlatPos {
-    const content = (event.currentTarget as HTMLElement).closest('.sh-code-content') ?? (event.currentTarget as HTMLElement);
+    const content = this.scroller().nativeElement.querySelector('.sh-code-content') as HTMLElement;
     const rect = content.getBoundingClientRect();
     // `rect.top` is the border box, and the top padding is exactly the window's
     // prefix height — so this y is already in document coordinates.

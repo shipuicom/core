@@ -133,15 +133,24 @@ export function moveLines(doc: CodeDocument, selection: FlatSelection, direction
     newStart[i] = at;
     at += doc.lines[order[i]].text.length + 1;
   }
-  const remap = (pos: FlatPos): FlatPos => {
+  const remap = (pos: FlatPos, isRangeEnd: boolean): FlatPos => {
     const point = index.pointAt(pos);
+    // The exclusive end of a full-line sweep sits at the next line's offset 0 —
+    // a line `spanOf` deliberately excludes from the move. Keep that endpoint
+    // attached to the end of the last selected line, not to wherever the
+    // excluded line went. (Clamped: the selected line may now be the last.)
+    if (isRangeEnd && point.column === 0 && point.line > 0) {
+      const prev = point.line - 1;
+      return Math.min(newStart[posOf[prev]] + doc.lines[prev].text.length + 1, index.size);
+    }
     return newStart[posOf[point.line]] + point.column;
   };
-  const ranges = selection.ranges.map<FlatRange>((range) =>
-    range.goalColumn === undefined
-      ? { anchor: remap(range.anchor), head: remap(range.head) }
-      : { anchor: remap(range.anchor), head: remap(range.head), goalColumn: range.goalColumn }
-  );
+  const ranges = selection.ranges.map<FlatRange>((range) => {
+    const isEnd = (pos: FlatPos) => range.anchor !== range.head && pos === Math.max(range.anchor, range.head);
+    const anchor = remap(range.anchor, isEnd(range.anchor));
+    const head = remap(range.head, isEnd(range.head));
+    return range.goalColumn === undefined ? { anchor, head } : { anchor, head, goalColumn: range.goalColumn };
+  });
 
   return {
     changes: [{ from: index.startOf(lo), to: index.endOf(hi), insert: texts.join('\n') }],

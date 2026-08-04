@@ -25,7 +25,15 @@ let wasmLoaded: Promise<void> | null = null;
 
 /** Create the vscode-textmate engine. The WASM core loads once per page. */
 export async function createVSCodeEngine(options: VSCodeEngineOptions): Promise<TokenizerEngine> {
-  wasmLoaded ??= Promise.resolve(options.wasm).then((data) => loadWASM(data as Response));
+  // A failed load clears the once-per-page slot: caching the rejection would
+  // make one transient fetch failure permanent for the page's lifetime.
+  if (!wasmLoaded) {
+    const attempt = Promise.resolve(options.wasm).then((data) => loadWASM(data as Response));
+    attempt.catch(() => {
+      if (wasmLoaded === attempt) wasmLoaded = null;
+    });
+    wasmLoaded = attempt;
+  }
   await wasmLoaded;
 
   const registry = new Registry({
@@ -47,8 +55,13 @@ export async function createVSCodeEngine(options: VSCodeEngineOptions): Promise<
       if (!entry) return Promise.resolve(null);
       let loaded = cache.get(entry.scopeName);
       if (!loaded) {
-        loaded = registry.loadGrammar(entry.scopeName).then((grammar) => (grammar ? wrapGrammar(grammar) : null));
-        cache.set(entry.scopeName, loaded);
+        const attempt = registry.loadGrammar(entry.scopeName).then((grammar) => (grammar ? wrapGrammar(grammar) : null));
+        // Evict a rejection so the language can retry on the next request.
+        attempt.catch(() => {
+          if (cache.get(entry.scopeName) === attempt) cache.delete(entry.scopeName);
+        });
+        cache.set(entry.scopeName, attempt);
+        loaded = attempt;
       }
       return loaded;
     },

@@ -36,6 +36,13 @@ describe('resolveScope', () => {
     expect(styled.foreground).toBe('#literal');
   });
 
+  it('a selector matching at several depths is credited with the deepest', () => {
+    // 'string' matches at depths 1 AND 3; a 'keyword' rule at depth 2 must
+    // not outrank it — VS Code scores a rule by its deepest applicable scope.
+    const styled = resolveScope(['source.css', 'string.template', 'keyword.control', 'string.quoted'], theme);
+    expect(styled.foreground).toBe('#literal');
+  });
+
   it('descendant selectors require the outer scope and outrank the plain rule at the same depth', () => {
     expect(resolveScope(['source.ts', 'string.quoted.ts'], theme).foreground).toBe('#ts-string');
     expect(resolveScope(['source.css', 'string.quoted.css'], theme).foreground).toBe('#literal');

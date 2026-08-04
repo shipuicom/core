@@ -1,4 +1,4 @@
-<div class="sh-code-frame" [class.focused]="focused()" (mouseup)="onDocumentMouseUp()">
+<div class="sh-code-frame" [class.focused]="focused()">
   <div class="sh-code-scroller" #scroller>
     @if (lineNumbers()) {
       <div
@@ -17,8 +17,7 @@
       class="sh-code-content"
       [style.padding-top.px]="padTop()"
       [style.padding-bottom.px]="padBottom()"
-      (mousedown)="onContentMouseDown($event)"
-      (mousemove)="onContentMouseMove($event)">
+      (mousedown)="onContentMouseDown($event)">
       @for (rect of selectionRects(); track $index) {
         <div
           class="sh-code-selection"
