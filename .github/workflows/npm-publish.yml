@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main # Or your main branch name
+  # manual trigger — e.g. to re-run a deploy missed during a GitHub Actions outage
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
