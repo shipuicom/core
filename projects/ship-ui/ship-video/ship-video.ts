@@ -92,6 +92,7 @@ function isHlsSource(source: ShipVideoSource | undefined): boolean {
         class="sh-video-media sh-video-main-media"
         [attr.poster]="activePoster() || null"
         [attr.preload]="effectivePreload()"
+        [attr.crossorigin]="crossOrigin()"
         [loop]="loop()"
         playsinline
         (click)="onSurfaceClick()"
@@ -254,6 +255,12 @@ export class ShipVideo {
   playbackRates = input<number[]>([0.5, 1, 1.25, 1.5, 2]);
   /** When `false`, the player ignores clicks/keyboard — a wrapper (editor) drives it. */
   interactive = input(true);
+  /**
+   * `crossorigin` for the media elements. Required for auto first-frame
+   * scoring and canvas capture of cross-origin media whose server sends CORS
+   * headers; leave `null` for hosts without CORS or the video won't load.
+   */
+  crossOrigin = input<'anonymous' | 'use-credentials' | null>(null);
 
   /** Accent color of played bar and active states (`ShipColor`). */
   color = input<ShipColor | null>(null);
@@ -663,6 +670,77 @@ export class ShipVideo {
     this.#playMain();
   }
 
+  /**
+   * YouTube-style auto slate: sample a few candidate frames, score each by
+   * luma variance on a tiny canvas (fog/black/flat frames score low), park on
+   * the most detailed one. Requires CORS-readable media — on a tainted canvas
+   * the initial ~10% frame is kept. Aborts as soon as playback starts.
+   */
+  async #refineSlate(media: HTMLVideoElement, duration: number) {
+    if (!isFinite(duration) || duration <= 0) return;
+
+    const candidates = [...new Set(
+      [0.1, 0.25, 0.4, 0.6].map((fraction) => Math.round(Math.min(fraction * duration, 90) * 10) / 10)
+    )];
+
+    const canvas = this.#document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 36;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) return;
+
+    let best = { time: this.#appliedSlateTime, score: -1 };
+
+    for (const candidate of candidates) {
+      if (this.#destroyed || !this.#slateApplied || this.state.hasStarted()) return;
+
+      await this.#seekAndWait(media, candidate);
+      if (this.#destroyed || !this.#slateApplied || this.state.hasStarted()) return;
+
+      let pixels: Uint8ClampedArray;
+      try {
+        context.drawImage(media, 0, 0, canvas.width, canvas.height);
+        pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      } catch {
+        return; // cross-origin media without CORS — keep the current frame
+      }
+
+      const score = this.#frameDetailScore(pixels);
+      if (score > best.score) best = { time: candidate, score };
+    }
+
+    if (this.#destroyed || !this.#slateApplied || this.state.hasStarted()) return;
+    await this.#seekAndWait(media, best.time);
+  }
+
+  /** Standard deviation of luma — flat frames (black, fog, single colour) score near 0. */
+  #frameDetailScore(pixels: Uint8ClampedArray): number {
+    let sum = 0;
+    let squares = 0;
+    const count = pixels.length / 4;
+    for (let index = 0; index < pixels.length; index += 4) {
+      const luma = 0.299 * pixels[index] + 0.587 * pixels[index + 1] + 0.114 * pixels[index + 2];
+      sum += luma;
+      squares += luma * luma;
+    }
+    const mean = sum / count;
+    return Math.sqrt(Math.max(0, squares / count - mean * mean));
+  }
+
+  #seekAndWait(media: HTMLVideoElement, time: number): Promise<void> {
+    return new Promise((resolve) => {
+      const done = () => {
+        media.removeEventListener('seeked', done);
+        clearTimeout(timeout);
+        resolve();
+      };
+      const timeout = setTimeout(done, 1500);
+      media.addEventListener('seeked', done);
+      this.#appliedSlateTime = time;
+      media.currentTime = time;
+    });
+  }
+
   /** The slate seek was only for the featured frame — play from the beginning. */
   #rewindSlate() {
     if (!this.#slateApplied) return;
@@ -912,6 +990,11 @@ export class ShipVideo {
       this.#appliedSlateTime = this.#slateTimeFor(media.duration);
       media.currentTime = this.#appliedSlateTime;
       this.#slateApplied = true;
+
+      // auto mode: refine towards the most detailed candidate frame
+      if (typeof this.firstFrame() !== 'number' && !this.engineActive()) {
+        void this.#refineSlate(media, media.duration);
+      }
     }
 
     this.#restoreResume(media);

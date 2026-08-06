@@ -1,5 +1,5 @@
 <div class="player-with-playlist">
-  <sh-video #player />
+  <sh-video #player [firstFrame]="30" />
   <sh-video-playlist [player]="player" [items]="items" [autoAdvance]="true">
     <header>Up next</header>
   </sh-video-playlist>

@@ -1,1 +1,3 @@
-<sh-video sources="https://download.blender.org/durian/trailer/sintel_trailer-480p.mp4" [ad]="ad" />
+<!-- blender.org serves no CORS headers, so the auto frame-scoring can't read
+     pixels here — pick the featured frame explicitly instead -->
+<sh-video [firstFrame]="30" sources="https://download.blender.org/durian/trailer/sintel_trailer-480p.mp4" [ad]="ad" />

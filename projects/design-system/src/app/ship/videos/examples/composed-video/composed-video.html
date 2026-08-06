@@ -1,7 +1,8 @@
 <!-- Every composable control, in flex order. Cast/AirPlay render only when the
      browser has a castable device / wireless target available. -->
-<!-- no poster: the first video frame doubles as the featured image -->
-<sh-video color="accent" [sources]="sources" [tracks]="tracks">
+<!-- no poster: the featured image is a video frame ([firstFrame] time,
+     explicit because blender.org media is not CORS-readable for auto-scoring) -->
+<sh-video color="accent" [firstFrame]="30" [sources]="sources" [tracks]="tracks">
   <sh-video-controls>
     <sh-video-scrubber />
 
