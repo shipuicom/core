@@ -1,0 +1,1139 @@
+import { isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  contentChildren,
+  DOCUMENT,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  model,
+  output,
+  PLATFORM_ID,
+  signal,
+  untracked,
+  viewChild,
+  ViewEncapsulation,
+} from '@angular/core';
+import { shipComponentClasses, ShipColor } from '@ship-ui/core';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import type { ShipVideoEngine, ShipVideoEngineError, ShipVideoQualityLevel } from './engine/types';
+import { ShipVideoControls } from './ship-video-controls';
+import { ShipVideoPlayerHooks, ShipVideoState } from './ship-video-state';
+import {
+  ShipVideoAd,
+  ShipVideoAdCreative,
+  ShipVideoSource,
+  ShipVideoTrack,
+  shipVideoLevelsFromSources,
+  shipVideoToSourceArray,
+} from './ship-video-types';
+
+// Structural types: Remote Playback API and WebKit AirPlay, feature-detected at runtime.
+type RemotePlaybackLike = {
+  prompt?: () => Promise<void>;
+  watchAvailability: (callback: (available: boolean) => void) => Promise<number>;
+  cancelWatchAvailability?: (id: number) => Promise<void>;
+  addEventListener: (type: 'connect' | 'disconnect', listener: () => void) => void;
+  removeEventListener: (type: 'connect' | 'disconnect', listener: () => void) => void;
+};
+type WebKitVideoElement = HTMLVideoElement & {
+  webkitShowPlaybackTargetPicker?: () => void;
+  webkitCurrentPlaybackTargetIsWireless?: boolean;
+};
+type WebKitWindow = Window & { WebKitPlaybackTargetAvailabilityEvent?: unknown };
+
+const CONTROLS_IDLE_TIMEOUT = 2600;
+const DEFAULT_SKIP_AFTER = 5;
+const AD_RESOLVE_TIMEOUT = 8000;
+const SEEK_EPSILON = 0.3;
+const RESUME_MIN_SECONDS = 5;
+const RESUME_SAVE_INTERVAL = 5;
+
+function isHlsSource(source: ShipVideoSource | undefined): boolean {
+  if (!source) return false;
+  if (source.type === 'application/vnd.apple.mpegurl') return true;
+  return /\.m3u8(\?|#|$)/.test(source.src);
+}
+
+@Component({
+  selector: 'sh-video',
+  styleUrl: './ship-video.scss',
+  encapsulation: ViewEncapsulation.None,
+  imports: [ShipIcon, ShipVideoControls],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {
+      provide: ShipVideoState,
+      useFactory: () => inject(ShipVideoState, { optional: true, skipSelf: true }) ?? new ShipVideoState(),
+    },
+  ],
+  host: {
+    '[class]': 'hostClasses()',
+    '[class.is-playing]': 'state.playing()',
+    '[class.is-started]': 'state.hasStarted()',
+    '[class.is-ad]': 'state.adActive()',
+    '[class.is-live]': 'state.isLive()',
+    '[class.is-fullscreen]': 'state.isFullscreen()',
+    '[class.hide-controls]': '!state.controlsVisible()',
+    '[attr.tabindex]': 'interactive() ? 0 : null',
+    '(keydown)': 'onKeydown($event)',
+    '(pointermove)': 'wakeControls()',
+    '(pointerleave)': 'sleepControls()',
+    '(document:fullscreenchange)': 'syncFullscreenState()',
+    '(document:visibilitychange)': 'syncVisibility()',
+  },
+  template: `
+    @if (activated()) {
+      <video
+        #media
+        class="sh-video-media sh-video-main-media"
+        [attr.poster]="activePoster() || null"
+        [attr.preload]="effectivePreload()"
+        [loop]="loop()"
+        playsinline
+        (click)="onSurfaceClick()"
+        (play)="onMainPlay()"
+        (pause)="onMainPause()"
+        (ended)="onMainEnded()"
+        (seeking)="state.seeking.set(true)"
+        (seeked)="state.seeking.set(false)"
+        (timeupdate)="onMainTimeUpdate()"
+        (loadedmetadata)="onMainLoadedMetadata()"
+        (durationchange)="onMainLoadedMetadata()"
+        (progress)="onMainProgress()"
+        (waiting)="state.stalled.set(true)"
+        (playing)="state.stalled.set(false)"
+        (error)="onMainError()"
+        (enterpictureinpicture)="state.isPip.set(true)"
+        (leavepictureinpicture)="state.isPip.set(false)">
+        @if (!engineActive()) {
+          @for (source of renderedSources(); track source.src) {
+            <source [src]="source.src" [attr.type]="source.type || null" />
+          }
+          @for (track of activeTracks(); track track.src; let trackIndex = $index) {
+            <track
+              [src]="track.src"
+              [srclang]="track.srclang"
+              [label]="track.label"
+              [attr.kind]="track.kind || 'subtitles'"
+              [attr.data-sh-track-id]="trackIndex" />
+          }
+        }
+      </video>
+    }
+
+    @if (state.adActive() && state.adCreative(); as creative) {
+      <video
+        #adMedia
+        class="sh-video-media sh-video-ad-media"
+        autoplay
+        playsinline
+        (click)="onSurfaceClick()"
+        (play)="onAdPlay()"
+        (pause)="onAdPause()"
+        (ended)="finishAd(false)"
+        (error)="finishAd(false)"
+        (timeupdate)="onAdTimeUpdate()"
+        (loadedmetadata)="onAdLoadedMetadata()">
+        @for (source of adSources(); track source.src) {
+          <source [src]="source.src" [attr.type]="source.type || null" />
+        }
+      </video>
+
+      <div class="sh-video-ad-top">
+        <span class="sh-video-ad-badge">{{ creative.label || 'Ad' }}</span>
+
+        @if (creative.clickThroughUrl; as url) {
+          <a
+            class="sh-video-ad-link"
+            [href]="url"
+            target="_blank"
+            rel="noopener noreferrer"
+            (click)="adClicked.emit(url)">
+            {{ creative.clickThroughLabel || 'Visit advertiser' }}
+            <sh-icon size="small">arrow-square-out</sh-icon>
+          </a>
+        }
+      </div>
+
+      @if (adSkipEnabled()) {
+        <div class="sh-video-ad-skip-slot" aria-live="polite">
+          @if (adSkipCountdown() > 0) {
+            <div class="sh-video-ad-skip waiting">Skip in {{ adSkipCountdown() }}</div>
+          } @else {
+            <button type="button" class="sh-video-ad-skip" (click)="finishAd(true)">
+              Skip ad
+              <sh-icon size="small">skip-forward-fill</sh-icon>
+            </button>
+          }
+        </div>
+      }
+    }
+
+    @if (!state.hasStarted()) {
+      <button
+        type="button"
+        class="sh-video-featured"
+        [disabled]="!interactive()"
+        (click)="start()"
+        (pointerenter)="warmUp()"
+        (focus)="warmUp()"
+        aria-label="Play video">
+        @if (activePoster(); as posterUrl) {
+          <img class="sh-video-featured-image" [src]="posterUrl" alt="" decoding="async" />
+        }
+      </button>
+    }
+
+    <ng-content select="[shVideoOverlay]" />
+
+    @if (!projectedControls().length) {
+      <sh-video-controls [defaultLayout]="true" />
+    }
+    <ng-content />
+  `,
+})
+export class ShipVideo {
+  readonly state = inject(ShipVideoState);
+  #selfRef = inject(ElementRef<HTMLElement>);
+  #document = inject(DOCUMENT);
+  #platformId = inject(PLATFORM_ID);
+  #isBrowser = isPlatformBrowser(this.#platformId);
+
+  #engine: ShipVideoEngine | null = null;
+  #engineGeneration = 0;
+  #engineUnsubscribers: Array<() => void> = [];
+  #idleTimer: ReturnType<typeof setTimeout> | null = null;
+  #adCompleted = false;
+  #adResolveToken = 0;
+  #frameCallbacks = new Set<(time: number) => void>();
+  #frameCallbackHandle: number | null = null;
+  #lastFrameDuration = 1 / 30;
+  #lastFrameMediaTime = 0;
+  #lastResumeSave = 0;
+  #restoredResume = false;
+  #lastContentKey = '';
+  #unlocking = false;
+  #slateApplied = false;
+  #destroyed = false;
+  #intersectionObserver: IntersectionObserver | null = null;
+
+  mediaRef = viewChild<ElementRef<HTMLVideoElement>>('media');
+  adMediaRef = viewChild<ElementRef<HTMLVideoElement>>('adMedia');
+  projectedControls = contentChildren(ShipVideoControls);
+
+  /** Video source(s): a URL or a list of `ShipVideoSource` (format/quality/language variants). */
+  sources = input<string | ShipVideoSource[] | null>(null);
+  /** Featured image shown before playback starts (also the video poster). */
+  poster = input<string | null>(null);
+  /** Pre-roll advertisement: inline creative or async resolver (VAST-ready). */
+  ad = input<ShipVideoAd | null>(null);
+  /** Subtitle/caption tracks (WebVTT). */
+  tracks = input<ShipVideoTrack[]>([]);
+  /** Loops the content video when `true`. */
+  loop = input(false);
+  /** Preload strategy of the content video. */
+  preload = input<'auto' | 'metadata' | 'none'>('metadata');
+  /**
+   * Shows a video frame as the featured image when no poster is set.
+   * `true` (default) uses the first frame; a number grabs the frame at that
+   * time in seconds (for videos that fade in from black); `false` opts out.
+   * Playback still starts from the beginning.
+   */
+  firstFrame = input<boolean | number>(true);
+  /** Defers all network work until the player nears the viewport. */
+  lazy = input(false);
+  /** localStorage key for resuming playback position. */
+  resumeKey = input<string | null>(null);
+  /** Speeds offered by the settings menu. */
+  playbackRates = input<number[]>([0.5, 1, 1.25, 1.5, 2]);
+  /** When `false`, the player ignores clicks/keyboard — a wrapper (editor) drives it. */
+  interactive = input(true);
+
+  /** Accent color of played bar and active states (`ShipColor`). */
+  color = input<ShipColor | null>(null);
+  /** When `true`, renders the player with sharp (non-rounded) corners. */
+  sharp = input<boolean | undefined>(undefined);
+
+  /** Two-way bound volume from `0` to `1`. */
+  volume = model(1);
+  /** Two-way bound muted state. */
+  muted = model(false);
+  /** Two-way bound playback rate. */
+  playbackRate = model(1);
+  /** Two-way bound quality: `'auto'` or a level id. */
+  quality = model<'auto' | number>('auto');
+  /** Two-way bound subtitle track id, `null` = off. */
+  textTrack = model<number | null>(null);
+
+  /** Emits when playback starts for the first time (before a potential ad). */
+  videoStarted = output<void>();
+  /** Emits when the content video starts or resumes playing. */
+  videoPlayed = output<void>();
+  /** Emits when the content video is paused. */
+  videoPaused = output<void>();
+  /** Emits when the content video ends. */
+  videoEnded = output<void>();
+  /** Emits the content current time (seconds) while playing. */
+  videoTimeUpdated = output<number>();
+  /** Emits when the pre-roll ad starts. */
+  adStarted = output<void>();
+  /** Emits when the pre-roll ad is skipped. */
+  adSkipped = output<void>();
+  /** Emits when the pre-roll ad finishes (ended or skipped). */
+  adEnded = output<void>();
+  /** Emits the click-through URL when the ad link is clicked. */
+  adClicked = output<string>();
+  /** Emits the quality ladder once known (engine manifest or height-tagged sources). */
+  qualityLevels = output<readonly ShipVideoQualityLevel[]>();
+  /** Emits engine/media errors. */
+  videoError = output<ShipVideoEngineError>();
+
+  activated = signal(false);
+  warmedUp = signal(false);
+
+  /** Programmatic content overrides (playlist/editor); take precedence over the inputs. */
+  playlistSources = signal<ShipVideoSource[] | null>(null);
+  playlistPoster = signal<string | null>(null);
+  playlistAd = signal<ShipVideoAd | null>(null);
+  playlistTracks = signal<ShipVideoTrack[] | null>(null);
+
+  hostClasses = shipComponentClasses('video', {
+    color: this.color,
+    sharp: this.sharp,
+  });
+
+  parsedSources = computed(() => this.playlistSources() ?? shipVideoToSourceArray(this.sources()));
+  activePoster = computed(() => this.playlistPoster() ?? this.poster());
+  activeAd = computed(() => this.playlistAd() ?? this.ad());
+  activeTracks = computed(() => this.playlistTracks() ?? this.tracks());
+  engineActive = computed(() => isHlsSource(this.parsedSources()[0]));
+
+  progressiveLevels = computed(() => (this.engineActive() ? [] : shipVideoLevelsFromSources(this.parsedSources())));
+
+  /** Sources rendered as `<source>` children (progressive path only). */
+  renderedSources = computed(() => {
+    const sources = this.parsedSources();
+    const levels = this.progressiveLevels();
+    const quality = this.quality();
+
+    if (levels.length && quality !== 'auto') {
+      const level = levels.find((candidate) => candidate.id === quality);
+      const match = level && sources.find((source) => (source.label ?? `${source.height}p`) === level.label);
+      if (match) return [match];
+    }
+
+    return sources;
+  });
+
+  // The slate frame decodes even when a poster is set — the poster image
+  // simply layers on top, and the frame remains as a fallback beneath it.
+  firstFrameEnabled = computed(() => this.firstFrame() !== false);
+  firstFrameTime = computed(() => {
+    const value = this.firstFrame();
+    return typeof value === 'number' ? Math.max(0.001, value) : 0.001;
+  });
+
+  effectivePreload = computed(() => {
+    if (this.warmedUp()) return 'auto';
+    // without a poster the slate needs at least metadata to have a frame to paint
+    if (this.preload() === 'none' && this.firstFrameEnabled() && !this.activePoster()) return 'metadata';
+    return this.preload();
+  });
+
+  adSources = computed(() => shipVideoToSourceArray(this.state.adCreative()?.src));
+  adSkipEnabled = computed(() => (this.state.adCreative()?.skipAfter ?? DEFAULT_SKIP_AFTER) !== null);
+  adSkipCountdown = computed(() => {
+    const skipAfter = this.state.adCreative()?.skipAfter ?? DEFAULT_SKIP_AFTER;
+    if (skipAfter === null) return 0;
+    return Math.max(0, Math.ceil(skipAfter - this.state.adCurrentTime()));
+  });
+
+  #hooks: ShipVideoPlayerHooks = {
+    start: () => this.start(),
+    seekTo: (seconds, options) => this.seekTo(seconds, options),
+    step: (frames) => this.step(frames),
+    onVideoFrame: (callback) => this.onVideoFrame(callback),
+    goToLive: () => this.goToLive(),
+    skipAd: () => this.finishAd(true),
+    toggleFullscreen: () => this.toggleFullscreen(),
+    togglePip: () => this.togglePip(),
+    requestCast: () => this.requestCast(),
+    requestAirplay: () => this.requestAirplay(),
+    mediaElement: () => this.mediaRef()?.nativeElement ?? null,
+  };
+
+  constructor() {
+    this.state.attachPlayer(this.#hooks);
+
+    // input/model → store bridges (writes of equal values don't re-trigger)
+    effect(() => this.state.volume.set(this.volume()));
+    effect(() => this.volume.set(this.state.volume()));
+    effect(() => this.state.muted.set(this.muted()));
+    effect(() => this.muted.set(this.state.muted()));
+    effect(() => this.state.playbackRate.set(this.playbackRate()));
+    effect(() => this.playbackRate.set(this.state.playbackRate()));
+    effect(() => this.state.quality.set(this.quality()));
+    effect(() => this.quality.set(this.state.quality()));
+    effect(() => this.state.textTrack.set(this.textTrack()));
+    effect(() => this.textTrack.set(this.state.textTrack()));
+    effect(() => this.state.interactive.set(this.interactive()));
+    effect(() => this.state.playbackRates.set(this.playbackRates()));
+
+    // store → media element sync
+    effect(() => {
+      const volume = Math.max(0, Math.min(1, this.state.volume()));
+      const muted = this.state.muted();
+      for (const element of this.#mediaElements()) {
+        element.volume = volume;
+        element.muted = muted;
+      }
+    });
+
+    effect(() => {
+      const rate = this.state.playbackRate();
+      const media = this.mediaRef()?.nativeElement;
+      if (media && rate > 0) media.playbackRate = rate;
+    });
+
+    effect(() => {
+      const shouldPlay = this.state.playing();
+      untracked(() => {
+        if (!this.state.hasStarted()) {
+          if (shouldPlay) this.start();
+          return;
+        }
+        const media = this.#activeMedia();
+        if (!media) return;
+        if (shouldPlay && media.paused) this.#safePlay(media);
+        if (!shouldPlay && !media.paused) media.pause();
+      });
+    });
+
+    // store.currentTime written externally → seek (internal writes land within epsilon)
+    effect(() => {
+      const target = this.state.currentTime();
+      untracked(() => {
+        const media = this.mediaRef()?.nativeElement;
+        if (!media || this.state.adActive()) return;
+        if (Math.abs(media.currentTime - target) > SEEK_EPSILON) {
+          media.currentTime = target;
+        }
+      });
+    });
+
+    // per-item ads: a new ad config re-arms the pre-roll
+    effect(() => {
+      this.activeAd();
+      untracked(() => (this.#adCompleted = false));
+    });
+
+    // progressive subtitle tracks → store + native TextTrack modes
+    effect(() => {
+      const tracks = this.activeTracks();
+      this.state.subtitleTracks.set(
+        tracks.map((track, index) => ({
+          id: index,
+          groupId: 'main',
+          name: track.label,
+          lang: track.srclang,
+          forced: false,
+          default: track.default ?? false,
+        }))
+      );
+    });
+
+    effect(() => {
+      const active = this.state.textTrack();
+      const media = this.mediaRef()?.nativeElement;
+      if (!media || this.engineActive()) return;
+
+      const textTracks = Array.from(media.textTracks ?? []);
+      textTracks.forEach((track, index) => {
+        track.mode = index === active ? 'showing' : 'hidden';
+      });
+    });
+
+    // progressive quality ladder → store
+    effect(() => {
+      const levels = this.progressiveLevels();
+      if (!this.engineActive()) {
+        this.state.levels.set(levels);
+        if (levels.length) this.qualityLevels.emit(levels);
+      }
+    });
+
+    // quality switch preserves position; content swap (playlist) restarts from 0
+    effect(() => {
+      const contentKey = this.parsedSources()
+        .map((source) => source.src)
+        .join('|');
+      this.renderedSources();
+
+      untracked(() => {
+        const contentChanged = contentKey !== this.#lastContentKey;
+        this.#lastContentKey = contentKey;
+        this.#reload(contentChanged);
+      });
+    });
+
+    // engine lifecycle — the HLS/MSE engine is a separate entry point loaded
+    // on demand, so plain-mp4 consumers never download it
+    effect(() => {
+      const media = this.mediaRef()?.nativeElement;
+      const sources = this.parsedSources();
+      const useEngine = this.engineActive();
+
+      untracked(() => {
+        this.#destroyEngine();
+        if (!useEngine || !media || !this.#isBrowser || !sources.length) return;
+
+        const generation = ++this.#engineGeneration;
+        void import('@ship-ui/core/ship-video/engine').then(({ createShipVideoEngine }) => {
+          const engine = createShipVideoEngine(sources[0].src);
+          if (!engine) return;
+          if (generation !== this.#engineGeneration || media !== this.mediaRef()?.nativeElement) {
+            engine.destroy();
+            return;
+          }
+
+          this.#attachEngine(engine, media, sources[0].src);
+        });
+      });
+    });
+
+    this.#engineSelectionEffects();
+  }
+
+  #attachEngine(engine: ShipVideoEngine, media: HTMLVideoElement, src: string) {
+    this.#engine = engine;
+    this.#engineUnsubscribers.push(
+      engine.subscribe((engineState) => {
+        this.state.levels.set(engineState.levels);
+        this.state.activeLevel.set(engineState.currentLevel);
+        this.state.subtitleTracks.set(engineState.subtitleTracks);
+        this.state.audioTracks.set(engineState.audioTracks);
+        this.state.isLive.set(engineState.isLive);
+        this.state.atLiveEdge.set(engineState.atLiveEdge);
+        this.state.dvrWindow.set(engineState.dvrWindow);
+        this.state.latency.set(engineState.latency);
+        this.state.stalled.set(engineState.stalled);
+        if (engineState.storyboard) this.state.storyboard.set(engineState.storyboard);
+      }),
+      engine.on((event) => {
+        if (event.type === 'manifest-parsed') this.qualityLevels.emit(engine.getState().levels);
+        if (event.type === 'error') this.videoError.emit(event.error);
+        if (event.type === 'ended') this.onMainEnded();
+      })
+    );
+    engine.load(media, src);
+
+    // apply selections that may have been made while the engine was loading
+    const quality = this.state.quality();
+    if (quality !== 'auto') engine.setLevel(quality);
+    const textTrack = this.state.textTrack();
+    if (textTrack !== null) engine.setSubtitleTrack(textTrack);
+    const audioTrack = this.state.audioTrack();
+    if (audioTrack !== null) engine.setAudioTrack(audioTrack);
+  }
+
+  #engineSelectionEffects() {
+    effect(() => {
+      const quality = this.state.quality();
+      untracked(() => this.#engine?.setLevel(quality === 'auto' ? -1 : quality));
+    });
+
+    effect(() => {
+      const track = this.state.textTrack();
+      untracked(() => this.#engine?.setSubtitleTrack(track ?? -1));
+    });
+
+    effect(() => {
+      const track = this.state.audioTrack();
+      untracked(() => {
+        if (track !== null) this.#engine?.setAudioTrack(track);
+      });
+    });
+
+    // remote playback availability: Remote Playback API (Chromecast in
+    // Chrome/Edge) and WebKit AirPlay — each only where the browser supports it
+    effect((onCleanup) => {
+      const media = this.mediaRef()?.nativeElement;
+      if (!media || !this.#isBrowser) return;
+
+      const remote = (media as HTMLVideoElement & { remote?: RemotePlaybackLike }).remote;
+      if (remote?.watchAvailability) {
+        let watchId: number | null = null;
+        remote
+          .watchAvailability((available) => this.state.castAvailable.set(available))
+          .then((id) => (watchId = id))
+          .catch(() => this.state.castAvailable.set(false));
+
+        const onConnect = () => this.state.casting.set(true);
+        const onDisconnect = () => this.state.casting.set(false);
+        remote.addEventListener('connect', onConnect);
+        remote.addEventListener('disconnect', onDisconnect);
+
+        onCleanup(() => {
+          remote.removeEventListener('connect', onConnect);
+          remote.removeEventListener('disconnect', onDisconnect);
+          if (watchId !== null) remote.cancelWatchAvailability?.(watchId)?.catch?.(() => {});
+        });
+      }
+
+      if (typeof (window as WebKitWindow).WebKitPlaybackTargetAvailabilityEvent !== 'undefined') {
+        const webkitMedia = media as WebKitVideoElement;
+        const onAvailability = (event: Event) =>
+          this.state.airplayAvailable.set((event as { availability?: string }).availability === 'available');
+        const onWireless = () => this.state.casting.set(!!webkitMedia.webkitCurrentPlaybackTargetIsWireless);
+
+        media.addEventListener('webkitplaybacktargetavailabilitychanged', onAvailability);
+        media.addEventListener('webkitcurrentplaybacktargetiswirelesschanged', onWireless);
+
+        onCleanup(() => {
+          media.removeEventListener('webkitplaybacktargetavailabilitychanged', onAvailability);
+          media.removeEventListener('webkitcurrentplaybacktargetiswirelesschanged', onWireless);
+        });
+      }
+    });
+  }
+
+  /** Opens the Chromecast/remote-playback device picker. */
+  requestCast() {
+    const media = this.mediaRef()?.nativeElement as (HTMLVideoElement & { remote?: RemotePlaybackLike }) | undefined;
+    media?.remote?.prompt?.().catch(() => {});
+  }
+
+  /** Opens Safari's AirPlay target picker. */
+  requestAirplay() {
+    (this.mediaRef()?.nativeElement as WebKitVideoElement | undefined)?.webkitShowPlaybackTargetPicker?.();
+  }
+
+  ngAfterViewInit() {
+    if (!this.#isBrowser) return;
+
+    if (!this.lazy() || typeof IntersectionObserver === 'undefined') {
+      this.activated.set(true);
+      return;
+    }
+
+    this.#intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          this.activated.set(true);
+          this.#intersectionObserver?.disconnect();
+          this.#intersectionObserver = null;
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    this.#intersectionObserver.observe(this.#selfRef.nativeElement);
+  }
+
+  /** Starts playback for the first time; runs the pre-roll ad when configured. */
+  start() {
+    if (this.state.hasStarted() || !this.#isBrowser) return;
+
+    this.activated.set(true);
+    this.state.hasStarted.set(true);
+    this.#rewindSlate();
+    this.videoStarted.emit();
+
+    const ad = this.activeAd();
+    if (ad && !this.#adCompleted) {
+      // play+pause inside the user gesture so the content element keeps
+      // playback permission for the gesture-less play() after the ad
+      this.#unlockMainPlayback();
+      this.#beginAd(ad);
+      return;
+    }
+
+    this.#playMain();
+  }
+
+  /** The slate seek was only for the featured frame — play from the beginning. */
+  #rewindSlate() {
+    if (!this.#slateApplied) return;
+    this.#slateApplied = false;
+
+    const media = this.mediaRef()?.nativeElement;
+    // only rewind while still parked on the slate frame — an explicit user
+    // scrub or a resume restore moved the playhead and should be kept
+    if (media && Math.abs(media.currentTime - this.firstFrameTime()) < 0.25) {
+      media.currentTime = 0;
+      this.state.currentTime.set(0);
+    }
+  }
+
+  #unlockMainPlayback() {
+    const media = this.mediaRef()?.nativeElement;
+    if (!media) return;
+
+    this.#unlocking = true;
+    const result = media.play();
+    if (result && typeof result.then === 'function') {
+      result
+        .then(() => {
+          if (this.#unlocking) media.pause();
+          this.#unlocking = false;
+        })
+        .catch(() => (this.#unlocking = false));
+    } else {
+      media.pause();
+      this.#unlocking = false;
+    }
+  }
+
+  /** Ends the ad phase (skipped or completed) and starts the content video. */
+  finishAd(skipped: boolean) {
+    if (!this.state.adActive()) return;
+
+    // order matters: drop the ad phase first so the ad element's pause event
+    // can no longer write playing=false and stall the content hand-off
+    this.state.adActive.set(false);
+    this.adMediaRef()?.nativeElement?.pause();
+    this.state.adCreative.set(null);
+    this.state.adCurrentTime.set(0);
+    this.state.adDuration.set(0);
+    this.#adCompleted = true;
+
+    if (skipped) this.adSkipped.emit();
+    this.adEnded.emit();
+
+    this.state.playing.set(true);
+    this.#playMain();
+  }
+
+  onSurfaceClick() {
+    if (!this.interactive()) return;
+    this.state.togglePlay();
+    this.wakeControls();
+  }
+
+  seekTo(seconds: number, options?: { precise?: boolean }) {
+    if (this.state.adActive()) return;
+
+    const media = this.mediaRef()?.nativeElement;
+    if (!media) return;
+
+    const dvr = this.state.dvrWindow();
+    const max = dvr ? dvr.end : this.state.duration() || media.duration || 0;
+    const min = dvr ? dvr.start : 0;
+    const clamped = Math.max(min, Math.min(max, seconds));
+
+    // currentTime is frame-accurate; fastSeek would trade accuracy for speed.
+    media.currentTime = clamped;
+    this.state.currentTime.set(clamped);
+
+    if (options?.precise) this.state.seeking.set(true);
+  }
+
+  /** Frame stepping; pauses playback. Frame duration measured from rVFC deltas. */
+  step(frames: number) {
+    const media = this.mediaRef()?.nativeElement;
+    if (!media) return;
+
+    media.pause();
+    this.seekTo(media.currentTime + frames * this.#lastFrameDuration, { precise: true });
+  }
+
+  /** `requestVideoFrameCallback` passthrough; returns an unsubscribe function. */
+  onVideoFrame(callback: (time: number) => void): () => void {
+    this.#frameCallbacks.add(callback);
+    this.#ensureFrameLoop();
+    return () => this.#frameCallbacks.delete(callback);
+  }
+
+  goToLive() {
+    if (this.#engine) {
+      this.#engine.seekToLiveEdge();
+      return;
+    }
+
+    const media = this.mediaRef()?.nativeElement;
+    if (media && media.seekable.length) {
+      media.currentTime = media.seekable.end(media.seekable.length - 1);
+    }
+  }
+
+  toggleFullscreen() {
+    if (!this.#isBrowser) return;
+
+    if (this.#document.fullscreenElement) {
+      this.#document.exitFullscreen?.().catch(() => {});
+    } else {
+      this.#selfRef.nativeElement.requestFullscreen?.().catch(() => {});
+    }
+  }
+
+  togglePip() {
+    if (!this.#isBrowser) return;
+
+    const media = this.mediaRef()?.nativeElement;
+    const doc = this.#document as Document & { exitPictureInPicture?: () => Promise<void>; pictureInPictureElement?: Element };
+    if (doc.pictureInPictureElement) {
+      doc.exitPictureInPicture?.().catch(() => {});
+    } else {
+      (media as HTMLVideoElement & { requestPictureInPicture?: () => Promise<unknown> })
+        ?.requestPictureInPicture?.()
+        .catch(() => {});
+    }
+  }
+
+  syncFullscreenState() {
+    this.state.isFullscreen.set(this.#document.fullscreenElement === this.#selfRef.nativeElement);
+  }
+
+  syncVisibility() {
+    this.#engine?.setVisibility(this.#document.visibilityState !== 'hidden');
+  }
+
+  onKeydown(event: KeyboardEvent) {
+    if (!this.interactive()) return;
+
+    const target = event.target as HTMLElement;
+    if (target.closest('input, a, sh-menu, .sh-video-ad-skip')) return;
+
+    switch (event.key) {
+      case ' ':
+      case 'k':
+        event.preventDefault();
+        this.state.togglePlay();
+        break;
+      case 'm':
+        this.state.toggleMute();
+        break;
+      case 'f':
+        this.toggleFullscreen();
+        break;
+      case 'ArrowLeft':
+        event.preventDefault();
+        this.seekTo(this.state.currentTime() - 5);
+        break;
+      case 'ArrowRight':
+        event.preventDefault();
+        this.seekTo(this.state.currentTime() + 5);
+        break;
+      case 'j':
+        this.seekTo(this.state.currentTime() - 10);
+        break;
+      case 'l':
+        this.seekTo(this.state.currentTime() + 10);
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.state.volume.set(Math.min(1, this.state.volume() + 0.1));
+        this.state.muted.set(false);
+        break;
+      case 'ArrowDown':
+        event.preventDefault();
+        this.state.volume.set(Math.max(0, this.state.volume() - 0.1));
+        break;
+    }
+
+    this.wakeControls();
+  }
+
+  wakeControls() {
+    this.state.controlsVisible.set(true);
+
+    if (!this.#isBrowser) return;
+    if (this.#idleTimer) clearTimeout(this.#idleTimer);
+
+    this.#idleTimer = setTimeout(() => {
+      if (this.state.playing() && !this.#selfRef.nativeElement.matches(':focus-within')) {
+        this.state.controlsVisible.set(false);
+      }
+    }, CONTROLS_IDLE_TIMEOUT);
+  }
+
+  sleepControls() {
+    if (this.#idleTimer) clearTimeout(this.#idleTimer);
+    if (this.state.playing()) this.state.controlsVisible.set(false);
+  }
+
+  warmUp() {
+    if (this.preload() === 'metadata') this.warmedUp.set(true);
+  }
+
+  onMainPlay() {
+    if (this.state.adActive() || this.#unlocking) return;
+    this.state.playing.set(true);
+    this.videoPlayed.emit();
+    this.#ensureFrameLoop();
+  }
+
+  onMainPause() {
+    if (this.state.adActive() || this.#unlocking) return;
+    this.state.playing.set(false);
+    this.videoPaused.emit();
+  }
+
+  onMainEnded() {
+    this.state.playing.set(false);
+    this.#clearResume();
+    this.videoEnded.emit();
+  }
+
+  onMainTimeUpdate() {
+    const media = this.mediaRef()?.nativeElement;
+    if (!media) return;
+
+    // parked on the slate frame pre-start: keep the UI at 0:00
+    if (this.#slateApplied && !this.state.hasStarted()) return;
+
+    this.state.currentTime.set(media.currentTime);
+    this.videoTimeUpdated.emit(media.currentTime);
+    this.#saveResume(media.currentTime);
+  }
+
+  onMainLoadedMetadata() {
+    const media = this.mediaRef()?.nativeElement;
+    if (!media) return;
+
+    this.state.duration.set(isFinite(media.duration) ? media.duration : 0);
+    if (!this.engineActive() && !isFinite(media.duration)) this.state.isLive.set(true);
+
+    // metadata alone may not decode a frame — a seek forces the browser to
+    // paint the slate frame behind the transparent featured overlay
+    if (this.firstFrameEnabled() && !this.state.hasStarted() && media.currentTime === 0) {
+      media.currentTime = this.firstFrameTime();
+      this.#slateApplied = true;
+    }
+
+    this.#restoreResume(media);
+  }
+
+  onMainProgress() {
+    const media = this.mediaRef()?.nativeElement;
+    if (!media) return;
+
+    const ranges: { start: number; end: number }[] = [];
+    for (let index = 0; index < media.buffered.length; index++) {
+      ranges.push({ start: media.buffered.start(index), end: media.buffered.end(index) });
+    }
+    this.state.bufferedRanges.set(ranges);
+  }
+
+  onMainError() {
+    const media = this.mediaRef()?.nativeElement;
+    this.videoError.emit({
+      fatal: true,
+      type: 'media',
+      code: 'segment-load',
+      detail: media?.error?.message ?? 'Media element error',
+    });
+  }
+
+  onAdPlay() {
+    if (this.state.adActive()) this.state.playing.set(true);
+  }
+
+  onAdPause() {
+    if (this.state.adActive()) this.state.playing.set(false);
+  }
+
+  onAdTimeUpdate() {
+    const adMedia = this.adMediaRef()?.nativeElement;
+    if (adMedia) this.state.adCurrentTime.set(adMedia.currentTime);
+  }
+
+  onAdLoadedMetadata() {
+    const adMedia = this.adMediaRef()?.nativeElement;
+    if (adMedia) this.state.adDuration.set(isFinite(adMedia.duration) ? adMedia.duration : 0);
+  }
+
+  async #beginAd(ad: ShipVideoAd) {
+    const token = ++this.#adResolveToken;
+
+    let creative: ShipVideoAdCreative | null = null;
+    if (typeof ad === 'function') {
+      try {
+        creative = await Promise.race([
+          ad(),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), AD_RESOLVE_TIMEOUT)),
+        ]);
+      } catch {
+        creative = null;
+      }
+    } else {
+      creative = ad;
+    }
+
+    if (token !== this.#adResolveToken) return;
+
+    if (!creative) {
+      this.#adCompleted = true;
+      this.#playMain();
+      return;
+    }
+
+    this.state.adCreative.set(creative);
+    this.state.adActive.set(true);
+    this.adStarted.emit();
+  }
+
+  #playMain() {
+    this.#unlocking = false;
+    const media = this.mediaRef()?.nativeElement;
+    if (media) this.#safePlay(media);
+  }
+
+  #reload(contentChanged: boolean) {
+    const media = this.mediaRef()?.nativeElement;
+    if (!media || !this.#isBrowser || this.engineActive()) return;
+
+    const wasStarted = this.state.hasStarted();
+    const position = media.currentTime;
+    const wasPlaying = !media.paused;
+
+    if (contentChanged) {
+      this.state.currentTime.set(0);
+      this.state.duration.set(0);
+      this.state.bufferedRanges.set([]);
+      this.#restoredResume = false;
+    }
+
+    media.load();
+
+    if (!wasStarted) return;
+
+    if (!contentChanged && position > 0) {
+      const restore = () => {
+        media.currentTime = position;
+        if (wasPlaying) this.#safePlay(media);
+        media.removeEventListener('loadedmetadata', restore);
+      };
+      media.addEventListener('loadedmetadata', restore);
+      return;
+    }
+
+    // new content: run its pre-roll if configured, else keep playing
+    const ad = this.activeAd();
+    if (ad && !this.#adCompleted) {
+      this.#beginAd(ad);
+    } else if (wasPlaying || contentChanged) {
+      this.#safePlay(media);
+    }
+  }
+
+  #ensureFrameLoop() {
+    const media = this.mediaRef()?.nativeElement as
+      | (HTMLVideoElement & {
+          requestVideoFrameCallback?: (cb: (now: number, metadata: { mediaTime: number }) => void) => number;
+          cancelVideoFrameCallback?: (handle: number) => void;
+        })
+      | undefined;
+
+    if (!media?.requestVideoFrameCallback || this.#frameCallbackHandle !== null) return;
+
+    const loop = (_now: number, metadata: { mediaTime: number }) => {
+      this.#frameCallbackHandle = null;
+      if (this.#destroyed) return;
+
+      const delta = metadata.mediaTime - this.#lastFrameMediaTime;
+      if (delta > 0 && delta < 0.25) this.#lastFrameDuration = delta;
+      this.#lastFrameMediaTime = metadata.mediaTime;
+
+      if (!this.state.adActive()) this.state.currentTime.set(metadata.mediaTime);
+      for (const callback of this.#frameCallbacks) callback(metadata.mediaTime);
+
+      if (this.state.playing() || this.#frameCallbacks.size) {
+        this.#frameCallbackHandle = media.requestVideoFrameCallback!(loop);
+      }
+    };
+
+    this.#frameCallbackHandle = media.requestVideoFrameCallback(loop);
+  }
+
+  #restoreResume(media: HTMLVideoElement) {
+    const key = this.resumeKey();
+    if (!key || this.#restoredResume || !this.#isBrowser) return;
+    this.#restoredResume = true;
+
+    try {
+      const stored = parseFloat(localStorage.getItem(`sh-video:${key}`) ?? '');
+      const duration = media.duration;
+      if (!isNaN(stored) && isFinite(duration) && stored > RESUME_MIN_SECONDS && stored < duration * 0.9) {
+        media.currentTime = stored;
+        this.state.currentTime.set(stored);
+        this.#slateApplied = false;
+      }
+    } catch {
+      // localStorage unavailable (private mode) — resume silently disabled
+    }
+  }
+
+  #saveResume(currentTime: number) {
+    const key = this.resumeKey();
+    if (!key || !this.#isBrowser) return;
+    if (Math.abs(currentTime - this.#lastResumeSave) < RESUME_SAVE_INTERVAL) return;
+
+    this.#lastResumeSave = currentTime;
+    try {
+      localStorage.setItem(`sh-video:${key}`, String(currentTime));
+    } catch {
+      // ignore quota/private-mode failures
+    }
+  }
+
+  #clearResume() {
+    const key = this.resumeKey();
+    if (!key || !this.#isBrowser) return;
+    try {
+      localStorage.removeItem(`sh-video:${key}`);
+    } catch {
+      // ignore
+    }
+  }
+
+  #activeMedia(): HTMLVideoElement | null {
+    if (this.state.adActive()) return this.adMediaRef()?.nativeElement ?? null;
+    return this.mediaRef()?.nativeElement ?? null;
+  }
+
+  #mediaElements(): HTMLVideoElement[] {
+    const elements: HTMLVideoElement[] = [];
+    const media = this.mediaRef()?.nativeElement;
+    const adMedia = this.adMediaRef()?.nativeElement;
+    if (media) elements.push(media);
+    if (adMedia) elements.push(adMedia);
+    return elements;
+  }
+
+  #safePlay(media: HTMLVideoElement) {
+    const result = media.play();
+    if (result && typeof result.catch === 'function') result.catch(() => {});
+  }
+
+  #destroyEngine() {
+    this.#engineGeneration++;
+    for (const unsubscribe of this.#engineUnsubscribers) unsubscribe();
+    this.#engineUnsubscribers = [];
+    this.#engine?.destroy();
+    this.#engine = null;
+  }
+
+  ngOnDestroy() {
+    this.#destroyed = true;
+    if (this.#idleTimer) clearTimeout(this.#idleTimer);
+    this.#intersectionObserver?.disconnect();
+
+    // cancel the pending rVFC — on a detached element it may never fire again,
+    // pinning the component + media element in memory
+    const media = this.mediaRef()?.nativeElement as
+      | (HTMLVideoElement & { cancelVideoFrameCallback?: (handle: number) => void })
+      | undefined;
+    if (this.#frameCallbackHandle !== null && media?.cancelVideoFrameCallback) {
+      media.cancelVideoFrameCallback(this.#frameCallbackHandle);
+      this.#frameCallbackHandle = null;
+    }
+    this.#frameCallbacks.clear();
+
+    this.#destroyEngine();
+    this.state.detachPlayer(this.#hooks);
+  }
+}

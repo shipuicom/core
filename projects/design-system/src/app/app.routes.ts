@@ -224,6 +224,10 @@ export const routes: Routes = [
         loadComponent: () => import('./ship/editors/editors'),
       },
       {
+        path: 'videos',
+        loadComponent: () => import('./ship/videos/videos'),
+      },
+      {
         path: 'code',
         loadComponent: () => import('./ship/code/code'),
       },

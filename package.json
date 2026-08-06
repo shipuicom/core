@@ -45,7 +45,9 @@
     "mcp:start": "cd mcp-server && bun run index.ts",
     "serve:ssr:design-system": "bun scripts/serve-design-system.ts",
     "test:editor": "ng test ship-ui --watch=false --include='**/ship-editor/**/*.spec.ts'",
-    "test:e2e:editor": "playwright test -c scripts/editor-e2e/playwright.config.ts"
+    "test:e2e:editor": "playwright test -c scripts/editor-e2e/playwright.config.ts",
+    "bench:video": "bun projects/ship-ui/ship-video/benchmarks/run.ts",
+    "build:transmux": "bash scripts/build-transmux.sh"
   },
   "private": true,
   "dependencies": {

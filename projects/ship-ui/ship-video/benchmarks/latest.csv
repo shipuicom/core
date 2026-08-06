@@ -1,0 +1,24 @@
+name,category,size,iterations,totalMs,avgMs,opsPerSec
+"parseM3u8 multivariant (8 variants)",hls-parse,8,5000,98.379,0.0197,50824
+"parseM3u8 VOD (100 segments)",hls-parse,100,1000,66.791,0.0668,14972
+"parseM3u8 VOD (1000 segments)",hls-parse,1000,1000,610.963,0.611,1637
+"parseM3u8 VOD (5000 segments)",hls-parse,5000,100,316.628,3.1663,316
+"parseM3u8 VOD 10h (9000 segments)",hls-parse,9000,100,573.064,5.7306,175
+"parseM3u8 live (1800 segments)",hls-parse,1800,500,550.901,1.1018,908
+"computeLiveInfo (1800-segment DVR)",live,1800,100000,2.86,0,34961979
+"computeLiveInfo (10h DVR, 9000 segments)",live,9000,100000,1.914,0,52250016
+"selectLevel decision",abr,5,1000000,19.336,0,51716558
+"AbrController.nextLevel",abr,5,1000000,18.144,0,55115273
+"BandwidthEstimator sample+estimate",abr,1,1000000,58.161,0.0001,17193677
+"Ewma sample",abr,1,1000000,16.996,0,58836508
+"computeEviction",buffer,2,1000000,16.163,0,61869702
+"forwardBufferLength",buffer,2,1000000,8.796,0,113689113
+"SourceBufferQueue append cycle",buffer,1,20000,5.009,0.0003,3992813
+"GapController.tick",buffer,1,1000000,8.6,0,116283572
+"parseWebVtt (1000 cues)",tracks,1000,500,237.529,0.4751,2105
+"parseStoryboard (500 sprite cues)",tracks,500,500,246.269,0.4925,2030
+"ts_transmux (37KB, 2s segment)",transmux,38352,2000,96.044,0.048,20824
+"ts_transmux throughput (1.1MB payload)",transmux,1150560,200,266.947,1.3347,749
+"shipVideoFormatTime",component,1,1000000,42.119,0,23742136
+"shipVideoLevelsFromSources",component,4,1000000,92.212,0.0001,10844551
+"shipVideoToSourceArray",component,1,1000000,10.377,0,96366195

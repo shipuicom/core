@@ -1,0 +1,23 @@
+<!-- Every composable control, in flex order. Cast/AirPlay render only when the
+     browser has a castable device / wireless target available. -->
+<!-- no poster: the first video frame doubles as the featured image -->
+<sh-video color="accent" [sources]="sources" [tracks]="tracks">
+  <sh-video-controls>
+    <sh-video-scrubber />
+
+    <sh-video-play-button />
+    <sh-video-volume />
+    <sh-video-time />
+    <!-- X-style countdown alternative to sh-video-time -->
+    <sh-video-playtime-left />
+
+    <span class="sh-video-spacer"></span>
+
+    <sh-video-captions-button />
+    <sh-video-settings />
+    <sh-video-cast-button />
+    <sh-video-airplay-button />
+    <sh-video-pip-button />
+    <sh-video-fullscreen-button />
+  </sh-video-controls>
+</sh-video>

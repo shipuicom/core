@@ -82,7 +82,21 @@
     "arrows-out-line-horizontal",
     "frame-corners",
     "text-columns",
-    "sliders-horizontal"
+    "sliders-horizontal",
+    "play-fill",
+    "pause-fill",
+    "speaker-high-fill",
+    "speaker-low-fill",
+    "speaker-x-fill",
+    "corners-out",
+    "corners-in",
+    "gear-six-fill",
+    "subtitles-fill",
+    "picture-in-picture-fill",
+    "skip-forward-fill",
+    "arrow-square-out",
+    "screencast",
+    "airplay"
   ],
   "exports": {
     ".": {

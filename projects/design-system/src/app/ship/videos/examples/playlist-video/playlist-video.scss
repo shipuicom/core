@@ -1,0 +1,14 @@
+:host {
+  display: block;
+}
+
+.player-with-playlist {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  align-items: start;
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
+}

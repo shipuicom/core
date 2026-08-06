@@ -1,0 +1,479 @@
+@use 'helpers' as *;
+
+$shipVideo: true !default;
+
+@if $shipVideo == true {
+  sh-video {
+    // themable knobs
+    --vid-accent: var(--primary-8);
+    --vid-ad-accent: var(--warn-8);
+    --vid-chrome-text: #fff;
+    --vid-chrome-bg: linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.28) 60%, transparent);
+    --vid-rail-bg: rgba(255, 255, 255, 0.24);
+    --vid-rail-buffered: rgba(255, 255, 255, 0.42);
+    --vid-br: var(--shape-2);
+    --vid-focus: var(--primary-8);
+
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #000;
+    border-radius: var(--vid-br);
+    outline: none;
+    container-type: inline-size;
+
+    &.sharp {
+      --vid-br: 0;
+    }
+
+    &.accent {
+      --vid-accent: var(--accent-8);
+      --vid-focus: var(--accent-8);
+    }
+    &.warn {
+      --vid-accent: var(--warn-8);
+      --vid-focus: var(--warn-8);
+    }
+    &.error {
+      --vid-accent: var(--error-8);
+      --vid-focus: var(--error-8);
+    }
+    &.success {
+      --vid-accent: var(--success-8);
+      --vid-focus: var(--success-8);
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 p2r(2) var(--vid-focus);
+    }
+
+    .sh-video-media {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .sh-video-ad-media {
+      z-index: 2;
+    }
+
+    // ---- featured poster overlay -------------------------------------------
+    .sh-video-featured {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      border: 0;
+      // transparent: without a poster the content video's first frame
+      // (preload="metadata") shows through instead of a black slate
+      background: transparent;
+      cursor: pointer;
+
+      .sh-video-featured-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      &:focus-visible {
+        outline: p2r(2) solid var(--vid-focus);
+        outline-offset: p2r(-2);
+      }
+    }
+
+    // ---- ad chrome ----------------------------------------------------------
+    .sh-video-ad-top {
+      position: absolute;
+      top: p2r(12);
+      left: p2r(12);
+      right: p2r(12);
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      gap: p2r(10);
+      color: var(--vid-chrome-text);
+    }
+
+    .sh-video-ad-badge {
+      padding: p2r(2) p2r(8);
+      border-radius: var(--shape-1);
+      background: var(--vid-ad-accent);
+      color: #000;
+      font-size: p2r(12);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .sh-video-ad-link {
+      display: inline-flex;
+      align-items: center;
+      gap: p2r(4);
+      color: var(--vid-chrome-text);
+      font-size: p2r(13);
+      text-decoration: none;
+      padding: p2r(4) p2r(8);
+      border-radius: var(--shape-1);
+      background: rgba(0, 0, 0, 0.5);
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .sh-video-ad-skip-slot {
+      position: absolute;
+      right: p2r(12);
+      bottom: p2r(64);
+      z-index: 4;
+    }
+
+    .sh-video-ad-skip {
+      display: inline-flex;
+      align-items: center;
+      gap: p2r(6);
+      padding: p2r(8) p2r(14);
+      border: p2r(1) solid rgba(255, 255, 255, 0.4);
+      border-radius: var(--shape-1);
+      background: rgba(0, 0, 0, 0.72);
+      color: var(--vid-chrome-text);
+      font-size: p2r(13);
+      font-weight: 600;
+
+      &.waiting {
+        cursor: default;
+        opacity: 0.85;
+      }
+
+      &:not(.waiting) {
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+          background: rgba(0, 0, 0, 0.9);
+          border-color: var(--vid-chrome-text);
+        }
+      }
+    }
+
+    &.is-ad {
+      .sh-video-scrubber {
+        pointer-events: none;
+
+        .sh-video-scrubber-played {
+          background: var(--vid-ad-accent);
+        }
+
+        .sh-video-scrubber-knob {
+          display: none;
+        }
+      }
+    }
+
+    // ---- control bar ---------------------------------------------------------
+    .sh-video-controls {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 5;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: p2r(2);
+      padding: p2r(4) p2r(10) p2r(6);
+      background: var(--vid-chrome-bg);
+      color: var(--vid-chrome-text);
+      opacity: 1;
+      transition: opacity 0.2s ease;
+    }
+
+    &.hide-controls {
+      cursor: none;
+
+      .sh-video-controls {
+        opacity: 0;
+        pointer-events: none;
+      }
+    }
+
+    // keyboard/AT focus always reveals the controls
+    &:focus-within .sh-video-controls {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sh-video-spacer {
+      flex: 1;
+    }
+
+    .sh-video-control {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .sh-video-control-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: p2r(38);
+      height: p2r(34);
+      padding: 0;
+      border: 0;
+      border-radius: var(--shape-1);
+      background: transparent;
+      color: var(--vid-chrome-text);
+      cursor: pointer;
+      transition: background 0.12s ease;
+
+      sh-icon {
+        font-size: p2r(20);
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.14);
+      }
+
+      &:focus-visible {
+        outline: p2r(2) solid var(--vid-focus);
+        outline-offset: p2r(-2);
+      }
+
+      &.active {
+        box-shadow: inset 0 p2r(-3) 0 var(--vid-accent);
+      }
+    }
+
+    // ---- scrubber ------------------------------------------------------------
+    .sh-video-scrubber {
+      position: relative;
+      flex-basis: 100%;
+      height: p2r(16);
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      touch-action: none;
+
+      &:focus-visible {
+        outline: p2r(2) solid var(--vid-focus);
+        outline-offset: p2r(2);
+      }
+
+      .sh-video-scrubber-rail {
+        position: relative;
+        width: 100%;
+        height: p2r(3);
+        border-radius: p2r(2);
+        background: var(--vid-rail-bg);
+        overflow: hidden;
+        transition: height 0.1s ease;
+      }
+
+      &:hover .sh-video-scrubber-rail,
+      &:focus-visible .sh-video-scrubber-rail {
+        height: p2r(5);
+      }
+
+      .sh-video-scrubber-buffered {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        background: var(--vid-rail-buffered);
+      }
+
+      .sh-video-scrubber-played {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        background: var(--vid-accent);
+      }
+
+      .sh-video-scrubber-marker {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: p2r(2);
+        background: rgba(255, 255, 255, 0.85);
+      }
+
+      .sh-video-scrubber-knob {
+        position: absolute;
+        top: 50%;
+        width: p2r(12);
+        height: p2r(12);
+        border-radius: 50%;
+        background: var(--vid-accent);
+        transform: translate(-50%, -50%) scale(0);
+        transition: transform 0.1s ease;
+        pointer-events: none;
+      }
+
+      &:hover .sh-video-scrubber-knob,
+      &:focus-visible .sh-video-scrubber-knob {
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      .sh-video-scrubber-preview {
+        position: absolute;
+        bottom: p2r(20);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: p2r(4);
+        transform: translateX(-50%);
+        pointer-events: none;
+      }
+
+      .sh-video-scrubber-thumb {
+        border-radius: var(--shape-1);
+        border: p2r(2) solid rgba(255, 255, 255, 0.9);
+        background-color: #000;
+        background-repeat: no-repeat;
+      }
+
+      .sh-video-scrubber-tooltip {
+        padding: p2r(2) p2r(8);
+        border-radius: var(--shape-1);
+        background: rgba(0, 0, 0, 0.8);
+        color: var(--vid-chrome-text);
+        font-size: p2r(12);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+    }
+
+    // ---- volume ---------------------------------------------------------------
+    .sh-video-volume {
+      display: inline-flex;
+      align-items: center;
+
+      .sh-video-volume-slider {
+        width: 0;
+        opacity: 0;
+        height: p2r(3);
+        margin: 0;
+        accent-color: var(--vid-chrome-text);
+        cursor: pointer;
+        transition: width 0.15s ease, opacity 0.15s ease, margin 0.15s ease;
+      }
+
+      &:hover .sh-video-volume-slider,
+      &:focus-within .sh-video-volume-slider {
+        width: p2r(64);
+        opacity: 1;
+        margin-right: p2r(6);
+      }
+    }
+
+    // ---- playtime-left (X-style countdown pill) --------------------------------
+    .sh-video-playtime-left {
+      .sh-video-playtime-left-pill {
+        padding: p2r(3) p2r(9);
+        border-radius: p2r(999);
+        background: rgba(0, 0, 0, 0.7);
+        color: var(--vid-chrome-text);
+        font-size: p2r(12);
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+    }
+
+    // ---- time / live ----------------------------------------------------------
+    .sh-video-time {
+      display: inline-flex;
+      align-items: center;
+      gap: p2r(4);
+      padding: 0 p2r(8);
+      font-size: p2r(13);
+      font-variant-numeric: tabular-nums;
+      color: var(--vid-chrome-text);
+
+      .sh-video-time-divider,
+      .sh-video-time-duration {
+        opacity: 0.75;
+      }
+    }
+
+    .sh-video-live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: p2r(6);
+      padding: p2r(4) p2r(10);
+      border: 0;
+      border-radius: var(--shape-1);
+      background: transparent;
+      color: var(--vid-chrome-text);
+      font-size: p2r(12);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+
+      .sh-video-live-dot {
+        width: p2r(8);
+        height: p2r(8);
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      &.at-edge .sh-video-live-dot {
+        background: var(--error-8);
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.14);
+      }
+
+      &:focus-visible {
+        outline: p2r(2) solid var(--vid-focus);
+        outline-offset: p2r(-2);
+      }
+    }
+
+    // ---- settings menu --------------------------------------------------------
+    .sh-video-settings {
+      sh-menu .trigger,
+      sh-menu [trigger] {
+        display: inline-flex;
+      }
+
+      .sh-video-settings-hint {
+        margin-left: p2r(8);
+        opacity: 0.65;
+        font-size: p2r(12);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sh-video-controls,
+      .sh-video-scrubber-rail,
+      .sh-video-scrubber-knob,
+      .sh-video-volume-slider {
+        transition: none;
+      }
+    }
+
+    @container (max-width: #{p2r(480)}) {
+      .sh-video-time .sh-video-time-duration,
+      .sh-video-time .sh-video-time-divider {
+        display: none;
+      }
+
+      sh-video-pip-button {
+        display: none;
+      }
+    }
+  }
+}

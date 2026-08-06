@@ -1,0 +1,136 @@
+<h1>Video</h1>
+<!-- @keywords: video, player, media, stream, hls, live, playlist, ad, poster, youtube -->
+
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
+
+@let _activeTab = activeTab();
+
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer defaultView="markup" path="/videos/examples/basic-video/basic-video" title="Basic">
+      <app-basic-video class="example" />
+    </app-previewer>
+
+    <app-property-viewer>
+      <section>
+        <h4>Featured image</h4>
+        <p>
+          Set
+          <code>poster</code>
+          to show a featured image before playback starts; without one, a video frame is used (
+          <code>firstFrame</code>
+          ). The whole surface is click-to-play.
+        </p>
+      </section>
+      <section>
+        <h4>Sources</h4>
+        <p>
+          <code>sources</code>
+          accepts a plain URL or a list of
+          <code>ShipVideoSource</code>
+          objects for format fallbacks, quality variants (
+          <code>height</code>
+          ) and per-language variants (
+          <code>lang</code>
+          ). URLs ending in
+          <code>.m3u8</code>
+          stream through the built-in MSE engine with adaptive bitrate; live playlists get DVR scrubbing, a LIVE badge
+          and go-to-live.
+        </p>
+      </section>
+      <section>
+        <h4>Pre-roll ads</h4>
+        <p>
+          <code>ad</code>
+          takes an inline creative (
+          <code>src</code>
+          ,
+          <code>skipAfter</code>
+          ,
+          <code>clickThroughUrl</code>
+          ) or an async resolver returning one, so an ad-server integration can slot in without API changes.
+        </p>
+      </section>
+      <section>
+        <h4>Composable controls</h4>
+        <p>
+          Project
+          <code>sh-video-controls</code>
+          with any mix of
+          <code>sh-video-scrubber</code>
+          ,
+          <code>sh-video-play-button</code>
+          ,
+          <code>sh-video-volume</code>
+          ,
+          <code>sh-video-time</code>
+          ,
+          <code>sh-video-settings</code>
+          ,
+          <code>sh-video-captions-button</code>
+          ,
+          <code>sh-video-cast-button</code>
+          (Chromecast via the Remote Playback API),
+          <code>sh-video-airplay-button</code>
+          (Safari),
+          <code>sh-video-pip-button</code>
+          ,
+          <code>sh-video-live-button</code>
+          and
+          <code>sh-video-fullscreen-button</code>
+          — or project nothing to get the full default set. Cast and AirPlay render only in browsers with an
+          available target.
+        </p>
+      </section>
+      <section>
+        <h4>Centralized state</h4>
+        <p>
+          Every control reads and writes
+          <code>ShipVideoState</code>
+          — an injectable signal store. Provide it on a wrapper component to drive the player externally (the video
+          editor pattern):
+          <code>playing.set(true)</code>
+          plays,
+          <code>currentTime.set(12)</code>
+          seeks.
+        </p>
+      </section>
+      <section>
+        <h4>Keyboard</h4>
+        <p>
+          Space/K play-pause, M mute, F fullscreen, arrows seek and change volume, J/L jump 10s — matching familiar
+          player conventions. Controls stay visible while focused.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipVideo" />
+    <app-api-reference name="ShipVideoPlaylist" />
+  } @else if (_activeTab === 'examples') {
+    <div class="content">
+      <app-previewer path="/videos/examples/ad-video/ad-video" title="Pre-roll ad">
+        <app-ad-video class="example" />
+      </app-previewer>
+
+      <app-previewer path="/videos/examples/composed-video/composed-video" title="Composed controls">
+        <app-composed-video class="example" />
+      </app-previewer>
+
+      <app-previewer path="/videos/examples/hls-video/hls-video" title="HLS (MSE engine)">
+        <app-hls-video class="example" />
+      </app-previewer>
+
+      <app-previewer path="/videos/examples/ts-video/ts-video" title="Legacy TS HLS (wasm transmuxer)">
+        <app-ts-video class="example" />
+      </app-previewer>
+
+      <app-previewer path="/videos/examples/playlist-video/playlist-video" title="Playlist">
+        <app-playlist-video class="example wide" />
+      </app-previewer>
+    </div>
+  }
+</div>

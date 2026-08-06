@@ -1,0 +1,240 @@
+{
+  "timestamp": "2026-08-06T21:48:02.073Z",
+  "runtime": "bun 1.4.0",
+  "results": [
+    {
+      "name": "parseM3u8 multivariant (8 variants)",
+      "category": "hls-parse",
+      "size": 8,
+      "iterations": 5000,
+      "totalMs": 98.379,
+      "avgMs": 0.0197,
+      "opsPerSec": 50824
+    },
+    {
+      "name": "parseM3u8 VOD (100 segments)",
+      "category": "hls-parse",
+      "size": 100,
+      "iterations": 1000,
+      "totalMs": 66.791,
+      "avgMs": 0.0668,
+      "opsPerSec": 14972
+    },
+    {
+      "name": "parseM3u8 VOD (1000 segments)",
+      "category": "hls-parse",
+      "size": 1000,
+      "iterations": 1000,
+      "totalMs": 610.963,
+      "avgMs": 0.611,
+      "opsPerSec": 1637
+    },
+    {
+      "name": "parseM3u8 VOD (5000 segments)",
+      "category": "hls-parse",
+      "size": 5000,
+      "iterations": 100,
+      "totalMs": 316.628,
+      "avgMs": 3.1663,
+      "opsPerSec": 316
+    },
+    {
+      "name": "parseM3u8 VOD 10h (9000 segments)",
+      "category": "hls-parse",
+      "size": 9000,
+      "iterations": 100,
+      "totalMs": 573.064,
+      "avgMs": 5.7306,
+      "opsPerSec": 175
+    },
+    {
+      "name": "parseM3u8 live (1800 segments)",
+      "category": "hls-parse",
+      "size": 1800,
+      "iterations": 500,
+      "totalMs": 550.901,
+      "avgMs": 1.1018,
+      "opsPerSec": 908
+    },
+    {
+      "name": "computeLiveInfo (1800-segment DVR)",
+      "category": "live",
+      "size": 1800,
+      "iterations": 100000,
+      "totalMs": 2.86,
+      "avgMs": 0,
+      "opsPerSec": 34961979
+    },
+    {
+      "name": "computeLiveInfo (10h DVR, 9000 segments)",
+      "category": "live",
+      "size": 9000,
+      "iterations": 100000,
+      "totalMs": 1.914,
+      "avgMs": 0,
+      "opsPerSec": 52250016
+    },
+    {
+      "name": "selectLevel decision",
+      "category": "abr",
+      "size": 5,
+      "iterations": 1000000,
+      "totalMs": 19.336,
+      "avgMs": 0,
+      "opsPerSec": 51716558
+    },
+    {
+      "name": "AbrController.nextLevel",
+      "category": "abr",
+      "size": 5,
+      "iterations": 1000000,
+      "totalMs": 18.144,
+      "avgMs": 0,
+      "opsPerSec": 55115273
+    },
+    {
+      "name": "BandwidthEstimator sample+estimate",
+      "category": "abr",
+      "size": 1,
+      "iterations": 1000000,
+      "totalMs": 58.161,
+      "avgMs": 0.0001,
+      "opsPerSec": 17193677
+    },
+    {
+      "name": "Ewma sample",
+      "category": "abr",
+      "size": 1,
+      "iterations": 1000000,
+      "totalMs": 16.996,
+      "avgMs": 0,
+      "opsPerSec": 58836508
+    },
+    {
+      "name": "computeEviction",
+      "category": "buffer",
+      "size": 2,
+      "iterations": 1000000,
+      "totalMs": 16.163,
+      "avgMs": 0,
+      "opsPerSec": 61869702
+    },
+    {
+      "name": "forwardBufferLength",
+      "category": "buffer",
+      "size": 2,
+      "iterations": 1000000,
+      "totalMs": 8.796,
+      "avgMs": 0,
+      "opsPerSec": 113689113
+    },
+    {
+      "name": "SourceBufferQueue append cycle",
+      "category": "buffer",
+      "size": 1,
+      "iterations": 20000,
+      "totalMs": 5.009,
+      "avgMs": 0.0003,
+      "opsPerSec": 3992813
+    },
+    {
+      "name": "GapController.tick",
+      "category": "buffer",
+      "size": 1,
+      "iterations": 1000000,
+      "totalMs": 8.6,
+      "avgMs": 0,
+      "opsPerSec": 116283572
+    },
+    {
+      "name": "parseWebVtt (1000 cues)",
+      "category": "tracks",
+      "size": 1000,
+      "iterations": 500,
+      "totalMs": 237.529,
+      "avgMs": 0.4751,
+      "opsPerSec": 2105
+    },
+    {
+      "name": "parseStoryboard (500 sprite cues)",
+      "category": "tracks",
+      "size": 500,
+      "iterations": 500,
+      "totalMs": 246.269,
+      "avgMs": 0.4925,
+      "opsPerSec": 2030
+    },
+    {
+      "name": "ts_transmux (37KB, 2s segment)",
+      "category": "transmux",
+      "size": 38352,
+      "iterations": 2000,
+      "totalMs": 96.044,
+      "avgMs": 0.048,
+      "opsPerSec": 20824
+    },
+    {
+      "name": "ts_transmux throughput (1.1MB payload)",
+      "category": "transmux",
+      "size": 1150560,
+      "iterations": 200,
+      "totalMs": 266.947,
+      "avgMs": 1.3347,
+      "opsPerSec": 749
+    },
+    {
+      "name": "shipVideoFormatTime",
+      "category": "component",
+      "size": 1,
+      "iterations": 1000000,
+      "totalMs": 42.119,
+      "avgMs": 0,
+      "opsPerSec": 23742136
+    },
+    {
+      "name": "shipVideoLevelsFromSources",
+      "category": "component",
+      "size": 4,
+      "iterations": 1000000,
+      "totalMs": 92.212,
+      "avgMs": 0.0001,
+      "opsPerSec": 10844551
+    },
+    {
+      "name": "shipVideoToSourceArray",
+      "category": "component",
+      "size": 1,
+      "iterations": 1000000,
+      "totalMs": 10.377,
+      "avgMs": 0,
+      "opsPerSec": 96366195
+    }
+  ],
+  "bundle": [
+    {
+      "file": "ship-ui-core-ship-video.mjs",
+      "rawBytes": 142779,
+      "gzipBytes": 22950
+    },
+    {
+      "file": "ship-ui-core-ship-video-engine.mjs",
+      "rawBytes": 79467,
+      "gzipBytes": 20077
+    },
+    {
+      "file": "ship-ui-core-ship-video-engine-transmux.mjs",
+      "rawBytes": 18592,
+      "gzipBytes": 8014
+    },
+    {
+      "file": "ship-ui-core-ship-icon.mjs",
+      "rawBytes": 5687,
+      "gzipBytes": 1775
+    },
+    {
+      "file": "ship-ui-core-ship-menu.mjs",
+      "rawBytes": 35529,
+      "gzipBytes": 6184
+    }
+  ]
+}
