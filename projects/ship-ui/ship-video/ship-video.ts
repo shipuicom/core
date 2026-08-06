@@ -218,6 +218,7 @@ export class ShipVideo {
   #lastContentKey = '';
   #unlocking = false;
   #slateApplied = false;
+  #appliedSlateTime = 0.001;
   #destroyed = false;
   #intersectionObserver: IntersectionObserver | null = null;
 
@@ -239,9 +240,10 @@ export class ShipVideo {
   preload = input<'auto' | 'metadata' | 'none'>('metadata');
   /**
    * Shows a video frame as the featured image when no poster is set.
-   * `true` (default) uses the first frame; a number grabs the frame at that
-   * time in seconds (for videos that fade in from black); `false` opts out.
-   * Playback still starts from the beginning.
+   * `true` (default) picks a frame ~10% into the video (capped at 20s) so
+   * fade-from-black intros still yield a real image; a number grabs the frame
+   * at that exact time in seconds; `false` opts out. Playback always starts
+   * from the beginning.
    */
   firstFrame = input<boolean | number>(true);
   /** Defers all network work until the player nears the viewport. */
@@ -332,10 +334,17 @@ export class ShipVideo {
   // The slate frame decodes even when a poster is set — the poster image
   // simply layers on top, and the frame remains as a fallback beneath it.
   firstFrameEnabled = computed(() => this.firstFrame() !== false);
-  firstFrameTime = computed(() => {
+
+  /** Resolves the slate time once the duration is known. */
+  #slateTimeFor(duration: number): number {
     const value = this.firstFrame();
-    return typeof value === 'number' ? Math.max(0.001, value) : 0.001;
-  });
+    if (typeof value === 'number') return Math.max(0.001, value);
+    // auto: ~10% in, capped — frame zero is black on fade-in intros
+    if (isFinite(duration) && duration > 0) {
+      return Math.min(Math.max(duration * 0.1, 0.001), 20);
+    }
+    return 0.001;
+  }
 
   effectivePreload = computed(() => {
     if (this.warmedUp()) return 'auto';
@@ -662,7 +671,7 @@ export class ShipVideo {
     const media = this.mediaRef()?.nativeElement;
     // only rewind while still parked on the slate frame — an explicit user
     // scrub or a resume restore moved the playhead and should be kept
-    if (media && Math.abs(media.currentTime - this.firstFrameTime()) < 0.25) {
+    if (media && Math.abs(media.currentTime - this.#appliedSlateTime) < 0.25) {
       media.currentTime = 0;
       this.state.currentTime.set(0);
     }
@@ -900,7 +909,8 @@ export class ShipVideo {
     // metadata alone may not decode a frame — a seek forces the browser to
     // paint the slate frame behind the transparent featured overlay
     if (this.firstFrameEnabled() && !this.state.hasStarted() && media.currentTime === 0) {
-      media.currentTime = this.firstFrameTime();
+      this.#appliedSlateTime = this.#slateTimeFor(media.duration);
+      media.currentTime = this.#appliedSlateTime;
       this.#slateApplied = true;
     }
 
