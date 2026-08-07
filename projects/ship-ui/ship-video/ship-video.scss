@@ -182,6 +182,35 @@ $shipVideo: true !default;
       }
     }
 
+    // ---- top-right corner: remote playback (cast / AirPlay) -------------------
+    .sh-video-corner-controls {
+      position: absolute;
+      top: p2r(10);
+      right: p2r(10);
+      z-index: 5;
+      display: flex;
+      gap: p2r(4);
+      opacity: 1;
+      transition: opacity 0.2s ease;
+
+      .sh-video-control-button {
+        background: rgba(0, 0, 0, 0.55);
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.8);
+        }
+      }
+    }
+
+    &.hide-controls .sh-video-corner-controls {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    &.is-ad .sh-video-corner-controls {
+      display: none; // the ad badge/link owns the top edge during ads
+    }
+
     // ---- control bar ---------------------------------------------------------
     .sh-video-controls {
       position: absolute;

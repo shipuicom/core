@@ -20,7 +20,7 @@ import {
 import { shipComponentClasses, ShipColor } from '@ship-ui/core';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import type { ShipVideoEngine, ShipVideoEngineError, ShipVideoQualityLevel } from './engine/types';
-import { ShipVideoControls } from './ship-video-controls';
+import { ShipVideoAirplayButton, ShipVideoCastButton, ShipVideoControls } from './ship-video-controls';
 import { ShipVideoPlayerHooks, ShipVideoState } from './ship-video-state';
 import {
   ShipVideoAd,
@@ -63,7 +63,7 @@ function isHlsSource(source: ShipVideoSource | undefined): boolean {
   selector: 'sh-video',
   styleUrl: './ship-video.scss',
   encapsulation: ViewEncapsulation.None,
-  imports: [ShipIcon, ShipVideoControls],
+  imports: [ShipIcon, ShipVideoControls, ShipVideoCastButton, ShipVideoAirplayButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
@@ -192,6 +192,13 @@ function isHlsSource(source: ShipVideoSource | undefined): boolean {
     }
 
     <ng-content select="[shVideoOverlay]" />
+
+    <!-- remote playback lives top-right (YouTube/Netflix convention); the
+         buttons render nothing unless a target is actually available -->
+    <div class="sh-video-corner-controls">
+      <sh-video-cast-button />
+      <sh-video-airplay-button />
+    </div>
 
     @if (!projectedControls().length) {
       <sh-video-controls [defaultLayout]="true" />

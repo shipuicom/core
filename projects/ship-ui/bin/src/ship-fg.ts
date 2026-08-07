@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'child_process';
+import { createHash } from 'crypto';
 import { watch, type FSWatcher } from 'fs';
 import { readFile, writeFile, readdir, mkdir } from 'fs/promises';
 import { dirname, join, resolve } from 'path';
@@ -232,11 +233,18 @@ const writeCssFile = async (
   groupedIcons: { [key: string]: [string, string][] },
   TARGET_FONT_TYPE = 'woff2'
 ) => {
+  // cache-buster derived from the icon set: font files keep stable names, so
+  // without this, returning visitors keep stale fonts (missing new glyphs)
+  const iconSetVersion = createHash('sha1')
+    .update(JSON.stringify(Object.entries(groupedIcons).map(([key, value]) => [key, value.map(([name]) => name)])))
+    .digest('hex')
+    .slice(0, 8);
+
   const groupedIconsEntries = Object.entries(groupedIcons).map(([key, value], i) => {
     if (key === 'text') return '';
 
     const suffix = key === 'regular' ? '' : '-' + key;
-    const fontUrl = `url('${values.rootPath}sh${suffix}.${TARGET_FONT_TYPE}') format('${TARGET_FONT_TYPE === 'ttf' ? 'truetype' : TARGET_FONT_TYPE}')`;
+    const fontUrl = `url('${values.rootPath}sh${suffix}.${TARGET_FONT_TYPE}?v=${iconSetVersion}') format('${TARGET_FONT_TYPE === 'ttf' ? 'truetype' : TARGET_FONT_TYPE}')`;
 
     return `
 @font-face {
