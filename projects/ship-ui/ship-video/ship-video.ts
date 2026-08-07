@@ -46,6 +46,7 @@ type WebKitVideoElement = HTMLVideoElement & {
 type WebKitWindow = Window & { WebKitPlaybackTargetAvailabilityEvent?: unknown };
 
 const CONTROLS_IDLE_TIMEOUT = 2600;
+const CONTROLS_IDLE_TIMEOUT_TOUCH = 4000;
 const DEFAULT_SKIP_AFTER = 5;
 const AD_RESOLVE_TIMEOUT = 8000;
 const SEEK_EPSILON = 0.3;
@@ -223,6 +224,7 @@ export class ShipVideo {
   #appliedSlateTime = 0.001;
   #lastPointerWasTouch = false;
   #lastInputWasKeyboard = false;
+  #controlsVisibleAtPointerDown = true;
   #destroyed = false;
   #intersectionObserver: IntersectionObserver | null = null;
 
@@ -468,10 +470,12 @@ export class ShipVideo {
     });
 
     // explicit slate time → media fragment from the very first render, so iOS
-    // Safari (which ignores pre-play scripted seeks) still paints the frame
+    // Safari (which ignores pre-play scripted seeks) still paints the frame.
+    // parsedSources is a dependency so playlist swaps re-arm the fragment.
     effect(() => {
       const value = this.firstFrame();
       const poster = this.activePoster();
+      this.parsedSources();
       untracked(() => {
         if (typeof value === 'number' && !poster && !this.engineActive() && !this.state.hasStarted()) {
           this.slateFragmentTime.set(Math.max(0.001, value));
@@ -606,14 +610,40 @@ export class ShipVideo {
       });
     });
 
-    // remote playback availability: Remote Playback API (Chromecast in
-    // Chrome/Edge) and WebKit AirPlay — each only where the browser supports it
+    // remote playback availability: WebKit AirPlay on Apple platforms, Remote
+    // Playback API (Chromecast) elsewhere. Never both — on WebKit they are the
+    // same targets and would render two near-identical buttons. Everything is
+    // guarded: a throwing platform API must never break change detection.
     effect((onCleanup) => {
       const media = this.mediaRef()?.nativeElement;
       if (!media || !this.#isBrowser) return;
 
-      const remote = (media as HTMLVideoElement & { remote?: RemotePlaybackLike }).remote;
-      if (remote?.watchAvailability) {
+      const hasWebkitAirplay = typeof (window as WebKitWindow).WebKitPlaybackTargetAvailabilityEvent !== 'undefined';
+
+      if (hasWebkitAirplay) {
+        try {
+          const webkitMedia = media as WebKitVideoElement;
+          const onAvailability = (event: Event) =>
+            this.state.airplayAvailable.set((event as { availability?: string }).availability === 'available');
+          const onWireless = () => this.state.casting.set(!!webkitMedia.webkitCurrentPlaybackTargetIsWireless);
+
+          media.addEventListener('webkitplaybacktargetavailabilitychanged', onAvailability);
+          media.addEventListener('webkitcurrentplaybacktargetiswirelesschanged', onWireless);
+
+          onCleanup(() => {
+            media.removeEventListener('webkitplaybacktargetavailabilitychanged', onAvailability);
+            media.removeEventListener('webkitcurrentplaybacktargetiswirelesschanged', onWireless);
+          });
+        } catch {
+          this.state.airplayAvailable.set(false);
+        }
+        return;
+      }
+
+      try {
+        const remote = (media as HTMLVideoElement & { remote?: RemotePlaybackLike }).remote;
+        if (!remote?.watchAvailability) return;
+
         let watchId: number | null = null;
         remote
           .watchAvailability((available) => this.state.castAvailable.set(available))
@@ -626,25 +656,16 @@ export class ShipVideo {
         remote.addEventListener('disconnect', onDisconnect);
 
         onCleanup(() => {
-          remote.removeEventListener('connect', onConnect);
-          remote.removeEventListener('disconnect', onDisconnect);
-          if (watchId !== null) remote.cancelWatchAvailability?.(watchId)?.catch?.(() => {});
+          try {
+            remote.removeEventListener('connect', onConnect);
+            remote.removeEventListener('disconnect', onDisconnect);
+            if (watchId !== null) remote.cancelWatchAvailability?.(watchId)?.catch?.(() => {});
+          } catch {
+            // ignore teardown failures
+          }
         });
-      }
-
-      if (typeof (window as WebKitWindow).WebKitPlaybackTargetAvailabilityEvent !== 'undefined') {
-        const webkitMedia = media as WebKitVideoElement;
-        const onAvailability = (event: Event) =>
-          this.state.airplayAvailable.set((event as { availability?: string }).availability === 'available');
-        const onWireless = () => this.state.casting.set(!!webkitMedia.webkitCurrentPlaybackTargetIsWireless);
-
-        media.addEventListener('webkitplaybacktargetavailabilitychanged', onAvailability);
-        media.addEventListener('webkitcurrentplaybacktargetiswirelesschanged', onWireless);
-
-        onCleanup(() => {
-          media.removeEventListener('webkitplaybacktargetavailabilitychanged', onAvailability);
-          media.removeEventListener('webkitcurrentplaybacktargetiswirelesschanged', onWireless);
-        });
+      } catch {
+        this.state.castAvailable.set(false);
       }
     });
   }
@@ -831,8 +852,9 @@ export class ShipVideo {
 
     // touch: tapping the surface toggles the control overlay (YouTube-mobile
     // behaviour) — play/pause happens via the buttons. Mouse keeps click-to-play.
+    // Uses the pre-tap visibility (pointerdown already woke the bar).
     if (this.#lastPointerWasTouch && this.state.hasStarted()) {
-      if (this.state.controlsVisible()) {
+      if (this.#controlsVisibleAtPointerDown) {
         this.sleepControls();
       } else {
         this.wakeControls();
@@ -895,22 +917,52 @@ export class ShipVideo {
 
     if (this.#document.fullscreenElement) {
       this.#document.exitFullscreen?.().catch(() => {});
-    } else {
-      this.#selfRef.nativeElement.requestFullscreen?.().catch(() => {});
+      return;
+    }
+
+    if (this.#selfRef.nativeElement.requestFullscreen) {
+      this.#selfRef.nativeElement.requestFullscreen().catch(() => {});
+      return;
+    }
+
+    // iPhone Safari: no element fullscreen — use the native video fullscreen
+    const media = this.mediaRef()?.nativeElement as
+      | (HTMLVideoElement & { webkitEnterFullscreen?: () => void })
+      | undefined;
+    try {
+      media?.webkitEnterFullscreen?.();
+    } catch {
+      // not ready yet (no video data) — ignore
     }
   }
 
   togglePip() {
     if (!this.#isBrowser) return;
 
-    const media = this.mediaRef()?.nativeElement;
+    const media = this.mediaRef()?.nativeElement as
+      | (HTMLVideoElement & {
+          requestPictureInPicture?: () => Promise<unknown>;
+          webkitSupportsPresentationMode?: (mode: string) => boolean;
+          webkitSetPresentationMode?: (mode: string) => void;
+          webkitPresentationMode?: string;
+        })
+      | undefined;
+    if (!media) return;
+
     const doc = this.#document as Document & { exitPictureInPicture?: () => Promise<void>; pictureInPictureElement?: Element };
-    if (doc.pictureInPictureElement) {
-      doc.exitPictureInPicture?.().catch(() => {});
-    } else {
-      (media as HTMLVideoElement & { requestPictureInPicture?: () => Promise<unknown> })
-        ?.requestPictureInPicture?.()
-        .catch(() => {});
+    try {
+      if (doc.pictureInPictureElement) {
+        doc.exitPictureInPicture?.().catch(() => {});
+      } else if (media.requestPictureInPicture) {
+        media.requestPictureInPicture().catch(() => {});
+      } else if (media.webkitSupportsPresentationMode?.('picture-in-picture')) {
+        // Safari's presentation-mode API (incl. iPhone)
+        media.webkitSetPresentationMode?.(
+          media.webkitPresentationMode === 'picture-in-picture' ? 'inline' : 'picture-in-picture'
+        );
+      }
+    } catch {
+      // PiP unavailable in this state — ignore
     }
   }
 
@@ -972,6 +1024,11 @@ export class ShipVideo {
   onHostPointerDown(event: PointerEvent) {
     this.#lastPointerWasTouch = event.pointerType === 'touch' || event.pointerType === 'pen';
     this.#lastInputWasKeyboard = false;
+
+    // snapshot for the surface-tap toggle, then keep the bar alive while a
+    // finger is interacting — it must never fade mid-press
+    this.#controlsVisibleAtPointerDown = this.state.controlsVisible();
+    if (this.state.hasStarted()) this.wakeControls();
   }
 
   wakeControls() {
@@ -980,6 +1037,8 @@ export class ShipVideo {
     if (!this.#isBrowser) return;
     if (this.#idleTimer) clearTimeout(this.#idleTimer);
 
+    // touch gets longer: no hover means every interaction restarts from a tap
+    const idleTimeout = this.#lastPointerWasTouch ? CONTROLS_IDLE_TIMEOUT_TOUCH : CONTROLS_IDLE_TIMEOUT;
     this.#idleTimer = setTimeout(() => {
       // keyboard users keep their controls while focused; pointer-origin
       // focus (host has tabindex) must not block the idle fade
@@ -1041,12 +1100,26 @@ export class ShipVideo {
     // parked the playhead there — just claim it so the clock stays at 0:00
     // and start() rewinds to the beginning
     const fragment = this.slateFragmentTime();
-    if (fragment !== null && !this.state.hasStarted() && Math.abs(media.currentTime - fragment) < 1) {
-      this.#appliedSlateTime = media.currentTime;
-      this.#slateApplied = true;
-      this.state.currentTime.set(0);
-      this.#restoreResume(media);
-      return;
+    if (fragment !== null && !this.state.hasStarted()) {
+      const duration = media.duration;
+      if (isFinite(duration) && fragment >= duration - 0.5) {
+        // fragment beyond this media's end (e.g. slate time outliving a
+        // playlist swap) — parked at the end, play() would fire 'ended'
+        // instantly; reposition to a sane in-range slate
+        this.#appliedSlateTime = this.#slateTimeFor(duration);
+        this.#slateApplied = true;
+        media.currentTime = this.#appliedSlateTime;
+        this.state.currentTime.set(0);
+        this.#restoreResume(media);
+        return;
+      }
+      if (Math.abs(media.currentTime - fragment) < 1) {
+        this.#appliedSlateTime = media.currentTime;
+        this.#slateApplied = true;
+        this.state.currentTime.set(0);
+        this.#restoreResume(media);
+        return;
+      }
     }
 
     // metadata alone may not decode a frame — a seek forces the browser to
@@ -1159,6 +1232,10 @@ export class ShipVideo {
       this.state.duration.set(0);
       this.state.bufferedRanges.set([]);
       this.#restoredResume = false;
+      // new content gets a fresh slate — a stale #t= from the previous item
+      // could point past the new duration (instant 'ended' → auto-advance skip)
+      this.#slateApplied = false;
+      this.slateFragmentTime.set(null);
     }
 
     media.load();
