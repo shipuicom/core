@@ -21,6 +21,12 @@ export type ShipVideoSource = {
   lang?: ShipVideoLang;
 };
 
+/**
+ * Player chrome variants: `base` keeps the scrubber above the buttons;
+ * `edge` pins it full-bleed against the bottom edge of the frame.
+ */
+export type ShipVideoVariant = 'base' | 'edge';
+
 export type ShipVideoTrack = {
   src: string;
   srclang: ShipVideoLang;

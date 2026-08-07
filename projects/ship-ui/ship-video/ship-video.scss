@@ -475,6 +475,45 @@ $shipVideo: true !default;
       }
     }
 
+    // ---- edge variant: scrubber flush with the bottom of the frame -----------
+    &.edge {
+      .sh-video-controls {
+        padding-bottom: 0;
+      }
+
+      .sh-video-scrubber {
+        order: 10; // after the buttons row
+        margin: 0 p2r(-10); // bleed through the bar's side padding
+        flex-basis: calc(100% + #{p2r(20)});
+        height: p2r(14);
+
+        .sh-video-scrubber-rail {
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          width: auto;
+          border-radius: 0;
+        }
+
+        .sh-video-scrubber-knob {
+          top: auto;
+          bottom: calc(var(--vid-rail-height) / 2);
+          transform: translate(-50%, 50%) scale(0);
+        }
+
+        &:hover .sh-video-scrubber-knob,
+        &:focus-visible .sh-video-scrubber-knob {
+          bottom: calc(var(--vid-rail-height-active) / 2);
+          transform: translate(-50%, 50%) scale(1);
+        }
+
+        .sh-video-scrubber-preview {
+          bottom: p2r(18);
+        }
+      }
+    }
+
     // touch devices: no hover — hardware buttons handle volume
     @media (hover: none) {
       .sh-video-volume .sh-video-volume-slider {

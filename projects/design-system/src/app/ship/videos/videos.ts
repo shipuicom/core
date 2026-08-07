@@ -6,6 +6,7 @@ import { PropertyViewer } from '../../property-viewer/property-viewer';
 import { AdVideo } from './examples/ad-video/ad-video';
 import { BasicVideo } from './examples/basic-video/basic-video';
 import { ComposedVideo } from './examples/composed-video/composed-video';
+import { EdgeVideo } from './examples/edge-video/edge-video';
 import { HlsVideo } from './examples/hls-video/hls-video';
 import { PlaylistVideo } from './examples/playlist-video/playlist-video';
 import { TsVideo } from './examples/ts-video/ts-video';
@@ -20,6 +21,7 @@ import { TsVideo } from './examples/ts-video/ts-video';
     BasicVideo,
     AdVideo,
     ComposedVideo,
+    EdgeVideo,
     HlsVideo,
     TsVideo,
     PlaylistVideo,

@@ -27,6 +27,7 @@ import {
   ShipVideoAdCreative,
   ShipVideoSource,
   ShipVideoTrack,
+  ShipVideoVariant,
   shipVideoLevelsFromSources,
   shipVideoToSourceArray,
 } from './ship-video-types';
@@ -269,6 +270,8 @@ export class ShipVideo {
 
   /** Accent color of played bar and active states (`ShipColor`). */
   color = input<ShipColor | null>(null);
+  /** Chrome variant: `base` (scrubber above buttons) or `edge` (scrubber flush with the bottom edge). */
+  variant = input<ShipVideoVariant | null>(null);
   /** When `true`, renders the player with sharp (non-rounded) corners. */
   sharp = input<boolean | undefined>(undefined);
 
@@ -317,6 +320,7 @@ export class ShipVideo {
 
   hostClasses = shipComponentClasses('video', {
     color: this.color,
+    variant: this.variant,
     sharp: this.sharp,
   });
 
