@@ -10,6 +10,7 @@ $shipVideo: true !default;
     --vid-ad-accent-text: #000;
     --vid-chrome-text: #fff;
     --vid-chrome-bg: linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.28) 60%, transparent);
+    --vid-chrome-bg-edge: #121212;
     --vid-surface-bg: #000;
     --vid-rail-bg: rgba(255, 255, 255, 0.24);
     --vid-rail-buffered: rgba(255, 255, 255, 0.42);
@@ -479,6 +480,7 @@ $shipVideo: true !default;
     &.edge {
       .sh-video-controls {
         padding-bottom: 0;
+        background: var(--vid-chrome-bg-edge);
       }
 
       .sh-video-scrubber {
