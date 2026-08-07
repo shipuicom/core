@@ -143,6 +143,12 @@ export class HlsEngine implements ShipVideoEngine {
       return;
     }
 
+    // ManagedMediaSource (iPadOS/iOS fallback path) refuses to open unless
+    // remote playback is explicitly disabled or an AirPlay alternative exists
+    if (MediaSourceCtor.name === 'ManagedMediaSource') {
+      (video as HTMLVideoElement & { disableRemotePlayback?: boolean }).disableRemotePlayback = true;
+    }
+
     this.#mediaSource = new MediaSourceCtor();
     this.#objectUrl = URL.createObjectURL(this.#mediaSource);
     this.#mediaSource.addEventListener('sourceopen', this.#onSourceOpen, { once: true });

@@ -209,8 +209,10 @@ $shipVideo: true !default;
       }
     }
 
-    // keyboard/AT focus always reveals the controls
-    &:focus-within .sh-video-controls {
+    // keyboard/AT focus always reveals the controls (pointer focus must not —
+    // the host is clicked constantly and would pin the chrome open)
+    &:has(:focus-visible) .sh-video-controls,
+    &:focus-visible .sh-video-controls {
       opacity: 1;
       pointer-events: auto;
     }
@@ -465,13 +467,61 @@ $shipVideo: true !default;
       }
     }
 
+    // touch devices: no hover — hardware buttons handle volume
+    @media (hover: none) {
+      .sh-video-volume .sh-video-volume-slider {
+        display: none;
+      }
+    }
+
+    // narrow players: compact controls so a full set fits on one row
+    @container (max-width: #{p2r(560)}) {
+      .sh-video-controls {
+        gap: 0;
+        padding: p2r(2) p2r(6) p2r(4);
+      }
+
+      .sh-video-control-button {
+        width: p2r(32);
+        height: p2r(30);
+
+        sh-icon {
+          font-size: p2r(17);
+        }
+      }
+
+      .sh-video-time {
+        padding: 0 p2r(4);
+        font-size: p2r(11.5);
+      }
+
+      .sh-video-playtime-left .sh-video-playtime-left-pill {
+        padding: p2r(2) p2r(7);
+        font-size: p2r(11);
+      }
+
+      .sh-video-live-badge {
+        padding: p2r(3) p2r(7);
+        font-size: p2r(11);
+      }
+    }
+
     @container (max-width: #{p2r(480)}) {
       .sh-video-time .sh-video-time-duration,
       .sh-video-time .sh-video-time-divider {
         display: none;
       }
 
-      sh-video-pip-button {
+      // class-qualified: .sh-video-control's display would outrank a bare
+      // element selector
+      sh-video-pip-button.sh-video-control {
+        display: none;
+      }
+    }
+
+    @container (max-width: #{p2r(360)}) {
+      sh-video-captions-button.sh-video-control,
+      sh-video-playtime-left.sh-video-control {
         display: none;
       }
     }

@@ -80,6 +80,7 @@ function isHlsSource(source: ShipVideoSource | undefined): boolean {
     '[class.hide-controls]': '!state.controlsVisible()',
     '[attr.tabindex]': 'interactive() ? 0 : null',
     '(keydown)': 'onKeydown($event)',
+    '(pointerdown)': 'onHostPointerDown($event)',
     '(pointermove)': 'wakeControls()',
     '(pointerleave)': 'sleepControls()',
     '(document:fullscreenchange)': 'syncFullscreenState()',
@@ -220,6 +221,8 @@ export class ShipVideo {
   #unlocking = false;
   #slateApplied = false;
   #appliedSlateTime = 0.001;
+  #lastPointerWasTouch = false;
+  #lastInputWasKeyboard = false;
   #destroyed = false;
   #intersectionObserver: IntersectionObserver | null = null;
 
@@ -323,19 +326,33 @@ export class ShipVideo {
 
   progressiveLevels = computed(() => (this.engineActive() ? [] : shipVideoLevelsFromSources(this.parsedSources())));
 
+  /**
+   * Slate time appended to source URLs as a `#t=` media fragment. iOS Safari
+   * never paints pre-play scripted seeks, but it does render the fragment
+   * frame as the preview — the only reliable mobile slate without a poster.
+   */
+  slateFragmentTime = signal<number | null>(null);
+
   /** Sources rendered as `<source>` children (progressive path only). */
   renderedSources = computed(() => {
     const sources = this.parsedSources();
     const levels = this.progressiveLevels();
     const quality = this.quality();
 
+    let selected = sources;
     if (levels.length && quality !== 'auto') {
       const level = levels.find((candidate) => candidate.id === quality);
       const match = level && sources.find((source) => (source.label ?? `${source.height}p`) === level.label);
-      if (match) return [match];
+      if (match) selected = [match];
     }
 
-    return sources;
+    // the fragment stays in the URL once set — start() rewinds to 0 anyway,
+    // and stripping it later would force a reload mid-playback
+    const fragment = this.slateFragmentTime();
+    if (fragment === null) return selected;
+    return selected.map((source) =>
+      source.src.includes('#') ? source : { ...source, src: `${source.src}#t=${fragment}` }
+    );
   });
 
   // The slate frame decodes even when a poster is set — the poster image
@@ -435,6 +452,9 @@ export class ShipVideo {
       untracked(() => {
         const media = this.mediaRef()?.nativeElement;
         if (!media || this.state.adActive()) return;
+        // parked on the slate frame: the playhead intentionally differs from
+        // the 0:00 the UI shows — don't "correct" it
+        if (this.#slateApplied && !this.state.hasStarted()) return;
         if (Math.abs(media.currentTime - target) > SEEK_EPSILON) {
           media.currentTime = target;
         }
@@ -445,6 +465,18 @@ export class ShipVideo {
     effect(() => {
       this.activeAd();
       untracked(() => (this.#adCompleted = false));
+    });
+
+    // explicit slate time → media fragment from the very first render, so iOS
+    // Safari (which ignores pre-play scripted seeks) still paints the frame
+    effect(() => {
+      const value = this.firstFrame();
+      const poster = this.activePoster();
+      untracked(() => {
+        if (typeof value === 'number' && !poster && !this.engineActive() && !this.state.hasStarted()) {
+          this.slateFragmentTime.set(Math.max(0.001, value));
+        }
+      });
     });
 
     // progressive subtitle tracks → store + native TextTrack modes
@@ -796,6 +828,18 @@ export class ShipVideo {
 
   onSurfaceClick() {
     if (!this.interactive()) return;
+
+    // touch: tapping the surface toggles the control overlay (YouTube-mobile
+    // behaviour) — play/pause happens via the buttons. Mouse keeps click-to-play.
+    if (this.#lastPointerWasTouch && this.state.hasStarted()) {
+      if (this.state.controlsVisible()) {
+        this.sleepControls();
+      } else {
+        this.wakeControls();
+      }
+      return;
+    }
+
     this.state.togglePlay();
     this.wakeControls();
   }
@@ -879,6 +923,7 @@ export class ShipVideo {
   }
 
   onKeydown(event: KeyboardEvent) {
+    this.#lastInputWasKeyboard = true;
     if (!this.interactive()) return;
 
     const target = event.target as HTMLElement;
@@ -924,6 +969,11 @@ export class ShipVideo {
     this.wakeControls();
   }
 
+  onHostPointerDown(event: PointerEvent) {
+    this.#lastPointerWasTouch = event.pointerType === 'touch' || event.pointerType === 'pen';
+    this.#lastInputWasKeyboard = false;
+  }
+
   wakeControls() {
     this.state.controlsVisible.set(true);
 
@@ -931,7 +981,10 @@ export class ShipVideo {
     if (this.#idleTimer) clearTimeout(this.#idleTimer);
 
     this.#idleTimer = setTimeout(() => {
-      if (this.state.playing() && !this.#selfRef.nativeElement.matches(':focus-within')) {
+      // keyboard users keep their controls while focused; pointer-origin
+      // focus (host has tabindex) must not block the idle fade
+      const keyboardFocused = this.#lastInputWasKeyboard && this.#selfRef.nativeElement.matches(':focus-within');
+      if (this.state.playing() && !keyboardFocused) {
         this.state.controlsVisible.set(false);
       }
     }, CONTROLS_IDLE_TIMEOUT);
@@ -984,6 +1037,18 @@ export class ShipVideo {
     this.state.duration.set(isFinite(media.duration) ? media.duration : 0);
     if (!this.engineActive() && !isFinite(media.duration)) this.state.isLive.set(true);
 
+    // fragment-delivered slate (#t= in the source URL): the browser already
+    // parked the playhead there — just claim it so the clock stays at 0:00
+    // and start() rewinds to the beginning
+    const fragment = this.slateFragmentTime();
+    if (fragment !== null && !this.state.hasStarted() && Math.abs(media.currentTime - fragment) < 1) {
+      this.#appliedSlateTime = media.currentTime;
+      this.#slateApplied = true;
+      this.state.currentTime.set(0);
+      this.#restoreResume(media);
+      return;
+    }
+
     // metadata alone may not decode a frame — a seek forces the browser to
     // paint the slate frame behind the transparent featured overlay
     if (this.firstFrameEnabled() && !this.state.hasStarted() && media.currentTime === 0) {
@@ -991,9 +1056,15 @@ export class ShipVideo {
       media.currentTime = this.#appliedSlateTime;
       this.#slateApplied = true;
 
-      // auto mode: refine towards the most detailed candidate frame
+      // auto mode: refine towards the most detailed candidate frame, then bake
+      // the result into a #t= media fragment so iOS Safari paints it too
       if (typeof this.firstFrame() !== 'number' && !this.engineActive()) {
-        void this.#refineSlate(media, media.duration);
+        void this.#refineSlate(media, media.duration).then(() => {
+          if (this.#destroyed || !this.#slateApplied || this.state.hasStarted()) return;
+          if (this.slateFragmentTime() === null) {
+            this.slateFragmentTime.set(Math.round(this.#appliedSlateTime * 10) / 10);
+          }
+        });
       }
     }
 
