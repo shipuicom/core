@@ -4,13 +4,21 @@ $shipVideo: true !default;
 
 @if $shipVideo == true {
   sh-video {
-    // themable knobs
+    // themable knobs — override any of these on sh-video (or an ancestor)
     --vid-accent: var(--primary-8);
     --vid-ad-accent: var(--warn-8);
+    --vid-ad-accent-text: #000;
     --vid-chrome-text: #fff;
     --vid-chrome-bg: linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.28) 60%, transparent);
+    --vid-surface-bg: #000;
     --vid-rail-bg: rgba(255, 255, 255, 0.24);
     --vid-rail-buffered: rgba(255, 255, 255, 0.42);
+    --vid-rail-height: #{p2r(3)};
+    --vid-rail-height-active: #{p2r(5)};
+    --vid-knob-size: #{p2r(12)};
+    --vid-marker-bg: rgba(255, 255, 255, 0.85);
+    --vid-button-hover-bg: rgba(255, 255, 255, 0.14);
+    --vid-chip-bg: rgba(0, 0, 0, 0.72);
     --vid-br: var(--shape-2);
     --vid-focus: var(--primary-8);
 
@@ -19,7 +27,7 @@ $shipVideo: true !default;
     width: 100%;
     aspect-ratio: 16 / 9;
     overflow: hidden;
-    background: #000;
+    background: var(--vid-surface-bg);
     border-radius: var(--vid-br);
     outline: none;
     container-type: inline-size;
@@ -55,7 +63,7 @@ $shipVideo: true !default;
       width: 100%;
       height: 100%;
       object-fit: contain;
-      background: #000;
+      background: var(--vid-surface-bg);
     }
 
     .sh-video-ad-media {
@@ -110,7 +118,7 @@ $shipVideo: true !default;
       padding: p2r(2) p2r(8);
       border-radius: var(--shape-1);
       background: var(--vid-ad-accent);
-      color: #000;
+      color: var(--vid-ad-accent-text);
       font-size: p2r(12);
       font-weight: 700;
       letter-spacing: 0.04em;
@@ -126,7 +134,7 @@ $shipVideo: true !default;
       text-decoration: none;
       padding: p2r(4) p2r(8);
       border-radius: var(--shape-1);
-      background: rgba(0, 0, 0, 0.5);
+      background: var(--vid-chip-bg);
 
       &:hover {
         text-decoration: underline;
@@ -147,7 +155,7 @@ $shipVideo: true !default;
       padding: p2r(8) p2r(14);
       border: p2r(1) solid rgba(255, 255, 255, 0.4);
       border-radius: var(--shape-1);
-      background: rgba(0, 0, 0, 0.72);
+      background: var(--vid-chip-bg);
       color: var(--vid-chrome-text);
       font-size: p2r(13);
       font-weight: 600;
@@ -180,35 +188,6 @@ $shipVideo: true !default;
           display: none;
         }
       }
-    }
-
-    // ---- top-right corner: remote playback (cast / AirPlay) -------------------
-    .sh-video-corner-controls {
-      position: absolute;
-      top: p2r(10);
-      right: p2r(10);
-      z-index: 5;
-      display: flex;
-      gap: p2r(4);
-      opacity: 1;
-      transition: opacity 0.2s ease;
-
-      .sh-video-control-button {
-        background: rgba(0, 0, 0, 0.55);
-
-        &:hover {
-          background: rgba(0, 0, 0, 0.8);
-        }
-      }
-    }
-
-    &.hide-controls .sh-video-corner-controls {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    &.is-ad .sh-video-corner-controls {
-      display: none; // the ad badge/link owns the top edge during ads
     }
 
     // ---- control bar ---------------------------------------------------------
@@ -274,7 +253,7 @@ $shipVideo: true !default;
       }
 
       &:hover {
-        background: rgba(255, 255, 255, 0.14);
+        background: var(--vid-button-hover-bg);
       }
 
       &:focus-visible {
@@ -305,7 +284,7 @@ $shipVideo: true !default;
       .sh-video-scrubber-rail {
         position: relative;
         width: 100%;
-        height: p2r(3);
+        height: var(--vid-rail-height);
         border-radius: p2r(2);
         background: var(--vid-rail-bg);
         overflow: hidden;
@@ -314,7 +293,7 @@ $shipVideo: true !default;
 
       &:hover .sh-video-scrubber-rail,
       &:focus-visible .sh-video-scrubber-rail {
-        height: p2r(5);
+        height: var(--vid-rail-height-active);
       }
 
       .sh-video-scrubber-buffered {
@@ -337,14 +316,14 @@ $shipVideo: true !default;
         top: 0;
         bottom: 0;
         width: p2r(2);
-        background: rgba(255, 255, 255, 0.85);
+        background: var(--vid-marker-bg);
       }
 
       .sh-video-scrubber-knob {
         position: absolute;
         top: 50%;
-        width: p2r(12);
-        height: p2r(12);
+        width: var(--vid-knob-size);
+        height: var(--vid-knob-size);
         border-radius: 50%;
         background: var(--vid-accent);
         transform: translate(-50%, -50%) scale(0);
@@ -378,7 +357,7 @@ $shipVideo: true !default;
       .sh-video-scrubber-tooltip {
         padding: p2r(2) p2r(8);
         border-radius: var(--shape-1);
-        background: rgba(0, 0, 0, 0.8);
+        background: var(--vid-chip-bg);
         color: var(--vid-chrome-text);
         font-size: p2r(12);
         font-variant-numeric: tabular-nums;
@@ -414,7 +393,7 @@ $shipVideo: true !default;
       .sh-video-playtime-left-pill {
         padding: p2r(3) p2r(9);
         border-radius: p2r(999);
-        background: rgba(0, 0, 0, 0.7);
+        background: var(--vid-chip-bg);
         color: var(--vid-chrome-text);
         font-size: p2r(12);
         font-weight: 600;
@@ -464,7 +443,7 @@ $shipVideo: true !default;
       }
 
       &:hover {
-        background: rgba(255, 255, 255, 0.14);
+        background: var(--vid-button-hover-bg);
       }
 
       &:focus-visible {

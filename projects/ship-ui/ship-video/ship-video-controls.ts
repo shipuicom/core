@@ -299,6 +299,8 @@ export class ShipVideoFullscreenButton {
     ShipVideoTime,
     ShipVideoLiveButton,
     ShipVideoCaptionsButton,
+    ShipVideoCastButton,
+    ShipVideoAirplayButton,
     ShipVideoPipButton,
     ShipVideoFullscreenButton,
   ],
@@ -321,6 +323,8 @@ export class ShipVideoFullscreenButton {
         <sh-video-captions-button />
       }
       <sh-video-settings />
+      <sh-video-cast-button />
+      <sh-video-airplay-button />
       <sh-video-pip-button />
       <sh-video-fullscreen-button />
     } @else {
