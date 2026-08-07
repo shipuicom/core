@@ -198,7 +198,7 @@ export class ShipVideoCaptionsButton {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { 'class': 'sh-video-control' },
   template: `
-    @if (state.castAvailable()) {
+    @if (state.castAvailable() || alwaysVisible()) {
       <button
         type="button"
         class="sh-video-control-button"
@@ -213,6 +213,9 @@ export class ShipVideoCaptionsButton {
 })
 export class ShipVideoCastButton {
   state = inject(ShipVideoState);
+
+  /** Shows the button even without an available cast target (demos, previews). */
+  alwaysVisible = input(false);
 }
 
 /**
@@ -226,7 +229,7 @@ export class ShipVideoCastButton {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { 'class': 'sh-video-control' },
   template: `
-    @if (state.airplayAvailable()) {
+    @if (state.airplayAvailable() || alwaysVisible()) {
       <button
         type="button"
         class="sh-video-control-button"
@@ -241,6 +244,9 @@ export class ShipVideoCastButton {
 })
 export class ShipVideoAirplayButton {
   state = inject(ShipVideoState);
+
+  /** Shows the button even without an available AirPlay target (demos, previews). */
+  alwaysVisible = input(false);
 }
 
 @Component({

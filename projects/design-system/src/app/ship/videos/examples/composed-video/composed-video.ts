@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import {
   ShipVideo,
+  ShipVideoAirplayButton,
   ShipVideoCaptionsButton,
+  ShipVideoCastButton,
   ShipVideoControls,
   ShipVideoFullscreenButton,
   ShipVideoPipButton,
@@ -34,6 +36,8 @@ function vtt(lines: string[]): string {
     ShipVideoPlaytimeLeft,
     ShipVideoCaptionsButton,
     ShipVideoSettings,
+    ShipVideoCastButton,
+    ShipVideoAirplayButton,
     ShipVideoPipButton,
     ShipVideoFullscreenButton,
   ],
