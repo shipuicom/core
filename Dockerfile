@@ -1,6 +1,6 @@
-# Pinned to stable: the floating canary tag broke deploys when a cached nightly
-# started rejecting the lockfile (frozen-lockfile false positive on manifest edits)
-FROM oven/bun:1.3-alpine AS base
+# Latest stable bun (no nightlies — canary broke deploys with a frozen-lockfile
+# false positive). Rolls to 1.4-alpine automatically once bun publishes it.
+FROM oven/bun:alpine AS base
 WORKDIR /app
 
 # 1. Install Node.js from edge, plus dependencies needed to fetch/unpack Zig
