@@ -361,13 +361,16 @@ export class ShipVideo {
   // simply layers on top, and the frame remains as a fallback beneath it.
   firstFrameEnabled = computed(() => this.firstFrame() !== false);
 
-  /** Resolves the slate time once the duration is known. */
+  /** Resolves the slate time once the duration is known (always in range). */
   #slateTimeFor(duration: number): number {
+    const inRange = (time: number) =>
+      isFinite(duration) && duration > 0 ? Math.min(Math.max(0.001, time), Math.max(0.001, duration - 1)) : Math.max(0.001, time);
+
     const value = this.firstFrame();
-    if (typeof value === 'number') return Math.max(0.001, value);
+    if (typeof value === 'number') return inRange(value);
     // auto: ~10% in, capped — frame zero is black on fade-in intros
     if (isFinite(duration) && duration > 0) {
-      return Math.min(Math.max(duration * 0.1, 0.001), 20);
+      return inRange(Math.min(duration * 0.1, 20));
     }
     return 0.001;
   }
@@ -471,11 +474,10 @@ export class ShipVideo {
 
     // explicit slate time → media fragment from the very first render, so iOS
     // Safari (which ignores pre-play scripted seeks) still paints the frame.
-    // parsedSources is a dependency so playlist swaps re-arm the fragment.
+    // (Playlist swaps re-arm inside the content-swap reset in #reload.)
     effect(() => {
       const value = this.firstFrame();
       const poster = this.activePoster();
-      this.parsedSources();
       untracked(() => {
         if (typeof value === 'number' && !poster && !this.engineActive() && !this.state.hasStarted()) {
           this.slateFragmentTime.set(Math.max(0.001, value));
@@ -800,9 +802,13 @@ export class ShipVideo {
     this.#slateApplied = false;
 
     const media = this.mediaRef()?.nativeElement;
-    // only rewind while still parked on the slate frame — an explicit user
-    // scrub or a resume restore moved the playhead and should be kept
-    if (media && Math.abs(media.currentTime - this.#appliedSlateTime) < 0.25) {
+    if (!media) return;
+
+    // rewind while parked on the slate frame; also never begin playback from
+    // the media's end (a clamped slate) — that fires 'ended' immediately
+    const onSlate = Math.abs(media.currentTime - this.#appliedSlateTime) < 0.25;
+    const atEnd = isFinite(media.duration) && media.duration > 0 && media.currentTime >= media.duration - 0.5;
+    if (onSlate || atEnd) {
       media.currentTime = 0;
       this.state.currentTime.set(0);
     }
@@ -1233,9 +1239,15 @@ export class ShipVideo {
       this.state.bufferedRanges.set([]);
       this.#restoredResume = false;
       // new content gets a fresh slate — a stale #t= from the previous item
-      // could point past the new duration (instant 'ended' → auto-advance skip)
+      // could point past the new duration (instant 'ended' → auto-advance skip).
+      // Explicit firstFrame re-arms immediately; metadata re-clamps misfits.
       this.#slateApplied = false;
-      this.slateFragmentTime.set(null);
+      const explicit = this.firstFrame();
+      this.slateFragmentTime.set(
+        typeof explicit === 'number' && !this.activePoster() && !this.engineActive()
+          ? Math.max(0.001, explicit)
+          : null
+      );
     }
 
     media.load();
