@@ -16,6 +16,8 @@ export interface ShipComponentConfig {
   variant?: ShipVariant | string;
   size?: ShipSize | string;
   color?: ShipColor | string;
+  /** Renders the component in a non-interactive read-only state. Read by `shipComponentClasses`. */
+  readonly?: boolean;
 }
 
 export interface ShipChipConfig extends ShipComponentConfig {

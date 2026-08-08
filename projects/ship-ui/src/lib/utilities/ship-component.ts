@@ -65,7 +65,7 @@ export function shipComponentClasses(
 
     if (color) classList.push(color);
     if (variant) {
-      
+      // Bare-letter shorthand: `variant="b"` expands to the `type-b` class.
       if (['a', 'b', 'c', 'd'].includes(variant)) {
         classList.push(`type-${variant}`);
       } else {
