@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, HostListener, inject, input, model, output, signal, untracked, viewChild, ViewEncapsulation } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, effect, ElementRef, HostListener, inject, Injector, input, model, output, signal, untracked, viewChild, ViewEncapsulation } from '@angular/core';
 import { classMutationSignal, ShipCalendar } from '@ship-ui/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
@@ -91,8 +91,8 @@ export class ShipDatepicker {
 
   /** Index of the first weekday column (`0` = Sunday, `1` = Monday). */
   startOfWeek = input<number>(1);
-  /** Weekday column labels, ordered Sunday through Saturday. `null` derives them from `locale`. */
-  weekdayLabels = input<string[] | null>(['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']);
+  /** Weekday column labels, ordered Sunday through Saturday. Defaults to locale-derived labels. */
+  weekdayLabels = input<string[] | null>(null);
   /** BCP-47 locale for month names, weekday headers and aria labels. Defaults to the runtime locale. */
   locale = input<string | undefined>(undefined);
 
@@ -102,6 +102,7 @@ export class ShipDatepicker {
 
   #keybindings = inject(ShipA11yKeybindingsService);
   #selfRef = inject(ElementRef);
+  #injector = inject(Injector);
 
   prevMonthShortcut = computed(() => {
     const action = 'datepicker.prev-month';
@@ -270,13 +271,17 @@ export class ShipDatepicker {
   }
 
   #findSelectedAndCalc() {
-    setTimeout(() => {
-      const selectedElement = this.daysRef()?.nativeElement.querySelector('.sel');
-      if (!selectedElement) {
-        return this.selectedDateStylePosition.update((x) => (x ? { ...x, opacity: '0' } : null));
-      }
-      this.setSelectedDateStylePosition(selectedElement as HTMLElement);
-    });
+    afterNextRender(
+      () => {
+        const selectedElement = this.daysRef()?.nativeElement.querySelector('.sel');
+        if (!selectedElement) {
+          this.selectedDateStylePosition.update((x) => (x ? { ...x, opacity: '0' } : null));
+          return;
+        }
+        this.setSelectedDateStylePosition(selectedElement as HTMLElement);
+      },
+      { injector: this.#injector }
+    );
   }
 
   @HostListener('focusout', ['$event'])
