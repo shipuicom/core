@@ -31,13 +31,6 @@ describe('ShipChip', () => {
     expect(classList).toContain('primary-tonal');
   });
 
-  it('should map letter variants to type-x', () => {
-    fixture.componentRef.setInput('variant', 'b');
-    fixture.detectChanges();
-    
-    expect(fixture.nativeElement.classList.contains('type-b')).toBe(true);
-  });
-
   it('should apply size classes correctly', () => {
     fixture.componentRef.setInput('size', 'lg');
     fixture.detectChanges();
