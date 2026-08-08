@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, effect, inject, input, model, ViewE
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { shipComponentClasses } from '@ship-ui/core';
-import { ShipCardVariant, ShipColor } from '@ship-ui/core';
+import { ShipColor, ShipToggleCardVariant } from '@ship-ui/core';
 
 @Component({
   selector: 'sh-toggle-card',
@@ -50,11 +50,11 @@ export class ShipToggleCard {
     }
   });
 
-  /** Theme color applied to the card via the `card` component classes. */
+  /** Theme color applied via the `toggleCard` component classes. */
   color = input<ShipColor | null>(null);
-  /** Visual variant of the card via the `card` component classes. */
-  variant = input<ShipCardVariant | null>(null);
-  hostClasses = shipComponentClasses('card', {
+  /** Visual variant applied via the `toggleCard` component classes. */
+  variant = input<ShipToggleCardVariant | null>(null);
+  hostClasses = shipComponentClasses('toggleCard', {
     color: this.color,
     variant: this.variant,
   });

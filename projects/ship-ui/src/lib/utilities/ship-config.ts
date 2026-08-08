@@ -64,6 +64,7 @@ export interface ShipConfig {
   progressBar?: ShipComponentConfig;
   spinner?: ShipComponentConfig;
   card?: ShipComponentConfig;
+  toggleCard?: ShipComponentConfig;
   table?: ShipComponentConfig;
   buttonGroup?: ShipComponentConfig;
   checkbox?: ShipComponentConfig;

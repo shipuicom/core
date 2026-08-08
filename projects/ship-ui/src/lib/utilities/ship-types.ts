@@ -22,6 +22,9 @@ export type ShipTableVariant = (typeof __SHIP_TABLE_VARIANTS)[number];
 export const __SHIP_CARD_VARIANTS = ['type-a', 'type-b', 'type-c', ''] as const;
 export type ShipCardVariant = (typeof __SHIP_CARD_VARIANTS)[number];
 
+export const __SHIP_TOGGLE_CARD_VARIANTS = ['type-a', 'type-b', 'type-c', ''] as const;
+export type ShipToggleCardVariant = (typeof __SHIP_TOGGLE_CARD_VARIANTS)[number];
+
 export const __SHIP_BUTTON_GROUP_VARIANTS = [''] as const;
 export type ShipButtonGroupVariant = (typeof __SHIP_BUTTON_GROUP_VARIANTS)[number];
 
