@@ -9,6 +9,7 @@ import {
   effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 
 interface InputSignalOptions<T> {
@@ -62,6 +63,9 @@ export function createInputSignal<T>(
       if (!inputElement) {
         return valueSignal.set(returnPreviousValue && previousValue ? transform(previousValue) : undefined);
       }
+
+      lastValueFromInput = undefined;
+      hasValueFromInput = false;
 
       if (initialValue !== undefined && inputElement.value === '') {
         valueSignal.set(initialValue);
@@ -127,7 +131,7 @@ export function createInputSignal<T>(
     lastValueFromInput = transformedValue;
     hasValueFromInput = true;
 
-    if (!compare(valueSignal(), transformedValue)) {
+    if (!compare(untracked(valueSignal), transformedValue)) {
       valueSignal.set(transformedValue);
     }
   }
