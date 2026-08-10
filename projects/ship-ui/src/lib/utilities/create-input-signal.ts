@@ -50,9 +50,10 @@ export function createInputSignal<T>(
     return createCustomInputEventListener(inputElement);
   });
 
-  let isUpdating = false;
   let previousValue: string | undefined;
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  let lastValueFromInput: T | null | undefined = undefined;
+  let hasValueFromInput = false;
 
   effect(
     () => {
@@ -99,9 +100,11 @@ export function createInputSignal<T>(
 
       if (!inputElement) return;
 
-      const currentValue = valueSignal() ?? '';
+      const currentValue = valueSignal();
 
-      let domValue = currentValue === null || currentValue === undefined ? '' : String(currentValue);
+      if (hasValueFromInput && compare(currentValue, lastValueFromInput)) return;
+
+      const domValue = currentValue === null || currentValue === undefined ? '' : String(currentValue);
 
       if (inputElement.value !== domValue) {
         previousValue = domValue;
@@ -115,22 +118,17 @@ export function createInputSignal<T>(
   return valueSignal;
 
   function syncValueFromInput() {
-    if (isUpdating) return;
+    const inputElement = inputElementRef();
+    if (!inputElement) return;
 
-    isUpdating = true;
-    try {
-      const inputElement = inputElementRef();
-      if (!inputElement) return;
+    const inputValue = inputElement.value;
+    const transformedValue = forceType ? forceTransform(inputValue, forceType) : transform(inputValue);
+    previousValue = inputValue;
+    lastValueFromInput = transformedValue;
+    hasValueFromInput = true;
 
-      const inputValue = inputElement.value;
-      const transformedValue = forceType ? forceTransform(inputValue, forceType) : transform(inputValue);
-      previousValue = inputValue;
-
-      if (!compare(valueSignal(), transformedValue)) {
-        valueSignal.set(transformedValue);
-      }
-    } finally {
-      isUpdating = false;
+    if (!compare(valueSignal(), transformedValue)) {
+      valueSignal.set(transformedValue);
     }
   }
 
