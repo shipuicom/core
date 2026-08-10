@@ -21,8 +21,10 @@ interface InputSignalOptions<T> {
   returnPreviousValue?: boolean;
 }
 
+type InputElement = HTMLInputElement | HTMLTextAreaElement;
+
 export function createInputSignal<T>(
-  input: Signal<ElementRef<HTMLInputElement | HTMLTextAreaElement> | undefined>,
+  input: Signal<InputElement | ElementRef<InputElement> | InputElement[] | undefined>,
   options?: InputSignalOptions<T>
 ): WritableSignal<T | null | undefined> {
   const injector = options?.injector || (assertInInjectionContext(createInputSignal), inject(Injector));
@@ -38,7 +40,11 @@ export function createInputSignal<T>(
   const valueSignal = signal<T | null | undefined>(initialValue);
   const destroyRef = injector.get(DestroyRef);
   const inputElementRef = computed(() => {
-    const inputElement = input()?.nativeElement;
+    let raw = input();
+
+    if (Array.isArray(raw)) raw = raw[0];
+
+    const inputElement = raw instanceof ElementRef ? raw.nativeElement : raw;
 
     if (!(inputElement instanceof HTMLInputElement || inputElement instanceof HTMLTextAreaElement)) {
       return;
