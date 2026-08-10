@@ -20,6 +20,13 @@ interface InputSignalOptions<T> {
   forceType?: 'number' | 'boolean' | 'string';
   injector?: Injector;
   returnPreviousValue?: boolean;
+  /**
+   * Adopt an existing writable signal (e.g. a `model()`) as the backing store instead of
+   * creating one. When provided, the caller owns the initial value: the primitive skips
+   * seeding from the DOM on attach and skips resetting the value on detach — it only wires
+   * ongoing input↔signal sync.
+   */
+  signal?: WritableSignal<T | null | undefined>;
 }
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement;
@@ -38,7 +45,8 @@ export function createInputSignal<T>(
     returnPreviousValue = true,
   } = options || {};
 
-  const valueSignal = signal<T | null | undefined>(initialValue);
+  const adopted = options?.signal;
+  const valueSignal = adopted ?? signal<T | null | undefined>(initialValue);
   const destroyRef = injector.get(DestroyRef);
   const inputElementRef = computed(() => {
     const raw = input();
@@ -61,19 +69,29 @@ export function createInputSignal<T>(
       const inputElement = inputElementRef();
 
       if (!inputElement) {
-        return valueSignal.set(returnPreviousValue && previousValue ? transform(previousValue) : undefined);
+        if (!adopted) {
+          valueSignal.set(returnPreviousValue && previousValue ? transform(previousValue) : undefined);
+        }
+        return;
       }
 
       lastValueFromInput = undefined;
       hasValueFromInput = false;
 
-      if (initialValue !== undefined && inputElement.value === '') {
-        valueSignal.set(initialValue);
-      } else if (inputElement.value !== '') {
-        syncValueFromInput();
+      if (!adopted) {
+        if (initialValue !== undefined && inputElement.value === '') {
+          valueSignal.set(initialValue);
+        } else if (inputElement.value !== '') {
+          syncValueFromInput();
+        }
       }
 
-      const inputHandler = (e: any) => {
+      const inputHandler = () => {
+        if (debounce <= 0) {
+          syncValueFromInput();
+          return;
+        }
+
         if (timeoutId !== null) {
           clearTimeout(timeoutId);
         }
