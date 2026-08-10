@@ -11,12 +11,12 @@ import {
   input,
   model,
   output,
-  signal,
+  untracked,
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import { NgControl } from '@angular/forms';
-import { classMutationSignal, contentProjectionSignal, createCustomInputEventListener } from '@ship-ui/core';
+import { classMutationSignal, contentProjectionSignal, createInputSignal } from '@ship-ui/core';
 import { ShipFormFieldPopover } from '@ship-ui/core/ship-form-field';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipDatepicker } from './ship-datepicker';
@@ -50,7 +50,7 @@ import { ShipDatepicker } from './ship-datepicker';
       <div popoverContent>
         @if (this.isOpen()) {
           <sh-datepicker
-            [date]="internalDate()"
+            [date]="internalDate() ?? null"
             (dateChange)="onDateChange($event)"
             (tabbedOut)="isOpen.set(false)"
             [class]="currentClass()" />
@@ -66,12 +66,26 @@ export class ShipDatepickerInput {
   #selfRef = inject(ElementRef);
   ngControl = contentChild(NgControl);
   #datePipe = inject(DatePipe);
-  #inputRef = signal<HTMLInputElement | null>(null);
 
   /** `DatePipe` format used to render the masked date display (empty disables masking). */
   masking = input('mediumDate');
   /** Emits the selected date when the picker popover closes. */
   closed = output<Date | null>();
+
+  isOpen = model<boolean>(false);
+  currentClass = classMutationSignal();
+  #inputObserver = contentProjectionSignal<HTMLInputElement>('#input-wrap input');
+  #inputRef = computed(() => {
+    const input = this.#inputObserver()[0];
+    return input ? new ElementRef(input) : undefined;
+  });
+
+  internalDate = createInputSignal<Date | null>(this.#inputRef, {
+    transform: (value) => this.#parseInputValue(value),
+    compare: (a, b) => (a?.getTime() ?? null) === (b?.getTime() ?? null),
+  });
+
+  datepicker = viewChild(ShipDatepicker);
 
   _maskedDate = computed(() => {
     const date = this.internalDate();
@@ -83,12 +97,18 @@ export class ShipDatepickerInput {
     return this.#datePipe.transform(date, mask);
   });
 
-  internalDate = signal<Date | null>(null);
-  /** Whether the datepicker popover is open. Two-way bindable. */
-  isOpen = model<boolean>(false);
-  currentClass = classMutationSignal();
-  #inputObserver = contentProjectionSignal<HTMLInputElement>('#input-wrap input');
-  datepicker = viewChild(ShipDatepicker);
+  #inputSetupEffect = effect((onCleanup) => {
+    const input = this.#inputRef()?.nativeElement;
+
+    if (!input) return;
+
+    input.autocomplete = 'off';
+
+    const openOnFocus = () => this.isOpen.set(true);
+    input.addEventListener('focus', openOnFocus);
+
+    onCleanup(() => input.removeEventListener('focus', openOnFocus));
+  });
 
   #isOpenEffect = effect(() => {
     if (this.isOpen()) {
@@ -115,65 +135,29 @@ export class ShipDatepickerInput {
 
     if (control) {
       control.setValue(date);
-    } else {
-      const input = this.#inputRef();
-      if (input) {
-        input.value = date ? date.toString() : '';
-        input.dispatchEvent(new Event('input'));
-      }
     }
   }
 
   close() {
-    this.closed.emit(this.internalDate());
+    this.closed.emit(this.internalDate() ?? null);
   }
 
-  #inputRefEffect = effect(() => {
-    const inputs = this.#inputObserver();
+  #parseInputValue(value: string): Date | null {
+    if (!value) return null;
 
-    if (!inputs.length) return;
+    let newD = new Date(value);
 
-    const input = inputs[0];
-
-    if (!input) return;
-
-    createCustomInputEventListener(input);
-
-    input.addEventListener('inputValueChanged', (event: any) => {
-      const val = event.detail.value;
-      if (!val) {
-        this.internalDate.set(null);
-        return;
+    if (isNaN(newD.getTime()) && /^(\d{2}):(\d{2})/.test(value)) {
+      const match = value.match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+      if (match) {
+        const current = untracked(() => this.internalDate()) || new Date();
+        newD = new Date(current);
+        newD.setHours(parseInt(match[1], 10), parseInt(match[2], 10), match[3] ? parseInt(match[3], 10) : 0, 0);
       }
-
-      let newD = new Date(val);
-
-      if (isNaN(newD.getTime())) {
-        if (typeof val === 'string' && /^(\d{2}):(\d{2})/.test(val)) {
-          const match = val.match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
-          if (match) {
-            const current = this.internalDate() || new Date();
-            newD = new Date(current);
-            newD.setHours(parseInt(match[1], 10), parseInt(match[2], 10), match[3] ? parseInt(match[3], 10) : 0, 0);
-          }
-        }
-      }
-
-      if (!isNaN(newD.getTime())) {
-        this.internalDate.set(newD);
-      }
-    });
-
-    input.addEventListener('focus', () => {
-      this.isOpen.set(true);
-    });
-
-    this.#inputRef.set(input);
-    input.autocomplete = 'off';
-
-    if (typeof input.value === 'string') {
-      this.internalDate.set(input.value ? new Date(input.value) : null);
     }
-  });
 
+    if (isNaN(newD.getTime())) return untracked(() => this.internalDate()) ?? null;
+
+    return newD;
+  }
 }
