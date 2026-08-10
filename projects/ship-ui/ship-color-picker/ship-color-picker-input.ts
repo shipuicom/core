@@ -15,6 +15,7 @@ import {
 import {
   classMutationSignal,
   contentProjectionSignal,
+  createCustomInputEventListener,
   hslToRgbExact,
   rgbaToHex8,
   rgbToHex,
@@ -233,7 +234,7 @@ export class ShipColorPickerInput {
     const input = inputs[0];
     if (!input) return;
 
-    this.#createCustomInputEventListener(input);
+    createCustomInputEventListener(input);
 
     input.addEventListener('inputValueChanged', (event: any) => {
       this.#parseAndSetColor(event.detail.value);
@@ -374,31 +375,4 @@ export class ShipColorPickerInput {
     };
   }
 
-  #createCustomInputEventListener(input: HTMLInputElement) {
-    Object.defineProperty(input, 'value', {
-      configurable: true,
-      get() {
-        const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
-        return descriptor!.get!.call(this);
-      },
-      set(newVal) {
-        const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
-        descriptor!.set!.call(this, newVal);
-
-        const inputEvent = new CustomEvent('inputValueChanged', {
-          bubbles: true,
-          cancelable: true,
-          detail: {
-            value: newVal,
-          },
-        });
-
-        this.dispatchEvent(inputEvent);
-
-        return newVal;
-      },
-    });
-
-    return input;
-  }
 }

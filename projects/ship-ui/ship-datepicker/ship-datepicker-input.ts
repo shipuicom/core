@@ -1,10 +1,24 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, computed, contentChild, effect, inject, input, model, output, signal, viewChild, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  contentChild,
+  effect,
+  ElementRef,
+  HostListener,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+  viewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import { NgControl } from '@angular/forms';
+import { classMutationSignal, contentProjectionSignal, createCustomInputEventListener } from '@ship-ui/core';
 import { ShipFormFieldPopover } from '@ship-ui/core/ship-form-field';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
-import { classMutationSignal } from '@ship-ui/core';
-import { contentProjectionSignal } from '@ship-ui/core';
 import { ShipDatepicker } from './ship-datepicker';
 
 @Component({
@@ -35,7 +49,11 @@ import { ShipDatepicker } from './ship-datepicker';
 
       <div popoverContent>
         @if (this.isOpen()) {
-          <sh-datepicker [date]="internalDate()" (dateChange)="onDateChange($event)" (tabbedOut)="isOpen.set(false)" [class]="currentClass()" />
+          <sh-datepicker
+            [date]="internalDate()"
+            (dateChange)="onDateChange($event)"
+            (tabbedOut)="isOpen.set(false)"
+            [class]="currentClass()" />
         }
       </div>
     </sh-form-field-popover>
@@ -45,8 +63,6 @@ import { ShipDatepicker } from './ship-datepicker';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShipDatepickerInput {
-  
-
   #selfRef = inject(ElementRef);
   ngControl = contentChild(NgControl);
   #datePipe = inject(DatePipe);
@@ -86,11 +102,7 @@ export class ShipDatepickerInput {
   onFocusOut(event: FocusEvent) {
     setTimeout(() => {
       const activeElement = document.activeElement as HTMLElement | null;
-      if (
-        activeElement &&
-        activeElement !== document.body &&
-        !this.#selfRef.nativeElement.contains(activeElement)
-      ) {
+      if (activeElement && activeElement !== document.body && !this.#selfRef.nativeElement.contains(activeElement)) {
         this.isOpen.set(false);
       }
     });
@@ -125,7 +137,7 @@ export class ShipDatepickerInput {
 
     if (!input) return;
 
-    this.#createCustomInputEventListener(input);
+    createCustomInputEventListener(input);
 
     input.addEventListener('inputValueChanged', (event: any) => {
       const val = event.detail.value;
@@ -133,11 +145,10 @@ export class ShipDatepickerInput {
         this.internalDate.set(null);
         return;
       }
-      
+
       let newD = new Date(val);
-      
+
       if (isNaN(newD.getTime())) {
-        
         if (typeof val === 'string' && /^(\d{2}):(\d{2})/.test(val)) {
           const match = val.match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
           if (match) {
@@ -147,7 +158,7 @@ export class ShipDatepickerInput {
           }
         }
       }
-      
+
       if (!isNaN(newD.getTime())) {
         this.internalDate.set(newD);
       }
@@ -155,7 +166,6 @@ export class ShipDatepickerInput {
 
     input.addEventListener('focus', () => {
       this.isOpen.set(true);
-      
     });
 
     this.#inputRef.set(input);
@@ -166,31 +176,4 @@ export class ShipDatepickerInput {
     }
   });
 
-  #createCustomInputEventListener(input: HTMLInputElement) {
-    Object.defineProperty(input, 'value', {
-      configurable: true,
-      get() {
-        const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
-        return descriptor!.get!.call(this);
-      },
-      set(newVal) {
-        const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
-        descriptor!.set!.call(this, newVal);
-
-        const inputEvent = new CustomEvent('inputValueChanged', {
-          bubbles: true,
-          cancelable: true,
-          detail: {
-            value: newVal,
-          },
-        });
-
-        this.dispatchEvent(inputEvent);
-
-        return newVal;
-      },
-    });
-
-    return input;
-  }
 }

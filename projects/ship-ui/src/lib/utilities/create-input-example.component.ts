@@ -3,64 +3,24 @@ import { FormsModule } from '@angular/forms';
 import { createInputSignal } from './create-input-signal';
 
 @Component({
-  selector: 'app-child',
-
-  template: `
-    <ng-content />
-  `,
-})
-class ChildComponentExample {
-  myTextInput = contentChild<ElementRef<HTMLInputElement>>('myTextInput');
-  textInputValue = createInputSignal<string>(this.myTextInput);
-
-  ngOnInit() {
-    setTimeout(() => {
-      this.textInputValue.set('123123123');
-    }, 500);
-  }
-}
-
-@Component({
-  selector: 'app-parent',
-  imports: [FormsModule, ChildComponentExample],
-
-  template: `
-    <app-child>
-      <input type="text" #myTextInput [(ngModel)]="exampleModel" />
-    </app-child>
-  `,
-})
-class ParentComponentExample {
-  exampleModel = signal<string | undefined>(undefined);
-
-  ngOnInit() {
-    setTimeout(() => {
-      this.exampleModel.set('123123123');
-    }, 1000);
-  }
-}
-
-@Component({
-  selector: 'app-child',
+  selector: 'app-input-signal-demo',
   template: `
     <div class="card">
       <h3>Text input</h3>
       <ng-content select="div[text-wrap]" />
       <p>Text Input Value: {{ textInputValue() }}</p>
       <p>typeof text input value: {{ typeof textInputValue() }}</p>
-      <ng-content />
     </div>
 
     <div class="card">
       <h3>Number input with debounce</h3>
       <ng-content select="div[number-wrap]" />
-      <p>Number Input Value: {{ numberInputSignal() }}</p>
+      <p>Number Input Value: {{ numberInputValue() }}</p>
       <p>Double Value: {{ doubleValue() }}</p>
-      <p>Computed Value + 5: {{ someInputComputed() }}</p>
-      <p>typeof number input value: {{ typeof numberInputSignal() }}</p>
+      <p>Computed Value + 5: {{ plusFiveValue() }}</p>
+      <p>typeof number input value: {{ typeof numberInputValue() }}</p>
     </div>
   `,
-
   styles: [
     `
       :host {
@@ -75,29 +35,29 @@ class ParentComponentExample {
     `,
   ],
 })
-export class ChildComponent {
-  myNumberInput = contentChild<ElementRef<HTMLInputElement>>('myNumberInput');
+export class InputSignalDemoComponent {
   myTextInput = contentChild<ElementRef<HTMLInputElement>>('myTextInput');
+  myNumberInput = contentChild<ElementRef<HTMLInputElement>>('myNumberInput');
 
   textInputValue = createInputSignal<string>(this.myTextInput);
-  numberInputSignal = createInputSignal<number>(this.myNumberInput, {
+  numberInputValue = createInputSignal<number>(this.myNumberInput, {
     forceType: 'number',
     debounce: 300,
   });
 
   doubleValue = computed(() => {
-    const val = this.numberInputSignal();
-    return val === undefined || val === null ? 0 : val * 2;
+    const val = this.numberInputValue();
+    return val == null ? 0 : val * 2;
   });
 
-  someInputComputed = computed(() => {
-    const val = this.numberInputSignal();
-    return val === undefined || val === null ? 5 : val + 5;
+  plusFiveValue = computed(() => {
+    const val = this.numberInputValue();
+    return val == null ? 5 : val + 5;
   });
 
   ngOnInit() {
     setTimeout(() => {
-      this.textInputValue.set('123123123');
+      this.textInputValue.set('set from the signal');
     }, 1000);
 
     setTimeout(() => {
@@ -107,10 +67,10 @@ export class ChildComponent {
 }
 
 @Component({
-  selector: 'app-my-component',
-  imports: [FormsModule, ChildComponent],
+  selector: 'app-create-input-example',
+  imports: [FormsModule, InputSignalDemoComponent],
   template: `
-    <app-child>
+    <app-input-signal-demo>
       <div number-wrap>
         <input type="number" #myNumberInput [(ngModel)]="someNumberModel" />
         <p>Some Number Model: {{ someNumberModel() }}</p>
@@ -126,9 +86,8 @@ export class ChildComponent {
       <p>Some Value: {{ someModel() }}</p>
 
       <button (click)="toggleTextInput()">Toggle Text Input</button>
-    </app-child>
+    </app-input-signal-demo>
   `,
-
   styles: [
     `
       [number-wrap] {
@@ -141,7 +100,7 @@ export class ChildComponent {
     `,
   ],
 })
-export default class MyComponent {
+export default class CreateInputExampleComponent {
   someNumberModel = signal<number | undefined>(undefined);
   someModel = signal<string>('123');
   showTextInput = signal(true);

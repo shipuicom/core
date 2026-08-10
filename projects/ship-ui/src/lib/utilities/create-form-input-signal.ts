@@ -99,7 +99,7 @@ export function createFormInputSignal<T extends HTMLInputElement | HTMLTextAreaE
   return valueSignal;
 }
 
-function createCustomInputEventListener(input: HTMLInputElement | HTMLTextAreaElement) {
+export function createCustomInputEventListener(input: HTMLInputElement | HTMLTextAreaElement) {
   Object.defineProperty(input, 'value', {
     configurable: true,
     get() {

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, model, signal, ViewEncapsulation } from '@angular/core';
-import { shipComponentClasses } from '@ship-ui/core';
+import { createCustomInputEventListener, shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipSize, ShipRangeSliderVariant } from '@ship-ui/core';
 
 @Component({
@@ -108,7 +108,7 @@ export class ShipRangeSlider {
 
     if (this.#inputElement) {
       this.hasInput.set(true);
-      this.#createCustomInputEventListener(this.#inputElement);
+      createCustomInputEventListener(this.#inputElement);
 
       this.#inputElement.oninput = () => {
         this.setNewInputValue(this.#inputElement!.value);
@@ -237,31 +237,6 @@ export class ShipRangeSlider {
     return decimalPart ? decimalPart.length : 0;
   }
 
-  #createCustomInputEventListener(input: HTMLInputElement | HTMLTextAreaElement) {
-    Object.defineProperty(input, 'value', {
-      configurable: true,
-      get() {
-        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
-        return descriptor!.get!.call(this);
-      },
-      set(newVal) {
-        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
-        descriptor!.set!.call(this, newVal);
-
-        const inputEvent = new CustomEvent('inputValueChanged', {
-          bubbles: true,
-          cancelable: true,
-          detail: {
-            value: newVal,
-          },
-        });
-
-        this.dispatchEvent(inputEvent);
-
-        return newVal;
-      },
-    });
-  }
 
   ngOnDestroy() {
     if (this.#observer) {

@@ -8,7 +8,7 @@ import { ShipFormField } from '@ship-ui/core/ship-form-field';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipPopover } from '@ship-ui/core/ship-popover';
 import { ShipSpinner } from '@ship-ui/core/ship-spinner';
-import { generateUniqueId } from '@ship-ui/core';
+import { createCustomInputEventListener, generateUniqueId } from '@ship-ui/core';
 import { shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
 
@@ -427,7 +427,7 @@ export class ShipSelect {
     input.setAttribute('aria-owns', `optionsWrapId-${this.componentId}`);
     input.setAttribute('aria-controls', `optionsWrapId-${this.componentId}`);
 
-    this.#createCustomInputEventListener(input);
+    createCustomInputEventListener(input);
 
     input.addEventListener('focus', () => {
       if (this.readonly()) return;
@@ -932,31 +932,6 @@ export class ShipSelect {
     return path.split('.').reduce((o: unknown, i: string) => (o as any)?.[i], obj);
   }
 
-  #createCustomInputEventListener(input: HTMLInputElement | HTMLTextAreaElement) {
-    Object.defineProperty(input, 'value', {
-      configurable: true,
-      get() {
-        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
-        return descriptor!.get!.call(this);
-      },
-      set(newVal) {
-        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
-        descriptor!.set!.call(this, newVal);
-
-        const inputEvent = new CustomEvent('inputValueChanged', {
-          bubbles: true,
-          cancelable: true,
-          detail: {
-            value: newVal,
-          },
-        });
-
-        this.dispatchEvent(inputEvent);
-
-        return newVal;
-      },
-    });
-  }
 
   #createWildcardRegex(inputValue: string | null | undefined): RegExp {
     const lowerCaseInput = (inputValue ?? '').toLowerCase();
