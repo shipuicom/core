@@ -15,7 +15,7 @@ import {
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { createFormInputSignal, generateUniqueId, observeChildren } from '@ship-ui/core';
+import { createInputSignal, generateUniqueId, observeChildren } from '@ship-ui/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { ShipFormField } from '@ship-ui/core/ship-form-field';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
@@ -144,7 +144,7 @@ export class ShipMenu {
       return x.closest('.options') === optionsContainer;
     });
   });
-  inputValue = createFormInputSignal(this.inputRef);
+  inputValue = createInputSignal<string>(this.inputRef);
 
   optionsId = generateUniqueId();
   activeOptionId = signal<string | undefined>(undefined);

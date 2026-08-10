@@ -1,5 +1,5 @@
 import { afterNextRender, ChangeDetectionStrategy, Component, effect, ElementRef, inject } from '@angular/core';
-import { createFormInputSignal } from '@ship-ui/core';
+import { createInputSignal, observeFirstChild } from '@ship-ui/core';
 
 @Component({
   selector: 'sh-form-field-experimental',
@@ -13,7 +13,7 @@ import { createFormInputSignal } from '@ship-ui/core';
 })
 export class ShipFormFieldExperimental {
   #selfRef = inject(ElementRef);
-  firstInput = createFormInputSignal();
+  firstInput = createInputSignal<string>(observeFirstChild(this.#selfRef, ['input', 'textarea']));
 
   hello = effect(() => {
     console.log('hello', this.firstInput());

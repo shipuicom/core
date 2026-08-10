@@ -25,7 +25,7 @@ interface InputSignalOptions<T> {
 type InputElement = HTMLInputElement | HTMLTextAreaElement;
 
 export function createInputSignal<T>(
-  input: Signal<InputElement | ElementRef<InputElement> | undefined>,
+  input: Signal<InputElement | ElementRef<InputElement> | null | undefined>,
   options?: InputSignalOptions<T>
 ): WritableSignal<T | null | undefined> {
   const injector = options?.injector || (assertInInjectionContext(createInputSignal), inject(Injector));
