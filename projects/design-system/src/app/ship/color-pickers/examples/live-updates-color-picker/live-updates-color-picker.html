@@ -1,0 +1,6 @@
+<sh-color-picker-input format="rgb">
+  <label>Driven externally</label>
+  <input type="text" [(ngModel)]="color" />
+</sh-color-picker-input>
+
+<p>External value (updated every second): {{ color() }}</p>

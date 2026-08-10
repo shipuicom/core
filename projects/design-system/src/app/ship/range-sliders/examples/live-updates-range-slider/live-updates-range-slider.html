@@ -1,0 +1,6 @@
+<sh-range-slider class="primary">
+  <label for="live-range">Driven externally:</label>
+  <input id="live-range" type="range" min="0" max="100" [(ngModel)]="value" />
+</sh-range-slider>
+
+<p>External value (updated every second): {{ value() }}</p>

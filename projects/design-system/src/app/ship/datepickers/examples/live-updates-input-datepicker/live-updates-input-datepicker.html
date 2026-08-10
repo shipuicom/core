@@ -1,0 +1,6 @@
+<sh-datepicker-input class="primary">
+  <label>Driven externally</label>
+  <input type="text" [(ngModel)]="date" />
+</sh-datepicker-input>
+
+<p>External value (updated every second): {{ date() | date: 'medium' }}</p>

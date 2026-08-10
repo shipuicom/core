@@ -8,6 +8,7 @@ import { AlwaysShowIndicatorRangeSlider } from './examples/always-show-indicator
 import { BaseRangeSlider } from './examples/base-range-slider/base-range-slider';
 import { DisabledRangeSlider } from './examples/disabled-range-slider/disabled-range-slider';
 import { FloatRangeSlider } from './examples/float-range-slider/float-range-slider';
+import { LiveUpdatesRangeSlider } from './examples/live-updates-range-slider/live-updates-range-slider';
 import { RangeSliderSandbox } from './examples/range-slider-sandbox/range-slider-sandbox';
 import { ReactiveRangeSlider } from './examples/reactive-range-slider/reactive-range-slider';
 import { ReadonlyRangeSlider } from './examples/readonly-range-slider/readonly-range-slider';
@@ -30,6 +31,7 @@ import { UnitRangeSlider } from './examples/unit-range-slider/unit-range-slider'
     AlwaysShowIndicatorRangeSlider,
     RangeSliderSandbox,
     FloatRangeSlider,
+    LiveUpdatesRangeSlider,
   ],
   templateUrl: './range-sliders.html',
   styleUrl: './range-sliders.scss',
