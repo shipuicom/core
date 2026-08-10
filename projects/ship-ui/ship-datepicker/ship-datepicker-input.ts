@@ -74,7 +74,7 @@ export class ShipDatepickerInput {
 
   isOpen = model<boolean>(false);
   currentClass = classMutationSignal();
-  #inputObserver = contentProjectionSignal<HTMLInputElement>('#input-wrap input');
+  #inputObserver = contentProjectionSignal<HTMLInputElement>('#input-wrap input', undefined, 0);
 
   internalDate = createInputSignal<Date | null>(this.#inputObserver, {
     transform: (value) => this.#parseInputValue(value),
@@ -94,7 +94,7 @@ export class ShipDatepickerInput {
   });
 
   #inputSetupEffect = effect((onCleanup) => {
-    const input = this.#inputObserver()[0];
+    const input = this.#inputObserver();
 
     if (!input) return;
 

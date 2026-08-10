@@ -1,9 +1,21 @@
-import { DestroyRef, ElementRef, inject, signal, Signal, WritableSignal } from '@angular/core';
+import { computed, DestroyRef, ElementRef, inject, signal, Signal, WritableSignal } from '@angular/core';
 
 export function contentProjectionSignal<T = HTMLElement>(
   querySelector: string,
-  options: MutationObserverInit = { childList: true }
-): Signal<T[]> {
+  options?: MutationObserverInit
+): Signal<T[]>;
+export function contentProjectionSignal<T = HTMLElement>(
+  querySelector: string,
+  options: MutationObserverInit | undefined,
+  index: number
+): Signal<T | undefined>;
+export function contentProjectionSignal<T = HTMLElement>(
+  querySelector: string,
+  options?: MutationObserverInit,
+  index?: number
+): Signal<T[]> | Signal<T | undefined> {
+  options ??= { childList: true };
+
   const hostElement = inject(ElementRef<HTMLElement>).nativeElement;
   const destroyRef = inject(DestroyRef);
 
@@ -14,7 +26,10 @@ export function contentProjectionSignal<T = HTMLElement>(
 
   updateElements();
 
-  if (typeof MutationObserver === 'undefined') return projectedElementsSignal.asReadonly();
+  const result =
+    index === undefined ? projectedElementsSignal.asReadonly() : computed(() => projectedElementsSignal()[index]);
+
+  if (typeof MutationObserver === 'undefined') return result;
 
   const observer = new MutationObserver((mutations) => {
     const hasChildListChanges = mutations.some((mutation) => mutation.type === 'childList');
@@ -26,5 +41,5 @@ export function contentProjectionSignal<T = HTMLElement>(
   observer.observe(hostElement, options);
   destroyRef.onDestroy(() => observer.disconnect());
 
-  return projectedElementsSignal.asReadonly();
+  return result;
 }
