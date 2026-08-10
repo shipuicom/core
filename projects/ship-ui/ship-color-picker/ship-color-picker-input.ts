@@ -15,7 +15,7 @@ import {
 import {
   classMutationSignal,
   contentProjectionSignal,
-  createCustomInputEventListener,
+  createInputSignal,
   hslToRgbExact,
   rgbaToHex8,
   rgbToHex,
@@ -166,23 +166,29 @@ export class ShipColorPickerInput {
     }
   });
 
-  #formatSyncEffect = effect(() => {
+  #inputEl = contentProjectionSignal<HTMLInputElement>('#input-wrap input', undefined, 0);
+  #focused = signal(false);
+
+  /** Raw edit-buffer bound to the projected text input; decoded to the color tuple below. */
+  #colorText = createInputSignal<string>(this.#inputEl);
+
+  // Decode: whatever sits in the field (typed or seeded) → color tuple.
+  #parseEffect = effect(() => {
+    const text = this.#colorText();
+    if (text) this.#parseAndSetColor(text);
+  });
+
+  // Encode: reflect the canonical formatted string back into the field, but never while the
+  // user is editing it — mirrors the old `activeElement !== input` guard.
+  #canonicalizeEffect = effect(() => {
     const str = this.formattedColorString();
-    const input = untracked(() => this.#inputRef());
-    if (input && input.value !== str) {
-      if (this.#document.activeElement !== input) {
-        input.value = str;
-        input.dispatchEvent(new Event('input'));
-      }
-    }
+    if (this.#focused()) return;
+    this.#colorText.set(str);
   });
 
   pureHueColor = computed<[number, number, number]>(() => {
     return hslToRgbExact(this.internalHue(), 100, 50);
   });
-
-  #inputRef = signal<HTMLInputElement | null>(null);
-  #inputObserver = contentProjectionSignal<HTMLInputElement>('#input-wrap input');
 
   onMainColorChange(colorObj: any) {
     if (colorObj.hue !== undefined) {
@@ -207,16 +213,6 @@ export class ShipColorPickerInput {
       const result = await eyeDropper.open();
       if (result && result.sRGBHex) {
         this.#parseAndSetColor(result.sRGBHex);
-
-        // Force the text field to immediately display the new output string according to the active format
-        const input = untracked(() => this.#inputRef());
-        if (input) {
-          const str = this.formattedColorString();
-          if (input.value !== str) {
-            input.value = str;
-            input.dispatchEvent(new Event('input'));
-          }
-        }
       }
     } catch (e) {
       // User cancelled
@@ -227,42 +223,25 @@ export class ShipColorPickerInput {
     this.closed.emit(this.formattedColorString());
   }
 
-  #inputRefEffect = effect(() => {
-    const inputs = this.#inputObserver();
-    if (!inputs.length) return;
-
-    const input = inputs[0];
+  #inputSetupEffect = effect((onCleanup) => {
+    const input = this.#inputEl();
     if (!input) return;
 
-    createCustomInputEventListener(input);
-
-    input.addEventListener('inputValueChanged', (event: any) => {
-      this.#parseAndSetColor(event.detail.value);
-    });
-
-    input.addEventListener('input', (event: Event) => {
-      const target = event.target as HTMLInputElement;
-      this.#parseAndSetColor(target.value);
-    });
-
-    input.addEventListener('blur', () => {
-      const str = untracked(() => this.formattedColorString());
-      if (input.value !== str) {
-        input.value = str;
-        input.dispatchEvent(new Event('input'));
-      }
-    });
-
-    input.addEventListener('focus', () => {
-      this.isOpen.set(true);
-    });
-
-    this.#inputRef.set(input);
     input.autocomplete = 'off';
 
-    if (typeof input.value === 'string' && input.value) {
-      this.#parseAndSetColor(input.value);
-    }
+    const onFocus = () => {
+      this.#focused.set(true);
+      this.isOpen.set(true);
+    };
+    const onBlur = () => this.#focused.set(false);
+
+    input.addEventListener('focus', onFocus);
+    input.addEventListener('blur', onBlur);
+
+    onCleanup(() => {
+      input.removeEventListener('focus', onFocus);
+      input.removeEventListener('blur', onBlur);
+    });
   });
 
   #parseAndSetColor(colorStr: string) {

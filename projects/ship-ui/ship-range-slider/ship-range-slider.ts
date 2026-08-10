@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, model, signal, ViewEncapsulation } from '@angular/core';
-import { createCustomInputEventListener, shipComponentClasses } from '@ship-ui/core';
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, model, signal, untracked, ViewEncapsulation } from '@angular/core';
+import { contentProjectionSignal, createInputSignal, shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipSize, ShipRangeSliderVariant } from '@ship-ui/core';
 
 @Component({
@@ -42,7 +42,6 @@ import { ShipColor, ShipSize, ShipRangeSliderVariant } from '@ship-ui/core';
 export class ShipRangeSlider {
   hasInput = signal(false);
   #selfRef = inject(ElementRef<HTMLElement>);
-  #observer: MutationObserver | null = null;
   #inputElement: HTMLInputElement | null = null;
   #initialDefaultValue = 0;
 
@@ -91,49 +90,49 @@ export class ShipRangeSlider {
   trackFilledPercentage = computed(() => this.valuePercentage());
   thumbPositionPercentage = computed(() => this.valuePercentage());
 
-  syncModelToInputEffect = effect(() => {
-    const modelValue = this.value();
-    if (this.#inputElement) {
-      const currentInputValue = parseFloat(this.#inputElement.value);
-      if (isNaN(currentInputValue) || String(currentInputValue) !== String(modelValue)) {
-        this.#inputElement.value = String(modelValue);
-      }
+  #inputSignal = contentProjectionSignal<HTMLInputElement>('input[type="range"]', undefined, 0);
+
+  // Read the projected range input's attributes → inputState, (re)seed on attach, and watch
+  // for min/max/step changes. Declared BEFORE #valueSync so init reconciliation lands before
+  // the model→DOM write-back the primitive registers.
+  #setupEffect = effect((onCleanup) => {
+    const input = this.#inputSignal();
+    this.#inputElement = input ?? null;
+
+    if (!input) {
+      this.hasInput.set(false);
+      return;
     }
+
+    this.hasInput.set(true);
+    untracked(() => this.#updateStateFromInput(true));
+
+    if (typeof MutationObserver === 'undefined') return;
+
+    const MUTATION_ATTRIBUTES = ['min', 'max', 'step', 'value', 'readonly', 'disabled'];
+    const observer = new MutationObserver((mutationList) => {
+      if (mutationList.some((m) => m.type === 'attributes' && MUTATION_ATTRIBUTES.includes(m.attributeName ?? ''))) {
+        this.#updateStateFromInput(false);
+      }
+    });
+    observer.observe(input, { attributes: true, attributeFilter: MUTATION_ATTRIBUTES });
+    onCleanup(() => observer.disconnect());
   });
 
+  // Adopt the public `value` model as the input-backed store: drag / programmatic input →
+  // parse + clamp → model; model changes → String() → the range input (via the primitive).
+  #valueSync = createInputSignal<number>(this.#inputSignal, {
+    signal: this.value,
+    transform: (v) => {
+      const n = parseFloat(v);
+      return isNaN(n) ? untracked(this.value) : this.#clamp(n);
+    },
+    compare: (a, b) => a === b,
+  });
 
-
-  ngAfterViewInit() {
-    this.#inputElement = this.#selfRef.nativeElement.querySelector('input[type="range"]');
-
-    if (this.#inputElement) {
-      this.hasInput.set(true);
-      createCustomInputEventListener(this.#inputElement);
-
-      this.#inputElement.oninput = () => {
-        this.setNewInputValue(this.#inputElement!.value);
-      };
-
-      this.#inputElement.addEventListener('inputValueChanged', (event: any) => {
-        this.setNewInputValue(event.detail.value);
-      });
-
-      queueMicrotask(() => this.#updateStateFromInput(true));
-
-      this.#setupMutationObserver();
-    } else {
-      console.error('ShipRangeSlider: No <input type="range"> element found projected inside.');
-    }
-  }
-
-  /** Parses and clamps a string value to the slider's min/max range, then updates `value`. */
-  setNewInputValue(value: string) {
-    const inputValue = parseFloat(value ?? '0');
-
-    if (!isNaN(inputValue)) {
-      const { min, max } = this.inputState();
-      this.value.set(Math.max(min, Math.min(max, inputValue)));
-    }
+  #clamp(value: number): number {
+    const { min, max } = this.inputState();
+    return Math.max(min, Math.min(max, value));
   }
 
   trackEvent(e: MouseEvent) {
@@ -207,43 +206,10 @@ export class ShipRangeSlider {
     }
   }
 
-  #setupMutationObserver() {
-    if (!this.#inputElement || typeof MutationObserver === 'undefined') {
-      return;
-    }
-
-    const MUTATION_ATTRIBUTES = ['min', 'max', 'step', 'value', 'readonly', 'disabled'];
-
-    this.#observer = new MutationObserver((mutationList) => {
-      let needsStateUpdate = false;
-      for (const mutation of mutationList) {
-        if (mutation.type === 'attributes' && MUTATION_ATTRIBUTES.includes(mutation.attributeName ?? '')) {
-          needsStateUpdate = true;
-          break;
-        }
-      }
-      if (needsStateUpdate) {
-        this.#updateStateFromInput(false);
-      }
-    });
-
-    this.#observer.observe(this.#inputElement, { attributes: true, attributeFilter: MUTATION_ATTRIBUTES });
-  }
-
   #countDecimals(value: number): number {
     if (isNaN(value) || Math.floor(value) === value) return 0;
     const str = value.toString();
     const decimalPart = str.split('.')[1];
     return decimalPart ? decimalPart.length : 0;
-  }
-
-
-  ngOnDestroy() {
-    if (this.#observer) {
-      this.#observer.disconnect();
-    }
-    if (this.#inputElement) {
-      this.#inputElement.oninput = null;
-    }
   }
 }
