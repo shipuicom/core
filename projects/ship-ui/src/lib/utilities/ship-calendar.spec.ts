@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { ShipCalendar } from './ship-calendar';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { ShipCalendarService } from './ship-calendar.service';
 
 /** Calendar day after `d`, constructed in local time (DST-safe). */
 function nextCalendarDay(d: Date): Date {
@@ -10,16 +10,16 @@ function isSameDay(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
-function gridForMonth(cal: ShipCalendar, year: number, month: number): Date[] {
+function gridForMonth(cal: ShipCalendarService, year: number, month: number): Date[] {
   cal.currentDate.set(new Date(year, month, 1, 0, 0, 0, 0));
   return cal.getMonthDates(0);
 }
 
-describe('ShipCalendar', () => {
-  let cal: ShipCalendar;
+describe('ShipCalendarService', () => {
+  let cal: ShipCalendarService;
 
   beforeEach(() => {
-    cal = new ShipCalendar();
+    cal = new ShipCalendarService();
   });
 
   describe('grid generation', () => {
@@ -110,68 +110,6 @@ describe('ShipCalendar', () => {
       }
     });
 
-    it('preserves time-of-day when selecting across a DST change', () => {
-      cal.selectedDate.set(new Date(2026, 2, 7, 14, 30, 0, 0)); // before the seam
-      cal.selectDate(new Date(2026, 2, 9)); // after the seam
-      const sel = cal.selectedDate()!;
-      expect(sel.getHours()).toBe(14);
-      expect(sel.getMinutes()).toBe(30);
-      expect(isSameDay(sel, new Date(2026, 2, 9))).toBe(true);
-    });
-  });
-
-  describe('single selection', () => {
-    it('sets selectedDate and clears endDate', () => {
-      cal.endDate.set(new Date(2026, 0, 20));
-      cal.selectDate(new Date(2026, 0, 15));
-      expect(isSameDay(cal.selectedDate()!, new Date(2026, 0, 15))).toBe(true);
-      expect(cal.endDate()).toBeNull();
-    });
-
-    it('marks only the selected day with the sel class', () => {
-      cal.selectDate(new Date(2026, 0, 15));
-      expect(cal.isDateSelected(new Date(2026, 0, 15))).toContain('sel');
-      expect(cal.isDateSelected(new Date(2026, 0, 16))).toBeNull();
-      expect(cal.isDateSelectedBool(new Date(2026, 0, 15))).toBe(true);
-    });
-  });
-
-  describe('range selection', () => {
-    beforeEach(() => cal.asRange.set(true));
-
-    it('selects start then end and orders them', () => {
-      cal.activeRangeSelection.set('start');
-      cal.selectDate(new Date(2026, 0, 10));
-      cal.activeRangeSelection.set('end');
-      cal.selectDate(new Date(2026, 0, 20));
-      expect(isSameDay(cal.selectedDate()!, new Date(2026, 0, 10))).toBe(true);
-      expect(isSameDay(cal.endDate()!, new Date(2026, 0, 20))).toBe(true);
-    });
-
-    it('swaps to a new start when the picked end precedes the start', () => {
-      cal.selectedDate.set(new Date(2026, 0, 20));
-      cal.activeRangeSelection.set('end');
-      cal.selectDate(new Date(2026, 0, 10));
-      expect(isSameDay(cal.selectedDate()!, new Date(2026, 0, 10))).toBe(true);
-      expect(cal.endDate()).toBeNull();
-    });
-
-    it('flags first, last and interior days of a range', () => {
-      cal.selectedDate.set(new Date(2026, 0, 10));
-      cal.endDate.set(new Date(2026, 0, 12));
-      expect(cal.isDateSelected(new Date(2026, 0, 10))).toContain('first');
-      expect(cal.isDateSelected(new Date(2026, 0, 12))).toContain('last');
-      expect(cal.isDateSelected(new Date(2026, 0, 11))).toContain('sel');
-      expect(cal.isDateSelected(new Date(2026, 0, 13))).toBeNull();
-    });
-
-    it('handles a range spanning a DST boundary', () => {
-      cal.selectedDate.set(new Date(2026, 2, 6));
-      cal.endDate.set(new Date(2026, 2, 10));
-      expect(cal.isDateSelected(new Date(2026, 2, 6))).toContain('first');
-      expect(cal.isDateSelected(new Date(2026, 2, 10))).toContain('last');
-      expect(cal.isDateSelectedBool(new Date(2026, 2, 8))).toBe(true); // the DST day
-    });
   });
 
   describe('navigation', () => {

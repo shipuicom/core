@@ -1,6 +1,7 @@
 import { describe, beforeEach, it, expect, vi } from 'vitest';
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { ShipDatepicker } from './ship-datepicker';
 
 @Component({
@@ -241,5 +242,101 @@ describe('ShipDatepicker', () => {
 
     expect(host.tabbedOutCalled).toBe(true);
     vi.useRealTimers();
+  });
+
+  describe('selection ownership', () => {
+    function isSameDay(a: Date, b: Date): boolean {
+      return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    }
+
+    function setup() {
+      const fixture = TestBed.createComponent(TestHostComponent);
+      const host = fixture.componentInstance;
+      fixture.detectChanges();
+      const picker: ShipDatepicker = fixture.debugElement.query(By.directive(ShipDatepicker)).componentInstance;
+      return { fixture, host, picker };
+    }
+
+    it('single mode sets date and clears endDate', () => {
+      const { fixture, host, picker } = setup();
+      host.endDate.set(new Date(2026, 0, 20));
+      fixture.detectChanges();
+
+      picker.selectDate(new Date(2026, 0, 15));
+      expect(isSameDay(host.date()!, new Date(2026, 0, 15))).toBe(true);
+      expect(host.endDate()).toBeNull();
+    });
+
+    it('marks only the selected day with the sel class', () => {
+      const { picker } = setup();
+      picker.selectDate(new Date(2026, 0, 15));
+      expect(picker.isDateSelected(new Date(2026, 0, 15))).toContain('sel');
+      expect(picker.isDateSelected(new Date(2026, 0, 16))).toBeNull();
+      expect(picker.isDateSelectedBool(new Date(2026, 0, 15))).toBe(true);
+    });
+
+    it('preserves time-of-day when selecting across a DST change', () => {
+      const { fixture, host, picker } = setup();
+      host.date.set(new Date(2026, 2, 7, 14, 30, 0, 0)); // before the seam
+      fixture.detectChanges();
+
+      picker.selectDate(new Date(2026, 2, 9)); // after the seam
+      const sel = host.date()!;
+      expect(sel.getHours()).toBe(14);
+      expect(sel.getMinutes()).toBe(30);
+      expect(isSameDay(sel, new Date(2026, 2, 9))).toBe(true);
+    });
+
+    it('range mode selects start then end and orders them', () => {
+      const { fixture, host, picker } = setup();
+      host.asRange.set(true);
+      host.activeRangeSelection.set('start');
+      fixture.detectChanges();
+
+      picker.selectDate(new Date(2026, 0, 10));
+      host.activeRangeSelection.set('end');
+      fixture.detectChanges();
+
+      picker.selectDate(new Date(2026, 0, 20));
+      expect(isSameDay(host.date()!, new Date(2026, 0, 10))).toBe(true);
+      expect(isSameDay(host.endDate()!, new Date(2026, 0, 20))).toBe(true);
+    });
+
+    it('range mode swaps to a new start when the picked end precedes the start', () => {
+      const { fixture, host, picker } = setup();
+      host.asRange.set(true);
+      host.date.set(new Date(2026, 0, 20));
+      host.activeRangeSelection.set('end');
+      fixture.detectChanges();
+
+      picker.selectDate(new Date(2026, 0, 10));
+      expect(isSameDay(host.date()!, new Date(2026, 0, 10))).toBe(true);
+      expect(host.endDate()).toBeNull();
+    });
+
+    it('flags first, last and interior days of a range', () => {
+      const { fixture, host, picker } = setup();
+      host.asRange.set(true);
+      host.date.set(new Date(2026, 0, 10));
+      host.endDate.set(new Date(2026, 0, 12));
+      fixture.detectChanges();
+
+      expect(picker.isDateSelected(new Date(2026, 0, 10))).toContain('first');
+      expect(picker.isDateSelected(new Date(2026, 0, 12))).toContain('last');
+      expect(picker.isDateSelected(new Date(2026, 0, 11))).toContain('sel');
+      expect(picker.isDateSelected(new Date(2026, 0, 13))).toBeNull();
+    });
+
+    it('handles a range spanning a DST boundary', () => {
+      const { fixture, host, picker } = setup();
+      host.asRange.set(true);
+      host.date.set(new Date(2026, 2, 6));
+      host.endDate.set(new Date(2026, 2, 10));
+      fixture.detectChanges();
+
+      expect(picker.isDateSelected(new Date(2026, 2, 6))).toContain('first');
+      expect(picker.isDateSelected(new Date(2026, 2, 10))).toContain('last');
+      expect(picker.isDateSelectedBool(new Date(2026, 2, 8))).toBe(true); // the DST day
+    });
   });
 });

@@ -1,11 +1,50 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, effect, ElementRef, HostListener, inject, Injector, input, model, output, signal, untracked, viewChild, ViewEncapsulation } from '@angular/core';
-import { classMutationSignal, ShipCalendar } from '@ship-ui/core';
+import {
+  afterRenderEffect,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  HostListener,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+  viewChild,
+  ViewEncapsulation,
+} from '@angular/core';
+import { classMutationSignal, ShipCalendarService } from '@ship-ui/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 
-/** Same-instant comparison that treats two nulls as equal. */
-function sameInstant(a: Date | null, b: Date | null): boolean {
-  return (a ? a.getTime() : null) === (b ? b.getTime() : null);
+function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+}
+
+function toValidDate(value: Date | string | number | null): Date | null {
+  if (value == null) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  return isNaN(date.getTime()) ? null : date;
+}
+
+function withExistingTime(newDate: Date, existing: Date | string | number | null): Date {
+  let hours = 0;
+  let minutes = 0;
+  let seconds = 0;
+  let milliseconds = 0;
+
+  if (existing != null) {
+    const ref = existing instanceof Date ? existing : new Date(existing);
+    if (!isNaN(ref.getTime())) {
+      hours = ref.getHours();
+      minutes = ref.getMinutes();
+      seconds = ref.getSeconds();
+      milliseconds = ref.getMilliseconds();
+    }
+  }
+
+  return new Date(newDate.getFullYear(), newDate.getMonth(), newDate.getDate(), hours, minutes, seconds, milliseconds);
 }
 
 @Component({
@@ -13,11 +52,12 @@ function sameInstant(a: Date | null, b: Date | null): boolean {
   styleUrl: './ship-datepicker.scss',
   encapsulation: ViewEncapsulation.None,
   imports: [ShipIcon],
-  // The pure calendar engine is provided per-instance; this component is purely its view layer.
-  providers: [ShipCalendar],
+  providers: [ShipCalendarService],
   template: `
     <header>
-      <button tabindex="-1" (click)="previousMonth()" [attr.aria-keyshortcuts]="prevMonthShortcut()"><sh-icon>caret-left</sh-icon></button>
+      <button tabindex="-1" (click)="previousMonth()" [attr.aria-keyshortcuts]="prevMonthShortcut()">
+        <sh-icon>caret-left</sh-icon>
+      </button>
       <div class="title">
         {{ calendar.getMonthName(calendar.currentDate()) }}
         @if (monthsToShow() > 1) {
@@ -25,7 +65,9 @@ function sameInstant(a: Date | null, b: Date | null): boolean {
         }
         {{ calendar.getFullYear(calendar.currentDate()) }}
       </div>
-      <button tabindex="-1" (click)="nextMonth()" [attr.aria-keyshortcuts]="nextMonthShortcut()"><sh-icon>caret-right</sh-icon></button>
+      <button tabindex="-1" (click)="nextMonth()" [attr.aria-keyshortcuts]="nextMonthShortcut()">
+        <sh-icon>caret-right</sh-icon>
+      </button>
     </header>
 
     <section class="months-container">
@@ -41,14 +83,13 @@ function sameInstant(a: Date | null, b: Date | null): boolean {
             @for (calDate of month.dates; track $index) {
               <button
                 type="button"
-                #elementRef
                 [class.out-of-scope]="!calendar.isCurrentMonth(calDate, monthOffset)"
-                [class]="calendar.isDateSelected(calDate)"
+                [class]="isDateSelected(calDate)"
                 [attr.aria-label]="calendar.getAriaLabel(calDate)"
                 [attr.tabindex]="getTabIndex(calDate)"
-                [attr.aria-selected]="calendar.isDateSelectedBool(calDate)"
+                [attr.aria-selected]="isDateSelectedBool(calDate)"
                 (keydown)="onKeydown($event, calDate)"
-                (click)="onDayClick(calDate, elementRef)">
+                (click)="onDayClick(calDate)">
                 {{ calDate.getDate() }}
               </button>
             }
@@ -71,38 +112,27 @@ function sameInstant(a: Date | null, b: Date | null): boolean {
   },
 })
 export class ShipDatepicker {
-  /** The pure calendar engine backing this view. Also reachable from a host component if needed. */
-  calendar = inject(ShipCalendar);
+  #keybindings = inject(ShipA11yKeybindingsService);
+  #selfRef = inject(ElementRef);
 
-  /** Selected date; the range start date when `asRange` is enabled. Two-way bindable. */
+  calendar = inject(ShipCalendarService);
+
+  #currentClasses = classMutationSignal();
+
   date = model<Date | null>(null);
-  /** Selected range end date when `asRange` is enabled. Two-way bindable. */
   endDate = model<Date | null>(null);
-  /** When `true`, selects a date range instead of a single date. */
   asRange = input<boolean>(false);
-  /** Which end of the range is currently being edited: `'start'`, `'end'`, or `null`. */
   activeRangeSelection = input<'start' | 'end' | null>(null);
-  /** Number of consecutive month grids to display side by side. */
   monthsToShow = input<number>(1);
-  /** Disables date selection. */
   disabled = input<boolean>(false);
-  /** Emits when keyboard focus leaves the datepicker (e.g. tabbing out). */
-  tabbedOut = output<void>();
-
-  /** Index of the first weekday column (`0` = Sunday, `1` = Monday). */
-  startOfWeek = input<number>(1);
-  /** Weekday column labels, ordered Sunday through Saturday. Defaults to locale-derived labels. */
-  weekdayLabels = input<string[] | null>(null);
-  /** BCP-47 locale for month names, weekday headers and aria labels. Defaults to the runtime locale. */
+  startOfWeek = input<number>(1); //(`0` = Sunday, `1` = Monday).
+  weekdayLabels = input<string[] | null>(null); // Defaults to locale-derived labels.
   locale = input<string | undefined>(undefined);
+  tabbedOut = output<void>();
 
   daysRef = viewChild<ElementRef<HTMLDivElement>>('daysRef');
   focusedDate = signal<Date | null>(null);
   selectedDateStylePosition = signal<{ transform: string; opacity: string } | null>(null);
-
-  #keybindings = inject(ShipA11yKeybindingsService);
-  #selfRef = inject(ElementRef);
-  #injector = inject(Injector);
 
   prevMonthShortcut = computed(() => {
     const action = 'datepicker.prev-month';
@@ -116,77 +146,147 @@ export class ShipDatepicker {
     return shortcut ? this.#keybindings.getDisplayShortcut(action) || shortcut : null;
   });
 
-  // --- bridge the public input()/model() API into the calendar engine ---
-
   #syncConfig = effect(() => {
-    this.calendar.asRange.set(this.asRange());
     this.calendar.monthsToShow.set(this.monthsToShow());
     this.calendar.startOfWeek.set(this.startOfWeek());
     this.calendar.weekdayLabels.set(this.weekdayLabels());
-    this.calendar.activeRangeSelection.set(this.activeRangeSelection());
     this.calendar.locale.set(this.locale());
   });
 
-  // Push external date/endDate changes into the engine (guarded to avoid a sync loop).
-  #pushModelToService = effect(() => {
-    const d = this.date();
-    const e = this.endDate();
-    untracked(() => {
-      if (!sameInstant(d, this.calendar.selectedDate())) this.calendar.selectedDate.set(d);
-      if (!sameInstant(e, this.calendar.endDate())) this.calendar.endDate.set(e);
-    });
-  });
-
-  // Push engine selection back out to the two-way models (guarded to avoid a sync loop).
-  #pullSelectionToModel = effect(() => {
-    const sel = this.calendar.selectedDate();
-    const end = this.calendar.endDate();
-    untracked(() => {
-      if (!sameInstant(sel, this.date())) this.date.set(sel);
-      if (!sameInstant(end, this.endDate())) this.endDate.set(end);
-    });
-  });
-
-  // Keep the visible month anchored to the selected date in single-month mode.
   #syncCurrentFromDate = effect(() => {
     const d = this.date();
     if (this.monthsToShow() > 1) return;
     if (d && !isNaN(d.getTime())) this.calendar.currentDate.set(d);
-    this.#findSelectedAndCalc();
   });
 
-  #currentClasses = classMutationSignal();
-  #recalcOnClassChange = effect(() => {
+  #selIndicator = afterRenderEffect(() => {
+    this.date();
+    this.calendar.months();
     this.#currentClasses();
-    this.#findSelectedAndCalc();
+    if (this.asRange()) return;
+
+    const selectedElement = this.daysRef()?.nativeElement.querySelector('.sel');
+    if (!selectedElement) {
+      this.selectedDateStylePosition.update((x) => (x ? { ...x, opacity: '0' } : null));
+      return;
+    }
+    this.setSelectedDateStylePosition(selectedElement as HTMLElement);
   });
+
+  @HostListener('focusout', ['$event'])
+  onFocusOut(_event: FocusEvent) {
+    setTimeout(() => {
+      const activeElement = document.activeElement as HTMLElement | null;
+      if (activeElement && activeElement !== document.body && !this.#selfRef.nativeElement.contains(activeElement)) {
+        this.tabbedOut.emit();
+      }
+    });
+  }
 
   ngOnInit() {
     if (this.monthsToShow() === 1) return;
     const d = this.date();
     if (d && !isNaN(d.getTime())) this.calendar.currentDate.set(d);
-    this.#findSelectedAndCalc();
   }
 
   nextMonth() {
     this.calendar.nextMonth();
-    this.#findSelectedAndCalc();
   }
 
   previousMonth() {
     this.calendar.previousMonth();
-    this.#findSelectedAndCalc();
   }
 
-  onDayClick(calDate: Date, selectedElement: HTMLElement) {
+  onDayClick(calDate: Date) {
     this.focusedDate.set(calDate);
-    this.calendar.selectDate(calDate);
-
-    if (this.asRange()) return;
-    this.setSelectedDateStylePosition(selectedElement);
+    this.selectDate(calDate);
   }
 
-  /** Returns the roving tabindex (`0` or `-1`) for `date`'s day button. */
+  selectDate(newDate: Date): void {
+    if (!this.asRange()) {
+      this.date.set(withExistingTime(newDate, this.date()));
+      this.endDate.set(null);
+      return;
+    }
+
+    const startDate = this.date();
+    const endDate = this.endDate();
+    const mode = this.activeRangeSelection();
+
+    if (mode === 'start') {
+      const next = withExistingTime(newDate, startDate);
+      this.date.set(next);
+      if (endDate && next > endDate) this.endDate.set(null);
+    } else if (mode === 'end') {
+      if (!startDate || newDate < startDate) {
+        this.date.set(withExistingTime(newDate, startDate));
+        this.endDate.set(null);
+      } else {
+        this.endDate.set(withExistingTime(newDate, endDate));
+      }
+    } else {
+      if (!startDate) {
+        this.date.set(withExistingTime(newDate, startDate));
+      } else if (!endDate) {
+        if (newDate < startDate) {
+          this.date.set(withExistingTime(newDate, startDate));
+          this.endDate.set(null);
+        } else {
+          this.endDate.set(withExistingTime(newDate, endDate));
+        }
+      } else {
+        this.date.set(withExistingTime(newDate, startDate));
+        this.endDate.set(null);
+      }
+    }
+  }
+
+  #selection = computed(() => {
+    const start = toValidDate(this.date());
+    if (!start) return null;
+    const end = toValidDate(this.endDate());
+    return { start: startOfDay(start).getTime(), end: end ? startOfDay(end).getTime() : null };
+  });
+
+  isDateSelectedBool(date: Date): boolean {
+    const sel = this.#selection();
+    if (!sel) return false;
+    const day = startOfDay(date).getTime();
+    if (!this.asRange() || sel.end === null) return day === sel.start;
+    return day >= sel.start && day <= sel.end;
+  }
+
+  isDateSelected(date: Date): string | null {
+    const sel = this.#selection();
+    if (!sel) return null;
+    const day = startOfDay(date).getTime();
+
+    if (!this.asRange()) return day === sel.start ? 'sel' : null;
+    if (sel.end === null) return day === sel.start ? 'sel first last' : null;
+
+    const classes: string[] = [];
+
+    if (day === sel.start) classes.push('first');
+    if (day === sel.end) classes.push('last');
+
+    if (day >= sel.start && day <= sel.end) {
+      classes.push('sel');
+
+      const dayOfWeek = date.getDay();
+      const startOfWeek = this.startOfWeek();
+      if (dayOfWeek === startOfWeek) classes.push('week-start');
+      if (dayOfWeek === (startOfWeek + 6) % 7) classes.push('week-end');
+    }
+
+    const nextDate = new Date(date);
+    nextDate.setDate(date.getDate() + 1);
+
+    if (date.getDate() === 1) classes.push('month-start');
+    if (nextDate.getMonth() !== date.getMonth()) classes.push('month-end');
+
+    return classes.join(' ') || null;
+  }
+
   getTabIndex(date: Date): number {
     const focused = this.focusedDate();
     const selected = this.date();
@@ -254,7 +354,6 @@ export class ShipDatepicker {
     });
   }
 
-  /** Moves DOM focus to the currently active (tabbable) day button. */
   focusActiveDate() {
     setTimeout(() => {
       const activeBtn = this.#selfRef.nativeElement.querySelector('button[tabindex="0"]') as HTMLButtonElement;
@@ -262,35 +361,10 @@ export class ShipDatepicker {
     }, 50);
   }
 
-  /** Moves the sliding selection highlight to cover the given day element. */
   setSelectedDateStylePosition(selectedElement: HTMLElement) {
     this.selectedDateStylePosition.set({
       transform: `translate(${selectedElement.offsetLeft}px, ${selectedElement.offsetTop}px)`,
       opacity: '1',
-    });
-  }
-
-  #findSelectedAndCalc() {
-    afterNextRender(
-      () => {
-        const selectedElement = this.daysRef()?.nativeElement.querySelector('.sel');
-        if (!selectedElement) {
-          this.selectedDateStylePosition.update((x) => (x ? { ...x, opacity: '0' } : null));
-          return;
-        }
-        this.setSelectedDateStylePosition(selectedElement as HTMLElement);
-      },
-      { injector: this.#injector }
-    );
-  }
-
-  @HostListener('focusout', ['$event'])
-  onFocusOut(_event: FocusEvent) {
-    setTimeout(() => {
-      const activeElement = document.activeElement as HTMLElement | null;
-      if (activeElement && activeElement !== document.body && !this.#selfRef.nativeElement.contains(activeElement)) {
-        this.tabbedOut.emit();
-      }
     });
   }
 }
