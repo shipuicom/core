@@ -22,7 +22,7 @@ export default class GettingStarted {
 
   activeMcpTab = signal('cursor');
 
-  ASSETS_CONFIG = `"assets": [
+  ASSETS_CONFIG = `"assets": [ 
   "src/assets",
   {
     "glob": "**/*",
