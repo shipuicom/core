@@ -51,6 +51,22 @@ this.#keybindings.getShortcut('spotlight.open');        // 'ctrlOrCmd+k'
 this.#keybindings.getDisplayShortcut('spotlight.open'); // '⌘K' on macOS, 'Ctrl+K' elsewhere
 this.#keybindings.getDefaultShortcut('spotlight.open'); // ignores overrides`;
 
+  codeAnnounce = `import { inject } from '@angular/core';
+import { ShipA11yAnnouncerService } from '@ship-ui/core/ship-a11y-announcer';
+
+export class BoardPage {
+  #announcer = inject(ShipA11yAnnouncerService);
+
+  onCardMoved(card: Card, column: string) {
+    // 'polite' (default) waits its turn; reserve 'assertive' for errors
+    this.#announcer.announce(\`\${card.title} moved to \${column}\`);
+  }
+
+  onSaveFailed(reason: string) {
+    this.#announcer.announce(\`Save failed: \${reason}\`, 'assertive');
+  }
+}`;
+
   codePause = `// Suspend all keybinding matching while a modal editor is open.
 // pause() is reference-counted: every pause() needs a matching resume().
 this.#keybindings.pause();
