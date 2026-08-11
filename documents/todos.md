@@ -123,7 +123,7 @@ Might be sharing a lot of features and could be useful to do in the same one
 - [ ] Create a gantt chart component
 - [ ] Create a timeline component
 
-### Complex feature additions to complex components
+#### Complex Components feature additions to complex components
 
 - [ ] sh-editor features
   - [ ] Editable tables — as a component block (BaseComponentBlockBehavior), like the existing spreadsheet block but swapping in the editable composer once sh-spreadsheet cell editing lands
@@ -176,7 +176,7 @@ Might be sharing a lot of features and could be useful to do in the same one
 - [ ] Cross-cutting (build once, use in all three)
   - [ ] One find & replace engine shared by sh-editor / sh-code / sh-spreadsheet
   - [ ] Shared collab layer — generalize the remoteStepMap foundations beyond the editor
-  - [ ] Screen-reader announcement pass for grid/editor operations (fits the planned A11y service)
+  - [ ] Screen-reader announcement pass for grid/editor operations — investigated 2026-08-11: not built. ShipA11yKeybindingsService covers keybindings only (ship-table uses it for aria-keyshortcuts); missing: (1) an announce(message, politeness) API backed by a persistent hidden aria-live region, (2) grid ARIA on sh-spreadsheet (role=grid/row/gridcell, aria-rowcount/colcount + row/colindex — required because virtualization mounts only a window of rows, aria-selected), (3) call sites announcing spreadsheet selection, editor block/mark operations and sh-code cursor actions
 
 ### Testing (WIP)
 
