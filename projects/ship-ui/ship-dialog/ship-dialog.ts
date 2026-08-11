@@ -29,6 +29,14 @@ const DEFAULT_OPTIONS: ShipDialogOptions = {
   closeOnOutsideClick: true,
 };
 
+/**
+ * Open dialogs across the app share one scroll lock on the page: the first
+ * one to open sets `overflow: hidden` on the root element, the last one to
+ * close removes it — so stacked dialogs don't unlock early.
+ */
+let scrollLockCount = 0;
+let scrollLockPrevious = '';
+
 /** Drag farther than this fraction of the sheet's height to dismiss on release. */
 const SHEET_DISMISS_FRACTION = 0.3;
 /** …or release faster than this (px/ms), regardless of distance. */
@@ -194,6 +202,27 @@ export class ShipDialog {
     }, SHEET_DISMISS_MS);
   }
 
+  /** Whether THIS dialog currently holds a share of the page scroll lock. */
+  #holdsScrollLock = false;
+
+  #lockPageScroll() {
+    if (this.#holdsScrollLock) return;
+    this.#holdsScrollLock = true;
+    if (++scrollLockCount === 1) {
+      const root = this.#document.documentElement;
+      scrollLockPrevious = root.style.overflow;
+      root.style.overflow = 'hidden';
+    }
+  }
+
+  #unlockPageScroll() {
+    if (!this.#holdsScrollLock) return;
+    this.#holdsScrollLock = false;
+    if (--scrollLockCount === 0) {
+      this.#document.documentElement.style.overflow = scrollLockPrevious;
+    }
+  }
+
   #onVisualViewport = () => {
     const vv = typeof window !== 'undefined' ? window.visualViewport : null;
     if (!vv) return;
@@ -214,6 +243,8 @@ export class ShipDialog {
 
     if (this.isOpen()) {
       dialogEl.showModal();
+      // The top layer doesn't stop the page behind from scrolling on its own.
+      this.#lockPageScroll();
       // showModal focuses the first focusable element — in a sheet that pops
       // the software keyboard before the user asked for it. Park focus on the
       // handle instead; inputs focus on tap like a native sheet.
@@ -261,6 +292,7 @@ export class ShipDialog {
       }
     } else {
       dialogEl.close();
+      this.#unlockPageScroll();
       this.keyboardInset.set(0);
       this.#visualHeight.set(null);
 
@@ -270,5 +302,6 @@ export class ShipDialog {
 
   ngOnDestroy() {
     this.abortController?.abort();
+    this.#unlockPageScroll();
   }
 }

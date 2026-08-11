@@ -26,6 +26,9 @@ test.describe('bottom-sheet dialog', () => {
     // showModal would focus the input inside — the sheet must not pop the
     // keyboard; focus parks on the handle instead.
     await expect(page.locator('.sheet-handle')).toBeFocused();
+
+    // The page behind is scroll-locked while the dialog is open.
+    expect(await page.evaluate(() => document.documentElement.style.overflow)).toBe('hidden');
   });
 
   test('slide-down drag dismisses; a short drag snaps back', async ({ page }) => {
@@ -58,6 +61,9 @@ test.describe('bottom-sheet dialog', () => {
     await page.mouse.up();
     await page.waitForTimeout(600);
     await expect(page.locator('dialog[shDialog]')).toHaveCount(0);
+
+    // Closing releases the page scroll lock.
+    expect(await page.evaluate(() => document.documentElement.style.overflow)).toBe('');
   });
 
   test('editor sheet mode: preview opens the sheet, edits sync back, toolbar pins to the card bottom', async ({
