@@ -65,11 +65,14 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [x] Add another button group variant
 - [x] Grid drag and drop sortables
 - [x] Multi list drag and drop sortables
-- [x] Extract virtualization into a shared core: ShipVirtualWindow (headless, axis-aware) drives sh-virtual-scroll, the new shVirtualScroll directive, sh-code and sh-spreadsheet; sh-editor stays on BlockHeightMap directly
+- [x] sh-virtualization
+  - [x] Extract virtualization into a shared core: ShipVirtualWindow (headless, axis-aware) drives sh-virtual-scroll, the new shVirtualScroll directive, sh-code and sh-spreadsheet; sh-editor stays on BlockHeightMap directly
+  - [x] shVirtualScroll directive: apply to your own markup, vertical or horizontal, scrolls against the nearest overflow-auto ancestor
+  - [x] Virtual Scroll docs page: Architecture tab (component/directive/engine, with examples) + live directive example, added to the sidebar
 - [x] Document component services on dedicated Service tabs (dialogs, alerts, spotlight, a11y-keybindings, datepickers, lists, sortables, theme-toggle, videos)
-- [x] Virtual Scroll docs page: Architecture tab (component/directive/engine, with examples) + live directive example, added to the sidebar
-- [x] Create a wysiwyg editor component (sh-editor)
-- [x] Create a markdown editor component (sh-editor markdown format)
+- [x] sh-editor
+  - [x] wysiwyg editor
+  - [x] markdown editor
 - [x] sh-popover should have a pos center feature for the dropdown
 - [ ] Apply the new sheet utility to radio buttons
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
@@ -83,6 +86,15 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [ ] Drag controls for number inputs (directive)
 - [ ] sh-table features
   - [ ] Add support for row resizing
+- [ ] sh-editor features
+  - [ ] Editable tables — today's spreadsheet block is read-only (ties into sh-spreadsheet cell editing)
+  - [ ] Task list / checkbox block
+  - [ ] Find & replace
+  - [ ] Mentions (@user) and emoji autocomplete
+  - [ ] Embed blocks (video/iframe — currently stripped by the sanitizer on purpose, needs a safe embed behavior)
+  - [ ] Drag handles for block reordering (keyboard block move already works)
+  - [ ] Collaborative editing — remoteStepMap + rebase foundations exist, missing transport, presence and remote cursors
+  - [ ] Comments / annotations and track changes
 - [ ] sh-spreadsheet features (also listed on the docs page's "Not there yet" section)
   - [ ] Cell editing — editable composer wrapping the read-only sh-spreadsheet view
   - [ ] Keyboard navigation — arrow-key roving, Shift+arrow range extension
@@ -115,7 +127,6 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 
 - [x] (WIP) Create a spreadsheet component (sh-spreadsheet)
 - [x] (WIP) Create a blueprint component (aka flowchart)
-  - [ ] API is work in progress
 - [x] Code editor component (sh-code)
   - [x] Syntax highlighting (textmate grammars)
   - [x] Indent/outdent, multi-cursor, keymaps (sublime/vscode)
