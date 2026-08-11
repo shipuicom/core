@@ -104,7 +104,7 @@ interface HistoryEntry {
 /**
  * `<sh-code>` — the code editor surface. Renders a virtualized window of
  * lines (the shared `ShipVirtualWindow` drives the pixel model, the same
- * engine behind `sh-virtual-scroll` and `sh-sheet-view`), takes input through
+ * engine behind `sh-virtual-scroll` and `sh-spreadsheet`), takes input through
  * a hidden textarea, and keeps a flat `{anchor, head}` selection over the
  * columnar line index.
  */

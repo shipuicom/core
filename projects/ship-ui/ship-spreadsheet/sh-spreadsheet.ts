@@ -58,31 +58,32 @@ function colLabel(index: number): string {
 }
 
 /**
- * `<sh-sheet-view>` — the lean read-only sheet renderer. An immutable
+ * `<sh-spreadsheet>` — the lean read-only spreadsheet renderer. An immutable
  * `SheetModel` in, display state (selection) alongside; two `ShipVirtualWindow`
  * instances — one per axis, the column one horizontal — drive the virtualized
- * window exactly as `sh-code` virtualizes lines. It does not know editing exists: the editable
- * `ShipSheet` composes this view and floats its own editing overlay above it.
+ * window exactly as `sh-code` virtualizes lines. It does not know editing
+ * exists: a future editable composer wraps this view and floats its own
+ * editing overlay above it.
  *
  * Interaction owned here is display-side only: mouse drag paints a
  * rectangular selection, and the native copy event writes TSV + `<table>`
  * clipboard flavors. Anything richer belongs to the composing layer.
  */
 @Component({
-  selector: 'sh-sheet-view',
+  selector: 'sh-spreadsheet',
   standalone: true,
-  exportAs: 'shSheetView',
+  exportAs: 'shSpreadsheet',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  templateUrl: './sh-sheet-view.html',
-  styleUrl: './sh-sheet-view.scss',
+  templateUrl: './sh-spreadsheet.html',
+  styleUrl: './sh-spreadsheet.scss',
   host: {
     '[attr.data-shs]': 'uid',
     '[style.--shs-row-h.px]': 'defaultRowHeight()',
     '[style.--shs-head-w.px]': 'headOffset()',
   },
 })
-export class ShipSheetView {
+export class ShipSpreadsheet {
   scroller = viewChild.required<ElementRef<HTMLElement>>('scroller');
   frame = viewChild.required<ElementRef<HTMLElement>>('frame');
 

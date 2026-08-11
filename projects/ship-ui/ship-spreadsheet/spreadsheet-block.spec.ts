@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { BaseBlockBehavior, BaseInlineBehavior } from '@ship-ui/core/ship-editor';
 import { htmlToAst } from '../ship-editor/editor-serializers';
 import { createSheet, sheetFromJSON, sheetToJSON } from './core/sheet-model';
-import { ShipSheetBlockBehavior } from './sheet-block';
+import { ShipSpreadsheetBlockBehavior } from './spreadsheet-block';
 
-const behavior = new ShipSheetBlockBehavior();
+const behavior = new ShipSpreadsheetBlockBehavior();
 const blocks = new Map<string, BaseBlockBehavior>([['sheet', behavior]]);
 const inlines = new Map<string, BaseInlineBehavior>();
 
@@ -13,7 +13,7 @@ function parse(html: string) {
   return behavior.parseDOM(doc.body.firstElementChild as HTMLElement);
 }
 
-describe('ShipSheetBlockBehavior', () => {
+describe('ShipSpreadsheetBlockBehavior', () => {
   it('serializes attrs as a real table and parses it back losslessly', () => {
     const attrs = { ...sheetToJSON(createSheet(2, 2, ['a', 'b', 'c', 'd'])), colWidths: [80, null] };
     const html = behavior.renderHTML({ type: 'sheet', attrs, content: [] });

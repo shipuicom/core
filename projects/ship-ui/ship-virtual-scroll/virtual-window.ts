@@ -19,7 +19,7 @@ export interface ShipVirtualWindowOptions {
  * virtualized ShipUI surface runs. Holds no DOM and no DI — feed it scroll
  * positions and measurements, read the window back as signals. Axis-agnostic:
  * `'vertical'` windows rows by height, `'horizontal'` windows columns by
- * width; `sh-sheet-view` runs one instance per axis.
+ * width; `sh-spreadsheet` runs one instance per axis.
  *
  * `ShipVirtualScroll` (component) and `ShipVirtualScrollDirective` are thin
  * DOM adapters over this class; use it directly for custom virtualization

@@ -3,13 +3,13 @@ import { ShipEditor, ShipEditorToolbar } from '@ship-ui/core/ship-editor';
 import {
   SheetModel,
   SheetSelection,
-  ShipSheetBlockBehavior,
-  ShipSheetView,
+  ShipSpreadsheetBlockBehavior,
+  ShipSpreadsheet,
   applySheetOps,
   createSheet,
   primarySheetRange,
   sheetRangeToTsv,
-} from '@ship-ui/core/ship-sheet';
+} from '@ship-ui/core/ship-spreadsheet';
 import { Highlight } from '../../previewer/highlight/highlight';
 import { Previewer } from '../../previewer/previewer';
 
@@ -51,19 +51,19 @@ const EDITOR_DOC = `
 `;
 
 @Component({
-  selector: 'app-sheet',
+  selector: 'app-spreadsheet',
   standalone: true,
-  imports: [ShipSheetView, ShipEditor, ShipEditorToolbar, Previewer, Highlight],
-  templateUrl: './sheet.html',
-  styleUrl: './sheet.scss',
+  imports: [ShipSpreadsheet, ShipEditor, ShipEditorToolbar, Previewer, Highlight],
+  templateUrl: './spreadsheet.html',
+  styleUrl: './spreadsheet.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class Sheet {
-  usageExample = `import { ShipSheetView } from '@ship-ui/core/ship-sheet';
+export default class Spreadsheet {
+  usageExample = `import { ShipSpreadsheet } from '@ship-ui/core/ship-spreadsheet';
 
 @Component({
-  imports: [ShipSheetView],
-  template: \`<sh-sheet-view [sheet]="sheet()" [(selection)]="selection" />\`,
+  imports: [ShipSpreadsheet],
+  template: \`<sh-spreadsheet [sheet]="sheet()" [(selection)]="selection" />\`,
 })
 export class MyComponent {
   sheet = signal(createSheet(20, 8));
@@ -71,10 +71,10 @@ export class MyComponent {
   selection = signal<SheetSelection | null>(null);
 }`;
 
-  blockExample = `import { ShipSheetBlockBehavior } from '@ship-ui/core/ship-sheet';
+  blockExample = `import { ShipSpreadsheetBlockBehavior } from '@ship-ui/core/ship-spreadsheet';
 
 // <sh-editor [behaviors]="sheetBehaviors" ...> — any pasted <table> becomes a sheet block.
-sheetBehaviors = [new ShipSheetBlockBehavior()];`;
+sheetBehaviors = [new ShipSpreadsheetBlockBehavior()];`;
 
   sample = signal(sampleSheet());
   sampleSelection = signal<SheetSelection | null>({ ranges: [{ r0: 1, c0: 1, r1: 2, c1: 2 }] });
@@ -88,6 +88,6 @@ sheetBehaviors = [new ShipSheetBlockBehavior()];`;
   bigSelection = signal<SheetSelection | null>(null);
   readonly bigCellCount = computed(() => this.big().rows * this.big().cols);
 
-  sheetBehaviors = [new ShipSheetBlockBehavior()];
+  sheetBehaviors = [new ShipSpreadsheetBlockBehavior()];
   editorValue = signal(EDITOR_DOC);
 }

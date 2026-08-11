@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// ShipSheet — clipboard flavors
+// ShipSpreadsheet — clipboard flavors
 // ---------------------------------------------------------------------------
 //
 // Copy-out writes two flavors: TSV for text targets (terminals, plain

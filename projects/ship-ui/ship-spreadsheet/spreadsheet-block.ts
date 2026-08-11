@@ -9,31 +9,31 @@ import {
 import { ASTBlockNode } from '@ship-ui/core/ship-editor';
 import { SheetModel, createSheet, sheetFromJSON, sheetToJSON } from './core/sheet-model';
 import { sheetFromTable, sheetToTableHtml } from './core/sheet-table';
-import { ShipSheetView } from './sh-sheet-view';
+import { ShipSpreadsheet } from './sh-spreadsheet';
 
 /**
- * The sheet mounted as an `sh-editor` component block. Attrs are the
+ * The spreadsheet mounted as an `sh-editor` component block. Attrs are the
  * persisted `SheetJSON`; the read-only view renders them, and Escape at the
- * sheet's edge hands control back to the editor. The editable upgrade swaps
- * the view for the composing `ShipSheet` without touching this contract.
+ * spreadsheet's edge hands control back to the editor. A future editable
+ * upgrade swaps in a composing wrapper without touching this contract.
  */
 @Component({
-  selector: 'sh-sheet-block',
+  selector: 'sh-spreadsheet-block',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ShipSheetView],
+  imports: [ShipSpreadsheet],
   styles: `
     :host {
       display: block;
       margin: 12px 0;
     }
-    sh-sheet-view {
+    sh-spreadsheet {
       max-height: 420px;
     }
   `,
-  template: `<sh-sheet-view [sheet]="sheet()" (keydown.escape)="ctx.select()" />`,
+  template: `<sh-spreadsheet [sheet]="sheet()" (keydown.escape)="ctx.select()" />`,
 })
-export class ShipSheetBlock {
+export class ShipSpreadsheetBlock {
   ctx = inject(SHIP_EDITOR_BLOCK_CONTEXT);
   sheet = computed<SheetModel>(() => sheetFromJSON(this.ctx.attrs()) ?? createSheet(1, 1));
 }
@@ -44,9 +44,9 @@ export class ShipSheetBlock {
  * and `parseDOM` accepts *any* table element, which is what turns an
  * Excel / Google Sheets / Word paste into a live sheet block.
  */
-export class ShipSheetBlockBehavior extends BaseComponentBlockBehavior {
+export class ShipSpreadsheetBlockBehavior extends BaseComponentBlockBehavior {
   readonly type = 'sheet';
-  readonly component = ShipSheetBlock;
+  readonly component = ShipSpreadsheetBlock;
 
   override parseDOM(el: HTMLElement): ASTBlockNode | null {
     if (el.tagName?.toLowerCase() === 'table') {
@@ -72,7 +72,7 @@ export class ShipSheetBlockBehavior extends BaseComponentBlockBehavior {
     return [
       {
         id: 'sheet',
-        label: 'Sheet',
+        label: 'Spreadsheet',
         icon: 'table',
         keywords: ['sheet', 'table', 'spreadsheet', 'grid', 'cells'],
         group: 'Widgets',

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// ShipSheet — Columnar Cell Model
+// ShipSpreadsheet — Columnar Cell Model
 // ---------------------------------------------------------------------------
 //
 // Third instance of the house pattern: ship-editor's rows are blocks,

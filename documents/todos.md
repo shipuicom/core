@@ -65,11 +65,10 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [x] Add another button group variant
 - [x] Grid drag and drop sortables
 - [x] Multi list drag and drop sortables
-- [x] Extract virtualization into a shared core: ShipVirtualWindow (headless, axis-aware) drives sh-virtual-scroll, the new shVirtualScroll directive, sh-code and sh-sheet-view; sh-editor stays on BlockHeightMap directly
+- [x] Extract virtualization into a shared core: ShipVirtualWindow (headless, axis-aware) drives sh-virtual-scroll, the new shVirtualScroll directive, sh-code and sh-spreadsheet; sh-editor stays on BlockHeightMap directly
 - [x] Document component services on dedicated Service tabs (dialogs, alerts, spotlight, a11y-keybindings, datepickers, lists, sortables, theme-toggle, videos)
 - [x] Virtual Scroll docs page: Architecture tab (component/directive/engine, with examples) + live directive example, added to the sidebar
 - [ ] Apply the new sheet utility to radio buttons
-
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
 - [ ] Make color themes optional/configurable (primary, accent, warn, error, success) globally.
 
@@ -85,7 +84,7 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [ ] Drag controls for number inputs (directive)
 - [ ] sh-table features
   - [ ] Add support for row resizing
-- [ ] sh-sheet features
+- [ ] sh-spreadsheet features
   - [ ] User-resizable columns and rows (resize = heights.measure + sync on the axis windows; regenerate the column stylesheet)
 - [ ] sh-menu features
   - [ ] add hotkeys to navigate options without having a search input
@@ -111,6 +110,7 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [ ] Animation package
 - [ ] Create a gantt chart component
 - [x] Create a blueprint component (like blueprints in unreal engine)
+  - [ ] API is work in progress
 - [ ] Create a timeline component
 - [x] Code editor component (sh-code)
   - [x] Syntax highlighting (textmate grammars)
@@ -120,7 +120,7 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
   - [ ] Auto formatting
   - [ ] Auto indentation / auto closing
 - [x] Create a markdown editor component (sh-editor markdown format)
-- [x] Create a spreadsheet component (sh-sheet / sh-sheet-view)
+- [x] Create a spreadsheet component (sh-spreadsheet)
 - [x] Create a wysiwyg editor component (sh-editor)
 
 ### Testing to add

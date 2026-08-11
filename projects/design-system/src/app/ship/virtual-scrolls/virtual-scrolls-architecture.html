@@ -3,7 +3,7 @@
     <h4>How ShipUI virtualizes</h4>
     <p>
       Every virtualized surface in ShipUI — <code>sh-virtual-scroll</code>, <code>sh-code</code>,
-      <code>sh-sheet-view</code> and <code>sh-editor</code> — shares one engine. At the bottom sits
+      <code>sh-spreadsheet</code> and <code>sh-editor</code> — shares one engine. At the bottom sits
       <code>BlockHeightMap</code>, a pixel-size model; on top of it, <code>ShipVirtualWindow</code> runs the scroll
       math and exposes the mounted range as signals. The component and the directive are thin DOM adapters over that
       core, and you can use it directly for anything with an ordered pixel layout.
@@ -63,7 +63,7 @@
   <section>
     <h4>Two axes: the sheet</h4>
     <p>
-      Virtualization is axis-agnostic. <code>sh-sheet-view</code> mounts a rectangular window of cells by running two
+      Virtualization is axis-agnostic. <code>sh-spreadsheet</code> mounts a rectangular window of cells by running two
       engines side by side:
     </p>
     <app-highlight lang="ts" [content]="code2d" />

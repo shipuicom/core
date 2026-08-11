@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// ShipSheet — <table> (de)serialization
+// ShipSpreadsheet — <table> (de)serialization
 // ---------------------------------------------------------------------------
 //
 // The document form of a sheet is a real semantic table: published pages get

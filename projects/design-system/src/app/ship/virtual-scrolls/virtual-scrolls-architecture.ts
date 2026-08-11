@@ -77,7 +77,7 @@ map.prefixHeight(100);  // pixel offset of item 100's top — O(1) after a
 map.heightOf(7);        // measured size, or the estimate
 map.isMeasured(7);`;
 
-  code2d = `// sh-sheet-view runs one window per axis — the column one horizontal,
+  code2d = `// sh-spreadsheet runs one window per axis — the column one horizontal,
 // so sizes are widths and update() takes scrollLeft/clientWidth.
 #rowWin = new ShipVirtualWindow({ count: 0, estimate: 28, overscan: 200 });
 #colWin = new ShipVirtualWindow({ count: 0, estimate: 96, overscan: 200, axis: 'horizontal' });

@@ -482,8 +482,8 @@ export const routes: Routes = [
         loadComponent: () => import('./ship/code/code'),
       },
       {
-        path: 'sheet',
-        loadComponent: () => import('./ship/sheet/sheet'),
+        path: 'spreadsheet',
+        loadComponent: () => import('./ship/spreadsheet/spreadsheet'),
       },
     ],
   },

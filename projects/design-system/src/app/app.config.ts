@@ -60,9 +60,9 @@ export const appConfig: ApplicationConfig = {
         { id: 'dialogs', label: 'Dialogs', category: 'Components', data: { route: '/dialogs' } },
         { id: 'dividers', label: 'Dividers', category: 'Components', data: { route: '/dividers' } },
         { id: 'editors', label: 'Editor', category: 'Form Fields', data: { route: '/editors' } },
-        // Hidden until ready to ship — pages stay reachable at /code and /sheet.
+        // Hidden until ready to ship — pages stay reachable at /code and /spreadsheet.
         // { id: 'code', label: 'Code Editor', category: 'Form Fields', data: { route: '/code' } },
-        // { id: 'sheet', label: 'Sheet', category: 'Form Fields', data: { route: '/sheet' } },
+        // { id: 'spreadsheet', label: 'Spreadsheet', category: 'Form Fields', data: { route: '/spreadsheet' } },
         { id: 'event-cards', label: 'Event Cards', category: 'Components', data: { route: '/event-cards' } },
         { id: 'icons', label: 'Icons', category: 'Components', data: { route: '/icons' } },
         { id: 'kbds', label: 'Keyboard Keys', category: 'Components', data: { route: '/kbds' } },

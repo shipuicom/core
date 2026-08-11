@@ -76,7 +76,7 @@ const ALLOWED_TAGS = new Set([
   'blockquote', 'pre', 'code',
   'ul', 'ol', 'li', 'hr', 'img',
   'strong', 'b', 'em', 'i', 'u', 's', 'strike', 'del', 'a', 'mark',
-  // Tables survive as-is so a table-shaped block behavior (ship-sheet) can
+  // Tables survive as-is so a table-shaped block behavior (ship-spreadsheet) can
   // claim them — and so Excel/Google Sheets/Word pastes keep their grid.
   'table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th', 'colgroup', 'col', 'caption',
 ]);
