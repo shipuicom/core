@@ -31,6 +31,18 @@ test.describe('bottom-sheet dialog', () => {
     expect(await page.evaluate(() => document.documentElement.style.overflow)).toBe('hidden');
   });
 
+  test('regular modal dialogs also lock page scroll while open', async ({ page }) => {
+    await page.goto('/dialogs/examples');
+    await page.getByRole('button', { name: 'Open Basic Dialog' }).click();
+    await expect(page.locator('dialog[shDialog]')).toHaveCount(1);
+    expect(await page.evaluate(() => document.documentElement.style.overflow)).toBe('hidden');
+
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(300);
+    await expect(page.locator('dialog[shDialog]')).toHaveCount(0);
+    expect(await page.evaluate(() => document.documentElement.style.overflow)).toBe('');
+  });
+
   test('slide-down drag dismisses; a short drag snaps back', async ({ page }) => {
     await page.goto('/dialogs/examples');
     await page.getByRole('button', { name: 'Open bottom sheet' }).click();
