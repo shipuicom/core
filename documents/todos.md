@@ -68,14 +68,13 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [x] Extract virtualization into a shared core: ShipVirtualWindow (headless, axis-aware) drives sh-virtual-scroll, the new shVirtualScroll directive, sh-code and sh-spreadsheet; sh-editor stays on BlockHeightMap directly
 - [x] Document component services on dedicated Service tabs (dialogs, alerts, spotlight, a11y-keybindings, datepickers, lists, sortables, theme-toggle, videos)
 - [x] Virtual Scroll docs page: Architecture tab (component/directive/engine, with examples) + live directive example, added to the sidebar
+- [x] Create a wysiwyg editor component (sh-editor)
+- [x] Create a markdown editor component (sh-editor markdown format)
+- [x] sh-popover should have a pos center feature for the dropdown
 - [ ] Apply the new sheet utility to radio buttons
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
 - [ ] Make color themes optional/configurable (primary, accent, warn, error, success) globally.
-
-### Nice to haves for v1 beta
-
 - [ ] sh-select feature: add support for custom filter predicates on inlineSearch
-- [x] sh-popover should have a pos center feature for the dropdown
 
 ### Features after v1 release
 
@@ -84,8 +83,13 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [ ] Drag controls for number inputs (directive)
 - [ ] sh-table features
   - [ ] Add support for row resizing
-- [ ] sh-spreadsheet features
+- [ ] sh-spreadsheet features (also listed on the docs page's "Not there yet" section)
+  - [ ] Cell editing — editable composer wrapping the read-only sh-spreadsheet view
+  - [ ] Keyboard navigation — arrow-key roving, Shift+arrow range extension
   - [ ] User-resizable columns and rows (resize = heights.measure + sync on the axis windows; regenerate the column stylesheet)
+  - [ ] Paste into an existing spreadsheet (in-place range paste; today a pasted table becomes a new editor block)
+  - [ ] Formulas / computed cells
+  - [ ] Cell formatting, sorting, merged cells, frozen panes beyond the header rails
 - [ ] sh-menu features
   - [ ] add hotkeys to navigate options without having a search input
   - [ ] add focus with a hidden input similar to native select
@@ -105,13 +109,13 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
   - [ ] Pie chart
   - [ ] Doughnut chart
 
-### Possible extension packages
+### WIP Complex Components
 
-- [ ] Animation package
-- [ ] Create a gantt chart component
-- [x] Create a blueprint component (like blueprints in unreal engine)
+### Complex Components
+
+- [x] (WIP) Create a spreadsheet component (sh-spreadsheet)
+- [x] (WIP) Create a blueprint component (aka flowchart)
   - [ ] API is work in progress
-- [ ] Create a timeline component
 - [x] Code editor component (sh-code)
   - [x] Syntax highlighting (textmate grammars)
   - [x] Indent/outdent, multi-cursor, keymaps (sublime/vscode)
@@ -119,14 +123,17 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
   - [ ] Code folding
   - [ ] Auto formatting
   - [ ] Auto indentation / auto closing
-- [x] Create a markdown editor component (sh-editor markdown format)
-- [x] Create a spreadsheet component (sh-spreadsheet)
-- [x] Create a wysiwyg editor component (sh-editor)
+- [ ] Animation package
+- [ ] Create a gantt chart component
+- [ ] Create a timeline component
 
-### Testing to add
+### Testing (WIP)
 
-- [x] E2E testing (Playwright suites for sh-editor and sh-code; extend to more surfaces)
-- [ ] Fuzz testing
+Working on expanding testing surface currently tests most complex ui components
+
+- [-] (WIP) Unit testing
+- [-] (WIP) E2E testing
+- [-] (WIP) Fuzz testing
 - [ ] Simulation testing
 
 ### Blocked changes
