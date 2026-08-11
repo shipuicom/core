@@ -1,6 +1,6 @@
 import { Component, computed, contentChild, ElementRef, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { createInputSignal } from './create-input-signal';
+import { nativeInputValueSignal } from './native-input-value-signal';
 
 @Component({
   selector: 'app-input-signal-demo',
@@ -39,8 +39,8 @@ export class InputSignalDemoComponent {
   myTextInput = contentChild<ElementRef<HTMLInputElement>>('myTextInput');
   myNumberInput = contentChild<ElementRef<HTMLInputElement>>('myNumberInput');
 
-  textInputValue = createInputSignal<string>(this.myTextInput);
-  numberInputValue = createInputSignal<number>(this.myNumberInput, {
+  textInputValue = nativeInputValueSignal<string>(this.myTextInput);
+  numberInputValue = nativeInputValueSignal<number>(this.myNumberInput, {
     forceType: 'number',
     debounce: 300,
   });

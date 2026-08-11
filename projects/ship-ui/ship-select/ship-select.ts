@@ -8,7 +8,7 @@ import { ShipFormField } from '@ship-ui/core/ship-form-field';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipPopover } from '@ship-ui/core/ship-popover';
 import { ShipSpinner } from '@ship-ui/core/ship-spinner';
-import { contentProjectionSignal, createInputSignal, generateUniqueId } from '@ship-ui/core';
+import { contentProjectionSignal, nativeInputValueSignal, generateUniqueId } from '@ship-ui/core';
 import { shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
 
@@ -419,7 +419,7 @@ export class ShipSelect {
   // The projected input doubles as the search field (while open) and the committed value
   // (on close / external writes). The primitive keeps inputValue <-> DOM in sync; source
   // tells the two intents apart: typing filters, programmatic writes resolve the selection.
-  #valueSync = createInputSignal<string>(this.inputRefEl, {
+  #valueSync = nativeInputValueSignal<string>(this.inputRefEl, {
     signal: this.inputValue,
     onDomChange: (value, source) => {
       if (source === 'user') {

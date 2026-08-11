@@ -15,7 +15,7 @@ import {
 import {
   classMutationSignal,
   contentProjectionSignal,
-  createInputSignal,
+  nativeInputValueSignal,
   hslToRgbExact,
   rgbaToHex8,
   rgbToHex,
@@ -170,7 +170,7 @@ export class ShipColorPickerInput {
   #focused = signal(false);
 
   /** Raw edit-buffer bound to the projected text input; decoded to the color tuple below. */
-  #colorText = createInputSignal<string>(this.#inputEl);
+  #colorText = nativeInputValueSignal<string>(this.#inputEl);
 
   // Decode: whatever sits in the field (typed or seeded) → color tuple.
   #parseEffect = effect(() => {

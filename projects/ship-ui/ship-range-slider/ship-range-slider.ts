@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, model, signal, untracked, ViewEncapsulation } from '@angular/core';
-import { contentProjectionSignal, createInputSignal, shipComponentClasses } from '@ship-ui/core';
+import { contentProjectionSignal, nativeInputValueSignal, shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipSize, ShipRangeSliderVariant } from '@ship-ui/core';
 
 @Component({
@@ -121,7 +121,7 @@ export class ShipRangeSlider {
 
   // Adopt the public `value` model as the input-backed store: drag / programmatic input →
   // parse + clamp → model; model changes → String() → the range input (via the primitive).
-  #valueSync = createInputSignal<number>(this.#inputSignal, {
+  #valueSync = nativeInputValueSignal<number>(this.#inputSignal, {
     signal: this.value,
     transform: (v) => {
       const n = parseFloat(v);

@@ -2,7 +2,7 @@ import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
 import { Component, ElementRef, signal, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { contentProjectionSignal } from './content-projection-signal';
-import { createInputSignal } from './create-input-signal';
+import { nativeInputValueSignal } from './native-input-value-signal';
 
 @Component({
   template: `
@@ -15,7 +15,7 @@ class ViewChildHost {
   show = signal(true);
   initialDomValue = 'hello';
   el = viewChild<ElementRef<HTMLInputElement>>('el');
-  value = createInputSignal<string>(this.el);
+  value = nativeInputValueSignal<string>(this.el);
 }
 
 @Component({
@@ -23,7 +23,7 @@ class ViewChildHost {
 })
 class RawElementHost {
   raw = signal<HTMLInputElement | undefined>(undefined);
-  value = createInputSignal<number>(this.raw, { forceType: 'number' });
+  value = nativeInputValueSignal<number>(this.raw, { forceType: 'number' });
 }
 
 @Component({
@@ -31,7 +31,7 @@ class RawElementHost {
 })
 class TransformHost {
   el = viewChild<ElementRef<HTMLInputElement>>('el');
-  value = createInputSignal<Date | null>(this.el, {
+  value = nativeInputValueSignal<Date | null>(this.el, {
     transform: (value) => (value ? new Date(value) : null),
     compare: (a, b) => (a?.getTime() ?? null) === (b?.getTime() ?? null),
   });
@@ -42,7 +42,7 @@ class TransformHost {
 })
 class DebounceHost {
   el = viewChild<ElementRef<HTMLInputElement>>('el');
-  value = createInputSignal<string>(this.el, { debounce: 100 });
+  value = nativeInputValueSignal<string>(this.el, { debounce: 100 });
 }
 
 @Component({
@@ -51,7 +51,7 @@ class DebounceHost {
 class AdoptedSeedHost {
   el = viewChild<ElementRef<HTMLInputElement>>('el');
   store = signal<string | null | undefined>('');
-  value = createInputSignal<string>(this.el, { signal: this.store });
+  value = nativeInputValueSignal<string>(this.el, { signal: this.store });
 }
 
 @Component({
@@ -60,7 +60,7 @@ class AdoptedSeedHost {
 class OriginHost {
   el = viewChild<ElementRef<HTMLInputElement>>('el');
   calls: Array<{ value: string | null | undefined; source: 'user' | 'programmatic' }> = [];
-  value = createInputSignal<string>(this.el, {
+  value = nativeInputValueSignal<string>(this.el, {
     onDomChange: (value, source) => this.calls.push({ value, source }),
   });
 }
@@ -71,7 +71,7 @@ class OriginHost {
 })
 class ConjunctionHost {
   input = contentProjectionSignal<HTMLInputElement>('input.target', undefined, 0);
-  value = createInputSignal<string>(this.input);
+  value = nativeInputValueSignal<string>(this.input);
 }
 
 @Component({
@@ -103,7 +103,7 @@ async function flush(fixture: ComponentFixture<unknown>, ms = 1) {
   fixture.detectChanges();
 }
 
-describe('createInputSignal', () => {
+describe('nativeInputValueSignal', () => {
   beforeEach(async () => {
     vi.useFakeTimers();
     await TestBed.configureTestingModule({

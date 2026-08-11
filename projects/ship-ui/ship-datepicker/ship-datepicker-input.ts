@@ -16,7 +16,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { NgControl } from '@angular/forms';
-import { classMutationSignal, contentProjectionSignal, createInputSignal } from '@ship-ui/core';
+import { classMutationSignal, contentProjectionSignal, nativeInputValueSignal } from '@ship-ui/core';
 import { ShipFormFieldPopover } from '@ship-ui/core/ship-form-field';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipDatepicker } from './ship-datepicker';
@@ -76,7 +76,7 @@ export class ShipDatepickerInput {
   currentClass = classMutationSignal();
   #inputObserver = contentProjectionSignal<HTMLInputElement>('#input-wrap input', undefined, 0);
 
-  internalDate = createInputSignal<Date | null>(this.#inputObserver, {
+  internalDate = nativeInputValueSignal<Date | null>(this.#inputObserver, {
     transform: (value) => this.#parseInputValue(value),
     compare: (a, b) => (a?.getTime() ?? null) === (b?.getTime() ?? null),
   });

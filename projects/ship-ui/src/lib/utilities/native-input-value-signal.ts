@@ -12,7 +12,7 @@ import {
   untracked,
 } from '@angular/core';
 
-interface InputSignalOptions<T> {
+interface NativeInputValueSignalOptions<T> {
   debounce?: number;
   initialValue?: T | null | undefined;
   transform?: (value: string) => T | null | undefined;
@@ -38,11 +38,11 @@ interface InputSignalOptions<T> {
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement;
 
-export function createInputSignal<T>(
+export function nativeInputValueSignal<T>(
   input: Signal<InputElement | ElementRef<InputElement> | null | undefined>,
-  options?: InputSignalOptions<T>
+  options?: NativeInputValueSignalOptions<T>
 ): WritableSignal<T | null | undefined> {
-  const injector = options?.injector || (assertInInjectionContext(createInputSignal), inject(Injector));
+  const injector = options?.injector || (assertInInjectionContext(nativeInputValueSignal), inject(Injector));
   const {
     debounce = 0,
     initialValue = undefined,
