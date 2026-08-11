@@ -72,6 +72,7 @@ export function createInputSignal<T>(
   let lastValueFromInput: T | null | undefined = undefined;
   let hasValueFromInput = false;
   let writeBackDepth = 0;
+  let lastWriteBackElement: InputElement | undefined;
 
   effect(
     () => {
@@ -131,13 +132,26 @@ export function createInputSignal<T>(
     () => {
       const inputElement = inputElementRef();
 
-      if (!inputElement) return;
+      if (!inputElement) {
+        lastWriteBackElement = undefined;
+        return;
+      }
+
+      const isAttach = inputElement !== lastWriteBackElement;
+      lastWriteBackElement = inputElement;
 
       const currentValue = valueSignal();
 
       if (hasValueFromInput && compare(currentValue, lastValueFromInput)) return;
 
       const domValue = currentValue === null || currentValue === undefined ? '' : String(currentValue);
+
+      // Adopted mode skips the DOM seed because the caller owns the initial value — so on
+      // the attach transition the DOM may legitimately hold externally-seeded state (e.g. an
+      // ngModel write that raced ahead of element discovery). Enforcing signal -> DOM here
+      // would stomp that state and, via the dispatched input event, wipe the outside model
+      // too. Leave attach reconciliation to the caller; enforcement resumes on the next run.
+      if (adopted && isAttach && inputElement.value !== domValue) return;
 
       if (inputElement.value !== domValue) {
         previousValue = domValue;

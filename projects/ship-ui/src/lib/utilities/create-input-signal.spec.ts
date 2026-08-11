@@ -46,6 +46,15 @@ class DebounceHost {
 }
 
 @Component({
+  template: `<input #el value="seeded" />`,
+})
+class AdoptedSeedHost {
+  el = viewChild<ElementRef<HTMLInputElement>>('el');
+  store = signal<string | null | undefined>('');
+  value = createInputSignal<string>(this.el, { signal: this.store });
+}
+
+@Component({
   template: `<input #el />`,
 })
 class OriginHost {
@@ -98,7 +107,15 @@ describe('createInputSignal', () => {
   beforeEach(async () => {
     vi.useFakeTimers();
     await TestBed.configureTestingModule({
-      imports: [ViewChildHost, RawElementHost, TransformHost, DebounceHost, OriginHost, ConjunctionWrapper],
+      imports: [
+        ViewChildHost,
+        RawElementHost,
+        TransformHost,
+        DebounceHost,
+        OriginHost,
+        AdoptedSeedHost,
+        ConjunctionWrapper,
+      ],
     }).compileComponents();
   });
 
@@ -247,6 +264,30 @@ describe('createInputSignal', () => {
 
       vi.advanceTimersByTime(100);
       expect(host.value()).toBe('ab');
+    });
+  });
+
+  describe('adopted signal on attach', () => {
+    it('does not stomp externally-seeded DOM state on the attach transition', async () => {
+      const fixture = TestBed.createComponent(AdoptedSeedHost);
+      const host = fixture.componentInstance;
+      await flush(fixture);
+
+      const input: HTMLInputElement = fixture.nativeElement.querySelector('input');
+      expect(input.value).toBe('seeded');
+      expect(host.store()).toBe('');
+    });
+
+    it('resumes signal-to-DOM enforcement after attach', async () => {
+      const fixture = TestBed.createComponent(AdoptedSeedHost);
+      const host = fixture.componentInstance;
+      await flush(fixture);
+
+      host.store.set('next');
+      await flush(fixture);
+
+      const input: HTMLInputElement = fixture.nativeElement.querySelector('input');
+      expect(input.value).toBe('next');
     });
   });
 
