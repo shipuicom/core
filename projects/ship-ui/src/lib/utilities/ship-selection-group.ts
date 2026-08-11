@@ -135,7 +135,11 @@ export abstract class ShipSelectionGroup<T = any> {
       return;
     }
 
-    const items = this.items().filter(item => item.hasAttribute('value'));
+    // Link items (routerLink/href without a value) participate in roving
+    // focus too — activation happens through their own click navigation.
+    const items = this.items().filter(
+      (item) => item.hasAttribute('value') || item.hasAttribute('routerlink') || item.hasAttribute('href')
+    );
     if (!items.length) return;
 
     let activeIndex = items.findIndex((item) => item === document.activeElement || item.contains(document.activeElement as Node));
@@ -158,8 +162,12 @@ export abstract class ShipSelectionGroup<T = any> {
     const nextItem = items[nextIndex];
     if (nextItem) {
       if (!this.manualActivation()) {
-        const value = nextItem.getAttribute('value') as unknown as T;
-        this.value.set(value);
+        if (nextItem.hasAttribute('value')) {
+          const value = nextItem.getAttribute('value') as unknown as T;
+          this.value.set(value);
+        } else {
+          nextItem.click();
+        }
       }
       nextItem.focus();
     }
