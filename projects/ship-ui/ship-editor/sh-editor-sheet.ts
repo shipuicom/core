@@ -104,12 +104,21 @@ type SheetEditorConfig = {
         <button shEditorAction="bold" aria-label="Bold"><sh-icon>text-b</sh-icon></button>
         <button shEditorAction="italic" aria-label="Italic"><sh-icon>text-italic</sh-icon></button>
         <button shEditorAction="underline" aria-label="Underline"><sh-icon>text-underline</sh-icon></button>
-        <button shEditorAction="heading" [shEditorActionAttrs]="{ level: 2 }" aria-label="Heading">
+        <button shEditorAction="strike" aria-label="Strikethrough"><sh-icon>text-strikethrough</sh-icon></button>
+        <button shEditorAction="code" aria-label="Inline code"><sh-icon>code</sh-icon></button>
+        <button shEditorAction="heading" [shEditorActionAttrs]="{ level: 1 }" aria-label="Heading 1">
+          <sh-icon>text-h-one</sh-icon>
+        </button>
+        <button shEditorAction="heading" [shEditorActionAttrs]="{ level: 2 }" aria-label="Heading 2">
           <sh-icon>text-h-two</sh-icon>
         </button>
+        <button shEditorAction="paragraph" aria-label="Paragraph"><sh-icon>paragraph</sh-icon></button>
         <button shEditorAction="bullet-list" aria-label="Bullet list"><sh-icon>list-bullets</sh-icon></button>
         <button shEditorAction="ordered-list" aria-label="Numbered list"><sh-icon>list-numbers</sh-icon></button>
         <button shEditorAction="quote" aria-label="Quote"><sh-icon>quotes</sh-icon></button>
+        <button shEditorAction="code-block" aria-label="Code block"><sh-icon>terminal</sh-icon></button>
+        <button shEditorAction="hr" aria-label="Divider"><sh-icon>minus</sh-icon></button>
+        <button shEditorAction="image" aria-label="Image"><sh-icon>image</sh-icon></button>
         <button shEditorAction="link" aria-label="Link"><sh-icon>link</sh-icon></button>
       </sh-editor-toolbar>
     </sh-editor>

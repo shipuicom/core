@@ -85,6 +85,27 @@ test.describe('bottom-sheet dialog', () => {
     });
     expect(pinned).toBeLessThan(40); // only content padding/safe-area below it
 
+    // Every action stays reachable: the toolbar row overflows horizontally
+    // and scrolls instead of wrapping or clipping actions away.
+    const scroll = await page.evaluate(() => {
+      const inner = document.querySelector('dialog[shDialog] sh-editor-toolbar .sh-editor-toolbar-inner')!;
+      const before = inner.scrollLeft;
+      inner.scrollLeft = 10_000;
+      const buttons = inner.querySelectorAll('button');
+      const last = buttons[buttons.length - 1].getBoundingClientRect();
+      const box = inner.getBoundingClientRect();
+      return {
+        overflows: inner.scrollWidth > inner.clientWidth,
+        scrolled: inner.scrollLeft > before,
+        lastReachable: last.right <= box.right + 1,
+        buttonCount: buttons.length,
+      };
+    });
+    expect(scroll.overflows).toBe(true);
+    expect(scroll.scrolled).toBe(true);
+    expect(scroll.lastReachable).toBe(true);
+    expect(scroll.buttonCount).toBeGreaterThanOrEqual(17);
+
     // Type in the sheet, close with Escape, the preview shows the edit.
     await dialog.locator('sh-editor [contenteditable]').click();
     await page.keyboard.type(' ROUNDTRIP');
