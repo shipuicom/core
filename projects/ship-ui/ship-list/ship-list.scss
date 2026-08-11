@@ -42,7 +42,7 @@ $shipList: true !default;
       > [action],
       > [item] {
         color: var(--base-10);
-        
+
         &.active,
         &.selected {
           background: rgb(from var(--base-3) r g b / 90%);
@@ -51,7 +51,7 @@ $shipList: true !default;
           sh-icon:first-child {
             color: var(--primary-8);
           }
-          
+
           .description {
             color: var(--base-9);
           }
@@ -103,9 +103,9 @@ $shipList: true !default;
     }
 
     > [title] {
-      color: var(--base-8);
-      margin: 0 0.75rem;
-      font: var(--paragraph-30);
+      color: var(--base-12);
+      margin: p2r(8 8 0);
+      font: var(--paragraph-30B);
       line-height: p2r(24);
     }
 
