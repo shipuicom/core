@@ -8,7 +8,7 @@ import { ShipFormField } from '@ship-ui/core/ship-form-field';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipPopover } from '@ship-ui/core/ship-popover';
 import { ShipSpinner } from '@ship-ui/core/ship-spinner';
-import { createCustomInputEventListener, generateUniqueId } from '@ship-ui/core';
+import { createInputSignal, generateUniqueId } from '@ship-ui/core';
 import { shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
 
@@ -427,38 +427,30 @@ export class ShipSelect {
     input.setAttribute('aria-owns', `optionsWrapId-${this.componentId}`);
     input.setAttribute('aria-controls', `optionsWrapId-${this.componentId}`);
 
-    createCustomInputEventListener(input);
-
     input.addEventListener('focus', () => {
       if (this.readonly()) return;
 
       this.open();
     });
 
-    input.addEventListener('input', (e: any) => {
-      const newInputValue = e.target.value;
-      const inputValue = this.inputValue();
+    return input;
+  });
 
-      if (newInputValue === inputValue) return;
+  // The projected input doubles as the search field (while open) and the committed value
+  // (on close / external writes). The primitive keeps inputValue <-> DOM in sync; source
+  // tells the two intents apart: typing filters, programmatic writes resolve the selection.
+  #valueSync = createInputSignal<string>(this.inputRefEl, {
+    signal: this.inputValue,
+    onDomChange: (value, source) => {
+      if (source === 'user') {
+        this.focusedOptionIndex.set(this.asFreeText() ? -1 : 0);
+        return;
+      }
 
-      this.focusedOptionIndex.set(this.asFreeText() ? -1 : 0);
-      this.inputValue.set(newInputValue);
-      this.updateInputElValue();
-    });
-
-    input.addEventListener('inputValueChanged', (event: any) => {
-      const newInputValue = event.detail.value;
-      const inputValue = this.inputValue();
-      const selectedOptionsLength = untracked(() => this.selectedOptions().length);
-
-      if (newInputValue === inputValue && (newInputValue !== '' || selectedOptionsLength > 0)) return;
-
-      this.setSelectedOptionsFromValue(newInputValue);
+      this.setSelectedOptionsFromValue(value ?? '');
       this.setInputValueFromOptions(this.selectedOptions());
       this.#setFirstSelectedOptionAsFocused();
-    });
-
-    return input;
+    },
   });
 
   focusEffect = effect(() => {
@@ -560,19 +552,13 @@ export class ShipSelect {
     });
   });
 
-  _inputValue = '';
-  inputValueEffect = effect(() => {
-    const inputValue = this.inputValue();
-    this._inputValue = inputValue;
-  });
-
   inputRefElEffect = effect(() => {
     const input = this.inputRefEl();
 
     if (!input) return;
 
     const selectedOptionsLength = untracked(() => this.selectedOptions().length);
-    if (input.value === this._inputValue && (input.value !== '' || selectedOptionsLength > 0)) return;
+    if (input.value === untracked(this.inputValue) && (input.value !== '' || selectedOptionsLength > 0)) return;
 
     this.disabled.set(input.disabled);
 
@@ -710,7 +696,6 @@ export class ShipSelect {
 
     if (options.length === 0) {
       this.inputValue.set('');
-      this.updateInputElValue();
 
       return;
     }
@@ -722,10 +707,7 @@ export class ShipSelect {
       })
       .join(',');
 
-    if (newInputValue === this.inputValue()) return;
-
     this.inputValue.set(newInputValue);
-    this.updateInputElValue();
   }
 
   /** Returns the value of an option, reading the `value` property path when configured. */
@@ -821,7 +803,6 @@ export class ShipSelect {
 
     if (selectMultiple && this.hasSearch()) {
       this.inputValue.set('');
-      this.updateInputElValue();
     }
   }
 
@@ -853,7 +834,6 @@ export class ShipSelect {
     if (this.hasSearch()) {
       this.prevInputValue.set(this.inputValue() ?? '');
       this.inputValue.set('');
-      this.updateInputElValue();
     } else {
       this.#previousSelectedOptions.set(this.selectedOptions());
     }
@@ -886,7 +866,6 @@ export class ShipSelect {
     const prevSelectedOptions = this.#previousSelectedOptions();
 
     if (this.asFreeText() && !this.selectMultiple()) {
-      this.updateInputElValue();
       return;
     }
 
@@ -913,19 +892,6 @@ export class ShipSelect {
     this.isOpen.set(false);
     this.prevInputValue.set(null);
     this.cleared.emit();
-
-    this.updateInputElValue();
-  }
-
-  /** Writes the current input value to the native input element and dispatches an `input` event. */
-  updateInputElValue() {
-    const inputEl = this.inputRefEl();
-    const inputValue = this.inputValue();
-
-    if (!inputEl || inputEl.value === inputValue) return;
-
-    inputEl.value = inputValue;
-    inputEl.dispatchEvent(new Event('input'));
   }
 
   #getProperty(obj: unknown, path: string): unknown {
