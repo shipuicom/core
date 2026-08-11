@@ -1,5 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { generateUniqueId } from '@ship-ui/core';
+import { ShipA11yAnnouncerService } from '@ship-ui/core/ship-a11y-announcer';
 import { ShipAlertType } from './ship-alert';
 
 export type ShipAlertItem = {
@@ -19,6 +20,8 @@ export type ShipAlertItemInternal = ShipAlertItem & {
   providedIn: 'root',
 })
 export class ShipAlertService {
+  #announcer = inject(ShipA11yAnnouncerService);
+
   /** Reactive list of active/queued alerts, newest first. */
   alertHistory = signal<ShipAlertItemInternal[]>([]);
   /** Whether the alert history panel is expanded. */
@@ -69,6 +72,13 @@ export class ShipAlertService {
   /** Add an alert to the history, animate it in, and auto-hide it after a timeout. */
   addAlert(alert: ShipAlertItem) {
     const id = generateUniqueId();
+
+    // Toasts are otherwise invisible to screen readers; errors and warnings
+    // interrupt, everything else waits its turn.
+    this.#announcer.announce(
+      alert.content ? `${alert.title}. ${alert.content}` : alert.title,
+      alert.type === 'error' || alert.type === 'warn' ? 'assertive' : 'polite'
+    );
 
     this.alertHistory.update((history) => [
       { ...alert, isOpen: true, animateIn: true, animateOut: false, id },

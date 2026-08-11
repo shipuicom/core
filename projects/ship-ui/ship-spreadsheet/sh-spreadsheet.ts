@@ -15,6 +15,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { ShipA11yAnnouncerService } from '@ship-ui/core/ship-a11y-announcer';
 import { ShipVirtualWindow } from '@ship-ui/core/ship-virtual-scroll';
 import { sheetRangeToHtml, sheetRangeToTsv } from './core/sheet-clipboard';
 import {
@@ -124,6 +125,7 @@ export class ShipSpreadsheet {
   #dragging = false;
   #destroyRef = inject(DestroyRef);
   #sanitizer = inject(DomSanitizer);
+  #announcer = inject(ShipA11yAnnouncerService);
   #styleEl: HTMLStyleElement | null = null;
 
   readonly headOffset = computed(() => (this.headers() ? 44 : 0));
@@ -318,7 +320,24 @@ export class ShipSpreadsheet {
   }
 
   onMouseUp() {
+    if (this.#dragging) this.#announceSelection();
     this.#dragging = false;
+  }
+
+  /**
+   * Voice the settled selection ("B2 to C3 selected, 2 ranges") — announced
+   * on mouseup rather than per selection write, so a drag sweep produces one
+   * announcement instead of a stream.
+   */
+  #announceSelection() {
+    const raw = this.selection();
+    const sheet = this.sheet();
+    if (!raw?.ranges.length) return;
+    const { r0, c0, r1, c1 } = normalizedRange(sheet, raw.ranges[raw.ranges.length - 1]);
+    const from = `${colLabel(c0)}${r0 + 1}`;
+    const to = `${colLabel(c1)}${r1 + 1}`;
+    const range = from === to ? `${from} selected` : `${from} to ${to} selected`;
+    this.#announcer.announce(raw.ranges.length > 1 ? `${range}, ${raw.ranges.length} ranges` : range);
   }
 
   /** Copies the active range — the multi-range union has no TSV shape. */
