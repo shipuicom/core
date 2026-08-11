@@ -50,6 +50,12 @@ export type ShipEditorMetric = 'words' | 'characters' | 'blocks' | 'format';
 const VIRTUAL_AUTO_THRESHOLD = 1000;
 /** Pixels of content kept mounted beyond each viewport edge. */
 const VIRTUAL_OVERSCAN_PX = 600;
+/**
+ * Breathing room when revealing the caret: without it the caret lands flush
+ * against the viewport edge — visually glued to the software keyboard, or
+ * hidden under floating browser chrome (Chrome iOS bottom URL bar).
+ */
+const CARET_REVEAL_MARGIN_PX = 16;
 /** Height assumed for a block the DOM has never laid out. */
 const VIRTUAL_DEFAULT_BLOCK_PX = 36;
 
@@ -526,8 +532,24 @@ export class ShipEditor implements ControlValueAccessor {
       const vv = window.visualViewport;
       if (vv) {
         vv.addEventListener('resize', this.#onVisualViewportResize, { passive: true });
-        this.#destroyRef.onDestroy(() => vv.removeEventListener('resize', this.#onVisualViewportResize));
+        // Panning while pinch-zoomed moves the visible band: keep the virtual
+        // window honest, but never reveal-on-scroll — that would yank the
+        // viewport back to the caret mid-pan.
+        vv.addEventListener('scroll', this.#onViewportChange, { passive: true });
+        this.#destroyRef.onDestroy(() => {
+          vv.removeEventListener('resize', this.#onVisualViewportResize);
+          vv.removeEventListener('scroll', this.#onViewportChange);
+        });
       }
+
+      // WKWebView browsers (Chrome/Firefox on iOS, in-app webviews) open the
+      // keyboard without any visualViewport resize — Safari is the only iOS
+      // browser that fires it. Revealing on focus, after the keyboard's
+      // settle time, covers them; on Safari it is a harmless double-check.
+      const surface = this.surface().nativeElement;
+      const onFocusIn = () => setTimeout(() => this.#revealFocusedCaret(), 350);
+      surface.addEventListener('focusin', onFocusIn);
+      this.#destroyRef.onDestroy(() => surface.removeEventListener('focusin', onFocusIn));
     });
 
     this.#destroyRef.onDestroy(() => {
@@ -1998,7 +2020,9 @@ export class ShipEditor implements ControlValueAccessor {
     if (!domSel?.rangeCount) return;
     const rect = domSel.getRangeAt(0).getBoundingClientRect();
     if (rect.top === 0 && rect.bottom === 0) return; // unpainted/detached range
-    const { top: vpTop, bottom: vpBottom } = this.#viewportEdges();
+    const edges = this.#viewportEdges();
+    const vpTop = edges.top + CARET_REVEAL_MARGIN_PX;
+    const vpBottom = edges.bottom - CARET_REVEAL_MARGIN_PX;
     let delta = 0;
     if (rect.top < vpTop) delta = rect.top - vpTop;
     else if (rect.bottom > vpBottom) delta = rect.bottom - vpBottom;
@@ -2220,7 +2244,9 @@ export class ShipEditor implements ControlValueAccessor {
     const origin = container.getBoundingClientRect().top + this.#basePadTop;
     const top = origin + heights.prefixHeight(blockIndex);
     const bottom = top + heights.heightOf(blockIndex);
-    const { top: vpTop, bottom: vpBottom } = this.#viewportEdges();
+    const edges = this.#viewportEdges();
+    const vpTop = edges.top + CARET_REVEAL_MARGIN_PX;
+    const vpBottom = edges.bottom - CARET_REVEAL_MARGIN_PX;
     let delta = 0;
     if (top < vpTop) delta = top - vpTop;
     else if (bottom > vpBottom) delta = Math.min(bottom - vpBottom, top - vpTop);
