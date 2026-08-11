@@ -120,13 +120,13 @@ export class ShipDialog {
   });
 
   /**
-   * The dialog's containing block is the *large* viewport — on iOS Safari
-   * that extends behind the bottom URL bar. `100lvh - 100dvh` lifts the sheet
-   * above whatever browser chrome currently overlays the page, and the JS
-   * `keyboardInset` stacks the software keyboard on top (the keyboard moves
-   * only the visual viewport, which no CSS unit tracks).
+   * The sheet rests at the *true* bottom of the layout viewport — extending
+   * behind any overlaying browser chrome like a native sheet (the content's
+   * safe-area padding keeps controls clear of the home indicator). Only the
+   * software keyboard lifts it: the keyboard moves just the visual viewport,
+   * which no CSS unit tracks, so it needs the JS inset.
    */
-  readonly sheetBottomInset = computed(() => `calc(100lvh - 100dvh + ${this.keyboardInset()}px)`);
+  readonly sheetBottomInset = computed(() => `${this.keyboardInset()}px`);
 
   /** With the keyboard open the sheet caps to the visible band instead of dvh. */
   readonly sheetMaxHeight = computed(() => {

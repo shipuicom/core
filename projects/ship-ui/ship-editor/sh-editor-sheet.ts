@@ -44,7 +44,7 @@ type SheetEditorConfig = {
       display: flex;
       flex-direction: column;
       flex: 1;
-      min-height: 60dvh;
+      min-height: 0;
 
       // Stretch the editor's internal column so the body takes the leftover
       // height (and becomes the scroller) while the bottom toolbar lands
@@ -57,10 +57,37 @@ type SheetEditorConfig = {
         min-height: 0;
       }
 
+      // The sheet card supplies the chrome — the editor sheds its own frame.
+      sh-editor {
+        border-radius: 0;
+      }
+
+      sh-editor > .sh-editor-container {
+        border: none;
+        border-radius: 0;
+      }
+
       sh-editor .sh-editor-body {
         flex: 1;
         min-height: 0;
         overflow: auto;
+      }
+
+      // One scrollable row instead of wrapping: on narrow screens the full
+      // action set swipes horizontally, like native keyboard accessory bars.
+      sh-editor-toolbar[data-position='bottom'] .sh-editor-toolbar-inner {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
+
+        button {
+          flex: 0 0 auto;
+        }
       }
     }
   `,
@@ -229,6 +256,10 @@ export class ShipEditorSheet {
 
     this.#dialogService.open(ShipEditorSheetSurface, {
       type: 'bottom-sheet',
+      // A fixed-height card, not content-sized: the editing surface should
+      // feel like a workspace (the keyboard cap still wins via max-height).
+      height: '95dvh',
+      maxHeight: '95dvh',
       data: {
         value: () => this.value(),
         setValue: (next: string | ASTDocument | null) => this.value.set(next),
