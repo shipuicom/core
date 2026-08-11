@@ -1,0 +1,25 @@
+<div class="example-list" style="display: flex; flex-direction: column; gap: 32px">
+  <app-previewer path="/tree/examples/sortable-tree/sortable-tree" title="Interactive Sortable Tree">
+    <p style="margin-bottom: 16px">
+      Integrate the tree component with
+      <code>createTreeSortableManager</code>
+      to enable premium, VSCode-style interactive drag-and-drop.
+    </p>
+    <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px">
+      <app-highlight lang="html" [content]="sortableCodeHtml" />
+      <app-highlight lang="ts" [content]="sortableCodeTypescript" />
+    </div>
+    <app-sortable-tree-example class="example" />
+  </app-previewer>
+
+  <app-previewer path="/tree/examples/template-tree/template-tree" title="Custom Node Template & Actions">
+    <p style="margin-bottom: 16px">
+      Define a custom node layout inside the
+      <code>#nodeTemplate</code>
+      child element. This example maps custom property keys, resolves custom icons, displays status badges, and
+      supports deleting elements.
+    </p>
+    <app-highlight lang="html" [content]="templateCodeHtml" />
+    <app-template-tree-example class="example" />
+  </app-previewer>
+</div>

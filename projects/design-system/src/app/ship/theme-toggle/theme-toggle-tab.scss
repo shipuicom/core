@@ -1,0 +1,16 @@
+@use '../showcase' as *;
+
+:host {
+  @extend %tab-host;
+}
+
+.service-demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: p2r(10);
+}
+
+.example {
+  display: flex;
+  justify-content: center;
+}

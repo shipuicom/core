@@ -1,0 +1,37 @@
+<div class="overview-doc">
+  <section>
+    <h4>Overview</h4>
+    <p>
+      <code>&lt;sh-editor&gt;</code> is a signal-based, zoneless WYSIWYG editor with a clean separation between the DOM,
+      the AST (Abstract Syntax Tree) and behaviors. The AST is the source of truth: edits flow through
+      <code>beforeinput</code> into an undoable engine transaction and the DOM is re-projected from the AST. It binds
+      two-way via <code>ControlValueAccessor</code> and serializes to HTML, Markdown or JSON.
+    </p>
+  </section>
+  <section>
+    <h4>Architecture</h4>
+    <ul>
+      <li><strong>Behavior-driven:</strong> each block/mark is a standalone behavior class; extend via <code>[behaviors]</code>.</li>
+      <li><strong>AST as source of truth:</strong> the DOM is a pure projection, so undo/redo and serialization are exact.</li>
+      <li><strong>Signal-based &amp; zoneless:</strong> reactive state throughout, no zone.js.</li>
+      <li><strong>Dependency-free:</strong> no Prosemirror or Quill.</li>
+    </ul>
+  </section>
+  <section>
+    <h4>Basic usage</h4>
+    <p>Import the editor and (optionally) the composable toolbar pieces, then bind <code>[(value)]</code>.</p>
+    <app-highlight lang="ts" [content]="usageExample" />
+  </section>
+
+  <app-previewer path="/editors" title="Basic Editor" class="no-space">
+    <sh-editor [(value)]="basicValue" format="html">
+      <sh-editor-toolbar position="top">
+        <button shEditorAction="bold" aria-label="Bold"><sh-icon>text-b</sh-icon></button>
+        <button shEditorAction="italic" aria-label="Italic"><sh-icon>text-italic</sh-icon></button>
+        <button shEditorAction="heading" [shEditorActionAttrs]="{ level: 2 }" aria-label="Heading"><sh-icon>text-h-two</sh-icon></button>
+        <button shEditorAction="bullet-list" aria-label="Bullet List"><sh-icon>list-bullets</sh-icon></button>
+        <button shEditorAction="link" aria-label="Insert Link"><sh-icon>link</sh-icon></button>
+      </sh-editor-toolbar>
+    </sh-editor>
+  </app-previewer>
+</div>

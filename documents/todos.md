@@ -65,6 +65,9 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [x] Add another button group variant
 - [x] Grid drag and drop sortables
 - [x] Multi list drag and drop sortables
+- [x] Extract virtualization into a shared core: ShipVirtualWindow (headless, axis-aware) drives sh-virtual-scroll, the new shVirtualScroll directive, sh-code and sh-sheet-view; sh-editor stays on BlockHeightMap directly
+- [x] Document component services on dedicated Service tabs (dialogs, alerts, spotlight, a11y-keybindings, datepickers, lists, sortables, theme-toggle, videos)
+- [x] Virtual Scroll docs page: Architecture tab (component/directive/engine, with examples) + live directive example, added to the sidebar
 - [ ] Apply the new sheet utility to radio buttons
 
 - [ ] Make styles optional/configurable (base, simple, raised, outlined, flat) on a component level and generally
@@ -82,6 +85,8 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [ ] Drag controls for number inputs (directive)
 - [ ] sh-table features
   - [ ] Add support for row resizing
+- [ ] sh-sheet features
+  - [ ] User-resizable columns and rows (resize = heights.measure + sync on the axis windows; regenerate the column stylesheet)
 - [ ] sh-menu features
   - [ ] add hotkeys to navigate options without having a search input
   - [ ] add focus with a hidden input similar to native select
@@ -105,25 +110,22 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 
 - [ ] Animation package
 - [ ] Create a gantt chart component
-- [ ] Create a blueprint component (like blueprints in unreal engine)
+- [x] Create a blueprint component (like blueprints in unreal engine)
 - [ ] Create a timeline component
-- [ ] Code editor component
-  - [ ] Syntax highlighting
+- [x] Code editor component (sh-code)
+  - [x] Syntax highlighting (textmate grammars)
+  - [x] Indent/outdent, multi-cursor, keymaps (sublime/vscode)
   - [ ] Code completion
   - [ ] Code folding
-  - [ ] Code refactoring
-  - [ ] Code navigation
   - [ ] Auto formatting
-  - [ ] Auto indentation
-  - [ ] Auto closing
-  - [ ] Auto rename
-- [ ] Create a markdown editor component
-- [ ] Create a spreadsheet component
-- [ ] Create a wysiwyg editor component
+  - [ ] Auto indentation / auto closing
+- [x] Create a markdown editor component (sh-editor markdown format)
+- [x] Create a spreadsheet component (sh-sheet / sh-sheet-view)
+- [x] Create a wysiwyg editor component (sh-editor)
 
 ### Testing to add
 
-- [ ] E2E testing
+- [x] E2E testing (Playwright suites for sh-editor and sh-code; extend to more surfaces)
 - [ ] Fuzz testing
 - [ ] Simulation testing
 

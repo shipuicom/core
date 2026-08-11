@@ -1,0 +1,75 @@
+<div class="controls">
+  <sh-button-group [(value)]="type">
+    <button value="type-a">Type A</button>
+    <button value="type-b">Type B</button>
+  </sh-button-group>
+</div>
+
+<app-property-viewer>
+  <section>
+    <h4>Table Content Component</h4>
+    <p>
+      Project the
+      <code>&lt;sh-table-content&gt;</code>
+      component inside
+      <code>&lt;sh-table&gt;</code>
+      to automatically generate columns, headers, and cell rows based on a configuration schema.
+    </p>
+  </section>
+
+  <section>
+    <h4>Column Config Types</h4>
+    <p>
+      Define column schemas using
+      <code>ShipTableColumn</code>
+      objects. Set the
+      <code>type</code>
+      field to enable out-of-the-box sorting and formatting for:
+      <code>'string'</code>, <code>'number'</code>, <code>'date'</code>, <code>'boolean'</code>, and <code>'badge'</code>.
+    </p>
+  </section>
+
+  <section>
+    <h4>Formatting & Rendering</h4>
+    <p>
+      Customize cell rendering dynamically. Provide a
+      <code>cell</code>
+      function for inline string values, a
+      <code>format</code>
+      function for formatting value keys, or a
+      <code>TemplateRef</code>
+      via
+      <code>cellTemplate</code>
+      for complete HTML markup override.
+    </p>
+  </section>
+
+  <section>
+    <h4>Features & Stickiness</h4>
+    <p>
+      Support features like Sorting and Resizing directly via configuration attributes:
+      <code>sortable</code>, <code>resizable</code>, <code>minWidth</code>, <code>maxWidth</code>, and <code>sticky: 'start' | 'end'</code>.
+    </p>
+  </section>
+
+  <section>
+    <h4>Accessibility (WCAG)</h4>
+    <p>
+      Support screen reader navigation and labeling. Bind an accessible name to the table container with
+      <code>[aria-label]</code> or <code>[aria-labelledby]</code>. Identify columns uniquely by setting
+      <code>rowHeader: true</code> in the column configuration, which renders cell rows using the semantic
+      <code>role="rowheader"</code> instead of <code>role="cell"</code>.
+    </p>
+  </section>
+</app-property-viewer>
+
+<h3>Basic Usage</h3>
+<app-highlight lang="html" [content]="configTableHtml" />
+<app-highlight lang="ts" [content]="configTableTs" />
+
+<app-previewer
+  class="no-space"
+  path="/tables/examples/config-table/config-table"
+  title="Configuration-based Table">
+  <config-table class="example" [variant]="type()" />
+</app-previewer>

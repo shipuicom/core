@@ -1,0 +1,45 @@
+<app-property-viewer>
+  <section>
+    <h4>ShipAlertService</h4>
+    <p>
+      <code>ShipAlertService</code> is provided in root and is the imperative way to show toast alerts from anywhere —
+      components, interceptors, effects. Alerts are queued in a reactive history, animate in, and auto-hide after a
+      short timeout.
+    </p>
+    <p>Try it:</p>
+    <div class="service-demo-row">
+      <button shButton color="success" (click)="alertService.success('Changes saved')">success()</button>
+      <button shButton color="warn" (click)="alertService.warning('Storage almost full')">warning()</button>
+      <button shButton color="error" (click)="alertService.error('Something went wrong')">error()</button>
+      <button shButton color="primary" (click)="alertService.info('Heads up!')">info()</button>
+    </div>
+    <ship-alert-container [alertService]="alertService" />
+  </section>
+
+  <section>
+    <h4>Shorthand methods</h4>
+    <p>
+      <code>success()</code>, <code>error()</code>, <code>warning()</code>, <code>info()</code> and
+      <code>question()</code> each show a single-line alert of the matching type.
+    </p>
+    <app-highlight lang="ts" [content]="codeShorthands" />
+  </section>
+
+  <section>
+    <h4>Full control with addAlert</h4>
+    <p>Use <code>addAlert()</code> when you need a body text or want to choose the type dynamically:</p>
+    <app-highlight lang="ts" [content]="codeAddAlert" />
+  </section>
+
+  <section>
+    <h4>Alert history</h4>
+    <p>
+      Every alert is kept in the <code>alertHistory</code> signal (newest first). The
+      <code>alertHistoryIsOpen</code> and <code>alertHistoryIsHidden</code> signals control the history panel, and
+      <code>removeAlert()</code> / <code>hideAlert()</code> manage individual entries.
+    </p>
+    <app-highlight lang="ts" [content]="codeHistory" />
+  </section>
+</app-property-viewer>
+
+<app-api-reference name="ShipAlertService" />

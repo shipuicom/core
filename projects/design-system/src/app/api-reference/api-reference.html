@@ -9,7 +9,7 @@
 } @else {
   <sh-card variant="type-c" class="api-ref">
     <header class="api-head">
-      <sh-chip [color]="kindColor()" class="api-kind">{{ kindLabel() }}</sh-chip>
+      <sh-chip variant="simple" size="small" [color]="kindColor()" class="api-kind">{{ kindLabel() }}</sh-chip>
       <code class="api-selector">{{ c.selector }}</code>
       @for (a of c.selectorAliases ?? []; track a) {
         <code class="api-selector alias">{{ a }}</code>
@@ -21,7 +21,7 @@
     }
 
     @if (plainInputs().length) {
-      <h4 class="api-group">Inputs</h4>
+      <h4 class="api-group">Inputs <span class="api-count">{{ plainInputs().length }}</span></h4>
       <div class="api-table-wrap">
         <table class="api-table">
           <thead>
@@ -36,7 +36,7 @@
                   @if (i.options?.length) {
                     <div class="opts">
                       @for (o of i.options; track o) {
-                        <sh-chip size="small">{{ o === '' ? "''" : o }}</sh-chip>
+                        <sh-chip size="xsmall">{{ o === '' ? "''" : o }}</sh-chip>
                       }
                     </div>
                   }
@@ -51,7 +51,7 @@
     }
 
     @if (models().length) {
-      <h4 class="api-group">Models <span class="api-hint">two-way bindable — <code>[(name)]</code></span></h4>
+      <h4 class="api-group">Models <span class="api-count">{{ models().length }}</span> <span class="api-hint">two-way bindable — <code>[(name)]</code></span></h4>
       <div class="api-table-wrap">
         <table class="api-table">
           <thead>
@@ -72,7 +72,7 @@
     }
 
     @if (c.outputs.length) {
-      <h4 class="api-group">Outputs</h4>
+      <h4 class="api-group">Outputs <span class="api-count">{{ c.outputs.length }}</span></h4>
       <div class="api-table-wrap">
         <table class="api-table">
           <thead>
@@ -92,7 +92,7 @@
     }
 
     @if (c.methods.length) {
-      <h4 class="api-group">Methods</h4>
+      <h4 class="api-group">Methods <span class="api-count">{{ c.methods.length }}</span></h4>
       <div class="api-table-wrap">
         <table class="api-table">
           <thead>

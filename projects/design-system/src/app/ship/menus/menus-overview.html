@@ -1,0 +1,43 @@
+<app-previewer defaultView="markup" path="/menus/examples/base-menu-example/base-menu-example" title="Basic">
+  <base-menu-example class="example" />
+</app-previewer>
+
+<app-property-viewer>
+  <section>
+    <h4>Searchable</h4>
+    <p>
+      Enable a wildcard search input to filter menu options using the
+      <code>searchable</code>
+      attribute.
+    </p>
+  </section>
+
+  <section>
+    <h4>Behavior</h4>
+    <p>Customize menu interaction:</p>
+    <ul>
+      <li>
+        <code>asMultiLayer</code>
+        : Enables nested menu support.
+      </li>
+      <li>
+        <code>closeOnClick</code>
+        : Determines if the menu closes when an option is selected (default: true).
+      </li>
+      <li>
+        <code>disabled</code>
+        : Disables the menu trigger and content.
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h4>Slots</h4>
+    <p>
+      Add a
+      <code>suffix</code>
+      attribute to an element inside a menu option to display hotkeys, icons, or secondary information at the trailing
+      end.
+    </p>
+  </section>
+</app-property-viewer>

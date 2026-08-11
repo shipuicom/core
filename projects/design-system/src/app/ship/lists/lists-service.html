@@ -1,0 +1,17 @@
+<app-property-viewer>
+  <section>
+    <h4>ShipListItemSwipeService</h4>
+    <p>
+      <code>ShipListItemSwipeService</code> is the root-provided coordinator for <code>sh-list-item-swipe</code>. Every
+      swipe item registers with it while being dragged open, and the service guarantees only one item is open at a time
+      — starting a swipe on one item automatically closes the previously open one.
+    </p>
+    <p>
+      Its single property, <code>activeSwipeItem</code>, holds the currently open <code>ShipListItemSwipe</code>
+      instance (or <code>null</code>), which you can use to observe or close the open item from outside the list:
+    </p>
+    <app-highlight lang="ts" [content]="codeCloseActive" />
+  </section>
+</app-property-viewer>
+
+<app-api-reference name="ShipListItemSwipeService" />

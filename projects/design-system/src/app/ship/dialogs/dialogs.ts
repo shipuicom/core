@@ -1,35 +1,12 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { ShipTabs } from '@ship-ui/core/ship-tabs';
-import { ApiReference } from '../../api-reference/api-reference';
-import { Previewer } from '../../previewer/previewer';
-import { PropertyViewer } from '../../property-viewer/property-viewer';
-import { BasicDynamicDialog } from './examples/basic-dynamic-dialog/basic-dynamic-dialog';
-import { DataPassingDialog } from './examples/data-passing-dialog/data-passing-dialog';
-import { DialogAsComponent } from './examples/dialog-as-component/dialog-as-component';
-import { HeaderFooterDialog } from './examples/header-footer-dialog/header-footer-dialog';
-import { TemplateDialog } from './examples/template-dialog/template-dialog';
 
 @Component({
   selector: 'app-dialogs',
-  imports: [
-    ShipTabs,
-    ApiReference,
-    Previewer,
-    PropertyViewer,
-    BasicDynamicDialog,
-    HeaderFooterDialog,
-    DataPassingDialog,
-    DialogAsComponent,
-    TemplateDialog,
-
-    ShipButtonGroup,
-  ],
+  imports: [ShipTabs, RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './dialogs.html',
   styleUrl: './dialogs.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class Dialogs {
-  activeTab = signal('overview');
-  type = signal('');
-}
+export default class Dialogs {}

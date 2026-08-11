@@ -46,11 +46,11 @@ export class ApiReference {
   readonly kindColor = computed(() => {
     switch (this.component()?.kind) {
       case 'directive':
-        return 'accent';
-      case 'service':
         return 'warn';
+      case 'service':
+        return 'error';
       default:
-        return 'primary';
+        return 'accent';
     }
   });
 

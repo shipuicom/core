@@ -1,0 +1,44 @@
+<app-property-viewer>
+  <section>
+    <h4>ShipCalendarService</h4>
+    <p>
+      <code>ShipCalendarService</code> is the signal-based calendar engine behind <code>sh-datepicker</code>. It is
+      <em>not</em> provided in root — the datepicker provides its own instance, and you can do the same to build fully
+      custom calendar UIs (booking grids, availability views, heatmaps) on top of the exact date math the datepicker
+      uses.
+    </p>
+  </section>
+
+  <section>
+    <h4>Providing and configuring</h4>
+    <p>
+      Add the service to a component's <code>providers</code> and configure it through its writable signals:
+      <code>currentDate</code>, <code>monthsToShow</code>, <code>startOfWeek</code>, <code>weekdayLabels</code> and
+      <code>locale</code>.
+    </p>
+    <app-highlight lang="ts" [content]="codeProvide" />
+  </section>
+
+  <section>
+    <h4>Rendering the grid</h4>
+    <p>
+      The <code>months()</code> computed returns one <code>ShipCalendarMonth</code> per visible month, where
+      <code>dates</code> is a 7-column grid padded with leading/trailing days from the adjacent months.
+      <code>weekdays()</code> gives matching column headers rotated to your <code>startOfWeek</code>.
+    </p>
+    <app-highlight lang="html" [content]="codeRender" />
+  </section>
+
+  <section>
+    <h4>Navigation</h4>
+    <app-highlight lang="ts" [content]="codeNavigate" />
+  </section>
+
+  <section>
+    <h4>Date helpers</h4>
+    <p>Timezone-safe helpers used throughout the datepicker are exposed for reuse:</p>
+    <app-highlight lang="ts" [content]="codeHelpers" />
+  </section>
+</app-property-viewer>
+
+<app-api-reference name="ShipCalendarService" />

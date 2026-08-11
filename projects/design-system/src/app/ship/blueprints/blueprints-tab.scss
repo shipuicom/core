@@ -1,0 +1,29 @@
+@use '../showcase' as *;
+
+:host {
+  @extend %tab-host;
+  flex: 1;
+  min-height: 0;
+}
+
+h3 {
+  display: flex;
+  align-items: center;
+  gap: p2r(16);
+}
+
+section {
+  flex: 1 0;
+  height: 100%;
+  width: 100%;
+}
+
+.overview-blueprint {
+  height: p2r(360);
+  min-height: p2r(360);
+
+  sh-blueprint {
+    display: block;
+    height: 100%;
+  }
+}

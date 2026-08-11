@@ -1,0 +1,22 @@
+<app-previewer defaultView="markup" path="/tree/examples/basic-tree/basic-tree" title="Basic">
+  <app-basic-tree class="example" />
+</app-previewer>
+
+<p>
+  The
+  <code>&lt;sh-tree&gt;</code>
+  component renders a flat list of nodes hierarchically. It handles caret folding, vertical indent guide lines, node
+  selection, and node icon states automatically.
+</p>
+
+<h3>Basic Usage</h3>
+<div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px">
+  <div>
+    <h4>HTML</h4>
+    <app-highlight lang="html" [content]="basicCodeHtml" />
+  </div>
+  <div>
+    <h4>TypeScript</h4>
+    <app-highlight lang="ts" [content]="basicCodeTypescript" />
+  </div>
+</div>

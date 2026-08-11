@@ -1,0 +1,42 @@
+<app-property-viewer>
+  <section>
+    <h4>ShipDialogService</h4>
+    <p>
+      <code>ShipDialogService</code> is provided in root and opens any component or <code>ng-template</code> inside a
+      <code>ShipDialog</code> overlay — no dialog markup needed in your template. It returns an instance handle with the
+      rendered <code>component</code>, an imperative <code>close()</code> and a <code>closed</code> output.
+    </p>
+  </section>
+
+  <section>
+    <h4>Opening a component</h4>
+    <p>
+      Pass a component class to <code>open()</code>. When the component declares a <code>data</code> input and a
+      <code>closed</code> output, the service infers their types — <code>data</code> is type-checked against the
+      component's input and the <code>closed</code> callback receives the emitted result.
+    </p>
+    <app-highlight lang="ts" [content]="codeOpenComponent" />
+    <p>The dialog component itself only needs the conventional <code>data</code> / <code>closed</code> pair:</p>
+    <app-highlight lang="ts" [content]="codeDialogComponent" />
+  </section>
+
+  <section>
+    <h4>Opening a template</h4>
+    <p>
+      A <code>TemplateRef</code> works too. The template context exposes the passed <code>data</code> as
+      <code>$implicit</code> and a <code>close</code> function that resolves the <code>closed</code> callback.
+    </p>
+    <app-highlight lang="ts" [content]="codeOpenTemplate" />
+  </section>
+
+  <section>
+    <h4>Dialog options</h4>
+    <p>
+      Besides <code>data</code> and <code>closed</code>, every <code>ShipDialogOptions</code> field is forwarded to the
+      underlying <code>ShipDialog</code>:
+    </p>
+    <app-highlight lang="ts" [content]="codeOptions" />
+  </section>
+</app-property-viewer>
+
+<app-api-reference name="ShipDialogService" />

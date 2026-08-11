@@ -1,0 +1,82 @@
+<app-property-viewer>
+  <section>
+    <h4>How ShipUI virtualizes</h4>
+    <p>
+      Every virtualized surface in ShipUI — <code>sh-virtual-scroll</code>, <code>sh-code</code>,
+      <code>sh-sheet-view</code> and <code>sh-editor</code> — shares one engine. At the bottom sits
+      <code>BlockHeightMap</code>, a pixel-size model; on top of it, <code>ShipVirtualWindow</code> runs the scroll
+      math and exposes the mounted range as signals. The component and the directive are thin DOM adapters over that
+      core, and you can use it directly for anything with an ordered pixel layout.
+    </p>
+    <p>Only the items inside the viewport (plus an overscan margin) exist in the DOM; spacers stand in for the rest, so the scrollbar geometry matches a fully rendered list.</p>
+  </section>
+
+  <section>
+    <h4>The component</h4>
+    <p>
+      <code>&lt;sh-virtual-scroll&gt;</code> is the drop-in form: it owns the scroll viewport, measures every
+      projected item with a <code>ResizeObserver</code>, and translates the content to the window's offset. Items are
+      projected with an <code>#item</code> template ref so the component can find and measure them.
+    </p>
+    <app-highlight lang="html" [content]="codeComponent" />
+  </section>
+
+  <section>
+    <h4>The directive</h4>
+    <p>
+      <code>[shVirtualScroll]</code> is the bring-your-own-markup form: put the directive on the element holding your
+      rows, inside a container with <code>overflow: auto</code>, and render only the <code>start()..end()</code> slice
+      yourself. The directive scrolls against the nearest scrollable ancestor (or the host itself when the host
+      scrolls) and owns the spacer padding and the measurement pass (offset deltas after every render). Export it as
+      <code>#vs="shVirtualScroll"</code> to read the window.
+    </p>
+    <app-highlight lang="html" [content]="codeDirective" />
+    <p>
+      With <code>virtualAxis="horizontal"</code> the same directive windows by width instead of height — the host
+      scrolls on x and spacer padding goes left/right:
+    </p>
+    <app-highlight lang="html" [content]="codeDirectiveHorizontal" />
+  </section>
+
+  <section>
+    <h4>The engine: ShipVirtualWindow</h4>
+    <p>
+      <code>ShipVirtualWindow</code> is headless — no DOM, no DI. Feed it scroll positions and measurements; read the
+      window back as signals. This is what to reach for when neither DOM adapter fits: canvas rows, table axes, editor
+      blocks.
+    </p>
+    <app-highlight lang="ts" [content]="codeWindowBasics" />
+    <p>Measurement and structural edits:</p>
+    <app-highlight lang="ts" [content]="codeWindowMeasure" />
+  </section>
+
+  <section>
+    <h4>The pixel model: BlockHeightMap</h4>
+    <p>
+      Sizes are "distance to the next item's top", so margins and margin-collapse are inside the numbers and the
+      prefix sums match real layout. Estimates come from a rolling average of what has been measured — locked after 32
+      measurements to keep the model deterministic.
+    </p>
+    <app-highlight lang="ts" [content]="codeHeightMap" />
+  </section>
+
+  <section>
+    <h4>Two axes: the sheet</h4>
+    <p>
+      Virtualization is axis-agnostic. <code>sh-sheet-view</code> mounts a rectangular window of cells by running two
+      engines side by side:
+    </p>
+    <app-highlight lang="ts" [content]="code2d" />
+  </section>
+
+  <section>
+    <h4>The editors</h4>
+    <p>
+      <code>sh-code</code> windows lines on a <code>ShipVirtualWindow</code> (uniform line height — no per-line
+      measurement pass). <code>sh-editor</code> sits directly on <code>BlockHeightMap</code>: its window pass is
+      interleaved with DOM reconciliation, scroll-anchoring compensation and caret repainting, so the signal wrapper
+      would only add indirection there. Both virtualize automatically past 1,000 lines/blocks:
+    </p>
+    <app-highlight lang="html" [content]="codeEditorUsage" />
+  </section>
+</app-property-viewer>

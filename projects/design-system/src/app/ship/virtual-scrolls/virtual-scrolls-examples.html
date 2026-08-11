@@ -1,0 +1,18 @@
+<app-previewer path="/virtual-scrolls/examples/directive-virtual-scroll/directive-virtual-scroll" title="Directive on your own container">
+  <app-directive-virtual-scroll class="example" />
+</app-previewer>
+
+<h3>Component with varied content</h3>
+<sh-virtual-scroll>
+  @for (item of items(); track item.id) {
+    <div #item class="my-item" [style.background-color]="item.color">
+      <div [style.font-size.px]="item.fontSize">{{ item.name }} (ID: {{ item.id }})</div>
+      @if (item.showContent) {
+        <div>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident, excepturi deserunt dignissimos corrupti
+          repellendus obcaecati.
+        </div>
+      }
+    </div>
+  }
+</sh-virtual-scroll>

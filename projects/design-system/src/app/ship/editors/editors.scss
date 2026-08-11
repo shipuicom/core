@@ -111,3 +111,9 @@ sh-tabs {
   margin-bottom: 1.5rem;
 }
 
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(24);
+}
+

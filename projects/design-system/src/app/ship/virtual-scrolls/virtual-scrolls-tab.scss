@@ -1,0 +1,10 @@
+@use '../showcase' as *;
+
+:host {
+  @extend %tab-host;
+}
+
+.my-item {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}

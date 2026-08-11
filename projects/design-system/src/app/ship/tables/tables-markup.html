@@ -1,0 +1,108 @@
+<div class="controls">
+  <sh-button-group [(value)]="type">
+    <button value="type-a">Type A</button>
+    <button value="type-b">Type B</button>
+  </sh-button-group>
+</div>
+
+<app-property-viewer>
+  <section>
+    <h4>Data & Loading</h4>
+    <p>
+      Provide data via
+      <code>[data]</code>
+      and toggle a loading state using the
+      <code>loading</code>
+      attribute.
+    </p>
+  </section>
+
+  <section>
+    <h4>Sorting</h4>
+    <p>
+      Enable sorting by applying
+      <code>shSort</code>
+      to header cells. Track the active column with
+      <code>sortByColumn</code>
+      (two-way bindable).
+    </p>
+  </section>
+
+  <section>
+    <h4>Resizing</h4>
+    <p>
+      Apply the
+      <code>shResize</code>
+      directive to header cells to allow column width adjustment. Available inputs:
+      <code>resizable</code>
+      ,
+      <code>minWidth</code>
+      , and
+      <code>maxWidth</code>
+      .
+    </p>
+  </section>
+
+  <section>
+    <h4>Sticky Columns</h4>
+    <p>
+      Use the
+      <code>shStickyColumns</code>
+      attribute (
+      <b>start</b>
+      or
+      <b>end</b>
+      ) or apply
+      <code>.sticky</code>
+      /
+      <code>.sticky-end</code>
+      classes to header cells to pin columns.
+    </p>
+  </section>
+
+  <section>
+    <h4>Column Sizing</h4>
+    <p>
+      Use the
+      <code>size</code>
+      attribute on
+      <code>&lt;th&gt;</code>
+      elements to set initial or fixed widths (e.g.,
+      <code>size="1fr"</code>
+      ,
+      <code>size="200px"</code>
+      ).
+    </p>
+  </section>
+</app-property-viewer>
+
+<app-previewer
+  class="no-space"
+  path="/tables/examples/full-featured-table/full-featured-table"
+  title="Full Featured Table">
+  <full-featured-table class="example" [variant]="type()" />
+</app-previewer>
+
+<app-previewer path="/tables/examples/base-table/base-table" title="Basic Table">
+  <base-table class="example" [variant]="type()" />
+</app-previewer>
+
+<app-previewer path="/tables/examples/toggle-row-table/toggle-row-table" title="Toggle Row Table">
+  <toggle-row-table class="example" [variant]="type()" />
+</app-previewer>
+
+<app-previewer path="/tables/examples/multi-sticky-table/multi-sticky-table" title="Multi Sticky Columns">
+  <multi-sticky-table class="example" [variant]="type()" />
+</app-previewer>
+
+<app-previewer path="/tables/examples/resizing-table/resizing-table" title="Resizing Table">
+  <resizing-table class="example" [variant]="type()" />
+</app-previewer>
+
+<app-previewer path="/tables/examples/multi-table-header/multi-table-header" title="Multi Table Header">
+  <multi-table-header class="example" [variant]="type()" />
+</app-previewer>
+
+<app-previewer path="/tables/examples/sorting-table/sorting-table" title="Sorting Table">
+  <sorting-table class="example" [variant]="type()" />
+</app-previewer>

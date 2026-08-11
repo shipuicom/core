@@ -1,0 +1,20 @@
+<app-property-viewer>
+  <section>
+    <h4>ShipSortableService</h4>
+    <p>
+      <code>ShipSortableService</code> is the root-provided drag registry shared by every <code>ShipSortable</code>
+      container. It is what makes cross-container drops work: all sortable instances register themselves in
+      <code>activeInstances</code>, and during a drag the service tracks the source container
+      (<code>activeSource</code>), the dragged element (<code>activeDraggedElement</code>) and the container currently
+      under the pointer (<code>activeTarget</code>).
+    </p>
+    <p>
+      You rarely call it directly — <code>ShipSortable</code> and <code>createSortableManager()</code> use it under the
+      hood — but injecting it lets you observe global drag state, e.g. to highlight valid drop zones or block other
+      interactions while a drag is active:
+    </p>
+    <app-highlight lang="ts" [content]="codeInspect" />
+  </section>
+</app-property-viewer>
+
+<app-api-reference name="ShipSortableService" />

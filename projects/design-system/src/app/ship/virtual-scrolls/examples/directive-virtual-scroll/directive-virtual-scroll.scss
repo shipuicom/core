@@ -1,0 +1,27 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.scroller {
+  height: 320px;
+  overflow: auto;
+  border: 1px solid var(--base-9);
+  border-radius: 8px;
+}
+
+.row {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--base-10);
+}
+
+.detail {
+  font-size: 0.85em;
+  opacity: 0.7;
+}
+
+.window-readout {
+  margin-top: 8px;
+  font-size: 0.85em;
+  opacity: 0.7;
+}

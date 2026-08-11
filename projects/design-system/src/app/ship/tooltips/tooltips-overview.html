@@ -1,0 +1,69 @@
+<app-previewer defaultView="markup" path="/tooltips/examples/basic-tooltip/basic-tooltip" title="Basic">
+  <app-basic-tooltip class="example" />
+</app-previewer>
+
+<app-property-viewer>
+  <section>
+    <h4>Content Types</h4>
+    <p>
+      The
+      <code>[shTooltip]</code>
+      directive supports multiple content types:
+    </p>
+    <ul>
+      <li>
+        <b>String</b>
+        : Simple text content.
+      </li>
+      <li>
+        <b>Template</b>
+        : Rich HTML using
+        <code>ng-template</code>
+        .
+      </li>
+      <li>
+        <b>null / undefined</b>
+        : Disables the tooltip.
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h4>Positioning</h4>
+    <p>Tooltips automatically position themselves (top, bottom, left, right) based on viewport space.</p>
+  </section>
+
+  <section>
+    <h4>Theming</h4>
+    <p>
+      Tooltips inherit their color from the trigger element. Use the
+      <code>color</code>
+      attribute on the trigger:
+      <b>primary</b>
+      ,
+      <b>accent</b>
+      ,
+      <b>warn</b>
+      ,
+      <b>error</b>
+      , or
+      <b>success</b>
+      .
+    </p>
+  </section>
+
+  <section>
+    <h4>Target Elements</h4>
+    <p>
+      Apply
+      <code>[shTooltip]</code>
+      to any interactive element like
+      <b>buttons</b>
+      ,
+      <b>icons</b>
+      , or
+      <b>form fields</b>
+      .
+    </p>
+  </section>
+</app-property-viewer>

@@ -1,0 +1,13 @@
+<h3>
+  WIP Blueprints
+  <sh-toggle [(checked)]="showAsDots">Show as dots</sh-toggle>
+</h3>
+
+<section>
+  <sh-blueprint [class.dots]="showAsDots()" [autoLayout]="true" [(nodes)]="nodes" (nodesChange)="onChange($event)">
+    <button shButton size="small" (click)="addNewNode()">
+      Add node
+      <sh-icon>leaf</sh-icon>
+    </button>
+  </sh-blueprint>
+</section>

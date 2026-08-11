@@ -1,0 +1,68 @@
+<app-property-viewer>
+  <section>
+    <h4>ShipSpotlightService</h4>
+    <p>
+      <code>ShipSpotlightService</code> integrates the spotlight into your application. By default it registers a global
+      <code>Cmd + K</code> (macOS) / <code>Ctrl + K</code> (Windows/Linux) listener that opens the spotlight overlay
+      with every registered item. It also exposes imperative <code>open()</code> and the
+      <code>globalItemSelected</code> signal for handling selections.
+    </p>
+  </section>
+
+  <section>
+    <h4>Registering items</h4>
+    <p>
+      <code>registerItems()</code> adds items that appear whenever the spotlight opens. It returns a cleanup function to
+      unregister them — and when called from an injection context, cleanup runs automatically when the registering
+      component is destroyed.
+    </p>
+    <app-highlight lang="ts" [content]="codeRegisterItems" />
+    <p>
+      <strong>Shortcuts:</strong> each item can carry an optional <code>shortcut</code> (e.g. <code>"alt+t"</code>) that
+      triggers it <em>while the spotlight is open</em>. Avoid reserved browser hotkeys such as <code>Cmd+N</code>,
+      <code>Cmd+T</code> or <code>Cmd+W</code> — browsers block preventing these, and the component throws if you try to
+      register one.
+    </p>
+  </section>
+
+  <section>
+    <h4>Contextual items</h4>
+    <p>
+      <code>setContextualItems()</code> maintains a single per-context registry — each call replaces the previous
+      contextual set, which makes it ideal for route- or view-specific actions. <code>clearContextualItems()</code>
+      removes them.
+    </p>
+    <app-highlight lang="ts" [content]="codeContextualItems" />
+  </section>
+
+  <section>
+    <h4>Handling selections</h4>
+    <p>
+      When the spotlight was opened via the global shortcut, selections land in the read-only
+      <code>globalItemSelected</code> signal:
+    </p>
+    <app-highlight lang="ts" [content]="codeSelections" />
+  </section>
+
+  <section>
+    <h4>Opening imperatively</h4>
+    <p>
+      <code>open()</code> shows the spotlight on demand and returns a <code>ShipSpotlightInstance</code> with
+      <code>itemSelected</code> / <code>closed</code> outputs and a <code>close()</code> handle. Use
+      <code>enableGlobalShortcuts()</code> / <code>disableGlobalShortcuts()</code> to control the global listener at
+      runtime (state is exposed on <code>isShortcutsEnabled</code>).
+    </p>
+    <app-highlight lang="ts" [content]="codeManualOpen" />
+  </section>
+
+  <section>
+    <h4>Global configuration</h4>
+    <p>
+      Provide <code>SHIP_SPOTLIGHT_CONFIG</code> to seed default items or opt out of the global event listener
+      entirely:
+    </p>
+    <app-highlight lang="ts" [content]="codeConfig" />
+  </section>
+</app-property-viewer>
+
+<app-api-reference name="ShipSpotlightService" />

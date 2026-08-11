@@ -1,0 +1,56 @@
+<app-previewer defaultView="markup" path="/dialogs/examples/basic-dynamic-dialog/basic-dynamic-dialog" title="Basic">
+  <basic-dynamic-dialog class="example" />
+</app-previewer>
+
+<p>Utility component to create dialogs for modals, forms, and more.</p>
+
+<app-property-viewer>
+  <section>
+    <h4>Customization</h4>
+    <p>
+      The
+      <code>options</code>
+      attribute accepts a configuration object for:
+      <code>width</code>
+      ,
+      <code>height</code>
+      ,
+      <code>maxWidth</code>
+      ,
+      <code>maxHeight</code>
+      ,
+      <code>closeOnButton</code>
+      ,
+      <code>closeOnEsc</code>
+      , and
+      <code>closeOnOutsideClick</code>
+      .
+    </p>
+  </section>
+
+  <section>
+    <h4>Variants</h4>
+    <p>
+      Dialogs support multiple layouts via the
+      <code>variant</code>
+      attribute. Valid options:
+      <b>default</b>
+      and
+      <b>type-b</b>
+      .
+    </p>
+  </section>
+
+  <section>
+    <h4>Slots</h4>
+    <p>
+      Structure your dialog content using the
+      <code>header</code>
+      ,
+      <code>content</code>
+      , and
+      <code>footer</code>
+      attributes on container elements.
+    </p>
+  </section>
+</app-property-viewer>

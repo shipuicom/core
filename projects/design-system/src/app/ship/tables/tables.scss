@@ -34,3 +34,9 @@ sh-tabs {
   width: 100%;
   gap: p2r(20);
 }
+
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(24);
+}

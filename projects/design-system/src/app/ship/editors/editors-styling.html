@@ -1,0 +1,20 @@
+<app-property-viewer>
+  <section>
+    <h4>Variants</h4>
+    <p>
+      Like every Ship component, the editor takes a <code>variant</code>. <code>variant="document"</code> converts the
+      surface into a Google-Docs-style page canvas (a centered, width-constrained page on a muted desk). The default
+      <code>'base'</code> is the inline surface. The active state is a subtle neutral border on the outer edge.
+    </p>
+    <app-highlight lang="html" [content]="stylingExample" />
+  </section>
+  <section>
+    <h4>Theming</h4>
+    <p>
+      The editor is themed with CSS custom properties on <code>sh-editor</code> (e.g. <code>--editor-bg</code>,
+      <code>--editor-border-color</code>, <code>--editor-border-focus</code>, <code>--editor-p</code>,
+      <code>--editor-min-h</code>). Override them to restyle the surface, or switch light/dark automatically via the
+      Ship <code>base</code>/<code>primary</code> scales.
+    </p>
+  </section>
+</app-property-viewer>

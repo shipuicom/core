@@ -1,0 +1,38 @@
+<app-property-viewer>
+  <section>
+    <h4>ShipThemeState</h4>
+    <p>
+      <code>ShipThemeState</code> is the root-provided service behind <code>sh-theme-toggle</code>. It owns the current
+      theme as a read-only signal, applies the <code>light</code>/<code>dark</code> class on
+      <code>&lt;html&gt;</code> through an effect, and persists the choice to <code>localStorage</code> (SSR-safe —
+      storage access is skipped on the server).
+    </p>
+    <p>Try it — this page uses the same root instance:</p>
+    <div class="service-demo-row">
+      <button shButton color="primary" (click)="themeState.toggleTheme()">
+        toggleTheme() — current: {{ themeState.theme() ?? 'system' }}
+      </button>
+    </div>
+  </section>
+
+  <section>
+    <h4>Reading and toggling</h4>
+    <p>
+      <code>theme()</code> returns <code>'light'</code>, <code>'dark'</code> or <code>null</code> (system default).
+      <code>toggleTheme()</code> cycles light → dark → system:
+    </p>
+    <app-highlight lang="ts" [content]="codeUsage" />
+  </section>
+
+  <section>
+    <h4>Setting explicitly</h4>
+    <app-highlight lang="ts" [content]="codeSetTheme" />
+  </section>
+
+  <section>
+    <h4>Reacting to theme changes</h4>
+    <app-highlight lang="ts" [content]="codeReact" />
+  </section>
+</app-property-viewer>
+
+<app-api-reference name="ShipThemeState" />

@@ -1,0 +1,13 @@
+<div class="scroller">
+  <div [shVirtualScroll]="rows().length" #vs="shVirtualScroll">
+    @for (row of rows().slice(vs.start(), vs.end()); track row.id) {
+      <div class="row">
+        <strong>{{ row.label }}</strong>
+        @if (row.detail) {
+          <div class="detail">{{ row.detail }}</div>
+        }
+      </div>
+    }
+  </div>
+</div>
+<p class="window-readout">Mounted rows {{ vs.start() }}–{{ vs.end() }} of {{ rows().length }}</p>

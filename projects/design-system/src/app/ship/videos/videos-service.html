@@ -1,0 +1,37 @@
+<app-property-viewer>
+  <section>
+    <h4>ShipVideoState</h4>
+    <p>
+      <code>ShipVideoState</code> is the centralized player store. <code>sh-video</code> provides its own instance by
+      default, but you can provide it on a wrapper component to share a single store between the player, custom
+      controls and editor chrome. The store itself stays passive — commands delegate to whichever player registered via
+      <code>attachPlayer()</code>.
+    </p>
+    <app-highlight lang="ts" [content]="codeShare" />
+  </section>
+
+  <section>
+    <h4>Signals as the API</h4>
+    <p>
+      The writable signals are the control surface: setting <code>playing</code> plays, setting
+      <code>currentTime</code> seeks, setting <code>quality</code> switches renditions. Observed signals like
+      <code>duration</code>, <code>bufferedRanges</code>, <code>levels</code> or <code>isLive</code> are kept current by
+      the player engine.
+    </p>
+    <app-highlight lang="ts" [content]="codeSignals" />
+  </section>
+
+  <section>
+    <h4>Command methods</h4>
+    <p>Everything that is a command rather than state goes through a method:</p>
+    <app-highlight lang="ts" [content]="codeCommands" />
+  </section>
+
+  <section>
+    <h4>Frame-accurate work</h4>
+    <p>For editors and overlays, the store exposes frame callbacks and the underlying media element:</p>
+    <app-highlight lang="ts" [content]="codeFrames" />
+  </section>
+</app-property-viewer>
+
+<app-api-reference name="ShipVideoState" />

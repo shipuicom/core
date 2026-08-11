@@ -9,24 +9,39 @@
 
 // Only for styling projected content
 app-property-viewer {
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: p2r(6);
+    padding: p2r(14) p2r(16);
+    background-color: var(--base-2);
+    border-radius: var(--shape-2);
+  }
+
   h4 {
     font: var(--paragraph-20B);
+    color: var(--base-12);
+    margin: 0;
   }
 
   p {
-    color: var(--base-8);
+    font: var(--paragraph-30);
+    line-height: 1.6;
+    color: var(--base-9);
+    margin: 0;
   }
 
   code {
-    color: var(--primary-12);
-    background-color: var(--primary-4);
-    padding: p2r(2 4);
+    font: var(--code-30);
+    color: var(--base-12);
+    background-color: var(--base-4);
+    padding: p2r(2 5);
     border-radius: var(--shape-1);
   }
 
   b,
   strong {
-    color: var(--base-12);
+    color: var(--base-11);
   }
 }
 

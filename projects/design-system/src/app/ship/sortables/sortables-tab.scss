@@ -1,0 +1,16 @@
+@use '../showcase' as *;
+
+:host {
+  @extend %tab-host;
+}
+
+h3 {
+  margin: 0;
+  font: var(--title-30);
+}
+
+.example {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(20);
+}

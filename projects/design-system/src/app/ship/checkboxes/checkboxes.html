@@ -1,115 +1,12 @@
 <h1>Checkboxes</h1>
 <!-- @keywords: checkbox, toggle, boolean, checkmark, tick box, checked, multi-select, form control -->
 
-<sh-tabs color="primary" [(value)]="activeTab">
-  <button value="overview">Overview</button>
-  <button value="api">API</button>
-  <button value="examples">Examples</button>
+<sh-tabs color="primary">
+  <button routerLink="/checkboxes" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Overview</button>
+  <button routerLink="/checkboxes/api" routerLinkActive="active">API</button>
+  <button routerLink="/checkboxes/examples" routerLinkActive="active">Examples</button>
 </sh-tabs>
 
-@let _activeTab = activeTab();
-
 <div class="tab-content">
-  @if (_activeTab === 'overview') {
-    <app-previewer defaultView="markup" path="/checkboxes/examples/basic-checkbox/basic-checkbox" title="Basic">
-      <app-basic-checkbox class="example" />
-    </app-previewer>
-
-    <app-property-viewer>
-  <section>
-    <h4>Variants</h4>
-    <p>
-      Checkbox variants can be set using the
-      <code>variant</code>
-      attribute. Valid options are:
-      <b>simple</b>
-      ,
-      <b>outlined</b>
-      ,
-      <b>flat</b>
-      , and
-      <b>raised</b>
-      .
-    </p>
-  </section>
-  <section>
-    <h4>Colors</h4>
-    <p>
-      Checkbox colors can be set using the
-      <code>color</code>
-      attribute. Valid options are:
-      <b>primary</b>
-      ,
-      <b>accent</b>
-      ,
-      <b>warn</b>
-      ,
-      <b>error</b>
-      , and
-      <b>success</b>
-      .
-    </p>
-  </section>
-  <section>
-    <h4>Indeterminate</h4>
-    <p>
-      The checkbox can be set to an indeterminate state by adding the
-      <code>indeterminate</code>
-      class.
-    </p>
-  </section>
-  <section>
-    <h4>Readonly</h4>
-    <p>
-      The checkbox can be set to readonly through the
-      <code>readonly</code>
-      input (adds the
-      <code>readonly</code>
-      class).
-    </p>
-  </section>
-  <section>
-    <h4>Disabled</h4>
-    <p>
-      The checkbox can be disabled using the standard
-      <code>disabled</code>
-      attribute or
-      <code>[disabled]</code>
-      binding.
-    </p>
-  </section>
-    </app-property-viewer>
-  } @else if (_activeTab === 'api') {
-    <app-api-reference name="ShipCheckbox" />
-  } @else if (_activeTab === 'examples') {
-    <div class="sandbox-example">
-      <app-previewer path="/checkboxes/examples/checkbox-sandbox/checkbox-sandbox" title="Sandbox" class="no-space">
-        <app-checkbox-sandbox />
-      </app-previewer>
-    </div>
-
-    <h3>Variations</h3>
-
-    <div class="content">
-      <app-previewer path="/checkboxes/examples/base-checkbox/base-checkbox" title="Default" configName="checkbox">
-        <app-base-checkbox class="example" />
-      </app-previewer>
-
-      <app-previewer path="/checkboxes/examples/simple-checkbox/simple-checkbox" title="Simple">
-        <app-simple-checkbox class="example" />
-      </app-previewer>
-
-      <app-previewer path="/checkboxes/examples/outlined-checkbox/outlined-checkbox" title="Outlined">
-        <app-outlined-checkbox class="example" />
-      </app-previewer>
-
-      <app-previewer path="/checkboxes/examples/flat-checkbox/flat-checkbox" title="Flat">
-        <app-flat-checkbox class="example" />
-      </app-previewer>
-
-      <app-previewer path="/checkboxes/examples/raised-checkbox/raised-checkbox" title="Raised">
-        <app-raised-checkbox class="example" />
-      </app-previewer>
-    </div>
-  }
+  <router-outlet />
 </div>

@@ -1,0 +1,36 @@
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ShipVirtualScroll } from '@ship-ui/core/ship-virtual-scroll';
+import { Previewer } from '../../previewer/previewer';
+import { DirectiveVirtualScroll } from './examples/directive-virtual-scroll/directive-virtual-scroll';
+
+type ExampleItem = {
+  id: number;
+  name: string;
+  color: string;
+  fontSize: number;
+  showContent: boolean;
+};
+const data: Array<ExampleItem> = [];
+
+const colors = ['lightblue', 'lightgreen', 'lightpink'];
+
+for (let i = 0; i < 1000; i++) {
+  data.push({
+    id: i,
+    name: 'Item ' + i,
+    color: colors[i % colors.length],
+    fontSize: 16 + (i % 5), // Vary font size to simulate different heights
+    showContent: i % 2 === 0,
+  });
+}
+
+@Component({
+  selector: 'app-virtual-scrolls-examples',
+  imports: [ShipVirtualScroll, Previewer, DirectiveVirtualScroll],
+  templateUrl: './virtual-scrolls-examples.html',
+  styleUrl: './virtual-scrolls-tab.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export default class VirtualScrollsExamples {
+  items = signal<ExampleItem[]>(data);
+}

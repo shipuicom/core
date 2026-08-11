@@ -1,0 +1,91 @@
+<app-previewer defaultView="markup" path="/datepickers/examples/base-datepicker/base-datepicker" title="Basic">
+  <app-base-datepicker class="example" />
+</app-previewer>
+
+<app-property-viewer>
+  <section>
+    <h4>Selection</h4>
+    <p>
+      Selected values are available via
+      <code>date</code>
+      and
+      <code>endDate</code>
+      . Use
+      <code>[(date)]</code>
+      and
+      <code>[(endDate)]</code>
+      for two-way binding.
+    </p>
+  </section>
+  <section>
+    <h4>Configuration</h4>
+    <p>Customize the picker behavior:</p>
+    <ul>
+      <li>
+        <code>asRange</code>
+        : Enable range selection mode.
+      </li>
+      <li>
+        <code>monthsToShow</code>
+        : Set the number of months displayed (default: 1).
+      </li>
+      <li>
+        <code>startOfWeek</code>
+        : Specify the first day of the week (0-6).
+      </li>
+      <li>
+        <code>weekdayLabels</code>
+        : Provide custom labels for week days.
+      </li>
+    </ul>
+  </section>
+  <section>
+    <h4>Input Display</h4>
+    <p>Customize how dates appear in inputs:</p>
+    <ul>
+      <li>
+        <code>masking</code>
+        : Set the date format mask (e.g.,
+        <code>'mediumDate'</code>
+        ).
+      </li>
+      <li>
+        <code>size</code>
+        : Use the
+        <code>small</code>
+        attribute/class for a compact input.
+      </li>
+    </ul>
+  </section>
+  <section>
+    <h4>Interaction</h4>
+    <ul>
+      <li>
+        <code>closed</code>
+        : Event emitted when the picker is dismissed.
+      </li>
+      <li>
+        <code>disabled</code>
+        : Standard attribute to disable interaction.
+      </li>
+    </ul>
+  </section>
+  <section>
+    <h4>Local Time & Timezones</h4>
+    <p>
+      The datepicker operates using standard native JavaScript
+      <code>Date</code>
+      objects, so it automatically adapts to the user's operating system timezone.
+    </p>
+    <p>
+      <strong>Testing different timezones:</strong>
+      Because it relies on the browser's native timezone API, you cannot spoof the timezone programmatically within the
+      component. To test how the datepicker looks and behaves in other regions, use your browser's Developer Tools. In
+      Chrome or Edge, open DevTools, press
+      <code>Esc</code>
+      to bring up the bottom drawer, find the
+      <strong>Sensors</strong>
+      tab, and change the Location override to a different city (e.g., Tokyo or London).
+    </p>
+  </section>
+</app-property-viewer>

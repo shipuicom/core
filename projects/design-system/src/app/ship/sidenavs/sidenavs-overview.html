@@ -1,0 +1,39 @@
+<app-previewer defaultView="markup" path="/sidenavs/examples/default-sidenav/default-sidenav" title="Basic">
+  <app-default-sidenav class="example" />
+</app-previewer>
+
+<app-property-viewer>
+  <section>
+    <h4>Variants</h4>
+    <p>
+      Sidenavs support multiple behaviors via the
+      <code>variant</code>
+      attribute:
+    </p>
+    <ul>
+      <li>
+        <b>default</b>
+        : Fixed position, non-toggleable.
+      </li>
+      <li>
+        <b>simple</b>
+        : Support for toggling width (e.g., icon-only vs. full expanded view).
+      </li>
+      <li>
+        <b>overlay</b>
+        : Overlays content when opened and supports swipe-to-close gestures.
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h4>Drag Interaction</h4>
+    <p>
+      Use the
+      <code>disableDrag</code>
+      attribute/binding to disable swipe gestures on the
+      <b>overlay</b>
+      variant.
+    </p>
+  </section>
+</app-property-viewer>

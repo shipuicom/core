@@ -1,0 +1,33 @@
+<div class="controls">
+  <sh-button-group [(value)]="type">
+    <button value="">Default</button>
+    <button value="type-b">Type B</button>
+    <button value="type-c">Type C</button>
+  </sh-button-group>
+</div>
+
+<div class="content">
+  <h3>Examples</h3>
+
+  <app-previewer path="/dialogs/examples/basic-dynamic-dialog/basic-dynamic-dialog" title="Basic Dialog">
+    <basic-dynamic-dialog class="example" [type]="type()" />
+  </app-previewer>
+
+  <app-previewer path="/dialogs/examples/dialog-as-component/dialog-as-component" title="Data Passing & Close Event">
+    <app-dialog-as-component class="example" [type]="type()" />
+  </app-previewer>
+
+  <app-previewer
+    path="/dialogs/examples/header-footer-dialog/header-footer-dialog"
+    title="Header, Content & Footer Dialog">
+    <header-footer-dialog class="example" [type]="type()" />
+  </app-previewer>
+
+  <app-previewer path="/dialogs/examples/data-passing-dialog/data-passing-dialog" title="Data Passing & Close Event">
+    <data-passing-dialog class="example" [type]="type()" />
+  </app-previewer>
+
+  <app-previewer path="/dialogs/examples/template-dialog/template-dialog" title="Template-based Dialog">
+    <template-dialog class="example" [type]="type()" />
+  </app-previewer>
+</div>

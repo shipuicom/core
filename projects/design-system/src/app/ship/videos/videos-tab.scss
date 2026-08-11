@@ -1,0 +1,26 @@
+@use '../showcase' as *;
+
+:host {
+  @extend %tab-host;
+}
+
+h3 {
+  font: var(--paragraph-10);
+}
+
+.example {
+  display: block;
+  width: 100%;
+  max-width: p2r(640);
+
+  &.wide {
+    max-width: p2r(900);
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: p2r(20);
+}

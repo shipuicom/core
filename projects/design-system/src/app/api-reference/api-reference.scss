@@ -18,7 +18,7 @@
 .api-ref {
   display: flex;
   flex-direction: column;
-  gap: p2r(12);
+  gap: p2r(14);
   padding: p2r(20);
 }
 
@@ -44,8 +44,8 @@
 }
 
 .api-import {
-  font: var(--code-10);
-  color: var(--base-11);
+  font: var(--code-20);
+  color: var(--base-10);
   background: var(--base-2);
   border: var(--border-10);
   border-radius: var(--shape-2);
@@ -55,15 +55,21 @@
 }
 
 .api-group {
-  font: var(--title-10);
+  display: flex;
+  align-items: baseline;
+  gap: p2r(8);
+  font: var(--paragraph-20B);
   color: var(--base-12);
-  margin: p2r(12) 0 0;
+  margin: p2r(8) 0 0;
+
+  .api-count {
+    font: var(--paragraph-30);
+    color: var(--base-7);
+  }
 
   .api-hint {
-    font: var(--paragraph-10);
+    font: var(--paragraph-30);
     color: var(--base-8);
-    text-transform: none;
-    letter-spacing: 0;
   }
 }
 
@@ -76,7 +82,7 @@
 .api-table {
   width: 100%;
   border-collapse: collapse;
-  font: var(--paragraph-20);
+  font: var(--paragraph-30);
 
   th,
   td {
@@ -87,10 +93,11 @@
   }
 
   thead th {
-    font: var(--paragraph-10B);
+    font: var(--paragraph-40B);
     color: var(--base-8);
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.06em;
+    padding: p2r(8) p2r(14);
     background: var(--base-2);
     white-space: nowrap;
   }
@@ -99,19 +106,27 @@
     border-bottom: 0;
   }
 
+  tbody tr:hover td {
+    background: var(--base-2);
+  }
+
   td {
-    color: var(--base-11);
+    color: var(--base-9);
+    line-height: 1.55;
   }
 
   code {
-    font: var(--code-10);
+    font: var(--code-30);
     color: var(--base-12);
+    white-space: nowrap;
 
     &.ty {
       color: var(--accent-11);
+      white-space: normal;
     }
     &.sig {
       color: var(--primary-11);
+      white-space: normal;
     }
   }
 

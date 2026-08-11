@@ -1,0 +1,57 @@
+<app-api-reference name="ShipSortable" />
+<app-property-viewer>
+  <section>
+    <h4>Enable Sorting</h4>
+    <p>
+      Apply the
+      <code>shSortable</code>
+      directive to any container element to enable drag-and-drop reordering.
+    </p>
+  </section>
+
+  <section>
+    <h4>Event Handling</h4>
+    <p>
+      Listen to the
+      <code>sortDrop</code>
+      event to update your data source when an item is moved. For tree structures, listen to the
+      <code>treeDrop</code>
+      event.
+    </p>
+  </section>
+
+  <section>
+    <h4>Sortable Manager (Recommended)</h4>
+    <p>
+      Vastly simplify drag-and-drop state by passing a manager to the
+      <code>shSortable</code>
+      input. Use
+      <code>createSortableManager()</code>
+      for simple and cross-list configurations, or
+      <code>createTreeSortableManager()</code>
+      for hierarchical trees.
+    </p>
+  </section>
+
+  <section>
+    <h4>Tree View Drag & Drop</h4>
+    <p>
+      Enable VSCode-explorer-style tree drag-and-drop by setting
+      <code>sortingMode="tree"</code>
+      and binding
+      <code>[treeItems]</code>
+      to the visible items list. Target folders must include the
+      <code>sortable-folder="true"</code>
+      attribute to accept drop-inside actions.
+    </p>
+  </section>
+
+  <section>
+    <h4>Drag Handles</h4>
+    <p>
+      Add the
+      <code>sort-handle</code>
+      attribute to a specific element within a sortable item to limit dragging to that specific region.
+    </p>
+  </section>
+</app-property-viewer>

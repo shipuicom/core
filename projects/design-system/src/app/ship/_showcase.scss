@@ -23,3 +23,11 @@
     padding: p2r(12);
   }
 }
+
+// Host styles for routed tab components (rendered in a page's .tab-content
+// router-outlet) — mirrors the .tab-content column rhythm.
+%tab-host {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(24);
+}

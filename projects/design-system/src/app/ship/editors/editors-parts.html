@@ -1,0 +1,37 @@
+<p>Public directives and sub-components that compose <code>sh-editor</code>.</p>
+<app-api-reference name="ShipEditorToolbar" />
+<app-api-reference name="ShipEditorFloatingToolbar" />
+<app-api-reference name="ShipEditorActionDirective" />
+<app-property-viewer>
+  <section>
+    <h4>Inputs</h4>
+    <ul>
+      <li><code>value</code> — two-way (<code>[(value)]</code>); the content as a string or AST, per <code>format</code>.</li>
+      <li><code>format</code> — <code>'html' | 'json' | 'markdown'</code> (default <code>'html'</code>); the serialized shape of <code>value</code>.</li>
+      <li><code>variant</code> — <code>'base' | 'document'</code>; <code>'document'</code> renders a centered page canvas.</li>
+      <li><code>readonly</code>, <code>placeholder</code>, <code>showMetrics</code> — disable editing, ghost text, word/character footer.</li>
+      <li><code>behaviors</code> — extra block/inline behavior classes (<code>BaseBlockBehavior</code> / <code>BaseInlineBehavior</code>).</li>
+      <li><code>sanitize</code> — <code>SanitizeOption</code>; scrub untrusted HTML against the allow-list (or extend it).</li>
+      <li><code>imageUpload</code> — <code>(file) =&gt; Promise&lt;string&gt;</code>; resolve a picked file to its URL.</li>
+      <li><code>imageEdgeResize</code> — opt in to the image mid-edge (one-axis) resize handles.</li>
+      <li>
+        <code>multiCursor</code> — opt in to Alt+click opening extra cursors. Every cursor edits as one undo step;
+        the browser paints only the first, so the rest are drawn by the editor.
+      </li>
+      <li><code>contextualActions</code>, <code>slashCommands</code> — consumer-provided block actions and slash-menu entries.</li>
+    </ul>
+  </section>
+  <section>
+    <h4>Composition</h4>
+    <p>
+      The editor exports as <code>shEditor</code>. Compose a toolbar with <code>&lt;sh-editor-toolbar&gt;</code> +
+      <code>[shEditorAction]</code> buttons (inside the editor, or elsewhere via <code>[editor]</code>), and a selection
+      bubble with <code>&lt;sh-editor-floating-toolbar&gt;</code>.
+    </p>
+  </section>
+  <section>
+    <h4>Custom behaviors</h4>
+    <p>Register custom marks/blocks through <code>[behaviors]</code> — e.g. a highlight mark:</p>
+    <app-highlight lang="ts" [content]="behaviorExample" />
+  </section>
+</app-property-viewer>

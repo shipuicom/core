@@ -1,0 +1,28 @@
+@use '../showcase' as *;
+
+:host {
+  @extend %tab-host;
+}
+
+.service-demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: p2r(10);
+}
+
+.example {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(10);
+}
+
+.sandbox-example {
+  margin-bottom: 2rem;
+}
+
+.content {
+  display: flex;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: p2r(40);
+}

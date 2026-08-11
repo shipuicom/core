@@ -1,0 +1,9 @@
+@use '../showcase' as *;
+
+:host {
+  @extend %tab-host;
+}
+
+.example {
+  padding: 40px;
+}

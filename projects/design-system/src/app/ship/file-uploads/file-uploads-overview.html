@@ -1,0 +1,46 @@
+<app-previewer defaultView="markup" path="/file-uploads/examples/base-file-upload/base-file-upload" title="Basic">
+  <app-base-file-upload class="example" />
+</app-previewer>
+
+<app-property-viewer>
+  <section>
+    <h4>Files</h4>
+    <p>
+      Selected files are available via the
+      <code>files</code>
+      attribute. Use
+      <code>[(files)]</code>
+      for two-way binding.
+    </p>
+  </section>
+  <section>
+    <h4>Selection</h4>
+    <p>Customize selection behavior:</p>
+    <ul>
+      <li>
+        <code>multiple</code>
+        : Allows selecting more than one file.
+      </li>
+      <li>
+        <code>accept</code>
+        : Restricts file types (e.g.,
+        <code>accept=".png,.jpg"</code>
+        ).
+      </li>
+    </ul>
+  </section>
+  <section>
+    <h4>Text</h4>
+    <p>Customize displayed labels:</p>
+    <ul>
+      <li>
+        <code>placeholder</code>
+        : Text shown when empty.
+      </li>
+      <li>
+        <code>overlayText</code>
+        : Text shown during drag-and-drop.
+      </li>
+    </ul>
+  </section>
+</app-property-viewer>
