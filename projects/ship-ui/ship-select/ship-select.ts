@@ -8,7 +8,7 @@ import { ShipFormField } from '@ship-ui/core/ship-form-field';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipPopover } from '@ship-ui/core/ship-popover';
 import { ShipSpinner } from '@ship-ui/core/ship-spinner';
-import { createInputSignal, generateUniqueId } from '@ship-ui/core';
+import { contentProjectionSignal, createInputSignal, generateUniqueId } from '@ship-ui/core';
 import { shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
 
@@ -279,18 +279,7 @@ export class ShipSelect {
   #selectFirstAfterLoad = false;
   inlineTemplate = contentChild<TemplateRef<unknown>>(TemplateRef);
   optionsWrapRef = viewChild.required<ElementRef<HTMLDivElement>>('optionsWrap');
-  inputRefInput = signal<ElementRef<HTMLInputElement> | null>(null);
-  #inputObserver =
-    typeof MutationObserver !== 'undefined'
-      ? new MutationObserver((mutations) => {
-          for (var mutation of mutations) {
-            if (mutation && (mutation.target.nodeName === 'INPUT' || mutation.target.nodeName === 'TEXTAREA')) {
-              this.inputRefInput.set(new ElementRef(mutation.target as HTMLInputElement));
-              (this.#inputObserver as MutationObserver).disconnect();
-            }
-          }
-        })
-      : undefined;
+  inputRefInput = contentProjectionSignal<HTMLInputElement>('input, textarea', { childList: true, subtree: true }, 0);
 
   inputValue = signal<string>('');
 
@@ -407,18 +396,9 @@ export class ShipSelect {
 
   componentId = generateUniqueId();
   inputRefEl = computed(() => {
-    const inputRefInput = this.inputRefInput();
+    const input = this.inputRefInput();
 
-    if (inputRefInput === null) return;
-
-    const input = inputRefInput ? inputRefInput.nativeElement : null;
-
-    if (!input) {
-      console.warn(
-        '<sh-select> input element not found are you missing to pass an <input> or <textarea> element to select component?'
-      );
-      return null;
-    }
+    if (!input) return null;
 
     input.autocomplete = 'off';
     input.setAttribute('role', 'combobox');
@@ -635,36 +615,6 @@ export class ShipSelect {
 
     this.inputValue.set(inputValue);
   });
-
-  ngOnInit() {
-    this.setInitInput();
-  }
-
-  /** Locates the projected `<input>`/`<textarea>` and wires it up, observing the DOM if not yet present. */
-  setInitInput() {
-    const input = this.#selfRef.nativeElement.querySelector('input');
-
-    if (input) {
-      this.inputRefInput.set(new ElementRef(input));
-      return;
-    }
-
-    const textarea = this.#selfRef.nativeElement.querySelector('textarea');
-
-    if (textarea) {
-      this.inputRefInput.set(new ElementRef(textarea as any as HTMLInputElement));
-      return;
-    }
-
-    if (typeof MutationObserver !== 'undefined') {
-      (this.#inputObserver as MutationObserver).observe(this.#selfRef.nativeElement, {
-        attributes: true,
-        childList: true,
-        subtree: true,
-        characterData: true,
-      });
-    }
-  }
 
   /** Resolves the selected option(s) by matching the given comma-separated value against the options. */
   setSelectedOptionsFromValue(value: string) {
@@ -920,10 +870,6 @@ export class ShipSelect {
     if (this.openAbortController) {
       this.openAbortController.abort();
       this.openAbortController = null;
-    }
-
-    if (typeof MutationObserver !== 'undefined') {
-      (this.#inputObserver as MutationObserver).disconnect();
     }
   }
 }
