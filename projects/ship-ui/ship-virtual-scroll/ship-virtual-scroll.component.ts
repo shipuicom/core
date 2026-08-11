@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, computed, effect, ElementRef, inject, Renderer2, signal, viewChild, viewChildren, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, ElementRef, inject, Renderer2, signal, viewChild, viewChildren, ViewEncapsulation } from '@angular/core';
+import { ShipVirtualWindow } from './virtual-window';
 
 @Component({
   selector: 'sh-virtual-scroll',
@@ -23,30 +24,26 @@ export class ShipVirtualScroll {
   viewportRef = viewChild.required<ElementRef<HTMLDivElement>>('viewport');
   itemElements = viewChildren<ElementRef>('item');
 
+  /** Pixels of content considered visible beyond each viewport edge. */
   bufferSize = signal(10);
 
-  itemHeights = signal<number[]>([]);
-  startIndex = signal(0);
-  endIndex = signal(0);
-  translateY = signal(0);
-  totalHeight = computed(() => this.itemHeights().reduce((sum, height) => sum + height, 0));
+  /**
+   * The shared windowing engine — the same one `ShipVirtualScrollDirective`
+   * uses and that `ShipVirtualWindow` exposes for direct use.
+   */
+  readonly window = new ShipVirtualWindow({ count: 0, overscan: 10 });
+
+  readonly startIndex = this.window.start;
+  readonly endIndex = this.window.end;
+  readonly translateY = this.window.padStart;
+  readonly totalHeight = this.window.totalSize;
   numberOfRenderedItems = signal(0);
 
   #resizeObserver: ResizeObserver | null = null;
   #hostResizeObserver: ResizeObserver | null = null;
 
-  #itemHeightsEffect = effect(() => {
-    const startIndex = this.startIndex();
-    const endIndex = this.endIndex();
-    const itemHeights = this.itemHeights();
-
-    if (startIndex > 0 && endIndex > 0 && itemHeights.length > 0) {
-      let newTranslateY = 0;
-      for (let i = 0; i < startIndex; i++) {
-        newTranslateY += itemHeights[i];
-      }
-      this.translateY.set(newTranslateY);
-    }
+  #bufferEffect = effect(() => {
+    this.window.setOverscan(this.bufferSize());
   });
 
   #totalHeightEffect = effect(() => {
@@ -59,17 +56,18 @@ export class ShipVirtualScroll {
 
     if (this.#resizeObserver && itemElements) {
       this.#resizeObserver.disconnect();
-      const heights = new Array(itemElements.length).fill(0);
       this.numberOfRenderedItems.set(itemElements.length);
-      this.itemHeights.set(heights);
+      this.window.setCount(itemElements.length);
 
-      for (let i = 0; i < itemElements.length; i++) {
-        this.#resizeObserver.observe(itemElements[i].nativeElement);
-        heights[i] = itemElements[i].nativeElement.offsetHeight;
+      for (const el of itemElements) {
+        this.#resizeObserver.observe(el.nativeElement);
       }
 
-      this.itemHeights.set(heights);
-      this.#calculateVisibleItems();
+      this.window.measureElements(
+        itemElements.map((el) => el.nativeElement as HTMLElement),
+        0
+      );
+      this.#updateWindow();
     }
   });
 
@@ -80,7 +78,13 @@ export class ShipVirtualScroll {
   }
 
   onScroll() {
-    this.#calculateVisibleItems();
+    this.#updateWindow();
+  }
+
+  #updateWindow() {
+    const viewport = this.viewportRef()?.nativeElement;
+    if (!viewport) return;
+    this.window.update(viewport.scrollTop, viewport.clientHeight);
   }
 
   #setupHostResizeObserver() {
@@ -90,6 +94,7 @@ export class ShipVirtualScroll {
       if (hostElement) {
         const newHeight = hostElement.contentRect.height;
         this.#renderer.setStyle(this.viewportRef().nativeElement, 'height', `${newHeight}px`);
+        this.#updateWindow();
       }
     });
 
@@ -99,25 +104,18 @@ export class ShipVirtualScroll {
   #setupResizeObserver() {
     if (typeof ResizeObserver === 'undefined') return;
     this.#resizeObserver = new ResizeObserver((entries) => {
-      const newHeights = [...this.itemHeights()];
-
       let didUpdate = false;
 
       for (const entry of entries) {
         const index = this.itemElements().findIndex((el) => el.nativeElement === entry.target);
 
-        if (index !== undefined && index !== -1) {
-          const newHeight = entry.contentRect.height;
-          if (newHeights[index] !== newHeight) {
-            newHeights[index] = newHeight;
-            didUpdate = true;
-          }
+        if (index !== -1) {
+          didUpdate = this.window.measure(index, entry.contentRect.height) || didUpdate;
         }
       }
 
       if (didUpdate) {
-        this.itemHeights.set(newHeights);
-        this.#calculateVisibleItems();
+        this.#updateWindow();
       }
     });
   }
@@ -133,44 +131,6 @@ export class ShipVirtualScroll {
     if (this.#hostResizeObserver) {
       this.#hostResizeObserver.disconnect();
       this.#hostResizeObserver = null;
-    }
-  }
-
-  #calculateVisibleItems() {
-    const nativeElement = this.viewportRef();
-    if (!nativeElement) return;
-
-    const scrollTop = nativeElement.nativeElement.scrollTop;
-    const viewportHeight = nativeElement.nativeElement.clientHeight;
-
-    let accumulatedHeight = 0;
-    let startIndex = -1;
-    let endIndex = -1;
-
-    for (let i = 0; i < this.itemHeights().length; i++) {
-      const itemHeight = this.itemHeights()[i];
-
-      if (startIndex === -1 && accumulatedHeight + itemHeight >= scrollTop - this.bufferSize()) {
-        startIndex = i;
-      }
-
-      if (endIndex === -1 && accumulatedHeight >= scrollTop + viewportHeight + this.bufferSize()) {
-        endIndex = i;
-        break;
-      }
-
-      accumulatedHeight += itemHeight;
-    }
-
-    if (endIndex === -1) {
-      endIndex = this.itemHeights().length - 1;
-    }
-
-    if (this.startIndex() !== startIndex) {
-      this.startIndex.set(startIndex);
-    }
-    if (this.endIndex() !== endIndex) {
-      this.endIndex.set(endIndex);
     }
   }
 
