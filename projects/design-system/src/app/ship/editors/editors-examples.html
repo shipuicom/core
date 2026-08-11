@@ -1,4 +1,19 @@
 <div class="sandbox-example">
+  <app-previewer path="/editors" title="Mobile Sheet Editing" class="no-space">
+    <div class="experimental-editor-container">
+      <div class="editor-controls">
+        <div class="control-group">
+          <sh-button-group [(value)]="sheetMode">
+            <button value="auto">Auto</button>
+            <button value="sheet">Force sheet</button>
+            <button value="inline">Force inline</button>
+          </sh-button-group>
+        </div>
+      </div>
+      <sh-editor-sheet [(value)]="sheetValue" [mode]="sheetMode()" sheetLabel="the demo document" />
+    </div>
+  </app-previewer>
+
   <app-previewer path="/editors" title="Feature-Rich Integrated Editor" class="no-space">
     <div class="experimental-editor-container">
       <div class="editor-controls">

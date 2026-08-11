@@ -10,8 +10,10 @@ import {
   ShipEditor,
   ShipEditorActionDirective,
   ShipEditorFloatingToolbar,
+  ShipEditorSheet,
   ShipEditorToolbar,
 } from '@ship-ui/core/ship-editor';
+import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipKbd } from '@ship-ui/core/ship-kbd';
 import { ShipSelect } from '@ship-ui/core/ship-select';
@@ -29,6 +31,8 @@ import { ShipEditorSelectionDebug } from './sh-editor-selection-debug';
     ShipEditor,
     ShipEditorToolbar,
     ShipEditorFloatingToolbar,
+    ShipEditorSheet,
+    ShipButtonGroup,
     ShipEditorActionDirective,
     ShipEditorSelectionDebug,
     ShipButton,
@@ -51,6 +55,13 @@ export default class EditorsExamples {
   initialHtml = `<h1>Ship WYSIWYG Editor</h1><p>Welcome! This is a <strong>config-driven</strong> rich-text editor designed to support flexible storage formats.</p><ul><li><strong>Two-way binding</strong> with <code>ControlValueAccessor</code></li><li>Instant conversion to <strong>HTML</strong>, <strong>Markdown</strong>, or <strong>JSON</strong></li><li>Sticky blur-toolbar, light/dark mode support, and word counting</li></ul><blockquote>"A beautiful interface makes editing content a delight."</blockquote><hr><p>Custom <strong>component blocks</strong> render live Angular components as void blocks — interact with them directly, or arrow onto them from the text to select:</p><div data-sh-block="demo-counter" data-sh-attrs='{"count":3}'></div><div data-sh-block="demo-code-pad" data-sh-attrs='{"code":"function answer() {\\n  return 42;\\n}"}'></div><p>Try changing the storage format below to see the serialized output update in real time!</p>`;
 
   format = signal<'html' | 'json' | 'markdown'>('html');
+
+  // Mobile sheet editing demo — 'auto' uses the sheet on coarse-pointer or
+  // narrow viewports; force 'sheet' to try it from a desktop.
+  sheetMode = signal<'auto' | 'sheet' | 'inline'>('auto');
+  sheetValue = signal<string | ASTDocument | null>(
+    '<h2>Sheet editing</h2><p>On a phone this editor is a tap-to-edit preview — tap it and the real surface opens in a bottom sheet with the toolbar above the keyboard. Drag the handle down to dismiss.</p>'
+  );
   formatOptions = [
     { value: 'html', label: 'HTML' },
     { value: 'markdown', label: 'Markdown' },

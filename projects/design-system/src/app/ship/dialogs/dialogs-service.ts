@@ -75,5 +75,12 @@ export class DeletePage {
   closeOnOutsideClick: true,
   closeOnEsc: true,
   class: 'my-dialog',
+});
+
+// type: 'bottom-sheet' anchors the dialog as a native-feeling card:
+// drag handle, slide-down dismiss, rides on top of the software keyboard.
+this.#dialogService.open(ShareSheet, {
+  type: 'bottom-sheet',
+  maxWidth: '640px',
 });`;
 }
