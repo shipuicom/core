@@ -124,10 +124,7 @@
             ],
             "scripts": [],
             "server": "projects/design-system/src/main.server.ts",
-            "outputMode": "static",
-            "ssr": {
-              "entry": "projects/design-system/src/server.ts"
-            }
+            "outputMode": "static"
           },
           "configurations": {
             "production": {

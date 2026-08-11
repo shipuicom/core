@@ -43,7 +43,6 @@
     "watch": "ng build ship-ui --watch --configuration development",
     "mcp:update": "cd mcp-server && bun run scan.ts",
     "mcp:start": "cd mcp-server && bun run index.ts",
-    "serve:ssr:design-system": "bun scripts/serve-design-system.ts",
     "test:editor": "ng test ship-ui --watch=false --include='**/ship-editor/**/*.spec.ts'",
     "test:e2e:editor": "playwright test -c scripts/editor-e2e/playwright.config.ts",
     "bench:video": "bun projects/ship-ui/ship-video/benchmarks/run.ts",
@@ -60,10 +59,8 @@
     "@angular/platform-server": "^22.0.0",
     "@angular/router": "^22.0.0",
     "@angular/ssr": "^22.0.0",
-    "@hono/node-server": "^2.0.4",
     "harfbuzzjs": "^1.2.0",
     "highlight.js": "^11.11.1",
-    "hono": "^4.12.23",
     "rxjs": "~7.8.2",
     "wawoff2": "^2.0.1"
   },
