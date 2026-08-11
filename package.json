@@ -38,7 +38,7 @@
     "test": "ng test ship-ui",
     "test:a11y": "playwright test -c scripts/a11y-checker/playwright.config.ts",
     "build:prod": "bun run copy:readme && bun run mcp:prep && bun run build:zig && bun run build:cli && ng build ship-ui --configuration production",
-    "build:docs": "bun mcp-server/scan.ts && bun run gen:font && ng build design-system --configuration production",
+    "build:docs": "bun mcp-server/scan.ts && bun run build:cli && bun run gen:font && ng build design-system --configuration production",
     "watch": "ng build ship-ui --watch --configuration development",
     "mcp:update": "cd mcp-server && bun run scan.ts",
     "mcp:start": "cd mcp-server && bun run index.ts",
