@@ -86,22 +86,6 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [ ] Drag controls for number inputs (directive)
 - [ ] sh-table features
   - [ ] Add support for row resizing
-- [ ] sh-editor features
-  - [ ] Editable tables — as a component block (BaseComponentBlockBehavior), like the existing spreadsheet block but swapping in the editable composer once sh-spreadsheet cell editing lands
-  - [ ] Task list / checkbox block
-  - [ ] Find & replace
-  - [ ] Mentions (@user) and emoji autocomplete
-  - [ ] Embed blocks — as a component block (BaseComponentBlockBehavior) so the live component owns the iframe/video and the sanitizer keeps stripping raw embeds from pasted HTML; the document form stays a safe placeholder (url attrs), like the spreadsheet block's table form
-  - [ ] Drag handles for block reordering (keyboard block move already works)
-  - [ ] Collaborative editing — remoteStepMap + rebase foundations exist, missing transport, presence and remote cursors
-  - [ ] Comments / annotations and track changes
-- [ ] sh-spreadsheet features (also listed on the docs page's "Not there yet" section)
-  - [ ] Cell editing — editable composer wrapping the read-only sh-spreadsheet view
-  - [ ] Keyboard navigation — arrow-key roving, Shift+arrow range extension
-  - [ ] User-resizable columns and rows (resize = heights.measure + sync on the axis windows; regenerate the column stylesheet)
-  - [ ] Paste into an existing spreadsheet (in-place range paste; today a pasted table becomes a new editor block)
-  - [ ] Formulas / computed cells
-  - [ ] Cell formatting, sorting, merged cells, frozen panes beyond the header rails
 - [ ] sh-menu features
   - [ ] add hotkeys to navigate options without having a search input
   - [ ] add focus with a hidden input similar to native select
@@ -130,13 +114,69 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [x] Code editor component (sh-code)
   - [x] Syntax highlighting (textmate grammars)
   - [x] Indent/outdent, multi-cursor, keymaps (sublime/vscode)
+- [ ] Animation package
+
+#### Complex Components (Timeline/Gantt)
+
+Might be sharing a lot of features and could be useful to do in the same one
+
+- [ ] Create a gantt chart component
+- [ ] Create a timeline component
+
+### Complex feature additions to complex components
+
+- [ ] sh-editor features
+  - [ ] Editable tables — as a component block (BaseComponentBlockBehavior), like the existing spreadsheet block but swapping in the editable composer once sh-spreadsheet cell editing lands
+  - [ ] Embed blocks — as a component block (BaseComponentBlockBehavior) so the live component owns the iframe/video and the sanitizer keeps stripping raw embeds from pasted HTML; the document form stays a safe placeholder (url attrs), like the spreadsheet block's table form
+  - [ ] Task list / checkbox block
+  - [ ] Find & replace
+  - [ ] Mentions (@user) and emoji autocomplete
+  - [ ] Drag handles for block reordering (keyboard block move already works)
+  - [ ] Collaborative editing — remoteStepMap + rebase foundations exist, missing transport, presence and remote cursors
+  - [ ] Comments / annotations and track changes
+  - [ ] Markdown input rules — typing `# `, `- `, `> `, ``` autoconverts the block
+  - [ ] Smart paste rules — URL over selection becomes a link, image URL becomes an image block
+  - [ ] Toggle/collapsible block and multi-column layout block (component blocks)
+  - [ ] Callout variants beyond info (warn/success/error — color system already exists)
+  - [ ] Image captions + alt-text UI; gallery block
+  - [ ] Heading anchors/ids + generated table of contents
+  - [ ] Templates/snippets — insert predefined block structures via the slash menu
+  - [ ] Version snapshots with local diff (pairs with the collab foundations)
+  - [ ] AI hooks — selection rewrite / continue writing as slash commands over the behavior API
+  - [ ] Smart typography (curly quotes, em-dashes)
+- [ ] sh-code features
+  - [ ] Find & replace bar (regex + in-selection)
   - [ ] Code completion
   - [ ] Code folding
   - [ ] Auto formatting
   - [ ] Auto indentation / auto closing
-- [ ] Animation package
-- [ ] Create a gantt chart component
-- [ ] Create a timeline component
+  - [ ] Soft wrap toggle — breaks the uniform-line-height assumption, needs per-line measureElements on the virtual window
+  - [ ] Diff/merge view (two documents, gutter markers)
+  - [ ] Diagnostics API — squiggles + gutter decorations so an LSP or linter can hang data on it
+  - [ ] Bracket-pair matching/highlight, indent guides, whitespace rendering
+  - [ ] Snippets with tabstops
+  - [ ] Gutter extension API (breakpoints, blame, custom markers)
+  - [ ] Color swatches on hex values, clickable URLs
+  - [ ] Sticky scope header (current function pinned at top)
+- [ ] sh-spreadsheet features (the first six are also on the docs page's "Not there yet" section)
+  - [ ] Cell editing — editable composer wrapping the read-only sh-spreadsheet view
+  - [ ] Keyboard navigation — arrow-key roving, Shift+arrow range extension
+  - [ ] User-resizable columns and rows (resize = heights.measure + sync on the axis windows; regenerate the column stylesheet)
+  - [ ] Paste into an existing spreadsheet (in-place range paste; today a pasted table becomes a new editor block)
+  - [ ] Formulas / computed cells + formula bar UI and named ranges
+  - [ ] Cell formatting, sorting, merged cells, frozen panes beyond the header rails
+  - [ ] Fill handle — drag to autofill series
+  - [ ] Row/column insert/delete/move (structural ops mirror into the axis windows via splice)
+  - [ ] Cell types + validation (number/date/dropdown), conditional formatting
+  - [ ] CSV/XLSX import/export
+  - [ ] Multi-sheet tabs (workbook model)
+  - [ ] Per-cell comments (shares the editor's future comments layer)
+  - [ ] In-sheet search
+  - [ ] Charts from a selected range — ties into the planned chart components
+- [ ] Cross-cutting (build once, use in all three)
+  - [ ] One find & replace engine shared by sh-editor / sh-code / sh-spreadsheet
+  - [ ] Shared collab layer — generalize the remoteStepMap foundations beyond the editor
+  - [ ] Screen-reader announcement pass for grid/editor operations (fits the planned A11y service)
 
 ### Testing (WIP)
 
