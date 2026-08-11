@@ -15,6 +15,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { classMutationSignal, ShipCalendarService } from '@ship-ui/core';
+import { ShipA11yAnnouncerService } from '@ship-ui/core/ship-a11y-announcer';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 
@@ -113,6 +114,7 @@ function withExistingTime(newDate: Date, existing: Date | string | number | null
 })
 export class ShipDatepicker {
   #keybindings = inject(ShipA11yKeybindingsService);
+  #announcer = inject(ShipA11yAnnouncerService);
   #selfRef = inject(ElementRef);
 
   calendar = inject(ShipCalendarService);
@@ -191,10 +193,18 @@ export class ShipDatepicker {
 
   nextMonth() {
     this.calendar.nextMonth();
+    this.#announceVisibleMonth();
   }
 
   previousMonth() {
     this.calendar.previousMonth();
+    this.#announceVisibleMonth();
+  }
+
+  /** Voice the month the paged calendar now shows ("March 2026"). */
+  #announceVisibleMonth() {
+    const date = this.calendar.currentDate();
+    this.#announcer.announce(`${this.calendar.getMonthName(date)} ${this.calendar.getFullYear(date)}`);
   }
 
   onDayClick(calDate: Date) {

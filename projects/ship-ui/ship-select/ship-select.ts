@@ -1,6 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, contentChild, effect, ElementRef, inject, input, model, output, signal, TemplateRef, untracked, viewChild, ViewEncapsulation } from '@angular/core';
 import { ShipCheckbox } from '@ship-ui/core/ship-checkbox';
+import { ShipA11yAnnouncerService } from '@ship-ui/core/ship-a11y-announcer';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { ShipChip } from '@ship-ui/core/ship-chip';
 import { ShipDivider } from '@ship-ui/core/ship-divider';
@@ -189,6 +190,17 @@ type ValidateFreeText = (value: string) => boolean;
 export class ShipSelect {
   #selfRef = inject<ElementRef<HTMLElement>>(ElementRef<HTMLElement>);
   #keybindings = inject(ShipA11yKeybindingsService);
+  #announcer = inject(ShipA11yAnnouncerService);
+
+  // Voice the filtered option count while the user is narrowing the list —
+  // the dropdown options repaint silently otherwise.
+  #resultsAnnounceEffect = effect(() => {
+    if (!this.isOpen() || !this.hasSearch()) return;
+    const query = this.inputValue() ?? '';
+    const count = this.filteredOptions().length;
+    if (query === '') return;
+    untracked(() => this.#announcer.announce(count === 1 ? '1 option' : `${count} options`));
+  });
 
   /** Property path used to read each option's value (e.g. `id`); when unset, the option itself is the value. */
   value = input<string>();
@@ -749,6 +761,18 @@ export class ShipSelect {
       this.isOpen.set(false);
     }
 
+    // Voice the outcome: the visual state (chips, checkmarks) changes silently.
+    const wasSelected = selectedOptionValues.indexOf(optionValue) > -1;
+    const nowSelected = this.selectedOptionValues().indexOf(optionValue) > -1;
+    if (wasSelected !== nowSelected) {
+      const optionLabel = this.getLabel(option);
+      this.#announcer.announce(
+        selectMultiple
+          ? `${optionLabel} ${nowSelected ? 'selected' : 'unselected'}, ${this.selectedOptions().length} selected`
+          : `${optionLabel} selected`
+      );
+    }
+
     this.setInputValueFromOptions(this.selectedOptions());
 
     if (selectMultiple && this.hasSearch()) {
@@ -759,9 +783,15 @@ export class ShipSelect {
   removeSelectedOptionByIndex($event: MouseEvent, optionRemoveIndex: number) {
     $event.stopPropagation();
 
+    const removed = this.selectedOptions()[optionRemoveIndex];
+
     this.selectedOptions.update((selectedOptions) => {
       return [...selectedOptions.slice(0, optionRemoveIndex), ...selectedOptions.slice(optionRemoveIndex + 1)];
     });
+
+    if (removed !== undefined) {
+      this.#announcer.announce(`${this.getLabel(removed)} removed, ${this.selectedOptions().length} selected`);
+    }
 
     this.setInputValueFromOptions(this.selectedOptions());
   }

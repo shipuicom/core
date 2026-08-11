@@ -347,6 +347,10 @@ export class ShipSpreadsheet {
     event.preventDefault();
     event.clipboardData.setData('text/plain', sheetRangeToTsv(this.sheet(), range));
     event.clipboardData.setData('text/html', sheetRangeToHtml(this.sheet(), range));
+    const { r0, c0, r1, c1 } = normalizedRange(this.sheet(), range);
+    const from = `${colLabel(c0)}${r0 + 1}`;
+    const to = `${colLabel(c1)}${r1 + 1}`;
+    this.#announcer.announce(from === to ? `Copied ${from}` : `Copied ${from} to ${to}`);
   }
 
   /** The active range as TSV, `null` when nothing is selected. */

@@ -1,4 +1,5 @@
 import { Injectable, Signal, computed, inject, signal } from '@angular/core';
+import { ShipA11yAnnouncerService } from '@ship-ui/core/ship-a11y-announcer';
 import { BaseBlockBehavior, BaseInlineBehavior, SlashCommand } from './editor-behaviors';
 import { astToHtml, blockToMarkdown } from './editor-serializers';
 import { ColumnarDocument, RowKind, fromColumnar, toColumnar } from './editor-columnar';
@@ -42,6 +43,9 @@ export type RenderHint =
 @Injectable()
 export class EditorEngineService {
   readonly selection = inject(EditorSelectionService);
+  // Optional: the engine stays constructible in a bare injector (headless
+  // tests, tooling) where no announcer is provided.
+  #announcer = inject(ShipA11yAnnouncerService, { optional: true });
 
   /**
    * The document. Columnar is the only live model: every mutation is a row
@@ -680,11 +684,14 @@ export class EditorEngineService {
         ? base.filter((m) => m.type !== markType)
         : [...base, { type: markType, ...(attrs ? { attrs } : {}) } as ASTMark];
       this.pendingMarks.set({ pos: currentSel.from, marks: structuredClone(marks) });
+      this.#announcer?.announce(`${humanizeType(markType)} ${has ? 'off' : 'on'}`);
       return;
     }
 
+    const wasActive = this.activeFormats().marks.some((m) => m.type === markType);
     this.pendingMarks.set(null);
     this.#apply(toggleMarkOp(this.columnar, currentSel, markType, attrs, this.blocks), currentSel);
+    this.#announcer?.announce(`${humanizeType(markType)} ${wasActive ? 'off' : 'on'}`);
   }
 
   insertFragment(fragment: ASTDocument) {
@@ -702,6 +709,7 @@ export class EditorEngineService {
     const sel = this.selection.active();
     if (!sel) return;
     this.#apply(setBlockTypeOp(this.columnar, sel, type, this.blocks, attrs), sel);
+    this.#announcer?.announce(type === 'heading' && attrs?.level ? `Heading ${attrs.level}` : humanizeType(type));
   }
 
   serialize(format: 'html' | 'json' | 'markdown'): any {
@@ -779,6 +787,7 @@ export class EditorEngineService {
     const stack = this.#undoStack();
     const tx = stack[stack.length - 1];
     if (!tx) return;
+    this.#announcer?.announce('Undone');
     // A multi-cursor edit left one transaction per cursor; they come back as
     // one step, newest first so each op inverts against the document it saw.
     const count = tx.groupId === undefined ? 1 : runLength(stack, tx.groupId);
@@ -801,6 +810,7 @@ export class EditorEngineService {
     const stack = this.#redoStack();
     const tx = stack[stack.length - 1];
     if (!tx) return;
+    this.#announcer?.announce('Redone');
     const count = tx.groupId === undefined ? 1 : runLength(stack, tx.groupId);
     // The redo stack holds the group in reverse; replay it in original order.
     const group = stack.slice(stack.length - count);
@@ -918,6 +928,12 @@ export class EditorEngineService {
 }
 
 /** How many transactions at the top of `stack` share `groupId`. */
+/** 'bullet-list' → 'Bullet list' — announcement labels for mark/block types. */
+function humanizeType(type: string): string {
+  const label = type.replace(/-/g, ' ');
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
 function runLength(stack: readonly EditorTransaction[], groupId: number): number {
   let count = 0;
   for (let i = stack.length - 1; i >= 0 && stack[i].groupId === groupId; i--) count++;

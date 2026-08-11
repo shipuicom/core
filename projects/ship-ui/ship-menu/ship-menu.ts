@@ -16,6 +16,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { nativeInputValueSignal, generateUniqueId, observeChildren } from '@ship-ui/core';
+import { ShipA11yAnnouncerService } from '@ship-ui/core/ship-a11y-announcer';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { ShipFormField } from '@ship-ui/core/ship-form-field';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
@@ -96,6 +97,7 @@ export class ShipMenu {
   #document = inject(DOCUMENT);
   #renderer = inject(Renderer2);
   #keybindings = inject(ShipA11yKeybindingsService);
+  #announcer = inject(ShipA11yAnnouncerService);
 
   parentMenu = inject(ShipMenu, { optional: true, skipSelf: true });
   isSubmenu = computed(() => this.parentMenu !== null);
@@ -361,6 +363,9 @@ export class ShipMenu {
 
     this.activeElements.set(optionElements);
     this._lastElementList = optionElements;
+
+    // Voice the narrowed result count — options reorder and drop out silently.
+    this.#announcer.announce(optionElements.length === 1 ? '1 result' : `${optionElements.length} results`);
 
     // Assign IDs to options for ARIA support
     for (let i = 0; i < optionElements.length; i++) {
