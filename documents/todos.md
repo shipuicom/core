@@ -87,11 +87,11 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [ ] sh-table features
   - [ ] Add support for row resizing
 - [ ] sh-editor features
-  - [ ] Editable tables — today's spreadsheet block is read-only (ties into sh-spreadsheet cell editing)
+  - [ ] Editable tables — as a component block (BaseComponentBlockBehavior), like the existing spreadsheet block but swapping in the editable composer once sh-spreadsheet cell editing lands
   - [ ] Task list / checkbox block
   - [ ] Find & replace
   - [ ] Mentions (@user) and emoji autocomplete
-  - [ ] Embed blocks (video/iframe — currently stripped by the sanitizer on purpose, needs a safe embed behavior)
+  - [ ] Embed blocks — as a component block (BaseComponentBlockBehavior) so the live component owns the iframe/video and the sanitizer keeps stripping raw embeds from pasted HTML; the document form stays a safe placeholder (url attrs), like the spreadsheet block's table form
   - [ ] Drag handles for block reordering (keyboard block move already works)
   - [ ] Collaborative editing — remoteStepMap + rebase foundations exist, missing transport, presence and remote cursors
   - [ ] Comments / annotations and track changes
