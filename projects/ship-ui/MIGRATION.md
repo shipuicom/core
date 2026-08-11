@@ -1,4 +1,9 @@
-# Migration Guide: Upgrading to Secondary Entry Points
+# Migration Guide
+
+> [!IMPORTANT]
+> **v0.25.0**: the spreadsheet moved — `@ship-ui/core/ship-sheet` is now `@ship-ui/core/ship-spreadsheet`, `ShipSheetView` is `ShipSpreadsheet` (`<sh-spreadsheet>`), and `ShipSheetBlockBehavior` is `ShipSpreadsheetBlockBehavior`. Angular `>= 20` remains the supported floor.
+
+# Upgrading to Secondary Entry Points
 
 Starting with version `0.21.0`, ShipUI has transitioned from a single unified bundle import to a **Modular Secondary Entry Points** architecture. This guide walks you through why we made this change and how to update your codebase.
 
