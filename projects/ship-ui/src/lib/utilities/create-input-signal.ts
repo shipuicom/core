@@ -27,6 +27,13 @@ interface InputSignalOptions<T> {
    * ongoing input↔signal sync.
    */
   signal?: WritableSignal<T | null | undefined>;
+  /**
+   * Called after a DOM-originated change actually updates the signal, with where it came
+   * from: `'user'` for typing (a native `input` event), `'programmatic'` for code writing
+   * `input.value` from outside (forms/ngModel — surfaced via the value interceptor).
+   * Signal-originated `.set()` calls and echo round-trips never trigger it.
+   */
+  onDomChange?: (value: T | null | undefined, source: 'user' | 'programmatic') => void;
 }
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement;
@@ -43,6 +50,7 @@ export function createInputSignal<T>(
     compare = (a: T | null | undefined, b: T | null | undefined) => a === b,
     forceType = undefined,
     returnPreviousValue = true,
+    onDomChange = undefined,
   } = options || {};
 
   const adopted = options?.signal;
@@ -63,6 +71,7 @@ export function createInputSignal<T>(
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
   let lastValueFromInput: T | null | undefined = undefined;
   let hasValueFromInput = false;
+  let writeBackDepth = 0;
 
   effect(
     () => {
@@ -86,9 +95,11 @@ export function createInputSignal<T>(
         }
       }
 
-      const inputHandler = () => {
+      const inputHandler = (e: Event) => {
+        const source: 'user' | 'programmatic' = e.type === 'inputValueChanged' ? 'programmatic' : 'user';
+
         if (debounce <= 0) {
-          syncValueFromInput();
+          syncValueFromInput(source);
           return;
         }
 
@@ -98,7 +109,7 @@ export function createInputSignal<T>(
 
         timeoutId = setTimeout(() => {
           timeoutId = null;
-          syncValueFromInput();
+          syncValueFromInput(source);
         }, debounce);
       };
 
@@ -130,8 +141,13 @@ export function createInputSignal<T>(
 
       if (inputElement.value !== domValue) {
         previousValue = domValue;
-        inputElement.value = domValue;
-        inputElement.dispatchEvent(new Event('input'));
+        writeBackDepth++;
+        try {
+          inputElement.value = domValue;
+          inputElement.dispatchEvent(new Event('input'));
+        } finally {
+          writeBackDepth--;
+        }
       }
     },
     { injector }
@@ -139,7 +155,7 @@ export function createInputSignal<T>(
 
   return valueSignal;
 
-  function syncValueFromInput() {
+  function syncValueFromInput(source?: 'user' | 'programmatic') {
     const inputElement = inputElementRef();
     if (!inputElement) return;
 
@@ -151,6 +167,10 @@ export function createInputSignal<T>(
 
     if (!compare(untracked(valueSignal), transformedValue)) {
       valueSignal.set(transformedValue);
+
+      if (source && writeBackDepth === 0) {
+        onDomChange?.(transformedValue, source);
+      }
     }
   }
 

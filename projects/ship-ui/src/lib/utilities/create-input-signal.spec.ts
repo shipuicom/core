@@ -46,6 +46,17 @@ class DebounceHost {
 }
 
 @Component({
+  template: `<input #el />`,
+})
+class OriginHost {
+  el = viewChild<ElementRef<HTMLInputElement>>('el');
+  calls: Array<{ value: string | null | undefined; source: 'user' | 'programmatic' }> = [];
+  value = createInputSignal<string>(this.el, {
+    onDomChange: (value, source) => this.calls.push({ value, source }),
+  });
+}
+
+@Component({
   selector: 'test-conjunction-host',
   template: `<ng-content />`,
 })
@@ -87,7 +98,7 @@ describe('createInputSignal', () => {
   beforeEach(async () => {
     vi.useFakeTimers();
     await TestBed.configureTestingModule({
-      imports: [ViewChildHost, RawElementHost, TransformHost, DebounceHost, ConjunctionWrapper],
+      imports: [ViewChildHost, RawElementHost, TransformHost, DebounceHost, OriginHost, ConjunctionWrapper],
     }).compileComponents();
   });
 
@@ -236,6 +247,40 @@ describe('createInputSignal', () => {
 
       vi.advanceTimersByTime(100);
       expect(host.value()).toBe('ab');
+    });
+  });
+
+  describe('onDomChange origin reporting', () => {
+    let fixture: ComponentFixture<OriginHost>;
+    let host: OriginHost;
+
+    beforeEach(async () => {
+      fixture = TestBed.createComponent(OriginHost);
+      host = fixture.componentInstance;
+      await flush(fixture);
+    });
+
+    function inputEl(): HTMLInputElement {
+      return fixture.nativeElement.querySelector('input');
+    }
+
+    it('reports typing as user', async () => {
+      typeInto(inputEl(), 'hi');
+      await flush(fixture);
+      expect(host.calls).toEqual([{ value: 'hi', source: 'user' }]);
+    });
+
+    it('reports an outside value assignment as programmatic', async () => {
+      inputEl().value = 'prog';
+      await flush(fixture);
+      expect(host.calls).toEqual([{ value: 'prog', source: 'programmatic' }]);
+    });
+
+    it('never fires for signal-originated set() or its echo', async () => {
+      host.value.set('ext');
+      await flush(fixture);
+      expect(inputEl().value).toBe('ext');
+      expect(host.calls).toEqual([]);
     });
   });
 
