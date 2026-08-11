@@ -98,6 +98,7 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 
 - [ ] Create a code input (like n amont of boxes for 2FA codes etc).
 - [ ] Create a card stack component
+- [ ] Bottom-sheet dialog type — a ShipDialog variant (e.g. type "bottom-sheet"; "sheet" is taken by the surface utility) that anchors the dialog as a native-feeling card: drag handle, slide-down dismiss with velocity snap (transpose ship-sidenav's drag machinery), backdrop + Escape from the dialog for free, opened through the same typed ShipDialogService.open(). Foundation for the editor's mobile sheet mode.
 - [ ] Create a CSV input that create chips on comma (or enter) press, currently select has chip select which is not ideal but works for now
 - [ ] Create simple chart components (could also be core for simple charts)
   - [ ] Line chart
@@ -134,6 +135,7 @@ Might be sharing a lot of features and could be useful to do in the same one
   - [ ] Drag handles for block reordering (keyboard block move already works)
   - [ ] Collaborative editing — remoteStepMap + rebase foundations exist, missing transport, presence and remote cursors
   - [ ] Comments / annotations and track changes
+  - [ ] Mobile sheet editing mode — on coarse-pointer/narrow viewports the inline editor renders as a tap-to-edit preview that opens the real editing surface in a bottom-sheet dialog: toolbar position="bottom" pinned above the keyboard (visualViewport tracking already shipped), editor fills the card and is its own scroller (virtualization picks the sheet body up as scroll container). Never reparent a live contenteditable into the sheet — mount fresh and restore the logical selection.
   - [ ] Markdown input rules — typing `# `, `- `, `> `, ``` autoconverts the block
   - [ ] Smart paste rules — URL over selection becomes a link, image URL becomes an image block
   - [ ] Toggle/collapsible block and multi-column layout block (component blocks)
