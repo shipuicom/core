@@ -115,9 +115,12 @@ export class ShipDialog {
   sheetDragging = signal(false);
   sheetDismissing = signal(false);
   /**
-   * Height of the software keyboard overlapping the layout viewport — the
-   * sheet rides on top of it so bottom-pinned content (toolbars, inputs)
-   * stays reachable. 0 on desktop and while the keyboard is closed.
+   * How far the sheet is lifted off the layout-viewport bottom so its lower
+   * edge sits exactly on the *visual* viewport bottom — on top of whatever
+   * currently overlays the page: the software keyboard, a bottom URL bar,
+   * a keyboard accessory row. Measured, not predicted: engines disagree on
+   * what `innerHeight`/`dvh` include, so the sheet's own overhang below the
+   * visible band is the only number that is true everywhere.
    */
   keyboardInset = signal(0);
   #visualHeight = signal<number | null>(null);
@@ -127,20 +130,18 @@ export class ShipDialog {
     return offset > 0 ? `translateY(${offset}px)` : null;
   });
 
-  /**
-   * The sheet rests at the *true* bottom of the layout viewport — extending
-   * behind any overlaying browser chrome like a native sheet (the content's
-   * safe-area padding keeps controls clear of the home indicator). Only the
-   * software keyboard lifts it: the keyboard moves just the visual viewport,
-   * which no CSS unit tracks, so it needs the JS inset.
-   */
   readonly sheetBottomInset = computed(() => `${this.keyboardInset()}px`);
 
-  /** With the keyboard open the sheet caps to the visible band instead of dvh. */
+  /**
+   * The card is capped to the visible band (minus breathing room) whenever
+   * the visual viewport is known — so a "95dvh" sheet ends up the same
+   * *visible* size on every engine, regardless of how each one accounts for
+   * its own chrome in CSS viewport units.
+   */
   readonly sheetMaxHeight = computed(() => {
     if (this.defaultOptionMerge().type !== 'bottom-sheet') return null;
     const visual = this.#visualHeight();
-    if (this.keyboardInset() > 0 && visual) return `${Math.round(visual - 12)}px`;
+    if (visual) return `${Math.round(visual - 12)}px`;
     return this.defaultOptionMerge().maxHeight ?? null;
   });
 
@@ -184,8 +185,10 @@ export class ShipDialog {
     if (shouldDismiss && sheetHeight > 0) {
       this.dismissSheet();
     } else {
-      // The transition (enabled while not dragging) animates the snap back.
+      // The transition (enabled while not dragging) animates the snap back;
+      // the measurement defers itself until that transition ends.
       this.sheetOffset.set(0);
+      this.#onVisualViewport();
     }
   }
 
@@ -223,12 +226,50 @@ export class ShipDialog {
     }
   }
 
+  #measureScheduled = false;
+
+  /**
+   * Feedback control instead of viewport arithmetic: measure how far the
+   * sheet's bottom edge overhangs the visual viewport's bottom and fold the
+   * difference into the inset. One pass converges (margin shifts the rect
+   * linearly); a negative overhang (keyboard closed, URL bar collapsed)
+   * lowers the sheet again, floored at the true bottom.
+   */
   #onVisualViewport = () => {
-    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
-    if (!vv) return;
-    this.keyboardInset.set(Math.max(0, Math.round(window.innerHeight - vv.offsetTop - vv.height)));
-    this.#visualHeight.set(vv.height);
+    if (this.#measureScheduled) return;
+    this.#measureScheduled = true;
+    requestAnimationFrame(() => {
+      this.#measureScheduled = false;
+      this.#measureSheetInset();
+    });
+    // rAF is paused in hidden documents; the timeout keeps the sheet honest there.
+    setTimeout(() => {
+      if (!this.#measureScheduled) return;
+      this.#measureScheduled = false;
+      this.#measureSheetInset();
+    }, 48);
   };
+
+  #measureSheetInset() {
+    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
+    const dialogEl = this.dialogRef()?.nativeElement;
+    if (!vv || !dialogEl || !this.isOpen()) return;
+    this.#visualHeight.set(vv.height);
+
+    // While the sheet is mid-gesture or mid-animation its rect is transformed
+    // and lies about the resting position — re-measure once it settles.
+    if (this.sheetDragging() || this.sheetDismissing()) return;
+    if (dialogEl.getAnimations().length > 0) {
+      dialogEl.addEventListener('animationend', () => this.#onVisualViewport(), { once: true });
+      dialogEl.addEventListener('transitionend', () => this.#onVisualViewport(), { once: true });
+      return;
+    }
+
+    const overhang = Math.round(dialogEl.getBoundingClientRect().bottom - (vv.offsetTop + vv.height));
+    if (overhang !== 0) {
+      this.keyboardInset.set(Math.max(0, this.keyboardInset() + overhang));
+    }
+  }
 
   abortController: AbortController | null = null;
   isOpenEffect = effect(() => {
@@ -282,11 +323,16 @@ export class ShipDialog {
         }
       );
 
-      // The software keyboard shrinks only the visual viewport; the sheet
-      // tracks it so its bottom edge (and pinned toolbars) stay visible.
+      // Keyboard, bottom URL bars and accessory rows all move only the visual
+      // viewport; the sheet re-measures against it on every geometry change
+      // (resize = keyboard/bar state, scroll = pinch-zoom panning) and once
+      // after the entry animation settles.
       if (this.defaultOptionMerge().type === 'bottom-sheet' && typeof window !== 'undefined' && window.visualViewport) {
         this.#onVisualViewport();
         window.visualViewport.addEventListener('resize', this.#onVisualViewport, {
+          signal: this.abortController?.signal,
+        });
+        window.visualViewport.addEventListener('scroll', this.#onVisualViewport, {
           signal: this.abortController?.signal,
         });
       }
