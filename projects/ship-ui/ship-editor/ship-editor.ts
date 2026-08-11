@@ -517,7 +517,18 @@ export class ShipEditor implements ControlValueAccessor {
       }
     });
 
-    afterNextRender(() => this.#viewReady.set(true));
+    afterNextRender(() => {
+      this.#viewReady.set(true);
+      // The software keyboard resizes only the visual viewport — window
+      // `resize` never fires for it (iOS). Track it for the editor's whole
+      // lifetime (virtual or not) so a focused caret is pulled back out from
+      // behind the keyboard when the visible band changes.
+      const vv = window.visualViewport;
+      if (vv) {
+        vv.addEventListener('resize', this.#onVisualViewportResize, { passive: true });
+        this.#destroyRef.onDestroy(() => vv.removeEventListener('resize', this.#onVisualViewportResize));
+      }
+    });
 
     this.#destroyRef.onDestroy(() => {
       this.#unhookScroll();
@@ -1953,18 +1964,72 @@ export class ShipEditor implements ControlValueAccessor {
     this.selection.unsuppress();
   }
 
-  /** The viewport's edges in client coordinates. */
+  readonly #onVisualViewportResize = () => {
+    // Recompute the virtual window against the new visible band (self-guards
+    // when virtualization is off) …
+    this.#onViewportChange();
+    // … then reveal the caret once that update has landed (rAF runs FIFO).
+    // Deliberately only on viewport *resize*, never scroll: scrolling past
+    // the caret must not yank the viewport back, but the keyboard changing
+    // the visible band under a focused editor must.
+    requestAnimationFrame(() => this.#revealFocusedCaret());
+  };
+
+  /**
+   * Bring the caret back into the visible band, in whichever mode: the
+   * virtualized path goes through the block math, a non-virtual document
+   * reveals by the DOM caret's own rect (the browser won't auto-scroll for a
+   * programmatically restored selection).
+   */
+  #revealFocusedCaret() {
+    if (typeof window === 'undefined') return;
+    const sel = this.selection.active();
+    if (!sel) return;
+    const active = this.#document.activeElement;
+    if (!active || !this.surface().nativeElement.contains(active)) return;
+    if (this.#insideComponentBlock(active)) return;
+
+    if (this.#heights) {
+      this.#scrollCaretIntoView(sel.from);
+      return;
+    }
+
+    const domSel = window.getSelection();
+    if (!domSel?.rangeCount) return;
+    const rect = domSel.getRangeAt(0).getBoundingClientRect();
+    if (rect.top === 0 && rect.bottom === 0) return; // unpainted/detached range
+    const { top: vpTop, bottom: vpBottom } = this.#viewportEdges();
+    let delta = 0;
+    if (rect.top < vpTop) delta = rect.top - vpTop;
+    else if (rect.bottom > vpBottom) delta = rect.bottom - vpBottom;
+    if (delta !== 0) this.#adjustScroll(delta);
+  }
+
+  /**
+   * The viewport's edges in client coordinates, clamped to the visual
+   * viewport: the software keyboard shrinks `visualViewport` while
+   * `window.innerHeight` (and any scroller's rect) stays full-size, so
+   * without the clamp "visible" includes the band behind the keyboard.
+   */
   #viewportEdges(): { top: number; bottom: number } {
+    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
+    const visTop = vv?.offsetTop ?? 0;
+    const visBottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
     if (this.#scrollerEl) {
       const rect = this.#scrollerEl.getBoundingClientRect();
-      return { top: rect.top, bottom: rect.bottom };
+      return { top: Math.max(rect.top, visTop), bottom: Math.min(rect.bottom, visBottom) };
     }
-    return { top: 0, bottom: window.innerHeight };
+    return { top: visTop, bottom: visBottom };
   }
 
   #adjustScroll(delta: number) {
     if (delta === 0) return;
-    const el = this.#scrollerEl ?? (this.#document.scrollingElement as HTMLElement | null);
+    // #scrollerEl is only resolved when virtualization activates; resolve on
+    // demand so non-virtual documents scroll their real container too.
+    const el =
+      this.#scrollerEl ??
+      this.#findScrollContainer(this.surface().nativeElement) ??
+      (this.#document.scrollingElement as HTMLElement | null);
     if (el) el.scrollTop += delta;
   }
 
