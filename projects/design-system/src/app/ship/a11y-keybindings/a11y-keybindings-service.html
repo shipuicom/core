@@ -43,9 +43,9 @@
     <p>
       The companion <code>ShipA11yAnnouncerService</code> (from
       <code>&#64;ship-ui/core/ship-a11y-announcer</code>) voices state changes the DOM doesn't announce on its own,
-      through hidden <code>aria-live</code> regions. ShipUI uses it for alert toasts and
-      <code>sh-spreadsheet</code> selection changes; call it from your own components for anything a screen reader
-      would otherwise miss:
+      through hidden <code>aria-live</code> regions. ShipUI uses it throughout: alert toasts, select option changes
+      and filtered counts, menu search results, editor formatting/undo, spreadsheet selection and copy, and datepicker
+      month navigation. Call it from your own components for anything a screen reader would otherwise miss:
     </p>
     <app-highlight lang="ts" [content]="codeAnnounce" />
   </section>

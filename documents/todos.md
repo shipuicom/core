@@ -179,9 +179,13 @@ Might be sharing a lot of features and could be useful to do in the same one
   - [ ] Screen-reader announcement pass for grid/editor operations
     - [x] announce(message, politeness) API — ShipA11yAnnouncerService (@ship-ui/core/ship-a11y-announcer), hidden aria-live regions per politeness, clear-then-set so repeats re-voice
     - [x] Alert toasts announce (error/warn assertive, rest polite)
-    - [x] sh-spreadsheet announces the settled selection on mouseup ("B2 to C3 selected, 2 ranges")
+    - [x] sh-spreadsheet announces the settled selection on mouseup ("B2 to C3 selected, 2 ranges") and copy ("Copied A1 to B3")
+    - [x] sh-select announces option select/unselect with count, chip removal, and filtered option counts while searching
+    - [x] sh-menu announces search result counts
+    - [x] sh-editor announces mark toggles ("Bold on/off"), block conversions ("Heading 2"), undo/redo
+    - [x] sh-datepicker announces the visible month when paging ("March 2026")
     - [ ] Grid ARIA on sh-spreadsheet (role=grid/row/gridcell, aria-rowcount/colcount + row/colindex — required because virtualization mounts only a window of rows, aria-selected)
-    - [ ] sh-editor block/mark operation announcements and sh-code cursor/occurrence announcements
+    - [ ] sh-code cursor/occurrence announcements ("2 cursors", "3 of 7 occurrences")
 
 ### Testing (WIP)
 
