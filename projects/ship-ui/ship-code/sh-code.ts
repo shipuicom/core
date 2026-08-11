@@ -17,7 +17,7 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { BlockHeightMap } from '@ship-ui/core/ship-virtual-scroll';
+import { ShipVirtualWindow } from '@ship-ui/core/ship-virtual-scroll';
 import {
   CodeDocument,
   createDocument,
@@ -103,9 +103,10 @@ interface HistoryEntry {
 
 /**
  * `<sh-code>` — the code editor surface. Renders a virtualized window of
- * lines (the shared `BlockHeightMap` drives the pixel model, exactly as in
- * `sh-editor`'s virtualization), takes input through a hidden textarea, and
- * keeps a flat `{anchor, head}` selection over the columnar line index.
+ * lines (the shared `ShipVirtualWindow` drives the pixel model, the same
+ * engine behind `sh-virtual-scroll` and `sh-sheet-view`), takes input through
+ * a hidden textarea, and keeps a flat `{anchor, head}` selection over the
+ * columnar line index.
  */
 @Component({
   selector: 'sh-code',
@@ -174,10 +175,12 @@ export class ShipCode implements ControlValueAccessor {
   readonly sel = signal<FlatSelection>(flatCaret(0));
   readonly focused = signal(false);
 
-  // Window state
-  readonly winStart = signal(0);
-  readonly winEnd = signal(0);
-  #heights = new BlockHeightMap(1, DEFAULT_LINE_PX);
+  // Window state — the shared windowing engine drives the mounted line range
+  // and the spacer paddings; lines are priced uniformly at the measured
+  // line height (no per-line measurement pass).
+  #win = new ShipVirtualWindow({ count: 1, estimate: DEFAULT_LINE_PX, overscan: VIRTUAL_OVERSCAN_PX });
+  readonly winStart = this.#win.start;
+  readonly winEnd = this.#win.end;
   #scrollScheduled = false;
   /** The element the scroll listener is currently bound to. */
   #scrollHooked: HTMLElement | null = null;
@@ -321,14 +324,8 @@ export class ShipCode implements ControlValueAccessor {
     this.#syncBucketStyles();
   }
 
-  readonly padTop = computed(() => {
-    this.doc();
-    return this.#heights.prefixHeight(this.winStart());
-  });
-  readonly padBottom = computed(() => {
-    this.doc();
-    return Math.max(0, this.#heights.total() - this.#heights.prefixHeight(this.winEnd()));
-  });
+  readonly padTop = this.#win.padStart;
+  readonly padBottom = this.#win.padEnd;
 
   readonly gutterDigits = computed(() => String(Math.max(1, this.lineCount())).length);
 
@@ -366,7 +363,7 @@ export class ShipCode implements ControlValueAccessor {
       const point = index.pointAt(range.head);
       if (point.line < this.winStart() || point.line >= this.winEnd()) continue;
       boxes.push({
-        top: this.#heights.prefixHeight(point.line),
+        top: this.#win.heights.prefixHeight(point.line),
         left: point.column * charW,
         height: lineH,
         primary: range === primary,
@@ -399,7 +396,7 @@ export class ShipCode implements ControlValueAccessor {
         const colTo = line === end.line ? end.column : lines[line].text.length;
         // A fully swept line paints a newline stub so empty lines stay visible.
         const width = Math.max((colTo - colFrom) * charW, colTo === colFrom ? charW * 0.5 : 0);
-        rects.push({ top: this.#heights.prefixHeight(line), left: colFrom * charW, width, height: lineH });
+        rects.push({ top: this.#win.heights.prefixHeight(line), left: colFrom * charW, width, height: lineH });
       }
     }
     return rects;
@@ -418,7 +415,7 @@ export class ShipCode implements ControlValueAccessor {
         this.doc.set(doc);
         this.#history = [];
         this.#redoStack = [];
-        this.#heights = new BlockHeightMap(doc.lines.length, this.lineHeight());
+        this.#win.reset(doc.lines.length, this.lineHeight());
         const size = indexFor(doc).size;
         const range = primaryFlat(this.sel());
         this.sel.set(flatCaret(Math.min(range.head, size)));
@@ -611,26 +608,19 @@ export class ShipCode implements ControlValueAccessor {
 
   #updateWindow() {
     const count = this.lineCount();
-    if (this.#heights.count !== count) this.#heights = new BlockHeightMap(count, this.lineHeight());
+    this.#win.setCount(count, this.lineHeight());
     if (!this.#virtualOn()) {
-      this.winStart.set(0);
-      this.winEnd.set(count);
+      this.#win.setRange(0, count);
       this.#pumpTokens();
       return;
     }
     const scroller = this.scroller?.()?.nativeElement;
     if (!scroller) {
-      this.winStart.set(0);
-      this.winEnd.set(Math.min(count, 100));
+      this.#win.setRange(0, Math.min(count, 100));
       this.#pumpTokens();
       return;
     }
-    const top = scroller.scrollTop;
-    const bottom = top + scroller.clientHeight;
-    const from = this.#heights.indexAt(top - VIRTUAL_OVERSCAN_PX);
-    const to = Math.min(count, this.#heights.indexAt(bottom + VIRTUAL_OVERSCAN_PX) + 1);
-    this.winStart.set(from);
-    this.winEnd.set(to);
+    this.#win.update(scroller.scrollTop, scroller.clientHeight);
     this.#pumpTokens();
   }
 
@@ -652,7 +642,7 @@ export class ShipCode implements ControlValueAccessor {
     if (rect.width > 0) this.charWidth.set(rect.width / probe.textContent!.length);
     if (rect.height > 0) {
       this.lineHeight.set(rect.height);
-      this.#heights = new BlockHeightMap(this.lineCount(), rect.height);
+      this.#win.reset(this.lineCount(), rect.height);
     }
   }
 
@@ -660,8 +650,8 @@ export class ShipCode implements ControlValueAccessor {
     const scroller = this.scroller?.()?.nativeElement;
     if (!scroller) return;
     const line = indexFor(this.doc()).pointAt(pos).line;
-    const top = this.#heights.prefixHeight(line);
-    const bottom = top + this.#heights.heightOf(line);
+    const top = this.#win.heights.prefixHeight(line);
+    const bottom = top + this.#win.heights.heightOf(line);
     if (top < scroller.scrollTop) scroller.scrollTop = top;
     else if (bottom > scroller.scrollTop + scroller.clientHeight) {
       scroller.scrollTop = bottom - scroller.clientHeight;
@@ -1187,7 +1177,7 @@ export class ShipCode implements ControlValueAccessor {
     // prefix height — so this y is already in document coordinates.
     const y = event.clientY - rect.top;
     const x = event.clientX - this.#textOriginX(content, rect);
-    const line = this.#heights.indexAt(y);
+    const line = this.#win.heights.indexAt(y);
     const column = Math.max(0, Math.round(x / this.charWidth()));
     return indexFor(this.doc()).posOf({ line, column });
   }

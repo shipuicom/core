@@ -15,7 +15,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { BlockHeightMap } from '@ship-ui/core/ship-virtual-scroll';
+import { ShipVirtualWindow } from '@ship-ui/core/ship-virtual-scroll';
 import { sheetRangeToHtml, sheetRangeToTsv } from './core/sheet-clipboard';
 import {
   SheetModel,
@@ -59,9 +59,9 @@ function colLabel(index: number): string {
 
 /**
  * `<sh-sheet-view>` — the lean read-only sheet renderer. An immutable
- * `SheetModel` in, display state (selection) alongside; two `BlockHeightMap`
- * instances — one per axis — drive the virtualized window exactly as
- * `sh-code` virtualizes lines. It does not know editing exists: the editable
+ * `SheetModel` in, display state (selection) alongside; two `ShipVirtualWindow`
+ * instances — one per axis, the column one horizontal — drive the virtualized
+ * window exactly as `sh-code` virtualizes lines. It does not know editing exists: the editable
  * `ShipSheet` composes this view and floats its own editing overlay above it.
  *
  * Interaction owned here is display-side only: mouse drag paints a
@@ -106,14 +106,17 @@ export class ShipSheetView {
 
   readonly uid = `shs${nextInstanceId++}`;
 
-  // Window state: the mounted slice on each axis.
-  readonly rowStart = signal(0);
-  readonly rowEnd = signal(0);
-  readonly colStart = signal(0);
-  readonly colEnd = signal(0);
+  // Two shared windowing engines, one per axis — sizes are heights on the
+  // row axis, widths on the column axis.
+  #rowWin = new ShipVirtualWindow({ count: 0, estimate: 28, overscan: OVERSCAN_PX });
+  #colWin = new ShipVirtualWindow({ count: 0, estimate: 96, overscan: OVERSCAN_PX, axis: 'horizontal' });
 
-  #rowMap = new BlockHeightMap(0, 28);
-  #colMap = new BlockHeightMap(0, 96);
+  // Window state: the mounted slice on each axis.
+  readonly rowStart = this.#rowWin.start;
+  readonly rowEnd = this.#rowWin.end;
+  readonly colStart = this.#colWin.start;
+  readonly colEnd = this.#colWin.end;
+
   /** Bumped when the maps are rebuilt, so geometry computeds re-read them. */
   readonly #geometry = signal(0);
   #scrollScheduled = false;
@@ -124,18 +127,9 @@ export class ShipSheetView {
 
   readonly headOffset = computed(() => (this.headers() ? 44 : 0));
 
-  readonly contentWidth = computed(() => {
-    this.#geometry();
-    return this.headOffset() + this.#colMap.total();
-  });
-  readonly padTop = computed(() => {
-    this.#geometry();
-    return this.#rowMap.prefixHeight(this.rowStart());
-  });
-  readonly padBottom = computed(() => {
-    this.#geometry();
-    return Math.max(0, this.#rowMap.total() - this.#rowMap.prefixHeight(this.rowEnd()));
-  });
+  readonly contentWidth = computed(() => this.headOffset() + this.#colWin.totalSize());
+  readonly padTop = this.#rowWin.padStart;
+  readonly padBottom = this.#rowWin.padEnd;
 
   /**
    * The mounted rows: absolute index, resolved height, and the row's cells as
@@ -181,13 +175,15 @@ export class ShipSheetView {
     const sheet = this.sheet();
     if (!raw?.ranges.length || sheet.rows === 0 || sheet.cols === 0) return [];
     this.#geometry();
+    const rows = this.#rowWin.heights;
+    const cols = this.#colWin.heights;
     return raw.ranges.map((range, i) => {
       const { r0, c0, r1, c1 } = normalizedRange(sheet, range);
       return {
-        top: this.#rowMap.prefixHeight(r0),
-        left: this.headOffset() + this.#colMap.prefixHeight(c0),
-        width: this.#colMap.prefixHeight(c1 + 1) - this.#colMap.prefixHeight(c0),
-        height: this.#rowMap.prefixHeight(r1 + 1) - this.#rowMap.prefixHeight(r0),
+        top: rows.prefixHeight(r0),
+        left: this.headOffset() + cols.prefixHeight(c0),
+        width: cols.prefixHeight(c1 + 1) - cols.prefixHeight(c0),
+        height: rows.prefixHeight(r1 + 1) - rows.prefixHeight(r0),
         active: i === raw.ranges.length - 1,
       };
     });
@@ -205,10 +201,14 @@ export class ShipSheetView {
         // partially measured map re-prices its unmeasured tracks from the
         // rolling average of the measured ones, which would drag default
         // columns toward whatever widths the explicit ones happen to have.
-        this.#rowMap = new BlockHeightMap(sheet.rows, rowH);
-        for (let r = 0; r < sheet.rows; r++) this.#rowMap.measure(r, sheet.rowHeights[r] ?? rowH);
-        this.#colMap = new BlockHeightMap(sheet.cols, colW);
-        for (let c = 0; c < sheet.cols; c++) this.#colMap.measure(c, sheet.colWidths[c] ?? colW);
+        // Bulk-measure on the raw map + one sync: measure() per track would
+        // rebuild the O(n) prefix sums on every call (quadratic on big sheets).
+        this.#rowWin.setCount(sheet.rows, rowH);
+        for (let r = 0; r < sheet.rows; r++) this.#rowWin.heights.measure(r, sheet.rowHeights[r] ?? rowH);
+        this.#rowWin.sync();
+        this.#colWin.setCount(sheet.cols, colW);
+        for (let c = 0; c < sheet.cols; c++) this.#colWin.heights.measure(c, sheet.colWidths[c] ?? colW);
+        this.#colWin.sync();
         this.#syncColStyles(sheet, headOffset);
         this.#geometry.update((v) => v + 1);
         this.#updateWindow();
@@ -247,7 +247,7 @@ export class ShipSheetView {
     const rules: string[] = [];
     let left = headOffset;
     for (let c = 0; c < sheet.cols; c++) {
-      const width = this.#colMap.heightOf(c);
+      const width = this.#colWin.heights.heightOf(c);
       rules.push(`[data-shs="${this.uid}"] .c${c}{left:${left}px;width:${width}px}`);
       left += width;
     }
@@ -275,18 +275,14 @@ export class ShipSheetView {
     const sheet = this.sheet();
     const scroller = this.scroller?.()?.nativeElement;
     if (!scroller || scroller.clientHeight === 0 || scroller.clientWidth === 0) {
-      this.rowStart.set(0);
-      this.rowEnd.set(Math.min(sheet.rows, FALLBACK_ROWS));
-      this.colStart.set(0);
-      this.colEnd.set(Math.min(sheet.cols, FALLBACK_COLS));
+      this.#rowWin.setRange(0, Math.min(sheet.rows, FALLBACK_ROWS));
+      this.#colWin.setRange(0, Math.min(sheet.cols, FALLBACK_COLS));
       return;
     }
     const top = scroller.scrollTop;
     const left = Math.max(0, scroller.scrollLeft - this.headOffset());
-    this.rowStart.set(this.#rowMap.indexAt(top - OVERSCAN_PX));
-    this.rowEnd.set(Math.min(sheet.rows, this.#rowMap.indexAt(top + scroller.clientHeight + OVERSCAN_PX) + 1));
-    this.colStart.set(this.#colMap.indexAt(left - OVERSCAN_PX));
-    this.colEnd.set(Math.min(sheet.cols, this.#colMap.indexAt(left + scroller.clientWidth + OVERSCAN_PX) + 1));
+    this.#rowWin.update(top, scroller.clientHeight);
+    this.#colWin.update(left, scroller.clientWidth);
   }
 
   // -------------------------------------------------------------------------
@@ -352,6 +348,6 @@ export class ShipSheetView {
     if (sheet.rows === 0 || sheet.cols === 0) return null;
     const x = event.clientX - rect.left - this.headOffset();
     const y = event.clientY - rect.top;
-    return { row: this.#rowMap.indexAt(y), col: this.#colMap.indexAt(Math.max(0, x)) };
+    return { row: this.#rowWin.heights.indexAt(y), col: this.#colWin.heights.indexAt(Math.max(0, x)) };
   }
 }
