@@ -1,5 +1,6 @@
 export * from './ship-editor';
 export * from './sh-editor-toolbar';
+export * from './sh-editor-sheet';
 export * from './sh-editor-floating-toolbar';
 export * from './sh-editor-contextual-toolbar';
 export * from './sh-editor-action.directive';

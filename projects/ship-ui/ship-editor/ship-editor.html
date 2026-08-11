@@ -61,6 +61,7 @@
       <sh-editor-contextual-toolbar [blockElAt]="blockElementAt" [extras]="contextualActions()" />
       <sh-editor-image-resize [blockElAt]="blockElementAt" [surface]="surface" [readonly]="readonly()" [edgeHandles]="imageEdgeResize()" />
       <sh-editor-slash-menu [commands]="slashCommands()" />
+      <ng-content select="sh-editor-toolbar[position='bottom']"></ng-content>
       @if (showMetrics() && metricsText()) {
         <div class="sh-editor-stats">{{ metricsText() }}</div>
       }

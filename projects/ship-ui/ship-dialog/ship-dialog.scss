@@ -64,6 +64,74 @@ $shipDialog: true !default;
       overflow: auto;
     }
 
+    // Bottom-anchored, drag-dismissable card — native-sheet feel. The type
+    // rides on top of the class variants (default/type-b/type-c keep their
+    // surface styling).
+    &.bottom-sheet {
+      margin: auto 0 0;
+      width: 100%;
+      max-width: 100%;
+      border-radius: var(--dialog-s) var(--dialog-s) 0 0;
+      border-bottom: none;
+      max-height: 85dvh;
+      animation: sh-sheet-in 260ms cubic-bezier(0.32, 0.72, 0, 1);
+      // Drag offset is bound inline; animate the snap-back and dismiss, never
+      // the finger-following itself.
+      transition: transform 240ms cubic-bezier(0.32, 0.72, 0, 1);
+      will-change: transform;
+
+      &.sheet-dragging {
+        transition: none;
+      }
+
+      &.sheet-dismissing {
+        transition: transform 220ms cubic-bezier(0.55, 0, 0.55, 0.2);
+      }
+
+      > .content {
+        border-radius: var(--dialog-inner-s) var(--dialog-inner-s) 0 0;
+        display: flex;
+        flex-direction: column;
+        // Basis auto, not 0: the dialog's height is its content's height, and
+        // a 0-basis child in an auto-height column collapses to nothing
+        // (iOS WebKit follows the spec here; grow still wins when max-height
+        // caps the card).
+        flex: 1 1 auto;
+        min-height: 0;
+        padding-bottom: env(safe-area-inset-bottom, 0);
+      }
+
+      .sheet-handle {
+        position: relative;
+        z-index: 3;
+        outline: none;
+        display: flex;
+        justify-content: center;
+        padding: p2r(10) 0 p2r(6);
+        background-color: var(--dialog-bg);
+        border-radius: var(--dialog-inner-s) var(--dialog-inner-s) 0 0;
+        cursor: grab;
+        touch-action: none;
+
+        &:active {
+          cursor: grabbing;
+        }
+
+        .sheet-handle-bar {
+          width: p2r(36);
+          height: p2r(5);
+          border-radius: p2r(3);
+          background: var(--base-6);
+        }
+      }
+
+      // The handle owns the top rounding; square the content off against it.
+      .sheet-handle + .content {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+      }
+    }
+
     .closeable-overlay {
       position: fixed;
       inset: 0;
@@ -155,6 +223,15 @@ $shipDialog: true !default;
         bottom: 0;
         z-index: 100;
       }
+    }
+  }
+
+  @keyframes sh-sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
     }
   }
 }
