@@ -95,6 +95,10 @@ import { ShipColorPicker } from './ship-color-picker';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
+    // SSG: the popoverContent div projects into sh-popover's closed `@if`
+    // branch, which the hydration serializer can't map (NG0502) — skip
+    // hydration so this subtree client-renders instead.
+    ngSkipHydration: 'true',
     // `patch` collapses the field to just the color swatch (a compact trigger);
     // the swatch opens the picker popover on click. Styled in the scss.
     '[class.patch]': 'patch()',

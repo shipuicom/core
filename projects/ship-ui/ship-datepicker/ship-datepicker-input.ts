@@ -61,6 +61,12 @@ import { ShipDatepicker } from './ship-datepicker';
     <ng-template #defaultIndicator></ng-template>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    // SSG: the popoverContent div projects into sh-popover's closed `@if`
+    // branch, which the hydration serializer can't map (NG0502) — skip
+    // hydration so this subtree client-renders instead.
+    ngSkipHydration: 'true',
+  },
 })
 export class ShipDatepickerInput {
   #selfRef = inject(ElementRef);
