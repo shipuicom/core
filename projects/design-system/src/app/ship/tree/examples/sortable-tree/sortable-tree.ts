@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { ShipTree, ShipTreeNode, ShipTreeOpenIcon, ShipTreeClosedIcon } from '@ship-ui/core/ship-tree';
+import { ShipTree, ShipTreeNode, ShipTreeOpenIcon, ShipTreeClosedIcon, ShipTreeItemIcon } from '@ship-ui/core/ship-tree';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { createTreeSortableManager } from '@ship-ui/core/ship-sortable';
 
@@ -14,7 +14,7 @@ interface TreeNode {
 @Component({
   selector: 'app-sortable-tree-example',
   standalone: true,
-  imports: [ShipTree, ShipTreeNode, ShipTreeOpenIcon, ShipTreeClosedIcon, ShipIcon],
+  imports: [ShipTree, ShipTreeNode, ShipTreeOpenIcon, ShipTreeClosedIcon, ShipTreeItemIcon, ShipIcon],
   templateUrl: './sortable-tree.html',
   styleUrl: './sortable-tree.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

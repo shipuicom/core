@@ -260,6 +260,196 @@ export class ShipResize {
   }
 }
 
+
+@Directive({
+  selector: '[shRowResize]',
+  standalone: true,
+  host: {
+    '[class.resizing]': 'resizingClass()',
+  },
+})
+export class ShipRowResize {
+  #el = inject(ElementRef) as ElementRef<HTMLTableRowElement>;
+  #renderer = inject(Renderer2);
+  #table = inject(ShipTable);
+  #keybindings = inject(ShipA11yKeybindingsService);
+
+  /** Whether the row can be resized by dragging or keyboard shortcuts. */
+  resizable = input<boolean>(true);
+  /** Minimum height in pixels the row can be resized to. */
+  minHeight = input<number>(24);
+  /** Maximum height in pixels the row can be resized to, or `null` for no cap. */
+  maxHeight = input<number | null>(null);
+
+  resizingClass = signal(false);
+
+  #startY!: number;
+  #startHeight!: number;
+  #resizing = false;
+  #animationFrameRequest: number | null = null;
+
+  constructor() {
+    effect(() => {
+      const hostEl = this.#el.nativeElement;
+      if (this.resizable()) {
+        const parts: string[] = [];
+        const decAction = 'table.row-resize-decrease';
+        const decShortcut = this.#keybindings.getShortcut(decAction);
+        if (decShortcut) {
+          parts.push(this.#keybindings.getDisplayShortcut(decAction) || decShortcut);
+        }
+        const incAction = 'table.row-resize-increase';
+        const incShortcut = this.#keybindings.getShortcut(incAction);
+        if (incShortcut) {
+          parts.push(this.#keybindings.getDisplayShortcut(incAction) || incShortcut);
+        }
+
+        if (parts.length > 0) {
+          this.#renderer.setAttribute(hostEl, 'aria-keyshortcuts', parts.join(', '));
+        } else {
+          this.#renderer.removeAttribute(hostEl, 'aria-keyshortcuts');
+        }
+      } else {
+        this.#renderer.removeAttribute(hostEl, 'aria-keyshortcuts');
+      }
+    });
+  }
+
+  ngOnInit() {
+    if (!this.#table) {
+      console.error('shRowResize directive must be used within a sh-table component.');
+      return;
+    }
+
+    const hostEl = this.#el.nativeElement;
+
+    if (this.resizable()) {
+      const resizer = this.#renderer.createElement('div');
+      this.#renderer.addClass(resizer, 'sh-row-resizer');
+      this.#renderer.appendChild(hostEl, resizer);
+      this.#renderer.listen(resizer, 'mousedown', this.#onMouseDown.bind(this));
+      // Keep drag-end clicks on the handle from reaching row-level click handlers
+      this.#renderer.listen(resizer, 'click', (event: MouseEvent) => event.stopPropagation());
+
+      if (!hostEl.hasAttribute('role')) {
+        this.#renderer.setAttribute(hostEl, 'role', 'row');
+      }
+
+      if (!hostEl.hasAttribute('tabindex')) {
+        this.#renderer.setAttribute(hostEl, 'tabindex', '0');
+      }
+    }
+  }
+
+  @HostListener('keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (!this.resizable()) return;
+
+    const target = event.target as HTMLElement;
+    const host = this.#el.nativeElement;
+    if (
+      target !== host &&
+      (target.tagName === 'BUTTON' ||
+        target.tagName === 'INPUT' ||
+        target.tagName === 'SELECT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.closest('button, input, select, textarea, a') !== null ||
+        target.closest('[role="button"], [role="checkbox"], [role="menuitem"]') !== null)
+    ) {
+      return;
+    }
+
+    const isDecrease = this.#keybindings.matches(event, 'table.row-resize-decrease');
+    const isIncrease = this.#keybindings.matches(event, 'table.row-resize-increase');
+
+    if (isDecrease || isIncrease) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const currentHeight = host.offsetHeight;
+      const step = 10;
+      const targetHeight = isDecrease ? currentHeight - step : currentHeight + step;
+
+      this.#applyHeight(targetHeight);
+    }
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    if (!this.#resizing) return;
+
+    this.#scheduleResize(event);
+  }
+
+  @HostListener('document:mouseup', ['$event'])
+  onMouseUp(event: MouseEvent) {
+    if (this.#resizing) {
+      this.#resizing = false;
+      this.resizingClass.set(false);
+
+      if (this.#animationFrameRequest !== null) {
+        cancelAnimationFrame(this.#animationFrameRequest);
+        this.#animationFrameRequest = null;
+      }
+
+      // Delay resetting the table's resizing state to block clicks immediately after resizing
+      setTimeout(() => {
+        this.#table.resizing.set(false);
+      }, 50);
+    }
+  }
+
+  @HostListener('document:click', ['$event']) onClick(event: MouseEvent) {
+    if (this.#resizing) {
+      event.stopPropagation();
+    }
+  }
+
+  #onMouseDown(event: MouseEvent) {
+    event.stopPropagation();
+
+    if (!this.resizable()) return;
+
+    this.#table.resizing.set(true);
+    this.#resizing = true;
+    this.resizingClass.set(true);
+    this.#startY = event.pageY;
+    this.#startHeight = this.#el.nativeElement.offsetHeight;
+  }
+
+  #scheduleResize(event: MouseEvent) {
+    if (this.#animationFrameRequest !== null) {
+      cancelAnimationFrame(this.#animationFrameRequest);
+    }
+
+    this.#animationFrameRequest = requestAnimationFrame(() => {
+      this.#resizeRow(event);
+      this.#animationFrameRequest = null;
+    });
+  }
+
+  #resizeRow(event: MouseEvent) {
+    this.#applyHeight(this.#startHeight + (event.pageY - this.#startY));
+  }
+
+  #applyHeight(height: number) {
+    const constrainedHeight = Math.max(
+      this.minHeight(),
+      this.maxHeight() ? Math.min(height, this.maxHeight() ?? height) : height
+    );
+
+    const hostEl = this.#el.nativeElement;
+    this.#renderer.setStyle(hostEl, 'height', `${constrainedHeight}px`);
+    this.#renderer.addClass(hostEl, 'row-resized');
+  }
+
+  ngOnDestroy() {
+    if (this.#animationFrameRequest !== null) {
+      cancelAnimationFrame(this.#animationFrameRequest);
+    }
+  }
+}
+
 @Directive({
   selector: '[shSort]',
   standalone: true,
@@ -493,6 +683,9 @@ type ScrollState = -1 | 0 | 1;
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
+    // Browsers strip <thead>/<tr>/<td> parsed outside a real <table>, so SSR markup
+    // arrives mangled — skip hydration and re-render the subtree on the client.
+    ngSkipHydration: 'true',
     '[attr.role]': 'role()',
     '[attr.aria-busy]': 'loading()',
     '[attr.aria-label]': 'ariaLabel()',
@@ -586,6 +779,55 @@ export class ShipTable {
       }
     });
   });
+
+  // Cumulative sticky-column offsets: every direct sticky child of a row (th/td or a
+  // [shStickyColumns] group) is pinned next to the previous one instead of all
+  // stacking at the scroll edge. Runs for markup- and config-based tables alike.
+  stickyOffsetsEffect = effect(() => {
+    this.data();
+    this.sizeTrigger();
+    this.columns.signal();
+
+    untracked(() => queueMicrotask(() => this.#updateStickyOffsets()));
+  });
+
+  hostResizeEffect = effect((onCleanup) => {
+    if (typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver(() => this.#updateStickyOffsets());
+    observer.observe(this.#el.nativeElement);
+    onCleanup(() => observer.disconnect());
+  });
+
+  #updateStickyOffsets() {
+    // Layout can only be measured in the browser; SSR DOM also lacks NodeList iteration
+    if (typeof window === 'undefined') return;
+
+    const rows = Array.from(
+      this.#el.nativeElement.querySelectorAll('tr') as NodeListOf<HTMLTableRowElement>
+    );
+
+    rows.forEach((row) => {
+      const children = Array.from(row.children) as HTMLElement[];
+
+      let start = 0;
+      for (const child of children) {
+        if (child.classList.contains('sticky')) {
+          child.style.left = `${start}px`;
+          start += child.offsetWidth;
+        }
+      }
+
+      let end = 0;
+      for (let i = children.length - 1; i >= 0; i--) {
+        const child = children[i];
+        if (child.classList.contains('sticky-end')) {
+          child.style.right = `${end}px`;
+          end += child.offsetWidth;
+        }
+      }
+    });
+  }
 
   gridSetupEffect = effect(() => {
     const gridActive = this.grid();

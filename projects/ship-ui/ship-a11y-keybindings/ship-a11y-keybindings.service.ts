@@ -47,6 +47,8 @@ export const DEFAULT_KEYBINDINGS: Record<string, string> = {
   'table.sort': 'Enter, space',
   'table.column-resize-decrease': 'Shift+ArrowLeft',
   'table.column-resize-increase': 'Shift+ArrowRight',
+  'table.row-resize-decrease': 'Shift+ArrowUp',
+  'table.row-resize-increase': 'Shift+ArrowDown',
 
   'grid.focus-up': 'ArrowUp, w',
   'grid.focus-down': 'ArrowDown, s',

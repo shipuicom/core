@@ -6,7 +6,7 @@
   </tr>
 
   @for (row of dataSource(); track $index) {
-    <tr>
+    <tr shRowResize>
       @for (col of displayedColumns(); track col) {
         <td>{{ row[col] }}</td>
       }

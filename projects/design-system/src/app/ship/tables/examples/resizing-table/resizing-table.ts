@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { ShipResize, ShipTable } from '@ship-ui/core/ship-table';
+import { ShipResize, ShipRowResize, ShipTable } from '@ship-ui/core/ship-table';
 import { ShipTableVariant } from '@ship-ui/core';
 
 const ELEMENT_DATA = [
@@ -19,7 +19,7 @@ const COLUMNS = ['position', 'name', 'weight', 'symbol'] as const;
 @Component({
   selector: 'resizing-table',
   standalone: true,
-  imports: [ShipTable, ShipResize],
+  imports: [ShipTable, ShipResize, ShipRowResize],
   templateUrl: './resizing-table.html',
   styleUrl: './resizing-table.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

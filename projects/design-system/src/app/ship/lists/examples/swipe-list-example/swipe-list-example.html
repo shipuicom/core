@@ -1,0 +1,36 @@
+<span class="hint">
+  Swipe a row right to archive, left to delete — on desktop, use the buttons revealed by dragging on a touch screen.
+</span>
+
+<sh-list class="inbox">
+  @for (message of messages(); track message.id) {
+    <sh-list-item-swipe (swipeOpen)="onSwipeOpen($event, message)">
+      <button actionLeft class="swipe-action archive" (click)="archive(message)">
+        <sh-icon>tray-arrow-down</sh-icon>
+        Archive
+      </button>
+
+      <div item class="row">
+        <div class="text">
+          <span class="from">{{ message.from }}</span>
+          <span class="subject">{{ message.subject }}</span>
+        </div>
+        <span class="time">{{ message.time }}</span>
+      </div>
+
+      <button actionRight class="swipe-action delete" (click)="remove(message)">
+        <sh-icon>trash</sh-icon>
+        Delete
+      </button>
+    </sh-list-item-swipe>
+  } @empty {
+    <div class="empty">Inbox zero 🎉</div>
+  }
+</sh-list>
+
+<div class="status-row">
+  <span class="status">{{ lastAction() }}</span>
+  @if (messages().length < 4) {
+    <button class="reset" (click)="reset()">Reset</button>
+  }
+</div>

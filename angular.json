@@ -156,6 +156,35 @@
           "builder": "@angular/build:extract-i18n"
         }
       }
+    },
+    "size-harness": {
+      "projectType": "application",
+      "root": "scripts/size-cli",
+      "sourceRoot": "scripts/size-cli/app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "dist/size-harness",
+            "index": "scripts/size-cli/app/index.html",
+            "browser": "scripts/size-cli/app/main.ts",
+            "polyfills": [],
+            "tsConfig": "scripts/size-cli/tsconfig.json",
+            "inlineStyleLanguage": "scss",
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "projects/ship-ui/styles"
+              ]
+            },
+            "styles": [],
+            "scripts": [],
+            "outputHashing": "none",
+            "sourceMap": false,
+            "budgets": [],
+            "optimization": true
+          }
+        }
+      }
     }
   }
 }

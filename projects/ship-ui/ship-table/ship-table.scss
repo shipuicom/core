@@ -233,6 +233,59 @@ $shipTable: true !default;
       position: relative;
       z-index: 0;
 
+      &.row-resized td {
+        min-height: 0;
+      }
+
+      &:has(.sh-row-resizer):hover,
+      &.resizing {
+        z-index: 10;
+      }
+
+      .sh-row-resizer {
+        height: p2r(12);
+        width: 100%;
+        position: absolute;
+        bottom: p2r(-6);
+        left: 0;
+        cursor: row-resize;
+        z-index: 5;
+
+        &:after {
+          content: '';
+          position: absolute;
+          left: p2r(5);
+          right: p2r(5);
+          border-radius: p2r(2);
+          top: 50%;
+          transform: translateY(-50%);
+          height: p2r(3);
+          background-color: var(--base-4);
+          opacity: 0;
+          transition:
+            height 150ms ease,
+            opacity 150ms ease,
+            background-color 150ms ease;
+        }
+
+        &:hover:after {
+          height: p2r(5);
+          opacity: 1;
+          background-color: var(--primary-8);
+        }
+
+        @media (pointer: coarse) {
+          height: p2r(24);
+          bottom: p2r(-12);
+        }
+      }
+
+      &.resizing .sh-row-resizer:after {
+        height: p2r(5);
+        opacity: 1;
+        background-color: var(--primary-8);
+      }
+
       &.sticky {
         position: sticky;
         top: 0;
@@ -381,6 +434,7 @@ $shipTable: true !default;
     td {
       display: flex;
       align-items: center;
+      overflow: hidden;
       padding: var(--table-td-p);
       min-height: var(--table-td-mh);
       gap: var(--table-td-g);

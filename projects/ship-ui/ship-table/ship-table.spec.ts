@@ -1,7 +1,7 @@
 import { Component, signal, TemplateRef, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ShipSort, ShipTable, ShipTableColumn, ShipTableContent } from './ship-table';
+import { ShipRowResize, ShipSort, ShipTable, ShipTableColumn, ShipTableContent } from './ship-table';
 
 @Component({
   selector: 'sh-test-table',
@@ -1021,5 +1021,98 @@ describe('ShipTable Keyboard Resizing & Accessibility Shortcuts', () => {
     btn1.dispatchEvent(shiftTabEvent);
     fixture.detectChanges();
     expect(document.activeElement).toBe(h1);
+  });
+});
+
+@Component({
+  selector: 'sh-test-row-resize-table',
+  template: `
+    <sh-table [data]="dataSource()">
+      <tr thead>
+        <th>Name</th>
+        <th>Age</th>
+      </tr>
+      @for (row of dataSource(); track $index) {
+        <tr shRowResize [minHeight]="20" [maxHeight]="100">
+          <td>{{ row.name }}</td>
+          <td>{{ row.age }}</td>
+        </tr>
+      }
+    </sh-table>
+  `,
+  standalone: true,
+  imports: [ShipTable, ShipRowResize],
+})
+class TestRowResizeTableComponent {
+  dataSource = signal([
+    { name: 'Alice', age: 30 },
+    { name: 'Bob', age: 25 },
+  ]);
+}
+
+describe('ShipRowResize', () => {
+  let fixture: ComponentFixture<TestRowResizeTableComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [TestRowResizeTableComponent],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(TestRowResizeTableComponent);
+    fixture.detectChanges();
+  });
+
+  const bodyRow = (): HTMLTableRowElement => fixture.nativeElement.querySelectorAll('tbody tr')[0];
+
+  it('should append a row resizer handle and make the row focusable', () => {
+    const row = bodyRow();
+    expect(row.querySelector('.sh-row-resizer')).toBeTruthy();
+    expect(row.getAttribute('tabindex')).toBe('0');
+    expect(row.getAttribute('role')).toBe('row');
+    expect(row.getAttribute('aria-keyshortcuts')).toContain('Shift');
+  });
+
+  it('should grow the row height on Shift+ArrowDown and shrink it on Shift+ArrowUp', () => {
+    const row = bodyRow();
+    Object.defineProperty(row, 'offsetHeight', { value: 40, configurable: true });
+
+    row.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', shiftKey: true, bubbles: true }));
+    fixture.detectChanges();
+    expect(row.style.height).toBe('50px');
+    expect(row.classList.contains('row-resized')).toBe(true);
+
+    row.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', shiftKey: true, bubbles: true }));
+    fixture.detectChanges();
+    expect(row.style.height).toBe('30px');
+  });
+
+  it('should clamp the height between minHeight and maxHeight', () => {
+    const row = bodyRow();
+
+    Object.defineProperty(row, 'offsetHeight', { value: 22, configurable: true });
+    row.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', shiftKey: true, bubbles: true }));
+    expect(row.style.height).toBe('20px');
+
+    Object.defineProperty(row, 'offsetHeight', { value: 98, configurable: true });
+    row.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', shiftKey: true, bubbles: true }));
+    expect(row.style.height).toBe('100px');
+  });
+
+  it('should resize with mouse drag on the handle', () => {
+    const row = bodyRow();
+    Object.defineProperty(row, 'offsetHeight', { value: 40, configurable: true });
+    const resizer = row.querySelector('.sh-row-resizer') as HTMLElement;
+
+    resizer.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+
+    // resize is scheduled via requestAnimationFrame
+    return new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+        expect(row.classList.contains('row-resized')).toBe(true);
+        resolve();
+      });
+    });
   });
 });

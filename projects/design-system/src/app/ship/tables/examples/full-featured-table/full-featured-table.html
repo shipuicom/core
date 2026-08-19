@@ -102,6 +102,8 @@
 
   @for (user of displayedUsers(); track user.id) {
     <tr
+      shRowResize
+      [maxHeight]="120"
       [class.selected]="selectedUserIds().has(user.id)"
       (click)="toggleExpandUser(user.id, $event)"
       class="clickable-row">

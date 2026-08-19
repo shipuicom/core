@@ -90,6 +90,7 @@ export class ConfigTable {
       header: 'ID',
       type: 'number',
       sortable: true,
+      resizable: true,
       size: '60px',
       sticky: 'start',
     },

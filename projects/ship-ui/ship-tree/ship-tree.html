@@ -5,6 +5,8 @@
     [treeItems]="visibleNodes()"
     sortingMode="tree"
     role="tree"
+    (keydown)="onTreeKeydown($event)"
+    (focusin)="onTreeFocusIn($event)"
   >
     @for (node of visibleNodes(); track getId()(node)) {
       <div
@@ -12,12 +14,20 @@
         [class.is-folder]="isFolder()(node)"
         [class.is-expanded]="getIsOpen()(node)"
         [class.is-selected]="selectedId() === getId()(node)"
+        [class.is-grabbed]="grabbedId() === getId()(node)"
         draggable="true"
+        [attr.aria-grabbed]="grabbedId() === getId()(node)"
         [attr.sortable-dir]="isFolder()(node) ? 'true' : null"
         [style.--tree-depth]="getNodeDepth(node)"
         (click)="handleNodeClick(node, $event)"
         role="treeitem"
+        [attr.data-tree-id]="getId()(node)"
+        [attr.tabindex]="tabStopId() === getId()(node) ? 0 : -1"
         [attr.aria-expanded]="isFolder()(node) ? getIsOpen()(node) : null"
+        [attr.aria-selected]="selectedId() === getId()(node)"
+        [attr.aria-level]="getNodeDepth(node) + 1"
+        [attr.aria-posinset]="getAriaPosInSet(node)"
+        [attr.aria-setsize]="getAriaSetSize(node)"
       >
         <!-- Indent guides -->
         @for (i of getDepthArray(getNodeDepth(node)); track i) {
@@ -27,7 +37,7 @@
         <!-- Folder Caret -->
         @if (isFolder()(node) && !dirTemplate()) {
           <span class="caret-container">
-            <button class="caret-btn" (click)="toggleNode(node, $event)" type="button">
+            <button class="caret-btn" (click)="toggleNode(node, $event)" type="button" tabindex="-1" aria-hidden="true">
               @if (getIsOpen()(node)) {
                 <sh-icon size="small">caret-down</sh-icon>
               } @else {
@@ -65,8 +75,9 @@
       </div>
     }
   </div>
+  <div class="sh-tree-live" aria-live="polite">{{ liveMessage() }}</div>
 } @else {
-  <div class="sh-tree-container" role="tree">
+  <div class="sh-tree-container" role="tree" (keydown)="onTreeKeydown($event)" (focusin)="onTreeFocusIn($event)">
     @for (node of visibleNodes(); track getId()(node)) {
       <div
         class="sh-tree-node"
@@ -76,7 +87,13 @@
         [style.--tree-depth]="getNodeDepth(node)"
         (click)="handleNodeClick(node, $event)"
         role="treeitem"
+        [attr.data-tree-id]="getId()(node)"
+        [attr.tabindex]="tabStopId() === getId()(node) ? 0 : -1"
         [attr.aria-expanded]="isFolder()(node) ? getIsOpen()(node) : null"
+        [attr.aria-selected]="selectedId() === getId()(node)"
+        [attr.aria-level]="getNodeDepth(node) + 1"
+        [attr.aria-posinset]="getAriaPosInSet(node)"
+        [attr.aria-setsize]="getAriaSetSize(node)"
       >
         <!-- Indent guides -->
         @for (i of getDepthArray(getNodeDepth(node)); track i) {
@@ -86,7 +103,7 @@
         <!-- Folder Caret -->
         @if (isFolder()(node) && !dirTemplate()) {
           <span class="caret-container">
-            <button class="caret-btn" (click)="toggleNode(node, $event)" type="button">
+            <button class="caret-btn" (click)="toggleNode(node, $event)" type="button" tabindex="-1" aria-hidden="true">
               @if (getIsOpen()(node)) {
                 <sh-icon size="small">caret-down</sh-icon>
               } @else {

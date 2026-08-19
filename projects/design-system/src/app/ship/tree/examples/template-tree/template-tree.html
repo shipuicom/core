@@ -1,5 +1,5 @@
 <div class="tree-wrapper">
-  <sh-tree [(items)]="nodes" [getName]="getName" [isFolder]="isFolderNode">
+  <sh-tree [(items)]="nodes" [getId]="getId" [getParentId]="getParentId" [getName]="getName" [isFolder]="isFolderNode">
     <!-- Custom Directory Template -->
     <ng-template #dirTemplate let-node>
       <sh-tree-node>

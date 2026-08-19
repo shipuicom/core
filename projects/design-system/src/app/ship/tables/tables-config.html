@@ -53,6 +53,20 @@
   </section>
 
   <section>
+    <h4>Keyboard Grid Navigation</h4>
+    <p>
+      Set
+      <code>[grid]="true"</code>
+      on
+      <code>&lt;sh-table&gt;</code>
+      to switch from <code>role="table"</code> to an ARIA <code>role="grid"</code> with full keyboard cell
+      navigation. The table becomes a single tab stop: the <kbd>arrow keys</kbd> move focus between cells,
+      <kbd>Home</kbd>/<kbd>End</kbd> jump within the row, and <kbd>Tab</kbd> steps through interactive controls
+      inside a cell before leaving it. Try the "Interactive Grid" toggle in the example below.
+    </p>
+  </section>
+
+  <section>
     <h4>Accessibility (WCAG)</h4>
     <p>
       Support screen reader navigation and labeling. Bind an accessible name to the table container with

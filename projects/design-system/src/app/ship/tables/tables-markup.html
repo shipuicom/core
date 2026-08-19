@@ -44,6 +44,24 @@
   </section>
 
   <section>
+    <h4>Row Resizing</h4>
+    <p>
+      Apply the
+      <code>shRowResize</code>
+      directive to body rows (
+      <code>&lt;tr&gt;</code>
+      ) to allow row height adjustment by dragging the bottom edge or with
+      <kbd>Shift+ArrowUp</kbd>/<kbd>Shift+ArrowDown</kbd> on a focused row. Available inputs:
+      <code>resizable</code>
+      ,
+      <code>minHeight</code>
+      , and
+      <code>maxHeight</code>
+      .
+    </p>
+  </section>
+
+  <section>
     <h4>Sticky Columns</h4>
     <p>
       Use the
@@ -56,7 +74,9 @@
       <code>.sticky</code>
       /
       <code>.sticky-end</code>
-      classes to header cells to pin columns.
+      classes to header cells to pin columns. Multiple sticky columns stack next to each other automatically
+      &mdash; the table measures each pinned column and applies cumulative offsets, so adjacent sticky columns
+      never slide beneath one another.
     </p>
   </section>
 

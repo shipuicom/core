@@ -45,6 +45,8 @@
     "test:editor": "ng test ship-ui --watch=false --include='**/ship-editor/**/*.spec.ts'",
     "test:e2e:editor": "playwright test -c scripts/editor-e2e/playwright.config.ts",
     "bench:video": "bun projects/ship-ui/ship-video/benchmarks/run.ts",
+    "size": "bun scripts/component-sizes.ts",
+    "size:cli": "bun scripts/size-cli/run.ts",
     "build:transmux": "bash scripts/build-transmux.sh"
   },
   "private": true,

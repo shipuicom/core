@@ -7,7 +7,7 @@ import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipCheckbox } from '@ship-ui/core/ship-checkbox';
 import { ShipChip } from '@ship-ui/core/ship-chip';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
-import { ShipResize, ShipSort, ShipStickyColumns, ShipTable } from '@ship-ui/core/ship-table';
+import { ShipResize, ShipRowResize, ShipSort, ShipStickyColumns, ShipTable } from '@ship-ui/core/ship-table';
 import { ShipFormField } from 'ship-ui/ship-form-field';
 
 export interface UserElement {
@@ -121,6 +121,7 @@ const INITIAL_USERS: UserElement[] = [
     ShipTable,
     ShipSort,
     ShipResize,
+    ShipRowResize,
     ShipStickyColumns,
     ShipCheckbox,
     ShipButton,

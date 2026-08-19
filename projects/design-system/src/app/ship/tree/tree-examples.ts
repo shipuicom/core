@@ -53,6 +53,8 @@ export class SortableTree {
 
   templateCodeHtml = `<sh-tree
   [(items)]="nodes"
+  [getId]="getId"
+  [getParentId]="getParentId"
   [getName]="getName"
   [isFolder]="isFolderNode"
 >
@@ -88,4 +90,27 @@ export class SortableTree {
     </sh-tree-node>
   </ng-template>
 </sh-tree>`;
+
+  templateCodeTypescript = `interface CustomNode {
+  uuid: string;       // custom id field
+  label: string;
+  kind: 'dir' | 'item';
+  ownerUuid: string | null; // custom parent id field
+  isOpen?: boolean;
+}
+
+export class TemplateTreeExample {
+  nodes = signal<CustomNode[]>([
+    { uuid: '1', label: 'production-server', kind: 'dir', ownerUuid: null, isOpen: true },
+    { uuid: '1a', label: 'database-migration.log', kind: 'item', ownerUuid: '1' },
+    // ...
+  ]);
+
+  // By default the tree reads \`item.id\` and \`item.parentId\`.
+  // Provide accessors to use any field names you like:
+  getId = (node: CustomNode) => node.uuid;
+  getParentId = (node: CustomNode) => node.ownerUuid;
+  getName = (node: CustomNode) => node.label;
+  isFolderNode = (node: CustomNode) => node.kind === 'dir';
+}`;
 }

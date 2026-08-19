@@ -3,7 +3,15 @@
     <p style="margin-bottom: 16px">
       Integrate the tree component with
       <code>createTreeSortableManager</code>
-      to enable premium, VSCode-style interactive drag-and-drop.
+      to enable premium, VSCode-style interactive drag-and-drop. Also shown on the
+      <a href="/sortables/examples#sortable-tree">Sortables examples page</a>.
+    </p>
+    <p style="margin-bottom: 16px">
+      The tree is fully keyboard operable:
+      <kbd>Tab</kbd> focuses the tree, the <kbd>arrow keys</kbd> move focus and expand or collapse folders,
+      <kbd>Enter</kbd> selects, and typing a letter jumps to the next matching node. With a sortable manager,
+      <kbd>Space</kbd> picks the focused node up, <kbd>ArrowUp</kbd>/<kbd>ArrowDown</kbd> move it,
+      <kbd>Space</kbd> drops it, and <kbd>Escape</kbd> cancels and returns it to its original position.
     </p>
     <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px">
       <app-highlight lang="html" [content]="sortableCodeHtml" />
@@ -19,7 +27,16 @@
       child element. This example maps custom property keys, resolves custom icons, displays status badges, and
       supports deleting elements.
     </p>
-    <app-highlight lang="html" [content]="templateCodeHtml" />
+    <p style="margin-bottom: 16px">
+      The tree doesn't require any specific data shape. By default it reads <code>item.id</code> and
+      <code>item.parentId</code>, but you can point it at any field names by passing accessor functions to
+      <code>getId</code> and <code>getParentId</code> &mdash; here the data uses <code>uuid</code> and
+      <code>ownerUuid</code> instead. The same pattern applies to <code>getName</code> and <code>isFolder</code>.
+    </p>
+    <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px">
+      <app-highlight lang="html" [content]="templateCodeHtml" />
+      <app-highlight lang="ts" [content]="templateCodeTypescript" />
+    </div>
     <app-template-tree-example class="example" />
   </app-previewer>
 </div>

@@ -1,0 +1,16 @@
+<span class="hint">Long-press an item to pick it up — a plain touch still scrolls the list.</span>
+
+<sh-list [shSortable]="manager" [touchEnabled]="true" touchActivation="longpress" class="stops">
+  @for (stop of stops(); track stop.title) {
+    <div class="stop" draggable="true">
+      <div class="badge">
+        <sh-icon>{{ stop.icon }}</sh-icon>
+      </div>
+      <div class="text">
+        <span class="title">{{ stop.title }}</span>
+        <span class="subtitle">{{ stop.subtitle }}</span>
+      </div>
+      <span class="order">{{ $index + 1 }}</span>
+    </div>
+  }
+</sh-list>
