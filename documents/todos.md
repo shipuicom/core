@@ -50,6 +50,9 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
   - [x] Add support for multi sticky rows
   - [x] Improve support for sorting with a built in sort using attribute on the column
   - [x] Add support for multi sticky columns
+  - [x] Multi sticky columns use cumulative offsets — adjacent sticky columns pin next to each other instead of sliding beneath one another, same engine for markup- and config-based tables (no [shStickyColumns] wrapper needed)
+  - [x] Row resizing (shRowResize) — drag the bottom edge or Shift+ArrowUp/Down, with minHeight/maxHeight inputs
+  - [x] Fix sh-table losing its row/cell elements under SSR hydration (browsers strip table tags outside a real <table>; sh-table now skips hydration)
 - [x] sh-menu features
   - [x] support multi select
   - [x] Support multiple element types
@@ -84,8 +87,6 @@ This is a early stage alpha version of the Ship UI. It is not ready for producti
 - [ ] CLI utility to remove unused css variables to not ship unused code
 - [ ] Create volume slider variant for range slider
 - [ ] Drag controls for number inputs (directive)
-- [ ] sh-table features
-  - [ ] Add support for row resizing
 - [ ] sh-menu features
   - [ ] add hotkeys to navigate options without having a search input
   - [ ] add focus with a hidden input similar to native select
