@@ -1,0 +1,20 @@
+<sh-list class="primary" listRole="listbox" closable [(value)]="environment">
+  <h3 title>Deploy target</h3>
+  <button value="development">
+    <sh-icon>code</sh-icon>
+    Development
+  </button>
+  <button value="staging">
+    <sh-icon>flask</sh-icon>
+    Staging
+  </button>
+  <button value="production">
+    <sh-icon>rocket-launch</sh-icon>
+    Production
+  </button>
+</sh-list>
+
+<p class="selected-value">
+  Selected:
+  <code>{{ environment() ?? 'none' }}</code>
+</p>

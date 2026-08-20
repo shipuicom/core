@@ -4,23 +4,57 @@
 
 <app-property-viewer>
   <section>
-    <h4>Item</h4>
+    <h4>Collapsed</h4>
     <p>
       Add the
-      <code>item</code>
-      attribute to a child element of
+      <code>collapsed</code>
+      class to
       <code>sh-list</code>
-      to designate it as a list item.
+      to animate it down to an icon-only rail: the list narrows to
+      <code>--list-collapsed-w</code>
+      and item labels fade out, leaving the leading
+      <code>sh-icon</code>
+      visible. Toggle the class to animate between the two states.
     </p>
   </section>
   <section>
-    <h4>Action</h4>
+    <h4>Items</h4>
     <p>
-      Add the
-      <code>action</code>
-      attribute to a child element of
+      Every direct child of
       <code>sh-list</code>
-      to make it interactive (e.g., clickable with hover effects).
+      is a list item by default. Inherently interactive elements (
+      <code>a</code>
+      ,
+      <code>button</code>
+      ,
+      <code>label</code>
+      , or anything with a
+      <code>value</code>
+      attribute) automatically get action affordances. The
+      <code>item</code>
+      and
+      <code>action</code>
+      attributes still work as explicit overrides, and
+      <code>raw</code>
+      opts a child out of item styling entirely.
+    </p>
+  </section>
+  <section>
+    <h4>Selection</h4>
+    <p>
+      Set
+      <code>listRole="listbox"</code>
+      to opt in to selection: two-way bind
+      <code>[(value)]</code>
+      , give items
+      <code>value</code>
+      attributes, and the list handles click/keyboard selection, roving focus, and
+      <code>aria-selected</code>
+      stamping. Use
+      <code>closable</code>
+      to allow deselecting the active item. The default
+      <code>listRole="list"</code>
+      leaves projected content completely untouched.
     </p>
   </section>
   <section>

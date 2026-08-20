@@ -18,7 +18,7 @@
     Reset Data
   </button>
 
-  <sh-table-content [columns]="columns()" [data]="users()" />
+  <sh-table-content [columns]="columns()" [data]="users()" [rowResize]="true" />
 
   <!-- Custom User Column Template -->
   <ng-template #nameTemplate let-row>

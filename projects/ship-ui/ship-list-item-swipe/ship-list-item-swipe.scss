@@ -1,4 +1,5 @@
 @use 'helpers' as *;
+@use '../ship-list/ship-list-item' as *;
 
 sh-list-item-swipe {
   display: block;
@@ -32,12 +33,15 @@ sh-list-item-swipe {
       background-color: var(--base-2);
     }
 
-    > [item],
-    > [action] {
+    // Content rows share the exact sh-list item layout — [item]/[action]
+    // attributes are optional here too. The row stays transparent so the
+    // swipe content surface underneath carries background and active states.
+    > *:not([raw]) {
+      @include ship-list-item-layout;
+
       background-color: transparent !important;
       box-shadow: none !important;
       border: 0 !important;
-      width: 100%;
       margin: 0;
       box-sizing: border-box;
     }

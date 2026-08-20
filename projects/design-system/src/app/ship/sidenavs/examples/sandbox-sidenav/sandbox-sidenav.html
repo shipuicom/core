@@ -21,7 +21,14 @@
 
 <div class="sandbox">
   <sh-sidenav [class]="sidenavType()" [(isOpen)]="isNavOpen" [disableDrag]="disableDrag()">
-    <ng-container sidenav>sidenav</ng-container>
+    <ng-container sidenav>
+      <sh-list>
+        <a><sh-icon>squares-four</sh-icon>Dashboard</a>
+        <a><sh-icon>folder</sh-icon>Projects</a>
+        <a><sh-icon>chart-bar</sh-icon>Reports</a>
+        <a><sh-icon>gear</sh-icon>Settings</a>
+      </sh-list>
+    </ng-container>
 
     <ng-container sidenav-closed-topbar><button (click)="isNavOpen.set(!isNavOpen())">hello</button></ng-container>
 

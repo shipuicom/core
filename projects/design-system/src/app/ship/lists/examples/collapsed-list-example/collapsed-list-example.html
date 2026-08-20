@@ -1,0 +1,33 @@
+<button shButton class="simple" (click)="collapsed.set(!collapsed())">
+  <sh-icon>list</sh-icon>
+  {{ collapsed() ? 'Expand' : 'Collapse' }}
+</button>
+
+<sh-list class="primary" listRole="listbox" [(value)]="active" [class.collapsed]="collapsed()">
+  <h3 title>Workspace</h3>
+  <a value="dashboard">
+    <sh-icon>squares-four</sh-icon>
+    Dashboard
+    <span suffix>⌘1</span>
+  </a>
+  <a value="projects">
+    <sh-icon>folder</sh-icon>
+    Projects
+    <span suffix>⌘2</span>
+  </a>
+  <a value="reports">
+    <sh-icon>chart-bar</sh-icon>
+    Reports
+    <span suffix>⌘3</span>
+  </a>
+  <a value="settings">
+    <sh-icon>gear</sh-icon>
+    Settings
+    <span suffix>⌘4</span>
+  </a>
+</sh-list>
+
+<p class="selected-value">
+  Selected:
+  <code>{{ active() ?? 'none' }}</code>
+</p>

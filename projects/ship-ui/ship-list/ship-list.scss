@@ -1,7 +1,17 @@
 @use 'helpers' as *;
+@use './ship-list-item' as *;
 @use '../ship-sortable/ship-sortable.scss';
 
 $shipList: true !default;
+
+// Every direct child is a list item unless it opts out: [title] renders as a
+// section heading, [raw] is the explicit "don't style me" escape hatch, and
+// hr stays a plain divider. [item]/[action] remain valid but optional.
+// sh-list-item-swipe manages its own item layout, so it is not an implicit item.
+$item: '> *:not([title]):not([raw]):not(hr):not(sh-list-item-swipe)';
+// Inherently interactive children get action affordances without needing the
+// [action] attribute. :where() keeps specificity flat.
+$interactive: '> :where(a, button, label, [action], [value]):not([title]):not([raw])';
 
 @if $shipList == true {
   sh-list {
@@ -20,6 +30,7 @@ $shipList: true !default;
     gap: p2r(8);
     display: flex;
     flex-direction: column;
+    transition: width 200ms linear;
 
     &.base-1 {
       --list-active-bg: var(--base-1);
@@ -39,8 +50,7 @@ $shipList: true !default;
       --list-item-gap: #{p2r(12)};
       --list-s: var(--shape-2);
 
-      > [action],
-      > [item] {
+      #{$item} {
         color: var(--base-10);
 
         &.active,
@@ -76,7 +86,9 @@ $shipList: true !default;
         .description {
           font: var(--paragraph-40);
           color: var(--base-7);
-          transition: color 150ms ease;
+          transition:
+            color 150ms ease,
+            opacity 150ms ease;
         }
 
         .shortcut {
@@ -102,39 +114,83 @@ $shipList: true !default;
       padding: 0;
     }
 
+    // WCAG 2.5.5 (AAA) target size: selectable options are at least 44px tall.
+    &[role='listbox'] {
+      #{$item} {
+        min-height: p2r(44);
+      }
+    }
+
     > [title] {
       color: var(--base-12);
       margin: p2r(8 8 0);
       font: var(--paragraph-30B);
       line-height: p2r(24);
+      transition: color 150ms ease;
+    }
+
+    // Icon-only mode: the list narrows to --list-collapsed-w and item labels
+    // fade out. Text nodes can't be wrapped, so labels hide by turning the
+    // item's text color transparent while the leading icon keeps its color.
+    &.collapsed {
+      --list-item-p: #{p2r(8 0)};
+
+      width: var(--list-collapsed-w, #{p2r(68)});
+
+      > [title] {
+        color: transparent;
+      }
+
+      #{$item} {
+        color: transparent;
+        white-space: nowrap;
+        text-wrap: nowrap;
+        overflow: hidden;
+
+        // The leading icon claims the full (icon-only) item width and centers
+        // itself; the faded-out label is pushed past the clipped edge.
+        sh-icon:first-child {
+          color: var(--list-color);
+          display: inline-block;
+          width: 100%;
+          flex-shrink: 0;
+          text-align: center;
+        }
+
+        [suffix],
+        .shortcut,
+        .description {
+          opacity: 0;
+        }
+      }
+
+      &.type-b {
+        #{$item} {
+          sh-icon:first-child {
+            color: var(--base-7);
+          }
+
+          &.active,
+          &.selected {
+            sh-icon:first-child {
+              color: var(--primary-8);
+            }
+          }
+        }
+      }
     }
 
     &[shsortable] [item]:active {
       transform: scale(1);
     }
 
-    > [action],
-    > [item] {
-      border-radius: var(--list-s);
-      padding: var(--list-item-p);
-      font: var(--paragraph-30B);
-      color: var(--list-color);
-      border: var(--list-item-b);
-      display: flex;
-      align-items: center;
-      gap: var(--list-item-gap);
-      width: 100%;
-      user-select: none;
-      appearance: none;
-      border: 0;
-      text-align: left;
-      text-wrap: balance;
-      background-color: transparent;
-      text-decoration: none;
+    #{$item} {
+      @include ship-list-item-layout;
 
       transition:
         transform 125ms linear,
-        box-shadow 125ms linear;
+        box-shadow 125ms linear,
+        color 150ms ease;
       transform: scale(1);
 
       &:active {
@@ -150,80 +206,81 @@ $shipList: true !default;
         outline: 2px solid var(--primary-8);
         outline-offset: 2px;
       }
-
-      [suffix] {
-        margin-left: auto;
-        color: var(--base-8);
-      }
     }
 
     :has(input),
-    > [action] {
+    #{$interactive} {
       cursor: pointer;
     }
 
-    > [item]:has(input:checked),
-    > [action]:has(input:checked),
-    > [action].active,
-    > [action].selected {
-      --list-color: var(--base-12);
+    #{$item} {
+      &:has(input:checked),
+      &.active,
+      &.selected {
+        --list-color: var(--base-12);
 
-      background-color: var(--list-active-bg);
-      box-shadow: var(--list-active-bs);
-      border: var(--list-item-active-b);
+        background-color: var(--list-active-bg);
+        box-shadow: var(--list-active-bs);
+        border: var(--list-item-active-b);
+      }
     }
 
     &.primary {
-      > [item]:has(input:checked),
-      > [action]:has(input:checked),
-      > [action].active,
-      > [action].selected {
-        sh-icon:first-child {
-          color: var(--primary-8);
+      #{$item} {
+        &:has(input:checked),
+        &.active,
+        &.selected {
+          sh-icon:first-child {
+            color: var(--primary-8);
+          }
         }
       }
     }
 
     &.accent {
-      > [item]:has(input:checked),
-      > [action]:has(input:checked),
-      > [action].active,
-      > [action].selected {
-        sh-icon:first-child {
-          color: var(--accent-8);
+      #{$item} {
+        &:has(input:checked),
+        &.active,
+        &.selected {
+          sh-icon:first-child {
+            color: var(--accent-8);
+          }
         }
       }
     }
 
     &.warn {
-      > [item]:has(input:checked),
-      > [action]:has(input:checked),
-      > [action].active,
-      > [action].selected {
-        sh-icon:first-child {
-          color: var(--warn-8);
+      #{$item} {
+        &:has(input:checked),
+        &.active,
+        &.selected {
+          sh-icon:first-child {
+            color: var(--warn-8);
+          }
         }
       }
     }
 
     &.error {
-      > [item]:has(input:checked),
-      > [action]:has(input:checked),
-      > [action].active,
-      > [action].selected {
-        sh-icon:first-child {
-          color: var(--error-8);
+      #{$item} {
+        &:has(input:checked),
+        &.active,
+        &.selected {
+          sh-icon:first-child {
+            color: var(--error-8);
+          }
         }
       }
     }
 
     &.success {
-      > [item]:has(input:checked),
-      > [action]:has(input:checked),
-      > [action].active,
-      > [action].selected {
-        sh-icon:first-child {
-          color: var(--success-8);
+      #{$item} {
+        &:has(input:checked),
+        &.active,
+        &.selected {
+          sh-icon:first-child {
+            color: var(--success-8);
+          }
         }
       }
     }

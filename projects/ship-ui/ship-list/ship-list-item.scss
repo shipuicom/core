@@ -1,0 +1,28 @@
+@use 'helpers' as *;
+
+// Shared layout for a list item row. Used by sh-list for its (implicit or
+// [item]/[action]-tagged) children and by sh-list-item-swipe for its content
+// row, so a swipe item renders pixel-identical to a plain list item.
+@mixin ship-list-item-layout {
+  border-radius: var(--list-s, var(--shape-2));
+  padding: var(--list-item-p, #{p2r(8 12)});
+  font: var(--paragraph-30B);
+  color: var(--list-color, var(--base-9));
+  display: flex;
+  align-items: center;
+  gap: var(--list-item-gap, #{p2r(8)});
+  width: 100%;
+  user-select: none;
+  appearance: none;
+  border: 0;
+  text-align: left;
+  text-wrap: balance;
+  background-color: transparent;
+  text-decoration: none;
+
+  [suffix] {
+    margin-left: auto;
+    color: var(--base-8);
+    transition: opacity 150ms ease;
+  }
+}

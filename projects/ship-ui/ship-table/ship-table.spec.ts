@@ -246,15 +246,20 @@ describe('ShipTable Configuration-Based Columns', () => {
     expect(cells[0].getAttribute('role')).toBe('cell');
   });
 
-  it('should apply role="rowheader" to cells if rowHeader is true in config', () => {
+  it('should render a native th[scope="row"] when rowHeader is true in config', () => {
     hostComponent.columns.set([
       { id: 'name', header: 'User Name', rowHeader: true },
       { id: 'age', header: 'Age' },
     ]);
     fixture.detectChanges();
 
-    const cells = fixture.nativeElement.querySelectorAll('tbody td');
-    expect(cells[0].getAttribute('role')).toBe('rowheader');
+    const row = fixture.nativeElement.querySelector('tbody tr');
+    const cells = row.children;
+    expect(cells[0].tagName).toBe('TH');
+    expect(cells[0].getAttribute('scope')).toBe('row');
+    expect(cells[0].classList.contains('row-header')).toBe(true);
+    expect(cells[0].textContent?.trim()).toBe('Alice');
+    expect(cells[1].tagName).toBe('TD');
     expect(cells[1].getAttribute('role')).toBe('cell');
   });
 

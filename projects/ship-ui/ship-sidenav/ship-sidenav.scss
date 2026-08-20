@@ -9,7 +9,7 @@ $shipSidenav: true !default;
   }
 
   sh-sidenav {
-    --sidenav-width: #{p2r(280)};
+    --sidenav-width: var(--sidenav-open-width, #{p2r(280)});
     // Deliberately viewport-relative: the host is often laid out inside a
     // narrower grid column and is expected to span the full width regardless.
     --sidenav-wrap-w: 100vw;
@@ -82,10 +82,6 @@ $shipSidenav: true !default;
       display: none;
     }
 
-    .drag-image {
-      display: none;
-    }
-
     &.simple {
       border-radius: 0;
 
@@ -106,18 +102,6 @@ $shipSidenav: true !default;
 
     &.overlay {
       overflow: hidden;
-
-      .drag-image {
-        display: block;
-        width: p2r(4);
-        height: 40%;
-        background-color: var(--base-2);
-        border-radius: p2r(2);
-        box-shadow: none;
-        position: fixed;
-        top: 0;
-        left: -9999px;
-      }
 
       .sidenav {
         position: fixed;
@@ -148,6 +132,7 @@ $shipSidenav: true !default;
         align-items: center;
         justify-content: center;
         cursor: grab;
+        touch-action: none;
 
         &:active {
           cursor: grabbing;
@@ -162,20 +147,16 @@ $shipSidenav: true !default;
           border-radius: p2r(2);
         }
 
-        &:hover {
+        &:hover,
+        &:focus-visible {
           &:after {
             background-color: var(--base-4);
           }
         }
-      }
 
-      .dropping-surface {
-        position: fixed;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
-        z-index: 100000;
+        &:focus-visible {
+          outline: none;
+        }
       }
 
       .main-wrap {

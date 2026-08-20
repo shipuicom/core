@@ -1,68 +1,36 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, DOCUMENT, effect, ElementRef, inject, input, model, runInInjectionContext, signal, viewChild, WritableSignal, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, DOCUMENT, effect, ElementRef, inject, input, model, signal, ViewEncapsulation } from '@angular/core';
+import { classMutationSignal } from '@ship-ui/core';
 
 export type ShipSidenavType = 'overlay' | 'simple' | '';
-export function watchHostClass(className: string): WritableSignal<boolean> {
-  const elementRef = inject(ElementRef);
-  const destroyRef = inject(DestroyRef);
 
-  const hasClass = signal(false);
-  const observer =
-    typeof MutationObserver !== 'undefined'
-      ? new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-              hasClass.set(elementRef.nativeElement.classList.contains(className));
-            }
-          });
-        })
-      : undefined;
-
-  runInInjectionContext(elementRef.nativeElement, () => {
-    if (observer) {
-      observer.observe(elementRef.nativeElement, { attributes: true });
-    }
-
-    hasClass.set(elementRef.nativeElement.classList.contains(className));
-  });
-
-  destroyRef.onDestroy(() => {
-    if (observer) {
-      observer.disconnect();
-    }
-  });
-
-  return hasClass;
-}
+// Tracks how many overlay sidenavs currently hold the document scroll lock so
+// two instances on the same page don't remove each other's lock.
+let scrollLockCount = 0;
 
 @Component({
   selector: 'sh-sidenav',
   styleUrl: './ship-sidenav.scss',
   encapsulation: ViewEncapsulation.None,
   template: `
-    @if (isOverlay() && !disableDrag()) {
-      <div #dragImageElement class="drag-image"></div>
-    }
-
-    @if (isOverlay() && isDragging()) {
-      <div class="dropping-surface" (drop)="drop($event)" (dragenter)="dragEnter()" (dragleave)="dragLeave()"></div>
-    }
-
-    <div class="sidenav" role="navigation">
+    <div class="sidenav" role="navigation" [attr.aria-hidden]="sidenavIsHidden() ? 'true' : null">
       <ng-content select="[sidenav]"></ng-content>
     </div>
 
-    <div class="main-wrap" [style.transform]="!disableDrag() && draggingStyle()">
+    <div class="main-wrap" [style.transform]="draggingStyle()">
       @if (isOverlay() && !disableDrag()) {
         <div
           class="dragable"
-          draggable="true"
-          (dragstart)="dragStart($event)"
-          (dragend)="dragEnd($event)"
-          (drag)="drag($event)"
-          (touchstart)="touchStart($event)"
-          (touchmove)="touchMove($event)"
-          (touchend)="touchEnd($event)"
-          (touchcancel)="touchCancel($event)"></div>
+          role="separator"
+          aria-orientation="vertical"
+          [attr.aria-expanded]="isOpen()"
+          [attr.aria-label]="isOpen() ? 'Close navigation' : 'Open navigation'"
+          tabindex="0"
+          (keydown.enter)="isOpen.set(!isOpen())"
+          (keydown.space)="$event.preventDefault(); isOpen.set(!isOpen())"
+          (pointerdown)="dragPointerDown($event)"
+          (pointermove)="dragPointerMove($event)"
+          (pointerup)="dragPointerUp($event)"
+          (pointercancel)="dragPointerCancel()"></div>
       }
 
       <div class="closed-topbar">
@@ -79,32 +47,37 @@ export function watchHostClass(className: string): WritableSignal<boolean> {
     '[class.open]': 'isOpen()',
     '[class.closed]': '!isOpen()',
     '[class.is-dragging]': 'isDragging()',
+    '[style.--sidenav-open-width.px]': 'openWidth()',
+    '(document:keydown.escape)': 'onEscape()',
   },
 })
 export class ShipSidenav {
   #document = inject(DOCUMENT);
   #selfRef = inject(ElementRef);
-  openWidth = 280;
-  openWidthTreshold = this.openWidth * 0.5;
+  #destroyRef = inject(DestroyRef);
 
   /** When `true`, disables drag/swipe gestures for opening and closing the sidenav. */
   disableDrag = input<boolean>(false);
+  /** Width in px the sidenav opens to. Also drives the drag threshold. */
+  openWidth = input<number>(280);
   /** Two-way bound open/closed state of the sidenav. */
   isOpen = model<boolean>(false);
-  isOverlay = watchHostClass('overlay');
+  #currentClasses = classMutationSignal();
+  isOverlay = computed(() => this.#currentClasses().split(/\s+/).includes('overlay'));
 
-  #closestParent = this.#selfRef.nativeElement.parentElement;
-  #closestParentRect = this.#closestParent.getBoundingClientRect && this.#closestParent.getBoundingClientRect();
-
-  dragImageElement = viewChild.required<ElementRef<HTMLDivElement>>('dragImageElement');
-  dragIsEnding = signal<boolean>(false);
-  dragIsOnScreen = signal<boolean>(true);
   isDragging = signal<boolean>(false);
   dragPositionX = signal<number>(0);
 
+  #openThreshold = computed(() => this.openWidth() * 0.5);
+  #dragStartLeft = 0;
+  #activePointerId: number | null = null;
+  #holdsScrollLock = false;
+
+  sidenavIsHidden = computed(() => this.isOverlay() && !this.isOpen() && !this.isDragging());
+
   dragActualPositionX = computed(() => {
     const dragPosition = this.dragPositionX();
-    const openWidth = 280;
+    const openWidth = this.openWidth();
     const noEffectWidth = 100;
     const tensionFactor = 0.008;
 
@@ -138,109 +111,101 @@ export class ShipSidenav {
       return `translateX(${this.dragActualPositionX()}px)`;
     }
 
-    return this.isOpen() ? `translateX(${this.openWidth}px)` : `translateX(0px)`;
+    return this.isOpen() ? `translateX(${this.openWidth()}px)` : `translateX(0px)`;
   });
 
-  draggingEffect = effect(() => {
-    if (this.disableDrag()) return;
+  draggingEffect = effect((onCleanup) => {
+    if (this.disableDrag() || !this.isDragging()) return;
 
-    if (this.isDragging()) {
-      this.#document.body.classList.add('dragging');
-    } else {
-      this.#document.body.classList.remove('dragging');
-    }
+    this.#document.body.classList.add('dragging');
+    onCleanup(() => this.#document.body.classList.remove('dragging'));
   });
 
   scrollLockEffect = effect((onCleanup) => {
-    const isOverlay = this.isOverlay();
-    const isOpen = this.isOpen();
-
-    if (isOverlay && isOpen) {
-      this.#document.body.classList.add('sh-sidenav-open');
-      this.#document.documentElement.classList.add('sh-sidenav-open');
+    if (this.isOverlay() && this.isOpen()) {
+      this.#acquireScrollLock();
     }
 
-    onCleanup(() => {
-      this.#document.body.classList.remove('sh-sidenav-open');
-      this.#document.documentElement.classList.remove('sh-sidenav-open');
-    });
+    onCleanup(() => this.#releaseScrollLock());
   });
 
-  drop(e: DragEvent) {
-    e.stopPropagation();
-    this.#drop(e.clientX - this.#closestParentRect.left);
+  constructor() {
+    this.#destroyRef.onDestroy(() => this.#releaseScrollLock());
   }
 
-  #drop(clientX: number) {
-    this.isDragging.set(false);
-
-    if (clientX >= this.openWidthTreshold) {
-      this.isOpen.set(true);
-    } else {
+  onEscape() {
+    if (this.isOverlay() && this.isOpen()) {
       this.isOpen.set(false);
     }
   }
 
-  dragEnd(e: DragEvent) {
-    if (e.clientX - this.#closestParentRect.left < 0) {
-      this.#drop(0);
-    }
+  dragPointerDown(e: PointerEvent) {
+    if (this.#activePointerId !== null) return;
 
-    if (e.clientX - this.#closestParentRect.left > this.openWidthTreshold) {
-      this.#drop(this.openWidthTreshold);
-    }
-  }
-
-  dragEnter() {
-    this.dragIsOnScreen.set(true);
-  }
-
-  dragLeave() {
-    this.dragIsOnScreen.set(false);
-  }
-
-  dragStart(e: DragEvent) {
     e.stopPropagation();
+    e.preventDefault();
 
-    this.#closestParentRect = this.#closestParent.getBoundingClientRect();
+    const parent = this.#selfRef.nativeElement.parentElement;
+    this.#dragStartLeft = parent?.getBoundingClientRect ? parent.getBoundingClientRect().left : 0;
+    this.#activePointerId = e.pointerId;
     this.isDragging.set(true);
-  }
+    this.dragPositionX.set(e.clientX - this.#dragStartLeft);
 
-  drag(e: DragEvent) {
-    e.stopPropagation();
-
-    if (!this.isDragging()) return;
-
-    if (e.clientX !== 0 || e.clientY !== 0) {
-      this.dragPositionX.set(e.clientX - this.#closestParentRect.left);
+    // Routes subsequent pointer events to the handle even when the pointer
+    // leaves it mid-drag. Throws for pointers the browser no longer tracks.
+    try {
+      (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    } catch {
+      /* drag still works while the pointer stays over the handle */
     }
   }
 
-  touchStart(e: TouchEvent) {
-    e.stopPropagation();
+  dragPointerMove(e: PointerEvent) {
+    if (e.pointerId !== this.#activePointerId || !this.isDragging()) return;
 
-    this.isDragging.set(true);
-    this.#closestParentRect = this.#closestParent.getBoundingClientRect();
-    this.dragPositionX.set(0);
+    e.stopPropagation();
+    this.dragPositionX.set(e.clientX - this.#dragStartLeft);
   }
 
-  touchMove(e: TouchEvent) {
+  dragPointerUp(e: PointerEvent) {
+    if (e.pointerId !== this.#activePointerId) return;
+
     e.stopPropagation();
-
-    if (!this.isDragging()) return;
-
-    this.dragPositionX.set(e.touches[0].clientX - this.#closestParentRect.left);
+    this.#endDrag(e.clientX - this.#dragStartLeft);
   }
 
-  touchEnd(e: TouchEvent) {
-    e.stopPropagation();
+  dragPointerCancel() {
+    if (this.#activePointerId === null) return;
 
-    this.#drop(e.changedTouches[0].clientX - this.#closestParentRect.left);
-  }
-
-  touchCancel(e: TouchEvent) {
-    e.stopPropagation();
-
+    // A cancelled gesture snaps back to the state it started from.
+    this.#activePointerId = null;
     this.isDragging.set(false);
+  }
+
+  #endDrag(clientX: number) {
+    this.#activePointerId = null;
+    this.isDragging.set(false);
+    this.isOpen.set(clientX >= this.#openThreshold());
+  }
+
+  #acquireScrollLock() {
+    if (this.#holdsScrollLock) return;
+
+    this.#holdsScrollLock = true;
+    scrollLockCount++;
+    this.#document.body.classList.add('sh-sidenav-open');
+    this.#document.documentElement.classList.add('sh-sidenav-open');
+  }
+
+  #releaseScrollLock() {
+    if (!this.#holdsScrollLock) return;
+
+    this.#holdsScrollLock = false;
+    scrollLockCount = Math.max(0, scrollLockCount - 1);
+
+    if (scrollLockCount === 0) {
+      this.#document.body.classList.remove('sh-sidenav-open');
+      this.#document.documentElement.classList.remove('sh-sidenav-open');
+    }
   }
 }

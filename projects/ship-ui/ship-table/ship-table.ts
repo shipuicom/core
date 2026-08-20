@@ -1237,7 +1237,7 @@ export class ShipTable {
 @Component({
   selector: 'sh-table-content',
   standalone: true,
-  imports: [NgTemplateOutlet, ShipSort, ShipResize, ShipIcon, ShipChip],
+  imports: [NgTemplateOutlet, ShipSort, ShipResize, ShipRowResize, ShipIcon, ShipChip],
   host: {
     style: 'display: contents',
   },
@@ -1275,47 +1275,69 @@ export class ShipTable {
     <tbody #tbody role="rowgroup">
       @for (row of data(); track $index) {
         @let rowIndex = $index;
-        <tr role="row">
+        <tr role="row" shRowResize [resizable]="rowResize()">
           @for (col of columns(); track col.id) {
-            <td
-              [class.sticky]="col.sticky === 'start'"
-              [class.sticky-end]="col.sticky === 'end'"
-              [id]="col.id + '-' + rowIndex"
-              [attr.aria-labelledby]="col.id + ' ' + col.id + '-' + rowIndex"
-              [attr.role]="col.rowHeader ? 'rowheader' : grid() ? 'gridcell' : 'cell'">
-              @if (col.cellTemplate) {
+            <!-- A row-header column renders as a native th[scope=row] (mapping
+                 to role=rowheader) rather than a role-stamped td, so the
+                 semantics survive outside ARIA processing too. -->
+            @if (col.rowHeader) {
+              <th
+                scope="row"
+                class="row-header"
+                [class.sticky]="col.sticky === 'start'"
+                [class.sticky-end]="col.sticky === 'end'"
+                [id]="col.id + '-' + rowIndex">
                 <ng-container
-                  [ngTemplateOutlet]="col.cellTemplate"
-                  [ngTemplateOutletContext]="{ $implicit: row, column: col }" />
-              } @else if (col.cell) {
-                {{ col.cell(row) }}
-              } @else if (col.format) {
-                {{ col.format(getValue(row, col), row) }}
-              } @else {
-                @switch (col.type) {
-                  @case ('date') {
-                    {{ formatDate(getValue(row, col)) }}
-                  }
-                  @case ('boolean') {
-                    @if (getValue(row, col)) {
-                      <sh-icon class="text-success">check</sh-icon>
-                    } @else {
-                      <sh-icon class="text-muted">x</sh-icon>
-                    }
-                  }
-                  @case ('badge') {
-                    <sh-chip>{{ getValue(row, col) }}</sh-chip>
-                  }
-                  @default {
-                    {{ getValue(row, col) }}
-                  }
-                }
-              }
-            </td>
+                  [ngTemplateOutlet]="cellContent"
+                  [ngTemplateOutletContext]="{ $implicit: row, col }" />
+              </th>
+            } @else {
+              <td
+                [class.sticky]="col.sticky === 'start'"
+                [class.sticky-end]="col.sticky === 'end'"
+                [id]="col.id + '-' + rowIndex"
+                [attr.aria-labelledby]="col.id + ' ' + col.id + '-' + rowIndex"
+                [attr.role]="grid() ? 'gridcell' : 'cell'">
+                <ng-container
+                  [ngTemplateOutlet]="cellContent"
+                  [ngTemplateOutletContext]="{ $implicit: row, col }" />
+              </td>
+            }
           }
         </tr>
       }
     </tbody>
+
+    <ng-template #cellContent let-row let-col="col">
+      @if (col.cellTemplate) {
+        <ng-container
+          [ngTemplateOutlet]="col.cellTemplate"
+          [ngTemplateOutletContext]="{ $implicit: row, column: col }" />
+      } @else if (col.cell) {
+        {{ col.cell(row) }}
+      } @else if (col.format) {
+        {{ col.format(getValue(row, col), row) }}
+      } @else {
+        @switch (col.type) {
+          @case ('date') {
+            {{ formatDate(getValue(row, col)) }}
+          }
+          @case ('boolean') {
+            @if (getValue(row, col)) {
+              <sh-icon class="text-success">check</sh-icon>
+            } @else {
+              <sh-icon class="text-muted">x</sh-icon>
+            }
+          }
+          @case ('badge') {
+            <sh-chip>{{ getValue(row, col) }}</sh-chip>
+          }
+          @default {
+            {{ getValue(row, col) }}
+          }
+        }
+      }
+    </ng-template>
   `,
 })
 export class ShipTableContent {
@@ -1325,6 +1347,8 @@ export class ShipTableContent {
   columns = input<ShipTableColumn[]>([]);
   /** The row data rendered into table rows. */
   data = input<any[]>([]);
+  /** When `true`, generated rows get the `shRowResize` drag/keyboard resize handle. Evaluated when rows are created. */
+  rowResize = input<boolean>(false);
 
   sortByColumn = this.#table.sortByColumn;
   grid = this.#table.grid;

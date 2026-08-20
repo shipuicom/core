@@ -44,6 +44,8 @@ export abstract class ShipSelectionGroup<T = any> {
     });
 
     effect(() => {
+      if (!this.selectionEnabled()) return;
+
       const selectedValue = this.value();
       const activeClass = this.activeClass;
       const items = this.items();
@@ -93,16 +95,43 @@ export abstract class ShipSelectionGroup<T = any> {
             item.removeAttribute('tabindex');
           }
         }
+
+        // ARIA APG: the group is a single tab stop. Interactive descendants
+        // inside an item (checkbox inputs, buttons, links) must not add their
+        // own tab stops — the item itself carries focus and state.
+        item
+          .querySelectorAll<HTMLElement>('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])')
+          .forEach((focusable) => focusable.setAttribute('tabindex', '-1'));
       });
+
+      // With no current selection there is no tabindex="0" roving anchor, so
+      // the first selectable item becomes the group's tab stop.
+      if (!hasSelection) {
+        const selectable = items.filter((item) => item.hasAttribute('value') || item.hasAttribute('routerlink') || item.hasAttribute('href'));
+        selectable.forEach((item, index) => item.setAttribute('tabindex', index === 0 ? '0' : '-1'));
+      }
     });
+  }
+
+  /**
+   * Hook for subclasses that make selection opt-in (e.g. `sh-list`): when this
+   * returns `false` the group leaves projected content untouched — no role,
+   * aria, or tabindex stamping and no click/keyboard selection handling.
+   */
+  protected selectionEnabled(): boolean {
+    return true;
   }
 
   @HostListener('click', ['$event.target'])
   onClick(target: EventTarget | null) {
+    if (!this.selectionEnabled()) return;
+
     const targetEl = target as HTMLElement;
-    if (!targetEl || !targetEl.closest) return;
-    const item = targetEl.closest(this.itemSelector) as HTMLElement;
-    if (item && this.hostElement.contains(item)) {
+    if (!targetEl) return;
+    // Resolve via the tracked items rather than targetEl.closest(): closest()
+    // re-binds :scope to the target element, breaking direct-child selectors.
+    const item = this.items().find((candidate) => candidate === targetEl || candidate.contains(targetEl));
+    if (item) {
       if (item.hasAttribute('value')) {
         const value = item.getAttribute('value') as unknown as T;
         if (this.closable() && String(this.value()) === String(value)) {
@@ -116,11 +145,13 @@ export abstract class ShipSelectionGroup<T = any> {
 
   @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
+    if (!this.selectionEnabled()) return;
+
     const targetEl = event.target as HTMLElement;
 
     if (this.#keybindings.matches(event, 'selection-group.select')) {
-      const item = targetEl?.closest?.(this.itemSelector) as HTMLElement;
-      if (item && this.hostElement.contains(item) && item.hasAttribute('value')) {
+      const item = this.items().find((candidate) => candidate === targetEl || candidate.contains(targetEl));
+      if (item && item.hasAttribute('value')) {
         
         const isSpace = event.key === ' ' || event.key === 'Spacebar';
         if (isSpace) event.preventDefault();
@@ -154,8 +185,12 @@ export abstract class ShipSelectionGroup<T = any> {
       nextIndex = activeIndex >= items.length - 1 ? 0 : activeIndex + 1;
     } else if (this.#keybindings.matches(event, 'selection-group.prev')) {
       nextIndex = activeIndex <= 0 ? items.length - 1 : activeIndex - 1;
+    } else if (event.key === 'Home') {
+      nextIndex = 0;
+    } else if (event.key === 'End') {
+      nextIndex = items.length - 1;
     } else {
-      return; 
+      return;
     }
 
     event.preventDefault();
