@@ -1,0 +1,11 @@
+<h1>Screen Reader Simulator</h1>
+
+<sh-tabs color="primary">
+  <button routerLink="/screenreaders" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Overview</button>
+  <button routerLink="/screenreaders/api" routerLinkActive="active">API</button>
+  <button routerLink="/screenreaders/examples" routerLinkActive="active">Examples</button>
+</sh-tabs>
+
+<div class="tab-content">
+  <router-outlet />
+</div>
