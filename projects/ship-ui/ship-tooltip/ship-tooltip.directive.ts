@@ -242,6 +242,21 @@ export class ShipTooltip implements OnDestroy {
   #viewContainerRef = inject(ViewContainerRef);
   #environmentInjector = inject(EnvironmentInjector);
 
+  // A string tooltip doubles as the accessible name when the host has none
+  // of its own (icon-only buttons): without this, screen readers announce a
+  // nameless control while sighted users read the tooltip.
+  #a11yLabelEffect = effect(() => {
+    const content = this.shTooltip();
+    const host = this.#elementRef.nativeElement as HTMLElement;
+    if (typeof content !== 'string' || !content) return;
+    const externallyLabelled =
+      (host.hasAttribute('aria-label') && !host.hasAttribute('data-sh-tooltip-label')) ||
+      host.hasAttribute('aria-labelledby');
+    if (externallyLabelled || hasVisibleText(host)) return;
+    host.setAttribute('aria-label', content);
+    host.setAttribute('data-sh-tooltip-label', '');
+  });
+
   #debounceTimer: Timeout | null = null;
   #DEBOUNCE_DELAY = 50;
 
@@ -363,4 +378,18 @@ export class ShipTooltip implements OnDestroy {
       }
     }
   }
+}
+
+// Text that contributes to the host's accessible name: text nodes outside
+// aria-hidden subtrees (decorative sh-icons are aria-hidden).
+function hasVisibleText(el: Element): boolean {
+  for (const child of Array.from(el.childNodes)) {
+    if (child.nodeType === Node.TEXT_NODE && child.textContent?.trim()) return true;
+    if (child.nodeType === Node.ELEMENT_NODE) {
+      const childEl = child as Element;
+      if (childEl.getAttribute('aria-hidden') === 'true') continue;
+      if (hasVisibleText(childEl)) return true;
+    }
+  }
+  return false;
 }

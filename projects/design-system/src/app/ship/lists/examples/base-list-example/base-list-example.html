@@ -19,12 +19,12 @@
   <div (click)="checkbox1.setValue(!checkbox1.value)">
     <sh-icon>circle</sh-icon>
     Checkbox item with reactive form control
-    <sh-checkbox suffix>
+    <sh-checkbox suffix label="Checkbox item with reactive form control">
       <input type="checkbox" [formControl]="checkbox1" />
     </sh-checkbox>
   </div>
   <div (click)="checkbox2.set(!checkbox2())">
-    <sh-checkbox>
+    <sh-checkbox label="Checkbox item with ngModel">
       <input type="checkbox" [ngModel]="checkbox2()" />
     </sh-checkbox>
     Checkbox item with ngModel

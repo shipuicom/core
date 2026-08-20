@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, HostListener, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
 import { classMutationSignal, generateUniqueId } from '@ship-ui/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { contentProjectionSignal } from '@ship-ui/core';
@@ -21,7 +21,8 @@ import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
         type="radio"
         class="internal-input"
         [attr.disabled]="disabled() ? '' : null"
-        [attr.aria-labelledby]="labelId"
+        [attr.aria-label]="label() || null"
+        [attr.aria-labelledby]="label() ? null : labelId"
         [checked]="checked()"
         (change)="onInternalInputChange($event)" />
     }
@@ -54,8 +55,21 @@ export class ShipRadio {
     attributes: true,
   });
 
+  // Projected inputs (ngModel/forms usage) need the same labelling as the
+  // internal one — stamp aria-labelledby unless the consumer labelled them.
+  projectedLabelEffect = effect(() => {
+    for (const input of this.projectedInputs()) {
+      if (!input.getAttribute('aria-label') && !input.getAttribute('aria-labelledby') && !input.labels?.length) {
+        if (this.label()) input.setAttribute('aria-label', this.label());
+        else input.setAttribute('aria-labelledby', this.labelId);
+      }
+    }
+  });
+
   /** Two-way bound checked state of the radio. */
   checked = model<boolean>(false);
+  /** Accessible name for label-less usage; projected text content is used otherwise. */
+  label = input<string>('');
   currentClassList = classMutationSignal();
   /** Color theme of the radio (`ShipColor`). */
   color = input<ShipColor | null>(null);

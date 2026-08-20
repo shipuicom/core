@@ -2,7 +2,7 @@
   <h3 title>Today</h3>
   @for (todo of todos(); track todo.id) {
     <button (click)="toggle(todo.id)" [class.done]="todo.done">
-      <sh-checkbox class="primary">
+      <sh-checkbox class="primary" [label]="todo.title">
         <input type="checkbox" [ngModel]="todo.done" />
       </sh-checkbox>
       <span class="title">{{ todo.title }}</span>
