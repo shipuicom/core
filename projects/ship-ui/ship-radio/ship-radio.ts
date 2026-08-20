@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
-import { classMutationSignal } from '@ship-ui/core';
+import { classMutationSignal, generateUniqueId } from '@ship-ui/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { contentProjectionSignal } from '@ship-ui/core';
 import { shipComponentClasses } from '@ship-ui/core';
@@ -21,6 +21,7 @@ import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
         type="radio"
         class="internal-input"
         [attr.disabled]="disabled() ? '' : null"
+        [attr.aria-labelledby]="labelId"
         [checked]="checked()"
         (change)="onInternalInputChange($event)" />
     }
@@ -37,6 +38,15 @@ import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
 export class ShipRadio {
   #elementRef = inject(ElementRef);
   #keybindings = inject(ShipA11yKeybindingsService);
+
+  // The internal input takes its accessible name from the host subtree
+  // (projected label text), the same way a wrapping <label> would — otherwise
+  // screen readers announce a nameless radio. Reuses a consumer-set host id.
+  labelId = (() => {
+    const host = this.#elementRef.nativeElement as HTMLElement;
+    if (!host.id) host.id = `sh-radio-${generateUniqueId()}`;
+    return host.id;
+  })();
 
   internalInput = viewChild<ElementRef<HTMLInputElement>>('internalInput');
   projectedInputs = contentProjectionSignal<HTMLInputElement>('input:not(.internal-input)', {
