@@ -70,6 +70,11 @@ describe('computeAccessibleName', () => {
     expect(computeAccessibleName(mount('<input placeholder="Search…">'))).toBe('Search…');
   });
 
+  it('gives an anchor without href no name from content (it is a generic)', () => {
+    expect(computeAccessibleName(mount('<a>Not a link</a>'))).toBe('');
+    expect(computeAccessibleName(mount('<a href="/x">A link</a>'))).toBe('A link');
+  });
+
   it('gives a plain div no name', () => {
     expect(computeAccessibleName(mount('<div>Just text</div>'))).toBe('');
   });

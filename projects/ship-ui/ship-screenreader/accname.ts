@@ -112,7 +112,10 @@ const CONTENT_NAME_ROLES = new Set([
 function namesFromContent(el: Element): boolean {
   const role = el.getAttribute('role')?.trim().split(/\s+/)[0];
   if (role) return CONTENT_NAME_ROLES.has(role);
-  return CONTENT_NAME_TAGS.has(el.tagName.toLowerCase());
+  const tag = el.tagName.toLowerCase();
+  // An <a> without href is a generic, not a link — no name from content.
+  if (tag === 'a') return el.hasAttribute('href');
+  return CONTENT_NAME_TAGS.has(tag);
 }
 
 // `visited` only guards aria-labelledby re-entry; plain DOM descent cannot
