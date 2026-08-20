@@ -116,6 +116,24 @@ export class ShipDaterangeInput {
     });
   }
 
+  // Reflect formatted dates into inputs whose values were seeded externally
+  // (bindings/forms write `Date.toString()`, which is what screen readers
+  // would announce) — the same formatting #updateInputValue applies after a
+  // picker selection.
+  #formatValueEffect = effect(() => {
+    const inputs = this.#inputObserver() as HTMLInputElement[];
+    const dates = [this.startDate(), this.endDate()];
+
+    inputs.slice(0, 2).forEach((input, index) => {
+      const date = dates[index];
+      if (!date || !input || input.ownerDocument.activeElement === input) return;
+      const formatted = this.masking() ? this.#datePipe.transform(date, this.masking()) : date.toUTCString();
+      if (formatted && input.value !== formatted && new Date(input.value).getTime() === date.getTime()) {
+        this.#updateInputValue([input], date);
+      }
+    });
+  });
+
   #setupInput(element: HTMLInputElement, isStart: boolean) {
     if ((element as any)._hasCustomFocusEvent) return;
     (element as any)._hasCustomFocusEvent = true;

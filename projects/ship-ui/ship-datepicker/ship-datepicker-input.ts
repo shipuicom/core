@@ -75,6 +75,15 @@ export class ShipDatepickerInput {
 
   /** `DatePipe` format used to render the masked date display (empty disables masking). */
   masking = input('mediumDate');
+  /**
+   * `DatePipe` format reflected into the input's actual value — what screen
+   * readers announce and what an unmasked input displays. Defaults to the
+   * `masking` format; when that format would lose precision (e.g. a
+   * date-only mask on a date holding a time), a lossless `'medium'` format
+   * is used instead so a round-trip through parsing keeps the same instant.
+   * Set to `''` to keep the raw `Date.toString()` value.
+   */
+  valueFormat = input<string | null>(null);
   /** Emits the selected date when the picker popover closes. */
   closed = output<Date | null>();
 
@@ -97,6 +106,38 @@ export class ShipDatepickerInput {
     if (!date) return null;
 
     return this.#datePipe.transform(date, mask);
+  });
+
+  // Reflect the formatted date into the real input value. Without this the
+  // input holds `Date.toString()` ("Thu Aug 20 2026 17:10:00 GMT+0200 …"),
+  // which is what screen readers announce — the masked overlay only fixes
+  // what sighted users see. Reflection is safe because parsing the formatted
+  // string yields the same instant (guarded below) and the value signal
+  // compares dates by time, so no feedback loop occurs.
+  #formatValueEffect = effect(() => {
+    const input = this.#inputObserver();
+    const date = this.internalDate();
+    const format = this.valueFormat() ?? this.masking();
+
+    if (!input || !format) return;
+    // Typed inputs (time, date, datetime-local) require their native value
+    // format — only free-text inputs can hold a DatePipe-formatted string.
+    if (input.type !== 'text') return;
+    // Never clobber while the user is typing in the field.
+    if (input.ownerDocument.activeElement === input) return;
+
+    if (!date) return;
+
+    for (const candidate of [format, 'medium']) {
+      const formatted = this.#datePipe.transform(date, candidate);
+      if (!formatted || input.value === formatted) return;
+      // Only reflect losslessly: the formatted string must parse back to
+      // the same instant, or forms would silently drop precision.
+      if (this.#parseInputValue(formatted)?.getTime() === date.getTime()) {
+        input.value = formatted;
+        return;
+      }
+    }
   });
 
   #inputSetupEffect = effect((onCleanup) => {
