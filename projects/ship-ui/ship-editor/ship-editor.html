@@ -5,6 +5,10 @@
         <div
           #surface
           class="sh-editor-content"
+          role="textbox"
+          aria-multiline="true"
+          aria-label="Rich text editor"
+          [attr.aria-readonly]="readonly() ? 'true' : null"
           [hidden]="viewMode() === 'code'"
           [class.readonly]="readonly()"
           [class.multi-cursor]="selection.isMulti()"
