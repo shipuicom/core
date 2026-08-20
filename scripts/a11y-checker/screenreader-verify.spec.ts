@@ -2,6 +2,7 @@ import { execSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, expect, CDPSession } from '@playwright/test';
+import { WPT_ACCNAME_FIXTURES } from './wpt-accname-fixtures';
 
 /**
  * Verifies the sh-screenreader simulator against true WCAG/ARIA behaviour:
@@ -112,6 +113,44 @@ test.describe('sh-screenreader vs Chromium accessibility tree', () => {
     }
 
     expect(mismatches, `Simulator diverges from Chromium accessibility tree:\n${mismatches.join('\n')}`).toEqual([]);
+  });
+
+  test('W3C web-platform-tests accname conformance', async ({ page }) => {
+    await page.goto('about:blank');
+
+    const failures: string[] = [];
+    const surprisePasses: string[] = [];
+    let passed = 0;
+
+    for (const fixture of WPT_ACCNAME_FIXTURES) {
+      await page.setContent(
+        `${fixture.css ? `<style>${fixture.css}</style>` : ''}<main>${fixture.html}</main>`,
+      );
+      await page.addScriptTag({ path: BUNDLE, type: 'module' });
+
+      const name = await page.evaluate(() =>
+        window.__shipScreenreader.computeAccessibleName(document.querySelector('#t')!),
+      );
+
+      if (fixture.gap) {
+        // Documented v1 gap: the case must still fail. A pass means the
+        // implementation caught up — remove the gap marker.
+        if (name === fixture.expected) surprisePasses.push(fixture.testname);
+        continue;
+      }
+
+      if (name === fixture.expected) passed++;
+      else failures.push(`${fixture.testname}: got "${name}", WPT expects "${fixture.expected}"`);
+    }
+
+    const total = WPT_ACCNAME_FIXTURES.filter((fixture) => !fixture.gap).length;
+    console.log(`WPT accname: ${passed}/${total} supported cases pass, ${WPT_ACCNAME_FIXTURES.length - total} documented gaps`);
+
+    expect(failures, `WPT accname conformance failures:\n${failures.join('\n')}`).toEqual([]);
+    expect(
+      surprisePasses,
+      `These gap-marked cases now PASS — remove their \`gap\` marker:\n${surprisePasses.join('\n')}`,
+    ).toEqual([]);
   });
 });
 

@@ -24,24 +24,38 @@ export function isAccHidden(el: Element): boolean {
 
 /** Compute the accessible name of `el`. Returns `''` when it has none. */
 export function computeAccessibleName(el: Element): string {
-  return nameFor(el, new Set(), true).replace(/\s+/g, ' ').trim();
+  return nameFor(el, new Set(), {}).replace(/\s+/g, ' ').trim();
 }
 
-function nameFor(el: Element, visited: Set<Element>, allowLabelledby: boolean): string {
+interface NameOpts {
+  /** Element was reached via traversal/reference — name from content even for generic roles. */
+  forceContent?: boolean;
+  /** Inside a hidden-but-directly-referenced subtree — hiding no longer prunes. */
+  ignoreHidden?: boolean;
+  /** Referenced elements never consult their own aria-labelledby (non-recursive per spec). */
+  noLabelledby?: boolean;
+}
+
+function nameFor(el: Element, visited: Set<Element>, opts: NameOpts): string {
   if (visited.has(el)) return '';
   visited.add(el);
 
-  // aria-labelledby is non-recursive: referenced elements contribute their
-  // aria-label or subtree text, never their own labelledby.
-  if (allowLabelledby) {
+  if (!opts.noLabelledby) {
     const ids = el.getAttribute('aria-labelledby')?.trim().split(/\s+/) ?? [];
     if (ids.length) {
       const parts = ids
         .map((id) => el.ownerDocument.getElementById(id))
         .filter((ref): ref is HTMLElement => !!ref)
-        .map((ref) => nameFor(ref, visited, false))
-        .filter(Boolean);
-      if (parts.length) return parts.join(' ');
+        // A hidden element that is *directly referenced* still contributes,
+        // and hiding inside that subtree no longer prunes (accname step 2A).
+        // An element referencing itself resolves one level (its aria-label /
+        // content) rather than looping — drop it from `visited` for that.
+        .map((ref) => {
+          const refVisited = ref === el ? new Set([...visited].filter((v) => v !== el)) : visited;
+          return nameFor(ref, refVisited, { forceContent: true, noLabelledby: true, ignoreHidden: isAccHidden(ref) });
+        })
+        .filter((part) => part.trim());
+      if (parts.length) return parts.map((part) => part.trim()).join(' ');
     }
   }
 
@@ -49,13 +63,11 @@ function nameFor(el: Element, visited: Set<Element>, allowLabelledby: boolean): 
   if (ariaLabel) return ariaLabel;
 
   const native = nativeName(el, visited);
-  if (native) return native;
+  if (native.trim()) return native;
 
-  // A referenced element (via labelledby) always contributes its subtree
-  // text; an element naming itself only does so for content-named roles.
-  if (!allowLabelledby || namesFromContent(el)) {
-    const text = subtreeText(el, visited);
-    if (text) return text;
+  if (opts.forceContent || namesFromContent(el)) {
+    const text = subtreeText(el, visited, opts.ignoreHidden ?? false);
+    if (text.trim()) return text;
   }
 
   return el.getAttribute('title')?.trim() ?? '';
@@ -69,7 +81,7 @@ function nativeName(el: Element, visited: Set<Element>): string {
     // Associated <label> elements: for/id or wrapping.
     const labels = (input.labels ?? []) as ArrayLike<HTMLLabelElement>;
     const fromLabels = Array.from(labels)
-      .map((label) => subtreeText(label, new Set(visited)))
+      .map((label) => subtreeText(label, new Set(visited), false))
       .filter(Boolean)
       .join(' ');
     if (fromLabels) return fromLabels;
@@ -87,12 +99,12 @@ function nativeName(el: Element, visited: Set<Element>): string {
 
   if (tag === 'fieldset') {
     const legend = el.querySelector(':scope > legend');
-    if (legend) return subtreeText(legend, new Set(visited));
+    if (legend) return subtreeText(legend, new Set(visited), false);
   }
 
   if (tag === 'figure') {
     const caption = el.querySelector(':scope > figcaption');
-    if (caption) return subtreeText(caption, new Set(visited));
+    if (caption) return subtreeText(caption, new Set(visited), false);
   }
 
   return '';
@@ -119,20 +131,40 @@ function namesFromContent(el: Element): boolean {
 }
 
 // `visited` only guards aria-labelledby re-entry; plain DOM descent cannot
-// cycle, so children are traversed unconditionally.
-function subtreeText(el: Element, visited: Set<Element>): string {
-  if (el.getAttribute('aria-hidden') === 'true' || el.hasAttribute('hidden')) return '';
+// cycle, so children are traversed unconditionally. Spec details verified
+// against WPT comp_hidden_not_referenced / comp_name_from_content:
+// - display:none prunes the subtree; visibility:hidden only mutes the
+//   element's own text — descendants can be visibility:visible again.
+// - Inline children join without extra spaces; non-inline children add them.
+// - Element children go through the full name computation (their aria-label,
+//   labelledby, alt … win over their text).
+function subtreeText(el: Element, visited: Set<Element>, ignoreHidden: boolean): string {
   const style = el.ownerDocument.defaultView?.getComputedStyle?.(el);
-  if (style && (style.display === 'none' || style.visibility === 'hidden')) return '';
-
-  const ariaLabel = el.getAttribute('aria-label')?.trim();
-  if (ariaLabel) return ariaLabel;
-  if (el.tagName.toLowerCase() === 'img') return el.getAttribute('alt')?.trim() ?? '';
+  let textMuted = false;
+  if (!ignoreHidden) {
+    if (el.getAttribute('aria-hidden') === 'true' || el.hasAttribute('hidden')) return '';
+    if (style?.display === 'none') return '';
+    textMuted = style?.visibility === 'hidden';
+  }
 
   let text = '';
   for (const child of Array.from(el.childNodes)) {
-    if (child.nodeType === Node.TEXT_NODE) text += child.textContent ?? '';
-    else if (child.nodeType === Node.ELEMENT_NODE) text += ' ' + subtreeText(child as Element, visited) + ' ';
+    if (child.nodeType === Node.TEXT_NODE) {
+      if (!textMuted) text += child.textContent ?? '';
+    } else if (child.nodeType === Node.ELEMENT_NODE) {
+      const childEl = child as Element;
+      const childText = nameFor(childEl, visited, { forceContent: true, ignoreHidden });
+      const pad = isInline(childEl) ? '' : ' ';
+      text += pad + childText + pad;
+    }
   }
-  return text.replace(/\s+/g, ' ').trim();
+  // Collapse but do NOT trim: boundary whitespace inside a child ("an ")
+  // is significant when siblings join without padding; the top-level
+  // computeAccessibleName does the final trim.
+  return text.replace(/\s+/g, ' ');
+}
+
+function isInline(el: Element): boolean {
+  const display = el.ownerDocument.defaultView?.getComputedStyle?.(el)?.display;
+  return display === 'inline' || display === 'contents';
 }

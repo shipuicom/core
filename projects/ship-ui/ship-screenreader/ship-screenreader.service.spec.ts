@@ -74,6 +74,45 @@ describe('ShipScreenreaderService', () => {
     expect(service.log()).toEqual([]);
   });
 
+  it('computes an utterance on demand without logging', () => {
+    const button = document.createElement('button');
+    button.textContent = 'Save';
+    document.body.appendChild(button);
+    expect(service.utteranceFor(button)).toBe('Save, button');
+    expect(service.utteranceFor('button')).toBe('Save, button');
+    expect(service.utteranceFor('#missing')).toBe('');
+    button.setAttribute('aria-hidden', 'true');
+    expect(service.utteranceFor(button)).toBe('');
+    expect(service.log()).toEqual([]);
+  });
+
+  it('exposes the window.shipScreenreader automation handle', () => {
+    const handle = window.shipScreenreader!;
+    expect(handle).toBeDefined();
+
+    const button = document.createElement('button');
+    button.textContent = 'Publish';
+    document.body.appendChild(button);
+
+    expect(handle.say('button')).toBe('Publish, button');
+    expect(handle.expect('button', 'Publish, button')).toEqual({
+      pass: true,
+      actual: 'Publish, button',
+      expected: 'Publish, button',
+    });
+    expect(handle.expect('button', 'nope').pass).toBe(false);
+
+    handle.enable();
+    expect(handle.enabled()).toBe(true);
+    const announced = handle.focus('button');
+    expect(announced).toBe('Publish, button');
+    expect(handle.log().at(-1)?.text).toBe('Publish, button');
+    handle.clear();
+    expect(handle.log()).toEqual([]);
+    handle.disable();
+    expect(handle.enabled()).toBe(false);
+  });
+
   it('keeps speech off when SpeechSynthesis is unsupported', () => {
     service.toggleSpeech(true);
     expect(service.speechEnabled()).toBe(service.speechSupported);

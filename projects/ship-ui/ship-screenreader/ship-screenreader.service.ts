@@ -9,6 +9,39 @@ import { generateUniqueId } from '@ship-ui/core';
 const LOG_CAP = 200;
 
 /**
+ * Console / automation handle exposed as `window.shipScreenreader` while the
+ * service is instantiated — lets a developer, an e2e test, or an AI agent
+ * drive the simulator without touching Angular:
+ *
+ * ```js
+ * shipScreenreader.enable();
+ * shipScreenreader.say('#save');                       // "Save, button"
+ * shipScreenreader.expect('#save', 'Save, button');    // { pass: true, actual: "Save, button" }
+ * shipScreenreader.focus('#email');                    // focuses + returns the announcement
+ * shipScreenreader.log();                              // transcript [{text, source, timestamp}]
+ * ```
+ */
+export interface ShipScreenreaderHandle {
+  enable(): void;
+  disable(): void;
+  enabled(): boolean;
+  /** The announcement for an element (selector or Element) without logging or focusing it. */
+  say(target: Element | string): string;
+  /** Focus the element and return what was announced. */
+  focus(target: Element | string): string;
+  /** Assert an element's announcement; returns the verdict plus the actual phrase. */
+  expect(target: Element | string, expected: string): { pass: boolean; actual: string; expected: string };
+  log(): Array<{ text: string; source: ShipScreenreaderSource; timestamp: number }>;
+  clear(): void;
+}
+
+declare global {
+  interface Window {
+    shipScreenreader?: ShipScreenreaderHandle;
+  }
+}
+
+/**
  * Screen-reader *simulator* for accessibility debugging: computes what
  * assistive tech would announce (accessible name, role, states, value,
  * position per WCAG/ARIA) for focus moves and `aria-live` region changes,
@@ -79,6 +112,46 @@ export class ShipScreenreaderService {
   announce(text: string, source: ShipScreenreaderSource = 'manual'): void {
     if (!text) return;
     this.#push({ id: generateUniqueId(), text, source, timestamp: Date.now() });
+  }
+
+  /**
+   * What the simulator would announce for `target` (Element or selector) —
+   * computed on demand, nothing is logged or focused. Empty string when the
+   * element is missing or hidden from assistive tech.
+   */
+  utteranceFor(target: Element | string): string {
+    const el = this.#resolve(target);
+    if (!el || isAccHidden(el)) return '';
+    return buildUtterance(el).text;
+  }
+
+  #resolve(target: Element | string): Element | null {
+    if (typeof target !== 'string') return target;
+    if (!isPlatformBrowser(this.#platformId)) return null;
+    return this.#document.querySelector(target);
+  }
+
+  constructor() {
+    // Automation handle for devtools consoles, e2e tests and AI agents.
+    if (isPlatformBrowser(this.#platformId)) {
+      this.#document.defaultView!.shipScreenreader = {
+        enable: () => this.enable(),
+        disable: () => this.disable(),
+        enabled: () => this.enabled(),
+        say: (target) => this.utteranceFor(target),
+        focus: (target) => {
+          const el = this.#resolve(target);
+          (el as HTMLElement | null)?.focus?.();
+          return this.utteranceFor(target);
+        },
+        expect: (target, expected) => {
+          const actual = this.utteranceFor(target);
+          return { pass: actual === expected, actual, expected };
+        },
+        log: () => this.log().map(({ text, source, timestamp }) => ({ text, source, timestamp })),
+        clear: () => this.clearLog(),
+      };
+    }
   }
 
   #handleFocus(event: FocusEvent): void {
