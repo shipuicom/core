@@ -26,6 +26,9 @@ type A = number;
     '[class.vertical]': '(renderingType() === "hue" || renderingType() === "saturation") && direction() === "vertical"',
     'role': 'slider',
     'tabindex': '0',
+    '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-valuenow]': 'ariaValueNow()',
+    '[attr.aria-valuetext]': 'ariaValueText()',
   },
 })
 export class ShipColorPicker {
@@ -67,6 +70,45 @@ export class ShipColorPicker {
     saturation: number;
     alpha: number;
   }>();
+
+  /** Accessible name announced by screen readers; defaults per rendering type. */
+  label = input<string>('');
+
+  ariaLabel = computed(() => {
+    if (this.label()) return this.label();
+    switch (this.renderingType()) {
+      case 'hue':
+        return 'Hue';
+      case 'saturation':
+        return 'Saturation';
+      case 'alpha':
+        return 'Opacity';
+      default:
+        return 'Color picker';
+    }
+  });
+
+  ariaValueNow = computed(() => {
+    switch (this.renderingType()) {
+      case 'hue':
+        return Math.round(this.hue());
+      case 'alpha':
+        return Math.round(this.alpha() * 100);
+      default:
+        return null;
+    }
+  });
+
+  ariaValueText = computed(() => {
+    switch (this.renderingType()) {
+      case 'hue':
+        return `${Math.round(this.hue())} degrees`;
+      case 'alpha':
+        return `${Math.round(this.alpha() * 100)}%`;
+      default:
+        return this.selectedColorRgb();
+    }
+  });
 
   centerLightness = computed(() => (this.showDarkColors() ? 200 : 100));
   isDragging = signal(false);

@@ -45,6 +45,9 @@ const openMenus: ShipMenu[] = [];
         [class.is-open]="isOpen()"
         (click)="toggleIsOpen($event)"
         role="combobox"
+        [id]="triggerId"
+        [attr.aria-label]="label() || null"
+        [attr.aria-labelledby]="label() ? null : triggerId"
         [attr.aria-expanded]="isOpen()"
         aria-haspopup="listbox"
         [attr.aria-controls]="optionsId"
@@ -118,6 +121,12 @@ export class ShipMenu {
   /** Emits when the menu closes; `true` when closing via an active selection. */
   closed = output<boolean>();
 
+  /**
+   * Accessible name for the combobox trigger. Without it the trigger labels
+   * itself from its projected content (a combobox has no name from content
+   * per the accname spec, so it references its own id).
+   */
+  label = input<string>('');
   /** Enable the search input for filtering and fuzzy-matching options. */
   searchable = input<boolean>(false);
   activeOptionIndex = signal<number>(-1);
@@ -149,6 +158,7 @@ export class ShipMenu {
   inputValue = nativeInputValueSignal<string>(this.inputRef);
 
   optionsId = generateUniqueId();
+  triggerId = `sh-menu-trigger-${generateUniqueId()}`;
   activeOptionId = signal<string | undefined>(undefined);
 
   abortController: AbortController | null = null;

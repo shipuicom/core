@@ -51,6 +51,7 @@ export const INPUT_ROLES: Record<string, string> = {
   button: 'button',
   checkbox: 'checkbox',
   email: 'textbox',
+  file: 'button',
   image: 'button',
   number: 'spinbutton',
   radio: 'radio',
