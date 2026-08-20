@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, model, signal, untracked, ViewEncapsulation } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, model, signal, untracked, ViewEncapsulation } from '@angular/core';
 import { contentProjectionSignal, nativeInputValueSignal, shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipSize, ShipRangeSliderVariant } from '@ship-ui/core';
 
@@ -40,6 +40,20 @@ import { ShipColor, ShipSize, ShipRangeSliderVariant } from '@ship-ui/core';
   },
 })
 export class ShipRangeSlider {
+  constructor() {
+    // Associate a projected <label> with the projected range input (same
+    // wiring as sh-form-field) so the slider has an accessible name.
+    afterNextRender(() => {
+      const el = this.#a11ySelfRef.nativeElement as HTMLElement;
+      const inputEl = el.querySelector('input[type=range]');
+      const labelEl = el.querySelector('label');
+      if (!inputEl || !labelEl) return;
+      if (!inputEl.id) inputEl.id = `sh-input-${Math.random().toString(36).substring(2, 9)}`;
+      if (!labelEl.getAttribute('for')) labelEl.setAttribute('for', inputEl.id);
+    });
+  }
+
+  #a11ySelfRef = inject(ElementRef);
   hasInput = signal(false);
   #selfRef = inject(ElementRef<HTMLElement>);
   #inputElement: HTMLInputElement | null = null;

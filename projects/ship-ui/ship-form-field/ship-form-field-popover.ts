@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, input, model, output, ViewEncapsulation } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, input, model, output, ViewEncapsulation } from '@angular/core';
 import { ShipPopover } from '@ship-ui/core/ship-popover';
 import { shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
@@ -69,6 +69,43 @@ export class ShipFormFieldPopover {
   size = input<ShipSize | null>(null);
   /** Renders the field in a read-only state. */
   readonly = input<boolean>(false);
+
+  constructor() {
+    // Same label/error/hint wiring as ShipFormField: associate the projected
+    // <label> with the projected input so it has an accessible name, and
+    // error/hint content via aria-describedby.
+    afterNextRender(() => {
+      const el = this.#selfRef.nativeElement;
+      const inputEl = el.querySelector('input') || el.querySelector('textarea');
+      const labelEl = el.querySelector('label');
+      const errorEl = el.querySelector('[error]');
+      const hintEl = el.querySelector('[hint]');
+
+      if (!inputEl) return;
+
+      if (!inputEl.id) {
+        inputEl.id = `sh-input-${Math.random().toString(36).substring(2, 9)}`;
+      }
+
+      if (labelEl && !labelEl.getAttribute('for')) {
+        labelEl.setAttribute('for', inputEl.id);
+      }
+
+      const describedBy: string[] = [];
+      if (errorEl) {
+        if (!errorEl.id) errorEl.id = `sh-error-${Math.random().toString(36).substring(2, 9)}`;
+        describedBy.push(errorEl.id);
+      }
+      if (hintEl) {
+        if (!hintEl.id) hintEl.id = `sh-hint-${Math.random().toString(36).substring(2, 9)}`;
+        describedBy.push(hintEl.id);
+      }
+
+      if (describedBy.length > 0 && !inputEl.hasAttribute('aria-describedby')) {
+        inputEl.setAttribute('aria-describedby', describedBy.join(' '));
+      }
+    });
+  }
 
   hostClasses = shipComponentClasses('formField', {
     color: this.color,
