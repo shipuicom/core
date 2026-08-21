@@ -1,4 +1,5 @@
 import { Page, expect, test } from '@playwright/test';
+import { awaitHydrated } from './hydration';
 
 /**
  * Caret hit-testing in `<sh-code>`.
@@ -19,6 +20,7 @@ async function openCode(page: Page) {
     if (msg.type() === 'error') errors.push(msg.text());
   });
   await page.goto('/code');
+  await awaitHydrated(page, 'sh-code', 2);
   await page.locator('sh-code .sh-code-line').first().waitFor();
   // The virtualized instance is the second editor; wait for it to lay out too.
   await page.locator('sh-code').nth(1).locator('.sh-code-line').first().waitFor();

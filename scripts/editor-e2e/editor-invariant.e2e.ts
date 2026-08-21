@@ -1,4 +1,5 @@
 import { Page, expect, test } from '@playwright/test';
+import { awaitHydrated } from './hydration';
 
 /**
  * The editor's core invariant, under REAL browser events: after every edit the
@@ -23,7 +24,7 @@ const pick = (rnd: () => number, n: number) => Math.floor(rnd() * n);
 /** DOM text per block vs AST text per block, read in one atomic evaluate. */
 async function readInvariant(page: Page) {
   return page.evaluate(() => {
-    const host = document.querySelector('sh-editor')!;
+    const host = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!;
     const comp = (window as any).ng.getComponent(host);
     const surface = host.querySelector('.sh-editor-content')!;
     // Read DOM text with soft breaks: a real <br> is a '\n' in the AST; a
@@ -84,10 +85,10 @@ async function openEditor(page: Page) {
   page.on('console', (msg) => {
     if (msg.type() === 'error') errors.push(msg.text());
   });
-  await page.goto('/editors');
   // The live editor lives under the "Examples" tab of the docs page.
-  await page.locator('sh-tabs button[value="examples"]').click();
-  const surface = page.locator('.sh-editor-content').first();
+  await page.goto('/editors/examples');
+  await awaitHydrated(page, 'sh-editor');
+  const surface = page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content').first();
   await surface.waitFor();
   // Place the caret at the start of the intro paragraph.
   await surface.locator('p').first().click();
@@ -98,17 +99,17 @@ test.describe('DOM ≡ AST invariant', () => {
   test('paste replaces a select-all and a container-anchored last-char selection', async ({ page }) => {
     const { errors } = await openEditor(page);
     const astOf = () =>
-      page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document());
+      page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.document());
     const pastePlain = (text: string) =>
       page.evaluate((t) => {
-        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
         const dt = new DataTransfer();
         dt.setData('text/plain', t);
         comp.onPaste(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
       }, text);
     const reset = async () => {
       await page.evaluate(() => {
-        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
         comp.engine.reset([
           { type: 'paragraph', content: [{ type: 'text', text: 'hello' }] },
           { type: 'paragraph', content: [{ type: 'text', text: 'world' }] },
@@ -132,7 +133,7 @@ test.describe('DOM ≡ AST invariant', () => {
     // (what dragging past the last line produces). ──
     await reset();
     await page.evaluate(() => {
-      const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+      const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')! as HTMLElement;
       surface.focus();
       const last = surface.querySelectorAll('p')[1].firstChild!; // "world"
       const range = document.createRange();
@@ -153,12 +154,12 @@ test.describe('DOM ≡ AST invariant', () => {
     // trailing list (plain text and clipboard HTML). ──
     const load = (doc: unknown) =>
       page.evaluate((d) => {
-        (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset(d);
+        (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.reset(d);
       }, doc);
     const caretIn = (blockSelector: string, offset: number) =>
       page.evaluate(
         ({ selector, off }) => {
-          const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+          const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')! as HTMLElement;
           surface.focus();
           const el = surface.querySelector(selector)!;
           const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
@@ -175,7 +176,7 @@ test.describe('DOM ≡ AST invariant', () => {
       );
     const pasteHtml = (html: string) =>
       page.evaluate((h) => {
-        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
         const dt = new DataTransfer();
         dt.setData('text/html', h);
         comp.onPaste(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
@@ -243,7 +244,7 @@ test.describe('DOM ≡ AST invariant', () => {
   test('void blocks: click selects an hr, copy serializes it, paste replaces it', async ({ page }) => {
     const { errors } = await openEditor(page);
     await page.evaluate(() => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.reset([
         { type: 'paragraph', content: [{ type: 'text', text: 'above' }] },
         { type: 'hr', content: [] },
@@ -258,7 +259,7 @@ test.describe('DOM ≡ AST invariant', () => {
 
     // Copy with the block selected puts the block's HTML on the clipboard.
     const copied = await page.evaluate(() => {
-      const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+      const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')! as HTMLElement;
       const dt = new DataTransfer();
       const evt = new ClipboardEvent('copy', { clipboardData: dt, bubbles: true, cancelable: true });
       surface.dispatchEvent(evt);
@@ -269,19 +270,19 @@ test.describe('DOM ≡ AST invariant', () => {
 
     // Pasting with the hr selected replaces it.
     await page.evaluate(() => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       const dt = new DataTransfer();
       dt.setData('text/html', '<p>middle</p>');
       comp.onPaste(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
     });
-    const ast = await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document());
+    const ast = await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.document());
     expect(ast.map((b: any) => b.type)).toEqual(['paragraph', 'paragraph', 'paragraph']);
     expect(ast[1].content[0].text).toBe('middle');
     await expectInvariant(page, 'after pasting over a selected hr');
 
     // A void inside a text selection range gets the in-selection highlight.
     await page.evaluate(() => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.reset([
         { type: 'paragraph', content: [{ type: 'text', text: 'above' }] },
         { type: 'hr', content: [] },
@@ -303,7 +304,7 @@ test.describe('DOM ≡ AST invariant', () => {
       page.evaluate(
         (idx) =>
           (window as any).ng
-            .getComponent(document.querySelector('sh-editor')!)
+            .getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!)
             .engine.blockAt(idx)
             .content.map((n: any) => n.text)
             .join(''),
@@ -311,7 +312,7 @@ test.describe('DOM ≡ AST invariant', () => {
       );
     const caretInCode = async (offset: number) => {
       await page.evaluate((off) => {
-        const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+        const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')! as HTMLElement;
         surface.focus();
         // An empty code block renders <pre><code><br></code></pre> — no text
         // node to anchor in; the caret sits on the <code> element instead.
@@ -338,7 +339,7 @@ test.describe('DOM ≡ AST invariant', () => {
             .map((line) => `<div><span style="color:#569cd6">${line.replace(/\t/g, '&nbsp;&nbsp;')}</span></div>`)
             .join('') +
           '</div>';
-        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
         const dt = new DataTransfer();
         dt.setData('text/html', html);
         dt.setData('text/plain', text);
@@ -346,7 +347,7 @@ test.describe('DOM ≡ AST invariant', () => {
       }, plain);
 
     await page.evaluate(() => {
-      (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset([
+      (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.reset([
         { type: 'code-block', content: [{ type: 'text', text: 'start' }] },
       ]);
     });
@@ -362,7 +363,7 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(domCode).toBe('start' + snippet);
     // …and the source editor's syntax coloring rides along as style marks.
     const pastedJson = await page.evaluate(() =>
-      JSON.stringify((window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.serialize('json')[0])
+      JSON.stringify((window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.serialize('json')[0])
     );
     // The CSS parser normalizes the hex to rgb().
     expect(pastedJson).toContain('rgb(86, 156, 214)');
@@ -373,7 +374,7 @@ test.describe('DOM ≡ AST invariant', () => {
     // anchor while the rest keep their source-file depth — the common
     // indentation is stripped so the base lines up with the first line.
     await page.evaluate(() => {
-      (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset([
+      (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.reset([
         { type: 'code-block', content: [{ type: 'text', text: '' }] },
       ]);
     });
@@ -384,7 +385,7 @@ test.describe('DOM ≡ AST invariant', () => {
 
     // Windows line endings normalize.
     await page.evaluate(() => {
-      (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset([
+      (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.reset([
         { type: 'code-block', content: [{ type: 'text', text: '' }] },
       ]);
     });
@@ -400,16 +401,16 @@ test.describe('DOM ≡ AST invariant', () => {
     // Regression guard: a paragraph still takes the parsed-fragment path —
     // the styled HTML becomes blocks, not verbatim text.
     await page.evaluate(() => {
-      (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset([
+      (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.reset([
         { type: 'paragraph', content: [{ type: 'text', text: 'plain' }] },
       ]);
     });
     // Scoped to the first editor — the showcase mounts a second one with its
     // own paragraphs, which would satisfy an unscoped count while this
     // editor's render is still pending.
-    await expect(page.locator('sh-editor').first().locator('.sh-editor-content > p')).toHaveCount(1);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor)').first().locator('.sh-editor-content > p')).toHaveCount(1);
     await page.evaluate(() => {
-      const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+      const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')! as HTMLElement;
       surface.focus();
       const text = document.createTreeWalker(surface.querySelector('p')!, NodeFilter.SHOW_TEXT).nextNode()!;
       const range = document.createRange();
@@ -426,7 +427,7 @@ test.describe('DOM ≡ AST invariant', () => {
     // have been inserted.
     const paraTexts = await page.evaluate(() =>
       (window as any).ng
-        .getComponent(document.querySelector('sh-editor')!)
+        .getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!)
         .engine.document()
         .map((b: any) => (b.content ?? []).map((n: any) => n.text ?? '').join(''))
     );
@@ -521,7 +522,7 @@ test.describe('DOM ≡ AST invariant', () => {
     await page.keyboard.press('Enter');
     await expect(input).toBeHidden();
     await expectInvariant(page, 'after link apply');
-    let ast = JSON.stringify(await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.serialize('json')));
+    let ast = JSON.stringify(await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.serialize('json')));
     expect(ast).toContain('"href":"https://ship-ui.dev/docs"');
 
     // Reopen with the caret inside the link: prefilled, and unsafe URLs refused
@@ -532,14 +533,14 @@ test.describe('DOM ≡ AST invariant', () => {
     await input.fill('javascript:alert(1)');
     await page.keyboard.press('Enter');
     await expect(page.locator('sh-editor-link-popover [role=alert]')).toBeVisible();
-    ast = JSON.stringify(await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.serialize('json')));
+    ast = JSON.stringify(await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.serialize('json')));
     expect(ast).not.toContain('javascript:');
 
     // Remove unlinks the whole run
     await page.locator('sh-editor-link-popover button', { hasText: 'Remove' }).click();
     await expect(input).toBeHidden();
     await expectInvariant(page, 'after unlink');
-    ast = JSON.stringify(await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.serialize('json')));
+    ast = JSON.stringify(await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.serialize('json')));
     expect(ast).not.toContain('"href"');
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
@@ -547,11 +548,11 @@ test.describe('DOM ≡ AST invariant', () => {
   test('soft line break: Shift+Enter stays one block, Enter splits; caret is correct', async ({ page }) => {
     const { errors } = await openEditor(page);
     const astOf = () =>
-      page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document());
+      page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.document());
 
     // Start from a clean single empty paragraph and focus it.
     await page.evaluate(() => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
     });
     await page.locator('.sh-editor-content > p').first().click();
@@ -587,7 +588,7 @@ test.describe('DOM ≡ AST invariant', () => {
       sel.removeAllRanges();
       sel.addRange(range);
       document.dispatchEvent(new Event('selectionchange'));
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       // Selections are flat character positions; block 0's interior starts at
       // position 1, so the char offset within it is `from - 1`.
       const s = comp.selection.active();
@@ -608,12 +609,12 @@ test.describe('DOM ≡ AST invariant', () => {
     const { errors } = await openEditor(page);
     const attrOf = () =>
       page.evaluate(() => {
-        const eng = (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine;
+        const eng = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine;
         return eng.selectedBlockNode()?.attrs ?? null;
       });
 
     await page.evaluate(() => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: 'caption' }] }]);
     });
     await page.locator('.sh-editor-content > p').first().click();
@@ -690,7 +691,7 @@ test.describe('DOM ≡ AST invariant', () => {
     await page.evaluate(() => {
       const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='400' height='300' fill='#4f8cff'/></svg>";
       const src = 'data:image/svg+xml,' + encodeURIComponent(svg);
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.reset([
         { type: 'paragraph', content: [{ type: 'text', text: 'x' }] },
         { type: 'image', attrs: { src, alt: 'demo', mode: 'content', size: 'auto' }, content: [] },
@@ -719,7 +720,7 @@ test.describe('DOM ≡ AST invariant', () => {
     // Committed to the AST (source of truth): width shrank, no explicit height
     // (a corner preserves aspect via height:auto).
     const after = await page.evaluate(() => {
-      const attrs = (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document()[1].attrs;
+      const attrs = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.document()[1].attrs;
       return { astW: attrs.width as number, astH: attrs.height ?? null };
     });
     const ctx = JSON.stringify({ before, after });
@@ -732,7 +733,7 @@ test.describe('DOM ≡ AST invariant', () => {
     // The resize is a single undoable transaction.
     await page.keyboard.press('ControlOrMeta+z');
     const astAfterUndo = await page.evaluate(
-      () => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document()[1].attrs.width ?? null
+      () => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.document()[1].attrs.width ?? null
     );
     expect(astAfterUndo).toBeNull();
 
@@ -748,7 +749,7 @@ test.describe('DOM ≡ AST invariant', () => {
       (window as any).ng.getComponent(document.querySelector('app-editors')!).imageEdgeResize.set(true);
       const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='400' height='300' fill='#4f8cff'/></svg>";
       const src = 'data:image/svg+xml,' + encodeURIComponent(svg);
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.reset([
         { type: 'paragraph', content: [{ type: 'text', text: 'x' }] },
         { type: 'image', attrs: { src, alt: 'demo', mode: 'custom', size: 'auto', width: 240 }, content: [] },
@@ -772,7 +773,7 @@ test.describe('DOM ≡ AST invariant', () => {
 
     // The AST is the source of truth (committed once on mouseup).
     const after = await page.evaluate(() => {
-      const attrs = (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document()[1].attrs;
+      const attrs = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.document()[1].attrs;
       return { astW: attrs.width, astH: attrs.height };
     });
     const ctx = JSON.stringify({ before, after });
@@ -785,7 +786,7 @@ test.describe('DOM ≡ AST invariant', () => {
     // Undo restores the pre-stretch width and drops the explicit height.
     await page.keyboard.press('ControlOrMeta+z');
     const undone = await page.evaluate(() => {
-      const a = (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document()[1].attrs;
+      const a = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.document()[1].attrs;
       return { w: a.width, h: a.height ?? null };
     });
     expect(undone).toEqual({ w: 240, h: null });
@@ -799,11 +800,11 @@ test.describe('DOM ≡ AST invariant', () => {
     await page.evaluate(() => {
       const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='400' height='300' fill='#4f8cff'/></svg>";
       const src = 'data:image/svg+xml,' + encodeURIComponent(svg);
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.reset([{ type: 'image', attrs: { src, alt: 'demo', mode: 'content', size: 'auto' }, content: [] }]);
     });
     const setMode = (mode: string) =>
-      page.evaluate((m) => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.updateSelectedImage({ mode: m }), mode);
+      page.evaluate((m) => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.updateSelectedImage({ mode: m }), mode);
 
     await page.locator('.sh-editor-content img').click();
     const se = page.locator('.sh-editor-resize-se');
@@ -818,9 +819,9 @@ test.describe('DOM ≡ AST invariant', () => {
 
   test('image upload hook: a picked file is uploaded via the handler and its URL inserted', async ({ page }) => {
     const { errors } = await openEditor(page);
-    const editor = page.locator('sh-editor').first();
+    const editor = page.locator('sh-editor:not(sh-editor-sheet sh-editor)').first();
     await page.evaluate(() => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: 'caption' }] }]);
     });
     await editor.locator('.sh-editor-content > p').first().click();
@@ -843,7 +844,7 @@ test.describe('DOM ≡ AST invariant', () => {
   test('image: undoing the insert clears the selection instead of orphaning the highlight', async ({ page }) => {
     const { errors } = await openEditor(page);
     await page.evaluate(() => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: 'para' }] }]);
       comp.engine.selection.live.set({
         start: { blockIndex: 0, inlineIndex: 0, offset: 4 },
@@ -860,7 +861,7 @@ test.describe('DOM ≡ AST invariant', () => {
     await page.keyboard.press('ControlOrMeta+z');
     await expect(page.locator('.sh-editor-content img')).toHaveCount(0);
     await expect(page.locator('.sh-editor-content .sh-editor-block-selected')).toHaveCount(0);
-    expect(await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.selectedBlock())).toBeNull();
+    expect(await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.selectedBlock())).toBeNull();
     await expectInvariant(page, 'after undo of image insert');
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
@@ -868,10 +869,10 @@ test.describe('DOM ≡ AST invariant', () => {
   test('image: arrowing out of the block above selects the image (no caret in the void)', async ({ page }) => {
     const { errors } = await openEditor(page);
     const selectedBlock = () =>
-      page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.selectedBlock());
+      page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.selectedBlock());
 
     await page.evaluate(() => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: 'above' }] }]);
       comp.engine.selection.live.set({
         start: { blockIndex: 0, inlineIndex: 0, offset: 0 },
@@ -895,9 +896,9 @@ test.describe('DOM ≡ AST invariant', () => {
     // just moves the caret. Seat the caret directly (offset 2 of "above") so the
     // check is deterministic and unaffected by the prior image selection.
     await page.evaluate(() => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.clearBlockSelection();
-      const surface = document.querySelector('.sh-editor-content') as HTMLElement;
+      const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content') as HTMLElement;
       const textNode = surface.children[0].firstChild!;
       const range = document.createRange();
       range.setStart(textNode, 2);
@@ -917,9 +918,9 @@ test.describe('DOM ≡ AST invariant', () => {
 
   test('image drag-to-reorder: dragging an image moves it, showing a drop line', async ({ page }) => {
     const { errors } = await openEditor(page);
-    const editor = page.locator('sh-editor').first();
+    const editor = page.locator('sh-editor:not(sh-editor-sheet sh-editor)').first();
     await page.evaluate(() => {
-      (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset([
+      (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.reset([
         { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Heading' }] },
         { type: 'image', attrs: { src: 'https://picsum.photos/60', mode: 'content', size: 'auto' }, content: [] },
         { type: 'paragraph', content: [{ type: 'text', text: 'First' }] },
@@ -931,8 +932,8 @@ test.describe('DOM ≡ AST invariant', () => {
     // Drive the native drag: start on the image, hover the lower half of "First"
     // (drop after it → gap 3), then drop. The drop line shows during the hover.
     const result = await page.evaluate(() => {
-      const ed = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
-      const surface = document.querySelector('.sh-editor-content')!;
+      const ed = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
+      const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
       const img = surface.querySelector('img')!;
       const first = surface.children[2] as HTMLElement; // "First"
       const rect = first.getBoundingClientRect();
@@ -968,13 +969,13 @@ test.describe('DOM ≡ AST invariant', () => {
     const blockText = () =>
       page.evaluate(() =>
         (window as any).ng
-          .getComponent(document.querySelector('sh-editor')!)
+          .getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!)
           .engine.document()[0]
           .content.map((n: any) => n.text)
           .join('')
       );
     await page.evaluate(() => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
     });
     await page.locator('.sh-editor-content > p').first().click();
@@ -1011,7 +1012,7 @@ test.describe('DOM ≡ AST invariant', () => {
   test('float layout: list/quote/callout sit beside a floated image, never under it', async ({ page }) => {
     const { errors } = await openEditor(page);
     await page.evaluate(() => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.reset([
         { type: 'image', attrs: { src: 'https://picsum.photos/id/1062/220/160', alt: 'x', mode: 'float', size: 'small' }, content: [] },
         { type: 'bullet-list', content: [{ type: 'list-item', content: [{ type: 'text', text: 'item beside the float' }] }] },
@@ -1024,7 +1025,7 @@ test.describe('DOM ≡ AST invariant', () => {
     // Each block container establishes a BFC, so its box starts at/after the
     // floated image's right edge instead of its border/background sliding under.
     const geom = await page.evaluate(() => {
-      const surface = document.querySelector('.sh-editor-content')!;
+      const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
       const imgRight = surface.querySelector('img')!.getBoundingClientRect().right;
       const at = (sel: string) => {
         const el = surface.querySelector(sel) as HTMLElement;
@@ -1046,7 +1047,7 @@ test.describe('DOM ≡ AST invariant', () => {
 
   test('document variant: variant="document" adds the host class and centres the page', async ({ page }) => {
     const { errors } = await openEditor(page);
-    const editor = page.locator('sh-editor').first();
+    const editor = page.locator('sh-editor:not(sh-editor-sheet sh-editor)').first();
     const container = editor.locator('.sh-editor-container');
 
     await expect(editor).not.toHaveClass(/(^|\s)document(\s|$)/);
@@ -1072,9 +1073,9 @@ test.describe('DOM ≡ AST invariant', () => {
     const { errors } = await openEditor(page);
     // The showcase mounts two editors; scope every query to the first (the one
     // with metrics/placeholder/source wired up).
-    const editor = page.locator('sh-editor').first();
+    const editor = page.locator('sh-editor:not(sh-editor-sheet sh-editor)').first();
     const reset = (doc: unknown) =>
-      page.evaluate((d) => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset(d), doc);
+      page.evaluate((d) => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.reset(d), doc);
 
     // Metrics footer counts the live document.
     const stats = editor.locator('.sh-editor-stats');
@@ -1110,14 +1111,14 @@ test.describe('DOM ≡ AST invariant', () => {
 
   test('style toolbar: real-click opens controls, applies to + prefills from the selection', async ({ page }) => {
     const { errors } = await openEditor(page);
-    const editor = page.locator('sh-editor').first();
+    const editor = page.locator('sh-editor:not(sh-editor-sheet sh-editor)').first();
     const fontSelect = page.locator('.sh-editor-style-font');
     const sizeSelect = page.locator('.sh-editor-style-size');
 
     // Reset to a known single paragraph. Reset is async, so wait for the render.
     const resetRow = async () => {
       await page.evaluate(() => {
-        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
         comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: 'Style row here' }] }]);
       });
       await expect(editor.locator('.sh-editor-content > p').first()).toHaveText('Style row here');
@@ -1127,8 +1128,8 @@ test.describe('DOM ≡ AST invariant', () => {
     // the logical selection survives focus moving to the toolbar controls.
     const selectStyleWord = async () => {
       await page.evaluate(() => {
-        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
-        const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
+        const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')! as HTMLElement;
         surface.focus();
         // "Style" is the first text node however it ends up wrapped (span, strong…).
         const p = surface.querySelector('p')!;
@@ -1191,7 +1192,7 @@ test.describe('DOM ≡ AST invariant', () => {
       );
     await selectStyleWord();
     await page.evaluate(() => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.applyStyle({ color: '#3366ff' });
     });
     // Caret inside the colored run → the swatch reflects it; in the tail → resets.
@@ -1218,7 +1219,7 @@ test.describe('DOM ≡ AST invariant', () => {
     const { surface, errors } = await openEditor(page);
     // Caret mid-paragraph: after "Welcome! " in the intro block.
     await page.evaluate(() => {
-      const surfaceEl = document.querySelector('.sh-editor-content')!;
+      const surfaceEl = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
       const p = surfaceEl.querySelectorAll(':scope > *')[1]!; // intro paragraph
       const textNode = document.createTreeWalker(p, NodeFilter.SHOW_TEXT).nextNode()!;
       const range = document.createRange();
@@ -1253,7 +1254,7 @@ test.describe('DOM ≡ AST invariant', () => {
   test('modified arrows at the doc start never trigger the escape hatch', async ({ page }) => {
     const { errors } = await openEditor(page);
     const result = await page.evaluate(() => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       const engine = comp.engine;
       // A non-paragraph first block: a bare ArrowUp at its start is the escape
       // hatch (inject a paragraph above); a modified arrow must never be.
@@ -1288,7 +1289,7 @@ test.describe('DOM ≡ AST invariant', () => {
     await page.keyboard.press('ControlOrMeta+a');
     const isBold = () =>
       page.evaluate(() => {
-        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+        const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
         return comp.engine.isActive('bold', {});
       });
     expect(await isBold()).toBe(false);
