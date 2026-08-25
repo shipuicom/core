@@ -1,0 +1,56 @@
+@use '../showcase' as *;
+
+:host {
+  @extend %tab-host;
+}
+
+.collab-demo {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(12);
+  padding: p2r(12);
+}
+
+.collab-guide {
+  background: var(--base-2);
+  border: 1px solid var(--base-4);
+  border-radius: var(--shape-2);
+  padding: p2r(10) p2r(14);
+
+  ol {
+    margin: p2r(6) 0 0;
+    padding-left: p2r(20);
+  }
+}
+
+.collab-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: p2r(10);
+}
+
+.collab-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: p2r(6);
+  border: 1px solid var(--base-5);
+  border-radius: var(--shape-1);
+  padding: p2r(2) p2r(8);
+  font-size: p2r(12);
+
+  .dot {
+    width: p2r(8);
+    height: p2r(8);
+    border-radius: 50%;
+  }
+
+  &.checksum {
+    font-family: monospace;
+    color: var(--base-10);
+  }
+}
+
+.collab-editor-wrap {
+  position: relative;
+}

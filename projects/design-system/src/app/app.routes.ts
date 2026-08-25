@@ -473,6 +473,7 @@ export const routes: Routes = [
           { path: 'styling', loadComponent: () => import('./ship/editors/editors-styling') },
           { path: 'examples', loadComponent: () => import('./ship/editors/editors-examples') },
           { path: 'virtual', loadComponent: () => import('./ship/editors/editors-virtual') },
+          { path: 'collab', loadComponent: () => import('./ship/editors/editors-collab') },
           fallbackOverview,
         ],
       },

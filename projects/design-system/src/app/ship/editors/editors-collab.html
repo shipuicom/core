@@ -1,0 +1,90 @@
+<h3>Collaborative editing</h3>
+
+<p>
+  The editor's operation model is collaboration-ready: every edit is a serializable <code>EditorOp</code>, remote ops
+  are applied with <code>engine.applyRemoteOperation</code> (which maps your caret and keeps remote edits out of your
+  undo history), and concurrent edits converge through <code>transformOp</code>/<code>rebaseOp</code> — the same
+  fuzz-verified algebra the nightly rebase fuzz exercises.
+</p>
+
+<p>
+  <code>&#64;ship-ui/core/ship-editor-collab</code> packages this into three pieces: <code>ShipEditorCollab</code>
+  (the session service), the <code>CollabTransport</code> interface, and <code>&lt;sh-editor-remote-cursors&gt;</code>
+  (peer carets and selections). The built-in <code>BroadcastChannelTransport</code> syncs same-origin windows with no
+  server — exact for two peers; production multi-peer setups should implement <code>CollabTransport</code> over a
+  server relay that assigns a total order.
+</p>
+
+<app-previewer path="/editors" title="Live demo — two windows, one document" class="no-space">
+  <div class="collab-demo">
+    <div class="collab-guide">
+      <strong>Try it:</strong>
+      <ol>
+        <li>Click <em>Open second window</em> and place the windows side by side.</li>
+        <li>Type in either window — edits and the colored remote caret appear live in the other.</li>
+        <li>Flip on <em>Fuzz edits</em> here, then keep typing in the <em>other</em> window while random edits storm
+          this one. When the checksums in both windows match, the documents converged.</li>
+      </ol>
+    </div>
+
+    <div class="collab-toolbar">
+      <button shButton class="primary raised small" (click)="openWindow()">Open second window</button>
+      <sh-toggle class="primary" [checked]="fuzzing()" (checkedChange)="toggleFuzz($event)" label="Fuzz edits">
+        Fuzz edits
+      </sh-toggle>
+      <span class="collab-badge" [style.border-color]="me.color">
+        <span class="dot" [style.background]="me.color"></span>
+        You: {{ me.name }}
+      </span>
+      @for (peer of peerList(); track peer.clientId) {
+        <span class="collab-badge">
+          <span class="dot" [style.background]="peer.color"></span>
+          {{ peer.name }}
+        </span>
+      }
+      <span class="collab-badge checksum">doc {{ checksum() }}@if (fuzzing()) { · fuzz ops {{ fuzzOps() }}}</span>
+    </div>
+
+    <div class="collab-editor-wrap">
+      <sh-editor #collabEditor [value]="initialHtml" format="html" [multiCursor]="false" />
+      @if (editor()) {
+        <sh-editor-remote-cursors [engine]="editor()!.engine" [collab]="collab" />
+      }
+    </div>
+  </div>
+</app-previewer>
+
+<h4>Custom transports</h4>
+<p>
+  Any ordered-per-sender message pipe works. A minimal WebSocket transport:
+</p>
+<pre><code>class WsTransport implements CollabTransport &#123;
+  #ws = new WebSocket('wss://example.dev/doc/42');
+  connected = signal(false);
+  constructor() &#123;
+    this.#ws.onopen = () =&gt; this.connected.set(true);
+    this.#ws.onclose = () =&gt; this.connected.set(false);
+  &#125;
+  send(message: CollabMessage) &#123; this.#ws.send(JSON.stringify(message)); &#125;
+  subscribe(cb: (m: CollabMessage) =&gt; void) &#123;
+    const h = (e: MessageEvent) =&gt; cb(JSON.parse(e.data));
+    this.#ws.addEventListener('message', h);
+    return () =&gt; this.#ws.removeEventListener('message', h);
+  &#125;
+  destroy() &#123; this.#ws.close(); &#125;
+&#125;</code></pre>
+
+<p>
+  Wire-up is the same regardless of transport:
+</p>
+<pre><code>&#64;Component(&#123; providers: [ShipEditorCollab], ... &#125;)
+class DocPage &#123;
+  collab = inject(ShipEditorCollab);
+  editor = viewChild&lt;ShipEditor&gt;('editor');
+  constructor() &#123;
+    afterNextRender(() =&gt; this.collab.attach(this.editor()!.engine, &#123;
+      transport: new BroadcastChannelTransport('my-doc'),
+      presence: &#123; name: 'Ada', color: '#e0533d' &#125;,
+    &#125;));
+  &#125;
+&#125;</code></pre>
