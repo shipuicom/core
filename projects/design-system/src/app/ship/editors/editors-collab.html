@@ -19,7 +19,7 @@
     <h4>Quick start</h4>
     <p>
       The Typescript tab below is the <em>complete</em> integration: provide the service, attach it to the editor's
-      engine with a transport, and place the cursor overlay next to the editor.
+      engine with a transport, and project the cursor overlay inside the editor.
     </p>
     <app-previewer
       path="/editors/examples/minimal-collab/minimal-collab"
@@ -65,12 +65,9 @@
           <span class="collab-badge checksum">doc {{ checksum() }}@if (fuzzing()) { · fuzz ops {{ fuzzOps() }}}</span>
         </div>
 
-        <div class="collab-editor-wrap">
-          <sh-editor #collabEditor [value]="initialHtml" format="html" [multiCursor]="false" />
-          @if (editor()) {
-            <sh-editor-remote-cursors [engine]="editor()!.engine" [collab]="collab" />
-          }
-        </div>
+        <sh-editor #collabEditor [value]="initialHtml" format="html" [multiCursor]="false">
+          <sh-editor-remote-cursors [collab]="collab" />
+        </sh-editor>
       </div>
     </app-previewer>
   </section>
@@ -100,6 +97,18 @@
       channels, SSE + POST, a message broker):
     </p>
     <app-highlight lang="ts" [content]="CUSTOM_TRANSPORT" />
+
+    <p>
+      Your implementation only ferries <code>CollabMessage</code> values — opaque JSON as far as the transport is
+      concerned; the session interprets them:
+    </p>
+    <app-highlight lang="ts" [content]="COLLAB_MESSAGE" />
+
+    <p>
+      Swapping transports is a one-argument change at <code>attach</code> time — nothing else in your component, the
+      overlay or the protocol changes:
+    </p>
+    <app-highlight lang="ts" [content]="SWAP_TRANSPORT" />
   </section>
 
   <section>

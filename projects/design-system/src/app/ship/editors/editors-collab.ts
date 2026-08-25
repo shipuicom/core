@@ -86,6 +86,24 @@ export class DocPage {
 
   RELAY_CMD = `bun scripts/collab-relay.ts   # reference relay, ~40 lines`;
 
+  COLLAB_MESSAGE = `// Every message is plain JSON — postMessage/WebSocket/broker safe.
+type CollabMessage =
+  | { type: 'op'; clientId: string; seq: number;
+      seen: Record<string, number>;       // per-peer high-water marks
+      op: EditorOp; presence?: CollabPresence }
+  | { type: 'presence'; presence: CollabPresence }
+  | { type: 'join'; clientId: string }    // request a snapshot
+  | { type: 'snapshot'; toClientId: string; clientId: string;
+      doc: ASTDocument; seen: Record<string, number> }
+  | { type: 'leave'; clientId: string };`;
+
+  SWAP_TRANSPORT = `// Replacing the transport is the only change — the session,
+// overlay and protocol stay identical.
+this.collab.attach(this.editor().engine, {
+  transport: new MyBrokerTransport('doc-42'),   // your implementation
+  presence: { name: 'Ada', color: '#e0533d' },
+});`;
+
   CUSTOM_TRANSPORT = `interface CollabTransport {
   send(message: CollabMessage): void;
   subscribe(cb: (m: CollabMessage) => void): () => void;

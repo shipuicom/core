@@ -24,10 +24,13 @@ interface PeerPaint {
 /**
  * Paints the carets and selections of remote peers over an `sh-editor`.
  *
- * Place it as a sibling of the editor inside a `position: relative`
- * container; it locates the editor surface itself and repaints on document
- * and presence changes. Peer selections are flat positions — resolved to
- * pixel rects through the live DOM, so they track marks, wraps and images.
+ * Project it inside the editor — `<sh-editor>…<sh-editor-remote-cursors
+ * [collab]="collab" />…</sh-editor>` — and it picks the engine up from the
+ * editor's injector. (Placing it as a sibling in a `position: relative`
+ * wrapper with an explicit `[engine]` input also works.) It repaints on
+ * document and presence changes; peer selections are flat positions —
+ * resolved to pixel rects through the live DOM, so they track marks, wraps
+ * and images.
  */
 @Component({
   selector: 'sh-editor-remote-cursors',
@@ -97,14 +100,22 @@ export class ShEditorRemoteCursors {
   #selfRef = inject(ElementRef<HTMLElement>);
   #injector = inject(Injector);
 
-  /** The engine of the editor being collaborated on. */
-  engine = input.required<EditorEngineService>();
+  // Projected content resolves DI at its declaration site, so when this
+  // component sits inside <sh-editor> the editor's engine is injectable.
+  #parentEngine = inject(EditorEngineService, { optional: true });
+
+  /** Engine override for sibling placement; defaults to the enclosing editor's engine. */
+  engine = input<EditorEngineService | null>(null);
+
+  #engine(): EditorEngineService | null {
+    return this.engine() ?? this.#parentEngine;
+  }
   /** The collab session whose peers should be painted. */
   collab = input.required<ShipEditorCollab>();
 
   paints = signal<PeerPaint[]>([]);
 
-  #version = computed(() => this.engine().version());
+  #version = computed(() => this.#engine()?.version() ?? 0);
 
   constructor() {
     afterNextRender(() => {
@@ -135,7 +146,9 @@ export class ShEditorRemoteCursors {
     const surface = this.#surface();
     if (!surface) return;
     const hostRect = (this.#selfRef.nativeElement as HTMLElement).getBoundingClientRect();
-    const doc = this.engine().document();
+    const engine = this.#engine();
+    if (!engine) return;
+    const doc = engine.document();
     const paints: PeerPaint[] = [];
 
     for (const peer of this.collab().peers().values()) {
