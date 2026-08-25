@@ -8,19 +8,8 @@
   align-items: flex-start;
   gap: 0.75rem;
 
-  [role='listbox'] {
-    display: flex;
+  sh-list {
+    flex-direction: row;
     gap: 0.5rem;
-
-    [role='option'] {
-      padding: 0.25rem 0.75rem;
-      border: 1px solid var(--base-5);
-      border-radius: var(--shape-1);
-      cursor: pointer;
-
-      &[aria-selected='true'] {
-        background: var(--base-3);
-      }
-    }
   }
 }
