@@ -15,6 +15,21 @@
   server relay that assigns a total order.
 </p>
 
+<app-previewer
+  path="/editors/examples/minimal-collab/minimal-collab"
+  title="Minimum viable collab"
+  defaultView="typescript"
+  class="no-space">
+  <minimal-collab-example class="example" />
+</app-previewer>
+
+<p>
+  That is the whole integration: provide <code>ShipEditorCollab</code>, attach it to the editor's engine with a
+  transport, and drop <code>&lt;sh-editor-remote-cursors&gt;</code> next to the editor in a
+  <code>position:&nbsp;relative</code> wrapper. The richer demo below adds presence badges, a fuzz mode and a
+  convergence checksum on top of exactly this wiring.
+</p>
+
 <app-previewer path="/editors/editors-collab" title="Live demo — two windows, one document" class="no-space">
   <div class="collab-demo">
     <div class="collab-guide">

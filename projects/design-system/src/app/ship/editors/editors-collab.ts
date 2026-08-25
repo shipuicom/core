@@ -17,6 +17,7 @@ import {
 } from '@ship-ui/core/ship-editor-collab';
 import { ShipToggle } from '@ship-ui/core/ship-toggle';
 import { Previewer } from '../../previewer/previewer';
+import { MinimalCollab } from './examples/minimal-collab/minimal-collab';
 
 const PEER_COLORS = ['#e0533d', '#2f6fed', '#0f9d58', '#ab47bc', '#f4a712', '#00897b'];
 const PEER_NAMES = ['Ada', 'Grace', 'Alan', 'Edsger', 'Barbara', 'Donald'];
@@ -31,7 +32,7 @@ function hash(text: string): string {
 
 @Component({
   selector: 'app-editors-collab',
-  imports: [Previewer, ShipEditor, ShEditorRemoteCursors, ShipButton, ShipToggle],
+  imports: [Previewer, ShipEditor, ShEditorRemoteCursors, ShipButton, ShipToggle, MinimalCollab],
   providers: [ShipEditorCollab],
   templateUrl: './editors-collab.html',
   styleUrl: './editors-collab.scss',
