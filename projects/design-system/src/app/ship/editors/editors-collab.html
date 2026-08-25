@@ -65,7 +65,13 @@
           <span class="collab-badge checksum">doc {{ checksum() }}@if (fuzzing()) { · fuzz ops {{ fuzzOps() }}}</span>
         </div>
 
-        <sh-editor #collabEditor [value]="initialHtml" format="html" [multiCursor]="false">
+        @if (fuzzing()) {
+          <div class="fuzz-banner" role="status">
+            <strong>Editing is disabled in this window</strong> while fuzz edits run, so the chaos and your typing
+            don't fight over one caret. Type in the <em>other</em> window — or flip the toggle off to edit here again.
+          </div>
+        }
+        <sh-editor #collabEditor [value]="initialHtml" format="html" [multiCursor]="false" [readonly]="fuzzing()">
           <sh-editor-remote-cursors [collab]="collab" />
         </sh-editor>
       </div>

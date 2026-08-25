@@ -83,3 +83,12 @@ app-highlight {
     }
   }
 }
+
+.fuzz-banner {
+  border: 1px solid var(--warn-6, var(--base-6));
+  border-left-width: 3px;
+  background: var(--warn-2, var(--base-2));
+  color: var(--base-12);
+  border-radius: var(--shape-1);
+  padding: p2r(8) p2r(12);
+}
