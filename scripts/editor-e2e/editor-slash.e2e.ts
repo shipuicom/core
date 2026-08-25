@@ -187,15 +187,11 @@ test.describe('slash-command insert into a paragraph mid-document', () => {
         page.evaluate(() => !!(window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).slashMenu()?.isOpen())
       )
       .toBe(true);
-    // Second entry is the demo component block; the first is the built-in code
-    // block. Wait for the filter to actually render both entries — on slow CI
-    // an early ArrowDown lands before the list settles and Enter picks the
-    // built-in block instead.
-    await expect
-      .poll(() => page.locator('.sh-editor-slash-menu button').count())
-      .toBe(2);
-    await page.keyboard.press('ArrowDown');
-    await page.keyboard.press('Enter');
+    // Pick the demo component entry by its label. Keyboard navigation here is
+    // racy on slow CI: the filter re-renders per keystroke and a late update
+    // resets the highlighted entry back to the first (the built-in code
+    // block) between ArrowDown and Enter.
+    await page.locator('.sh-editor-slash-menu button', { hasText: 'Code pad' }).click();
     // Wait for the insert to land rather than for a fixed delay — the block
     // mounts an Angular component, so the render settles on its own schedule.
     await expect
