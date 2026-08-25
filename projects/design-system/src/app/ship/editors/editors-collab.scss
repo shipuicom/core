@@ -54,3 +54,16 @@
 .collab-editor-wrap {
   position: relative;
 }
+
+app-highlight {
+  display: block;
+  margin-bottom: p2r(12);
+}
+
+.collab-note {
+  border-left: 3px solid var(--primary-6);
+  background: var(--base-2);
+  border-radius: 0 var(--shape-1) var(--shape-1) 0;
+  padding: p2r(10) p2r(14);
+  color: var(--base-11);
+}

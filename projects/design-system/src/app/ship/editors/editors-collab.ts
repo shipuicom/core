@@ -16,6 +16,7 @@ import {
   ShipEditorCollab,
 } from '@ship-ui/core/ship-editor-collab';
 import { ShipToggle } from '@ship-ui/core/ship-toggle';
+import { Highlight } from '../../previewer/highlight/highlight';
 import { Previewer } from '../../previewer/previewer';
 import { MinimalCollab } from './examples/minimal-collab/minimal-collab';
 
@@ -32,7 +33,7 @@ function hash(text: string): string {
 
 @Component({
   selector: 'app-editors-collab',
-  imports: [Previewer, ShipEditor, ShEditorRemoteCursors, ShipButton, ShipToggle, MinimalCollab],
+  imports: [Previewer, Highlight, ShipEditor, ShEditorRemoteCursors, ShipButton, ShipToggle, MinimalCollab],
   providers: [ShipEditorCollab],
   templateUrl: './editors-collab.html',
   styleUrl: './editors-collab.scss',
@@ -60,6 +61,24 @@ export default class EditorsCollab implements OnDestroy {
     return engine ? hash(JSON.stringify(engine.document())) : '—';
   });
   peerList = computed(() => Array.from(this.collab.peers().values()));
+
+  WS_TRANSPORT = `// One line to go cross-machine — point it at a relay that
+// fans messages out in arrival order (total order = convergence).
+const transport = new WebSocketTransport('ws://localhost:8787/my-doc');
+
+collab.attach(editor.engine, {
+  transport,
+  presence: { name: 'Ada', color: '#e0533d' },
+});`;
+
+  RELAY_CMD = `bun scripts/collab-relay.ts   # reference relay, ~40 lines`;
+
+  CUSTOM_TRANSPORT = `interface CollabTransport {
+  send(message: CollabMessage): void;
+  subscribe(cb: (m: CollabMessage) => void): () => void;
+  readonly connected: Signal<boolean>;
+  destroy?(): void;
+}`;
 
   initialHtml = `<h2>Collaborative editing</h2><p>This document is shared between every window of this page — edits, carets and undo all stay in sync through the <strong>op-rebase</strong> pipeline.</p><p>Open a second window and type in both.</p>`;
 

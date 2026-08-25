@@ -1,19 +1,18 @@
 <h3>Collaborative editing</h3>
 
 <p>
-  The editor's operation model is collaboration-ready: every edit is a serializable <code>EditorOp</code>, remote ops
-  are applied with <code>engine.applyRemoteOperation</code> (which maps your caret and keeps remote edits out of your
-  undo history), and concurrent edits converge through <code>transformOp</code>/<code>rebaseOp</code> — the same
-  fuzz-verified algebra the nightly rebase fuzz exercises.
+  <code>&#64;ship-ui/core/ship-editor-collab</code> turns any <code>sh-editor</code> into a shared document. It builds
+  on the editor's operation model: every edit is a serializable op, concurrent edits converge through the fuzz-verified
+  <code>transformOp</code>/<code>rebaseOp</code> algebra, and remote edits never enter your local undo history.
 </p>
 
-<p>
-  <code>&#64;ship-ui/core/ship-editor-collab</code> packages this into three pieces: <code>ShipEditorCollab</code>
-  (the session service), the <code>CollabTransport</code> interface, and <code>&lt;sh-editor-remote-cursors&gt;</code>
-  (peer carets and selections). The built-in <code>BroadcastChannelTransport</code> syncs same-origin windows with no
-  server — exact for two peers; production multi-peer setups should implement <code>CollabTransport</code> over a
-  server relay that assigns a total order.
-</p>
+<p>Three pieces, one wiring:</p>
+<ul>
+  <li><code>ShipEditorCollab</code> — the session: broadcasts your edits, rebases and applies everyone else's.</li>
+  <li><code>CollabTransport</code> — any message pipe; <code>BroadcastChannelTransport</code> (same-origin windows, no
+    server) and <code>WebSocketTransport</code> (server relay) ship built in.</li>
+  <li><code>&lt;sh-editor-remote-cursors&gt;</code> — peer carets, selections and name tags.</li>
+</ul>
 
 <app-previewer
   path="/editors/examples/minimal-collab/minimal-collab"
@@ -24,10 +23,8 @@
 </app-previewer>
 
 <p>
-  That is the whole integration: provide <code>ShipEditorCollab</code>, attach it to the editor's engine with a
-  transport, and drop <code>&lt;sh-editor-remote-cursors&gt;</code> next to the editor in a
-  <code>position:&nbsp;relative</code> wrapper. The richer demo below adds presence badges, a fuzz mode and a
-  convergence checksum on top of exactly this wiring.
+  That is the whole integration — the Typescript tab above is the complete component. The demo below adds presence
+  badges, a chaos mode and a convergence checksum on top of exactly this wiring.
 </p>
 
 <app-previewer path="/editors/editors-collab" title="Live demo — two windows, one document" class="no-space">
@@ -69,27 +66,28 @@
   </div>
 </app-previewer>
 
-<h4>Custom transports</h4>
-<p>
-  Any ordered-per-sender message pipe implements <code>CollabTransport</code>. For multi-peer sessions use the
-  built-in <code>WebSocketTransport</code> against a relay that fans messages out in arrival order — that
-  serialization is the total order concurrent edits rebase against. A ~40-line reference relay ships in
-  <code>scripts/collab-relay.ts</code> (<code>bun scripts/collab-relay.ts</code>):
-</p>
-<pre><code>const transport = new WebSocketTransport('ws://localhost:8787/my-doc');
-collab.attach(editor.engine, &#123; transport, presence: &#123; name: 'Ada', color: '#e0533d' &#125; &#125;);</code></pre>
+<h4>Going cross-machine</h4>
 
 <p>
-  Wire-up is the same regardless of transport:
+  <code>BroadcastChannelTransport</code> only reaches windows of the same browser. For real multi-user sessions swap in
+  <code>WebSocketTransport</code> and run any relay that fans each message out to the other sockets in arrival order —
+  that ordering is what makes many peers converge:
 </p>
-<pre><code>&#64;Component(&#123; providers: [ShipEditorCollab], ... &#125;)
-class DocPage &#123;
-  collab = inject(ShipEditorCollab);
-  editor = viewChild&lt;ShipEditor&gt;('editor');
-  constructor() &#123;
-    afterNextRender(() =&gt; this.collab.attach(this.editor()!.engine, &#123;
-      transport: new BroadcastChannelTransport('my-doc'),
-      presence: &#123; name: 'Ada', color: '#e0533d' &#125;,
-    &#125;));
-  &#125;
-&#125;</code></pre>
+
+<app-highlight lang="ts" [content]="WS_TRANSPORT" />
+<app-highlight lang="shell" [content]="RELAY_CMD" />
+
+<h4>Writing your own transport</h4>
+
+<p>
+  A transport is four members — anything that delivers messages in order per sender qualifies (WebRTC data channels,
+  SSE + POST, a message broker):
+</p>
+
+<app-highlight lang="ts" [content]="CUSTOM_TRANSPORT" />
+
+<p class="collab-note">
+  Good to know: undo only ever removes <em>your</em> edits; late joiners receive a snapshot from an existing peer;
+  and the op algebra (<code>transformOp</code>, <code>rebaseOp</code>, <code>applyOp</code>) is exported for
+  integrations that need to rebase server-side.
+</p>
