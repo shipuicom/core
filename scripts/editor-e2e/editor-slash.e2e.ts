@@ -22,7 +22,7 @@ async function openEditor(page: Page) {
   });
   await page.goto('/editors/examples');
   await awaitHydrated(page, 'sh-editor');
-  await page.locator('.sh-editor-content').first().waitFor();
+  await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content').first().waitFor();
   await page.waitForTimeout(800);
   return { errors };
 }
@@ -32,7 +32,7 @@ function state(page: Page) {
   return page.evaluate(() => {
     const host = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!;
     const comp = (window as any).ng.getComponent(host);
-    const surface = host.querySelector('.sh-editor-content')!;
+    const surface = host.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
     const tagToType: Record<string, string> = {
       H1: 'heading',
       H2: 'heading',
@@ -145,7 +145,7 @@ function textState(page: Page) {
   return page.evaluate(() => {
     const host = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!;
     const comp = (window as any).ng.getComponent(host);
-    const surface = host.querySelector('.sh-editor-content')!;
+    const surface = host.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
     return {
       astTypes: comp.engine.document().map((b: any) => b.type),
       astTexts: comp.engine.document().map((b: any) => (b.content ?? []).map((n: any) => n.text ?? '').join('')),

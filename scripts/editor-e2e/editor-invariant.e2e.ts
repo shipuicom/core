@@ -26,7 +26,7 @@ async function readInvariant(page: Page) {
   return page.evaluate(() => {
     const host = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!;
     const comp = (window as any).ng.getComponent(host);
-    const surface = host.querySelector('.sh-editor-content')!;
+    const surface = host.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
     // Read DOM text with soft breaks: a real <br> is a '\n' in the AST; a
     // padding <br> (data-sh-pad) is a zero-width caret shim.
     const domTextOf = (el: Element): string => {
@@ -88,6 +88,14 @@ async function openEditor(page: Page) {
   // The live editor lives under the "Examples" tab of the docs page.
   await page.goto('/editors/examples');
   await awaitHydrated(page, 'sh-editor');
+  // The mobile-sheet demo precedes the main editor — scroll it to the top of
+  // the viewport so mouse-coordinate interactions land inside it.
+  await page.evaluate(() => {
+    document
+      .querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!
+      .scrollIntoView({ block: 'start' });
+  });
+  await page.waitForTimeout(200);
   const surface = page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content').first();
   await surface.waitFor();
   // Place the caret at the start of the intro paragraph.
@@ -115,13 +123,13 @@ test.describe('DOM ≡ AST invariant', () => {
           { type: 'paragraph', content: [{ type: 'text', text: 'world' }] },
         ]);
       });
-      await expect(page.locator('.sh-editor-content > p').first()).toHaveText('hello');
+      await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > p').first()).toHaveText('hello');
     };
 
     // ── Select-all (real keyboard: the range anchors on the surface element,
     // not on text nodes) then paste: the fragment must REPLACE everything. ──
     await reset();
-    await page.locator('.sh-editor-content > p').first().click();
+    await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > p').first().click();
     await page.keyboard.press('ControlOrMeta+a');
     await pastePlain('replaced');
     let ast = await astOf();
@@ -231,7 +239,7 @@ test.describe('DOM ≡ AST invariant', () => {
     await expectInvariant(page, 'after same-kind list paste into a list item');
 
     await load(trailingList);
-    await page.locator('.sh-editor-content > p').first().click();
+    await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > p').first().click();
     await page.keyboard.press('ControlOrMeta+a');
     await pastePlain('gone');
     ast = await astOf();
@@ -251,11 +259,11 @@ test.describe('DOM ≡ AST invariant', () => {
         { type: 'paragraph', content: [{ type: 'text', text: 'below' }] },
       ]);
     });
-    await expect(page.locator('.sh-editor-content > p').first()).toHaveText('above');
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > p').first()).toHaveText('above');
 
     // Click the hr: it becomes the selected block (the visual helper).
-    await page.locator('.sh-editor-content > hr').click();
-    await expect(page.locator('.sh-editor-content > hr.sh-editor-block-selected')).toHaveCount(1);
+    await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > hr').click();
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > hr.sh-editor-block-selected')).toHaveCount(1);
 
     // Copy with the block selected puts the block's HTML on the clipboard.
     const copied = await page.evaluate(() => {
@@ -289,12 +297,12 @@ test.describe('DOM ≡ AST invariant', () => {
         { type: 'paragraph', content: [{ type: 'text', text: 'below' }] },
       ]);
     });
-    await expect(page.locator('.sh-editor-content > hr')).toHaveCount(1);
-    await page.locator('.sh-editor-content > p').first().click();
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > hr')).toHaveCount(1);
+    await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > p').first().click();
     await page.keyboard.press('ControlOrMeta+a');
-    await expect(page.locator('.sh-editor-content > hr.sh-editor-void-in-selection')).toHaveCount(1);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > hr.sh-editor-void-in-selection')).toHaveCount(1);
     await page.keyboard.press('ArrowRight'); // collapse the selection
-    await expect(page.locator('.sh-editor-content > hr.sh-editor-void-in-selection')).toHaveCount(0);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > hr.sh-editor-void-in-selection')).toHaveCount(0);
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
@@ -351,7 +359,7 @@ test.describe('DOM ≡ AST invariant', () => {
         { type: 'code-block', content: [{ type: 'text', text: 'start' }] },
       ]);
     });
-    await expect(page.locator('.sh-editor-content > pre')).toHaveCount(1);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > pre')).toHaveCount(1);
     await caretInCode(5); // end of "start"
 
     const snippet = '\nfunction demo() {\n\tif (ok) {\n\t\treturn 1;\n\t}\n}';
@@ -359,7 +367,7 @@ test.describe('DOM ≡ AST invariant', () => {
 
     // The code block keeps every break and tab verbatim…
     expect(await astTextOf(0)).toBe('start' + snippet);
-    const domCode = await page.locator('.sh-editor-content > pre > code').textContent();
+    const domCode = await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > pre > code').textContent();
     expect(domCode).toBe('start' + snippet);
     // …and the source editor's syntax coloring rides along as style marks.
     const pastedJson = await page.evaluate(() =>
@@ -367,7 +375,7 @@ test.describe('DOM ≡ AST invariant', () => {
     );
     // The CSS parser normalizes the hex to rgb().
     expect(pastedJson).toContain('rgb(86, 156, 214)');
-    await expect(page.locator('.sh-editor-content > pre span[style*="rgb(86, 156, 214)"]').first()).toBeVisible();
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > pre span[style*="rgb(86, 156, 214)"]').first()).toBeVisible();
     await expectInvariant(page, 'after code paste');
 
     // A mid-line copy: the first line's indent is eaten by the selection
@@ -378,7 +386,7 @@ test.describe('DOM ≡ AST invariant', () => {
         { type: 'code-block', content: [{ type: 'text', text: '' }] },
       ]);
     });
-    await expect(page.locator('.sh-editor-content > pre')).toHaveCount(1);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > pre')).toHaveCount(1);
     await caretInCode(0);
     await pasteBoth('if (this.navDebug) {\n\t\t\tconst paths = [];\n\t\t\t\tdeep();\n\t\t}');
     expect(await astTextOf(0)).toBe('if (this.navDebug) {\n\tconst paths = [];\n\t\tdeep();\n}');
@@ -389,7 +397,7 @@ test.describe('DOM ≡ AST invariant', () => {
         { type: 'code-block', content: [{ type: 'text', text: '' }] },
       ]);
     });
-    await expect(page.locator('.sh-editor-content > pre')).toHaveCount(1);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > pre')).toHaveCount(1);
     await caretInCode(0);
     await pasteBoth('a();\r\nb();');
     expect(await astTextOf(0)).toBe('a();\nb();');
@@ -555,7 +563,7 @@ test.describe('DOM ≡ AST invariant', () => {
       const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
     });
-    await page.locator('.sh-editor-content > p').first().click();
+    await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > p').first().click();
     await page.keyboard.type('alpha');
     await page.keyboard.press('Shift+Enter'); // soft break — same paragraph
     await page.keyboard.type('beta');
@@ -563,7 +571,7 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(ast).toHaveLength(1); // ONE block
     expect(ast[0].content.map((n: any) => n.text).join('')).toBe('alpha\nbeta');
     // It renders a real <br>, and the caret sits after "beta" — typing continues there.
-    expect(await page.locator('.sh-editor-content > p').first().locator('br').count()).toBe(1);
+    expect(await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > p').first().locator('br').count()).toBe(1);
     await expectInvariant(page, 'after soft break');
 
     await page.keyboard.press('Enter'); // hard break — new paragraph now
@@ -577,7 +585,7 @@ test.describe('DOM ≡ AST invariant', () => {
     // start of "beta" (immediately after the soft break) and confirm the synced
     // logical offset counts the break as one char (char 6 of "alpha\nbeta").
     const syncedOffset = await page.evaluate(() => {
-      const p = document.querySelector('.sh-editor-content > p')!;
+      const p = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > p')!;
       const betaText = Array.from(p.childNodes).find(
         (n) => n.nodeType === Node.TEXT_NODE && n.textContent === 'beta'
       )!;
@@ -600,7 +608,7 @@ test.describe('DOM ≡ AST invariant', () => {
     await page.keyboard.press('Backspace');
     ast = await astOf();
     expect(ast[0].content.map((n: any) => n.text).join('')).toBe('alphabeta'); // break gone
-    expect(await page.locator('.sh-editor-content > p').first().locator('br').count()).toBe(0);
+    expect(await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > p').first().locator('br').count()).toBe(0);
     await expectInvariant(page, 'after break deletion');
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
@@ -617,7 +625,7 @@ test.describe('DOM ≡ AST invariant', () => {
       const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: 'caption' }] }]);
     });
-    await page.locator('.sh-editor-content > p').first().click();
+    await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > p').first().click();
 
     // Toolbar image button → popover → URL → insert
     await page.locator('sh-editor-toolbar button[aria-label="Insert Image"]').dispatchEvent('mousedown');
@@ -627,8 +635,8 @@ test.describe('DOM ≡ AST invariant', () => {
     await page.keyboard.press('Enter');
 
     // Image inserted, selected (highlight), contextual toolbar shown.
-    await expect(page.locator('.sh-editor-content img')).toHaveCount(1);
-    await expect(page.locator('.sh-editor-content .sh-editor-block-selected')).toHaveCount(1);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content img')).toHaveCount(1);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content .sh-editor-block-selected')).toHaveCount(1);
     const toolbar = page.locator('.sh-editor-contextual-toolbar');
     await expect(toolbar).toBeVisible();
     await expect(toolbar.locator('button')).toHaveCount(4); // 3 modes + delete
@@ -640,7 +648,7 @@ test.describe('DOM ≡ AST invariant', () => {
     const selectionState = () =>
       page.evaluate(() => {
         const sel = window.getSelection();
-        const img = document.querySelector('.sh-editor-content img');
+        const img = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content img');
         const r = sel && sel.rangeCount ? sel.getRangeAt(0) : null;
         return {
           collapsed: r ? r.collapsed : null,
@@ -656,20 +664,20 @@ test.describe('DOM ≡ AST invariant', () => {
     expect(await attrOf()).toMatchObject({ mode: 'float' });
     // The mode change swaps the <img> element; the selection highlight and node
     // selection must survive that patch (not just the initial insert).
-    await expect(page.locator('.sh-editor-content .sh-editor-block-selected')).toHaveCount(1);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content .sh-editor-block-selected')).toHaveCount(1);
     expect(await selectionState()).toMatchObject({ collapsed: false, wrapsImg: true });
 
     // Float carries a size class the size buttons act on (content/theater don't);
     // switching size re-renders the class so the width actually changes.
-    await expect(page.locator('.sh-editor-content img.sh-editor-img-float.sh-editor-img-size-medium')).toHaveCount(1);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content img.sh-editor-img-float.sh-editor-img-size-medium')).toHaveCount(1);
     await toolbar.locator('button').nth(3).click(); // size: small
-    await expect(page.locator('.sh-editor-content img.sh-editor-img-size-small')).toHaveCount(1);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content img.sh-editor-img-size-small')).toHaveCount(1);
     expect(await attrOf()).toMatchObject({ size: 'small' });
 
     // Backspace deletes the selected image (a node selection over a void block
     // fires no beforeinput, so this exercises the keydown delete path).
     await page.keyboard.press('Backspace');
-    await expect(page.locator('.sh-editor-content img')).toHaveCount(0);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content img')).toHaveCount(0);
     await expect(toolbar).toBeHidden();
     await expectInvariant(page, 'after keyboard delete');
 
@@ -677,9 +685,9 @@ test.describe('DOM ≡ AST invariant', () => {
     await page.locator('sh-editor-toolbar button[aria-label="Insert Image"]').dispatchEvent('mousedown');
     await urlInput.fill('https://picsum.photos/201');
     await page.keyboard.press('Enter');
-    await expect(page.locator('.sh-editor-content img')).toHaveCount(1);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content img')).toHaveCount(1);
     await toolbar.locator('button.danger').click();
-    await expect(page.locator('.sh-editor-content img')).toHaveCount(0);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content img')).toHaveCount(0);
     await expect(toolbar).toBeHidden();
     await expectInvariant(page, 'after trash-button delete');
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
@@ -697,7 +705,7 @@ test.describe('DOM ≡ AST invariant', () => {
         { type: 'image', attrs: { src, alt: 'demo', mode: 'content', size: 'auto' }, content: [] },
       ]);
     });
-    const img = page.locator('.sh-editor-content img');
+    const img = page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content img');
     await expect(img).toHaveCount(1);
     await img.click(); // select + focus the surface (so undo reaches the editor)
     const se = page.locator('.sh-editor-resize-se');
@@ -746,7 +754,7 @@ test.describe('DOM ≡ AST invariant', () => {
     // Enable the mid-edge handles + insert a compact, left-aligned image (custom
     // mode, 240px wide) so the right-edge stretch is deterministic.
     await page.evaluate(() => {
-      (window as any).ng.getComponent(document.querySelector('app-editors')!).imageEdgeResize.set(true);
+      (window as any).ng.getComponent(document.querySelector('app-editors-examples')!).imageEdgeResize.set(true);
       const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='400' height='300' fill='#4f8cff'/></svg>";
       const src = 'data:image/svg+xml,' + encodeURIComponent(svg);
       const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
@@ -755,7 +763,7 @@ test.describe('DOM ≡ AST invariant', () => {
         { type: 'image', attrs: { src, alt: 'demo', mode: 'custom', size: 'auto', width: 240 }, content: [] },
       ]);
     });
-    const img = page.locator('.sh-editor-content img');
+    const img = page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content img');
     await expect(img).toHaveCount(1);
     await img.click();
     const e = page.locator('.sh-editor-resize-e'); // right mid-edge (only present when opted in)
@@ -806,7 +814,7 @@ test.describe('DOM ≡ AST invariant', () => {
     const setMode = (mode: string) =>
       page.evaluate((m) => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.updateSelectedImage({ mode: m }), mode);
 
-    await page.locator('.sh-editor-content img').click();
+    await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content img').click();
     const se = page.locator('.sh-editor-resize-se');
     await expect(se).toBeVisible(); // content mode → resizable
     await setMode('theater');
@@ -853,14 +861,14 @@ test.describe('DOM ≡ AST invariant', () => {
       });
       comp.engine.insertImage({ src: 'https://picsum.photos/203', alt: '', mode: 'content', size: 'auto' });
     });
-    await expect(page.locator('.sh-editor-content img')).toHaveCount(1);
-    await expect(page.locator('.sh-editor-content .sh-editor-block-selected')).toHaveCount(1);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content img')).toHaveCount(1);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content .sh-editor-block-selected')).toHaveCount(1);
 
     // Undo removes the image; the highlight must not transfer to the paragraph
     // the image index now resolves to.
     await page.keyboard.press('ControlOrMeta+z');
-    await expect(page.locator('.sh-editor-content img')).toHaveCount(0);
-    await expect(page.locator('.sh-editor-content .sh-editor-block-selected')).toHaveCount(0);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content img')).toHaveCount(0);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content .sh-editor-block-selected')).toHaveCount(0);
     expect(await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.selectedBlock())).toBeNull();
     await expectInvariant(page, 'after undo of image insert');
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
@@ -885,12 +893,12 @@ test.describe('DOM ≡ AST invariant', () => {
 
     // Caret at the end of "above" (block 0), then ArrowRight → the image (block 1)
     // becomes the selected block rather than dropping a caret before it.
-    await page.locator('.sh-editor-content > p').first().click();
+    await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > p').first().click();
     await page.keyboard.press('End');
     expect(await selectedBlock()).toBeNull();
     await page.keyboard.press('ArrowRight');
     expect(await selectedBlock()).toBe(1);
-    await expect(page.locator('.sh-editor-content .sh-editor-block-selected')).toHaveCount(1);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content .sh-editor-block-selected')).toHaveCount(1);
 
     // A caret in the MIDDLE of the block above is not hijacked — ArrowRight there
     // just moves the caret. Seat the caret directly (offset 2 of "above") so the
@@ -978,7 +986,7 @@ test.describe('DOM ≡ AST invariant', () => {
       const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       comp.engine.reset([{ type: 'paragraph', content: [{ type: 'text', text: '' }] }]);
     });
-    await page.locator('.sh-editor-content > p').first().click();
+    await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > p').first().click();
 
     // "/" opens the menu with every behavior-declared command (8 built-ins +
     // the demo page's two custom component-block widgets).
@@ -995,7 +1003,7 @@ test.describe('DOM ≡ AST invariant', () => {
     // Enter applies the highlighted command and strips the "/quote" trigger.
     await page.keyboard.press('Enter');
     await expect(menu).toBeHidden();
-    await expect(page.locator('.sh-editor-content > blockquote')).toHaveCount(1);
+    await expect(page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > blockquote')).toHaveCount(1);
     expect(await blockText()).toBe('');
     await expectInvariant(page, 'after slash convert to quote');
 
@@ -1020,7 +1028,7 @@ test.describe('DOM ≡ AST invariant', () => {
         { type: 'info-callout', content: [{ type: 'text', text: 'callout beside the float, not under it' }] },
       ]);
     });
-    await page.waitForSelector('.sh-editor-content img.sh-editor-img-float');
+    await page.waitForSelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content img.sh-editor-img-float');
 
     // Each block container establishes a BFC, so its box starts at/after the
     // floated image's right edge instead of its border/background sliding under.
@@ -1053,7 +1061,7 @@ test.describe('DOM ≡ AST invariant', () => {
     await expect(editor).not.toHaveClass(/(^|\s)document(\s|$)/);
     expect(await container.evaluate((el) => getComputedStyle(el).maxWidth)).toBe('none'); // base: full width
 
-    await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('app-editors')!).documentVariant.set(true));
+    await page.evaluate(() => (window as any).ng.getComponent(document.querySelector('app-editors-examples')!).documentVariant.set(true));
 
     await expect(editor).toHaveClass(/(^|\s)document(\s|$)/);
     // The container becomes a width-constrained, centred page (auto side margins).
@@ -1112,8 +1120,8 @@ test.describe('DOM ≡ AST invariant', () => {
   test('style toolbar: real-click opens controls, applies to + prefills from the selection', async ({ page }) => {
     const { errors } = await openEditor(page);
     const editor = page.locator('sh-editor:not(sh-editor-sheet sh-editor)').first();
-    const fontSelect = page.locator('.sh-editor-style-font');
-    const sizeSelect = page.locator('.sh-editor-style-size');
+    const fontSelect = page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-style-font');
+    const sizeSelect = page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-style-size');
 
     // Reset to a known single paragraph. Reset is async, so wait for the render.
     const resetRow = async () => {
@@ -1178,7 +1186,7 @@ test.describe('DOM ≡ AST invariant', () => {
     // ── Regression: a plain toolbar mark button still applies to the selection
     // after removing the blanket mousedown preventDefault. ──
     await selectStyleWord();
-    await page.locator('sh-editor-toolbar button[aria-label="Bold"]').click();
+    await page.locator('sh-editor:not(sh-editor-sheet sh-editor) sh-editor-toolbar button[aria-label="Bold"]').click();
     await expect(editor.locator('.sh-editor-content strong')).toHaveCount(1);
 
     // ── Bug 2: the text-color swatch prefills from the selection. Applying a
@@ -1286,6 +1294,7 @@ test.describe('DOM ≡ AST invariant', () => {
 
   test('toolbar actions dispatch from the keyboard (Enter and Space)', async ({ page }) => {
     const { errors } = await openEditor(page);
+    await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > p').first().click();
     await page.keyboard.press('ControlOrMeta+a');
     const isBold = () =>
       page.evaluate(() => {
@@ -1293,7 +1302,7 @@ test.describe('DOM ≡ AST invariant', () => {
         return comp.engine.isActive('bold', {});
       });
     expect(await isBold()).toBe(false);
-    const bold = page.locator('button[aria-label="Bold"]').first();
+    const bold = page.locator('sh-editor:not(sh-editor-sheet sh-editor) button[aria-label="Bold"]').first();
     await bold.focus();
     await page.keyboard.press('Enter');
     expect(await isBold()).toBe(true);

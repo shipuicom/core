@@ -53,7 +53,7 @@ function mountedState(page: Page) {
   return page.evaluate(() => {
     const host = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!;
     const comp = (window as any).ng.getComponent(host);
-    const surface = host.querySelector('.sh-editor-content')! as HTMLElement;
+    const surface = host.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')! as HTMLElement;
     const style = getComputedStyle(surface);
     const texts = Array.from(surface.children).map((el) => el.textContent ?? '');
     return {
@@ -75,7 +75,7 @@ async function expectWindowInvariant(page: Page, context: string) {
         page.evaluate(() => {
           const host = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!;
           const comp = (window as any).ng.getComponent(host);
-          const surface = host.querySelector('.sh-editor-content')!;
+          const surface = host.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
           const domTexts = Array.from(surface.children).map((el) => el.textContent ?? '');
           if (!domTexts.length) return 'no blocks mounted';
           const m = /^Block (\d+)\b/.exec(domTexts[0]);
@@ -276,7 +276,7 @@ test.describe('viewport virtualization', () => {
     const { errors } = await openEditor(page);
     await loadBigDoc(page, BLOCKS);
     await scrollEditorTo(page, 0);
-    await page.locator('.sh-editor-content > p').first().click();
+    await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > p').first().click();
 
     await page.keyboard.press('ControlOrMeta+a');
     const selection = await page.evaluate(() => {

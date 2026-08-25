@@ -23,6 +23,14 @@ async function openEditor(page: Page) {
   });
   await page.goto('/editors/examples');
   await awaitHydrated(page, 'sh-editor');
+  // The mobile-sheet demo precedes the main editor — scroll it to the top of
+  // the viewport so mouse-coordinate interactions land inside it.
+  await page.evaluate(() => {
+    document
+      .querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!
+      .scrollIntoView({ block: 'start' });
+  });
+  await page.waitForTimeout(200);
   const surface = page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content').first();
   await surface.waitFor();
   return { surface, errors };
@@ -209,7 +217,7 @@ test.describe('component block replacement', () => {
     return page.evaluate(() => {
       const host = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!;
       const comp = (window as any).ng.getComponent(host);
-      const surface = host.querySelector('.sh-editor-content')!;
+      const surface = host.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
       const tagToType: Record<string, string> = {
         H1: 'heading', H2: 'heading', H3: 'heading', P: 'paragraph',
         UL: 'bullet-list', OL: 'ordered-list', BLOCKQUOTE: 'quote', HR: 'hr', PRE: 'code-block',
