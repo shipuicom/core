@@ -101,7 +101,7 @@ export class HlsEngine implements ShipVideoEngine {
 
   // legacy MPEG-TS segments: transmuxed to fMP4 via the lazily loaded wasm module
   #tsMode = false;
-  #transmuxer: TransmuxerLike | null = null;
+  #transmuxer: Promise<TransmuxerLike> | null = null;
   #lastTsCc = -1;
   #audioRenditions: HlsRendition[] = [];
   #currentAudioRendition = -1;
@@ -324,9 +324,16 @@ export class HlsEngine implements ShipVideoEngine {
       if (this.#tsMode) {
         this.#audioTrack = null;
         this.#store.patch({ audioTracks: [], currentAudioTrack: -1 });
-        const { TsTransmuxer } = await import('@ship-ui/core/ship-video/engine/transmux');
-        this.#transmuxer = await TsTransmuxer.create();
-        if (this.#destroyed) return;
+        // Kick off the wasm compile but do NOT await it: the playlist and
+        // segment fetches proceed while the module compiles, and the first
+        // transmux awaits the promise. Blocking here serialized startup
+        // behind wasm compilation — a visible stall on slow devices.
+        this.#transmuxer = import('@ship-ui/core/ship-video/engine/transmux').then(({ TsTransmuxer }) =>
+          TsTransmuxer.create()
+        );
+        // Guard the stored promise against an unhandled-rejection warning;
+        // the segment path re-awaits it and surfaces the real error.
+        this.#transmuxer.catch(() => {});
       } else {
         this.#setupSourceBuffers();
       }
@@ -699,11 +706,12 @@ export class HlsEngine implements ShipVideoEngine {
 
   /** Fetch, transmux (TS → fMP4) and append one legacy MPEG-TS segment. */
   async #loadAndTransmux(track: StreamTrack, segment: HlsSegment) {
-    const transmuxer = this.#transmuxer;
-    if (!transmuxer) return;
+    if (!this.#transmuxer) return;
 
     try {
-      const raw = await this.#fetchSegment(track, segment);
+      // The segment downloads while the wasm module compiles; whichever
+      // finishes last gates the transmux.
+      const [raw, transmuxer] = await Promise.all([this.#fetchSegment(track, segment), this.#transmuxer]);
       if (this.#destroyed) return;
 
       if (segment.cc !== this.#lastTsCc && this.#lastTsCc !== -1) transmuxer.reset();
