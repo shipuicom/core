@@ -15,7 +15,7 @@
   server relay that assigns a total order.
 </p>
 
-<app-previewer path="/editors" title="Live demo — two windows, one document" class="no-space">
+<app-previewer path="/editors/editors-collab" title="Live demo — two windows, one document" class="no-space">
   <div class="collab-demo">
     <div class="collab-guide">
       <strong>Try it:</strong>
@@ -56,23 +56,13 @@
 
 <h4>Custom transports</h4>
 <p>
-  Any ordered-per-sender message pipe works. A minimal WebSocket transport:
+  Any ordered-per-sender message pipe implements <code>CollabTransport</code>. For multi-peer sessions use the
+  built-in <code>WebSocketTransport</code> against a relay that fans messages out in arrival order — that
+  serialization is the total order concurrent edits rebase against. A ~40-line reference relay ships in
+  <code>scripts/collab-relay.ts</code> (<code>bun scripts/collab-relay.ts</code>):
 </p>
-<pre><code>class WsTransport implements CollabTransport &#123;
-  #ws = new WebSocket('wss://example.dev/doc/42');
-  connected = signal(false);
-  constructor() &#123;
-    this.#ws.onopen = () =&gt; this.connected.set(true);
-    this.#ws.onclose = () =&gt; this.connected.set(false);
-  &#125;
-  send(message: CollabMessage) &#123; this.#ws.send(JSON.stringify(message)); &#125;
-  subscribe(cb: (m: CollabMessage) =&gt; void) &#123;
-    const h = (e: MessageEvent) =&gt; cb(JSON.parse(e.data));
-    this.#ws.addEventListener('message', h);
-    return () =&gt; this.#ws.removeEventListener('message', h);
-  &#125;
-  destroy() &#123; this.#ws.close(); &#125;
-&#125;</code></pre>
+<pre><code>const transport = new WebSocketTransport('ws://localhost:8787/my-doc');
+collab.attach(editor.engine, &#123; transport, presence: &#123; name: 'Ada', color: '#e0533d' &#125; &#125;);</code></pre>
 
 <p>
   Wire-up is the same regardless of transport:

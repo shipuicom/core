@@ -111,6 +111,11 @@
                 "glob": "onig.wasm",
                 "input": "projects/ship-ui/ship-code/vendor/vscode-oniguruma",
                 "output": "/assets/ship-code/"
+              },
+              {
+                "glob": "editors/*.@(ts|html|scss)",
+                "input": "projects/design-system/src/app/ship",
+                "output": "/assets/examples/"
               }
             ],
             "stylePreprocessorOptions": {

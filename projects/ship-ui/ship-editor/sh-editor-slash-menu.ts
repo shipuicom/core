@@ -61,18 +61,31 @@ export class ShipEditorSlashMenu {
     return groups;
   });
 
-  constructor() {
+  #highlightedCmd: SlashCommand | null = null;
 
+  constructor() {
+    // A re-filter (each keystroke narrows the list) keeps the highlight on
+    // the same command when it survives, instead of snapping back to the
+    // first entry — arrowing down and typing on must not race the filter.
     effect(() => {
-      this.filtered();
-      this.highlighted.set(0);
+      const list = this.filtered();
+      const kept = this.#highlightedCmd ? list.indexOf(this.#highlightedCmd) : -1;
+      if (kept >= 0) {
+        this.highlighted.set(kept);
+      } else {
+        this.highlighted.set(0);
+        this.#highlightedCmd = null;
+      }
     });
 
     // A dismissal is scoped to one slash session: once the state clears (the
     // '/' deleted, a command run, the caret moved away), the next '/' with
     // the same query — especially the bare-'/' empty query — opens again.
     effect(() => {
-      if (this.engine.slashState() === null) this.#dismissedQuery.set(null);
+      if (this.engine.slashState() === null) {
+        this.#dismissedQuery.set(null);
+        this.#highlightedCmd = null;
+      }
     });
 
     effect(() => {
@@ -84,7 +97,10 @@ export class ShipEditorSlashMenu {
 
   move(delta: number) {
     const n = this.filtered().length;
-    if (n) this.highlighted.set((this.highlighted() + delta + n) % n);
+    if (!n) return;
+    const next = (this.highlighted() + delta + n) % n;
+    this.highlighted.set(next);
+    this.#highlightedCmd = this.filtered()[next] ?? null;
   }
 
   confirm() {
