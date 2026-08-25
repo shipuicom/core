@@ -63,6 +63,9 @@ interface PeerPaint {
       inset: 0;
       pointer-events: none;
       overflow: hidden;
+      /* Sit above the editor's own stacking contexts (blocks, images,
+         selection paint) — the overlay is visual-only and click-through. */
+      z-index: 30;
     }
 
     .remote-selection {
@@ -74,6 +77,7 @@ interface PeerPaint {
     .remote-caret {
       position: absolute;
       width: 2px;
+      z-index: 2;
 
       .remote-label {
         position: absolute;
