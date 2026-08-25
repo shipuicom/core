@@ -96,7 +96,15 @@
     "skip-forward-fill",
     "arrow-square-out",
     "screencast",
-    "airplay"
+    "airplay",
+    "tray-arrow-down",
+    "flask",
+    "rocket-launch",
+    "squares-four",
+    "folder",
+    "chart-bar",
+    "gear",
+    "circle"
   ],
   "exports": {
     ".": {
