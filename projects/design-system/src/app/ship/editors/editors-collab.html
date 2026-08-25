@@ -1,103 +1,113 @@
-<h3>Collaborative editing</h3>
+<div class="collab-doc">
+  <section>
+    <h4>Overview</h4>
+    <p>
+      <code>&#64;ship-ui/core/ship-editor-collab</code> turns any <code>sh-editor</code> into a shared document. It
+      builds on the editor's operation model: every edit is a serializable op, concurrent edits converge through the
+      fuzz-verified <code>transformOp</code>/<code>rebaseOp</code> algebra, and remote edits never enter your local
+      undo history.
+    </p>
+    <ul>
+      <li><code>ShipEditorCollab</code> — the session: broadcasts your edits, rebases and applies everyone else's.</li>
+      <li><code>CollabTransport</code> — any message pipe; <code>BroadcastChannelTransport</code> (same-origin windows,
+        no server) and <code>WebSocketTransport</code> (server relay) ship built in.</li>
+      <li><code>&lt;sh-editor-remote-cursors&gt;</code> — peer carets, selections and name tags.</li>
+    </ul>
+  </section>
 
-<p>
-  <code>&#64;ship-ui/core/ship-editor-collab</code> turns any <code>sh-editor</code> into a shared document. It builds
-  on the editor's operation model: every edit is a serializable op, concurrent edits converge through the fuzz-verified
-  <code>transformOp</code>/<code>rebaseOp</code> algebra, and remote edits never enter your local undo history.
-</p>
+  <section>
+    <h4>Quick start</h4>
+    <p>
+      The Typescript tab below is the <em>complete</em> integration: provide the service, attach it to the editor's
+      engine with a transport, and place the cursor overlay next to the editor.
+    </p>
+    <app-previewer
+      path="/editors/examples/minimal-collab/minimal-collab"
+      title="Minimum viable collab"
+      defaultView="typescript"
+      class="no-space">
+      <minimal-collab-example class="example" />
+    </app-previewer>
+  </section>
 
-<p>Three pieces, one wiring:</p>
-<ul>
-  <li><code>ShipEditorCollab</code> — the session: broadcasts your edits, rebases and applies everyone else's.</li>
-  <li><code>CollabTransport</code> — any message pipe; <code>BroadcastChannelTransport</code> (same-origin windows, no
-    server) and <code>WebSocketTransport</code> (server relay) ship built in.</li>
-  <li><code>&lt;sh-editor-remote-cursors&gt;</code> — peer carets, selections and name tags.</li>
-</ul>
+  <section>
+    <h4>Try it live</h4>
+    <p>
+      The same wiring plus presence badges, a chaos mode and a convergence checksum:
+    </p>
+    <app-previewer path="/editors/editors-collab" title="Live demo — two windows, one document" class="no-space">
+      <div class="collab-demo">
+        <div class="collab-guide">
+          <strong>Try it:</strong>
+          <ol>
+            <li>Click <em>Open second window</em> and place the windows side by side.</li>
+            <li>Type in either window — edits and the colored remote caret appear live in the other.</li>
+            <li>Flip on <em>Fuzz edits</em> here, then keep typing in the <em>other</em> window while random edits
+              storm this one. When the checksums in both windows match, the documents converged.</li>
+          </ol>
+        </div>
 
-<app-previewer
-  path="/editors/examples/minimal-collab/minimal-collab"
-  title="Minimum viable collab"
-  defaultView="typescript"
-  class="no-space">
-  <minimal-collab-example class="example" />
-</app-previewer>
+        <div class="collab-toolbar">
+          <button shButton class="primary raised small" (click)="openWindow()">Open second window</button>
+          <sh-toggle class="primary" [checked]="fuzzing()" (checkedChange)="toggleFuzz($event)" label="Fuzz edits">
+            Fuzz edits
+          </sh-toggle>
+          <span class="collab-badge" [style.border-color]="me.color">
+            <span class="dot" [style.background]="me.color"></span>
+            You: {{ me.name }}
+          </span>
+          @for (peer of peerList(); track peer.clientId) {
+            <span class="collab-badge">
+              <span class="dot" [style.background]="peer.color"></span>
+              {{ peer.name }}
+            </span>
+          }
+          <span class="collab-badge checksum">doc {{ checksum() }}@if (fuzzing()) { · fuzz ops {{ fuzzOps() }}}</span>
+        </div>
 
-<p>
-  That is the whole integration — the Typescript tab above is the complete component. The demo below adds presence
-  badges, a chaos mode and a convergence checksum on top of exactly this wiring.
-</p>
+        <div class="collab-editor-wrap">
+          <sh-editor #collabEditor [value]="initialHtml" format="html" [multiCursor]="false" />
+          @if (editor()) {
+            <sh-editor-remote-cursors [engine]="editor()!.engine" [collab]="collab" />
+          }
+        </div>
+      </div>
+    </app-previewer>
+  </section>
 
-<app-previewer path="/editors/editors-collab" title="Live demo — two windows, one document" class="no-space">
-  <div class="collab-demo">
-    <div class="collab-guide">
-      <strong>Try it:</strong>
-      <ol>
-        <li>Click <em>Open second window</em> and place the windows side by side.</li>
-        <li>Type in either window — edits and the colored remote caret appear live in the other.</li>
-        <li>Flip on <em>Fuzz edits</em> here, then keep typing in the <em>other</em> window while random edits storm
-          this one. When the checksums in both windows match, the documents converged.</li>
-      </ol>
+  <section>
+    <h4>Going cross-machine</h4>
+    <p>
+      <code>BroadcastChannelTransport</code> only reaches windows of the same browser. For real multi-user sessions
+      swap in <code>WebSocketTransport</code>:
+    </p>
+    <app-highlight lang="ts" [content]="WS_TRANSPORT" />
+
+    <p>
+      Point it at any relay that fans each message out to the other sockets in arrival order — that ordering is what
+      makes many peers converge. The reference relay below ships in the repo (~40 lines); copy it as-is and run it:
+    </p>
+    <app-highlight lang="shell" [content]="RELAY_CMD" />
+    <div class="relay-source">
+      <app-highlight-file lang="ts" path="/scripts/collab-relay" />
     </div>
+  </section>
 
-    <div class="collab-toolbar">
-      <button shButton class="primary raised small" (click)="openWindow()">Open second window</button>
-      <sh-toggle class="primary" [checked]="fuzzing()" (checkedChange)="toggleFuzz($event)" label="Fuzz edits">
-        Fuzz edits
-      </sh-toggle>
-      <span class="collab-badge" [style.border-color]="me.color">
-        <span class="dot" [style.background]="me.color"></span>
-        You: {{ me.name }}
-      </span>
-      @for (peer of peerList(); track peer.clientId) {
-        <span class="collab-badge">
-          <span class="dot" [style.background]="peer.color"></span>
-          {{ peer.name }}
-        </span>
-      }
-      <span class="collab-badge checksum">doc {{ checksum() }}@if (fuzzing()) { · fuzz ops {{ fuzzOps() }}}</span>
-    </div>
+  <section>
+    <h4>Writing your own transport</h4>
+    <p>
+      A transport is four members — anything that delivers messages in order per sender qualifies (WebRTC data
+      channels, SSE + POST, a message broker):
+    </p>
+    <app-highlight lang="ts" [content]="CUSTOM_TRANSPORT" />
+  </section>
 
-    <div class="collab-editor-wrap">
-      <sh-editor #collabEditor [value]="initialHtml" format="html" [multiCursor]="false" />
-      @if (editor()) {
-        <sh-editor-remote-cursors [engine]="editor()!.engine" [collab]="collab" />
-      }
-    </div>
-  </div>
-</app-previewer>
-
-<h4>Going cross-machine</h4>
-
-<p>
-  <code>BroadcastChannelTransport</code> only reaches windows of the same browser. For real multi-user sessions swap in
-  <code>WebSocketTransport</code> and run any relay that fans each message out to the other sockets in arrival order —
-  that ordering is what makes many peers converge:
-</p>
-
-<app-highlight lang="ts" [content]="WS_TRANSPORT" />
-
-<p>
-  The relay itself is ~40 lines — copy it as-is and run it with
-  <code>bun collab-relay.ts</code>. This is the full, current source of the reference relay that ships in the repo:
-</p>
-
-<app-highlight lang="shell" [content]="RELAY_CMD" />
-
-<div class="relay-source">
-  <app-highlight-file lang="ts" path="/scripts/collab-relay" />
+  <section>
+    <h4>Behavior guarantees</h4>
+    <p class="collab-note">
+      Undo only ever removes <em>your</em> edits; late joiners receive a snapshot from an existing peer; and the op
+      algebra (<code>transformOp</code>, <code>rebaseOp</code>, <code>applyOp</code>) is exported for integrations
+      that need to rebase server-side.
+    </p>
+  </section>
 </div>
-
-<h4>Writing your own transport</h4>
-
-<p>
-  A transport is four members — anything that delivers messages in order per sender qualifies (WebRTC data channels,
-  SSE + POST, a message broker):
-</p>
-
-<app-highlight lang="ts" [content]="CUSTOM_TRANSPORT" />
-
-<p class="collab-note">
-  Good to know: undo only ever removes <em>your</em> edits; late joiners receive a snapshot from an existing peer;
-  and the op algebra (<code>transformOp</code>, <code>rebaseOp</code>, <code>applyOp</code>) is exported for
-  integrations that need to rebase server-side.
-</p>
