@@ -1305,9 +1305,10 @@ test.describe('DOM ≡ AST invariant', () => {
     const bold = page.locator('sh-editor:not(sh-editor-sheet sh-editor) button[aria-label="Bold"]').first();
     await bold.focus();
     await page.keyboard.press('Enter');
-    expect(await isBold()).toBe(true);
+    // CI is slower than the sync read — the toggle lands a tick after the key.
+    await expect.poll(isBold).toBe(true);
     await page.keyboard.press(' ');
-    expect(await isBold()).toBe(false);
+    await expect.poll(isBold).toBe(false);
     await expectInvariant(page, 'after keyboard toolbar toggles');
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
