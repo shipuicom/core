@@ -17,6 +17,7 @@ import {
 } from '@ship-ui/core/ship-editor-collab';
 import { ShipToggle } from '@ship-ui/core/ship-toggle';
 import { Highlight } from '../../previewer/highlight/highlight';
+import { HighlightFile } from '../../previewer/highlight-file/highlight-file';
 import { Previewer } from '../../previewer/previewer';
 import { MinimalCollab } from './examples/minimal-collab/minimal-collab';
 
@@ -33,7 +34,7 @@ function hash(text: string): string {
 
 @Component({
   selector: 'app-editors-collab',
-  imports: [Previewer, Highlight, ShipEditor, ShEditorRemoteCursors, ShipButton, ShipToggle, MinimalCollab],
+  imports: [Previewer, Highlight, HighlightFile, ShipEditor, ShEditorRemoteCursors, ShipButton, ShipToggle, MinimalCollab],
   providers: [ShipEditorCollab],
   templateUrl: './editors-collab.html',
   styleUrl: './editors-collab.scss',
@@ -62,14 +63,26 @@ export default class EditorsCollab implements OnDestroy {
   });
   peerList = computed(() => Array.from(this.collab.peers().values()));
 
-  WS_TRANSPORT = `// One line to go cross-machine — point it at a relay that
-// fans messages out in arrival order (total order = convergence).
-const transport = new WebSocketTransport('ws://localhost:8787/my-doc');
+  WS_TRANSPORT = `// editor.engine comes from the ShipEditor component instance —
+// grab it with a viewChild on the <sh-editor #editor /> in your template.
+@Component({ providers: [ShipEditorCollab], /* … */ })
+export class DocPage {
+  collab = inject(ShipEditorCollab);
+  editor = viewChild.required<ShipEditor>('editor');
 
-collab.attach(editor.engine, {
-  transport,
-  presence: { name: 'Ada', color: '#e0533d' },
-});`;
+  constructor() {
+    afterNextRender(() => {
+      // One line to go cross-machine — point it at a relay that fans
+      // messages out in arrival order (total order = convergence).
+      const transport = new WebSocketTransport('ws://localhost:8787/my-doc');
+
+      this.collab.attach(this.editor().engine, {
+        transport,
+        presence: { name: 'Ada', color: '#e0533d' },
+      });
+    });
+  }
+}`;
 
   RELAY_CMD = `bun scripts/collab-relay.ts   # reference relay, ~40 lines`;
 

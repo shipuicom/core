@@ -116,6 +116,11 @@
                 "glob": "editors/*.@(ts|html|scss)",
                 "input": "projects/design-system/src/app/ship",
                 "output": "/assets/examples/"
+              },
+              {
+                "glob": "collab-relay.ts",
+                "input": "scripts",
+                "output": "/assets/examples/scripts/"
               }
             ],
             "stylePreprocessorOptions": {

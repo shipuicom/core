@@ -75,7 +75,17 @@
 </p>
 
 <app-highlight lang="ts" [content]="WS_TRANSPORT" />
+
+<p>
+  The relay itself is ~40 lines — copy it as-is and run it with
+  <code>bun collab-relay.ts</code>. This is the full, current source of the reference relay that ships in the repo:
+</p>
+
 <app-highlight lang="shell" [content]="RELAY_CMD" />
+
+<div class="relay-source">
+  <app-highlight-file lang="ts" path="/scripts/collab-relay" />
+</div>
 
 <h4>Writing your own transport</h4>
 
