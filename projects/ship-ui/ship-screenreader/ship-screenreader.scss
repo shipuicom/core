@@ -1,0 +1,110 @@
+@use 'helpers' as *;
+
+$shipScreenreader: true !default;
+
+@if $shipScreenreader == true {
+  :host {
+    position: fixed;
+    z-index: 9999;
+    inset: auto p2r(16) p2r(16) auto;
+    font-family: inherit;
+    font-size: p2r(13);
+
+    &.position-bottom-left {
+      inset: auto auto p2r(16) p2r(16);
+    }
+
+    &.position-top-right {
+      inset: p2r(16) p2r(16) auto auto;
+    }
+
+    &.position-top-left {
+      inset: p2r(16) auto auto p2r(16);
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      width: p2r(320);
+      max-height: p2r(280);
+      background: var(--base-1);
+      border: 1px solid var(--base-4);
+      border-radius: var(--shape-2);
+      box-shadow: 0 p2r(8) p2r(24) rgb(0 0 0 / 20%);
+      overflow: hidden;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: p2r(6);
+      padding: p2r(8);
+      border-bottom: 1px solid var(--base-4);
+      background: var(--base-2);
+
+      .title {
+        flex: 1;
+        font-weight: bold;
+        color: var(--base-11);
+      }
+
+      button {
+        font: inherit;
+        color: var(--base-11);
+        background: var(--base-1);
+        border: 1px solid var(--base-5);
+        border-radius: var(--shape-1);
+        padding: p2r(2) p2r(8);
+        cursor: pointer;
+
+        &:hover:not(:disabled) {
+          background: var(--base-3);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: default;
+        }
+      }
+    }
+
+    .transcript {
+      overflow-y: auto;
+      padding: p2r(8);
+      display: flex;
+      flex-direction: column;
+      gap: p2r(4);
+    }
+
+    .utterance {
+      display: flex;
+      align-items: baseline;
+      gap: p2r(6);
+
+      .badge {
+        flex-shrink: 0;
+        font-size: p2r(10);
+        text-transform: uppercase;
+        color: var(--base-9);
+        background: var(--base-3);
+        border-radius: var(--shape-1);
+        padding: 0 p2r(4);
+      }
+
+      &[data-source='live-assertive'] .badge {
+        color: var(--error-11, var(--base-11));
+        background: var(--error-3, var(--base-3));
+      }
+
+      .text {
+        color: var(--base-12);
+      }
+    }
+
+    .empty {
+      color: var(--base-8);
+      font-style: italic;
+      padding: p2r(8);
+    }
+  }
+}

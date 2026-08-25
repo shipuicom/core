@@ -1,0 +1,34 @@
+<app-previewer defaultView="markup" path="/screenreaders/examples/basic-screenreader/basic-screenreader" title="Basic">
+  <basic-screenreader-example class="example"></basic-screenreader-example>
+</app-previewer>
+
+<p>
+  The <code>sh-screenreader</code> component is a development tool that simulates what assistive technology would
+  announce, following the WCAG/ARIA accessible-name, role and state computation. It transcribes focus moves and
+  <code>aria-live</code> region changes into a floating panel, and can optionally voice them through the browser's
+  SpeechSynthesis API.
+</p>
+
+<p>
+  Announcements follow the NVDA/VoiceOver phrasing order: <em>name, role, states, value, level or position</em> — for
+  example <code>Accept terms, checkbox, checked</code> or <code>Overview, heading, level 2</code>. The panel removes
+  itself from the accessibility tree (<code>aria-hidden</code>), so it never announces itself.
+</p>
+
+<p>
+  For automation — e2e tests, devtools debugging, or AI-agent workflows — the service exposes a global
+  <code>window.shipScreenreader</code> handle: <code>say(selector)</code> returns the announcement for an element,
+  <code>expect(selector, phrase)</code> asserts it, <code>focus(selector)</code> focuses and announces, and
+  <code>enable()</code>/<code>log()</code>/<code>clear()</code> drive the transcript. No Angular access required.
+</p>
+
+<p>
+  The name/role computation is verified in CI against Chromium's real accessibility tree (via CDP) and against a
+  curated subset of the W3C web-platform-tests accname suite; the remaining gaps (CSS generated content,
+  <code>text-transform</code>, embedded controls in labels) are documented in the test fixtures.
+</p>
+
+<p>
+  It is an approximation for quick feedback loops while building accessible components — not a substitute for testing
+  with real screen readers like NVDA, JAWS or VoiceOver.
+</p>

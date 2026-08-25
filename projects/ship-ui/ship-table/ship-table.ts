@@ -659,7 +659,7 @@ type ScrollState = -1 | 0 | 1;
     </div>
 
     @if (loading()) {
-      <sh-progress-bar class="indeterminate primary" />
+      <sh-progress-bar class="indeterminate primary" label="Loading table data" />
     }
 
     <ng-content select="sh-table-content" />

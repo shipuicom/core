@@ -3,7 +3,7 @@
   {{ collapsed() ? 'Expand' : 'Collapse' }}
 </button>
 
-<sh-list class="primary" listRole="listbox" [(value)]="active" [class.collapsed]="collapsed()">
+<sh-list class="primary" listRole="listbox" label="Navigation" [(value)]="active" [class.collapsed]="collapsed()">
   <h3 title>Workspace</h3>
   <a value="dashboard">
     <sh-icon>squares-four</sh-icon>

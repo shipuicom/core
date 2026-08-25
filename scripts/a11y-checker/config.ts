@@ -158,7 +158,8 @@ export const COMPONENT_A11Y_MAP: Record<string, { url: string; rules: AriaRules[
     ]
   },
   'dialogs': {
-    url: 'http://localhost:4205/dialogs',
+    // sh-dialog hosts only exist in the examples-tab templates.
+    url: 'http://localhost:4205/dialogs/examples',
     rules: [
       {
         selector: 'sh-dialog',
@@ -303,7 +304,8 @@ export const COMPONENT_A11Y_MAP: Record<string, { url: string; rules: AriaRules[
     ]
   },
   'cards': {
-    url: 'http://localhost:4205/cards',
+    // sh-toggle-card demos only exist on the examples tab.
+    url: 'http://localhost:4205/cards/examples',
     rules: [
       {
         selector: 'sh-card',

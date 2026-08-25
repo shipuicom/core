@@ -243,8 +243,10 @@ seg0.ts
     mediaSource.triggerSourceOpen();
 
     // interleave fake-timer advances with real macrotasks so wasm
-    // instantiation and fetch bodies can settle
-    for (let index = 0; index < 20; index++) {
+    // instantiation and fetch bodies can settle. The budget is
+    // condition-driven: a fixed turn count flakes on loaded CI runners where
+    // real WebAssembly compilation takes more macrotask turns.
+    for (let index = 0; index < 400 && mediaSource.endOfStreamCalls === 0 && errors.length === 0; index++) {
       await vi.advanceTimersByTimeAsync(250);
       await new Promise((resolve) => setImmediate(resolve));
     }

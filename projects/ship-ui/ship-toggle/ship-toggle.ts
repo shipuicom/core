@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
-import { contentProjectionSignal } from '@ship-ui/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, HostListener, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
+import { contentProjectionSignal, generateUniqueId } from '@ship-ui/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
@@ -22,6 +22,8 @@ import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
         type="checkbox"
         class="internal-input"
         [attr.disabled]="disabled() ? '' : null"
+        [attr.aria-label]="label() || null"
+        [attr.aria-labelledby]="label() ? null : labelId"
         [checked]="checked()"
         (change)="onInternalInputChange($event)" />
     }
@@ -39,14 +41,36 @@ export class ShipToggle {
   #elementRef = inject(ElementRef);
   #keybindings = inject(ShipA11yKeybindingsService);
 
+  // The internal input takes its accessible name from the host subtree
+  // (projected label text), the same way a wrapping <label> would — otherwise
+  // screen readers announce a nameless switch. Reuses a consumer-set host id.
+  labelId = (() => {
+    const host = this.#elementRef.nativeElement as HTMLElement;
+    if (!host.id) host.id = `sh-toggle-${generateUniqueId()}`;
+    return host.id;
+  })();
+
   internalInput = viewChild<ElementRef<HTMLInputElement>>('internalInput');
   projectedInputs = contentProjectionSignal<HTMLInputElement>('input:not(.internal-input)', {
     childList: true,
     attributes: true,
   });
 
+  // Projected inputs (ngModel/forms usage) need the same labelling as the
+  // internal one — stamp aria-labelledby unless the consumer labelled them.
+  projectedLabelEffect = effect(() => {
+    for (const input of this.projectedInputs()) {
+      if (!input.getAttribute('aria-label') && !input.getAttribute('aria-labelledby') && !input.labels?.length) {
+        if (this.label()) input.setAttribute('aria-label', this.label());
+        else input.setAttribute('aria-labelledby', this.labelId);
+      }
+    }
+  });
+
   /** Two-way bound checked state of the toggle. */
   checked = model<boolean>(false);
+  /** Accessible name for label-less usage; projected text content is used otherwise. */
+  label = input<string>('');
   /** Color theme applied to the toggle. */
   color = input<ShipColor | null>(null);
   /** Sheet variant styling applied to the toggle. */

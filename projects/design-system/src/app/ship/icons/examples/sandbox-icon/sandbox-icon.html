@@ -22,7 +22,7 @@
     @if (size() === '') {
       <div class="row">
         <sh-range-slider>
-          <input type="range" [min]="10" [max]="64" [step]="2" [(ngModel)]="sizeValue" />
+          <input type="range" aria-label="Icon size" [min]="10" [max]="64" [step]="2" [(ngModel)]="sizeValue" />
         </sh-range-slider>
       </div>
     }

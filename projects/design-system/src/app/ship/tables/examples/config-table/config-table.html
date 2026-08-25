@@ -30,10 +30,10 @@
 
   <!-- Custom Actions Column Template -->
   <ng-template #actionsTemplate let-row>
-    <button shButton class="small text primary" (click)="editUser(row)" title="Edit user">
+    <button shButton class="small text primary" (click)="editUser(row)" title="Edit user" aria-label="Edit user">
       <sh-icon>pencil-simple</sh-icon>
     </button>
-    <button shButton class="small text error" (click)="deleteUser(row.id)" title="Delete user">
+    <button shButton class="small text error" (click)="deleteUser(row.id)" title="Delete user" aria-label="Delete user">
       <sh-icon>trash</sh-icon>
     </button>
   </ng-template>

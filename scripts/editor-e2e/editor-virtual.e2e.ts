@@ -1,4 +1,5 @@
 import { Page, expect, test } from '@playwright/test';
+import { awaitHydrated } from './hydration';
 
 /**
  * Viewport virtualization under real browser conditions: past the auto
@@ -18,9 +19,9 @@ async function openEditor(page: Page) {
   page.on('console', (msg) => {
     if (msg.type() === 'error') errors.push(msg.text());
   });
-  await page.goto('/editors');
-  await page.locator('sh-tabs button[value="examples"]').click();
-  const surface = page.locator('.sh-editor-content').first();
+  await page.goto('/editors/examples');
+  await awaitHydrated(page, 'sh-editor');
+  const surface = page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content').first();
   await surface.waitFor();
   return { surface, errors };
 }
@@ -28,21 +29,21 @@ async function openEditor(page: Page) {
 /** Load `count` indexed paragraphs into the first editor. */
 async function loadBigDoc(page: Page, count: number) {
   await page.evaluate((n) => {
-    const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+    const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
     const doc = Array.from({ length: n }, (_, i) => ({
       type: 'paragraph',
       content: [{ type: 'text', text: `Block ${i} with enough words to fill a line` }],
     }));
     comp.engine.reset(doc);
   }, count);
-  await expect.poll(() => page.evaluate(() => document.querySelector('.sh-editor-content')!.children.length)).toBeGreaterThan(0);
+  await expect.poll(() => page.evaluate(() => document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!.children.length)).toBeGreaterThan(0);
 }
 
 /** Scroll the page's scroll container so the editor content at `fraction` is in view. */
 async function scrollEditorTo(page: Page, fraction: number) {
   await page.evaluate((f) => {
     const main = document.querySelector('main')!;
-    const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+    const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')! as HTMLElement;
     const surfaceTopInMain = surface.getBoundingClientRect().top + main.scrollTop - main.getBoundingClientRect().top;
     main.scrollTop = surfaceTopInMain + surface.scrollHeight * f - 200;
   }, fraction);
@@ -50,9 +51,9 @@ async function scrollEditorTo(page: Page, fraction: number) {
 
 function mountedState(page: Page) {
   return page.evaluate(() => {
-    const host = document.querySelector('sh-editor')!;
+    const host = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!;
     const comp = (window as any).ng.getComponent(host);
-    const surface = host.querySelector('.sh-editor-content')! as HTMLElement;
+    const surface = host.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')! as HTMLElement;
     const style = getComputedStyle(surface);
     const texts = Array.from(surface.children).map((el) => el.textContent ?? '');
     return {
@@ -72,9 +73,9 @@ async function expectWindowInvariant(page: Page, context: string) {
     .poll(
       () =>
         page.evaluate(() => {
-          const host = document.querySelector('sh-editor')!;
+          const host = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!;
           const comp = (window as any).ng.getComponent(host);
-          const surface = host.querySelector('.sh-editor-content')!;
+          const surface = host.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
           const domTexts = Array.from(surface.children).map((el) => el.textContent ?? '');
           if (!domTexts.length) return 'no blocks mounted';
           const m = /^Block (\d+)\b/.exec(domTexts[0]);
@@ -108,7 +109,7 @@ async function scrollUntilBlockMounted(page: Page, index: number) {
       () =>
         page.evaluate((i) => {
           const main = document.querySelector('main')!;
-          const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+          const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')! as HTMLElement;
           const texts = Array.from(surface.children).map((el) => el.textContent ?? '');
           const idxOf = (t: string) => Number(/^Block (\d+)\b/.exec(t)?.[1] ?? '-1');
           const first = idxOf(texts[0] ?? '');
@@ -142,12 +143,12 @@ test.describe('viewport virtualization', () => {
 
     // Small documents stay fully mounted with no virtual padding.
     await page.evaluate(() => {
-      (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.reset([
+      (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.reset([
         { type: 'paragraph', content: [{ type: 'text', text: 'Block 0 tiny' }] },
         { type: 'paragraph', content: [{ type: 'text', text: 'Block 1 tiny' }] },
       ]);
     });
-    await expect.poll(() => page.evaluate(() => document.querySelector('.sh-editor-content')!.children.length)).toBe(2);
+    await expect.poll(() => page.evaluate(() => document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!.children.length)).toBe(2);
     const small = await mountedState(page);
     expect(small.padBottom).toBeLessThan(100);
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
@@ -183,7 +184,7 @@ test.describe('viewport virtualization', () => {
 
     // Caret at the end of a mounted mid-document block, via a real click.
     const targetIndex = await page.evaluate(() => {
-      const surface = document.querySelector('.sh-editor-content')!;
+      const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
       const el = surface.children[Math.floor(surface.children.length / 2)] as HTMLElement;
       const index = Number(/^Block (\d+)\b/.exec(el.textContent ?? '')![1]);
       const range = document.createRange();
@@ -201,7 +202,7 @@ test.describe('viewport virtualization', () => {
     const typed = await page.evaluate(
       (i) =>
         (window as any).ng
-          .getComponent(document.querySelector('sh-editor')!)
+          .getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!)
           .engine.blockAt(i)
           .content.map((n: any) => n.text)
           .join(''),
@@ -213,7 +214,7 @@ test.describe('viewport virtualization', () => {
     await page.keyboard.press('Enter');
     await page.keyboard.type('new block');
     const counts = await page.evaluate((i) => {
-      const engine = (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine;
+      const engine = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine;
       return { blocks: engine.blockCount(), split: engine.blockAt(i + 1).content.map((n: any) => n.text).join('') };
     }, targetIndex);
     expect(counts.blocks).toBe(BLOCKS + 1);
@@ -223,7 +224,7 @@ test.describe('viewport virtualization', () => {
     // Every keystroke is its own transaction: 9 for "new block", 1 for Enter.
     for (let i = 0; i < 10; i++) await page.keyboard.press('ControlOrMeta+z');
     await expect
-      .poll(() => page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.blockCount()))
+      .poll(() => page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.blockCount()))
       .toBe(BLOCKS);
     await expectWindowInvariant(page, 'after undo');
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
@@ -236,7 +237,7 @@ test.describe('viewport virtualization', () => {
     // estimate re-prices on measure — without scroll-anchor compensation the
     // window used to land below the viewport, leaving it blank.
     await page.evaluate((n) => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       const doc = Array.from({ length: n }, (_, i) => {
         if (i % 8 === 0) {
           return {
@@ -251,11 +252,11 @@ test.describe('viewport virtualization', () => {
       });
       comp.engine.reset(doc);
     }, BLOCKS);
-    await expect.poll(() => page.evaluate(() => document.querySelector('.sh-editor-content')!.children.length)).toBeGreaterThan(0);
+    await expect.poll(() => page.evaluate(() => document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!.children.length)).toBeGreaterThan(0);
 
     const viewportFilled = () =>
       page.evaluate(() => {
-        const surface = document.querySelector('.sh-editor-content')!;
+        const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
         const vp = document.querySelector('main')!.getBoundingClientRect();
         return Array.from(surface.children).some((el) => {
           const rect = el.getBoundingClientRect();
@@ -275,18 +276,18 @@ test.describe('viewport virtualization', () => {
     const { errors } = await openEditor(page);
     await loadBigDoc(page, BLOCKS);
     await scrollEditorTo(page, 0);
-    await page.locator('.sh-editor-content > p').first().click();
+    await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > p').first().click();
 
     await page.keyboard.press('ControlOrMeta+a');
     const selection = await page.evaluate(() => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
       return { ...comp.selection.active(), size: comp.engine.columnar.size };
     });
     expect(selection.from).toBe(0);
     expect(selection.to).toBe(selection.size);
 
     const copied = await page.evaluate(() => {
-      const surface = document.querySelector('.sh-editor-content')! as HTMLElement;
+      const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')! as HTMLElement;
       const dt = new DataTransfer();
       const evt = new ClipboardEvent('copy', { clipboardData: dt, bubbles: true, cancelable: true });
       surface.dispatchEvent(evt);
@@ -300,7 +301,7 @@ test.describe('viewport virtualization', () => {
     // The full-document selection also deletes as one unit.
     await page.keyboard.press('Backspace');
     await expect
-      .poll(() => page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.blockCount()))
+      .poll(() => page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.blockCount()))
       .toBe(1);
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });
@@ -314,7 +315,7 @@ test.describe('viewport virtualization', () => {
     // Click into a mounted block, then scroll — the window move tears down
     // the nodes the native selection pointed at.
     const targetIndex = await page.evaluate(() => {
-      const surface = document.querySelector('.sh-editor-content')!;
+      const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
       const el = surface.children[Math.floor(surface.children.length / 2)] as HTMLElement;
       const index = Number(/^Block (\d+)\b/.exec(el.textContent ?? '')![1]);
       const range = document.createRange();
@@ -337,7 +338,7 @@ test.describe('viewport virtualization', () => {
       .poll(() =>
         page.evaluate(
           (i) =>
-            Array.from(document.querySelector('.sh-editor-content')!.children).every(
+            Array.from(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!.children).every(
               (el) => !(el.textContent ?? '').startsWith(`Block ${i} `)
             ),
           targetIndex
@@ -356,7 +357,7 @@ test.describe('viewport virtualization', () => {
     const typed = await page.evaluate(
       (i) =>
         (window as any).ng
-          .getComponent(document.querySelector('sh-editor')!)
+          .getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!)
           .engine.blockAt(i)
           .content.map((n: any) => n.text)
           .join(''),
@@ -375,7 +376,7 @@ test.describe('viewport virtualization', () => {
     await expect.poll(async () => (await mountedState(page)).mounted).toBeGreaterThan(5);
 
     const targetIndex = await page.evaluate(() => {
-      const surface = document.querySelector('.sh-editor-content')!;
+      const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
       const el = surface.children[Math.floor(surface.children.length / 2)] as HTMLElement;
       const index = Number(/^Block (\d+)\b/.exec(el.textContent ?? '')![1]);
       const range = document.createRange();
@@ -398,7 +399,7 @@ test.describe('viewport virtualization', () => {
       .poll(() =>
         page.evaluate(
           (i) =>
-            Array.from(document.querySelector('.sh-editor-content')!.children).every(
+            Array.from(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!.children).every(
               (el) => !(el.textContent ?? '').startsWith(`Block ${i} `)
             ),
           targetIndex
@@ -409,7 +410,7 @@ test.describe('viewport virtualization', () => {
     await page.keyboard.type(' TYPED');
 
     const landed = await page.evaluate(() => {
-      const engine = (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine;
+      const engine = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine;
       const hits: number[] = [];
       for (let i = 0; i < engine.blockCount(); i++) {
         const text = (engine.blockAt(i)?.content ?? []).map((n: any) => n.text ?? '').join('');

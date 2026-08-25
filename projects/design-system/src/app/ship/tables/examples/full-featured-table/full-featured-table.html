@@ -30,6 +30,7 @@
     <div shStickyColumns>
       <th size="min-content">
         <sh-checkbox
+          label="Select all rows"
           [checked]="isAllSelected()"
           [class.indeterminate]="isSomeSelected()"
           (checkedChange)="toggleSelectAll($event)"></sh-checkbox>
@@ -110,13 +111,14 @@
       <div shStickyColumns (click)="$event.stopPropagation()">
         <td>
           <sh-checkbox
+            [label]="'Select ' + user.name"
             [checked]="selectedUserIds().has(user.id)"
             (checkedChange)="toggleSelectUser(user.id, $event)"></sh-checkbox>
         </td>
       </div>
       <td>{{ user.id }}</td>
       <td class="user-cell">
-        <button shButton class="small text primary expand-btn">
+        <button shButton class="small text primary expand-btn" [attr.aria-label]="expandedUserIds().has(user.id) ? 'Collapse row' : 'Expand row'" [attr.aria-expanded]="expandedUserIds().has(user.id)">
           <sh-icon>{{ expandedUserIds().has(user.id) ? 'caret-up' : 'caret-down' }}</sh-icon>
         </button>
         <span class="user-name">{{ user.name }}</span>

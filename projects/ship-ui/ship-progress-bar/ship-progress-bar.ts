@@ -19,11 +19,14 @@ export type ShipProgressBarMode = 'determinate' | 'indeterminate';
     'aria-valuemin': '0',
     'aria-valuemax': '100',
     '[attr.aria-valuenow]': 'value() !== undefined ? value() : null',
+    '[attr.aria-label]': 'label() || null',
   },
 })
 export class ShipProgressBar {
   /** Progress percentage from `0` to `100`; `undefined` renders an indeterminate bar. */
   value = input<number | undefined>(undefined);
+  /** Accessible name announced by screen readers (e.g. "Upload progress"). */
+  label = input<string>('');
   /** Color theme of the progress bar (`ShipColor`). */
   color = input<ShipColor | null>(null);
   /** Visual sheet variant of the progress bar (`ShipSheetVariant`). */

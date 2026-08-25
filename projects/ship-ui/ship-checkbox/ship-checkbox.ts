@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, HostListener, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
-import { classMutationSignal } from '@ship-ui/core';
+import { classMutationSignal, generateUniqueId } from '@ship-ui/core';
 import { contentProjectionSignal } from '@ship-ui/core';
 import { shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
@@ -27,6 +27,8 @@ import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
         type="checkbox"
         class="internal-input"
         [attr.disabled]="disabled() ? '' : null"
+        [attr.aria-label]="label() || null"
+        [attr.aria-labelledby]="label() ? null : labelId"
         [checked]="checked()"
         (change)="onInternalInputChange($event)" />
     }
@@ -44,14 +46,37 @@ export class ShipCheckbox {
   #elementRef = inject(ElementRef);
   #keybindings = inject(ShipA11yKeybindingsService);
 
+  // The internal input takes its accessible name from the host subtree
+  // (projected label text; decorative icons are aria-hidden), the same way a
+  // wrapping <label> would — otherwise screen readers announce a nameless
+  // checkbox. Reuses the host's own id when the consumer set one.
+  labelId = (() => {
+    const host = this.#elementRef.nativeElement as HTMLElement;
+    if (!host.id) host.id = `sh-checkbox-${generateUniqueId()}`;
+    return host.id;
+  })();
+
   internalInput = viewChild<ElementRef<HTMLInputElement>>('internalInput');
   projectedInputs = contentProjectionSignal<HTMLInputElement>('input:not(.internal-input)', {
     childList: true,
     attributes: true,
   });
 
+  // Projected inputs (ngModel/forms usage) need the same labelling as the
+  // internal one — stamp aria-labelledby unless the consumer labelled them.
+  projectedLabelEffect = effect(() => {
+    for (const input of this.projectedInputs()) {
+      if (!input.getAttribute('aria-label') && !input.getAttribute('aria-labelledby') && !input.labels?.length) {
+        if (this.label()) input.setAttribute('aria-label', this.label());
+        else input.setAttribute('aria-labelledby', this.labelId);
+      }
+    }
+  });
+
   /** Two-way checked state of the checkbox. */
   checked = model<boolean>(false);
+  /** Accessible name for label-less usage; projected text content is used otherwise. */
+  label = input<string>('');
   currentClassList = classMutationSignal();
   /** Semantic color scale (`primary`, `accent`, `warn`, `error`, `success`). */
   color = input<ShipColor | null>(null);

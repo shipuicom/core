@@ -1,4 +1,5 @@
 import { Page, expect, test } from '@playwright/test';
+import { awaitHydrated } from './hydration';
 
 /**
  * Slash-command inserts.
@@ -19,9 +20,9 @@ async function openEditor(page: Page) {
   page.on('console', (msg) => {
     if (msg.type() === 'error') errors.push(msg.text());
   });
-  await page.goto('/editors');
-  await page.locator('sh-tabs button[value="examples"]').click();
-  await page.locator('.sh-editor-content').first().waitFor();
+  await page.goto('/editors/examples');
+  await awaitHydrated(page, 'sh-editor');
+  await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content').first().waitFor();
   await page.waitForTimeout(800);
   return { errors };
 }
@@ -29,9 +30,9 @@ async function openEditor(page: Page) {
 /** The AST's block types beside what the DOM actually mounted, for comparison. */
 function state(page: Page) {
   return page.evaluate(() => {
-    const host = document.querySelector('sh-editor')!;
+    const host = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!;
     const comp = (window as any).ng.getComponent(host);
-    const surface = host.querySelector('.sh-editor-content')!;
+    const surface = host.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
     const tagToType: Record<string, string> = {
       H1: 'heading',
       H2: 'heading',
@@ -55,7 +56,7 @@ function state(page: Page) {
 /** Caret to the end of the last block, then Enter for a fresh paragraph. */
 async function caretOnFreshLine(page: Page) {
   await page.evaluate(() => {
-    const surface = document.querySelector('.sh-editor-content') as HTMLElement;
+    const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content') as HTMLElement;
     const el = surface.children[surface.children.length - 1] as HTMLElement;
     const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
     const node = walker.nextNode()!;
@@ -81,7 +82,7 @@ test.describe('slash-command component insert', () => {
       await caretOnFreshLine(page);
       await page.keyboard.type('/counter');
       await expect
-        .poll(() => page.evaluate(() => !!(window as any).ng.getComponent(document.querySelector('sh-editor')!).slashMenu()?.isOpen()))
+        .poll(() => page.evaluate(() => !!(window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).slashMenu()?.isOpen()))
         .toBe(true);
 
       if (confirm === 'Enter') await page.keyboard.press('Enter');
@@ -104,7 +105,7 @@ test.describe('slash-command component insert', () => {
     await caretOnFreshLine(page);
     await page.keyboard.type('/counter');
     await expect
-      .poll(() => page.evaluate(() => !!(window as any).ng.getComponent(document.querySelector('sh-editor')!).slashMenu()?.isOpen()))
+      .poll(() => page.evaluate(() => !!(window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).slashMenu()?.isOpen()))
       .toBe(true);
     await page.keyboard.press('Enter');
     await page.waitForTimeout(400);
@@ -112,7 +113,7 @@ test.describe('slash-command component insert', () => {
     // The insert selects the new block; Escape-free path: click into the
     // trailing paragraph and type, which is what a user does next.
     await page.evaluate(() => {
-      const surface = document.querySelector('.sh-editor-content') as HTMLElement;
+      const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content') as HTMLElement;
       const el = surface.children[surface.children.length - 1] as HTMLElement;
       const range = document.createRange();
       range.selectNodeContents(el);
@@ -142,9 +143,9 @@ test.describe('slash-command component insert', () => {
  */
 function textState(page: Page) {
   return page.evaluate(() => {
-    const host = document.querySelector('sh-editor')!;
+    const host = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!;
     const comp = (window as any).ng.getComponent(host);
-    const surface = host.querySelector('.sh-editor-content')!;
+    const surface = host.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
     return {
       astTypes: comp.engine.document().map((b: any) => b.type),
       astTexts: comp.engine.document().map((b: any) => (b.content ?? []).map((n: any) => n.text ?? '').join('')),
@@ -162,14 +163,14 @@ test.describe('slash-command insert into a paragraph mid-document', () => {
     const { errors } = await openEditor(page);
     await page.evaluate(() => {
       (window as any).ng
-        .getComponent(document.querySelector('sh-editor')!)
+        .getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!)
         .value.set('<p>Custom blocks:</p><p><br></p><p>Try changing</p>');
     });
     await page.waitForTimeout(400);
 
     // Caret into the empty paragraph that has another paragraph after it.
     await page.evaluate(() => {
-      const surface = document.querySelector('.sh-editor-content') as HTMLElement;
+      const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content') as HTMLElement;
       const range = document.createRange();
       range.selectNodeContents(surface.children[1] as HTMLElement);
       range.collapse(true);
@@ -183,17 +184,19 @@ test.describe('slash-command insert into a paragraph mid-document', () => {
     await page.keyboard.type('/code');
     await expect
       .poll(() =>
-        page.evaluate(() => !!(window as any).ng.getComponent(document.querySelector('sh-editor')!).slashMenu()?.isOpen())
+        page.evaluate(() => !!(window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).slashMenu()?.isOpen())
       )
       .toBe(true);
-    // Second entry is the demo component block; the first is the built-in code block.
-    await page.keyboard.press('ArrowDown');
-    await page.keyboard.press('Enter');
+    // Pick the demo component entry by its label. Keyboard navigation here is
+    // racy on slow CI: the filter re-renders per keystroke and a late update
+    // resets the highlighted entry back to the first (the built-in code
+    // block) between ArrowDown and Enter.
+    await page.locator('.sh-editor-slash-menu button', { hasText: 'Code pad' }).click();
     // Wait for the insert to land rather than for a fixed delay — the block
     // mounts an Angular component, so the render settles on its own schedule.
     await expect
       .poll(() => page.evaluate(() =>
-        (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.document().map((b: any) => b.type)
+        (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.document().map((b: any) => b.type)
       ))
       .toEqual(['paragraph', 'demo-code-pad', 'paragraph', 'paragraph']);
 

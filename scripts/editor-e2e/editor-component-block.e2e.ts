@@ -1,4 +1,5 @@
 import { Page, expect, test } from '@playwright/test';
+import { awaitHydrated } from './hydration';
 
 /**
  * Custom component blocks (BaseComponentBlockBehavior) under real browser
@@ -20,9 +21,17 @@ async function openEditor(page: Page) {
   page.on('console', (msg) => {
     if (msg.type() === 'error') errors.push(msg.text());
   });
-  await page.goto('/editors');
-  await page.locator('sh-tabs button[value="examples"]').click();
-  const surface = page.locator('.sh-editor-content').first();
+  await page.goto('/editors/examples');
+  await awaitHydrated(page, 'sh-editor');
+  // The mobile-sheet demo precedes the main editor — scroll it to the top of
+  // the viewport so mouse-coordinate interactions land inside it.
+  await page.evaluate(() => {
+    document
+      .querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!
+      .scrollIntoView({ block: 'start' });
+  });
+  await page.waitForTimeout(200);
+  const surface = page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content').first();
   await surface.waitFor();
   return { surface, errors };
 }
@@ -33,7 +42,7 @@ const pad = (page: Page) => page.locator('[data-sh-block="demo-code-pad"]');
 const docTypes = (page: Page) =>
   page.evaluate(() =>
     (window as any).ng
-      .getComponent(document.querySelector('sh-editor')!)
+      .getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!)
       .engine.document()
       .map((b: any) => b.type)
   );
@@ -54,7 +63,7 @@ test.describe('custom component blocks', () => {
 
     // The new count is in the serialized document.
     const html = await page.evaluate(() =>
-      (window as any).ng.getComponent(document.querySelector('sh-editor')!).engine.serialize('html')
+      (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.serialize('html')
     );
     expect(html).toContain('&quot;count&quot;:4');
     expect(errors).toEqual([]);
@@ -67,7 +76,7 @@ test.describe('custom component blocks', () => {
       page.evaluate(() =>
         JSON.stringify(
           (window as any).ng
-            .getComponent(document.querySelector('sh-editor')!)
+            .getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!)
             .engine.document()
             .filter((b: any) => b.type !== 'demo-code-pad')
         )
@@ -93,7 +102,7 @@ test.describe('custom component blocks', () => {
     // …while the pad's own attrs carry the typed text.
     const padAttrs = await page.evaluate(() =>
       (window as any).ng
-        .getComponent(document.querySelector('sh-editor')!)
+        .getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!)
         .engine.document()
         .find((b: any) => b.type === 'demo-code-pad')?.attrs
     );
@@ -206,9 +215,9 @@ test.describe('component block replacement', () => {
   /** The AST's block types beside the DOM's, in a directly comparable shape. */
   function state(page: Page) {
     return page.evaluate(() => {
-      const host = document.querySelector('sh-editor')!;
+      const host = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!;
       const comp = (window as any).ng.getComponent(host);
-      const surface = host.querySelector('.sh-editor-content')!;
+      const surface = host.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
       const tagToType: Record<string, string> = {
         H1: 'heading', H2: 'heading', H3: 'heading', P: 'paragraph',
         UL: 'bullet-list', OL: 'ordered-list', BLOCKQUOTE: 'quote', HR: 'hr', PRE: 'code-block',
@@ -232,7 +241,7 @@ test.describe('component block replacement', () => {
     // A document with plain paragraphs where the components used to be.
     await page.evaluate(() => {
       (window as any).ng
-        .getComponent(document.querySelector('sh-editor')!)
+        .getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!)
         .value.set('<h1>T</h1><p>a</p><ul><li>x</li></ul><blockquote>q</blockquote><hr><p>b</p><p><br></p><p>c</p>');
     });
     await page.waitForTimeout(400);
@@ -249,14 +258,14 @@ test.describe('component block replacement', () => {
     const { errors } = await openEditor(page);
     await page.evaluate(() => {
       (window as any).ng
-        .getComponent(document.querySelector('sh-editor')!)
+        .getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!)
         .value.set('<h1>Title</h1><p>intro</p><hr><p>lead in</p><p><br></p><p>tail</p>');
     });
     await page.waitForTimeout(400);
 
     const target = await page.evaluate(() => {
-      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor')!);
-      const surface = document.querySelector('.sh-editor-content') as HTMLElement;
+      const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);
+      const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content') as HTMLElement;
       const idx = comp.engine
         .document()
         .findIndex((b: any) => b.type === 'paragraph' && (b.content ?? []).map((n: any) => n.text ?? '').join('') === '');
@@ -281,7 +290,7 @@ test.describe('component block replacement', () => {
 
     await expect
       .poll(() =>
-        page.evaluate(() => !!(window as any).ng.getComponent(document.querySelector('sh-editor')!).slashMenu()?.isOpen())
+        page.evaluate(() => !!(window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).slashMenu()?.isOpen())
       )
       .toBe(true);
     await page.keyboard.press('Enter');
@@ -313,7 +322,7 @@ test.describe('drag-selection ending on a component block', () => {
     await page.waitForTimeout(300);
 
     const boxes = await page.evaluate(() =>
-      Array.from(document.querySelector('.sh-editor-content')!.children).map((el: any) => {
+      Array.from(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!.children).map((el: any) => {
         const r = el.getBoundingClientRect();
         return { x: r.x, y: r.y, w: r.width, h: r.height };
       })
@@ -334,7 +343,7 @@ test.describe('drag-selection ending on a component block', () => {
     await page.waitForTimeout(300);
 
     const painted = await page.evaluate((idx) => {
-      const surface = document.querySelector('.sh-editor-content')!;
+      const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!;
       const sel = window.getSelection()!;
       const range = sel.rangeCount ? sel.getRangeAt(0) : null;
       return Array.from(surface.children).map((el, i) => (range ? range.intersectsNode(el) : false)).slice(idx);
@@ -361,7 +370,7 @@ test.describe('drag-selection ending on a component block', () => {
     await page.waitForTimeout(300);
 
     const boxes = await page.evaluate(() =>
-      Array.from(document.querySelector('.sh-editor-content')!.children).map((el: any) => {
+      Array.from(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!.children).map((el: any) => {
         const r = el.getBoundingClientRect();
         return { x: r.x, y: r.y, w: r.width, h: r.height };
       })

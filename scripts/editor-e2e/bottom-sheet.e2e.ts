@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { awaitHydrated } from './hydration';
 
 /**
  * The bottom-sheet dialog type: bottom-anchored card, drag-dismiss with
@@ -9,6 +10,7 @@ test.describe('bottom-sheet dialog', () => {
 
   test('opens bottom-anchored with a drag handle, parks focus off inputs', async ({ page }) => {
     await page.goto('/dialogs/examples');
+    await awaitHydrated(page, 'sh-tabs');
     await page.getByRole('button', { name: 'Open bottom sheet' }).click();
 
     const dialog = page.locator('dialog[shDialog]');
@@ -33,6 +35,7 @@ test.describe('bottom-sheet dialog', () => {
 
   test('regular modal dialogs also lock page scroll while open', async ({ page }) => {
     await page.goto('/dialogs/examples');
+    await awaitHydrated(page, 'sh-tabs');
     await page.getByRole('button', { name: 'Open Basic Dialog' }).click();
     await expect(page.locator('dialog[shDialog]')).toHaveCount(1);
     expect(await page.evaluate(() => document.documentElement.style.overflow)).toBe('hidden');
@@ -45,6 +48,7 @@ test.describe('bottom-sheet dialog', () => {
 
   test('slide-down drag dismisses; a short drag snaps back', async ({ page }) => {
     await page.goto('/dialogs/examples');
+    await awaitHydrated(page, 'sh-tabs');
     await page.getByRole('button', { name: 'Open bottom sheet' }).click();
     const handle = page.locator('.sheet-handle');
     await handle.waitFor();
@@ -82,6 +86,7 @@ test.describe('bottom-sheet dialog', () => {
     page,
   }) => {
     await page.goto('/editors/examples');
+    await awaitHydrated(page, 'sh-editor');
     await page.getByRole('button', { name: 'Force sheet' }).click();
 
     const preview = page.locator('.sh-editor-sheet-preview-hit');

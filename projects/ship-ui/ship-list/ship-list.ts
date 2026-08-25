@@ -16,9 +16,12 @@ export type ShipListRole = 'list' | 'listbox' | 'none';
     '[attr.role]': "listRole() === 'none' ? null : listRole()",
     '[attr.aria-multiselectable]': "listRole() === 'listbox' ? 'false' : null",
     '[attr.aria-orientation]': "listRole() === 'listbox' ? 'vertical' : null",
+    '[attr.aria-label]': 'label() || null',
   },
 })
 export class ShipList extends ShipSelectionGroup<string> {
+  /** Accessible name for the list/listbox announced by screen readers. */
+  label = input<string>('');
   /**
    * Semantic role of the list. The default `list` keeps projected content
    * untouched (today's static behavior). Set `listbox` to opt in to the

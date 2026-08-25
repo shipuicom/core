@@ -454,6 +454,16 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'screenreaders',
+        loadComponent: () => import('./ship/screenreaders/screenreaders'),
+        children: [
+          { path: '', loadComponent: () => import('./ship/screenreaders/screenreaders-overview') },
+          { path: 'api', loadComponent: () => import('./ship/screenreaders/screenreaders-api') },
+          { path: 'examples', loadComponent: () => import('./ship/screenreaders/screenreaders-examples') },
+          fallbackOverview,
+        ],
+      },
+      {
         path: 'editors',
         loadComponent: () => import('./ship/editors/editors'),
         children: [

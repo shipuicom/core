@@ -1,0 +1,25 @@
+<sh-screenreader startEnabled />
+
+<h4>Try it: tab through the controls below</h4>
+
+<div class="playground">
+  <button type="button" [attr.aria-expanded]="expanded()" (click)="toggle()">Settings</button>
+
+  <label>
+    <input type="checkbox" checked />
+    Accept terms
+  </label>
+
+  <label>
+    Email
+    <input type="email" required aria-invalid="true" value="foo" />
+  </label>
+
+  <div role="listbox" aria-label="Fruit">
+    <div role="option" aria-selected="false" tabindex="0">Pears</div>
+    <div role="option" aria-selected="true" tabindex="0">Apples</div>
+    <div role="option" aria-selected="false" tabindex="0">Plums</div>
+  </div>
+
+  <button type="button" (click)="save()">Save draft (live region)</button>
+</div>

@@ -10,7 +10,7 @@
       @for (col of displayedColumns(); track col) {
         <td>
           @if ($first) {
-            <button shButton class="small primary raised">
+            <button shButton class="small primary raised" [attr.aria-label]="$index === openRowIndex() ? 'Collapse row' : 'Expand row'" [attr.aria-expanded]="$index === openRowIndex()">
               @if ($index === openRowIndex()) {
                 <sh-icon>caret-up</sh-icon>
               } @else {

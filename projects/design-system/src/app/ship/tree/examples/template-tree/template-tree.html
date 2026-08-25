@@ -11,7 +11,7 @@
         {{ node.label }}
 
         <sh-tree-node-actions>
-          <button class="delete-btn" (click)="deleteNode(node, $event)" type="button">
+          <button class="delete-btn" aria-label="Delete node" (click)="deleteNode(node, $event)" type="button">
             <sh-icon size="small">trash</sh-icon>
           </button>
         </sh-tree-node-actions>
@@ -32,7 +32,7 @@
         {{ node.label }}
 
         <sh-tree-node-actions>
-          <button class="delete-btn" (click)="deleteNode(node, $event)" type="button">
+          <button class="delete-btn" aria-label="Delete node" (click)="deleteNode(node, $event)" type="button">
             <sh-icon size="small">trash</sh-icon>
           </button>
         </sh-tree-node-actions>
