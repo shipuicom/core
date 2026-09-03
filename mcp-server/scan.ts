@@ -75,6 +75,7 @@ const INTERNAL = new Set([
   'ShipEditorSlashMenu',
   'EditorEngineService',
   'EditorSelectionService',
+  'ShipWindowNode',
 ]);
 
 // Public-but-internal helper methods that carry no detectable signal (they take
