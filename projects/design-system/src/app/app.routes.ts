@@ -427,6 +427,7 @@ export const routes: Routes = [
         children: [
           { path: '', loadComponent: () => import('./ship/a11y-keybindings/a11y-keybindings-overview') },
           { path: 'api', loadComponent: () => import('./ship/a11y-keybindings/a11y-keybindings-api') },
+          { path: 'defaults', loadComponent: () => import('./ship/a11y-keybindings/a11y-keybindings-defaults') },
           { path: 'service', loadComponent: () => import('./ship/a11y-keybindings/a11y-keybindings-service') },
           { path: 'examples', loadComponent: () => import('./ship/a11y-keybindings/a11y-keybindings-examples') },
           fallbackOverview,

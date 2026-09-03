@@ -50,10 +50,10 @@ export const DEFAULT_KEYBINDINGS: Record<string, string> = {
   'table.row-resize-decrease': 'Shift+ArrowUp',
   'table.row-resize-increase': 'Shift+ArrowDown',
 
-  'grid.focus-up': 'ArrowUp, w',
-  'grid.focus-down': 'ArrowDown, s',
-  'grid.focus-left': 'ArrowLeft, a',
-  'grid.focus-right': 'ArrowRight, d',
+  'grid.focus-up': 'ArrowUp',
+  'grid.focus-down': 'ArrowDown',
+  'grid.focus-left': 'ArrowLeft',
+  'grid.focus-right': 'ArrowRight',
   'grid.focus-first': 'Home',
   'grid.focus-last': 'End',
 
