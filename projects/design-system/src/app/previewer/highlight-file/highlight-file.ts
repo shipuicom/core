@@ -49,13 +49,13 @@ export class HighlightFile {
     if (!value || value.trimStart().toLowerCase().startsWith('<!doctype')) return null;
     return value;
   });
-  codeRef = viewChild.required<ElementRef<HTMLElement>>('codeRef');
+  codeRef = viewChild<ElementRef<HTMLElement>>('codeRef');
 
   resourceEffect =
     isPlatformBrowser(this.#platformId) &&
     effect(() => {
       const fileContent = this.content();
-      const codeElement = this.codeRef().nativeElement;
+      const codeElement = this.codeRef()?.nativeElement;
 
       if (fileContent && codeElement) {
         queueMicrotask(() => {
