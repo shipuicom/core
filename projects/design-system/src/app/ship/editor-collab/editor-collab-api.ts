@@ -12,8 +12,7 @@ export default class EditorCollabApi {
   EXPORT_AS = `<sh-editor shCollab="my-doc" #c="shCollab" />
 <p>{{ c.collab.peers().size }} peers · {{ c.collab.connected() ? 'online' : 'offline' }}</p>`;
 
-  MANUAL = `// What the directive does — or when you want to attach yourself:
-@Component({ providers: [ShipEditorCollab], imports: [ShipEditor, ShEditorRemoteCursors] })
+  MANUAL = `@Component({ providers: [ShipEditorCollab], imports: [ShipEditor, ShEditorRemoteCursors] })
 export class DocPage {
   collab = inject(ShipEditorCollab);
   editor = viewChild.required<ShipEditor>('editor');
@@ -26,7 +25,7 @@ export class DocPage {
 }
 // <sh-editor #editor><sh-editor-remote-cursors [collab]="collab" /></sh-editor>`;
 
-  COLLAB_MESSAGE = `// Every message is plain JSON — postMessage/WebSocket/broker safe.
+  COLLAB_MESSAGE = `// Plain JSON.
 type CollabMessage =
   | { type: 'op'; clientId: string; seq: number;
       seen: Record<string, number>;       // per-peer high-water marks

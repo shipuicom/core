@@ -1,35 +1,26 @@
 <div class="collab-doc">
   <section>
     <h4>Built in</h4>
-    <p>
-      A string value of
-      <code>shCollab</code>
-      picks the transport for you: a plain name is a
-      <code>BroadcastChannelTransport</code>
-      channel — windows of the same browser, no server; a
-      <code>ws://</code>
-      or
-      <code>wss://</code>
-      URL is a
-      <code>WebSocketTransport</code>
-      to a relay.
-    </p>
+    <ul>
+      <li>
+        <code>BroadcastChannelTransport</code>
+        — windows of one browser, no server. Any plain string.
+      </li>
+      <li>
+        <code>WebSocketTransport</code>
+        — a relay. Any
+        <code>ws://</code>
+        or
+        <code>wss://</code>
+        URL.
+      </li>
+    </ul>
   </section>
 
   <section>
-    <h4>Going cross-machine</h4>
-    <p>
-      <code>BroadcastChannelTransport</code>
-      only reaches windows of the same browser. For real multi-user sessions hand
-      <code>shCollab</code>
-      a relay URL:
-    </p>
+    <h4>Cross-machine</h4>
     <app-highlight lang="html" [content]="WS_TRANSPORT" />
-
-    <p>
-      Point it at any relay that fans each message out to the other sockets in arrival order — that ordering is what
-      makes many peers converge. The reference relay below ships in the repo (~40 lines); copy it as-is and run it:
-    </p>
+    <p>The relay fans every message out to the other sockets in arrival order. The reference one ships in the repo:</p>
     <app-highlight lang="shell" [content]="RELAY_CMD" />
     <div class="relay-source">
       <app-highlight-file lang="ts" path="/scripts/collab-relay" />
@@ -37,55 +28,30 @@
   </section>
 
   <section>
-    <h4>Writing your own transport</h4>
-    <p>
-      A transport is four members — anything that delivers messages in order per sender qualifies (WebRTC data channels,
-      SSE + POST, a message broker):
-    </p>
+    <h4>Your own transport</h4>
     <app-highlight lang="ts" [content]="CUSTOM_TRANSPORT" />
     <ul>
       <li>
         <code>send</code>
-        — deliver the message to every
-        <em>other</em>
-        peer on the document. Echoing it back to the sender is harmless (the session drops its own
-        <code>clientId</code>
-        ), just wasteful. Queue while disconnected; the session never retries.
+        — deliver to every other peer. Queue while disconnected.
       </li>
       <li>
         <code>subscribe</code>
-        — call back with every message from other peers, in the order each peer sent them. Return the unsubscribe
-        function; the session calls it on detach.
+        — call back with each peer's messages in the order sent. Return an unsubscribe.
       </li>
       <li>
         <code>connected</code>
-        — a signal, read once at attach into
-        <code>ShipEditorCollab.connected</code>
-        . Informational only; no message is gated on it.
+        — read once at attach. Informational.
       </li>
       <li>
         <code>destroy</code>
-        — optional.
-        <code>shCollab</code>
-        calls it only on transports it created from a string; a transport you bind yourself is yours to destroy.
+        — optional. Called only for transports created from a string.
       </li>
     </ul>
-    <p>
-      Ordering is the one hard requirement. Per-sender order is enough for two peers. For three or more, route through
-      something that serializes all senders into one arrival order (a relay, a broker topic, a single server) — that
-      total order is what every peer rebases against.
-    </p>
-
-    <p>
-      Bind the instance to
-      <code>shCollab</code>
-      — nothing else in your component, the overlay or the protocol changes:
+    <p class="collab-note">
+      Per-sender order is enough for two peers. Three or more need one arrival order for all senders — a relay, a broker
+      topic, a single server.
     </p>
     <app-highlight lang="ts" [content]="SWAP_TRANSPORT" />
-    <p>
-      Your implementation only ferries
-      <code>CollabMessage</code>
-      values — opaque JSON as far as the transport is concerned. The message shapes are listed on the API tab.
-    </p>
   </section>
 </div>

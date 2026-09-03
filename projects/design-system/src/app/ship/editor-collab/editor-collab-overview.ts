@@ -11,6 +11,5 @@ import { CollabDemo } from './examples/collab-demo/collab-demo';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class EditorCollabOverview {
-  ONE_LINER = `<!-- Same-origin windows share the document. Nothing else to wire. -->
-<sh-editor shCollab="my-doc" [presence]="{ name: 'Ada', color: '#e0533d' }" />`;
+  ONE_LINER = `<sh-editor shCollab="my-doc" [presence]="{ name: 'Ada', color: '#e0533d' }" />`;
 }

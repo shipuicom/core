@@ -17,13 +17,8 @@ const PEER_COLORS = ['#e0533d', '#2f6fed', '#0f9d58', '#ab47bc', '#f4a712', '#00
 const PEER_NAMES = ['Ada', 'Grace', 'Alan', 'Edsger', 'Barbara', 'Donald'];
 
 /**
- * Two windows, one document.
- *
- * The integration is the `shCollab` attribute on `<sh-editor>` in the
- * template — nothing in this class is required for collaboration. What's here
- * is demo chrome: presence badges read from the directive, a checksum so two
- * windows can be compared, and (at the bottom) a fuzz mode for stress-testing
- * convergence.
+ * `shCollab` on the editor is the integration. The rest is demo chrome:
+ * peer chips, a checksum to compare windows, and a fuzz mode at the bottom.
  */
 @Component({
   selector: 'collab-demo-example',
@@ -34,10 +29,8 @@ const PEER_NAMES = ['Ada', 'Grace', 'Alan', 'Edsger', 'Barbara', 'Donald'];
 })
 export class CollabDemo implements OnDestroy {
   editor = viewChild<ShipEditor>('collabEditor');
-  /** The directive instance — exposes the session's `peers()` and `connected()`. */
   collab = viewChild<ShEditorCollabDirective>(ShEditorCollabDirective);
 
-  /** Bound to `[presence]` — shown on this window's caret in the other windows. */
   me = {
     name: PEER_NAMES[Math.floor(Math.random() * PEER_NAMES.length)],
     color: PEER_COLORS[Math.floor(Math.random() * PEER_COLORS.length)],
@@ -45,7 +38,7 @@ export class CollabDemo implements OnDestroy {
 
   initialHtml = `<h2>Collaborative editing</h2><p>This document is shared between every window of this page — edits, carets and undo all stay in sync through the <strong>op-rebase</strong> pipeline.</p><p>Open a second window and type in both.</p>`;
 
-  // ── Demo chrome: peer badges + convergence checksum ──────────────────────
+  // ── Demo chrome ──────────────────────────────────────────────────────────
 
   peerList = computed(() => Array.from(this.collab()?.collab.peers().values() ?? []));
 
@@ -61,7 +54,6 @@ export class CollabDemo implements OnDestroy {
     afterNextRender(() => {
       const engine = this.editor()?.engine;
       if (!engine) return;
-      // Mirror the engine version into a page signal so the checksum recomputes.
       this.#badgeTimer = setInterval(() => this.version.set(engine.version()), 300);
     });
   }
@@ -75,9 +67,7 @@ export class CollabDemo implements OnDestroy {
     this.toggleFuzz(false);
   }
 
-  // ── Fuzz mode — NOT part of the integration ──────────────────────────────
-  // Storms this window with random inserts and deletes so you can watch the
-  // other window converge. Delete everything below this line in your own app.
+  // ── Fuzz mode — not part of the integration. Delete below in your app. ───
 
   fuzzing = signal(false);
   fuzzOps = signal(0);

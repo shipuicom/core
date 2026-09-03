@@ -10,11 +10,9 @@ import { HighlightFile } from '../../previewer/highlight-file/highlight-file';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class EditorCollabTransports {
-  WS_TRANSPORT = `<!-- A ws:// or wss:// URL switches to WebSocketTransport — point it at a
-     relay that fans messages out in arrival order (total order = convergence). -->
-<sh-editor shCollab="ws://localhost:8787/my-doc" [presence]="{ name: 'Ada', color: '#e0533d' }" />`;
+  WS_TRANSPORT = `<sh-editor shCollab="ws://localhost:8787/my-doc" [presence]="{ name: 'Ada', color: '#e0533d' }" />`;
 
-  RELAY_CMD = `bun scripts/collab-relay.ts   # reference relay, ~40 lines`;
+  RELAY_CMD = `bun scripts/collab-relay.ts`;
 
   CUSTOM_TRANSPORT = `interface CollabTransport {
   send(message: CollabMessage): void;
@@ -23,9 +21,7 @@ export default class EditorCollabTransports {
   destroy?(): void;
 }`;
 
-  SWAP_TRANSPORT = `// Bind a transport instance instead of a string — the session, overlay
-// and protocol stay identical. You own its lifetime.
-transport = new MyBrokerTransport('doc-42');   // your implementation
+  SWAP_TRANSPORT = `transport = new MyBrokerTransport('doc-42'); // yours to destroy
 
-// <sh-editor [shCollab]="transport" [presence]="…" />`;
+// <sh-editor [shCollab]="transport" />`;
 }

@@ -1,13 +1,10 @@
 <div class="collab-doc">
   <section>
-    <h4>
-      <code>shCollab</code>
-      directive
-    </h4>
+    <h4><code>shCollab</code></h4>
     <p>
       Selector
       <code>sh-editor[shCollab]</code>
-      ,
+      .
       <code>exportAs: 'shCollab'</code>
       .
     </p>
@@ -24,54 +21,39 @@
           <td><code>shCollab</code></td>
           <td><code>string | CollabTransport</code></td>
           <td>
-            Required. Channel name (BroadcastChannel),
+            Channel name,
             <code>ws(s)://</code>
-            relay URL (WebSocket), or a transport instance. Transports created from a string are destroyed with the
-            editor.
+            URL, or a transport. Required.
           </td>
         </tr>
         <tr>
           <td><code>presence</code></td>
           <td>
-            <code>{{ '{' }} name: string; color: string {{ '}' }}</code>
+            <code>{{ '{' }} name; color {{ '}' }}</code>
           </td>
-          <td>
-            Shown on this peer's caret in other windows. Defaults to
-            <em>Anonymous</em>
-            in grey.
-          </td>
+          <td>Label and color of your caret in other windows.</td>
         </tr>
         <tr>
           <td><code>clientId</code></td>
           <td><code>string</code></td>
-          <td>Stable identity for this window. Generated when omitted.</td>
+          <td>Stable identity. Generated when omitted.</td>
         </tr>
         <tr>
           <td><code>remoteCursors</code></td>
           <td><code>boolean</code></td>
           <td>
-            Default
+            Mount the cursor overlay. Default
             <code>true</code>
-            . Set
-            <code>false</code>
-            to skip mounting the cursor overlay.
+            .
           </td>
         </tr>
       </tbody>
     </table>
-    <p>
-      The directive exposes the session as
-      <code>collab</code>
-      for templates:
-    </p>
     <app-highlight lang="html" [content]="EXPORT_AS" />
   </section>
 
   <section>
-    <h4>
-      <code>ShipEditorCollab</code>
-      service
-    </h4>
+    <h4><code>ShipEditorCollab</code></h4>
     <table>
       <thead>
         <tr>
@@ -83,34 +65,28 @@
         <tr>
           <td><code>attach(engine, options)</code></td>
           <td>
-            Join a session:
+            Join. Options:
             <code>transport</code>
-            (required),
+            ,
             <code>presence</code>
             ,
             <code>clientId</code>
             ,
             <code>presenceThrottleMs</code>
-            (default 100).
+            .
           </td>
         </tr>
         <tr>
           <td><code>detach()</code></td>
-          <td>Leave the session and stop listening. Also runs on destroy.</td>
+          <td>Leave. Runs on destroy.</td>
         </tr>
         <tr>
           <td><code>peers</code></td>
-          <td>
-            <code>Signal&lt;ReadonlyMap&lt;string, CollabPresence&gt;&gt;</code>
-            — other peers' name, color and selection.
-          </td>
+          <td><code>Signal&lt;ReadonlyMap&lt;string, CollabPresence&gt;&gt;</code></td>
         </tr>
         <tr>
           <td><code>connected</code></td>
-          <td>
-            <code>Signal&lt;boolean&gt;</code>
-            — the transport's state at attach.
-          </td>
+          <td><code>Signal&lt;boolean&gt;</code></td>
         </tr>
         <tr>
           <td><code>clientId</code></td>
@@ -118,13 +94,11 @@
         </tr>
         <tr>
           <td><code>flushLocal()</code></td>
-          <td>
-            Broadcast pending local changes now. Only needed outside Angular's effect scheduler (tests, custom drivers).
-          </td>
+          <td>Broadcast pending edits now. Only outside Angular's effect scheduler.</td>
         </tr>
       </tbody>
     </table>
-    <p>Driving the service directly is the same three steps the directive performs:</p>
+    <p>Without the directive:</p>
     <app-highlight lang="ts" [content]="MANUAL" />
   </section>
 
@@ -132,7 +106,6 @@
     <h4>Wire protocol</h4>
     <app-highlight lang="ts" [content]="COLLAB_MESSAGE" />
     <p class="collab-note">
-      The op algebra (
       <code>applyOp</code>
       ,
       <code>invertOp</code>
@@ -140,9 +113,9 @@
       <code>transformOp</code>
       ,
       <code>rebaseOp</code>
-      ,
+      and
       <code>diffDocuments</code>
-      ) is re-exported from this entry point for server-side rebasing.
+      are re-exported for server-side rebasing.
     </p>
   </section>
 </div>

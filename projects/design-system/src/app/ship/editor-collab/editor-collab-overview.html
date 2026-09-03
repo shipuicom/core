@@ -3,71 +3,33 @@
     <h4>Overview</h4>
     <p>
       <code>&#64;ship-ui/core/ship-editor-collab</code>
-      turns any
+      makes an
       <code>sh-editor</code>
-      into a shared document. It builds on the editor's operation model: every edit is a serializable op, concurrent
-      edits converge through the fuzz-verified
-      <code>transformOp</code>
-      /
-      <code>rebaseOp</code>
-      algebra, and remote edits never enter your local undo history.
+      a shared document. Edits are ops, concurrent ops are rebased, remote edits stay out of your undo history.
     </p>
-    <ul>
-      <li>
-        <code>shCollab</code>
-        — one attribute on
-        <code>sh-editor</code>
-        : provides the session, attaches it, mounts the cursor overlay and tears it all down with the editor.
-      </li>
-      <li>
-        <code>ShipEditorCollab</code>
-        — the session: broadcasts your edits, rebases and applies everyone else's.
-      </li>
-      <li>
-        <code>CollabTransport</code>
-        — any message pipe;
-        <code>BroadcastChannelTransport</code>
-        (same-origin windows, no server) and
-        <code>WebSocketTransport</code>
-        (server relay) ship built in.
-      </li>
-      <li>
-        <code>&lt;sh-editor-remote-cursors&gt;</code>
-        — peer carets, selections and name tags.
-      </li>
-    </ul>
   </section>
 
   <section>
     <h4>Quick start</h4>
     <p>
-      One attribute is the
-      <em>complete</em>
-      integration — a channel name shares the document between same-origin windows, a
+      A channel name shares between same-origin windows. A
       <code>ws://</code>
-      URL goes through a relay:
+      URL goes through a relay.
     </p>
     <app-highlight lang="html" [content]="ONE_LINER" />
   </section>
 
   <section>
     <h4>Live demo</h4>
-    <p>The source tabs show everything the demo does — the editor line is the integration, the rest is demo chrome.</p>
     <div class="collab-guide">
-      <strong>Try it:</strong>
+      <strong>Try it</strong>
       <ol>
+        <li>Open a second window.</li>
+        <li>Type in either — the other follows, with a colored remote caret.</li>
         <li>
-          Click
-          <em>Open second window</em>
-          and place the windows side by side.
-        </li>
-        <li>Type in either window — edits and the colored remote caret appear live in the other.</li>
-        <li>
-          Flip on
+          Turn on
           <em>Fuzz edits</em>
-          in one window, then keep typing in the
-          <em>other</em>
-          while random edits storm the first. When the checksums in both windows match, the documents converged.
+          in one window, type in the other. Matching checksums mean convergence.
         </li>
       </ol>
     </div>
@@ -77,59 +39,36 @@
       class="no-space">
       <collab-demo-example class="example" />
     </app-previewer>
+    <p>In the source, the editor line is the integration. Everything else is demo chrome.</p>
   </section>
 
   <section>
     <h4>How it works</h4>
     <ul>
       <li>
-        <strong>Session.</strong>
+        <strong>Session</strong>
+        —
         <code>shCollab</code>
-        provides a
+        provides
         <code>ShipEditorCollab</code>
-        on the editor and attaches it to the editor's engine after first render. From then on every local transaction is
-        broadcast as an
-        <code>EditorOp</code>
-        tagged with a sequence number and the sender's view of everyone else's sequence.
+        and attaches it to the editor after first render.
       </li>
       <li>
-        <strong>Convergence.</strong>
-        An incoming op is rebased over any local ops the sender had not yet seen (
-        <code>rebaseOp</code>
-        ), then applied with
-        <code>applyRemoteOperation</code>
-        , which maps your caret across the change and keeps remote edits out of your undo stack. The checksum badge in
-        the demo is the proof: it matches across windows after the fuzz storm.
+        <strong>Ops</strong>
+        — each local edit is broadcast with a sequence number and what the sender has seen.
       </li>
       <li>
-        <strong>Presence.</strong>
-        Selections are broadcast (throttled) with each op; the directive mounts
-        <code>&lt;sh-editor-remote-cursors&gt;</code>
-        in the editor body to paint them, and exposes
-        <code>collab.peers()</code>
-        for badges like the ones above.
+        <strong>Convergence</strong>
+        — incoming ops are rebased over unseen local ops, then applied without touching your undo stack.
       </li>
       <li>
-        <strong>Joining late.</strong>
-        A new window sends
-        <code>join</code>
-        ; any existing peer answers with a snapshot of the document, and the joiner starts from there.
+        <strong>Presence</strong>
+        — selections ride along with ops; the directive paints them as remote carets.
+      </li>
+      <li>
+        <strong>Late join</strong>
+        — a new window asks for a snapshot; any peer answers.
       </li>
     </ul>
-  </section>
-
-  <section>
-    <h4>Behavior guarantees</h4>
-    <p class="collab-note">
-      Undo only ever removes
-      <em>your</em>
-      edits; late joiners receive a snapshot from an existing peer; and the op algebra (
-      <code>transformOp</code>
-      ,
-      <code>rebaseOp</code>
-      ,
-      <code>applyOp</code>
-      ) is exported for integrations that need to rebase server-side.
-    </p>
   </section>
 </div>
