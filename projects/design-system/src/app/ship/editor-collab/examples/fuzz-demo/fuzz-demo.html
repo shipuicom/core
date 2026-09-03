@@ -6,22 +6,21 @@
           <span class="dot" [style.background]="side.color"></span>
           {{ side.name }}
         </sh-chip>
-        @for (peer of peers()[i] ?? []; track peer.clientId) {
-          <sh-chip class="sharp xsmall">
-            <span class="dot" [style.background]="peer.color"></span>
-            {{ peer.name }}
-          </sh-chip>
-        }
         <sh-chip class="sharp xsmall checksum">doc {{ checksums()[i] }}</sh-chip>
+        <sh-toggle class="primary" [checked]="side.fuzzer.running()" (checkedChange)="toggle(i, $event)" label="Fuzz">
+          Fuzz
+        </sh-toggle>
+        @if (side.fuzzer.running()) {
+          <sh-chip class="sharp xsmall checksum">ops {{ side.fuzzer.ops() }}</sh-chip>
+        }
       </div>
-
-      <!-- The integration. -->
       <sh-editor
-        shCollab="ship-docs-collab"
+        shCollab="ship-docs-fuzz"
         [presence]="side"
         [value]="initialHtml"
         format="html"
-        [multiCursor]="false" />
+        [multiCursor]="false"
+        [readonly]="side.fuzzer.running()" />
     </div>
   }
 </div>

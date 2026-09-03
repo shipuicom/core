@@ -484,6 +484,7 @@ export const routes: Routes = [
           { path: '', loadComponent: () => import('./ship/editor-collab/editor-collab-overview') },
           { path: 'transports', loadComponent: () => import('./ship/editor-collab/editor-collab-transports') },
           { path: 'relay', loadComponent: () => import('./ship/editor-collab/editor-collab-relay') },
+          { path: 'fuzz', loadComponent: () => import('./ship/editor-collab/editor-collab-fuzz') },
           { path: 'api', loadComponent: () => import('./ship/editor-collab/editor-collab-api') },
           fallbackOverview,
         ],

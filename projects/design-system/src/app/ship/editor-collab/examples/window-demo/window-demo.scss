@@ -1,17 +1,10 @@
 @use '../../../showcase' as *;
 
-.collab-sides {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: p2r(12);
-  padding: p2r(12);
-}
-
-.collab-side {
+.window-demo {
   display: flex;
   flex-direction: column;
   gap: p2r(8);
-  min-width: 0;
+  padding: p2r(12);
 }
 
 .collab-toolbar {
