@@ -13,41 +13,37 @@ import { CollabMessage, CollabTransport, ShEditorCollabDirective } from '@ship-u
  */
 @Injectable()
 export class MemoryHub implements OnDestroy {
-  #peers = new Set<MemoryPeer>();
+  #transports = new Set<CollabTransport & { deliver: (message: CollabMessage) => void }>();
 
   transport(): CollabTransport {
-    const peer = new MemoryPeer(this.#peers);
-    this.#peers.add(peer);
-    return peer;
+    let callback: ((message: CollabMessage) => void) | null = null;
+    const connected = signal(true);
+
+    const transport = {
+      connected: connected.asReadonly(),
+      deliver: (message: CollabMessage) => callback?.(message),
+      send: (message: CollabMessage) => {
+        if (!connected()) return;
+        const copy = structuredClone(message);
+        for (const other of this.#transports) if (other !== transport) setTimeout(() => other.deliver(copy));
+      },
+      subscribe: (cb: (message: CollabMessage) => void) => {
+        callback = cb;
+        return () => (callback = null);
+      },
+      destroy: () => {
+        connected.set(false);
+        callback = null;
+        this.#transports.delete(transport);
+      },
+    };
+
+    this.#transports.add(transport);
+    return transport;
   }
 
   ngOnDestroy() {
-    for (const peer of this.#peers) peer.destroy();
-  }
-}
-
-class MemoryPeer implements CollabTransport {
-  #callback: ((message: CollabMessage) => void) | null = null;
-  #connected = signal(true);
-  readonly connected = this.#connected.asReadonly();
-
-  constructor(private peers: Set<MemoryPeer>) {}
-
-  send(message: CollabMessage) {
-    if (!this.#connected()) return;
-    const copy = structuredClone(message);
-    for (const peer of this.peers) if (peer !== this) setTimeout(() => peer.#callback?.(copy));
-  }
-
-  subscribe(callback: (message: CollabMessage) => void) {
-    this.#callback = callback;
-    return () => (this.#callback = null);
-  }
-
-  destroy() {
-    this.#connected.set(false);
-    this.#callback = null;
-    this.peers.delete(this);
+    for (const transport of [...this.#transports]) transport.destroy!();
   }
 }
 
