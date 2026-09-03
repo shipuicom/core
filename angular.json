@@ -113,7 +113,7 @@
                 "output": "/assets/ship-code/"
               },
               {
-                "glob": "editors/*.@(ts|html|scss)",
+                "glob": "@(editors|editor-collab)/*.@(ts|html|scss)",
                 "input": "projects/design-system/src/app/ship",
                 "output": "/assets/examples/"
               },

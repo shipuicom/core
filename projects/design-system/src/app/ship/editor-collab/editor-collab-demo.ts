@@ -11,10 +11,7 @@ import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipEditor, logicalToPos } from '@ship-ui/core/ship-editor';
 import { ShEditorCollabDirective } from '@ship-ui/core/ship-editor-collab';
 import { ShipToggle } from '@ship-ui/core/ship-toggle';
-import { Highlight } from '../../previewer/highlight/highlight';
-import { HighlightFile } from '../../previewer/highlight-file/highlight-file';
 import { Previewer } from '../../previewer/previewer';
-import { MinimalCollab } from './examples/minimal-collab/minimal-collab';
 
 const PEER_COLORS = ['#e0533d', '#2f6fed', '#0f9d58', '#ab47bc', '#f4a712', '#00897b'];
 const PEER_NAMES = ['Ada', 'Grace', 'Alan', 'Edsger', 'Barbara', 'Donald'];
@@ -28,13 +25,13 @@ function hash(text: string): string {
 }
 
 @Component({
-  selector: 'app-editors-collab',
-  imports: [Previewer, Highlight, HighlightFile, ShipEditor, ShEditorCollabDirective, ShipButton, ShipToggle, MinimalCollab],
-  templateUrl: './editors-collab.html',
-  styleUrl: './editors-collab.scss',
+  selector: 'app-editor-collab-demo',
+  imports: [Previewer, ShipEditor, ShEditorCollabDirective, ShipButton, ShipToggle],
+  templateUrl: './editor-collab-demo.html',
+  styleUrl: './editor-collab-demo.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class EditorsCollab implements OnDestroy {
+export default class EditorCollabDemo implements OnDestroy {
   editor = viewChild<ShipEditor>('collabEditor');
   collab = viewChild<ShEditorCollabDirective>(ShEditorCollabDirective);
 
@@ -56,54 +53,9 @@ export default class EditorsCollab implements OnDestroy {
   });
   peerList = computed(() => Array.from(this.collab()?.collab.peers().values() ?? []));
 
-  ONE_LINER = `<!-- Same-origin windows share the document. Nothing else to wire. -->
-<sh-editor shCollab="my-doc" [presence]="{ name: 'Ada', color: '#e0533d' }" />`;
-
-  WS_TRANSPORT = `<!-- A ws:// or wss:// URL switches to WebSocketTransport — point it at a
-     relay that fans messages out in arrival order (total order = convergence). -->
-<sh-editor shCollab="ws://localhost:8787/my-doc" [presence]="{ name: 'Ada', color: '#e0533d' }" />`;
-
-  RELAY_CMD = `bun scripts/collab-relay.ts   # reference relay, ~40 lines`;
-
-  COLLAB_MESSAGE = `// Every message is plain JSON — postMessage/WebSocket/broker safe.
-type CollabMessage =
-  | { type: 'op'; clientId: string; seq: number;
-      seen: Record<string, number>;       // per-peer high-water marks
-      op: EditorOp; presence?: CollabPresence }
-  | { type: 'presence'; presence: CollabPresence }
-  | { type: 'join'; clientId: string }    // request a snapshot
-  | { type: 'snapshot'; toClientId: string; clientId: string;
-      doc: ASTDocument; seen: Record<string, number> }
-  | { type: 'leave'; clientId: string };`;
-
-  SWAP_TRANSPORT = `// Bind a transport instance instead of a string — the session, overlay
-// and protocol stay identical. You own its lifetime.
-transport = new MyBrokerTransport('doc-42');   // your implementation
-
-// <sh-editor [shCollab]="transport" [presence]="…" />`;
-
-  MANUAL = `// Under the hood — or when you want to attach yourself:
-@Component({ providers: [ShipEditorCollab], imports: [ShipEditor, ShEditorRemoteCursors] })
-export class DocPage {
-  collab = inject(ShipEditorCollab);
-  editor = viewChild.required<ShipEditor>('editor');
-
-  constructor() {
-    afterNextRender(() => {
-      this.collab.attach(this.editor().engine, { transport: new WebSocketTransport('ws://…/my-doc') });
-    });
-  }
-}
-// <sh-editor #editor><sh-editor-remote-cursors [collab]="collab" /></sh-editor>`;
-
-  CUSTOM_TRANSPORT = `interface CollabTransport {
-  send(message: CollabMessage): void;
-  subscribe(cb: (m: CollabMessage) => void): () => void;
-  readonly connected: Signal<boolean>;
-  destroy?(): void;
-}`;
-
   initialHtml = `<h2>Collaborative editing</h2><p>This document is shared between every window of this page — edits, carets and undo all stay in sync through the <strong>op-rebase</strong> pipeline.</p><p>Open a second window and type in both.</p>`;
+
+  #badgeTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     afterNextRender(() => {
@@ -111,13 +63,9 @@ export class DocPage {
       if (!editor) return;
       // Mirror engine version into a page signal for the checksum badge.
       const engine = editor.engine;
-      const tick = () => this.version.set(engine.version());
-      const interval = setInterval(tick, 300);
-      this.#badgeTimer = interval;
+      this.#badgeTimer = setInterval(() => this.version.set(engine.version()), 300);
     });
   }
-
-  #badgeTimer: ReturnType<typeof setInterval> | null = null;
 
   openWindow() {
     window.open(location.href, '_blank', 'width=760,height=920');

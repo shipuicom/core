@@ -1,0 +1,53 @@
+@use '../showcase' as *;
+
+:host {
+  @extend %tab-host;
+}
+
+.collab-doc {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(28);
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: p2r(10);
+
+    > h4 {
+      margin: 0;
+    }
+  }
+}
+
+app-highlight {
+  display: block;
+  margin-bottom: p2r(12);
+}
+
+.collab-note {
+  border-left: 3px solid var(--primary-6);
+  background: var(--base-2);
+  border-radius: 0 var(--shape-1) var(--shape-1) 0;
+  padding: p2r(10) p2r(14);
+  color: var(--base-11);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: p2r(14);
+
+  th,
+  td {
+    text-align: left;
+    vertical-align: top;
+    padding: p2r(6) p2r(10);
+    border-bottom: 1px solid var(--base-4);
+  }
+
+  th {
+    color: var(--base-10);
+    font-weight: 600;
+  }
+}

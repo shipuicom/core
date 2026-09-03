@@ -62,6 +62,7 @@ export const appConfig: ApplicationConfig = {
         { id: 'dialogs', label: 'Dialogs', category: 'Components', data: { route: '/dialogs' } },
         { id: 'dividers', label: 'Dividers', category: 'Components', data: { route: '/dividers' } },
         { id: 'editors', label: 'Editor', category: 'Form Fields', data: { route: '/editors' } },
+        { id: 'editor-collab', label: 'Editor Collab', category: 'Form Fields', data: { route: '/editor-collab' } },
         // Hidden until ready to ship — pages stay reachable at /code and /spreadsheet.
         // { id: 'code', label: 'Code Editor', category: 'Form Fields', data: { route: '/code' } },
         // { id: 'spreadsheet', label: 'Spreadsheet', category: 'Form Fields', data: { route: '/spreadsheet' } },

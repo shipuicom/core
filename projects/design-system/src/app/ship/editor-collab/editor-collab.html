@@ -1,0 +1,15 @@
+<h1>Editor Collab</h1>
+<!-- @keywords: editor, collab, collaboration, realtime, multiplayer, remote cursors, websocket, broadcast channel, ot, rebase -->
+
+<sh-tabs color="primary">
+  <button routerLink="/editor-collab" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+    Overview
+  </button>
+  <button routerLink="/editor-collab/demo" routerLinkActive="active">Live demo</button>
+  <button routerLink="/editor-collab/transports" routerLinkActive="active">Transports</button>
+  <button routerLink="/editor-collab/api" routerLinkActive="active">API</button>
+</sh-tabs>
+
+<div class="tab-content">
+  <router-outlet />
+</div>
