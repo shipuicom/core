@@ -24,7 +24,7 @@ const DEFAULT_OPTIONS = [
 export class LazySearchMultipleSelect {
   lazySearchOption = signal('');
 
-  options = computed(() => this.resource.value() ?? DEFAULT_OPTIONS);
+  options = computed(() => (this.resource.hasValue() ? this.resource.value() : DEFAULT_OPTIONS));
   resource = rxResource({
     params: () => ({
       query: this.lazySearchOption(),

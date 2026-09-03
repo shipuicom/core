@@ -63,6 +63,10 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
+      # The build prerenders every route; the API reference reads this asset.
+      - name: Generate MCP component metadata
+        run: bun mcp-server/scan.ts
+
       - name: Build design-system (development)
         run: npx ng build design-system --configuration development
 
