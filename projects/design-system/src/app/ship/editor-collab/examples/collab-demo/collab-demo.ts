@@ -8,42 +8,46 @@ import {
   viewChild,
 } from '@angular/core';
 import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipChip } from '@ship-ui/core/ship-chip';
 import { ShipEditor, logicalToPos } from '@ship-ui/core/ship-editor';
 import { ShEditorCollabDirective } from '@ship-ui/core/ship-editor-collab';
 import { ShipToggle } from '@ship-ui/core/ship-toggle';
-import { Previewer } from '../../previewer/previewer';
 
 const PEER_COLORS = ['#e0533d', '#2f6fed', '#0f9d58', '#ab47bc', '#f4a712', '#00897b'];
 const PEER_NAMES = ['Ada', 'Grace', 'Alan', 'Edsger', 'Barbara', 'Donald'];
-const FUZZ_WORDS = ['ship', 'collab', 'rebase', 'signal', 'editor', 'op'];
 
-/** Tiny stable checksum so two windows can visually compare documents. */
-function hash(text: string): string {
-  let h = 5381;
-  for (let i = 0; i < text.length; i++) h = ((h << 5) + h + text.charCodeAt(i)) >>> 0;
-  return h.toString(36).padStart(7, '0');
-}
-
+/**
+ * Two windows, one document.
+ *
+ * The integration is the `shCollab` attribute on `<sh-editor>` in the
+ * template — nothing in this class is required for collaboration. What's here
+ * is demo chrome: presence badges read from the directive, a checksum so two
+ * windows can be compared, and (at the bottom) a fuzz mode for stress-testing
+ * convergence.
+ */
 @Component({
-  selector: 'app-editor-collab-demo',
-  imports: [Previewer, ShipEditor, ShEditorCollabDirective, ShipButton, ShipToggle],
-  templateUrl: './editor-collab-demo.html',
-  styleUrl: './editor-collab-demo.scss',
+  selector: 'collab-demo-example',
+  imports: [ShipEditor, ShEditorCollabDirective, ShipButton, ShipChip, ShipToggle],
+  templateUrl: './collab-demo.html',
+  styleUrl: './collab-demo.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class EditorCollabDemo implements OnDestroy {
+export class CollabDemo implements OnDestroy {
   editor = viewChild<ShipEditor>('collabEditor');
+  /** The directive instance — exposes the session's `peers()` and `connected()`. */
   collab = viewChild<ShEditorCollabDirective>(ShEditorCollabDirective);
 
+  /** Bound to `[presence]` — shown on this window's caret in the other windows. */
   me = {
     name: PEER_NAMES[Math.floor(Math.random() * PEER_NAMES.length)],
     color: PEER_COLORS[Math.floor(Math.random() * PEER_COLORS.length)],
   };
 
-  fuzzing = signal(false);
-  fuzzOps = signal(0);
-  #fuzzTimer: ReturnType<typeof setInterval> | null = null;
-  #fuzzStop: ReturnType<typeof setTimeout> | null = null;
+  initialHtml = `<h2>Collaborative editing</h2><p>This document is shared between every window of this page — edits, carets and undo all stay in sync through the <strong>op-rebase</strong> pipeline.</p><p>Open a second window and type in both.</p>`;
+
+  // ── Demo chrome: peer badges + convergence checksum ──────────────────────
+
+  peerList = computed(() => Array.from(this.collab()?.collab.peers().values() ?? []));
 
   version = signal(0);
   checksum = computed(() => {
@@ -51,18 +55,13 @@ export default class EditorCollabDemo implements OnDestroy {
     const engine = this.editor()?.engine;
     return engine ? hash(JSON.stringify(engine.document())) : '—';
   });
-  peerList = computed(() => Array.from(this.collab()?.collab.peers().values() ?? []));
-
-  initialHtml = `<h2>Collaborative editing</h2><p>This document is shared between every window of this page — edits, carets and undo all stay in sync through the <strong>op-rebase</strong> pipeline.</p><p>Open a second window and type in both.</p>`;
-
   #badgeTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     afterNextRender(() => {
-      const editor = this.editor();
-      if (!editor) return;
-      // Mirror engine version into a page signal for the checksum badge.
-      const engine = editor.engine;
+      const engine = this.editor()?.engine;
+      if (!engine) return;
+      // Mirror the engine version into a page signal so the checksum recomputes.
       this.#badgeTimer = setInterval(() => this.version.set(engine.version()), 300);
     });
   }
@@ -70,6 +69,20 @@ export default class EditorCollabDemo implements OnDestroy {
   openWindow() {
     window.open(location.href, '_blank', 'width=760,height=920');
   }
+
+  ngOnDestroy() {
+    if (this.#badgeTimer) clearInterval(this.#badgeTimer);
+    this.toggleFuzz(false);
+  }
+
+  // ── Fuzz mode — NOT part of the integration ──────────────────────────────
+  // Storms this window with random inserts and deletes so you can watch the
+  // other window converge. Delete everything below this line in your own app.
+
+  fuzzing = signal(false);
+  fuzzOps = signal(0);
+  #fuzzTimer: ReturnType<typeof setInterval> | null = null;
+  #fuzzStop: ReturnType<typeof setTimeout> | null = null;
 
   toggleFuzz(on: boolean) {
     this.fuzzing.set(on);
@@ -109,9 +122,13 @@ export default class EditorCollabDemo implements OnDestroy {
     }
     this.fuzzOps.update((n) => n + 1);
   }
+}
 
-  ngOnDestroy() {
-    this.toggleFuzz(false);
-    if (this.#badgeTimer) clearInterval(this.#badgeTimer);
-  }
+const FUZZ_WORDS = ['ship', 'collab', 'rebase', 'signal', 'editor', 'op'];
+
+/** Tiny stable checksum so two windows can visually compare documents. */
+function hash(text: string): string {
+  let h = 5381;
+  for (let i = 0; i < text.length; i++) h = ((h << 5) + h + text.charCodeAt(i)) >>> 0;
+  return h.toString(36).padStart(7, '0');
 }

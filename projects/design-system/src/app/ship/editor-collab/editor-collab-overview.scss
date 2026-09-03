@@ -32,3 +32,15 @@ app-highlight {
   padding: p2r(10) p2r(14);
   color: var(--base-11);
 }
+
+.collab-guide {
+  background: var(--base-2);
+  border: 1px solid var(--base-4);
+  border-radius: var(--shape-2);
+  padding: p2r(10) p2r(14);
+
+  ol {
+    margin: p2r(6) 0 0;
+    padding-left: p2r(20);
+  }
+}

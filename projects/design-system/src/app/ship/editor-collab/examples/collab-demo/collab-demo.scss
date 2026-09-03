@@ -1,0 +1,38 @@
+@use '../../../showcase' as *;
+
+.collab-demo {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(12);
+  padding: p2r(12);
+}
+
+.collab-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: p2r(10);
+}
+
+sh-chip {
+  .dot {
+    width: p2r(8);
+    height: p2r(8);
+    border-radius: 50%;
+    margin-right: p2r(6);
+  }
+
+  &.checksum {
+    font-family: monospace;
+    color: var(--base-10);
+  }
+}
+
+.fuzz-banner {
+  border: 1px solid var(--warn-6, var(--base-6));
+  border-left-width: 3px;
+  background: var(--warn-2, var(--base-2));
+  color: var(--base-12);
+  border-radius: var(--shape-1);
+  padding: p2r(8) p2r(12);
+}
