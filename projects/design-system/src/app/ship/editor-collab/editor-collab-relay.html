@@ -1,0 +1,24 @@
+<div class="collab-doc">
+  <section>
+    <h4>Cross-machine</h4>
+    <p>
+      A
+      <code>ws://</code>
+      or
+      <code>wss://</code>
+      URL uses
+      <code>WebSocketTransport</code>
+      .
+    </p>
+    <app-highlight lang="html" [content]="WS_TRANSPORT" />
+  </section>
+
+  <section>
+    <h4>Reference relay</h4>
+    <p>One channel per URL path. Every message fans out to the other sockets in arrival order.</p>
+    <app-highlight lang="shell" [content]="RELAY_CMD" />
+    <div class="relay-source">
+      <app-highlight-file lang="ts" path="/scripts/collab-relay" />
+    </div>
+  </section>
+</div>

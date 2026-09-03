@@ -1,0 +1,36 @@
+@use '../../../showcase' as *;
+
+.collab-sides {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: p2r(12);
+  padding: p2r(12);
+}
+
+.collab-side {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(8);
+  min-width: 0;
+}
+
+.collab-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: p2r(8);
+}
+
+sh-chip {
+  .dot {
+    width: p2r(8);
+    height: p2r(8);
+    border-radius: 50%;
+    margin-right: p2r(6);
+  }
+
+  &.checksum {
+    font-family: monospace;
+    color: var(--base-10);
+  }
+}

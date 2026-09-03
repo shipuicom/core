@@ -1,0 +1,69 @@
+<div class="collab-doc">
+  <section>
+    <h4>Overview</h4>
+    <p>
+      <code>&#64;ship-ui/core/ship-editor-collab</code>
+      makes an
+      <code>sh-editor</code>
+      a shared document. Edits are ops, concurrent ops are rebased, remote edits stay out of your undo history.
+    </p>
+  </section>
+
+  <section>
+    <h4>Quick start</h4>
+    <p>
+      A channel name shares between same-origin windows. A
+      <code>ws://</code>
+      URL goes through a relay.
+    </p>
+    <app-highlight lang="html" [content]="ONE_LINER" />
+  </section>
+
+  <section>
+    <h4>Live demo</h4>
+    <div class="collab-guide">
+      <strong>Try it</strong>
+      <ol>
+        <li>Type in either editor — the other follows, with a colored remote caret.</li>
+        <li>Open this page in a second window — it joins the same document.</li>
+      </ol>
+    </div>
+    <app-previewer
+      path="/editor-collab/examples/collab-demo/collab-demo"
+      title="Two windows, one document"
+      class="no-space">
+      <collab-demo-example class="example" />
+    </app-previewer>
+    <p>In the source, the editor line is the integration. Everything else is demo chrome.</p>
+  </section>
+
+  <section>
+    <h4>How it works</h4>
+    <ul>
+      <li>
+        <strong>Session</strong>
+        —
+        <code>shCollab</code>
+        provides
+        <code>ShipEditorCollab</code>
+        and attaches it to the editor after first render.
+      </li>
+      <li>
+        <strong>Ops</strong>
+        — each local edit is broadcast with a sequence number and what the sender has seen.
+      </li>
+      <li>
+        <strong>Convergence</strong>
+        — incoming ops are rebased over unseen local ops, then applied without touching your undo stack.
+      </li>
+      <li>
+        <strong>Presence</strong>
+        — selections ride along with ops; the directive paints them as remote carets.
+      </li>
+      <li>
+        <strong>Late join</strong>
+        — a new window asks for a snapshot; any peer answers.
+      </li>
+    </ul>
+  </section>
+</div>

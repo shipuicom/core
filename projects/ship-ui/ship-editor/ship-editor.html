@@ -59,6 +59,9 @@
             <div class="sh-editor-source-error" role="alert">{{ error }}</div>
           }
         }
+        <!-- Overlays projected by the consumer (e.g. sh-editor-remote-cursors)
+             anchor to the body, which is the editor's positioning context. -->
+        <ng-content select="sh-editor-remote-cursors"></ng-content>
       </div>
       <sh-editor-link-popover [surface]="surface" />
       <sh-editor-image-popover [surface]="surface" [upload]="imageUpload()" />
