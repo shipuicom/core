@@ -4,40 +4,37 @@
     <sh-toggle class="primary" [checked]="fuzzing()" (checkedChange)="toggleFuzz($event)" label="Fuzz edits">
       Fuzz edits
     </sh-toggle>
-    <sh-chip class="sharp xsmall" [style.border-color]="me.color">
-      <span class="dot" [style.background]="me.color"></span>
-      You: {{ me.name }}
-    </sh-chip>
-    @for (peer of peerList(); track peer.clientId) {
-      <sh-chip class="sharp xsmall">
-        <span class="dot" [style.background]="peer.color"></span>
-        {{ peer.name }}
-      </sh-chip>
+    @if (fuzzing()) {
+      <sh-chip class="sharp xsmall checksum">fuzz ops {{ fuzzOps() }}</sh-chip>
     }
-    <sh-chip class="sharp xsmall checksum">
-      doc {{ checksum() }}
-      @if (fuzzing()) {
-        · fuzz ops {{ fuzzOps() }}
-      }
-    </sh-chip>
   </div>
 
-  @if (fuzzing()) {
-    <div class="fuzz-banner" role="status">
-      <strong>Editing is disabled in this window</strong>
-      while fuzz edits run, so the chaos and your typing don't fight over one caret. Type in the
-      <em>other</em>
-      window — or flip the toggle off to edit here again.
-    </div>
-  }
+  <div class="collab-sides">
+    @for (side of sides; track side.name; let i = $index) {
+      <div class="collab-side">
+        <div class="collab-toolbar">
+          <sh-chip class="sharp xsmall" [style.border-color]="side.color">
+            <span class="dot" [style.background]="side.color"></span>
+            {{ side.name }}
+          </sh-chip>
+          @for (peer of peers()[i] ?? []; track peer.clientId) {
+            <sh-chip class="sharp xsmall">
+              <span class="dot" [style.background]="peer.color"></span>
+              {{ peer.name }}
+            </sh-chip>
+          }
+          <sh-chip class="sharp xsmall checksum">doc {{ checksums()[i] }}</sh-chip>
+        </div>
 
-  <!-- The integration. -->
-  <sh-editor
-    #collabEditor
-    shCollab="ship-docs-collab"
-    [presence]="me"
-    [value]="initialHtml"
-    format="html"
-    [multiCursor]="false"
-    [readonly]="fuzzing()" />
+        <!-- The integration. -->
+        <sh-editor
+          shCollab="ship-docs-collab"
+          [presence]="side"
+          [value]="initialHtml"
+          format="html"
+          [multiCursor]="false"
+          [readonly]="fuzzing() && i === 0" />
+      </div>
+    }
+  </div>
 </div>
