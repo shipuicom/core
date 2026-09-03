@@ -54,6 +54,9 @@ export class ShipEditorCollab {
   #presenceThrottleMs = 100;
   #presenceTimer: ReturnType<typeof setTimeout> | null = null;
   #lastPresenceAt = 0;
+  // Closing a window skips Angular's destroy hooks, so announce the leave on
+  // pagehide as well. Bound once so detach() can remove it.
+  #onPageHide = () => this.#send({ type: 'leave', clientId: this.clientId });
 
   // Send-side bookkeeping.
   #applyingRemote = false;
@@ -100,11 +103,14 @@ export class ShipEditorCollab {
       this.#effects = [];
     }
 
+    if (typeof window !== 'undefined') window.addEventListener('pagehide', this.#onPageHide);
+
     this.#send({ type: 'join', clientId: this.clientId });
     this.#broadcastPresence();
   }
 
   detach(): void {
+    if (typeof window !== 'undefined') window.removeEventListener('pagehide', this.#onPageHide);
     if (this.#transport) this.#send({ type: 'leave', clientId: this.clientId });
     this.#unsubscribe?.();
     this.#unsubscribe = null;
