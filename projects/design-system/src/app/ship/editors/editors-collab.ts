@@ -3,18 +3,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   OnDestroy,
   signal,
   viewChild,
 } from '@angular/core';
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipEditor, logicalToPos } from '@ship-ui/core/ship-editor';
-import {
-  BroadcastChannelTransport,
-  ShEditorRemoteCursors,
-  ShipEditorCollab,
-} from '@ship-ui/core/ship-editor-collab';
+import { ShEditorCollabDirective } from '@ship-ui/core/ship-editor-collab';
 import { ShipToggle } from '@ship-ui/core/ship-toggle';
 import { Highlight } from '../../previewer/highlight/highlight';
 import { HighlightFile } from '../../previewer/highlight-file/highlight-file';
@@ -34,17 +29,15 @@ function hash(text: string): string {
 
 @Component({
   selector: 'app-editors-collab',
-  imports: [Previewer, Highlight, HighlightFile, ShipEditor, ShEditorRemoteCursors, ShipButton, ShipToggle, MinimalCollab],
-  providers: [ShipEditorCollab],
+  imports: [Previewer, Highlight, HighlightFile, ShipEditor, ShEditorCollabDirective, ShipButton, ShipToggle, MinimalCollab],
   templateUrl: './editors-collab.html',
   styleUrl: './editors-collab.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class EditorsCollab implements OnDestroy {
-  collab = inject(ShipEditorCollab);
   editor = viewChild<ShipEditor>('collabEditor');
+  collab = viewChild<ShEditorCollabDirective>(ShEditorCollabDirective);
 
-  transport = new BroadcastChannelTransport('ship-docs-collab');
   me = {
     name: PEER_NAMES[Math.floor(Math.random() * PEER_NAMES.length)],
     color: PEER_COLORS[Math.floor(Math.random() * PEER_COLORS.length)],
@@ -61,28 +54,14 @@ export default class EditorsCollab implements OnDestroy {
     const engine = this.editor()?.engine;
     return engine ? hash(JSON.stringify(engine.document())) : '—';
   });
-  peerList = computed(() => Array.from(this.collab.peers().values()));
+  peerList = computed(() => Array.from(this.collab()?.collab.peers().values() ?? []));
 
-  WS_TRANSPORT = `// editor.engine comes from the ShipEditor component instance —
-// grab it with a viewChild on the <sh-editor #editor /> in your template.
-@Component({ providers: [ShipEditorCollab], /* … */ })
-export class DocPage {
-  collab = inject(ShipEditorCollab);
-  editor = viewChild.required<ShipEditor>('editor');
+  ONE_LINER = `<!-- Same-origin windows share the document. Nothing else to wire. -->
+<sh-editor shCollab="my-doc" [presence]="{ name: 'Ada', color: '#e0533d' }" />`;
 
-  constructor() {
-    afterNextRender(() => {
-      // One line to go cross-machine — point it at a relay that fans
-      // messages out in arrival order (total order = convergence).
-      const transport = new WebSocketTransport('ws://localhost:8787/my-doc');
-
-      this.collab.attach(this.editor().engine, {
-        transport,
-        presence: { name: 'Ada', color: '#e0533d' },
-      });
-    });
-  }
-}`;
+  WS_TRANSPORT = `<!-- A ws:// or wss:// URL switches to WebSocketTransport — point it at a
+     relay that fans messages out in arrival order (total order = convergence). -->
+<sh-editor shCollab="ws://localhost:8787/my-doc" [presence]="{ name: 'Ada', color: '#e0533d' }" />`;
 
   RELAY_CMD = `bun scripts/collab-relay.ts   # reference relay, ~40 lines`;
 
@@ -97,12 +76,25 @@ type CollabMessage =
       doc: ASTDocument; seen: Record<string, number> }
   | { type: 'leave'; clientId: string };`;
 
-  SWAP_TRANSPORT = `// Replacing the transport is the only change — the session,
-// overlay and protocol stay identical.
-this.collab.attach(this.editor().engine, {
-  transport: new MyBrokerTransport('doc-42'),   // your implementation
-  presence: { name: 'Ada', color: '#e0533d' },
-});`;
+  SWAP_TRANSPORT = `// Bind a transport instance instead of a string — the session, overlay
+// and protocol stay identical. You own its lifetime.
+transport = new MyBrokerTransport('doc-42');   // your implementation
+
+// <sh-editor [shCollab]="transport" [presence]="…" />`;
+
+  MANUAL = `// Under the hood — or when you want to attach yourself:
+@Component({ providers: [ShipEditorCollab], imports: [ShipEditor, ShEditorRemoteCursors] })
+export class DocPage {
+  collab = inject(ShipEditorCollab);
+  editor = viewChild.required<ShipEditor>('editor');
+
+  constructor() {
+    afterNextRender(() => {
+      this.collab.attach(this.editor().engine, { transport: new WebSocketTransport('ws://…/my-doc') });
+    });
+  }
+}
+// <sh-editor #editor><sh-editor-remote-cursors [collab]="collab" /></sh-editor>`;
 
   CUSTOM_TRANSPORT = `interface CollabTransport {
   send(message: CollabMessage): void;
@@ -117,10 +109,6 @@ this.collab.attach(this.editor().engine, {
     afterNextRender(() => {
       const editor = this.editor();
       if (!editor) return;
-      this.collab.attach(editor.engine, {
-        transport: this.transport,
-        presence: this.me,
-      });
       // Mirror engine version into a page signal for the checksum badge.
       const engine = editor.engine;
       const tick = () => this.version.set(engine.version());
@@ -177,7 +165,5 @@ this.collab.attach(this.editor().engine, {
   ngOnDestroy() {
     this.toggleFuzz(false);
     if (this.#badgeTimer) clearInterval(this.#badgeTimer);
-    this.collab.detach();
-    this.transport.destroy();
   }
 }

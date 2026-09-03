@@ -8,6 +8,8 @@
       undo history.
     </p>
     <ul>
+      <li><code>shCollab</code> — one attribute on <code>sh-editor</code>: provides the session, attaches it, mounts
+        the cursor overlay and tears it all down with the editor.</li>
       <li><code>ShipEditorCollab</code> — the session: broadcasts your edits, rebases and applies everyone else's.</li>
       <li><code>CollabTransport</code> — any message pipe; <code>BroadcastChannelTransport</code> (same-origin windows,
         no server) and <code>WebSocketTransport</code> (server relay) ship built in.</li>
@@ -18,9 +20,10 @@
   <section>
     <h4>Quick start</h4>
     <p>
-      The Typescript tab below is the <em>complete</em> integration: provide the service, attach it to the editor's
-      engine with a transport, and project the cursor overlay inside the editor.
+      One attribute is the <em>complete</em> integration — a channel name shares the document between same-origin
+      windows, a <code>ws://</code> URL goes through a relay:
     </p>
+    <app-highlight lang="html" [content]="ONE_LINER" />
     <app-previewer
       path="/editors/examples/minimal-collab/minimal-collab"
       title="Minimum viable collab"
@@ -71,9 +74,14 @@
             don't fight over one caret. Type in the <em>other</em> window — or flip the toggle off to edit here again.
           </div>
         }
-        <sh-editor #collabEditor [value]="initialHtml" format="html" [multiCursor]="false" [readonly]="fuzzing()">
-          <sh-editor-remote-cursors [collab]="collab" />
-        </sh-editor>
+        <sh-editor
+          #collabEditor
+          shCollab="ship-docs-collab"
+          [presence]="me"
+          [value]="initialHtml"
+          format="html"
+          [multiCursor]="false"
+          [readonly]="fuzzing()" />
       </div>
     </app-previewer>
   </section>
@@ -82,9 +90,9 @@
     <h4>Going cross-machine</h4>
     <p>
       <code>BroadcastChannelTransport</code> only reaches windows of the same browser. For real multi-user sessions
-      swap in <code>WebSocketTransport</code>:
+      hand <code>shCollab</code> a relay URL:
     </p>
-    <app-highlight lang="ts" [content]="WS_TRANSPORT" />
+    <app-highlight lang="html" [content]="WS_TRANSPORT" />
 
     <p>
       Point it at any relay that fans each message out to the other sockets in arrival order — that ordering is what
@@ -103,6 +111,22 @@
       channels, SSE + POST, a message broker):
     </p>
     <app-highlight lang="ts" [content]="CUSTOM_TRANSPORT" />
+    <ul>
+      <li><code>send</code> — deliver the message to every <em>other</em> peer on the document. Echoing it back to
+        the sender is harmless (the session drops its own <code>clientId</code>), just wasteful. Queue while
+        disconnected; the session never retries.</li>
+      <li><code>subscribe</code> — call back with every message from other peers, in the order each peer sent
+        them. Return the unsubscribe function; the session calls it on detach.</li>
+      <li><code>connected</code> — a signal, read once at attach into <code>ShipEditorCollab.connected</code>.
+        Informational only; no message is gated on it.</li>
+      <li><code>destroy</code> — optional. <code>shCollab</code> calls it only on transports it created from a
+        string; a transport you bind yourself is yours to destroy.</li>
+    </ul>
+    <p>
+      Ordering is the one hard requirement. Per-sender order is enough for two peers. For three or more, route
+      through something that serializes all senders into one arrival order (a relay, a broker topic, a single
+      server) — that total order is what every peer rebases against.
+    </p>
 
     <p>
       Your implementation only ferries <code>CollabMessage</code> values — opaque JSON as far as the transport is
@@ -111,10 +135,16 @@
     <app-highlight lang="ts" [content]="COLLAB_MESSAGE" />
 
     <p>
-      Swapping transports is a one-argument change at <code>attach</code> time — nothing else in your component, the
-      overlay or the protocol changes:
+      Bind the instance to <code>shCollab</code> — nothing else in your component, the overlay or the protocol
+      changes:
     </p>
     <app-highlight lang="ts" [content]="SWAP_TRANSPORT" />
+
+    <p>
+      Prefer to drive the session yourself (custom overlay placement, attaching later, several editors sharing one
+      transport)? The directive is a thin wrapper over the service — this is everything it does:
+    </p>
+    <app-highlight lang="ts" [content]="MANUAL" />
   </section>
 
   <section>
