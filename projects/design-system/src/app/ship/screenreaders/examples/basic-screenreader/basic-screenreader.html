@@ -3,23 +3,23 @@
 <h4>Try it: tab through the controls below</h4>
 
 <div class="playground">
-  <button type="button" [attr.aria-expanded]="expanded()" (click)="toggle()">Settings</button>
+  <button shButton class="primary raised" [attr.aria-expanded]="expanded()" (click)="toggle()">Settings</button>
 
-  <label>
-    <input type="checkbox" checked />
+  <sh-checkbox class="primary">
+    <input type="checkbox" [formField]="termsForm" />
     Accept terms
-  </label>
+  </sh-checkbox>
 
-  <label>
-    Email
-    <input type="email" required aria-invalid="true" value="foo" />
-  </label>
+  <sh-form-field>
+    <label>Email</label>
+    <input type="email" [formField]="emailForm" [attr.aria-required]="true" [attr.aria-invalid]="emailInvalid()" />
+  </sh-form-field>
 
-  <div role="listbox" aria-label="Fruit">
-    <div role="option" aria-selected="false" tabindex="0">Pears</div>
-    <div role="option" aria-selected="true" tabindex="0">Apples</div>
-    <div role="option" aria-selected="false" tabindex="0">Plums</div>
-  </div>
+  <sh-list class="primary" listRole="listbox" label="Fruit" [(value)]="fruit">
+    <button value="pears">Pears</button>
+    <button value="apples">Apples</button>
+    <button value="plums">Plums</button>
+  </sh-list>
 
-  <button type="button" (click)="save()">Save draft (live region)</button>
+  <button shButton class="primary" (click)="save()">Save draft (live region)</button>
 </div>
