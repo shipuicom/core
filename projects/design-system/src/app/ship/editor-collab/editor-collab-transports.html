@@ -12,19 +12,9 @@
         <code>ws://</code>
         or
         <code>wss://</code>
-        URL.
+        URL. See the Relay tab.
       </li>
     </ul>
-  </section>
-
-  <section>
-    <h4>Cross-machine</h4>
-    <app-highlight lang="html" [content]="WS_TRANSPORT" />
-    <p>The relay fans every message out to the other sockets in arrival order. The reference one ships in the repo:</p>
-    <app-highlight lang="shell" [content]="RELAY_CMD" />
-    <div class="relay-source">
-      <app-highlight-file lang="ts" path="/scripts/collab-relay" />
-    </div>
   </section>
 
   <section>
@@ -53,5 +43,17 @@
       topic, a single server.
     </p>
     <app-highlight lang="ts" [content]="SWAP_TRANSPORT" />
+  </section>
+
+  <section>
+    <h4>Example</h4>
+    <p>An in-memory hub as a service. Provided on the component, it destroys its transports when the component goes.</p>
+    <app-previewer
+      path="/editor-collab/examples/memory-transport/memory-transport"
+      title="In-memory transport"
+      defaultView="typescript"
+      class="no-space">
+      <memory-transport-example class="example" />
+    </app-previewer>
   </section>
 </div>

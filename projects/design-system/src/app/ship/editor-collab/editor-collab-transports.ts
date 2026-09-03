@@ -1,19 +1,16 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Highlight } from '../../previewer/highlight/highlight';
-import { HighlightFile } from '../../previewer/highlight-file/highlight-file';
+import { Previewer } from '../../previewer/previewer';
+import { MemoryTransport } from './examples/memory-transport/memory-transport';
 
 @Component({
   selector: 'app-editor-collab-transports',
-  imports: [Highlight, HighlightFile],
+  imports: [Highlight, Previewer, MemoryTransport],
   templateUrl: './editor-collab-transports.html',
   styleUrl: './editor-collab-transports.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class EditorCollabTransports {
-  WS_TRANSPORT = `<sh-editor shCollab="ws://localhost:8787/my-doc" [presence]="{ name: 'Ada', color: '#e0533d' }" />`;
-
-  RELAY_CMD = `bun scripts/collab-relay.ts`;
-
   CUSTOM_TRANSPORT = `interface CollabTransport {
   send(message: CollabMessage): void;
   subscribe(cb: (m: CollabMessage) => void): () => void;

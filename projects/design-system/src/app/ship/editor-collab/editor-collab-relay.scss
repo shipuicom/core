@@ -32,3 +32,10 @@ app-highlight {
   padding: p2r(10) p2r(14);
   color: var(--base-11);
 }
+
+.relay-source {
+  max-height: p2r(420);
+  overflow: auto;
+  border: 1px solid var(--base-4);
+  border-radius: var(--shape-2);
+}

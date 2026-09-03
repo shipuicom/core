@@ -483,6 +483,7 @@ export const routes: Routes = [
         children: [
           { path: '', loadComponent: () => import('./ship/editor-collab/editor-collab-overview') },
           { path: 'transports', loadComponent: () => import('./ship/editor-collab/editor-collab-transports') },
+          { path: 'relay', loadComponent: () => import('./ship/editor-collab/editor-collab-relay') },
           { path: 'api', loadComponent: () => import('./ship/editor-collab/editor-collab-api') },
           fallbackOverview,
         ],
