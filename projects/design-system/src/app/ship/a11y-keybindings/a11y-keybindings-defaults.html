@@ -1,0 +1,37 @@
+<app-property-viewer>
+  <section>
+    <h4>Default bindings</h4>
+    <p>
+      Every action ShipUI components ask the service about, with its default shortcut. Override any of them through
+      <code>SHIP_A11Y_KEYBINDINGS_OVERRIDE</code>
+      . Shortcuts are shown for this OS.
+    </p>
+  </section>
+
+  @for (g of groups; track g.name) {
+    <section>
+      <h4>
+        <code>{{ g.name }}</code>
+      </h4>
+      <table class="defaults">
+        <tbody>
+          @for (row of g.rows; track row.action) {
+            <tr>
+              <td>
+                <code>{{ row.action }}</code>
+              </td>
+              <td>
+                @for (key of row.keys; track key; let last = $last) {
+                  <kbd>{{ key }}</kbd>
+                  @if (!last) {
+                    <span class="or">or</span>
+                  }
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  }
+</app-property-viewer>

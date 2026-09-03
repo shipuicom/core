@@ -75,5 +75,4 @@ try {
 } finally {
   this.#keybindings.resume();
 }`;
-
 }

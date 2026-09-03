@@ -851,36 +851,36 @@ describe('ShipTable Keyboard Resizing & Accessibility Shortcuts', () => {
 
     expect(document.activeElement).toBe(c00);
 
-    // Press 's' to navigate down to C10
+    // Press ArrowDown to navigate down to C10
     const sEvent = new KeyboardEvent('keydown', {
-      key: 's',
+      key: 'ArrowDown',
       bubbles: true,
     });
     c00.dispatchEvent(sEvent);
     gridFixture.detectChanges();
     expect(document.activeElement).toBe(c10);
 
-    // Press 'd' to navigate right to C11
+    // Press ArrowRight to navigate right to C11
     const dEvent = new KeyboardEvent('keydown', {
-      key: 'd',
+      key: 'ArrowRight',
       bubbles: true,
     });
     c10.dispatchEvent(dEvent);
     gridFixture.detectChanges();
     expect(document.activeElement).toBe(c11);
 
-    // Press 'w' to navigate up to C01
+    // Press ArrowUp to navigate up to C01
     const wEvent = new KeyboardEvent('keydown', {
-      key: 'w',
+      key: 'ArrowUp',
       bubbles: true,
     });
     c11.dispatchEvent(wEvent);
     gridFixture.detectChanges();
     expect(document.activeElement).toBe(c01);
 
-    // Press 'a' to navigate left to C00
+    // Press ArrowLeft to navigate left to C00
     const aEvent = new KeyboardEvent('keydown', {
-      key: 'a',
+      key: 'ArrowLeft',
       bubbles: true,
     });
     c01.dispatchEvent(aEvent);

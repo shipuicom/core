@@ -2,19 +2,30 @@
   <section>
     <h4>ShipA11yKeybindingsService</h4>
     <p>
-      <code>ShipA11yKeybindingsService</code> is the root-provided registry behind every keyboard interaction in ShipUI.
-      Actions are named (<code>'spotlight.open'</code>, <code>'datepicker.next-month'</code>, …) and mapped to shortcut
-      strings; components ask the service whether a <code>KeyboardEvent</code> matches an action instead of hard-coding
-      keys. You can reuse it for your own components and remap any binding app-wide.
+      <code>ShipA11yKeybindingsService</code>
+      is the root-provided registry behind every keyboard interaction in ShipUI. Actions are named (
+      <code>'spotlight.open'</code>
+      ,
+      <code>'datepicker.next-month'</code>
+      , …) and mapped to shortcut strings; components ask the service whether a
+      <code>KeyboardEvent</code>
+      matches an action instead of hard-coding keys. You can reuse it for your own components and remap any binding
+      app-wide.
     </p>
   </section>
 
   <section>
     <h4>Overriding default bindings</h4>
     <p>
-      Provide <code>SHIP_A11Y_KEYBINDINGS_OVERRIDE</code> to replace the defaults for any action. The
-      <code>ctrlOrCmd</code> modifier resolves to <code>Cmd</code> on macOS and <code>Ctrl</code> elsewhere, and a
-      comma-separated string registers multiple shortcuts for one action.
+      Provide
+      <code>SHIP_A11Y_KEYBINDINGS_OVERRIDE</code>
+      to replace the defaults for any action. The
+      <code>ctrlOrCmd</code>
+      modifier resolves to
+      <code>Cmd</code>
+      on macOS and
+      <code>Ctrl</code>
+      elsewhere, and a comma-separated string registers multiple shortcuts for one action.
     </p>
     <app-highlight lang="ts" [content]="codeOverrides" />
   </section>
@@ -22,8 +33,12 @@
   <section>
     <h4>Matching events for your own actions</h4>
     <p>
-      <code>registerDefaults()</code> adds bindings without stomping user overrides, and <code>matches()</code> tests a
-      live <code>KeyboardEvent</code> against the active binding for an action:
+      <code>registerDefaults()</code>
+      adds bindings without stomping user overrides, and
+      <code>matches()</code>
+      tests a live
+      <code>KeyboardEvent</code>
+      against the active binding for an action:
     </p>
     <app-highlight lang="ts" [content]="codeMatches" />
   </section>
@@ -31,9 +46,17 @@
   <section>
     <h4>Displaying shortcuts</h4>
     <p>
-      Use <code>getShortcut()</code> / <code>getDefaultShortcut()</code> to read raw binding strings and
-      <code>getDisplayShortcut()</code> for platform-aware labels suited for tooltips, <code>sh-kbd</code> hints and
-      <code>aria-keyshortcuts</code>:
+      Use
+      <code>getShortcut()</code>
+      /
+      <code>getDefaultShortcut()</code>
+      to read raw binding strings and
+      <code>getDisplayShortcut()</code>
+      for platform-aware labels suited for tooltips,
+      <code>sh-kbd</code>
+      hints and
+      <code>aria-keyshortcuts</code>
+      :
     </p>
     <app-highlight lang="ts" [content]="codeDisplay" />
   </section>
@@ -41,11 +64,15 @@
   <section>
     <h4>Screen-reader announcements</h4>
     <p>
-      The companion <code>ShipA11yAnnouncerService</code> (from
-      <code>&#64;ship-ui/core/ship-a11y-announcer</code>) voices state changes the DOM doesn't announce on its own,
-      through hidden <code>aria-live</code> regions. ShipUI uses it throughout: alert toasts, select option changes
-      and filtered counts, menu search results, editor formatting/undo, spreadsheet selection and copy, and datepicker
-      month navigation. Call it from your own components for anything a screen reader would otherwise miss:
+      The companion
+      <code>ShipA11yAnnouncerService</code>
+      (from
+      <code>&#64;ship-ui/core/ship-a11y-announcer</code>
+      ) voices state changes the DOM doesn't announce on its own, through hidden
+      <code>aria-live</code>
+      regions. ShipUI uses it throughout: alert toasts, select option changes and filtered counts, menu search results,
+      editor formatting/undo, spreadsheet selection and copy, and datepicker month navigation. Call it from your own
+      components for anything a screen reader would otherwise miss:
     </p>
     <app-highlight lang="ts" [content]="codeAnnounce" />
   </section>
@@ -53,9 +80,14 @@
   <section>
     <h4>Pausing and disabling</h4>
     <p>
-      <code>pause()</code> / <code>resume()</code> temporarily suspend matching (reference-counted, reflected in the
-      <code>isPaused</code> signal). The <code>isDisabled</code> signal reflects a global kill-switch for all
-      keybinding handling.
+      <code>pause()</code>
+      /
+      <code>resume()</code>
+      temporarily suspend matching (reference-counted, reflected in the
+      <code>isPaused</code>
+      signal). The
+      <code>isDisabled</code>
+      signal reflects a global kill-switch for all keybinding handling.
     </p>
     <app-highlight lang="ts" [content]="codePause" />
   </section>
