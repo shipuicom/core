@@ -1,0 +1,8 @@
+<sh-code-input [(value)]="code" (completed)="submitted.set($event)" #input>
+  <label>Enter the 6-digit code we sent you</label>
+</sh-code-input>
+
+<p>Value: {{ code() || '—' }}</p>
+<p>Completed with: {{ submitted() || '—' }}</p>
+
+<button shButton class="small" (click)="input.clear(); submitted.set('')">Clear</button>

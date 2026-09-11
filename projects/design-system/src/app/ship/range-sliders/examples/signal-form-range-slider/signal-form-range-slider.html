@@ -1,0 +1,8 @@
+<sh-range-slider>
+  <label for="signal-range-demo">Select a value (Signal Form):</label>
+  <input id="signal-range-demo" type="range" [formField]="volumeForm" />
+</sh-range-slider>
+<p>Selected: {{ volume() }}</p>
+@for (error of volumeForm().errors(); track error.kind) {
+  <p class="error">{{ error.message }}</p>
+}

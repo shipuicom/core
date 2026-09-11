@@ -1,0 +1,10 @@
+<sh-select [options]="options()" label="label" value="value">
+  <label>Favorite food (signal form)</label>
+  <input type="text" [formField]="foodForm" />
+</sh-select>
+
+<p>Selected: {{ food() || '—' }}</p>
+<p>Valid: {{ foodForm().valid() }}</p>
+@for (error of foodForm().errors(); track error.kind) {
+  <p class="error">{{ error.message }}</p>
+}

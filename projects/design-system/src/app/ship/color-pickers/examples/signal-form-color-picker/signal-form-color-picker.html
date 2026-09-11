@@ -1,0 +1,7 @@
+<sh-color-picker-input format="hex">
+  <label>Brand color (signal form)</label>
+  <input type="text" [formField]="colorForm" />
+</sh-color-picker-input>
+
+<div class="swatch" [style.background]="color()"></div>
+<p>Value: {{ color() }}</p>

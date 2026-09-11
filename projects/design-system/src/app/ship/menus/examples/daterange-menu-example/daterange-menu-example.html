@@ -1,0 +1,14 @@
+<sh-menu [(isOpen)]="isOpen" [closeOnClick]="false" [openIndicator]="true">
+  <button shButton class="outlined">Date range</button>
+  <ng-container menu>
+    @for (preset of presets; track preset.days) {
+      <button (click)="applyPreset(preset.days)">{{ preset.label }}</button>
+    }
+    <div title>Custom</div>
+    <sh-daterange-input masking="yyyy-MM-dd" (closed)="applyCustom($event)">
+      <input type="text" [formField]="rangeForm.start" placeholder="Start" />
+      <input type="text" [formField]="rangeForm.end" placeholder="End" />
+    </sh-daterange-input>
+  </ng-container>
+</sh-menu>
+<p>Applied: {{ applied().start | date: 'mediumDate' }} – {{ applied().end | date: 'mediumDate' }}</p>

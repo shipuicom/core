@@ -290,6 +290,16 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'code-inputs',
+        loadComponent: () => import('./ship/code-inputs/code-inputs'),
+        children: [
+          { path: '', loadComponent: () => import('./ship/code-inputs/code-inputs-overview') },
+          { path: 'api', loadComponent: () => import('./ship/code-inputs/code-inputs-api') },
+          { path: 'examples', loadComponent: () => import('./ship/code-inputs/code-inputs-examples') },
+          fallbackOverview,
+        ],
+      },
+      {
         path: 'range-sliders',
         loadComponent: () => import('./ship/range-sliders/range-sliders'),
         children: [

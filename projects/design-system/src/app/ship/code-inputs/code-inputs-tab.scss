@@ -1,0 +1,19 @@
+@use '../showcase' as *;
+
+:host {
+  @extend %tab-host;
+}
+
+.example {
+  width: 100%;
+  max-width: p2r(600);
+  display: flex;
+  flex-direction: column;
+  gap: p2r(8);
+}
+
+.sandbox-example {
+  .example {
+    max-width: initial;
+  }
+}

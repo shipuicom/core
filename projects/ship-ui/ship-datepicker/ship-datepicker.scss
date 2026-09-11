@@ -54,8 +54,6 @@ $shipDatepicker: true !default;
     }
 
     sh-datepicker {
-      z-index: 10000;
-      position: relative;
       --dp-width: #{p2r(240)};
     }
   }

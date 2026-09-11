@@ -1,0 +1,35 @@
+<sh-form-field>
+  <label>Name</label>
+  <input placeholder="Your name..." [formField]="profileForm.name" />
+  <sh-icon prefix>user</sh-icon>
+  <span hint>{{ profile().name.length }}/10</span>
+  @if (profileForm.name().touched() && profileForm.name().errors()[0]; as error) {
+    <span error>{{ error.message }}</span>
+  }
+</sh-form-field>
+
+<sh-form-field>
+  <label>Email</label>
+  <input type="email" placeholder="you@example.com" [formField]="profileForm.email" />
+  <sh-icon prefix>envelope</sh-icon>
+  @if (profileForm.email().touched() && profileForm.email().errors()[0]; as error) {
+    <span error>{{ error.message }}</span>
+  }
+</sh-form-field>
+
+<sh-form-field>
+  <label>Bio</label>
+  <textarea placeholder="A few words about you..." [formField]="profileForm.bio"></textarea>
+  <span hint>Minimum 20 characters</span>
+  @if (profileForm.bio().touched() && profileForm.bio().errors()[0]; as error) {
+    <span error>{{ error.message }}</span>
+  }
+</sh-form-field>
+
+<sh-form-field>
+  <label>Disabled via schema</label>
+  <input [formField]="profileForm.locked" />
+</sh-form-field>
+
+<p>Form valid: {{ profileForm().valid() }}</p>
+<pre>{{ profile() | json }}</pre>

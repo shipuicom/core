@@ -1,0 +1,8 @@
+<sh-datepicker-input>
+  <label>Date (Signal Form)</label>
+  <input type="text" [formField]="dateForm" />
+</sh-datepicker-input>
+<p>Selected: {{ date() | date: 'mediumDate' }}</p>
+@for (error of dateForm().errors(); track error.kind) {
+  <p class="error">{{ error.message }}</p>
+}

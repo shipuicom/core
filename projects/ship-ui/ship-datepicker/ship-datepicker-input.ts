@@ -174,9 +174,12 @@ export class ShipDatepickerInput {
   onDateChange(date: Date | null) {
     this.internalDate.set(date);
 
+    // Reactive/ngModel controls are pushed the Date directly. Signal forms
+    // register a FormField as NgControl without a setValue — they pick the
+    // change up from the input event the value signal write-back dispatches.
     const control = this.ngControl()?.control;
 
-    if (control) {
+    if (control && typeof control.setValue === 'function') {
       control.setValue(date);
     }
   }

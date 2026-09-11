@@ -84,6 +84,7 @@ export const appConfig: ApplicationConfig = {
         { id: 'tooltips', label: 'Tooltips', category: 'Components', data: { route: '/tooltips' } },
         { id: 'tree', label: 'Tree', category: 'Components', data: { route: '/tree' } },
         { id: 'checkboxes', label: 'Checkboxes', category: 'Form Fields', data: { route: '/checkboxes' } },
+        { id: 'code-inputs', label: 'Code Inputs', category: 'Form Fields', data: { route: '/code-inputs' } },
         { id: 'datepickers', label: 'Datepickers', category: 'Form Fields', data: { route: '/datepickers' } },
         { id: 'file-uploads', label: 'File Uploads', category: 'Form Fields', data: { route: '/file-uploads' } },
         { id: 'form-fields', label: 'Form Fields', category: 'Form Fields', data: { route: '/form-fields' } },
