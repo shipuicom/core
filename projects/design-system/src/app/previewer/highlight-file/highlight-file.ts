@@ -39,13 +39,23 @@ export class HighlightFile {
   path = input.required<string>();
 
   fileResource = httpResource.text(() => `/assets/examples${this.path()}.${this.lang()}`);
-  codeRef = viewChild.required<ElementRef<HTMLElement>>('codeRef');
+  // A missing source file resolves to the SPA's index.html (or an error page)
+  // rather than a network error — detect that and show a message instead.
+  content = computed(() => {
+    // Reading value() of an errored resource throws (NG0951) — gate on the
+    // resource state first.
+    if (this.fileResource.error() || !this.fileResource.hasValue()) return null;
+    const value = this.fileResource.value();
+    if (!value || value.trimStart().toLowerCase().startsWith('<!doctype')) return null;
+    return value;
+  });
+  codeRef = viewChild<ElementRef<HTMLElement>>('codeRef');
 
   resourceEffect =
     isPlatformBrowser(this.#platformId) &&
     effect(() => {
-      const fileContent = this.fileResource.value();
-      const codeElement = this.codeRef().nativeElement;
+      const fileContent = this.content();
+      const codeElement = this.codeRef()?.nativeElement;
 
       if (fileContent && codeElement) {
         queueMicrotask(() => {
@@ -64,7 +74,7 @@ export class HighlightFile {
 
   copied = signal(false);
   copyToClipboard() {
-    const fileContent = this.fileResource.value();
+    const fileContent = this.content();
 
     if (fileContent) {
       navigator.clipboard.writeText(fileContent);

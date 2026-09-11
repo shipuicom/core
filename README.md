@@ -117,7 +117,7 @@ To use them in VS Code, you can add a link to the snippets file in your `.vscode
 
 ## Keyboard Accessibility (A11y)
 
-ShipUI includes a robust global keybindings service `ShipA11yKeybindingsService` that manages default keyboard shortcuts for all interactive components (such as selects, datepickers, menus, tabs, and dialogs) with full support for WASD alternatives and macOS custom formatting.
+ShipUI includes a robust global keybindings service `ShipA11yKeybindingsService` that manages default keyboard shortcuts for all interactive components (such as selects, datepickers, menus, tabs, and dialogs) with `ctrlOrCmd` resolving per OS and macOS-style shortcut formatting.
 
 ### Default Keybinding Actions
 

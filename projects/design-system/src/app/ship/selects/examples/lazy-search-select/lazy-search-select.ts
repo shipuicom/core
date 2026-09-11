@@ -23,7 +23,7 @@ const DEFAULT_OPTIONS = [
 export class LazySearchSelect {
   lazySearchOption = signal('pizza');
 
-  options = computed(() => this.resource.value() ?? DEFAULT_OPTIONS);
+  options = computed(() => (this.resource.hasValue() ? this.resource.value() : DEFAULT_OPTIONS));
   resource = rxResource({
     params: () => ({
       query: this.lazySearchOption(),

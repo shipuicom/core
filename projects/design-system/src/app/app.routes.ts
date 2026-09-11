@@ -437,6 +437,7 @@ export const routes: Routes = [
         children: [
           { path: '', loadComponent: () => import('./ship/a11y-keybindings/a11y-keybindings-overview') },
           { path: 'api', loadComponent: () => import('./ship/a11y-keybindings/a11y-keybindings-api') },
+          { path: 'defaults', loadComponent: () => import('./ship/a11y-keybindings/a11y-keybindings-defaults') },
           { path: 'service', loadComponent: () => import('./ship/a11y-keybindings/a11y-keybindings-service') },
           { path: 'examples', loadComponent: () => import('./ship/a11y-keybindings/a11y-keybindings-examples') },
           fallbackOverview,
@@ -483,6 +484,19 @@ export const routes: Routes = [
           { path: 'styling', loadComponent: () => import('./ship/editors/editors-styling') },
           { path: 'examples', loadComponent: () => import('./ship/editors/editors-examples') },
           { path: 'virtual', loadComponent: () => import('./ship/editors/editors-virtual') },
+          { path: 'collab', redirectTo: '/editor-collab' },
+          fallbackOverview,
+        ],
+      },
+      {
+        path: 'editor-collab',
+        loadComponent: () => import('./ship/editor-collab/editor-collab'),
+        children: [
+          { path: '', loadComponent: () => import('./ship/editor-collab/editor-collab-overview') },
+          { path: 'transports', loadComponent: () => import('./ship/editor-collab/editor-collab-transports') },
+          { path: 'relay', loadComponent: () => import('./ship/editor-collab/editor-collab-relay') },
+          { path: 'fuzz', loadComponent: () => import('./ship/editor-collab/editor-collab-fuzz') },
+          { path: 'api', loadComponent: () => import('./ship/editor-collab/editor-collab-api') },
           fallbackOverview,
         ],
       },

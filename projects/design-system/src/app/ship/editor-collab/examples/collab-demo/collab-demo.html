@@ -1,0 +1,27 @@
+<div class="collab-sides">
+  @for (side of sides; track side.name; let i = $index) {
+    <div class="collab-side">
+      <div class="collab-toolbar">
+        <sh-chip class="sharp xsmall" [style.border-color]="side.color">
+          <span class="dot" [style.background]="side.color"></span>
+          {{ side.name }}
+        </sh-chip>
+        @for (peer of peers()[i] ?? []; track peer.clientId) {
+          <sh-chip class="sharp xsmall">
+            <span class="dot" [style.background]="peer.color"></span>
+            {{ peer.name }}
+          </sh-chip>
+        }
+        <sh-chip class="sharp xsmall checksum">doc {{ checksums()[i] }}</sh-chip>
+      </div>
+
+      <!-- The integration. -->
+      <sh-editor
+        shCollab="ship-docs-collab"
+        [presence]="side"
+        [value]="initialHtml"
+        format="html"
+        [multiCursor]="false" />
+    </div>
+  }
+</div>

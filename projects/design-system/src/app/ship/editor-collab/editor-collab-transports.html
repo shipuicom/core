@@ -1,0 +1,59 @@
+<div class="collab-doc">
+  <section>
+    <h4>Built in</h4>
+    <ul>
+      <li>
+        <code>BroadcastChannelTransport</code>
+        — windows of one browser, no server. Any plain string.
+      </li>
+      <li>
+        <code>WebSocketTransport</code>
+        — a relay. Any
+        <code>ws://</code>
+        or
+        <code>wss://</code>
+        URL. See the Relay tab.
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h4>Your own transport</h4>
+    <app-highlight lang="ts" [content]="CUSTOM_TRANSPORT" />
+    <ul>
+      <li>
+        <code>send</code>
+        — deliver to every other peer. Queue while disconnected.
+      </li>
+      <li>
+        <code>subscribe</code>
+        — call back with each peer's messages in the order sent. Return an unsubscribe.
+      </li>
+      <li>
+        <code>connected</code>
+        — read once at attach. Informational.
+      </li>
+      <li>
+        <code>destroy</code>
+        — optional. Called only for transports created from a string.
+      </li>
+    </ul>
+    <p class="collab-note">
+      Per-sender order is enough for two peers. Three or more need one arrival order for all senders — a relay, a broker
+      topic, a single server.
+    </p>
+    <app-highlight lang="ts" [content]="SWAP_TRANSPORT" />
+  </section>
+
+  <section>
+    <h4>Example</h4>
+    <p>An in-memory hub as a service. Provided on the component, it destroys its transports when the component goes.</p>
+    <app-previewer
+      path="/editor-collab/examples/memory-transport/memory-transport"
+      title="In-memory transport"
+      defaultView="typescript"
+      class="no-space">
+      <memory-transport-example class="example" />
+    </app-previewer>
+  </section>
+</div>

@@ -1,0 +1,26 @@
+<div class="collab-sides">
+  @for (side of sides; track side.name; let i = $index) {
+    <div class="collab-side">
+      <div class="collab-toolbar">
+        <sh-chip class="sharp xsmall" [style.border-color]="side.color">
+          <span class="dot" [style.background]="side.color"></span>
+          {{ side.name }}
+        </sh-chip>
+        <sh-chip class="sharp xsmall checksum">doc {{ checksums()[i] }}</sh-chip>
+        <sh-toggle class="primary" [checked]="side.fuzzer.running()" (checkedChange)="toggle(i, $event)" label="Fuzz">
+          Fuzz
+        </sh-toggle>
+        @if (side.fuzzer.running()) {
+          <sh-chip class="sharp xsmall checksum">ops {{ side.fuzzer.ops() }}</sh-chip>
+        }
+      </div>
+      <sh-editor
+        shCollab="ship-docs-fuzz"
+        [presence]="side"
+        [value]="initialHtml"
+        format="html"
+        [multiCursor]="false"
+        [readonly]="side.fuzzer.running()" />
+    </div>
+  }
+</div>

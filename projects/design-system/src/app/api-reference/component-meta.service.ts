@@ -50,7 +50,10 @@ export class ComponentMetaService {
 
   readonly byKey = computed(() => {
     const map = new Map<string, ApiComponent>();
-    for (const c of this.resource.value() ?? []) {
+    // value() throws while the resource is errored (e.g. the asset is absent
+    // during prerender) — gate on hasValue() so consumers degrade to empty.
+    const components = this.resource.hasValue() ? this.resource.value() : [];
+    for (const c of components) {
       map.set(c.name, c);
       map.set(c.selector, c);
     }
