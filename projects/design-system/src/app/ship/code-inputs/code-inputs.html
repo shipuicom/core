@@ -1,0 +1,12 @@
+<h1>Code Input</h1>
+<!-- @keywords: otp, one-time code, verification code, 2fa, mfa, sms code, email code, pin, digits, paste, auto advance -->
+
+<sh-tabs color="primary">
+  <button routerLink="/code-inputs" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Overview</button>
+  <button routerLink="/code-inputs/api" routerLinkActive="active">API</button>
+  <button routerLink="/code-inputs/examples" routerLinkActive="active">Examples</button>
+</sh-tabs>
+
+<div class="tab-content">
+  <router-outlet />
+</div>

@@ -1,0 +1,111 @@
+@use 'helpers' as *;
+
+$shipCodeInput: true !default;
+
+@if $shipCodeInput == true {
+  sh-code-input {
+    --ci-size: #{p2r(44)};
+    --ci-gap: #{p2r(8)};
+    --ci-group-gap: #{p2r(20)};
+    --ci-s: var(--shape-2);
+    --ci-bc: var(--base-4);
+    --ci-bg: var(--base-1);
+    --ci-c: var(--base-8);
+    --ci-f: var(--title-30B);
+    --ci-focus: var(--primary-8);
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: p2r(4);
+
+    &[disabled],
+    &.disabled {
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.5;
+    }
+
+    &.small {
+      --ci-size: #{p2r(36)};
+      --ci-gap: #{p2r(6)};
+      --ci-f: var(--paragraph-30B);
+    }
+
+    &.error,
+    &.invalid {
+      --ci-bc: var(--error-8);
+    }
+
+    &.success {
+      --ci-bc: var(--success-8);
+    }
+
+    > label {
+      display: flex;
+      align-items: center;
+      gap: p2r(4);
+    }
+
+    // Projected form input: the boxes are the visible control.
+    > input:not(.cell) {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .cells {
+      display: flex;
+      align-items: center;
+      gap: var(--ci-gap);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: p2r(12);
+      color: var(--base-6);
+      font: var(--ci-f);
+      user-select: none;
+    }
+
+    .cell {
+      appearance: none;
+      box-sizing: border-box;
+      width: var(--ci-size);
+      height: var(--ci-size);
+      padding: 0;
+      border: var(--border-10);
+      border-color: var(--ci-bc);
+      border-radius: var(--ci-s);
+      background: var(--ci-bg);
+      color: var(--ci-c);
+      font: var(--ci-f);
+      text-align: center;
+      caret-color: var(--ci-focus);
+      transition:
+        border-color 125ms linear,
+        box-shadow 95ms linear;
+
+      &.group-end:not(:has(+ .divider)) {
+        margin-right: calc(var(--ci-group-gap) - var(--ci-gap));
+      }
+
+      &:focus {
+        outline: none;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--ci-focus);
+        outline-offset: 2px;
+      }
+
+      &::selection {
+        background: transparent;
+      }
+    }
+  }
+}

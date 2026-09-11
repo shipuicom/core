@@ -1,0 +1,98 @@
+<div class="explorer">
+  <aside class="explorer-sidebar">
+    <div class="explorer-toolbar">
+      <sh-form-field size="small" class="explorer-search">
+        <sh-icon prefix>magnifying-glass</sh-icon>
+        <input type="search" placeholder="Filter files" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+      </sh-form-field>
+
+      <button shButton class="small outlined" aria-label="New folder" title="New folder" (click)="create('dir')">
+        <sh-icon>folder-plus</sh-icon>
+      </button>
+      <button shButton class="small outlined" aria-label="New file" title="New file" (click)="create('item')">
+        <sh-icon>file-plus</sh-icon>
+      </button>
+    </div>
+
+    <sh-tree
+      [items]="visibleNodes()"
+      (itemsChange)="onItemsChange($event)"
+      [(selectedId)]="selectedId"
+      [getIcon]="getIcon"
+      (nodeClick)="onSelect($event)">
+      <sh-icon openIcon>folder-open</sh-icon>
+      <sh-icon closedIcon>folder</sh-icon>
+      <span emptyState>No files match “{{ search() }}”</span>
+    </sh-tree>
+
+    <div class="explorer-footer">
+      <button shButton class="small text" (click)="setAllOpen(true)">Expand all</button>
+      <button shButton class="small text" (click)="setAllOpen(false)">Collapse all</button>
+    </div>
+  </aside>
+
+  <section class="explorer-detail">
+    @if (selected(); as node) {
+      <nav class="explorer-breadcrumb" aria-label="Path">
+        @for (crumb of selectedPath(); track crumb.id) {
+          @if (!$first) {
+            <sh-icon size="small" class="crumb-sep">caret-right</sh-icon>
+          }
+          <button
+            type="button"
+            class="crumb"
+            [class.is-current]="$last"
+            (click)="selectedId.set(crumb.id); onSelect(crumb)">
+            {{ crumb.name }}
+          </button>
+        }
+      </nav>
+
+      <div class="explorer-hero">
+        <sh-icon size="large" [color]="node.type === 'dir' ? 'primary' : null">
+          {{ node.type === 'dir' ? 'folder' : getIcon(node) }}
+        </sh-icon>
+        <div>
+          <h4>{{ node.name }}</h4>
+          <span class="explorer-kind">{{ node.type === 'dir' ? 'Folder' : 'File' }}</span>
+        </div>
+      </div>
+
+      <dl class="explorer-meta">
+        @if (node.type === 'dir') {
+          <dt>Contains</dt>
+          <dd>{{ selectedChildCount() }} {{ selectedChildCount() === 1 ? 'item' : 'items' }}</dd>
+        } @else {
+          <dt>Size</dt>
+          <dd>{{ formatSize(node.size) }}</dd>
+        }
+        <dt>Modified</dt>
+        <dd>{{ node.modified ?? '—' }}</dd>
+      </dl>
+
+      <div class="explorer-rename">
+        <sh-form-field size="small">
+          <label>Rename</label>
+          <input
+            type="text"
+            [ngModel]="renameValue()"
+            (ngModelChange)="renameValue.set($event)"
+            (keydown.enter)="rename()" />
+        </sh-form-field>
+        <button shButton type="button" class="small primary raised" (click)="rename()">Save</button>
+      </div>
+
+      <div class="explorer-actions">
+        <button shButton class="small outlined error" (click)="deleteSelected()">
+          <sh-icon>trash</sh-icon>
+          Delete {{ node.type === 'dir' ? 'folder' : 'file' }}
+        </button>
+      </div>
+    } @else {
+      <div class="explorer-empty">
+        <sh-icon size="large">cursor-click</sh-icon>
+        <p>Select a file or folder to see its details.</p>
+      </div>
+    }
+  </section>
+</div>

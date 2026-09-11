@@ -73,6 +73,38 @@ $shipSelect: true !default;
       }
     }
 
+    // `ellipsis` host class: keep the selected text (typically `asText`
+    // multi-select) on a single line and truncate with an ellipsis instead
+    // of wrapping.
+    &.ellipsis {
+      min-width: 0;
+
+      sh-popover,
+      sh-form-field,
+      sh-form-field .input-wrap {
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      sh-form-field .input-wrap .input {
+        min-width: 0;
+        display: block;
+      }
+
+      .selected-value {
+        display: block;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      sh-form-field .input-wrap .input.show-search-text .selected-value {
+        display: flex;
+        flex-wrap: nowrap;
+      }
+    }
+
     sh-form-field.small .input-wrap .input {
       --ff-space: #{p2r(5 8)};
 

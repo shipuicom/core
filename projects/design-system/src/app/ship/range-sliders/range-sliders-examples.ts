@@ -8,6 +8,7 @@ import { LiveUpdatesRangeSlider } from './examples/live-updates-range-slider/liv
 import { RangeSliderSandbox } from './examples/range-slider-sandbox/range-slider-sandbox';
 import { ReactiveRangeSlider } from './examples/reactive-range-slider/reactive-range-slider';
 import { ReadonlyRangeSlider } from './examples/readonly-range-slider/readonly-range-slider';
+import { SignalFormRangeSlider } from './examples/signal-form-range-slider/signal-form-range-slider';
 import { UnitRangeSlider } from './examples/unit-range-slider/unit-range-slider';
 
 @Component({
@@ -18,6 +19,7 @@ import { UnitRangeSlider } from './examples/unit-range-slider/unit-range-slider'
     BaseRangeSlider,
     FloatRangeSlider,
     ReactiveRangeSlider,
+    SignalFormRangeSlider,
     ReadonlyRangeSlider,
     UnitRangeSlider,
     AlwaysShowIndicatorRangeSlider,

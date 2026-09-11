@@ -1,0 +1,20 @@
+<sh-checkbox variant="raised" color="primary">
+  Accept terms
+  <input type="checkbox" [formField]="prefsForm.terms" />
+</sh-checkbox>
+
+<sh-checkbox variant="raised" color="primary">
+  Subscribe to newsletter
+  <input type="checkbox" [formField]="prefsForm.newsletter" />
+</sh-checkbox>
+
+<sh-checkbox variant="raised" color="primary">
+  Join beta (requires newsletter)
+  <input type="checkbox" [formField]="prefsForm.beta" />
+</sh-checkbox>
+
+@for (error of prefsForm.terms().errors(); track error.kind) {
+  <p class="error">{{ error.message }}</p>
+}
+<p>Form valid: {{ prefsForm().valid() }}</p>
+<pre>{{ prefs() | json }}</pre>

@@ -1,0 +1,18 @@
+<p>Any inputs work — here four form fields share one group.</p>
+
+<div class="row" shCodeInputGroup (valueChange)="code.set($event)">
+  <sh-form-field class="center" variant="auto-width">
+    <input aria-label="Digit 1 of 4" inputmode="numeric" autocomplete="one-time-code" />
+  </sh-form-field>
+  <sh-form-field class="center" variant="auto-width">
+    <input aria-label="Digit 2 of 4" inputmode="numeric" />
+  </sh-form-field>
+  <sh-form-field class="center" variant="auto-width">
+    <input aria-label="Digit 3 of 4" inputmode="numeric" />
+  </sh-form-field>
+  <sh-form-field class="center" variant="auto-width">
+    <input aria-label="Digit 4 of 4" inputmode="numeric" />
+  </sh-form-field>
+</div>
+
+<p>Value: {{ code() || '—' }}</p>

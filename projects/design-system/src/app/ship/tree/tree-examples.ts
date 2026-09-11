@@ -3,15 +3,45 @@ import { Highlight } from '../../previewer/highlight/highlight';
 import { Previewer } from '../../previewer/previewer';
 import { SortableTreeExample } from './examples/sortable-tree/sortable-tree';
 import { TemplateTreeExample } from './examples/template-tree/template-tree';
+import { FileExplorerExample } from './examples/file-explorer/file-explorer';
 
 @Component({
   selector: 'app-tree-examples',
-  imports: [Previewer, Highlight, SortableTreeExample, TemplateTreeExample],
+  imports: [Previewer, Highlight, SortableTreeExample, TemplateTreeExample, FileExplorerExample],
   templateUrl: './tree-examples.html',
   styleUrl: './tree-tab.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class TreeExamples {
+  explorerCodeHtml = `<sh-tree
+  [items]="visibleNodes()"
+  (itemsChange)="onItemsChange($event)"
+  [(selectedId)]="selectedId"
+  [getIcon]="getIcon"
+  (nodeClick)="onSelect($event)"
+>
+  <sh-icon openIcon>folder-open</sh-icon>
+  <sh-icon closedIcon>folder</sh-icon>
+  <span emptyState>No files match "{{ search() }}"</span>
+</sh-tree>`;
+
+  explorerCodeTypescript = `// Pick an icon per file extension; folders keep the open/closed icons.
+getIcon = (node: FsNode) => {
+  if (node.type === 'dir') return null;
+  const ext = node.name.split('.').pop() ?? '';
+  return ICON_BY_EXTENSION[ext] ?? 'file';
+};
+
+// Search matches plus their ancestors, with the ancestors forced open.
+visibleNodes = computed(() => {
+  const query = this.search().trim().toLowerCase();
+  if (!query) return this.nodes();
+  ...
+});
+
+// The tree emits the toggled list; copy open state back onto the source.
+onItemsChange(list: FsNode[]) { ... }`;
+
   sortableCodeHtml = `<sh-tree [(items)]="nodes" [sortableManager]="manager">
   <sh-icon openIcon>folder-open</sh-icon>
   <sh-icon closedIcon>folder</sh-icon>

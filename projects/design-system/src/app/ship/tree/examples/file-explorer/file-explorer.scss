@@ -1,0 +1,148 @@
+@use 'helpers' as *;
+
+.explorer {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) 1fr;
+  gap: p2r(16);
+  align-items: start;
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.explorer-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(8);
+  min-width: 0;
+
+  sh-tree {
+    max-height: p2r(420);
+  }
+}
+
+.explorer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: p2r(6);
+
+  .explorer-search {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.explorer-footer {
+  display: flex;
+  gap: p2r(4);
+}
+
+.explorer-detail {
+  min-height: p2r(300);
+  padding: p2r(16);
+  background: var(--base-2);
+  border: 1px solid var(--base-3);
+  border-radius: var(--shape-2, #{p2r(8)});
+  box-shadow: var(--box-shadow-10);
+  display: flex;
+  flex-direction: column;
+  gap: p2r(16);
+}
+
+.explorer-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: p2r(2);
+
+  .crumb {
+    background: none;
+    border: 0;
+    padding: p2r(2 6);
+    border-radius: var(--shape-1, #{p2r(4)});
+    font: var(--paragraph-20, 14px sans-serif);
+    color: var(--base-10);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--base-3);
+      color: var(--base-12);
+    }
+
+    &.is-current {
+      color: var(--base-12);
+      font-weight: 600;
+    }
+  }
+
+  .crumb-sep {
+    color: var(--base-7);
+  }
+}
+
+.explorer-hero {
+  display: flex;
+  align-items: center;
+  gap: p2r(12);
+
+  h4 {
+    margin: 0;
+    font: var(--heading-30, 600 18px sans-serif);
+    color: var(--base-12);
+    word-break: break-all;
+  }
+
+  .explorer-kind {
+    font: var(--paragraph-10, 12px sans-serif);
+    color: var(--base-9);
+  }
+}
+
+.explorer-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: p2r(4) p2r(16);
+  margin: 0;
+  font: var(--paragraph-20, 14px sans-serif);
+
+  dt {
+    color: var(--base-9);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--base-12);
+  }
+}
+
+.explorer-rename {
+  display: flex;
+  align-items: flex-end;
+  gap: p2r(8);
+
+  sh-form-field {
+    flex: 1;
+  }
+}
+
+.explorer-actions {
+  margin-top: auto;
+  padding-top: p2r(8);
+  border-top: 1px solid var(--base-3);
+}
+
+.explorer-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: p2r(8);
+  color: var(--base-9);
+  text-align: center;
+
+  p {
+    margin: 0;
+  }
+}

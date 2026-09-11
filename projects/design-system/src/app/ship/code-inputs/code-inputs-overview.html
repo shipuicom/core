@@ -1,0 +1,61 @@
+<app-previewer defaultView="markup" path="/code-inputs/examples/base-code-input/base-code-input" title="Basic">
+  <app-base-code-input class="example" />
+</app-previewer>
+
+<app-property-viewer>
+  <section>
+    <h4>Purpose</h4>
+    <p>
+      Entry for the 4–8 character codes sent by email or SMS (one-time passwords, 2FA, magic codes). Typing jumps
+      to the next box, backspace steps back, arrow keys move around, and a paste or OS autofill into any box spreads
+      the code across the rest.
+    </p>
+  </section>
+  <section>
+    <h4>Binding</h4>
+    <p>
+      Use
+      <code>[(value)]</code>
+      for a plain signal, or project a hidden
+      <code>&lt;input&gt;</code>
+      and bind it with
+      <code>[(ngModel)]</code>
+      ,
+      <code>[formControl]</code>
+      or
+      <code>[formField]</code>
+      . Listen to
+      <code>(completed)</code>
+      to submit as soon as the last box is filled.
+    </p>
+  </section>
+  <section>
+    <h4>Shape</h4>
+    <p>
+      <code>length</code>
+      sets the number of boxes,
+      <code>type</code>
+      switches between
+      <b>numeric</b>
+      (numeric keyboard on mobile) and
+      <b>alphanumeric</b>
+      , and
+      <code>groupSize</code>
+      adds a visual gap every n boxes. Set
+      <code>divider</code>
+      to render text in that gap, or project
+      <code>&lt;ng-template shCodeInputDivider&gt;</code>
+      for custom content such as an icon.
+    </p>
+  </section>
+  <section>
+    <h4>Directive</h4>
+    <p>
+      The behaviour lives in
+      <code>[shCodeInputGroup]</code>
+      . Put it on any element wrapping your own inputs — for example a row of
+      <code>sh-form-field</code>
+      s — to get the same keyboard and paste handling with custom markup.
+    </p>
+  </section>
+</app-property-viewer>

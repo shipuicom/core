@@ -1,0 +1,15 @@
+<sh-code-input [class.error]="codeForm().touched() && codeForm().invalid()" (completed)="verify($event)">
+  <label>Verification code (signal form)</label>
+  <input type="text" [formField]="codeForm" />
+</sh-code-input>
+
+<p>Model: {{ code() || '—' }}</p>
+<p>Valid: {{ codeForm().valid() }}</p>
+@if (codeForm().touched()) {
+  @for (error of codeForm().errors(); track error.kind) {
+    <p class="error">{{ error.message }}</p>
+  }
+}
+@if (verified()) {
+  <p class="success">Verified! (any repeated digit, e.g. 111111)</p>
+}

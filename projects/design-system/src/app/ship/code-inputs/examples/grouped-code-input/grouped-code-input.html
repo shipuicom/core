@@ -1,0 +1,22 @@
+<sh-code-input [(value)]="code" [length]="8" [groupSize]="4" type="alphanumeric">
+  <label>Recovery code (8 characters, gap between groups)</label>
+</sh-code-input>
+
+<sh-code-input [(value)]="dashed" [length]="6" [groupSize]="3" divider="-">
+  <label>Text divider</label>
+</sh-code-input>
+
+<sh-code-input [length]="6" [groupSize]="2">
+  <label>Custom divider template</label>
+  <ng-template shCodeInputDivider><sh-icon>dot-outline</sh-icon></ng-template>
+</sh-code-input>
+
+<sh-code-input class="small" [length]="4" value="1234" [readonly]="true">
+  <label>Small, readonly</label>
+</sh-code-input>
+
+<sh-code-input [length]="4" value="12" [disabled]="true">
+  <label>Disabled</label>
+</sh-code-input>
+
+<p>Value: {{ code() || '—' }} / {{ dashed() || '—' }}</p>

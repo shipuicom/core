@@ -1,0 +1,11 @@
+@for (size of sizes; track size) {
+  <sh-radio variant="raised" color="primary">
+    {{ size }}
+    <input type="radio" [formField]="sizeForm" [value]="size" />
+  </sh-radio>
+}
+
+<p>Selected: {{ size() || '—' }}</p>
+@for (error of sizeForm().errors(); track error.kind) {
+  <p class="error">{{ error.message }}</p>
+}

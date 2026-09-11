@@ -100,7 +100,10 @@ export function nativeInputValueSignal<T>(
         const source: 'user' | 'programmatic' = e.type === 'inputValueChanged' ? 'programmatic' : 'user';
 
         if (debounce <= 0) {
-          syncValueFromInput(source);
+          // Programmatic writes can land mid-render (signal forms sets
+          // `input.value` from its template `control()` instruction). Drop the
+          // reactive consumer so the resulting signal write is allowed.
+          untracked(() => syncValueFromInput(source));
           return;
         }
 

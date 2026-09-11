@@ -147,8 +147,8 @@ $shipMenu: true !default;
       max-height: var(--menu-mh);
       overflow: auto;
 
-      sh-menu:first-child,
-      button:first-child {
+      > sh-menu:first-child,
+      > button:first-child {
         margin-top: p2r(8);
       }
 
@@ -186,7 +186,10 @@ $shipMenu: true !default;
         background-color: var(--base-1);
       }
 
-      button {
+      // Menu items only. Content embedded in the options (a datepicker, a
+      // form-field popover) brings its own buttons, which must keep their
+      // own layout.
+      button:not(sh-datepicker *, sh-form-field-popover *) {
         display: flex;
         justify-content: flex-start;
         align-items: center;

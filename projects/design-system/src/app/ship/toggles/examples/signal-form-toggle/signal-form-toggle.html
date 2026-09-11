@@ -1,0 +1,11 @@
+<sh-toggle variant="raised" color="primary">
+  Notifications
+  <input type="checkbox" [formField]="settingsForm.notifications" />
+</sh-toggle>
+
+<sh-toggle variant="raised" color="primary">
+  Sound (requires notifications)
+  <input type="checkbox" [formField]="settingsForm.sound" />
+</sh-toggle>
+
+<pre>{{ settings() | json }}</pre>

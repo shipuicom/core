@@ -1,4 +1,22 @@
 <div class="example-list" style="display: flex; flex-direction: column; gap: 32px">
+  <app-previewer path="/tree/examples/file-explorer/file-explorer" title="File Explorer">
+    <p style="margin-bottom: 16px">
+      A complete explorer built around the tree: a filter box narrows the list to matching files and their
+      ancestors, <code>getIcon</code> picks an icon per file extension, and <code>selectedId</code> drives a detail
+      pane with a breadcrumb, metadata, rename, and delete. New files and folders land in the selected folder.
+    </p>
+    <p style="margin-bottom: 16px">
+      Because filtering derives a new list, the tree is bound with <code>[items]</code> plus
+      <code>(itemsChange)</code> instead of two-way binding, so folder toggles are copied back onto the source
+      list rather than overwriting it.
+    </p>
+    <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px">
+      <app-highlight lang="html" [content]="explorerCodeHtml" />
+      <app-highlight lang="ts" [content]="explorerCodeTypescript" />
+    </div>
+    <app-file-explorer-example class="example" />
+  </app-previewer>
+
   <app-previewer path="/tree/examples/sortable-tree/sortable-tree" title="Interactive Sortable Tree">
     <p style="margin-bottom: 16px">
       Integrate the tree component with

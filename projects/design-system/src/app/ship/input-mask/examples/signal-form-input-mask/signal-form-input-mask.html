@@ -1,0 +1,24 @@
+<sh-form-field>
+  <label for="signalPhone">Phone</label>
+  <input id="signalPhone" placeholder="(999) 999-9999" type="text" shInputMask="(999) 999-9999" [formField]="contactForm.phone" />
+  <div boxPrefix>
+    <sh-icon>phone</sh-icon>
+  </div>
+  @if (contactForm.phone().touched() && contactForm.phone().errors()[0]; as error) {
+    <span error>{{ error.message }}</span>
+  }
+</sh-form-field>
+
+<sh-form-field>
+  <label for="signalCard">Credit card</label>
+  <input id="signalCard" placeholder="1234 5678 1234 5678" type="text" shInputMask="9999 9999 9999 9999" [formField]="contactForm.card" />
+  <div boxPrefix>
+    <sh-icon>credit-card</sh-icon>
+  </div>
+  @if (contactForm.card().touched() && contactForm.card().errors()[0]; as error) {
+    <span error>{{ error.message }}</span>
+  }
+</sh-form-field>
+
+<p>Form valid: {{ contactForm().valid() }}</p>
+<pre>{{ contact() | json }}</pre>

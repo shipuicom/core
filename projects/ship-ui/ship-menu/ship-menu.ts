@@ -24,6 +24,9 @@ import { ShipPopover } from '@ship-ui/core/ship-popover';
 
 const openMenus: ShipMenu[] = [];
 
+/** Default option selector: menu buttons, excluding buttons owned by embedded components. */
+export const MENU_OPTION_SELECTOR = 'button:not(sh-datepicker *, sh-form-field-popover *)';
+
 @Component({
   selector: 'sh-menu',
   styleUrl: './ship-menu.scss',
@@ -110,8 +113,13 @@ export class ShipMenu {
   openIndicator = input(false);
   /** Disable the menu so it cannot be opened or interacted with. */
   disabled = input<boolean>(false);
-  /** CSS selectors used to collect the menu's option elements (defaults to `button`). */
-  customOptionElementSelectors = input<string[]>(['button']);
+  /**
+   * CSS selectors used to collect the menu's option elements. The default
+   * takes every `button` in the projected `[menu]` content except those that
+   * belong to an embedded component (a datepicker or a form-field popover),
+   * which bring their own buttons and must not become menu items.
+   */
+  customOptionElementSelectors = input<string[]>([MENU_OPTION_SELECTOR]);
   /** Keep the clicked option marked active after selection instead of resetting. */
   keepClickedOptionActive = input<boolean>(false);
   /** Close the menu automatically when an option is clicked. */

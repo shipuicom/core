@@ -1,0 +1,13 @@
+<sh-select
+  class="ellipsis"
+  [options]="options()"
+  label="label"
+  value="value"
+  [selectMultiple]="true"
+  [asText]="true">
+  <label>Favorite foods (comma separated, truncated)</label>
+
+  <input type="text" [(ngModel)]="selected" />
+</sh-select>
+
+<p>Selected: {{ selected() | json }}</p>
