@@ -70,6 +70,26 @@ You now wanna add when to build the font and when to watch so it works well toge
 }
 ```
 
+## Forms
+
+Every form control (`sh-form-field`, `sh-select`, `sh-checkbox`, `sh-radio`, `sh-toggle`, `sh-range-slider`, `sh-datepicker-input`, `sh-color-picker-input`, `sh-code-input`, `shInputMask`) is driven by a native `<input>` you project into it, so it works with all three Angular form models without adapters:
+
+- **Template driven** — `[(ngModel)]`
+- **Reactive forms** — `[formControl]` / `formControlName`
+- **Signal forms** — `[formField]` from `@angular/forms/signals`
+
+```html
+<sh-form-field>
+  <label>Email</label>
+  <input type="email" [formField]="profileForm.email" />
+  @if (profileForm.email().touched() && profileForm.email().errors()[0]; as error) {
+    <span error>{{ error.message }}</span>
+  }
+</sh-form-field>
+```
+
+Every component's docs page has a "Signal Forms" example next to the ngModel and reactive ones.
+
 ## AI & Developer Experience
 
 ShipUI comes with built-in tools to enhance your development workflow through AI and IDE integrations.
