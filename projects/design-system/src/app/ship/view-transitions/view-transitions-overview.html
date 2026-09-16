@@ -89,9 +89,10 @@
       Add
       <code>swipeBack</code>
       to the outlet and dragging from the left edge of the frame scrubs a back navigation with the finger, like iOS.
-      Release past a third of the width (or flick) to complete, release earlier to cancel and stay. Under the hood the
-      router really navigates back and the transition's animations are paused and seeked; a cancel plays them in
-      reverse and steps forward again without animating.
+      Where the finger lets go decides: past halfway completes the back navigation, before it the page stays. While a
+      swipe is in flight every other click, key and pointer is swallowed so nothing else can start a navigation. Under
+      the hood the router really navigates back and the transition's animations are paused and seeked; a cancel plays
+      them in reverse and steps forward again without animating.
     </p>
     <app-highlight lang="html" [content]="swipeExample" />
   </section>

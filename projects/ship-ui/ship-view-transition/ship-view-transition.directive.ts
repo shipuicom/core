@@ -1,7 +1,8 @@
 import { Location } from '@angular/common';
 import { booleanAttribute, DestroyRef, Directive, effect, ElementRef, inject, input } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterOutlet } from '@angular/router';
+import { NavigationCancel, NavigationEnd, NavigationError, Router, RouterOutlet } from '@angular/router';
+import { filter, firstValueFrom, timeout } from 'rxjs';
 import { generateUniqueId } from '@ship-ui/core';
 import { ShipViewTransitions, ShipViewTransitionScrubber } from './ship-view-transition.service';
 import { ShipViewTransitionSpec } from './ship-view-transition.types';
@@ -10,10 +11,22 @@ import { ShipViewTransitionSpec } from './ship-view-transition.types';
 const EDGE_WIDTH = 28;
 /** Movement before the swipe is committed to and the navigation starts. */
 const SWIPE_SLOP = 8;
-/** Release beyond this fraction of the frame width completes the swipe. */
-const COMMIT_PROGRESS = 0.3;
-/** Or release faster than this, in px per ms. */
-const COMMIT_VELOCITY = 0.4;
+/** Release beyond this fraction of the frame width completes the swipe; before it the page stays. */
+const COMMIT_PROGRESS = 0.5;
+/** Upper bound on how long the page stays locked after a release, in case no navigation follows. */
+const LOCK_TIMEOUT = 1500;
+/** Events swallowed while a swipe is in flight so nothing else can start a navigation. */
+const BLOCKED_EVENTS = [
+  'click',
+  'auxclick',
+  'dblclick',
+  'contextmenu',
+  'keydown',
+  'wheel',
+  'touchstart',
+  'dragstart',
+  'selectstart',
+];
 
 /**
  * Animates the pages a `router-outlet` swaps between using the View Transition API.
@@ -36,6 +49,7 @@ export class ShipViewTransition {
   #element = inject<ElementRef<HTMLElement>>(ElementRef);
   #transitions = inject(ShipViewTransitions);
   #location = inject(Location);
+  #router = inject(Router);
   #destroyRef = inject(DestroyRef);
   #name = `sh-vt-${generateUniqueId()}`;
 
@@ -58,6 +72,8 @@ export class ShipViewTransition {
     scrubber: ShipViewTransitionScrubber | null;
     progress: number;
   } | null = null;
+  #locked = false;
+  #unblock: (() => void) | null = null;
 
   constructor() {
     this.#outlet.activateEvents.pipe(takeUntilDestroyed()).subscribe(() => this.#tag());
@@ -85,11 +101,14 @@ export class ShipViewTransition {
         frame.style.touchAction = previousTouchAction;
       });
     });
-    this.#destroyRef.onDestroy(() => (this.#swipe = null));
+    this.#destroyRef.onDestroy(() => {
+      this.#swipe = null;
+      this.#unblock?.();
+    });
   }
 
   #onPointerDown(event: PointerEvent, frame: HTMLElement) {
-    if (!event.isPrimary || event.button !== 0) return;
+    if (!event.isPrimary || event.button !== 0 || this.#swipe || this.#locked) return;
     const rect = frame.getBoundingClientRect();
     if (event.clientX - rect.left > EDGE_WIDTH) return;
     if (!this.#canGoBack()) return;
@@ -113,6 +132,7 @@ export class ShipViewTransition {
 
     if (!swipe.scrubber) {
       if (dx < SWIPE_SLOP) return;
+      this.#block();
       swipe.scrubber = this.#transitions.beginInteractive();
       this.#location.back();
     }
@@ -129,10 +149,63 @@ export class ShipViewTransition {
     this.#swipe = null;
     if (!swipe.scrubber) return;
 
-    const elapsed = Math.max(1, event.timeStamp - swipe.lastTime);
-    const velocity = event.type === 'pointercancel' ? 0 : (event.clientX - swipe.lastX) / elapsed;
-    const commit = event.type !== 'pointercancel' && (swipe.progress > COMMIT_PROGRESS || velocity > COMMIT_VELOCITY);
-    void (commit ? swipe.scrubber.finish() : swipe.scrubber.cancel());
+    // Only where the finger let go decides; speed does not.
+    const commit = event.type !== 'pointercancel' && swipe.progress >= COMMIT_PROGRESS;
+    void this.#settle(commit ? swipe.scrubber.finish() : swipe.scrubber.cancel().then(() => this.#afterNavigation()));
+  }
+
+  /** Keeps the page locked until the transition (and, after a cancel, the step forward) has landed. */
+  async #settle(done: Promise<void>) {
+    const view = this.#element.nativeElement.ownerDocument.defaultView;
+    const limit = new Promise<void>((resolve) => view?.setTimeout(resolve, LOCK_TIMEOUT));
+    try {
+      await Promise.race([done, limit]);
+    } finally {
+      this.#unblock?.();
+    }
+  }
+
+  /** Swallows every other interaction on the document while a swipe is in flight. */
+  #block() {
+    if (this.#unblock) return;
+    this.#locked = true;
+    const doc = this.#element.nativeElement.ownerDocument;
+    const frame = this.#element.nativeElement.parentElement;
+    const swallow = (event: Event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    };
+    const otherPointer = (event: PointerEvent) => {
+      if (!this.#swipe || event.pointerId !== this.#swipe.pointerId) swallow(event);
+    };
+    for (const type of BLOCKED_EVENTS) doc.addEventListener(type, swallow, { capture: true, passive: false });
+    doc.addEventListener('pointerdown', otherPointer, { capture: true });
+    const previousSelect = frame?.style.userSelect ?? '';
+    if (frame) frame.style.userSelect = 'none';
+
+    this.#unblock = () => {
+      for (const type of BLOCKED_EVENTS) doc.removeEventListener(type, swallow, { capture: true });
+      doc.removeEventListener('pointerdown', otherPointer, { capture: true });
+      if (frame) frame.style.userSelect = previousSelect;
+      this.#unblock = null;
+      this.#locked = false;
+    };
+  }
+
+  /** Resolves once the router settles the next navigation (the step forward after a cancel). */
+  #afterNavigation() {
+    return firstValueFrom(
+      this.#router.events.pipe(
+        filter(
+          (event) =>
+            event instanceof NavigationEnd || event instanceof NavigationCancel || event instanceof NavigationError
+        ),
+        timeout(LOCK_TIMEOUT)
+      )
+    ).then(
+      () => undefined,
+      () => undefined
+    );
   }
 
   #canGoBack() {
