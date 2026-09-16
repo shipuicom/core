@@ -41,7 +41,7 @@ describe('ShipChartSparkline', () => {
     host.color.set('accent');
     await fixture.whenStable();
     expect(element.querySelector('path.area')?.getAttribute('d')).toBe('M0,100L50,0L100,50L100,100L0,100Z');
-    expect((element.querySelector('.dot') as HTMLElement).style.left).toBe('100%');
+    expect((element.querySelector('.dot') as HTMLElement).style.getPropertyValue('--x')).toBe('100');
     expect(element.classList.contains('accent')).toBe(true);
   });
 

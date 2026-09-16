@@ -19,6 +19,7 @@ export default class ChartSparklineOverview {
   --chart-stroke-width: 2;            /* in px, does not scale with the box */
   --chart-dot-size: 6px;
   --chart-h: 2rem;                    /* default height, width is 100% */
+  --chart-pad: calc(var(--chart-stroke-width) * 0.5px + 1px); /* keeps the top and bottom strokes whole */
 }`;
 
   scalesExample = `import { extent, linearScale, linePath, niceTicks } from '@ship-ui/core/ship-chart-scales';

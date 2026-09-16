@@ -41,7 +41,7 @@ export type ShipChartSparklineColor = 'primary' | 'accent' | 'warn' | 'error' | 
       <path class="line" [attr.d]="lineD()" />
     </svg>
     @if (dot() && last(); as point) {
-      <span class="dot" [style.left.%]="point.x" [style.top.%]="point.y"></span>
+      <span class="dot" [style.--x]="point.x" [style.--y]="point.y"></span>
     }
   `,
   styles: `
@@ -52,11 +52,15 @@ export type ShipChartSparklineColor = 'primary' | 'accent' | 'warn' | 'error' | 
       --chart-stroke-width: 2;
       --chart-dot-size: 6px;
       --chart-h: 2rem;
+      /* Vertical inset so a stroke on the highest or lowest value is not cut in half. */
+      --chart-pad: calc(var(--chart-stroke-width) * 0.5px + 1px);
 
       display: inline-block;
       position: relative;
+      box-sizing: border-box;
       width: 100%;
       height: var(--chart-h);
+      padding: var(--chart-pad) 0;
       line-height: 0;
     }
 
@@ -109,6 +113,8 @@ export type ShipChartSparklineColor = 'primary' | 'accent' | 'warn' | 'error' | 
 
     .dot {
       position: absolute;
+      left: calc(var(--x) * 1%);
+      top: calc(var(--chart-pad) + (100% - 2 * var(--chart-pad)) * var(--y) / 100);
       width: var(--chart-dot-size);
       height: var(--chart-dot-size);
       border-radius: 50%;
