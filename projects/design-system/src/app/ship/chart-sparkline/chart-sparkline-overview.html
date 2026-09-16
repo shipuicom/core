@@ -1,0 +1,104 @@
+<app-previewer
+  defaultView="markup"
+  path="/chart-sparkline/examples/basic-chart-sparkline/basic-chart-sparkline"
+  title="Basic">
+  <app-basic-chart-sparkline class="example" />
+</app-previewer>
+
+<app-property-viewer>
+  <section>
+    <h4>Overview</h4>
+    <p>
+      <code>&lt;sh-chart-sparkline&gt;</code>
+      is the first of Ship's
+      <b>standalone charts</b>
+      : one series, one SVG, no axes, no legend, no runtime dependency on the rest of Ship. It is meant for KPI tiles,
+      table cells and list rows where a trend matters more than the numbers. It fills the width it is given and defaults
+      to
+      <code>--chart-h</code>
+      tall.
+    </p>
+  </section>
+
+  <section>
+    <h4>Colors</h4>
+    <p>
+      The
+      <code>color</code>
+      input (
+      <code>primary</code>
+      ,
+      <code>accent</code>
+      ,
+      <code>success</code>
+      ,
+      <code>warn</code>
+      ,
+      <code>error</code>
+      ) picks the matching palette shades. Every visual value is a custom property declared on the host, so a plain
+      override on the element or a parent always wins.
+    </p>
+    <app-highlight lang="scss" [content]="variablesExample" />
+  </section>
+
+  <section>
+    <h4>Shape</h4>
+    <p>
+      <code>curve</code>
+      chooses
+      <code>linear</code>
+      ,
+      <code>monotone</code>
+      (smooth, never overshoots) or
+      <code>step</code>
+      .
+      <code>area</code>
+      fills under the line,
+      <code>dot</code>
+      marks the latest value.
+      <code>min</code>
+      and
+      <code>max</code>
+      pin the value axis so several sparklines share a scale.
+    </p>
+  </section>
+
+  <section>
+    <h4>Live data</h4>
+    <p>
+      Add
+      <code>animate</code>
+      and changes to
+      <code>data</code>
+      tween over
+      <code>animationDuration</code>
+      (300ms). The common streaming case is handled on purpose: when the oldest value is dropped and a new one is
+      appended, the line slides one slot to the left, the dropped value leaves through the left edge and the new one
+      arrives from the right. Appending without dropping compresses the line, any other change eases every point to its
+      new place. Reduced motion turns it off.
+    </p>
+  </section>
+
+  <section>
+    <h4>Accessibility</h4>
+    <p>
+      The host has
+      <code>role="img"</code>
+      and an automatic label summarising count, range and latest value. Pass
+      <code>ariaLabel</code>
+      to describe it in your own words.
+    </p>
+  </section>
+
+  <section>
+    <h4>Building your own with the scales module</h4>
+    <p>
+      The math lives in
+      <code>@ship-ui/core/ship-chart-scales</code>
+      : pure functions for linear scales, nice ticks and SVG path building. Standalone charts and the composable
+      <code>sh-chart</code>
+      family both use it, and so can you.
+    </p>
+    <app-highlight lang="ts" [content]="scalesExample" />
+  </section>
+</app-property-viewer>

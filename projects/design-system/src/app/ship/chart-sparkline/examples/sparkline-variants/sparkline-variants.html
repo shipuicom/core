@@ -1,0 +1,24 @@
+<div class="row">
+  <span>Revenue</span>
+  <sh-chart-sparkline [data]="revenue" color="success" curve="monotone" area dot />
+</div>
+
+<div class="row">
+  <span>Errors</span>
+  <sh-chart-sparkline [data]="errors" color="error" area />
+</div>
+
+<div class="row">
+  <span>Latency</span>
+  <sh-chart-sparkline [data]="latency" color="accent" curve="monotone" dot />
+</div>
+
+<div class="row">
+  <span>Steps</span>
+  <sh-chart-sparkline [data]="steps" color="warn" curve="step" />
+</div>
+
+<div class="row">
+  <span>Custom</span>
+  <sh-chart-sparkline class="custom" [data]="revenue" area dot />
+</div>

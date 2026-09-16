@@ -6,8 +6,12 @@
 
 - **ship-view-transition**: new `@ship-ui/core/ship-view-transition` entry point for iOS-like page transitions on `router-outlet` via the View Transition API. `withShipViewTransitions()` (router feature) plus `provideShipViewTransitions(config)` set the defaults; the `[shViewTransition]` directive animates an outlet and takes a per-outlet `{ in, out, back, duration, easing }` spec so nested outlets can mix and match. Direction is detected (browser back, URL depth, sibling order for tabs) and can be forced per navigation with `info: { shipViewTransition: 'back' | false }` or disabled per route with `data: { shipViewTransition: false }`. Ships `slideFrom*/slideTo*`, `pushBack/pullForward`, `fadeIn/fadeOut`, `scaleIn/scaleOut`, `shrinkBack/growForward` animations and the `shipIosTransitions`, `shipSheetTransitions`, `shipFadeTransitions` presets; `createViewTransition()` makes custom ones. Keyframes are injected lazily on first use and only imported animations end up in the bundle. Snapshots are clipped to the page box (rounded corners included) and to the outlet's parent through nested view transition groups, and reduced motion swaps instantly. `swipeBack` on the outlet adds the iOS edge swipe: dragging from the left edge scrubs a real back navigation, release past halfway to complete or before it to stay, with all other input blocked while the swipe is in flight; `ShipViewTransitions.beginInteractive()` exposes the same scrubber for custom gestures.
 
+- **ship-chart-scales**: new `@ship-ui/core/ship-chart-scales` entry point with pure, dependency-free chart math: `extent`, `linearScale`, `niceStep`, `niceTicks`, `niceDomain`, `linePath` (linear, monotone, step) and `areaPath`. Shared by every Ship chart and usable on its own.
+- **ship-chart-sparkline**: new `sh-chart-sparkline`, the first standalone chart: one series, one SVG, no dependency on the rest of Ship. Inputs `data`, `color` (inherits the palette), `curve`, `area`, `dot`, `min`, `max`, `ariaLabel`, plus `animate` / `animationDuration` which tween data changes (a dropped value slides out on the left, an appended one slides in from the right). Every visual is a custom property declared on the host: `--chart-stroke`, `--chart-fill`, `--chart-fill-opacity`, `--chart-stroke-width`, `--chart-dot-size`, `--chart-h`.
+
 ### Docs
 
+- New "Sparkline" page under a new Charts section, with a live streaming example.
 - New "View Transitions" page under Directives with a routed phone demo (tabs, push/pop detail page, style picker).
 
 ## 0.25.7

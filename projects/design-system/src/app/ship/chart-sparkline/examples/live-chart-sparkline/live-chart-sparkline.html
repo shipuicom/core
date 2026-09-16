@@ -1,0 +1,12 @@
+<div class="tile">
+  <div class="stat">
+    <span class="label">Requests / s</span>
+    <strong>{{ values()[values().length - 1] }}</strong>
+  </div>
+  <sh-chart-sparkline [data]="values()" curve="monotone" area dot animate />
+</div>
+
+<div class="actions">
+  <button shButton class="flat" (click)="tick()">Push a value</button>
+  <button shButton class="flat" (click)="toggle()">{{ running() ? 'Pause' : 'Resume' }}</button>
+</div>

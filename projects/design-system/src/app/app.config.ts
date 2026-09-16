@@ -104,6 +104,13 @@ export const appConfig: ApplicationConfig = {
         { id: 'range-sliders', label: 'Range Sliders', category: 'Form Fields', data: { route: '/range-sliders' } },
         { id: 'selects', label: 'Selects', category: 'Form Fields', data: { route: '/selects' } },
         { id: 'toggles', label: 'Toggles', category: 'Form Fields', data: { route: '/toggles' } },
+        {
+          id: 'chart-sparkline',
+          label: 'Sparkline',
+          category: 'Charts',
+          icon: 'chart-line',
+          data: { route: '/chart-sparkline' },
+        },
         { id: 'input-mask', label: 'Input Mask', category: 'Directives', data: { route: '/input-mask' } },
         {
           id: 'view-transitions',

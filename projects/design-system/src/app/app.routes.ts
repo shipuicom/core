@@ -422,6 +422,16 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'chart-sparkline',
+        loadComponent: () => import('./ship/chart-sparkline/chart-sparkline'),
+        children: [
+          { path: '', loadComponent: () => import('./ship/chart-sparkline/chart-sparkline-overview') },
+          { path: 'api', loadComponent: () => import('./ship/chart-sparkline/chart-sparkline-api') },
+          { path: 'examples', loadComponent: () => import('./ship/chart-sparkline/chart-sparkline-examples') },
+          fallbackOverview,
+        ],
+      },
+      {
         path: 'view-transitions',
         loadComponent: () => import('./ship/view-transitions/view-transitions'),
         children: [

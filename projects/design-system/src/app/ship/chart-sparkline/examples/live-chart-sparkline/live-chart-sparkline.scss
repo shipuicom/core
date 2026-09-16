@@ -1,0 +1,39 @@
+@use 'helpers' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(12);
+}
+
+.tile {
+  display: grid;
+  grid-template-columns: p2r(120) 1fr;
+  align-items: center;
+  gap: p2r(16);
+  padding: p2r(16);
+  border: var(--border-10);
+  border-radius: var(--shape-2);
+
+  sh-chart-sparkline {
+    --chart-h: 3rem;
+  }
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+
+  .label {
+    font: var(--paragraph-10);
+    color: var(--base-8);
+  }
+  strong {
+    font: var(--title-30);
+  }
+}
+
+.actions {
+  display: flex;
+  gap: p2r(8);
+}

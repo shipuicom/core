@@ -1,0 +1,23 @@
+@use 'helpers' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(12);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: p2r(80) 1fr;
+  align-items: center;
+  gap: p2r(12);
+  font: var(--paragraph-20);
+  color: var(--base-8);
+}
+
+.custom {
+  --chart-stroke: var(--base-12);
+  --chart-fill: var(--base-6);
+  --chart-stroke-width: 1;
+  --chart-h: 3rem;
+}
