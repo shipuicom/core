@@ -91,8 +91,9 @@
       to the outlet and dragging from the left edge of the frame scrubs a back navigation with the finger, like iOS.
       Where the finger lets go decides: past halfway completes the back navigation, before it the page stays. While a
       swipe is in flight every other click, key and pointer is swallowed so nothing else can start a navigation. Under
-      the hood the router really navigates back and the transition's animations are paused and seeked; a cancel plays
-      them in reverse and steps forward again without animating.
+      the hood the router really navigates back and the transition's animations are paused and seeked; a cancel scrubs
+      them back to the start, steps history forward while the transition still covers the page, and only then lets go,
+      so nothing flashes.
     </p>
     <app-highlight lang="html" [content]="swipeExample" />
   </section>

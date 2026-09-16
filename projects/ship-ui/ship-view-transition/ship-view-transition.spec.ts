@@ -182,10 +182,17 @@ describe('ShipViewTransitions', () => {
     scrubber.progress(0.25);
     expect(animation.currentTime).toBe(100);
 
-    await scrubber.cancel();
-    expect(animation.reverse).toHaveBeenCalled();
+    const cancelled = scrubber.cancel();
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    expect(animation.currentTime).toBe(0);
     expect(forward).toHaveBeenCalled();
+    expect(document.startViewTransition).toBeUndefined();
+    await router.navigateByUrl('/search');
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(transition.skipTransition).toHaveBeenCalled();
+    expect(Object.getOwnPropertyDescriptor(document, 'startViewTransition')).toBeUndefined();
     await transition.finish();
+    await cancelled;
 
     history.forward = original;
     delete (document as any).getAnimations;

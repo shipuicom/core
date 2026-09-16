@@ -1,5 +1,13 @@
 import { DOCUMENT, inject, Injectable, InjectionToken, signal } from '@angular/core';
-import { ActivatedRouteSnapshot, Router, ViewTransitionInfo } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  NavigationCancel,
+  NavigationEnd,
+  NavigationError,
+  Router,
+  ViewTransitionInfo,
+} from '@angular/router';
+import { filter, firstValueFrom, timeout } from 'rxjs';
 import {
   ShipViewTransitionAnimation,
   ShipViewTransitionConfig,
@@ -19,6 +27,10 @@ export const SHIP_VIEW_TRANSITION_ROUTE_DATA = 'shipViewTransition';
 
 const DEFAULT_DURATION = 350;
 const DEFAULT_EASING = 'cubic-bezier(0.32, 0.72, 0, 1)';
+/** Longest we wait for the router to settle a navigation the gesture triggered. */
+const LOCK_TIMEOUT = 1500;
+/** How long the cancel scrub back to the start takes. */
+const CANCEL_DURATION = 180;
 
 /**
  * Handle for a gesture-driven transition, returned by
@@ -30,7 +42,7 @@ export interface ShipViewTransitionScrubber {
   progress(progress: number): void;
   /** Play the rest of the transition from the current progress. */
   finish(): Promise<void>;
-  /** Play the transition backwards to the start, then return to the page the gesture left (instantly). */
+  /** Scrub the transition back to the start, then return to the page the gesture left without any visible swap. */
   cancel(): Promise<void>;
 }
 
@@ -64,8 +76,6 @@ export class ShipViewTransitions {
 
   #active: ViewTransitionInfo | null = null;
   #changed = 0;
-  #instant = false;
-  #instantNext = false;
   #pendingScrubber: InteractiveScrubber | null = null;
 
   #direction = signal<ShipViewTransitionDirection | null>(null);
@@ -95,12 +105,9 @@ export class ShipViewTransitions {
   onCreated(info: ViewTransitionInfo) {
     const scrubber = this.#pendingScrubber;
     this.#pendingScrubber = null;
-    const instant = this.#instantNext;
-    this.#instantNext = false;
-
     const direction = scrubber ? 'back' : this.#directionFor(info);
 
-    if (direction === null || (this.#reducedMotion() && !instant)) {
+    if (direction === null || this.#reducedMotion()) {
       info.transition.skipTransition();
       scrubber?.attach([], info.transition);
       return;
@@ -108,7 +115,6 @@ export class ShipViewTransitions {
 
     this.#active = info;
     this.#changed = 0;
-    this.#instant = instant;
     this.#direction.set(direction);
 
     if (scrubber) {
@@ -151,7 +157,6 @@ export class ShipViewTransitions {
     info.transition.finished.finally(() => {
       if (this.#active !== info) return;
       this.#active = null;
-      this.#instant = false;
       this.#direction.set(null);
       this.#dynamicText = '';
       this.#apply(this.#dynamic, this.#dynamicText);
@@ -165,10 +170,7 @@ export class ShipViewTransitions {
    * (typically `Location.back()`), then feed the returned scrubber.
    */
   beginInteractive(): ShipViewTransitionScrubber {
-    const scrubber = new InteractiveScrubber(() => {
-      this.#instantNext = true;
-      this.#document.defaultView?.history.forward();
-    });
+    const scrubber = new InteractiveScrubber(() => this.#stepForwardSilently());
     this.#pendingScrubber = scrubber;
     return scrubber;
   }
@@ -186,18 +188,17 @@ export class ShipViewTransitions {
 
     const timing = `${pair.duration}ms ${pair.easing} both`;
     const newAbove = pair.in.layer !== 'below' && pair.out.layer !== 'above';
-    const instant = this.#instant;
     // The group's box is the page's own box, so clipping there keeps sliding
     // snapshots inside the page area in every browser with view transitions.
     const rules = [
-      `::view-transition-group(${name}) { overflow: clip; border-radius: ${radius}; ${instant ? 'animation: none;' : ''} }`,
+      `::view-transition-group(${name}) { overflow: clip; border-radius: ${radius}; }`,
       `::view-transition-image-pair(${name}) { isolation: auto; }`,
-      `::view-transition-old(${name}) { animation: ${instant ? 'none' : this.#animation(pair.out, timing)}; mix-blend-mode: normal; z-index: ${newAbove ? 1 : 2}; }`,
-      `::view-transition-new(${name}) { animation: ${instant ? 'none' : this.#animation(pair.in, timing)}; mix-blend-mode: normal; z-index: ${newAbove ? 2 : 1}; }`,
+      `::view-transition-old(${name}) { animation: ${this.#animation(pair.out, timing)}; mix-blend-mode: normal; z-index: ${newAbove ? 1 : 2}; }`,
+      `::view-transition-new(${name}) { animation: ${this.#animation(pair.in, timing)}; mix-blend-mode: normal; z-index: ${newAbove ? 2 : 1}; }`,
     ];
 
     if (frame) {
-      const frameTiming = instant ? 'animation: none;' : `animation-duration: ${pair.duration}ms;`;
+      const frameTiming = `animation-duration: ${pair.duration}ms;`;
       rules.push(
         `::view-transition-group(${name}-frame) { overflow: clip; border-radius: ${radius}; ${frameTiming} }`,
         `::view-transition-old(${name}-frame), ::view-transition-new(${name}-frame) { ${frameTiming} }`
@@ -206,6 +207,38 @@ export class ShipViewTransitions {
 
     this.#dynamicText += rules.join('\n') + '\n';
     this.#apply(this.#dynamic, this.#dynamicText);
+  }
+
+  /**
+   * Steps history forward without letting the router start a view transition,
+   * so the interactive transition that is still showing stays on screen until
+   * the page the gesture started on is back in the DOM.
+   */
+  #stepForwardSilently(): Promise<void> {
+    const doc = this.#document as Document & { startViewTransition?: unknown };
+    const view = doc.defaultView;
+    if (!view) return Promise.resolve();
+
+    const settled = firstValueFrom(
+      this.#router.events.pipe(
+        filter(
+          (event) =>
+            event instanceof NavigationEnd || event instanceof NavigationCancel || event instanceof NavigationError
+        ),
+        timeout(LOCK_TIMEOUT)
+      )
+    ).then(
+      () => undefined,
+      () => undefined
+    );
+
+    // The router's feature checks `document.startViewTransition` before every navigation.
+    Object.defineProperty(doc, 'startViewTransition', { value: undefined, configurable: true, writable: true });
+    const restore = () => {
+      delete (doc as { startViewTransition?: unknown }).startViewTransition;
+    };
+    view.history.forward();
+    return settled.then(restore, restore);
   }
 
   #animation(animation: ShipViewTransitionAnimation, timing: string) {
@@ -335,7 +368,7 @@ class InteractiveScrubber implements ShipViewTransitionScrubber {
   #resolveAttached!: () => void;
   #attached = new Promise<void>((resolve) => (this.#resolveAttached = resolve));
 
-  constructor(private readonly goForward: () => void) {}
+  constructor(private readonly stepForward: () => Promise<void>) {}
 
   attach(animations: Animation[], transition: ViewTransition) {
     this.#animations = animations;
@@ -347,6 +380,7 @@ class InteractiveScrubber implements ShipViewTransitionScrubber {
   }
 
   progress(progress: number) {
+    if (this.#done) return;
     this.#progress = Math.min(1, Math.max(0, progress));
     this.#seek(this.#progress);
   }
@@ -361,12 +395,18 @@ class InteractiveScrubber implements ShipViewTransitionScrubber {
   async cancel() {
     this.#done = 'cancel';
     if (!this.#transition) return this.#attached;
-    if (this.#animations.length) {
-      for (const animation of this.#animations) animation.reverse();
-      await Promise.all(this.#animations.map((animation) => animation.finished.catch(() => {})));
-    }
-    // The router already went back; return to the page the gesture started on without animating.
-    this.goForward();
+
+    // Scrub back to the start by hand so the animations stay paused: a
+    // finished animation would end the transition and reveal the page behind.
+    await this.#scrubTo(0);
+    // Step forward while the transition still shows the starting page, then drop it.
+    await this.#stepForward();
+    this.#transition.skipTransition();
+    await this.#transition.finished.catch(() => {});
+  }
+
+  #stepForward() {
+    return this.stepForward();
   }
 
   #seek(progress: number) {
@@ -374,5 +414,30 @@ class InteractiveScrubber implements ShipViewTransitionScrubber {
       const duration = Number((animation.effect as KeyframeEffect | null)?.getComputedTiming().activeDuration ?? 0);
       animation.currentTime = duration * progress;
     }
+  }
+
+  #scrubTo(target: number) {
+    const from = this.#progress;
+    const distance = Math.abs(target - from);
+    if (!this.#animations.length || distance === 0) {
+      this.#progress = target;
+      return Promise.resolve();
+    }
+    const raf =
+      globalThis.requestAnimationFrame?.bind(globalThis) ??
+      ((cb: FrameRequestCallback) => setTimeout(() => cb(performance.now()), 16));
+    const total = CANCEL_DURATION * distance;
+    return new Promise<void>((resolve) => {
+      const start = performance.now();
+      const step = () => {
+        const t = Math.min(1, (performance.now() - start) / total);
+        const eased = 1 - (1 - t) * (1 - t);
+        this.#progress = from + (target - from) * eased;
+        this.#seek(this.#progress);
+        if (t < 1) raf(step);
+        else resolve();
+      };
+      raf(step);
+    });
   }
 }
