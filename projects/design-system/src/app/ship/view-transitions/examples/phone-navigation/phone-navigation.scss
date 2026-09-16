@@ -1,0 +1,53 @@
+@use 'helpers' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: p2r(20);
+  width: 100%;
+}
+
+.phone {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, #{p2r(360)});
+  height: p2r(560);
+  border: var(--border-20);
+  border-radius: p2r(36);
+  background: var(--base-1);
+  overflow: hidden;
+  box-shadow: 0 p2r(20) p2r(60) rgba(0, 0, 0, 0.15);
+}
+
+// The screen is the outlet's parent, so it is the clipping frame for the transition.
+.screen {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: p2r(34) p2r(34) 0 0;
+}
+
+.tab-bar {
+  --tabs-sel-bg: transparent;
+  border-bottom: 0;
+  border-top: var(--border-10);
+  justify-content: space-around;
+  gap: 0;
+  padding-bottom: p2r(6);
+
+  button {
+    flex-direction: column;
+    gap: p2r(2);
+    height: p2r(60);
+    font: var(--paragraph-10);
+    flex: 1;
+    justify-content: center;
+
+    sh-icon {
+      font-size: p2r(22);
+    }
+  }
+}

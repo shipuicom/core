@@ -1,0 +1,30 @@
+@use 'helpers' as *;
+
+// Each page fills the phone screen and paints its own background so the
+// snapshots the view transition slides around are opaque.
+:host {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: p2r(16);
+  padding: p2r(20);
+  background: var(--base-1);
+}
+
+h3 {
+  margin: 0;
+  font: var(--title-30);
+}
+
+p {
+  margin: 0;
+  color: var(--base-8);
+}
+
+.hero {
+  height: p2r(140);
+  border-radius: p2r(16);
+  background: linear-gradient(135deg, var(--primary-3), var(--primary-6));
+}

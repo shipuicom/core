@@ -1,0 +1,96 @@
+<app-property-viewer>
+  <section>
+    <h4>Overview</h4>
+    <p>
+      <code>[shViewTransition]</code>
+      turns a
+      <code>router-outlet</code>
+      into an iOS-style navigation stack using the browser's
+      <b>View Transition API</b>
+      : pages slide, push back, fade or scale as the router swaps them. The leaving and entering page each get their own
+      animation, the direction (forward or back) is detected for you, and the pages are clipped to the outlet's parent
+      so nothing bleeds outside a phone frame or a card.
+    </p>
+    <p>See the live demo under Examples, it uses routed tabs plus a detail page.</p>
+  </section>
+
+  <section>
+    <h4>Setup</h4>
+    <p>
+      Add the router feature and the provider. The provider requires a default so no keyframes are bundled unless you
+      import them; start from a preset such as
+      <code>shipIosTransitions</code>
+      ,
+      <code>shipSheetTransitions</code>
+      or
+      <code>shipFadeTransitions</code>
+      .
+    </p>
+    <app-highlight lang="ts" [content]="setupExample" />
+  </section>
+
+  <section>
+    <h4>Animating an outlet</h4>
+    <p>
+      Put the directive on any
+      <code>router-outlet</code>
+      . Without a value it plays the provider defaults. Pass a spec to choose the
+      <code>in</code>
+      (entering page) and
+      <code>out</code>
+      (leaving page) animation and an optional
+      <code>back</code>
+      pair. Nested outlets can each have their own spec.
+    </p>
+    <app-highlight lang="html" [content]="outletExample" />
+  </section>
+
+  <section>
+    <h4>Provider config</h4>
+    <p>
+      The config sets the
+      <code>forward</code>
+      and
+      <code>back</code>
+      pairs, duration and easing. Animations are referenced by import, so bundlers drop the ones you never use. List
+      extra animations under
+      <code>animations</code>
+      to make them referencable by name from templates.
+    </p>
+    <app-highlight lang="ts" [content]="configExample" />
+  </section>
+
+  <section>
+    <h4>Direction</h4>
+    <p>
+      Browser back is a back transition. Otherwise a deeper URL is forward, a shallower one is back, and sibling routes
+      (tabs) go left-to-right by their order in the route config. Override per navigation through the
+      <code>info</code>
+      navigation extra, or opt a route out with route data.
+    </p>
+    <app-highlight lang="ts" [content]="directionExample" />
+  </section>
+
+  <section>
+    <h4>Custom animations</h4>
+    <p>
+      <code>createViewTransition()</code>
+      wraps a keyframe body. The keyframes are injected the first time an outlet uses them, so custom and built-in
+      animations cost the same: nothing until used.
+      <code>layer: 'below'</code>
+      draws that page under the other one, which the push-back style animations rely on.
+    </p>
+    <app-highlight lang="ts" [content]="customExample" />
+  </section>
+
+  <section>
+    <h4>Good to know</h4>
+    <p>
+      Users who prefer reduced motion get an instant swap. Route reuse (navigating between params of the same route)
+      does not swap the component, so nothing animates; use separate routes or a custom
+      <code>RouteReuseStrategy</code>
+      . Clipping to the parent relies on nested view transition groups; browsers without them still animate, just
+      without the clip.
+    </p>
+  </section>
+</app-property-viewer>

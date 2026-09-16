@@ -5,6 +5,11 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { SHIP_CONFIG } from '@ship-ui/core';
 import { provideShipSpotlight } from '@ship-ui/core/ship-spotlight';
+import {
+  provideShipViewTransitions,
+  shipIosTransitions,
+  withShipViewTransitions,
+} from '@ship-ui/core/ship-view-transition';
 import { environment } from '../environments/environment';
 import { ENVIRONMENT_TOKEN } from '../environments/environment-token';
 import { routes } from './app.routes';
@@ -13,7 +18,8 @@ import { LOCALSTORAGE } from './core/services/localstorage.token';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes, withComponentInputBinding()),
+    provideRouter(routes, withComponentInputBinding(), withShipViewTransitions()),
+    provideShipViewTransitions(shipIosTransitions),
     provideZonelessChangeDetection(),
     provideClientHydration(withEventReplay()),
     provideHttpClient(withFetch()),
@@ -44,7 +50,13 @@ export const appConfig: ApplicationConfig = {
           data: { route: '/getting-started' },
         },
         { id: 'typography', label: 'Typography', category: 'Theme', icon: 'text-t', data: { route: '/typography' } },
-        { id: 'theme-toggle', label: 'Theme Toggle', category: 'Theme', icon: 'circle-half-tilt', data: { route: '/theme-toggle' } },
+        {
+          id: 'theme-toggle',
+          label: 'Theme Toggle',
+          category: 'Theme',
+          icon: 'circle-half-tilt',
+          data: { route: '/theme-toggle' },
+        },
         { id: 'accordions', label: 'Accordions', category: 'Components', data: { route: '/accordions' } },
         { id: 'alerts', label: 'Alerts', category: 'Components', data: { route: '/alerts' } },
         {
@@ -93,6 +105,12 @@ export const appConfig: ApplicationConfig = {
         { id: 'selects', label: 'Selects', category: 'Form Fields', data: { route: '/selects' } },
         { id: 'toggles', label: 'Toggles', category: 'Form Fields', data: { route: '/toggles' } },
         { id: 'input-mask', label: 'Input Mask', category: 'Directives', data: { route: '/input-mask' } },
+        {
+          id: 'view-transitions',
+          label: 'View Transitions',
+          category: 'Directives',
+          data: { route: '/view-transitions' },
+        },
       ],
     }),
   ],

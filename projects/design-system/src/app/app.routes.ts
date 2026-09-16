@@ -422,6 +422,35 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'view-transitions',
+        loadComponent: () => import('./ship/view-transitions/view-transitions'),
+        children: [
+          { path: '', loadComponent: () => import('./ship/view-transitions/view-transitions-overview') },
+          { path: 'api', loadComponent: () => import('./ship/view-transitions/view-transitions-api') },
+          {
+            path: 'examples',
+            loadComponent: () => import('./ship/view-transitions/view-transitions-examples'),
+            // The phone demo's routes: '' is the Home tab so /examples renders something on load.
+            children: [
+              { path: '', loadComponent: () => import('./ship/view-transitions/examples/phone-navigation/pages/home') },
+              {
+                path: 'search',
+                loadComponent: () => import('./ship/view-transitions/examples/phone-navigation/pages/search'),
+              },
+              {
+                path: 'profile',
+                loadComponent: () => import('./ship/view-transitions/examples/phone-navigation/pages/profile'),
+              },
+              {
+                path: 'detail/:id',
+                loadComponent: () => import('./ship/view-transitions/examples/phone-navigation/pages/detail'),
+              },
+            ],
+          },
+          fallbackOverview,
+        ],
+      },
+      {
         path: 'input-mask',
         loadComponent: () => import('./ship/input-mask/input-mask'),
         children: [

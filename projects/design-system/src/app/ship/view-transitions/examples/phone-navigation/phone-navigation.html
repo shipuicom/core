@@ -1,0 +1,31 @@
+<sh-tabs class="style-picker" [(value)]="style">
+  <button value="ios">iOS stack</button>
+  <button value="tabs">Tabs slide</button>
+  <button value="sheet">Sheet</button>
+  <button value="fade">Fade</button>
+  <button value="custom">Custom wipe</button>
+</sh-tabs>
+
+<div class="phone">
+  <div class="screen">
+    <router-outlet [shViewTransition]="spec()" />
+  </div>
+
+  <sh-tabs class="tab-bar">
+    <button
+      routerLink="/view-transitions/examples"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }">
+      <sh-icon>house</sh-icon>
+      Home
+    </button>
+    <button routerLink="/view-transitions/examples/search" routerLinkActive="active">
+      <sh-icon>magnifying-glass</sh-icon>
+      Search
+    </button>
+    <button routerLink="/view-transitions/examples/profile" routerLinkActive="active">
+      <sh-icon>user</sh-icon>
+      Profile
+    </button>
+  </sh-tabs>
+</div>

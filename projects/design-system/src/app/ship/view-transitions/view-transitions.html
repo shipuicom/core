@@ -1,0 +1,14 @@
+<h1>View Transitions</h1>
+<!-- @keywords: view transition, page transition, router, animation, ios, navigation, slide, outlet -->
+
+<sh-tabs color="primary">
+  <button routerLink="/view-transitions" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+    Overview
+  </button>
+  <button routerLink="/view-transitions/api" routerLinkActive="active">API</button>
+  <button routerLink="/view-transitions/examples" routerLinkActive="active">Examples</button>
+</sh-tabs>
+
+<div class="tab-content">
+  <router-outlet />
+</div>
