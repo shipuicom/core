@@ -20,6 +20,20 @@ export const SHIP_VIEW_TRANSITION_ROUTE_DATA = 'shipViewTransition';
 const DEFAULT_DURATION = 350;
 const DEFAULT_EASING = 'cubic-bezier(0.32, 0.72, 0, 1)';
 
+/**
+ * Handle for a gesture-driven transition, returned by
+ * {@link ShipViewTransitions.beginInteractive}. The transition's animations are
+ * paused and scrubbed with `progress()` until `finish()` or `cancel()`.
+ */
+export interface ShipViewTransitionScrubber {
+  /** Seek every animation of the transition to `progress` (0..1). */
+  progress(progress: number): void;
+  /** Play the rest of the transition from the current progress. */
+  finish(): Promise<void>;
+  /** Play the transition backwards to the start, then return to the page the gesture left (instantly). */
+  cancel(): Promise<void>;
+}
+
 interface ResolvedPair {
   in: ShipViewTransitionAnimation;
   out: ShipViewTransitionAnimation;
@@ -50,6 +64,9 @@ export class ShipViewTransitions {
 
   #active: ViewTransitionInfo | null = null;
   #changed = 0;
+  #instant = false;
+  #instantNext = false;
+  #pendingScrubber: InteractiveScrubber | null = null;
 
   #direction = signal<ShipViewTransitionDirection | null>(null);
   /** Direction of the transition in flight, `null` when none is running. */
@@ -76,16 +93,45 @@ export class ShipViewTransitions {
 
   /** Called by the router feature for every created transition. */
   onCreated(info: ViewTransitionInfo) {
-    const direction = this.#directionFor(info);
+    const scrubber = this.#pendingScrubber;
+    this.#pendingScrubber = null;
+    const instant = this.#instantNext;
+    this.#instantNext = false;
 
-    if (direction === null || this.#reducedMotion()) {
+    const direction = scrubber ? 'back' : this.#directionFor(info);
+
+    if (direction === null || (this.#reducedMotion() && !instant)) {
       info.transition.skipTransition();
+      scrubber?.attach([], info.transition);
       return;
     }
 
     this.#active = info;
     this.#changed = 0;
+    this.#instant = instant;
     this.#direction.set(direction);
+
+    if (scrubber) {
+      const doc = this.#document;
+      info.transition.ready.then(
+        () => {
+          const animations = (doc.getAnimations?.() ?? []).filter(
+            (animation) => !!(animation.effect as KeyframeEffect | null)?.pseudoElement
+          );
+          for (const animation of animations) {
+            // The finger drives progress, so the easing curve must not. CSS
+            // animations keep their timing function on every keyframe, so it is
+            // rewritten there rather than on the effect.
+            const effect = animation.effect as KeyframeEffect | null;
+            effect?.setKeyframes(effect.getKeyframes().map((keyframe) => ({ ...keyframe, easing: 'linear' })));
+            animation.pause();
+            animation.currentTime = 0;
+          }
+          scrubber.attach(animations, info.transition);
+        },
+        () => scrubber.attach([], info.transition)
+      );
+    }
     this.#dynamicText = '';
     this.#apply(this.#dynamic, this.#dynamicText);
 
@@ -105,6 +151,7 @@ export class ShipViewTransitions {
     info.transition.finished.finally(() => {
       if (this.#active !== info) return;
       this.#active = null;
+      this.#instant = false;
       this.#direction.set(null);
       this.#dynamicText = '';
       this.#apply(this.#dynamic, this.#dynamicText);
@@ -113,10 +160,24 @@ export class ShipViewTransitions {
   }
 
   /**
+   * Prepares the next router transition to be driven by a gesture instead of
+   * playing on its own. Call it right before triggering the navigation
+   * (typically `Location.back()`), then feed the returned scrubber.
+   */
+  beginInteractive(): ShipViewTransitionScrubber {
+    const scrubber = new InteractiveScrubber(() => {
+      this.#instantNext = true;
+      this.#document.defaultView?.history.forward();
+    });
+    this.#pendingScrubber = scrubber;
+    return scrubber;
+  }
+
+  /**
    * Called by the directive when its outlet activates a new page. Writes the
    * animation rules for that outlet if a transition is in flight.
    */
-  activated(name: string, spec: ShipViewTransitionSpec | null, frame: boolean) {
+  activated(name: string, spec: ShipViewTransitionSpec | null, frame: boolean, radius = '0px') {
     const direction = this.#direction();
     if (!this.#active || !direction) return;
 
@@ -125,16 +186,21 @@ export class ShipViewTransitions {
 
     const timing = `${pair.duration}ms ${pair.easing} both`;
     const newAbove = pair.in.layer !== 'below' && pair.out.layer !== 'above';
+    const instant = this.#instant;
+    // The group's box is the page's own box, so clipping there keeps sliding
+    // snapshots inside the page area in every browser with view transitions.
     const rules = [
+      `::view-transition-group(${name}) { overflow: clip; border-radius: ${radius}; ${instant ? 'animation: none;' : ''} }`,
       `::view-transition-image-pair(${name}) { isolation: auto; }`,
-      `::view-transition-old(${name}) { animation: ${this.#animation(pair.out, timing)}; mix-blend-mode: normal; z-index: ${newAbove ? 1 : 2}; }`,
-      `::view-transition-new(${name}) { animation: ${this.#animation(pair.in, timing)}; mix-blend-mode: normal; z-index: ${newAbove ? 2 : 1}; }`,
+      `::view-transition-old(${name}) { animation: ${instant ? 'none' : this.#animation(pair.out, timing)}; mix-blend-mode: normal; z-index: ${newAbove ? 1 : 2}; }`,
+      `::view-transition-new(${name}) { animation: ${instant ? 'none' : this.#animation(pair.in, timing)}; mix-blend-mode: normal; z-index: ${newAbove ? 2 : 1}; }`,
     ];
 
     if (frame) {
+      const frameTiming = instant ? 'animation: none;' : `animation-duration: ${pair.duration}ms;`;
       rules.push(
-        `::view-transition-group(${name}-frame) { overflow: clip; animation-duration: ${pair.duration}ms; }`,
-        `::view-transition-old(${name}-frame), ::view-transition-new(${name}-frame) { animation-duration: ${pair.duration}ms; }`
+        `::view-transition-group(${name}-frame) { overflow: clip; border-radius: ${radius}; ${frameTiming} }`,
+        `::view-transition-old(${name}-frame), ::view-transition-new(${name}-frame) { ${frameTiming} }`
       );
     }
 
@@ -258,5 +324,55 @@ export class ShipViewTransitions {
     if (!target) return;
     if (target instanceof HTMLStyleElement) target.textContent = text;
     else target.replaceSync(text);
+  }
+}
+
+class InteractiveScrubber implements ShipViewTransitionScrubber {
+  #animations: Animation[] = [];
+  #transition: ViewTransition | null = null;
+  #progress = 0;
+  #done: 'finish' | 'cancel' | null = null;
+  #resolveAttached!: () => void;
+  #attached = new Promise<void>((resolve) => (this.#resolveAttached = resolve));
+
+  constructor(private readonly goForward: () => void) {}
+
+  attach(animations: Animation[], transition: ViewTransition) {
+    this.#animations = animations;
+    this.#transition = transition;
+    this.#seek(this.#progress);
+    this.#resolveAttached();
+    if (this.#done === 'finish') void this.finish();
+    if (this.#done === 'cancel') void this.cancel();
+  }
+
+  progress(progress: number) {
+    this.#progress = Math.min(1, Math.max(0, progress));
+    this.#seek(this.#progress);
+  }
+
+  async finish() {
+    this.#done = 'finish';
+    if (!this.#transition) return this.#attached;
+    for (const animation of this.#animations) animation.play();
+    await this.#transition.finished.catch(() => {});
+  }
+
+  async cancel() {
+    this.#done = 'cancel';
+    if (!this.#transition) return this.#attached;
+    if (this.#animations.length) {
+      for (const animation of this.#animations) animation.reverse();
+      await Promise.all(this.#animations.map((animation) => animation.finished.catch(() => {})));
+    }
+    // The router already went back; return to the page the gesture started on without animating.
+    this.goForward();
+  }
+
+  #seek(progress: number) {
+    for (const animation of this.#animations) {
+      const duration = Number((animation.effect as KeyframeEffect | null)?.getComputedTiming().activeDuration ?? 0);
+      animation.currentTime = duration * progress;
+    }
   }
 }

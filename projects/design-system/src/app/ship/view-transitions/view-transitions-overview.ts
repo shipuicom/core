@@ -56,6 +56,10 @@ export const dimOut = createViewTransition('dim-out', \`
 
 // <router-outlet [shViewTransition]="{ in: wipeIn, out: dimOut }" />`;
 
+  swipeExample = `<div class="screen">
+  <router-outlet shViewTransition swipeBack />
+</div>`;
+
   directionExample = `// Force a direction for one navigation
 router.navigate(['/settings'], { info: { shipViewTransition: 'back' } });
 

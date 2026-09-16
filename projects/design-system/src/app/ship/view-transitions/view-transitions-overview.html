@@ -84,6 +84,19 @@
   </section>
 
   <section>
+    <h4>Swipe back</h4>
+    <p>
+      Add
+      <code>swipeBack</code>
+      to the outlet and dragging from the left edge of the frame scrubs a back navigation with the finger, like iOS.
+      Release past a third of the width (or flick) to complete, release earlier to cancel and stay. Under the hood the
+      router really navigates back and the transition's animations are paused and seeked; a cancel plays them in
+      reverse and steps forward again without animating.
+    </p>
+    <app-highlight lang="html" [content]="swipeExample" />
+  </section>
+
+  <section>
     <h4>Good to know</h4>
     <p>
       Users who prefer reduced motion get an instant swap. Route reuse (navigating between params of the same route)

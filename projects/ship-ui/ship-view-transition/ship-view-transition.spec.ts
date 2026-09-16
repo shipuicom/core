@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, DOCUMENT } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, provideRouter, Router, Routes, ViewTransitionInfo } from '@angular/router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -142,6 +142,53 @@ describe('ShipViewTransitions', () => {
     expect(css).toContain('@keyframes sh-vt-fade-in');
     warn.mockRestore();
     await transition.finish();
+  });
+
+  it('drives an interactive transition from a scrubber and steps forward on cancel', async () => {
+    const forward = vi.fn();
+    const history = TestBed.inject(DOCUMENT).defaultView!.history;
+    const original = history.forward;
+    history.forward = forward;
+
+    const animation = {
+      pause: vi.fn(),
+      play: vi.fn(),
+      reverse: vi.fn(),
+      currentTime: 100,
+      finished: Promise.resolve(),
+      effect: {
+        pseudoElement: '::view-transition-new(x)',
+        getKeyframes: () => [
+          { offset: 0, easing: 'ease' },
+          { offset: 1, easing: 'ease' },
+        ],
+        setKeyframes: vi.fn(),
+        getComputedTiming: () => ({ activeDuration: 400 }),
+      },
+    };
+    (document as any).getAnimations = vi.fn(() => [animation]);
+
+    const scrubber = service.beginInteractive();
+    const transition = await transitionBetween('/', '/detail/1');
+    expect(service.direction()).toBe('back');
+    service.activated('outlet-d', null, false);
+    await transition.done();
+
+    expect(animation.pause).toHaveBeenCalled();
+    expect(animation.effect.setKeyframes).toHaveBeenCalledWith([
+      { offset: 0, easing: 'linear' },
+      { offset: 1, easing: 'linear' },
+    ]);
+    scrubber.progress(0.25);
+    expect(animation.currentTime).toBe(100);
+
+    await scrubber.cancel();
+    expect(animation.reverse).toHaveBeenCalled();
+    expect(forward).toHaveBeenCalled();
+    await transition.finish();
+
+    history.forward = original;
+    delete (document as any).getAnimations;
   });
 
   it('accepts animations made with createViewTransition', async () => {
