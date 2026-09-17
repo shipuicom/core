@@ -177,9 +177,25 @@ export class ShipChartSparkline {
   viewBox = computed(() => '0 0 100 100');
   lineD = computed(() => linePath(this.drawn(), this.curve()));
   areaD = computed(() => areaPath(this.drawn(), 100, this.curve()));
+  /**
+   * Where the dot sits: the last value, or, while a tween moves points past
+   * the right edge, the spot where the line crosses that edge so the dot
+   * rides the window instead of popping.
+   */
   last = computed(() => {
-    const point = this.drawn().at(-1) ?? null;
-    return point && point.x <= 100 ? point : null;
+    const points = this.drawn();
+    const point = points.at(-1) ?? null;
+    if (!point) return null;
+    if (point.x <= 100) return point;
+    for (let i = points.length - 1; i > 0; i--) {
+      const a = points[i - 1];
+      const b = points[i];
+      if (a.x <= 100 && b.x >= 100) {
+        const t = b.x === a.x ? 0 : (100 - a.x) / (b.x - a.x);
+        return { x: 100, y: a.y + (b.y - a.y) * t };
+      }
+    }
+    return { x: 100, y: point.y };
   });
 
   constructor() {

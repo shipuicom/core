@@ -53,6 +53,22 @@ describe('ShipChartSparkline', () => {
   });
 });
 
+describe('ShipChartSparkline dot during a tween', () => {
+  it('rides the right edge while the entering point is still outside', async () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.dot.set(true);
+    await fixture.whenStable();
+    const sparkline = fixture.debugElement.query((el) => el.name === 'sh-chart-sparkline')
+      .componentInstance as ShipChartSparkline;
+    sparkline.drawn.set([
+      { x: 0, y: 50 },
+      { x: 80, y: 20 },
+      { x: 120, y: 60 },
+    ]);
+    expect(sparkline.last()).toEqual({ x: 100, y: 40 });
+  });
+});
+
 describe('alignSparklinePoints', () => {
   const pts = (ys: number[]) => ys.map((y, i) => ({ x: (100 / (ys.length - 1)) * i, y }));
 
