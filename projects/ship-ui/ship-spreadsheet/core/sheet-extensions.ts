@@ -12,6 +12,7 @@
 // See EXTENSIONS.md for the design and the extension points to come.
 
 import { TemplateRef, Type } from '@angular/core';
+import { ShipSheetCheckboxCell } from '../cells/sheet-checkbox';
 import { SHEET_CURRENCY_EXTENSION, SHEET_DATE_EXTENSION, SHEET_NUMBER_EXTENSION, SHEET_PERCENT_EXTENSION } from './sheet-formats';
 import { escapeSheetHtml } from './sheet-html';
 
@@ -132,10 +133,15 @@ export const SHEET_TEXT_EXTENSION: SheetCellExtension = {
 
 const TRUE_WORDS = new Set(['true', '1', 'x', 'yes', 'y', '☑', '☒', '[x]', 'on', 'checked']);
 
-/** `'true'` / `''` in the model; renders a box; a click or Enter toggles. */
+/**
+ * `'true'` / `''` in the model; drawn as a real `sh-checkbox` per visible
+ * cell (`ShipSheetCheckboxCell`; the glyph `render` is the export
+ * fallback); a click, Enter or Space toggles.
+ */
 export const SHEET_CHECKBOX_EXTENSION: SheetCellExtension = {
   type: 'checkbox',
   editor: 'none',
+  renderer: ShipSheetCheckboxCell,
   render: (raw) => (raw === 'true' ? '<span class="shs-check on" aria-hidden="true">☑</span>' : '<span class="shs-check" aria-hidden="true">☐</span>'),
   parse: (input) => (TRUE_WORDS.has(input.trim().toLowerCase()) ? 'true' : ''),
   activate: (raw) => (raw === 'true' ? '' : 'true'),

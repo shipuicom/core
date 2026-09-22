@@ -232,7 +232,7 @@ sh-spreadsheet {
     font-variant-numeric: tabular-nums;
   }
 
-  // Built-in checkbox type: a glyph centered in the cell.
+  // Built-in checkbox type: the sh-checkbox (or the glyph fallback) centered in the cell.
   .shs-c.t-checkbox {
     justify-content: center;
     padding: 0;

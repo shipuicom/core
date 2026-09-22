@@ -270,7 +270,9 @@ describe('ShipSpreadsheet composer', () => {
     grid.setColType(1, 'checkbox');
     fixture.detectChanges();
     expect(host.sheet().colTypes).toEqual([null, 'checkbox', null]);
-    expect(fixture.nativeElement.querySelectorAll('.shs-c.t-checkbox .shs-check').length).toBe(4);
+    expect(fixture.nativeElement.querySelectorAll('.shs-c.t-checkbox sh-checkbox').length).toBe(4);
+    expect(fixture.nativeElement.querySelector('.shs-c.t-checkbox .box.sh-sheet')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.shs-c.t-checkbox sh-checkbox.active')).toBeNull();
     grid.selectCell(0, 1);
     key(frame, 'Enter');
     fixture.detectChanges();
@@ -282,7 +284,11 @@ describe('ShipSpreadsheet composer', () => {
     key(frame, 'x');
     expect(cellAt(host.sheet(), 0, 1)).toBe('true');
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.shs-check.on')).not.toBeNull();
+    const box = fixture.nativeElement.querySelector('.shs-c.t-checkbox sh-checkbox') as HTMLElement;
+    expect(box.classList.contains('active')).toBe(true);
+    expect(box.getAttribute('aria-checked')).toBe('true');
+    expect(box.querySelector('input')).toBeNull();
+    expect(box.closest('.shs-hosted')?.hasAttribute('inert')).toBe(true);
     // Pasting into the column parses each value; text columns take the raw string.
     grid.selectCell(1, 0);
     const { event } = clipboard('paste', { 'text/plain': 'raw\tyes\nmore\tnope' });

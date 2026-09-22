@@ -39,7 +39,9 @@ as a sparse `cellTypes: Record<number, string>` keyed by cell index with an `ins
 | `toText` / `toMarkdown` / `toHtml` | export forms | raw / `toText` / escaped `toText` |
 
 `ctx` is `{ row, col, type }`; an extension never receives the model. The composer builds a
-`SheetCellRegistry` from its `extensions` input on top of the built-ins (`text`, `checkbox`); unknown types
+`SheetCellRegistry` from its `extensions` input on top of the built-ins (`text`, `checkbox` — drawn as a
+real `sh-checkbox` per visible cell through the `renderer` hook, so the box is the library's own and its
+stylesheet arrives with the instance; nothing to restate host side); unknown types
 fall back to text, so a document typed by an app-side extension still renders where that extension is not
 registered.
 
