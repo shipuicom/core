@@ -112,8 +112,34 @@ cells array, so the asymptotics are unchanged.
 
 ## 4. Cross-sheet references
 
-`Sheet2!A1` needs a workbook (SHEETS.md §3.5 option b). Not before formulas are in; the evaluator takes an
-optional `resolveExternal(sheetName, row, col)` hook so a workbook can supply it later without a redesign.
+The workbook is the host's: the component stays one grid, and `Sheet2!A1` resolves through a `SheetWorkbook`
+the host hands in (`[workbook]` on `<sh-spreadsheet>`, `evaluator.workbook` underneath).
+
+- **Grammar.** A reference or range may carry a sheet prefix: a bare name (`Sheet2!A1`) or a quoted one with
+  `'` doubled inside (`'Budget 2026'!B2:B9`); the prefix on a range's first corner names the whole range, a
+  different sheet on the second corner is a syntax error. A prefix followed by a name that is not a reference
+  is a **named column** (`Tasks!Title`, `Tasks!'Due date'`): a range the workbook resolves by header — for a
+  sheet that is a projection of records rather than a grid. `FormulaRef.sheet` and the `column` node carry
+  them; `formulaNameText` quotes a name when it needs it.
+- **Resolver.** `SheetWorkbook.sheet(name)` returns a `SheetWorkbookSheet` (`rows`, `cols`, `cell(row, col)`,
+  optional `column(name)`) or `null`. Name matching is the host's (case-insensitive is the natural choice). A
+  missing sheet or column is `#REF!`; a cell past the sheet's size is empty; without a workbook every
+  cross-sheet reference is `#REF!`.
+- **Recomputation.** Cross-sheet references are not edges in the sheet's own graph (the other sheet is not in
+  the model): a formula holding one is treated like a volatile one — dirty on every `update` and on
+  `recalc()`. The host recalcs when a referenced sheet changes; the composer does so whenever `[workbook]` is a
+  new value, so the natural shape is a `computed` resolver over the workbook's documents. Values are computed
+  on read rather than eagerly in `update`, so a chain of sheets reading each other resolves whatever order the
+  host brings them up to date in, and a cycle across sheets ends in `#CYCLE` through each evaluator's own
+  visiting set. `cellValue(row, col)` exposes the typed value for a resolver to hand on.
+- **Structural ops on the referenced sheet.** `rewriteFormulaRefs(source, op, sheet)` with a sheet name
+  rewrites only the references qualified with that name (case-insensitive), leaving the formula's own
+  references alone — the host runs it over the other sheets' formulas when one sheet takes a structural op
+  (the apply inside the model still rewrites only unqualified references). `renameFormulaSheet(source, from,
+  to)` re-points references and named columns when a sheet is renamed.
+- **Fill.** `shiftFormulaRefs(source, rows, cols)` moves the relative references of a formula (anchored axes
+  stay, off the sheet is `#REF!`); `sheetFillValues(model, source, target)` is what the composer's fill handle
+  writes — the pattern repeated, a single arithmetic series continued, formulas shifted.
 
 ## 5. Order of work
 
