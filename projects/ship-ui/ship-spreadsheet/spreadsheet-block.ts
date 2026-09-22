@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, InjectionToken, effect, inject, signal, untracked, viewChild } from '@angular/core';
 import {
   BaseComponentBlockBehavior,
+  BlockInnerAlgebra,
   SHIP_EDITOR_BLOCK_CONTEXT,
   SlashCommand,
   SlashCommandCtx,
@@ -8,8 +9,9 @@ import {
 } from '@ship-ui/core/ship-editor';
 import { ASTBlockNode } from '@ship-ui/core/ship-editor';
 import { SheetCellExtension } from './core/sheet-extensions';
-import { SheetModel, SheetOp, createSheet, sheetFromJSON, sheetToJSON } from './core/sheet-model';
+import { SheetModel, SheetOp, applySheetOps, createSheet, sheetFromJSON, sheetToJSON } from './core/sheet-model';
 import { sheetFromTable, sheetToTableHtml } from './core/sheet-table';
+import { transformSheetOps } from './core/sheet-transform';
 import { ShipSpreadsheet } from './sh-spreadsheet';
 
 /** Cell extensions made available to every embedded sheet block (provide it on the editor's injector). */
@@ -21,16 +23,36 @@ function attrsPatch(model: SheetModel): Record<string, unknown> {
   return { rows: json.rows, cols: json.cols, cells: json.cells, colWidths: json.colWidths, rowHeights: json.rowHeights, colTypes: json.colTypes };
 }
 
+const modelOf = (attrs: Record<string, unknown>): SheetModel => sheetFromJSON(attrs) ?? createSheet(1, 1);
+const isOps = (inner: unknown): inner is SheetOp[] => Array.isArray(inner);
+
+/**
+ * The sheet's inner-op algebra for the editor: a `SheetOp[]` transaction
+ * travels inside a `block-inner` editor op, transforms through
+ * `transformSheetOps`, inverts through the exact inverse `applySheetOps`
+ * returns, and applies as a rewrite of the block's attrs.
+ */
+export const SHEET_INNER_ALGEBRA: BlockInnerAlgebra<SheetOp[]> = {
+  transform: (op, against, side) => transformSheetOps(op, against, side).ops,
+  invert: (op, attrs) => applySheetOps(modelOf(attrs), op).inverse.slice(),
+  apply: (attrs, op) => ({ ...attrs, ...attrsPatch(applySheetOps(modelOf(attrs), op).model) }),
+};
+
 /**
  * The spreadsheet mounted as an `sh-editor` component block. Attrs are the
  * persisted `SheetJSON`; the composer edits a model built from them, and
- * every transaction it emits is written back with `updateAttrs` — one
+ * every transaction it emits is handed to the editor as one inner op
+ * (`applyInner`, a `block-inner` editor op carrying the `SheetOp[]`) — one
  * editor transaction per sheet transaction, so the page's history and its
- * collab pipeline see the change as a block update. Attrs that change from
- * outside (editor undo, a remote block splice) are adopted; attrs that
- * merely echo this block's own write are not, so the composer's selection
- * and in-cell history survive the round trip. Escape at the spreadsheet's
- * edge hands control back to the editor.
+ * collab pipeline see the change as an edit *inside* the block and two
+ * peers editing the same sheet converge cell by cell. An editor without
+ * inner ops gets the attrs written back with `updateAttrs` (a block
+ * splice) instead. Attrs that change from outside are adopted — through
+ * the composer's `applyRemote` when the editor names the inner op that
+ * produced them (history kept), wholesale otherwise; attrs that merely echo
+ * this block's own write are not, so the composer's selection and in-cell
+ * history survive the round trip. Escape at the spreadsheet's edge hands
+ * control back to the editor.
  */
 @Component({
   selector: 'sh-spreadsheet-block',
@@ -65,22 +87,40 @@ export class ShipSpreadsheetBlock {
   extensions: readonly SheetCellExtension[] = inject(SHEET_BLOCK_EXTENSIONS, { optional: true }) ?? [];
   /** The attrs JSON this block last wrote, to tell an echo from an outside change. */
   #written = '';
+  /** The last inner-op sequence number adopted through `applyRemote`. */
+  #seenSeq = -1;
 
   constructor() {
     effect(() => {
       const attrs = this.ctx.attrs();
-      const key = JSON.stringify(sheetToJSON(sheetFromJSON(attrs) ?? createSheet(1, 1)));
+      const inner = this.ctx.innerOps?.() ?? null;
+      const key = JSON.stringify(sheetToJSON(modelOf(attrs)));
       if (key === this.#written) return;
       this.#written = key;
-      untracked(() => this.model.set(sheetFromJSON(attrs) ?? createSheet(1, 1)));
+      untracked(() => {
+        // An inner op that explains the new attrs is applied as a remote
+        // transaction — the composer keeps its history and selection —
+        // when it really does lead from the live model to the attrs.
+        const grid = this.grid();
+        if (grid && inner && inner.seq !== this.#seenSeq && isOps(inner.inner)) {
+          this.#seenSeq = inner.seq;
+          const next = applySheetOps(this.model(), inner.inner).model;
+          if (JSON.stringify(sheetToJSON(next)) === key) {
+            grid.applyRemote(inner.inner);
+            return;
+          }
+        }
+        this.model.set(modelOf(attrs));
+      });
     });
   }
 
   /** A composer transaction: the model already advanced; persist it as one editor transaction. */
-  onOps(_ops: SheetOp[]): void {
+  onOps(ops: SheetOp[]): void {
     const model = this.model();
     this.#written = JSON.stringify(sheetToJSON(model));
-    this.ctx.updateAttrs(attrsPatch(model));
+    if (this.ctx.applyInner) this.ctx.applyInner(ops);
+    else this.ctx.updateAttrs(attrsPatch(model));
   }
 }
 
@@ -93,6 +133,7 @@ export class ShipSpreadsheetBlock {
 export class ShipSpreadsheetBlockBehavior extends BaseComponentBlockBehavior {
   readonly type = 'sheet';
   readonly component = ShipSpreadsheetBlock;
+  override readonly innerAlgebra = SHEET_INNER_ALGEBRA;
 
   override parseDOM(el: HTMLElement): ASTBlockNode | null {
     if (el.tagName?.toLowerCase() === 'table') {

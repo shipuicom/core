@@ -3,8 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { BaseBlockBehavior, BaseInlineBehavior, SHIP_EDITOR_BLOCK_CONTEXT, ShipEditorBlockContext } from '@ship-ui/core/ship-editor';
 import { htmlToAst } from '../ship-editor/editor-serializers';
-import { createSheet, sheetFromJSON, sheetToJSON } from './core/sheet-model';
-import { ShipSpreadsheetBlock, ShipSpreadsheetBlockBehavior } from './spreadsheet-block';
+import { SheetOp, createSheet, sheetFromJSON, sheetToJSON } from './core/sheet-model';
+import { SHEET_INNER_ALGEBRA, ShipSpreadsheetBlock, ShipSpreadsheetBlockBehavior } from './spreadsheet-block';
 
 const behavior = new ShipSpreadsheetBlockBehavior();
 const blocks = new Map<string, BaseBlockBehavior>([['sheet', behavior]]);
@@ -60,10 +60,12 @@ describe('ShipSpreadsheetBlockBehavior', () => {
 });
 
 describe('ShipSpreadsheetBlock (editable)', () => {
-  function mount(initial = sheetToJSON(createSheet(2, 2, ['a', 'b', 'c', 'd']))) {
+  function mount(initial = sheetToJSON(createSheet(2, 2, ['a', 'b', 'c', 'd'])), innerOps = false) {
     const attrs = signal<Record<string, unknown>>({ ...initial });
     const readonly = signal(false);
     const writes: Record<string, unknown>[] = [];
+    const inners: SheetOp[][] = [];
+    const remote = signal<{ seq: number; inner: unknown } | null>(null);
     const ctx: ShipEditorBlockContext = {
       attrs: attrs.asReadonly(),
       index: signal(0).asReadonly(),
@@ -76,12 +78,66 @@ describe('ShipSpreadsheetBlock (editable)', () => {
       },
       select: () => {},
       remove: () => {},
+      ...(innerOps
+        ? {
+            // The editor applies the inner op through the sheet algebra and re-renders the attrs.
+            applyInner: (inner: unknown) => {
+              inners.push(inner as SheetOp[]);
+              attrs.set(JSON.parse(JSON.stringify(SHEET_INNER_ALGEBRA.apply(attrs(), inner as SheetOp[]))));
+            },
+            innerOps: remote.asReadonly(),
+          }
+        : {}),
     };
     TestBed.configureTestingModule({ imports: [ShipSpreadsheetBlock], providers: [{ provide: SHIP_EDITOR_BLOCK_CONTEXT, useValue: ctx }] });
     const fixture = TestBed.createComponent(ShipSpreadsheetBlock);
     fixture.detectChanges();
-    return { fixture, block: fixture.componentInstance, attrs, readonly, writes };
+    /** What the editor does for a peer's inner op: apply it to attrs and name it. */
+    const remoteInner = (ops: SheetOp[]) => {
+      attrs.set(JSON.parse(JSON.stringify(SHEET_INNER_ALGEBRA.apply(attrs(), ops))));
+      remote.set({ seq: (remote()?.seq ?? 0) + 1, inner: ops });
+    };
+    return { fixture, block: fixture.componentInstance, attrs, readonly, writes, inners, remoteInner };
   }
+
+  it('hands each composer transaction to the editor as an inner op when it can', () => {
+    const { fixture, block, attrs, writes, inners } = mount(undefined, true);
+    const grid = block.grid()!;
+    grid.apply([{ kind: 'set-cells', row: 0, col: 0, values: [['A']] }]);
+    fixture.detectChanges();
+    expect(writes).toHaveLength(0);
+    expect(inners).toEqual([[{ kind: 'set-cells', row: 0, col: 0, values: [['A']] }]]);
+    expect(sheetFromJSON(attrs())!.cells).toEqual(['A', 'b', 'c', 'd']);
+    // The echo is not re-adopted: the composer's history survives.
+    expect(grid.canUndo()).toBe(true);
+  });
+
+  it("applies a peer's inner op through the composer and keeps its own history", () => {
+    const { fixture, block, remoteInner } = mount(undefined, true);
+    const grid = block.grid()!;
+    grid.apply([{ kind: 'set-cells', row: 0, col: 0, values: [['A']] }]);
+    fixture.detectChanges();
+    remoteInner([{ kind: 'insert-rows', at: 0, count: 1 }]);
+    fixture.detectChanges();
+    expect(block.model().rows).toBe(3);
+    expect(block.model().cells).toEqual(['', '', 'A', 'b', 'c', 'd']);
+    expect(grid.canUndo()).toBe(true);
+    // The rebased undo still addresses the moved cell.
+    grid.undo();
+    fixture.detectChanges();
+    expect(block.model().cells).toEqual(['', '', 'a', 'b', 'c', 'd']);
+  });
+
+  it('adopts attrs wholesale when no inner op explains them', () => {
+    const { fixture, block, attrs } = mount(undefined, true);
+    const grid = block.grid()!;
+    grid.apply([{ kind: 'set-cells', row: 0, col: 0, values: [['A']] }]);
+    fixture.detectChanges();
+    attrs.set({ ...sheetToJSON(createSheet(1, 1, ['solo'])) });
+    fixture.detectChanges();
+    expect(block.model().cells).toEqual(['solo']);
+    expect(grid.canUndo()).toBe(false);
+  });
 
   it('writes each composer transaction back as one attrs update and keeps its history', () => {
     const { fixture, block, attrs, writes } = mount();

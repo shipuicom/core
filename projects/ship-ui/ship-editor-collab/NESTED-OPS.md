@@ -2,7 +2,21 @@
 
 Design for SHEETS.md §4 item 7: a `SheetOp[]` transaction travelling *inside* an editor op so that two people
 editing the same embedded sheet converge cell by cell instead of one of them losing a whole block splice.
-Not implemented; the pieces it builds on have landed (this note says which).
+
+**Status: implemented** as designed below, with these deltas:
+
+- The algebra registry is module-level (`registerBlockInnerAlgebra` / `blockInnerAlgebra` in
+  `editor-transactions.ts`) so the pure `transformOp`/`applyOp`/`invertOp` can reach it; the engine registers
+  every `BaseComponentBlockBehavior.innerAlgebra` it is given (`ShipSpreadsheetBlockBehavior` carries
+  `SHEET_INNER_ALGEBRA`).
+- `BlockInnerOp.inverse` carries the inner inverse computed at apply time (`EditorEngineService.applyBlockInner`),
+  so `invertOp` stays pure; inner-vs-inner transform rewrites both `inner` and `inverse`.
+- `ShipEditorBlockContext.applyInner?` and `innerOps?` are optional: a block falls back to `updateAttrs` on an
+  editor without them. `EditorEngineService.lastInnerOp` feeds `innerOps`; the sheet block applies a peer's
+  inner op with `grid.applyRemote` (history kept) when it explains the new attrs, else adopts them wholesale.
+- Tests: `ship-editor/editor-block-inner.spec.ts` (toy algebra, engine undo/redo/remote),
+  `ship-spreadsheet/sheet-inner-ops.spec.ts` (transform properties, fuzz, two-peer convergence),
+  `spreadsheet-block.spec.ts` (block ↔ context).
 
 ## 1. Where we are
 
