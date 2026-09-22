@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { ShipEditor, ShipEditorToolbar } from '@ship-ui/core/ship-editor';
 import {
+  SheetFunction,
   SheetModel,
   SheetOp,
   SheetRowKind,
@@ -60,6 +61,24 @@ function recordsSheet(): SheetModel {
     { kind: 'set-col-width', col: 3, width: 60 },
   ]).model;
 }
+
+/** The custom-functions demo: a plain function and one that reads the host's context. */
+const DOUBLE: SheetFunction = {
+  name: 'DOUBLE',
+  minArgs: 1,
+  maxArgs: 1,
+  signature: 'DOUBLE(x)',
+  description: 'Twice the number.',
+  call: ([x]) => (typeof x === 'number' ? x * 2 : { error: '#VALUE!' }),
+};
+const USERNAME: SheetFunction = {
+  name: 'USERNAME',
+  maxArgs: 0,
+  volatile: true,
+  signature: 'USERNAME()',
+  description: 'The signed-in user, from the host context.',
+  call: (_, ctx) => (ctx.external as { user: string }).user,
+};
 
 const EDITOR_DOC = `
 <h2>Quarterly numbers</h2>
@@ -144,7 +163,8 @@ save(ops: SheetOp[]) { ... }
 // A cell whose text starts with '=' is a formula: the model keeps the source, the grid
 // shows the value (grid.values() exposes it), and a typed column formats it. References
 // follow row/column inserts and deletes; a removed reference reads #REF!.
-// SUM AVG MIN MAX COUNT COUNTA ABS ROUND IF CONCAT LEN TODAY, + - * / ^ & and comparisons.`;
+// SUM AVG MIN MAX COUNT COUNTA ABS ROUND IF CONCAT LEN TODAY, + - * / ^ & and comparisons —
+// and whatever the host registers through [functions] (see Custom functions below).`;
 
   formatsExample = `import { sheetCurrencyExtension, sheetDateExtension } from '@ship-ui/core/ship-spreadsheet';
 
@@ -202,6 +222,27 @@ extensions = [sheetSelectExtension({ type: 'status', options: [{ key: 'todo', la
 // renderer: MyCell (inputs value / ctx / extension) or renderer: this.tpl() (an
 // <ng-template let-value let-ctx="ctx">). One instance per visible cell, inert.
 extensions = [{ type: 'avatar', renderer: AvatarCell, render: (raw) => raw }];`;
+  // Custom functions: [functions] merges over the built-ins, [functionContext] is what
+  // they see as ctx.external. A new context object recomputes every formula; USERNAME is
+  // volatile, so it is also recomputed on every edit.
+  sheetFunctions = [DOUBLE, USERNAME];
+  user = signal('sp90');
+  readonly functionContext = computed(() => ({ user: this.user() }));
+  functionsSheet = signal(createSheet(3, 3, ['Value', 'Doubled', 'Who', '21', '=DOUBLE(A2)', '=USERNAME()', 'x', '=DOUBLE(A3)', '=CONCAT("by ", USERNAME())']));
+  functionsSelection = signal<SheetSelection | null>(null);
+  functionsExample = `import { SheetFunction } from '@ship-ui/core/ship-spreadsheet';
+
+const DOUBLE: SheetFunction = {
+  name: 'DOUBLE', minArgs: 1, maxArgs: 1, signature: 'DOUBLE(x)', description: 'Twice the number.',
+  call: ([x]) => (typeof x === 'number' ? x * 2 : { error: '#VALUE!' }),
+};
+// volatile: recomputed on every edit and on recalc(), since its input lives outside the model.
+const USERNAME: SheetFunction = { name: 'USERNAME', maxArgs: 0, volatile: true, call: (_, ctx) => (ctx.external as { user: string }).user };
+
+// <sh-spreadsheet [functions]="[DOUBLE, USERNAME]" [functionContext]="context()" [formulaBar]="true" />
+// ctx: { row, col, address, model, valueAt(ref), external }. A thrown error reads #ERROR! and its
+// message is the cell's tooltip; the wrong number of arguments too. Unknown names read #NAME?.
+// Data that changed behind the same context object: grid.recalc().`;
   lastOps = signal('—');
   onOps(ops: SheetOp[]) {
     this.lastOps.set(JSON.stringify(ops, null, 1));

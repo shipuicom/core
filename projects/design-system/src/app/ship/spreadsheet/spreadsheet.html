@@ -68,6 +68,31 @@
     </div>
   </app-previewer>
 
+  <app-previewer path="/spreadsheet" title="Custom functions" class="no-space">
+    <div class="sheet-demo">
+      <label class="sheet-note">
+        Signed in as
+        <input class="sheet-input" type="text" [value]="user()" (input)="user.set($any($event.target).value)" />
+      </label>
+      <sh-spreadsheet
+        class="sheet-small"
+        [(sheet)]="functionsSheet"
+        [(selection)]="functionsSelection"
+        [editable]="true"
+        [formulaBar]="true"
+        [functions]="sheetFunctions"
+        [functionContext]="functionContext()" />
+      <p class="sheet-note">
+        <code>DOUBLE(x)</code> and <code>USERNAME()</code> are registered through <code>functions</code>;
+        <code>USERNAME</code> reads the user from <code>functionContext</code> — change the name above and the
+        cells follow. Select a cell and type <code>=d</code> in the formula bar: the registered functions
+        autocomplete with their signature and help. <code>=DOUBLE("x")</code> reads <code>#VALUE!</code>,
+        <code>=DOUBLE()</code> <code>#ERROR!</code> with the reason in its tooltip.
+      </p>
+      <app-highlight lang="ts" [content]="functionsExample" />
+    </div>
+  </app-previewer>
+
   <app-previewer path="/spreadsheet" title="Records: labelled columns, group rows, select and checkbox cells" class="no-space">
     <div class="sheet-demo">
       <sh-spreadsheet

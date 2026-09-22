@@ -24,6 +24,16 @@
   overflow: auto;
 }
 
+.sheet-input {
+  margin-left: p2r(6);
+  padding: p2r(2) p2r(6);
+  border: 1px solid var(--base-4);
+  border-radius: var(--shape-1);
+  background: var(--base-1);
+  color: inherit;
+  font: inherit;
+}
+
 sh-spreadsheet.sheet-small {
   max-height: p2r(260);
 }

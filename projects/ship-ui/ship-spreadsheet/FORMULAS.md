@@ -7,6 +7,8 @@ cycle and downstream), the errors listed in §2, SUM/AVG(AVERAGE)/MIN/MAX/COUNT/
 TODAY, and `rewriteFormulaRefs(source, op)`. The rewrite runs inside the structural applies and inside
 `transformSheetOp` (§3); the composer exposes `values` (a `SheetValues` per model), shows a formula's value or
 error token in the grid and its source in the editor, and has an opt-in `[formulaBar]` (§5 steps 3–4).
+Functions live in a `SheetFunctionRegistry`; a host registers its own through `[functions]` and hands them
+data through `[functionContext]` (§6).
 Ranges over 10 000 cells register on the sheet as a whole rather than per cell. Not done: cross-sheet references
 (§4). Two rules differ from Excel so that the rewrite converges under concurrent edits — see §3.
 
@@ -126,3 +128,41 @@ optional `resolveExternal(sheetName, row, col)` hook so a workbook can supply it
 4. Formula bar: `[formulaBar]` on `<sh-spreadsheet>` — address, `fx`, an input bound to `activeSource()`
    (the formula's source, else the type's `format`); Enter commits through the same path as the editor,
    Escape reverts, blur with a change commits; read-only without `editable`. Done.
+5. Custom functions: `SheetFunctionRegistry`, `[functions]`, `[functionContext]`, `recalc()`, the formula
+   bar's autocomplete. Done — §6.
+
+## 6. Custom functions
+
+Functions are data, not a switch in the evaluator. `SheetFunction` is `{ name, minArgs?, maxArgs?, variadic?,
+call(args, ctx), volatile?, signature?, description? }`; `SheetFunctionRegistry` holds them by upper-case name,
+mirroring `SheetCellRegistry`: `new SheetFunctionRegistry(functions)` merges over `SHEET_BUILTIN_FUNCTIONS`
+(a same-named function overrides the built-in), `registry.with(more)` layers another set, `get`/`has`/`names`/
+`list`. `SheetEvaluator` takes a registry (`SHEET_DEFAULT_FUNCTIONS` when none) and an `external` bag.
+
+```ts
+const DOUBLE: SheetFunction = { name: 'DOUBLE', minArgs: 1, maxArgs: 1, signature: 'DOUBLE(x)', call: ([x]) => (typeof x === 'number' ? x * 2 : { error: '#VALUE!' }) };
+const USERNAME: SheetFunction = { name: 'USERNAME', maxArgs: 0, volatile: true, call: (_, ctx) => (ctx.external as { user: string }).user };
+```
+
+```html
+<sh-spreadsheet [functions]="[DOUBLE, USERNAME]" [functionContext]="context()" [formulaBar]="true" />
+```
+
+- **Calls.** Names are case-insensitive; ranges arrive flattened into `args` (as for SUM). `ctx` is
+  `{ row, col, address, model, valueAt(ref), external }` — `valueAt` takes A1 text or `{ row, col }` and
+  returns the evaluated value. Cells read through `valueAt` are *not* dependencies (the graph comes from the
+  references in the source); a function whose result depends on them or on `external` is `volatile`.
+- **Volatile.** A formula calling a volatile function is recomputed on every `update` (any edit) and on
+  `recalc()`. `TODAY` is volatile.
+- **Context.** `[functionContext]` is any value; it reaches every call as `ctx.external`. A *new* value
+  recomputes every formula (the natural shape is a `computed` over the app's signals). Data that changed
+  behind the same object needs `grid.recalc()` (the evaluator's `recalc()` underneath).
+- **Errors.** A function may return a `FormulaError`, or throw: a thrown error reads `#ERROR!` and its message
+  is kept — `values.errorMessageAt(row, col)`, the error cell's `title` (source, newline, message). The wrong
+  number of arguments (`minArgs`/`maxArgs`, unless `variadic`) is the same `#ERROR!` with a message. Unknown
+  names stay `#NAME?`.
+- **Grammar.** A reference-shaped word followed by `(` — `LOG10(`, `AB1(` — is a call, in the parser and in
+  `rewriteFormulaRefs`, so custom names never collide with references and the rewrite is unaffected by them.
+- **Formula bar.** While the bar holds a formula, the word at the caret lists the registered functions that
+  start with it (`signature`, `description`); arrows move, Tab/Enter/click complete to `NAME(`, Escape closes.
+
