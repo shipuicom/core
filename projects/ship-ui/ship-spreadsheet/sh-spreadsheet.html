@@ -10,9 +10,9 @@
       autocapitalize="off"
       autocomplete="off"
       [attr.aria-label]="activeLabel() ? 'Formula bar, ' + activeLabel() : 'Formula bar'"
-      [value]="activeSource()"
       [readOnly]="!editable() || !activeCell()"
       (keydown)="onBarKeydown($event)"
+      (focus)="onBarFocus()"
       (blur)="onBarBlur()" />
   </div>
 }

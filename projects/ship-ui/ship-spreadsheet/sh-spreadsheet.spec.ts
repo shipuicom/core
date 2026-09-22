@@ -358,6 +358,31 @@ describe('ShipSpreadsheet composer', () => {
       bar().value = '25';
       key(bar(), 'Enter');
       expect(cellAt(host.sheet(), 1, 0)).toBe('0.25');
+      // A click on another cell blurs the bar: the text lands in the cell it was typed for, not the new one.
+      bar().dispatchEvent(new FocusEvent('focus'));
+      bar().value = '=A1*4';
+      grid.selectCell(0, 1);
+      bar().dispatchEvent(new FocusEvent('blur'));
+      fixture.detectChanges();
+      expect(cellAt(host.sheet(), 1, 0)).toBe('=A1*4');
+      expect(cellAt(host.sheet(), 0, 1)).toBe('=A1+1');
+      expect(bar().value).toBe('=A1+1');
+      // Typed text committed by a blur, then a move to a cell with the same source as before the typing: the bar follows.
+      grid.selectCell(1, 1);
+      fixture.detectChanges();
+      expect(bar().value).toBe('');
+      bar().dispatchEvent(new FocusEvent('focus'));
+      bar().value = 'typed';
+      bar().dispatchEvent(new FocusEvent('blur'));
+      grid.selectCell(1, 1);
+      grid.selectCell(0, 1);
+      grid.selectCell(1, 1);
+      fixture.detectChanges();
+      expect(cellAt(host.sheet(), 1, 1)).toBe('typed');
+      expect(bar().value).toBe('typed');
+      grid.apply([{ kind: 'set-cells', row: 1, col: 1, values: [['']] }]);
+      fixture.detectChanges();
+      expect(bar().value).toBe('');
       host.editable.set(false);
       fixture.detectChanges();
       expect(bar().readOnly).toBe(true);

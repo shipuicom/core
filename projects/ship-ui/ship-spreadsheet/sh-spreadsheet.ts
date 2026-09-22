@@ -270,11 +270,7 @@ export class ShipSpreadsheet {
   /** What the formula bar and the editor show for the active cell: a formula's source, else the type's `format`. */
   readonly activeSource = computed(() => {
     const cell = this.activeCell();
-    if (!cell) return '';
-    const raw = cellAt(this.sheet(), cell.row, cell.col);
-    if (isFormula(raw)) return raw;
-    const { ext, ctx } = this.#cell(cell.row, cell.col);
-    return ext.format ? ext.format(raw, ctx) : raw;
+    return cell ? this.#sourceAt(cell.row, cell.col) : '';
   });
 
   /**
@@ -446,6 +442,19 @@ export class ShipSpreadsheet {
           if (this.editing()) this.editing.set(null);
         }
       });
+    });
+
+    // The formula bar's text follows the active cell and the model. An
+    // explicit write, not a property binding: after the user typed into the
+    // input, a move to a cell whose source equals the last bound value
+    // would leave the typed text in place.
+    effect(() => {
+      const el = this.barRef()?.nativeElement;
+      this.activeCell();
+      this.sheet();
+      if (!el) return;
+      const text = untracked(() => this.activeSource());
+      if (el.ownerDocument.activeElement !== el) el.value = text;
     });
 
     afterNextRender(() => {
@@ -677,6 +686,14 @@ export class ShipSpreadsheet {
     const range = primarySheetRange(this.selection());
     const sheet = this.sheet();
     return range && sheet.rows > 0 && sheet.cols > 0 ? normalizedRange(sheet, range) : null;
+  }
+
+  /** A cell's editable text: a formula's source, else the type's `format` of the raw string. */
+  #sourceAt(row: number, col: number): string {
+    const raw = cellAt(this.sheet(), row, col);
+    if (isFormula(raw)) return raw;
+    const { ext, ctx } = this.#cell(row, col);
+    return ext.format ? ext.format(raw, ctx) : raw;
   }
 
   /** The extension and context for a cell. */
@@ -981,20 +998,33 @@ export class ShipSpreadsheet {
   // Formula bar
   // -------------------------------------------------------------------------
 
-  /** Write the formula bar's text into the active cell (through `parse`, a formula as is) and return focus to the grid. */
+  /** The cell the formula bar took focus on — what its text belongs to, whatever the selection does meanwhile. */
+  #barCell: { row: number; col: number } | null = null;
+
+  onBarFocus() {
+    this.#barCell = this.activeCell();
+  }
+
+  /** Write the formula bar's text into its cell (through `parse`, a formula as is) and return focus to the grid. */
   commitBar(): void {
-    const cell = this.activeCell();
+    this.#commitBar();
+    this.focus();
+  }
+
+  #commitBar(): void {
+    const cell = this.#barCell ?? this.activeCell();
     const el = this.barRef()?.nativeElement;
+    this.#barCell = null;
     if (!cell || !el) return;
     if (this.editing()) this.cancelEdit();
-    if (el.value !== this.activeSource()) this.#commitParsed(cell.row, cell.col, el.value);
+    if (el.value !== this.#sourceAt(cell.row, cell.col)) this.#commitParsed(cell.row, cell.col, el.value);
     el.value = this.activeSource();
-    this.focus();
   }
 
   /** Drop the formula bar's edit: the input shows the cell's source again. */
   cancelBar(): void {
     const el = this.barRef()?.nativeElement;
+    this.#barCell = null;
     if (el) el.value = this.activeSource();
     this.focus();
   }
@@ -1013,9 +1043,9 @@ export class ShipSpreadsheet {
     }
   }
 
+  /** Focus leaving the bar (a click on a cell, a tab out) keeps a changed text — in the cell it was typed for. */
   onBarBlur() {
-    const el = this.barRef()?.nativeElement;
-    if (el && el.value !== this.activeSource()) this.commitBar();
+    this.#commitBar();
   }
 
   #moveFrom(row: number, col: number, move: SheetCommitMove) {
