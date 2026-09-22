@@ -72,9 +72,10 @@
     <div class="sheet-demo">
       <sh-spreadsheet class="sheet-small" [(sheet)]="records" [(selection)]="recordsSelection" [editable]="true" [extensions]="recordExtensions" />
       <p class="sheet-note">
-        B and C are <code>select</code> columns (<code>status</code>, <code>priority</code>): press Enter on one
-        for a menu of the options, type to filter it, or paste <code>rev</code> and watch it resolve to
-        <em>Review</em>. D is a <code>checkbox</code>.
+        B and C are <code>select</code> columns (<code>status</code>, <code>priority</code>): each cell is a real
+        <code>sh-chip</code> drawn by the type's <code>renderer</code> component — one instance per visible cell,
+        re-fed as you scroll. Press Enter on one for a menu of the options, type to filter it, or paste
+        <code>rev</code> and watch it resolve to <em>Review</em>. D is a <code>checkbox</code>.
       </p>
       <app-highlight lang="ts" [content]="selectExample" />
     </div>

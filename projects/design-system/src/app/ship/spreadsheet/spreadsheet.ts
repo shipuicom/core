@@ -178,7 +178,12 @@ extensions = [sheetCurrencyExtension({ code: 'DKK', locale: 'da-DK', decimals: 2
 // options (arrows move, Enter picks, typed text filters); paste resolves a key, a label
 // or a label prefix. A component of your own: editor: MyEditor — the composer sets its
 // value / ctx / typed / extension / editor inputs and MyEditor calls editor.commit(raw).
-extensions = [sheetSelectExtension({ type: 'status', options: [{ key: 'todo', label: 'To do' }, ...] })];`;
+extensions = [sheetSelectExtension({ type: 'status', options: [{ key: 'todo', label: 'To do' }, ...] })];
+
+// Read-only cells through a component or a template instead of an HTML string:
+// renderer: MyCell (inputs value / ctx / extension) or renderer: this.tpl() (an
+// <ng-template let-value let-ctx="ctx">). One instance per visible cell, inert.
+extensions = [{ type: 'avatar', renderer: AvatarCell, render: (raw) => raw }];`;
   lastOps = signal('—');
   onOps(ops: SheetOp[]) {
     this.lastOps.set(JSON.stringify(ops, null, 1));

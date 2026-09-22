@@ -1,4 +1,4 @@
-import { Component, input, signal, viewChild } from '@angular/core';
+import { Component, TemplateRef, computed, input, signal, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { matchSheetSelectOption, sheetSelectExtension } from './cells/sheet-select';
@@ -27,6 +27,22 @@ class ProbeEditor implements SheetCellEditor {
 }
 
 const PROBE: SheetCellExtension = { type: 'probe', editor: ProbeEditor, render: (raw) => raw.toUpperCase() };
+
+/** A component renderer under test: counts instances, echoes its inputs. */
+@Component({
+  standalone: true,
+  template: `<b class="drawn">{{ value() }}#{{ ctx().row }}</b>`,
+})
+class ProbeCell {
+  static created = 0;
+  value = input('');
+  ctx = input.required<SheetCellContext>();
+  constructor() {
+    ProbeCell.created++;
+  }
+}
+
+const DRAWN: SheetCellExtension = { type: 'drawn', renderer: ProbeCell, render: (raw) => raw, validate: (raw) => (raw === 'bad' ? 'Bad' : null) };
 const STATUS = sheetSelectExtension({
   type: 'status',
   options: [
@@ -39,15 +55,19 @@ const STATUS = sheetSelectExtension({
 @Component({
   standalone: true,
   imports: [ShipSpreadsheet],
-  template: `<sh-spreadsheet style="height: 300px" [(sheet)]="sheet" [(selection)]="selection" [editable]="editable()" [formulaBar]="formulaBar()" [extensions]="extensions" (ops)="log.push($event)" />`,
+  template: `
+    <ng-template #tpl let-value let-ctx="ctx"><i class="tpl">{{ value }}/{{ ctx.col }}</i></ng-template>
+    <sh-spreadsheet style="height: 300px" [(sheet)]="sheet" [(selection)]="selection" [editable]="editable()" [formulaBar]="formulaBar()" [extensions]="extensions()" (ops)="log.push($event)" />
+  `,
 })
 class Host {
   grid = viewChild.required(ShipSpreadsheet);
+  tpl = viewChild.required('tpl', { read: TemplateRef });
   sheet = signal<SheetModel>(createSheet(4, 3, ['a1', 'b1', 'c1', 'a2', 'b2', 'c2', 'a3', 'b3', 'c3', 'a4', 'b4', 'c4']));
   selection = signal<SheetSelection | null>(sheetCellSelection(0, 0));
   editable = signal(true);
   formulaBar = signal(false);
-  extensions = [PROBE, STATUS];
+  extensions = computed<SheetCellExtension[]>(() => [PROBE, STATUS, DRAWN, { type: 'tpl', renderer: this.tpl(), render: (raw) => raw }]);
   log: SheetOp[][] = [];
 }
 
@@ -357,10 +377,10 @@ describe('ShipSpreadsheet composer', () => {
       host.sheet.set(applySheetOps(createSheet(2, 2, ['x', 'doing', 'y', 'gone']), [{ kind: 'set-col-type', col: 1, type: 'status' }]).model);
       await settle();
       const cells = fixture.nativeElement.querySelectorAll('.shs-c.t-status') as NodeListOf<HTMLElement>;
-      expect(cells[0].textContent).toBe('In progress');
-      expect(cells[0].querySelector('.shs-chip')?.getAttribute('style')).toContain('--chip-c:#08f');
+      expect(cells[0].textContent?.trim()).toBe('In progress');
+      expect(STATUS.render('doing', { row: 0, col: 1, type: 'status' })).toContain('--chip-c:#08f');
       expect(cells[1].classList.contains('shs-invalid')).toBe(true);
-      expect(cells[1].textContent).toBe('gone');
+      expect(cells[1].textContent?.trim()).toBe('gone');
       grid.selectCell(0, 1);
       grid.startEdit('rev');
       expect(cellAt(host.sheet(), 0, 1)).toBe('doing');
@@ -379,6 +399,59 @@ describe('ShipSpreadsheet composer', () => {
       frame.dispatchEvent(event);
       expect(cellAt(host.sheet(), 1, 1)).toBe('todo');
       expect(sheetRangeToTsv(host.sheet(), { r0: 0, c0: 1, r1: 1, c1: 1 }, grid.registry())).toBe('Review\ntodo'.replace('todo', 'To do'));
+    });
+  });
+
+  describe('cell renderers', () => {
+    const settle = async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+    };
+    const hosted = () => Array.from(fixture.nativeElement.querySelectorAll('.shs-c.shs-hosted')) as HTMLElement[];
+
+    it('a component renderer draws the cell, one instance per visible cell, re-fed on change', async () => {
+      ProbeCell.created = 0;
+      grid.setColType(1, 'drawn');
+      await settle();
+      const cells = hosted();
+      expect(cells).toHaveLength(4);
+      expect(cells.map((cell) => cell.textContent)).toEqual(['b1#0', 'b2#1', 'b3#2', 'b4#3']);
+      expect(cells[0].classList.contains('t-drawn')).toBe(true);
+      expect(cells[0].hasAttribute('inert')).toBe(true);
+      expect(ProbeCell.created).toBe(4);
+      // The string payload no longer carries the column; the other columns are untouched.
+      expect(fixture.nativeElement.querySelectorAll('.shs-row')[0].querySelectorAll('.shs-c').length).toBe(3);
+      grid.apply([{ kind: 'set-cells', row: 1, col: 1, values: [['bad']] }]);
+      await settle();
+      expect(ProbeCell.created).toBe(4);
+      const changed = hosted()[1];
+      expect(changed.textContent).toBe('bad#1');
+      expect(changed.classList.contains('shs-invalid')).toBe(true);
+      expect(changed.title).toBe('Bad');
+      expect(hosted()[0]).toBe(cells[0]);
+      // A formula in a rendered column hands the component its value.
+      grid.apply([{ kind: 'set-cells', row: 0, col: 1, values: [['=1+1']] }]);
+      await settle();
+      expect(hosted()[0].textContent).toBe('2#0');
+    });
+
+    it('a template renderer gets the value as $implicit and the cell context', async () => {
+      grid.setColType(2, 'tpl');
+      await settle();
+      expect(hosted().map((cell) => cell.querySelector('i.tpl')?.textContent)).toEqual(['c1/2', 'c2/2', 'c3/2', 'c4/2']);
+    });
+
+    it('select cells render the option as a real sh-chip', async () => {
+      host.sheet.set(applySheetOps(createSheet(2, 1, ['doing', 'gone']), [{ kind: 'set-col-type', col: 0, type: 'status' }]).model);
+      await settle();
+      const chips = fixture.nativeElement.querySelectorAll('.shs-hosted sh-chip') as NodeListOf<HTMLElement>;
+      expect(chips).toHaveLength(2);
+      expect(chips[0].textContent?.trim()).toBe('In progress');
+      expect(chips[0].classList.contains('dynamic')).toBe(true);
+      expect(chips[0].style.getPropertyValue('--chip-c')).toBe('#08f');
+      expect(chips[1].classList.contains('unknown')).toBe(true);
+      expect(chips[1].textContent?.trim()).toBe('gone');
     });
   });
 

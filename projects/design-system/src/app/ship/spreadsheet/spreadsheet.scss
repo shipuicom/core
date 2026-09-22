@@ -32,20 +32,3 @@ sh-spreadsheet.sheet-big {
   height: p2r(420);
 }
 
-// Select cells render a chip-like pill from the option's colour.
-sh-spreadsheet .shs-chip {
-  display: inline-block;
-  max-width: 100%;
-  padding: 0 p2r(7);
-  border-radius: 999px;
-  line-height: p2r(18);
-  font-size: 0.9em;
-  background: rgb(from var(--chip-c, var(--base-8)) r g b / 20%);
-  color: var(--base-12);
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  &.unknown {
-    background: rgb(from var(--error-8) r g b / 20%);
-  }
-}

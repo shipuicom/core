@@ -5,6 +5,7 @@ import {
   DestroyRef,
   ElementRef,
   Injector,
+  TemplateRef,
   Type,
   ViewContainerRef,
   ViewEncapsulation,
@@ -20,13 +21,22 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
+import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ShipA11yAnnouncerService } from '@ship-ui/core/ship-a11y-announcer';
 import { ShipMenu } from '@ship-ui/core/ship-menu';
 import { ShipVirtualWindow } from '@ship-ui/core/ship-virtual-scroll';
 import { parseTsv, sheetRangeToHtml, sheetRangeToTsv } from './core/sheet-clipboard';
 import { escapeSheetHtml } from './core/sheet-html';
-import { SheetCellContext, SheetCellEditor, SheetCellEditorApi, SheetCellExtension, SheetCellRegistry, SheetCommitMove } from './core/sheet-extensions';
+import {
+  SheetCellContext,
+  SheetCellEditor,
+  SheetCellEditorApi,
+  SheetCellExtension,
+  SheetCellRegistry,
+  SheetCellRendererContext,
+  SheetCommitMove,
+} from './core/sheet-extensions';
 import { FormulaErrorCode, SheetEvaluator, isFormula } from './core/sheet-formulas';
 import {
   SheetModel,
@@ -95,6 +105,22 @@ export interface SheetValues {
 
 export type { SheetCommitMove };
 
+/**
+ * A cell drawn by a component or a template (`SheetCellExtension.renderer`)
+ * rather than by the row's HTML string: positioned by the same generated
+ * column class, fed the cell's display value.
+ */
+export interface SheetHostedCell {
+  readonly col: number;
+  readonly cls: string;
+  readonly title: string | null;
+  readonly component: Type<unknown> | null;
+  readonly template: TemplateRef<SheetCellRendererContext> | null;
+  /** The declared inputs of `component` the cell sets: `value`, `ctx`, `extension`. */
+  readonly inputs: Record<string, unknown>;
+  readonly context: SheetCellRendererContext;
+}
+
 /** A live resize drag: the track and its provisional size. */
 interface ResizeDrag {
   readonly axis: 'row' | 'col';
@@ -139,7 +165,7 @@ interface ResizeDrag {
   exportAs: 'shSpreadsheet',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [ShipMenu],
+  imports: [ShipMenu, NgComponentOutlet, NgTemplateOutlet],
   templateUrl: './sh-spreadsheet.html',
   styleUrl: './sh-spreadsheet.scss',
   host: {
@@ -301,12 +327,27 @@ export class ShipSpreadsheet {
     };
   });
 
+  /** The input names a renderer component declares, so only those are set. */
+  readonly #inputNames = new Map<Type<unknown>, Set<string>>();
+
+  #inputsOf(component: Type<unknown>): Set<string> {
+    let names = this.#inputNames.get(component);
+    if (!names) {
+      names = new Set(reflectComponentType(component)?.inputs.map((i) => i.templateName) ?? []);
+      this.#inputNames.set(component, names);
+    }
+    return names;
+  }
+
   /**
    * The mounted rows: absolute index, resolved height, and the row's cells as
    * one built-from-escaped-strings HTML payload — bare spans carrying a short
    * generated per-column class (`c0…cn`), no template anchors, no per-cell
    * inline styles. The per-column geometry lives in one uid-scoped generated
-   * stylesheet, the same approach as `sh-code`'s style buckets.
+   * stylesheet, the same approach as `sh-code`'s style buckets. A column
+   * whose type has a `renderer` contributes `hosted` cells instead: one
+   * component or template instance per visible cell, tracked by column so
+   * the instances survive a re-render and are re-fed.
    */
   readonly visibleRows = computed(() => {
     const sheet = this.sheet();
@@ -324,14 +365,15 @@ export class ShipSpreadsheet {
       exts.push(registry.get(type));
       types.push(type ?? 'text');
     }
-    const out: { index: number; height: number; html: SafeHtml }[] = [];
+    const out: { index: number; height: number; html: SafeHtml; hosted: SheetHostedCell[] }[] = [];
     for (let r = from; r < to; r++) {
       const parts: string[] = [];
+      const hosted: SheetHostedCell[] = [];
       for (let c = c0; c < c1; c++) {
         const raw = sheet.cells[r * sheet.cols + c];
         const ext = exts[c - c0];
         let cls = types[c - c0] === 'text' ? `shs-c c${c}` : `shs-c c${c} t-${types[c - c0]}`;
-        if (!raw && ext.editor !== 'none') {
+        if (!raw && ext.editor !== 'none' && !ext.renderer) {
           parts.push(`<span class="${cls}"></span>`);
           continue;
         }
@@ -349,12 +391,26 @@ export class ShipSpreadsheet {
         }
         const error = ext.validate ? ext.validate(value, ctx) : null;
         if (error) cls += ' shs-invalid';
+        if (ext.renderer) {
+          const template = ext.renderer instanceof TemplateRef ? ext.renderer : null;
+          const component = template ? null : (ext.renderer as Type<unknown>);
+          const inputs: Record<string, unknown> = {};
+          if (component) {
+            const names = this.#inputsOf(component);
+            if (names.has('value')) inputs['value'] = value;
+            if (names.has('ctx')) inputs['ctx'] = ctx;
+            if (names.has('extension')) inputs['extension'] = ext;
+          }
+          hosted.push({ col: c, cls: `${cls} shs-hosted`, title: error, component, template, inputs, context: { $implicit: value, ctx, extension: ext } });
+          continue;
+        }
         parts.push(error ? `<span class="${cls}" title="${escapeSheetHtml(error).replace(/"/g, '&quot;')}">${ext.render(value, ctx)}</span>` : `<span class="${cls}">${ext.render(value, ctx)}</span>`);
       }
       out.push({
         index: r,
         height: sheet.rowHeights[r] ?? this.defaultRowHeight(),
         html: this.#sanitizer.bypassSecurityTrustHtml(parts.join('')),
+        hosted,
       });
     }
     return out;

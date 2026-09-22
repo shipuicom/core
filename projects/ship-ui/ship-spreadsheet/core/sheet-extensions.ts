@@ -11,7 +11,7 @@
 //
 // See EXTENSIONS.md for the design and the extension points to come.
 
-import { Type } from '@angular/core';
+import { TemplateRef, Type } from '@angular/core';
 import { SHEET_CURRENCY_EXTENSION, SHEET_DATE_EXTENSION, SHEET_NUMBER_EXTENSION, SHEET_PERCENT_EXTENSION } from './sheet-formats';
 import { escapeSheetHtml } from './sheet-html';
 
@@ -56,14 +56,38 @@ export interface SheetCellEditor {
   readValue?(): string;
 }
 
+/** The context a template renderer receives: the value as `$implicit`, plus the cell and its extension. */
+export interface SheetCellRendererContext {
+  readonly $implicit: string;
+  readonly ctx: SheetCellContext;
+  readonly extension: SheetCellExtension;
+}
+
+/**
+ * A read-only cell rendered by a component or a template instead of a
+ * string (`SheetCellExtension.renderer`). A component receives the inputs
+ * it declares, by name: `value` (the cell's display value — a formula's
+ * evaluated value in a formula cell), `ctx` and `extension`; a template
+ * gets a `SheetCellRendererContext`. The composer keeps one instance per
+ * visible cell and re-feeds it as the window scrolls or the model changes,
+ * so a chip, an avatar or an `sh-checkbox` costs one component per cell on
+ * screen, never per cell in the model. Hosted cells are `inert`: they draw,
+ * the grid takes the mouse and the keyboard.
+ */
+export type SheetCellRenderer = Type<unknown> | TemplateRef<SheetCellRendererContext>;
+
 export interface SheetCellExtension {
   /** The key stored in `colTypes`; `'text'` is the built-in default. */
   readonly type: string;
   /**
    * Display HTML for a raw string. Must return escaped markup — the result is
    * written into the row's `innerHTML` payload as is. `''` for an empty cell.
+   * With a `renderer`, this is the fallback where no component can mount
+   * (a static export of the rows).
    */
   render(raw: string, ctx: SheetCellContext): string;
+  /** A component or template that renders the read-only cell in place of `render` (see `SheetCellRenderer`). */
+  readonly renderer?: SheetCellRenderer;
   /**
    * Normalize text the user typed or pasted into the stored string. `null`
    * rejects the input (the cell is left unchanged). Default: identity.

@@ -30,6 +30,7 @@ as a sparse `cellTypes: Record<number, string>` keyed by cell index with an `ins
 | --- | --- | --- |
 | `type` | the key stored in `colTypes` | — |
 | `render(raw, ctx)` | escaped display HTML, written into the row's `innerHTML` payload | (text: escaped raw) |
+| `renderer` | a component (inputs `value`, `ctx`, `extension`) or a template (`SheetCellRendererContext`) drawing the read-only cell instead of `render` — one inert instance per visible cell, reused across re-renders (§2) | none |
 | `parse(input, ctx)` | typed/pasted text → stored string; `null` rejects | identity |
 | `format(raw, ctx)` | what the text editor and a formula bar show | raw |
 | `activate(raw, ctx)` | Enter / Space / click → new raw, or `null` | none |
@@ -52,6 +53,11 @@ registered.
 - A plain click (no sweep, no modifier, single-cell selection) on a cell whose type has `activate`
   activates it — the checkbox toggle.
 - Paste runs every value through its column's `parse`; a rejected value keeps the current text.
+- A column whose type has a `renderer` is left out of the row's HTML string; its cells are `hosted`
+  spans in the same row element, positioned by the same generated column class, each holding one
+  component (`ngComponentOutlet`, the declared inputs re-fed) or template instance, tracked by column so a
+  scroll or a model change re-feeds the instance rather than recreating it. Hosted cells are `inert`: they
+  draw, the grid keeps the pointer and the keyboard (`activate`, the editor). `validate` still marks them.
 - The context menu lists `Column type: <type>` for every registered type; `setColType(col, type)` and
   `setSelectionColType(type)` are the programmatic verbs. They emit `set-col-type` ops like any other change.
 - TSV copy stays raw (it is the lossless interchange form); `toText`/`toMarkdown`/`toHtml` are for the
@@ -110,5 +116,6 @@ comes from the record field rather than from `colTypes`. They register through t
 - *Type as a host callback only* (`cellType(row, col)` input, nothing in the model): right for the database
   view, wrong for a standalone sheet whose types must persist and sync. The callback can still be layered on
   top (the app-side view will do exactly that); the persisted column type is the base.
-- *Extensions as Angular components per cell*: one component per visible cell is the thing the string-built
-  rows exist to avoid on 10M-cell sheets. Components are for editors (one at a time), strings for display.
+- *Extensions as Angular components per cell*: one component per cell in the model is the thing the
+  string-built rows exist to avoid on 10M-cell sheets. Strings stay the default; a `renderer` opts one
+  column into components, and only for the visible window — the instances are reused as it moves.

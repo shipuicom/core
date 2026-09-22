@@ -177,6 +177,17 @@ sh-spreadsheet {
     text-overflow: ellipsis;
   }
 
+  // A cell drawn by a component or template: inert (the grid owns the
+  // pointer and the keyboard), its content clipped like text.
+  .shs-c.shs-hosted {
+    pointer-events: none;
+    white-space: nowrap;
+
+    > * {
+      max-width: 100%;
+    }
+  }
+
   // Numbers, amounts, percentages and dates read right-aligned.
   .shs-c.t-number,
   .shs-c.t-currency,

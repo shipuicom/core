@@ -78,6 +78,15 @@
             <span class="shs-rh">{{ row.index + 1 }}</span>
           }
           <span [innerHTML]="row.html"></span>
+          @for (cell of row.hosted; track cell.col) {
+            <span [class]="cell.cls" [attr.title]="cell.title" inert>
+              @if (cell.template) {
+                <ng-container *ngTemplateOutlet="cell.template; context: cell.context" />
+              } @else if (cell.component) {
+                <ng-container *ngComponentOutlet="cell.component; inputs: cell.inputs" />
+              }
+            </span>
+          }
         </div>
       }
 

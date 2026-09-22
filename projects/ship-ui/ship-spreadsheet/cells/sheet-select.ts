@@ -3,13 +3,15 @@
 // ---------------------------------------------------------------------------
 //
 // The reference component editor (EXTENSIONS.md §3.1): a column whose cells
-// hold one option's key. The cell shows the option's label; typing, Enter
+// hold one option's key. The cell shows the option's label as an `sh-chip`
+// (`ShipSheetSelectCell`, the reference cell renderer); typing, Enter
 // or F2 open a menu of the options in the cell's place (`sh-menu`,
 // searchable: arrows move, Enter picks, typed text filters); paste and the
 // formula bar go through `parse`, which takes a key, a label or a label
 // prefix.
 
 import { ChangeDetectionStrategy, Component, Injector, ViewEncapsulation, afterNextRender, computed, inject, input, signal, viewChild } from '@angular/core';
+import { ShipChip } from '@ship-ui/core/ship-chip';
 import { ShipMenu } from '@ship-ui/core/ship-menu';
 import { SheetCellContext, SheetCellEditor, SheetCellEditorApi, SheetCellExtension } from '../core/sheet-extensions';
 import { escapeSheetHtml } from '../core/sheet-html';
@@ -53,8 +55,9 @@ export function matchSheetSelectOption<T extends SheetSelectOption>(input: strin
 
 /**
  * A select column over plain strings: the cell stores an option's key and
- * shows its label; an unknown key shows as itself and is flagged. Edits
- * open `ShipSheetSelectEditor`; typed or pasted text resolves through
+ * shows its label as a chip (`ShipSheetSelectCell`; the string `render` is
+ * the export fallback); an unknown key shows as itself and is flagged.
+ * Edits open `ShipSheetSelectEditor`; typed or pasted text resolves through
  * `matchSheetSelectOption`; empty clears.
  */
 export function sheetSelectExtension({ type = 'select', options }: SheetSelectExtensionOptions): SheetSelectExtension {
@@ -65,6 +68,7 @@ export function sheetSelectExtension({ type = 'select', options }: SheetSelectEx
     options: list,
     find,
     editor: ShipSheetSelectEditor,
+    renderer: ShipSheetSelectCell,
     render: (raw) => {
       if (!raw) return '';
       const option = find(raw);
@@ -77,6 +81,52 @@ export function sheetSelectExtension({ type = 'select', options }: SheetSelectEx
     validate: (raw) => (raw && !find(raw) ? `Unknown ${type}: ${raw}` : null),
     toText: (raw) => find(raw)?.label ?? raw,
   };
+}
+
+/**
+ * The select column's read-only cell: the option's label as a small
+ * `sh-chip` coloured through `--chip-c` (`dynamic` when the option carries
+ * a colour), `unknown` for a key not among the options, nothing when empty.
+ */
+@Component({
+  selector: 'sh-sheet-select-cell',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  imports: [ShipChip],
+  template: `
+    @if (value(); as raw) {
+      @let option = current();
+      <sh-chip class="xsmall" [class]="option?.className ?? ''" [class.unknown]="!option" [dynamic]="!!option?.color" [style.--chip-c]="option?.color ?? null">
+        {{ option?.label ?? raw }}
+      </sh-chip>
+    }
+  `,
+  styles: `
+    sh-sheet-select-cell {
+      display: contents;
+
+      sh-chip {
+        max-width: 100%;
+        overflow: hidden;
+
+        div {
+          display: block;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        &.unknown {
+          --chip-c: var(--error-8);
+        }
+      }
+    }
+  `,
+})
+export class ShipSheetSelectCell {
+  readonly value = input('');
+  readonly extension = input.required<SheetCellExtension>();
+  readonly current = computed(() => (this.extension() as SheetSelectExtension).find?.(this.value()));
 }
 
 /**
