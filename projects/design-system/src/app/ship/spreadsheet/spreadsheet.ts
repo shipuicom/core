@@ -105,8 +105,22 @@ save(ops: SheetOp[]) { ... }
       { kind: 'set-col-type', col: 8, type: 'checkbox' },
       { kind: 'set-col-width', col: 8, width: 60 },
       { kind: 'set-cells', row: 1, col: 8, values: [['true'], [''], ['true'], ['']] },
+      // Formulas: a total row and a revenue column, evaluated through the column types.
+      { kind: 'insert-rows', at: 5, count: 1 },
+      { kind: 'set-cells', row: 5, col: 0, values: [['Total', '=SUM(B2:B5)', '=SUM(C2:C5)', '=SUM(D2:D5)', '=SUM(E2:E5)', '=AVG(F2:F5)', '=AVG(G2:G5)']] },
+      { kind: 'insert-cols', at: 9, count: 1 },
+      { kind: 'set-col-type', col: 9, type: 'currency' },
+      { kind: 'set-col-width', col: 9, width: 110 },
+      { kind: 'set-cells', row: 0, col: 9, values: [['Revenue'], ['=SUM(B2:E2)*F2'], ['=SUM(B3:E3)*F3'], ['=SUM(B4:E4)*F4'], ['=SUM(B5:E5)*F5'], ['=SUM(J2:J5)']] },
     ]).model
   );
+
+  formulaExample = `<sh-spreadsheet [(sheet)]="sheet" [editable]="true" [formulaBar]="true" />
+
+// A cell whose text starts with '=' is a formula: the model keeps the source, the grid
+// shows the value (grid.values() exposes it), and a typed column formats it. References
+// follow row/column inserts and deletes; a removed reference reads #REF!.
+// SUM AVG MIN MAX COUNT COUNTA ABS ROUND IF CONCAT LEN TODAY, + - * / ^ & and comparisons.`;
 
   formatsExample = `import { sheetCurrencyExtension, sheetDateExtension } from '@ship-ui/core/ship-spreadsheet';
 

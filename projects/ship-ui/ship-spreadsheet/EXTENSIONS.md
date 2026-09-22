@@ -84,8 +84,10 @@ The composer's copy keeps TSV raw and gives the HTML flavor the registry.
 Upstream (`@ship-ui/core/ship-spreadsheet`): `text`, `checkbox` (now); `number`/`currency`/`percent`
 (format only — display formatting belongs with SHEETS.md §3.2 cell formats and shares its number formatter),
 `date`, `select`, `rating` (with component editors, slice 1); `formula` is not an extension — see
-FORMULAS.md: a formula is any text cell starting with `=`, and the text extension's render consults the
-evaluator.
+FORMULAS.md: a formula is any cell starting with `=`, whatever the column's type. The composer evaluates it
+and hands the column's extension the *value* to `render`/`validate` (a `SUM` in a currency column reads as an
+amount), while `format`/`parse` are bypassed: the editor and the formula bar show the source, and the source
+is stored as typed.
 
 App side (sparkle-todo): anything that knows the app's records — `record` (link to a task/event/page:
 stores the record id string, renders the title from the store, editor is the app's picker), `assignee`,

@@ -32,7 +32,7 @@
     <h4>Not there yet</h4>
     <p>Missing, in rough priority order:</p>
     <ul>
-      <li><strong>Formulas</strong> — cells are plain strings; no computed cells or references.</li>
+      <li><strong>Cross-sheet references</strong> — formulas see one sheet; <code>Sheet2!A1</code> needs a workbook.</li>
       <li><strong>Formatting, sorting, merged cells, frozen panes</strong> beyond the built-in header rails.</li>
       <li><strong>Fill handle</strong> and drag-move of a range.</li>
     </ul>
@@ -53,16 +53,18 @@
 
   <app-previewer path="/spreadsheet" title="Composer: editable" class="no-space">
     <div class="sheet-demo">
-      <sh-spreadsheet class="sheet-small" [(sheet)]="editableSheet" [(selection)]="editableSelection" [editable]="true" (ops)="onOps($event)" />
+      <sh-spreadsheet class="sheet-small" [(sheet)]="editableSheet" [(selection)]="editableSelection" [editable]="true" [formulaBar]="true" (ops)="onOps($event)" />
       <p class="sheet-note">
         Type into a cell, paste a range, right-click for rows, columns and column types, drag a header edge to
         resize. B–E are <code>number</code> columns, F is <code>currency</code>, G <code>percent</code> (type
         <code>25</code> or <code>25%</code>), H <code>date</code> (ISO in the model, a date input to edit) and I a
-        <code>checkbox</code> (click or Space toggles). Copy a range: TSV carries the raw strings, HTML the
-        display form. Last transaction:
+        <code>checkbox</code> (click or Space toggles). Row 6 and column J are formulas: select one to see its
+        source in the formula bar, insert a row above the totals and watch the ranges follow. Copy a range: TSV
+        carries the raw strings, HTML the display form. Last transaction:
       </p>
       <pre class="sheet-tsv">{{ lastOps() }}</pre>
       <app-highlight lang="ts" [content]="formatsExample" />
+      <app-highlight lang="ts" [content]="formulaExample" />
     </div>
   </app-previewer>
 

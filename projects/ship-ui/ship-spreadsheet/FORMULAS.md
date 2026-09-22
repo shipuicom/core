@@ -1,12 +1,14 @@
 # Formulas — design note
 
-**Status: step 1 of §5 landed** — `core/sheet-formulas.ts`: the grammar (`parseFormula`), `SheetEvaluator`
+**Status: §5 steps 1–4 landed.** `core/sheet-formulas.ts`: the grammar (`parseFormula`), `SheetEvaluator`
 (`update(model, ops?)`, `valueAt`, `errorAt`, `isFormulaAt`), the dependency graph with incremental recompute on
 `set-cells` (a structural op or an update without ops rebuilds), structural cycle detection (`#CYCLE` on the
 cycle and downstream), the errors listed in §2, SUM/AVG(AVERAGE)/MIN/MAX/COUNT/COUNTA/ABS/ROUND/IF/CONCAT/LEN/
-TODAY, and `rewriteFormulaRefs(source, op)` as a pure function. Not yet done: running the rewrite inside the
-structural applies (§3, step 2), and the view boundary (§5 steps 3–4) — the composer does not consult the
-evaluator yet. Ranges over 10 000 cells register on the sheet as a whole rather than per cell.
+TODAY, and `rewriteFormulaRefs(source, op)`. The rewrite runs inside the structural applies and inside
+`transformSheetOp` (§3); the composer exposes `values` (a `SheetValues` per model), shows a formula's value or
+error token in the grid and its source in the editor, and has an opt-in `[formulaBar]` (§5 steps 3–4).
+Ranges over 10 000 cells register on the sheet as a whole rather than per cell. Not done: cross-sheet references
+(§4). Two rules differ from Excel so that the rewrite converges under concurrent edits — see §3.
 
 This note fixes the shape so that the model, the ops, the transform and the
 composer that exist today do not have to change when formulas arrive. It answers the brief's suggestion
@@ -78,15 +80,30 @@ of one per cell.
 ## 3. Structural ops must rewrite references
 
 `=A5` must become `=A6` when a row is inserted above 5, on every peer, deterministically. The rewrite is a
-pure function `rewriteRefs(source, splice): string` over the formula text (regex-level on the tokens, no
+pure function `rewriteFormulaRefs(source, op): string` over the formula text (regex-level on the tokens, no
 full parse needed) and it runs **inside `applyInsertRows`/`applyRemoveRows`/`applyInsertCols`/
-`applyRemoveCols`** for every cell that starts with `=`, so it is part of the op's semantics: both sides of
-a concurrent pair apply the same rewrite to the same op, and the TP1 property the fuzz test checks keeps
-holding with formulas in the random models (the generator will get a formula cell kind when this lands).
-References into a removed band become `#REF!` in the text, which is what spreadsheets do and what the
-inverse (`insert-rows` with the removed cells) restores exactly, since the inverse carries the pre-rewrite
-strings of the removed rows and the rewrite of the surviving cells is itself reversible by the inverse
-splice.
+`applyRemoveCols`** for every surviving cell that starts with `=` (never the inserted/restored cells, whose
+text is already in the post-insert frame), so it is part of the op's semantics: both sides of a concurrent pair
+apply the same rewrite to the same op. `transformSheetOp` rewrites the strings an op *carries* the same way —
+`set-cells.values` against the concurrent splice, an insert's restore `cells` against the splice as it lands
+after that insert — so a formula written concurrently with a structural edit ends up with the same references
+in either order. The fuzz in `sheet-transform.spec.ts` runs with formula cells in the models, in `set-cells`
+and in restore data, and checks TP1, sequence convergence and the rebase ladder.
+
+**Exact inverses.** A removal turns references into the band into `#REF!`, and the inverse `insert-rows` /
+`insert-cols` cannot know what they were, so `applyRemove*` appends a `set-cells` per damaged survivor (its
+pre-removal source, addressed in the restored frame) to the inverse: undo restores the text exactly, and the
+inverse of that inverse (redo) reproduces the removal's result. The check is generic — a cell is restored when
+rewriting its post-removal text by the inverse insert does not give the original back.
+
+**Two departures from Excel, for convergence.** A range is the tracks between its two end tracks, and the
+transform preserves track identity, so:
+
+- a removal strictly inside a range shrinks it, but one that takes either end track is `#REF!` (Excel would
+  shrink to the survivors). After a shrink to the band's start, a concurrent insert at that index could not
+  tell "the first track" from "just before the first track", and the two orders diverge — the fuzz found it.
+- an insert at a range's first track moves the range (as in Excel), strictly inside grows it, just past the
+  last track leaves it.
 
 Cost: `apply` for structural ops becomes O(cells) scans of the first character; it already copies the
 cells array, so the asymptotics are unchanged.
@@ -98,7 +115,14 @@ optional `resolveExternal(sheetName, row, col)` hook so a workbook can supply it
 
 ## 5. Order of work
 
-1. Grammar + evaluator + graph, pure, with tests (`sheet-formulas.spec.ts`): ~3 days.
-2. `rewriteRefs` inside the structural applies + formula kind in the transform fuzz: ~1 day.
-3. View boundary: `values` signal in the composer, text `render` through it, `#…` error class: ~half a day.
-4. Formula bar (`activeLabel` + `format(raw)` already exist on the composer): ~half a day.
+1. Grammar + evaluator + graph, pure, with tests (`sheet-formulas.spec.ts`). Done.
+2. `rewriteFormulaRefs` inside the structural applies and the transform + formula cells in the fuzz. Done.
+3. View boundary: `values` signal in the composer (`SheetValues`, one per model, incremental on the
+   composer's own ops, rebuilt for an adopted model), the grid renders a formula's value through the column
+   type — so `=SUM(A1:A3)` in a currency column reads `$30.00` — or the error token with the source as its
+   title (`.shs-error`); the editor opens on the source, in the text editor whatever the column's `inputType`;
+   `parse` is bypassed for a formula on commit and paste. `sheetRangeToTsv(model, range, registry, values)`
+   exports formula values. Done.
+4. Formula bar: `[formulaBar]` on `<sh-spreadsheet>` — address, `fx`, an input bound to `activeSource()`
+   (the formula's source, else the type's `format`); Enter commits through the same path as the editor,
+   Escape reverts, blur with a change commits; read-only without `editable`. Done.
