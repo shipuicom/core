@@ -309,6 +309,28 @@ sh-spreadsheet {
     z-index: 1;
   }
 
+  // The fill handle sits on the active range's bottom-right corner; the
+  // preview outlines what a drag will write.
+  .shs-fill-handle {
+    position: absolute;
+    width: #{p2r(7)};
+    height: #{p2r(7)};
+    margin: #{p2r(-4)} 0 0 #{p2r(-4)};
+    background: var(--shs-selection-border);
+    border: 1px solid var(--shs-bg);
+    box-sizing: border-box;
+    cursor: crosshair;
+    z-index: 2;
+  }
+
+  .shs-fill-preview {
+    position: absolute;
+    border: 1px dashed var(--shs-selection-border);
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: 1;
+  }
+
   // The in-cell editor floats over its cell from the same geometry as the
   // selection boxes; it grows with the text instead of clipping it.
   .shs-editor {

@@ -4,7 +4,7 @@ import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { matchSheetSelectOption, sheetSelectExtension } from './cells/sheet-select';
 import { sheetRangeToTsv } from './core/sheet-clipboard';
 import { SheetCellContext, SheetCellEditor, SheetCellEditorApi, SheetCellExtension } from './core/sheet-extensions';
-import { SheetFunction } from './core/sheet-formulas';
+import { SheetFunction, SheetWorkbook } from './core/sheet-formulas';
 import {
   SheetModel,
   SheetOp,
@@ -85,6 +85,7 @@ const STATUS = sheetSelectExtension({
       [formulaBar]="formulaBar()"
       [functions]="functions()"
       [functionContext]="functionContext()"
+      [workbook]="workbook()"
       [extensions]="extensions()"
       [headers]="headers()"
       [letters]="letters()"
@@ -104,6 +105,7 @@ class Host {
   formulaBar = signal(false);
   functions = signal<SheetFunction[]>([]);
   functionContext = signal<unknown>(undefined);
+  workbook = signal<SheetWorkbook | null>(null);
   headers = signal<boolean | readonly string[]>(true);
   letters = signal(true);
   rowClass = signal<((row: number) => string | null) | null>(null);
@@ -895,6 +897,45 @@ describe('ShipSpreadsheet composer', () => {
       expect(bar().value).toBe('=LEN(');
       key(bar(), 'Escape');
       expect(bar().value).toBe('=DOUBLE(4)');
+    });
+
+    it('cross-sheet references resolve through [workbook]; a new resolver recomputes', () => {
+      host.sheet.set(createSheet(1, 2, ['=Sheet2!A1*2', '=COUNTA(Tasks!Title)']));
+      fixture.detectChanges();
+      expect(cellText(0, 0)).toBe('#REF!');
+      const book = (value: number, titles: string[]): SheetWorkbook => ({
+        sheet: (name) =>
+          name === 'Sheet2'
+            ? { rows: 1, cols: 1, cell: () => value }
+            : name === 'Tasks'
+              ? { rows: titles.length, cols: 1, cell: (r) => titles[r] ?? null, column: () => titles }
+              : null,
+      });
+      host.workbook.set(book(21, ['a', 'b']));
+      fixture.detectChanges();
+      expect(cellText(0, 0)).toBe('42');
+      expect(cellText(0, 1)).toBe('2');
+      host.workbook.set(book(5, ['a', 'b', 'c']));
+      fixture.detectChanges();
+      expect(cellText(0, 0)).toBe('10');
+      expect(cellText(0, 1)).toBe('3');
+    });
+
+    it('fill: the handle shows on the active range, fill() continues the pattern as one transaction and selects the result', () => {
+      host.sheet.set(createSheet(4, 2, ['1', '=A1*10', '2', '', '', '', '', '']));
+      host.selection.set({ ranges: [{ r0: 0, c0: 0, r1: 1, c1: 1 }] });
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.shs-fill-handle')).not.toBeNull();
+      host.log.length = 0;
+      grid.fill({ r0: 0, c0: 0, r1: 1, c1: 1 }, { r0: 2, c0: 0, r1: 3, c1: 1 });
+      fixture.detectChanges();
+      expect(host.sheet().cells).toEqual(['1', '=A1*10', '2', '', '3', '=A3*10', '4', '']);
+      expect(host.log).toEqual([[{ kind: 'set-cells', row: 2, col: 0, values: [['3', '=A3*10'], ['4', '']] }]]);
+      expect(host.selection()).toEqual({ ranges: [{ r0: 0, c0: 0, r1: 3, c1: 1 }] });
+      expect(cellText(2, 1)).toBe('30');
+      host.editable.set(false);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.shs-fill-handle')).toBeNull();
     });
   });
 });

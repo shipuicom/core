@@ -101,6 +101,24 @@
           [style.height.px]="rect.height"></div>
       }
 
+      @if (fillPreview(); as rect) {
+        <div
+          class="shs-fill-preview"
+          [style.top.px]="rect.top"
+          [style.left.px]="rect.left"
+          [style.width.px]="rect.width"
+          [style.height.px]="rect.height"></div>
+      }
+
+      @if (fillHandle(); as handle) {
+        <div
+          class="shs-fill-handle"
+          [style.top.px]="handle.top"
+          [style.left.px]="handle.left"
+          (mousedown)="onFillMouseDown($event)"
+          (dblclick)="$event.stopPropagation()"></div>
+      }
+
       @for (row of visibleRows(); track row.index) {
         <div class="shs-row" [class]="row.cls" [style.height.px]="row.height">
           @if (showRowRail()) {

@@ -42,8 +42,10 @@ import {
   SheetEvaluator,
   SheetFunction,
   SheetFunctionRegistry,
+  SheetWorkbook,
   isFormula,
 } from './core/sheet-formulas';
+import { sheetFillValues } from './core/sheet-fill';
 import {
   SheetModel,
   SheetOp,
@@ -267,6 +269,13 @@ export class ShipSpreadsheet {
    */
   functionContext = input<unknown>(undefined);
   /**
+   * The other sheets of the workbook, for `Sheet2!A1` and `Tasks!Title` in
+   * formulas. A new value recomputes every formula, so hand in a new
+   * resolver whenever a referenced sheet changes; without one every
+   * cross-sheet reference is `#REF!`.
+   */
+  workbook = input<SheetWorkbook | null>(null);
+  /**
    * Every transaction the user makes, as the ops that were applied — one
    * emission per edit, paste, structural change, resize, undo, or redo.
    * Remote ops passed to `applyRemote` are not echoed.
@@ -328,6 +337,8 @@ export class ShipSpreadsheet {
   readonly resizeHover = signal<'row' | 'col' | null>(null);
   /** The resize drag in progress, painting a guide line. */
   readonly resizeDrag = signal<ResizeDrag | null>(null);
+  /** The fill-handle drag in progress: the pattern range and the cells it will fill so far. */
+  readonly fillDrag = signal<{ source: SheetRange; target: SheetRange | null } | null>(null);
 
   /** The column rail shows: letters (with `letters`) or the given labels. */
   readonly showColHead = computed(() => {
@@ -381,11 +392,13 @@ export class ShipSpreadsheet {
     const sheet = this.sheet();
     const registry = this.functionRegistry();
     const external = this.functionContext();
+    const workbook = this.workbook();
     this.#recalcTick();
     let ev = this.#evaluator;
     if (ev.functions !== registry) ev = this.#evaluator = new SheetEvaluator(registry);
-    const contextChanged = ev.external !== external;
+    const contextChanged = ev.external !== external || ev.workbook !== workbook;
     ev.external = external;
+    ev.workbook = workbook;
     // A fresh evaluator computes everything in `update`; otherwise a new
     // context or a pending `recalc()` recomputes on top of the incremental step.
     const fresh = ev.model === null;
@@ -615,6 +628,22 @@ export class ShipSpreadsheet {
     if (!cell) return null;
     this.#geometry();
     return this.#cellBox(cell.row, cell.col);
+  });
+
+  /** The fill handle: the bottom-right corner of the active range (body-relative px), while editable and not editing. */
+  readonly fillHandle = computed(() => {
+    if (!this.editable() || this.editing()) return null;
+    const range = primarySheetRange(this.selection());
+    const sheet = this.sheet();
+    if (!range || sheet.rows === 0 || sheet.cols === 0) return null;
+    const box = this.rangeBox(this.fillDrag()?.source ?? range);
+    return box && { top: box.top + box.height, left: box.left + box.width };
+  });
+
+  /** The dashed outline of the cells a fill drag will write, `null` when none. */
+  readonly fillPreview = computed(() => {
+    const drag = this.fillDrag();
+    return drag?.target ? this.rangeBox(drag.target) : null;
   });
 
   /** The resize guide line: `x` for a column drag, `y` for a row drag (body-relative px). */
@@ -1136,6 +1165,59 @@ export class ShipSpreadsheet {
     if (Math.abs(y - rows.prefixHeight(r + 1)) <= RESIZE_GRIP_PX) return r;
     if (r > 0 && Math.abs(y - rows.prefixHeight(r)) <= RESIZE_GRIP_PX) return r - 1;
     return null;
+  }
+
+  // -------------------------------------------------------------------------
+  // Fill handle
+  // -------------------------------------------------------------------------
+
+  /**
+   * Dragging the handle at the active range's corner extends it down, up,
+   * right or left (whichever axis the pointer travelled further on); the
+   * release writes one `set-cells` with the pattern continued
+   * (`sheetFillValues`) and selects the source plus the filled cells.
+   */
+  onFillMouseDown(event: MouseEvent) {
+    if (!this.editable() || event.button !== 0 || typeof document === 'undefined') return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.editing()) this.commitEdit('none');
+    this.focus();
+    const source = this.activeRange();
+    if (!source) return;
+    this.fillDrag.set({ source, target: null });
+    const move = (e: MouseEvent) => {
+      const cell = this.#cellFromMouse(e);
+      this.fillDrag.set({ source, target: cell ? fillTargetOf(source, cell) : null });
+    };
+    const up = () => {
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+      const target = this.fillDrag()?.target ?? null;
+      this.fillDrag.set(null);
+      if (!target) return;
+      this.fill(source, target);
+    };
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  }
+
+  /** Fill `target` from the pattern in `source` as one transaction, then select both. */
+  fill(source: SheetRange, target: SheetRange): void {
+    const sheet = this.sheet();
+    const from = normalizedRange(sheet, source);
+    const to = normalizedRange(sheet, target);
+    const values = sheetFillValues(sheet, from, to).map((row, r) =>
+      row.map((value, c) => (this.#rowEditable(to.r0 + r) ? value : cellAt(sheet, to.r0 + r, to.c0 + c)))
+    );
+    this.apply([{ kind: 'set-cells', row: to.r0, col: to.c0, values }]);
+    this.selectRange({
+      r0: Math.min(from.r0, to.r0),
+      c0: Math.min(from.c0, to.c0),
+      r1: Math.max(from.r1, to.r1),
+      c1: Math.max(from.c1, to.c1),
+    });
+    this.#announcer.announce(`Filled ${values.length * (values[0]?.length ?? 0)} cells`);
   }
 
   // -------------------------------------------------------------------------
@@ -1834,4 +1916,24 @@ export class ShipSpreadsheet {
     const range = primarySheetRange(this.selection());
     return range ? cellAt(this.sheet(), range.r0, range.c0) : null;
   }
+}
+
+
+/**
+ * The cells a fill from `source` towards `cell` writes: the band past the
+ * range's edge on the axis the pointer moved further along, the range's
+ * full extent on the other; `null` while the pointer is inside the range.
+ */
+function fillTargetOf(source: SheetRange, cell: { row: number; col: number }): SheetRange | null {
+  const dRow = cell.row > source.r1 ? cell.row - source.r1 : cell.row < source.r0 ? cell.row - source.r0 : 0;
+  const dCol = cell.col > source.c1 ? cell.col - source.c1 : cell.col < source.c0 ? cell.col - source.c0 : 0;
+  if (dRow === 0 && dCol === 0) return null;
+  if (Math.abs(dRow) >= Math.abs(dCol)) {
+    return dRow > 0
+      ? { r0: source.r1 + 1, r1: cell.row, c0: source.c0, c1: source.c1 }
+      : { r0: cell.row, r1: source.r0 - 1, c0: source.c0, c1: source.c1 };
+  }
+  return dCol > 0
+    ? { r0: source.r0, r1: source.r1, c0: source.c1 + 1, c1: cell.col }
+    : { r0: source.r0, r1: source.r1, c0: cell.col, c1: source.c0 - 1 };
 }
