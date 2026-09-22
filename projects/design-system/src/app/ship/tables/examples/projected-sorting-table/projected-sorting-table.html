@@ -1,0 +1,19 @@
+<pre>sortChange: {{ sort().key ?? '—' }} {{ sort().direction ?? '' }}</pre>
+
+<sh-table [sortByColumn]="sortByColumn()" (sortChange)="onSort($event)" [variant]="variant()">
+  <tr>
+    <th shSort="key">Key</th>
+    <th shSort="title">Title</th>
+    <th shSort="priority">Priority</th>
+    <th shSort="due">Due</th>
+  </tr>
+
+  @for (task of rows(); track task.key) {
+    <tr>
+      <td>{{ task.key }}</td>
+      <td>{{ task.title }}</td>
+      <td>P{{ task.priority }}</td>
+      <td>{{ task.due }}</td>
+    </tr>
+  }
+</sh-table>

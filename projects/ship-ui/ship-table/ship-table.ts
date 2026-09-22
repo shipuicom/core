@@ -44,6 +44,21 @@ export interface ShipTableColumn<T = any> {
   rowHeader?: boolean;
 }
 
+export type ShipSortDirection = 'asc' | 'desc';
+
+/** The active sort as `{ key, direction }`; both `null` when the table is unsorted. */
+export interface ShipSortChange {
+  key: string | null;
+  direction: ShipSortDirection | null;
+}
+
+/** Splits a `sortByColumn` value (`id` or `-id`) into its key and direction. */
+export function parseSortByColumn(value: string | null | undefined): ShipSortChange {
+  if (!value) return { key: null, direction: null };
+
+  return value.startsWith('-') ? { key: value.slice(1), direction: 'desc' } : { key: value, direction: 'asc' };
+}
+
 @Directive({
   selector: '[shResize]',
   standalone: true,
@@ -719,6 +734,13 @@ export class ShipTable {
   dataChange = output<any>();
   /** Two-way bound active sort, as a column id or `-id` for descending; `null` when unsorted. */
   sortByColumn = model<string | null>(null);
+  /**
+   * Emits `{ key, direction }` whenever a `shSort` header is toggled (click or keyboard). Meant for tables
+   * whose rows are projected without `[data]`: the consumer orders its rows, the table keeps the indicator.
+   */
+  sortChange = output<ShipSortChange>();
+  /** The active sort as `{ key, direction }`, derived from `sortByColumn`. */
+  sortState = computed(() => parseSortByColumn(this.sortByColumn()));
 
   /** Color theme applied to the table. */
   color = input<ShipColor | null>(null);
@@ -1193,6 +1215,7 @@ export class ShipTable {
     const sortDir = currentSort === column ? `-${column}` : currentSort === `-${column}` ? null : column;
 
     this.sortByColumn.set(sortDir);
+    this.sortChange.emit(parseSortByColumn(sortDir));
   }
 
   #checkScroll(): void {

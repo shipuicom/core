@@ -24,7 +24,9 @@
       <code>shSort</code>
       to header cells. Track the active column with
       <code>sortByColumn</code>
-      (two-way bindable).
+      (two-way bindable). With <code>[data]</code> the table orders the rows itself; without it (rows projected with
+      <code>&#64;for</code>) listen to <code>(sortChange)</code>, which emits <code>{{ '{' }} key, direction {{ '}' }}</code>, order the
+      rows yourself and keep <code>[sortByColumn]</code> bound so the header indicator follows.
     </p>
   </section>
 
@@ -125,4 +127,10 @@
 
 <app-previewer path="/tables/examples/sorting-table/sorting-table" title="Sorting Table">
   <sorting-table class="example" [variant]="type()" />
+</app-previewer>
+
+<app-previewer
+  path="/tables/examples/projected-sorting-table/projected-sorting-table"
+  title="Sorting projected rows (no [data])">
+  <projected-sorting-table class="example" [variant]="type()" />
 </app-previewer>

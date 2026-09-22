@@ -1,7 +1,15 @@
-import { Component, signal, TemplateRef, viewChild } from '@angular/core';
+import { Component, computed, signal, TemplateRef, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ShipRowResize, ShipSort, ShipTable, ShipTableColumn, ShipTableContent } from './ship-table';
+import {
+  parseSortByColumn,
+  ShipRowResize,
+  ShipSort,
+  ShipSortChange,
+  ShipTable,
+  ShipTableColumn,
+  ShipTableContent,
+} from './ship-table';
 
 @Component({
   selector: 'sh-test-table',
@@ -66,6 +74,116 @@ class TestConfigTableComponent {
   ariaLabel = signal<string | null>(null);
   ariaLabelledby = signal<string | null>(null);
 }
+
+@Component({
+  selector: 'sh-test-projected-table',
+  template: `
+    <sh-table [sortByColumn]="sort()" (sortByColumnChange)="sort.set($event)" (sortChange)="changes.push($event)">
+      <tr thead>
+        <th id="p-name" shSort="name">Name</th>
+        <th id="p-age" shSort="age">Age</th>
+      </tr>
+      @for (row of rows(); track row.name) {
+        <tr>
+          <td>{{ row.name }}</td>
+          <td>{{ row.age }}</td>
+        </tr>
+      }
+    </sh-table>
+  `,
+  standalone: true,
+  imports: [ShipTable, ShipSort],
+})
+class TestProjectedTableComponent {
+  shipTable = viewChild(ShipTable);
+  changes: ShipSortChange[] = [];
+  sort = signal<string | null>(null);
+  source = signal([
+    { name: 'Charlie', age: 35 },
+    { name: 'Alice', age: 30 },
+    { name: 'Bob', age: 25 },
+  ]);
+
+  /** The consumer orders its own rows from the emitted sort. */
+  rows = computed(() => {
+    const { key, direction } = parseSortByColumn(this.sort());
+    if (!key) return this.source();
+    const sorted = [...this.source()].sort((a: any, b: any) => (a[key] > b[key] ? 1 : a[key] < b[key] ? -1 : 0));
+    return direction === 'desc' ? sorted.reverse() : sorted;
+  });
+}
+
+describe('ShipTable sorting without [data]', () => {
+  let fixture: ComponentFixture<TestProjectedTableComponent>;
+  let host: TestProjectedTableComponent;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({ imports: [TestProjectedTableComponent] }).compileComponents();
+    fixture = TestBed.createComponent(TestProjectedTableComponent);
+    host = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  const names = () => Array.from(fixture.nativeElement.querySelectorAll('td:first-child')).map((td: any) => td.textContent.trim());
+
+  it('emits sortChange with key and direction through the asc, desc, none cycle', () => {
+    const th = fixture.nativeElement.querySelector('#p-name') as HTMLElement;
+
+    th.click();
+    fixture.detectChanges();
+    expect(host.changes).toEqual([{ key: 'name', direction: 'asc' }]);
+    expect(th.classList.contains('sort-asc')).toBe(true);
+    expect(th.getAttribute('aria-sort')).toBe('ascending');
+    expect(names()).toEqual(['Alice', 'Bob', 'Charlie']);
+
+    th.click();
+    fixture.detectChanges();
+    expect(host.changes[1]).toEqual({ key: 'name', direction: 'desc' });
+    expect(th.classList.contains('sort-desc')).toBe(true);
+    expect(th.getAttribute('aria-sort')).toBe('descending');
+    expect(names()).toEqual(['Charlie', 'Bob', 'Alice']);
+
+    th.click();
+    fixture.detectChanges();
+    expect(host.changes[2]).toEqual({ key: null, direction: null });
+    expect(th.classList.contains('sort-asc') || th.classList.contains('sort-desc')).toBe(false);
+    expect(names()).toEqual(['Charlie', 'Alice', 'Bob']);
+  });
+
+  it('emits sortChange from the keyboard and switches columns', () => {
+    const age = fixture.nativeElement.querySelector('#p-age') as HTMLElement;
+    age.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    fixture.detectChanges();
+
+    expect(host.changes).toEqual([{ key: 'age', direction: 'asc' }]);
+    expect(host.sort()).toBe('age');
+    expect(names()).toEqual(['Bob', 'Alice', 'Charlie']);
+
+    (fixture.nativeElement.querySelector('#p-name') as HTMLElement).click();
+    fixture.detectChanges();
+    expect(host.changes[1]).toEqual({ key: 'name', direction: 'asc' });
+    expect(age.getAttribute('aria-sort')).toBe('none');
+  });
+
+  it('renders the indicator for a sort set from outside and exposes sortState', () => {
+    host.sort.set('-age');
+    fixture.detectChanges();
+
+    const age = fixture.nativeElement.querySelector('#p-age') as HTMLElement;
+    expect(age.classList.contains('sort-desc')).toBe(true);
+    expect(host.shipTable()!.sortState()).toEqual({ key: 'age', direction: 'desc' });
+    expect(host.changes).toEqual([]);
+  });
+});
+
+describe('parseSortByColumn', () => {
+  it('splits the model value into key and direction', () => {
+    expect(parseSortByColumn(null)).toEqual({ key: null, direction: null });
+    expect(parseSortByColumn('')).toEqual({ key: null, direction: null });
+    expect(parseSortByColumn('due')).toEqual({ key: 'due', direction: 'asc' });
+    expect(parseSortByColumn('-due')).toEqual({ key: 'due', direction: 'desc' });
+  });
+});
 
 describe('ShipTable ARIA & Accessibility', () => {
   let fixture: ComponentFixture<TestTableComponent>;

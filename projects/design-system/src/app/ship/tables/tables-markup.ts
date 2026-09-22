@@ -6,6 +6,7 @@ import { BaseTable } from './examples/base-table/base-table';
 import { FullFeaturedTable } from './examples/full-featured-table/full-featured-table';
 import { MultiStickyTable } from './examples/multi-sticky-table/multi-sticky-table';
 import { MultiTableHeader } from './examples/multi-table-header/multi-table-header';
+import { ProjectedSortingTable } from './examples/projected-sorting-table/projected-sorting-table';
 import { ResizingTable } from './examples/resizing-table/resizing-table';
 import { SortingTable } from './examples/sorting-table/sorting-table';
 import { ToggleRowTable } from './examples/toggle-row-table/toggle-row-table';
@@ -23,6 +24,7 @@ import { ToggleRowTable } from './examples/toggle-row-table/toggle-row-table';
     ResizingTable,
     MultiTableHeader,
     SortingTable,
+    ProjectedSortingTable,
   ],
   templateUrl: './tables-markup.html',
   styleUrl: './tables-tab.scss',
