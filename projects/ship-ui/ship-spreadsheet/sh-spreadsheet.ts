@@ -37,7 +37,13 @@ import {
   SheetCellRendererContext,
   SheetCommitMove,
 } from './core/sheet-extensions';
-import { FormulaErrorCode, SheetEvaluator, isFormula } from './core/sheet-formulas';
+import {
+  FormulaErrorCode,
+  SheetEvaluator,
+  SheetFunction,
+  SheetFunctionRegistry,
+  isFormula,
+} from './core/sheet-formulas';
 import {
   SheetModel,
   SheetOp,
@@ -100,7 +106,18 @@ export interface SheetValues {
   readonly model: SheetModel;
   valueAt(row: number, col: number): string;
   errorAt(row: number, col: number): FormulaErrorCode | null;
+  /** The message behind an error, when a function threw or was called with the wrong number of arguments. */
+  errorMessageAt(row: number, col: number): string | null;
   isFormulaAt(row: number, col: number): boolean;
+}
+
+/** The formula bar's autocomplete: the functions matching the word at the caret. */
+export interface SheetBarHints {
+  readonly items: readonly SheetFunction[];
+  readonly active: number;
+  /** The word being completed, as `[start, end)` in the bar's text. */
+  readonly start: number;
+  readonly end: number;
 }
 
 export type { SheetCommitMove };
@@ -239,6 +256,17 @@ export class ShipSpreadsheet {
    */
   formulaBar = input(false);
   /**
+   * Formula functions beyond the built-ins: a list merged over them (a
+   * built-in's name overrides it), or a ready `SheetFunctionRegistry`.
+   */
+  functions = input<readonly SheetFunction[] | SheetFunctionRegistry>([]);
+  /**
+   * What functions see as `ctx.external` — app data a custom function
+   * reads. A new value recomputes every formula; for data that changes
+   * behind the same object, call `recalc()`.
+   */
+  functionContext = input<unknown>(undefined);
+  /**
    * Every transaction the user makes, as the ops that were applied — one
    * emission per edit, paste, structural change, resize, undo, or redo.
    * Remote ops passed to `applyRemote` are not echoed.
@@ -273,15 +301,24 @@ export class ShipSpreadsheet {
   #redo: SheetOp[][] = [];
   /** The last model this instance wrote to `sheet`, to tell own writes from adopted ones. */
   #own: SheetModel | null = null;
-  /** Formula values, kept in step with the model by `values`. */
+  /** Formula values, kept in step with the model by `values`; rebuilt when the registry changes. */
   #evaluator = new SheetEvaluator();
+  /** Bumped by `recalc()` so `values` recomputes the formulas against the host's data. */
+  readonly #recalcTick = signal(0);
   /** The ops that turned the evaluator's last model into the one just committed — the incremental path. */
-  #pending: { readonly from: SheetModel | null; readonly to: SheetModel; readonly ops: readonly SheetOp[] } | null = null;
+  #pending: { readonly from: SheetModel | null; readonly to: SheetModel; readonly ops: readonly SheetOp[] } | null =
+    null;
   readonly canUndo = signal(false);
   readonly canRedo = signal(false);
 
   /** The in-cell editor, when open: the cell and the text it started with; `component` when the type edits through a component. */
-  readonly editing = signal<{ row: number; col: number; initial: string; inputType?: string; component?: Type<SheetCellEditor> } | null>(null);
+  readonly editing = signal<{
+    row: number;
+    col: number;
+    initial: string;
+    inputType?: string;
+    component?: Type<SheetCellEditor>;
+  } | null>(null);
   /** The mounted component editor, while `editing().component` is set. */
   #editorCmp: ComponentRef<SheetCellEditor> | null = null;
   /** Context menu anchor (frame-relative px), `null` when closed. */
@@ -342,18 +379,43 @@ export class ShipSpreadsheet {
    */
   readonly values = computed<SheetValues>(() => {
     const sheet = this.sheet();
-    const ev = this.#evaluator;
+    const registry = this.functionRegistry();
+    const external = this.functionContext();
+    this.#recalcTick();
+    let ev = this.#evaluator;
+    if (ev.functions !== registry) ev = this.#evaluator = new SheetEvaluator(registry);
+    const contextChanged = ev.external !== external;
+    ev.external = external;
     if (ev.model !== sheet) {
       const pending = this.#pending;
       ev.update(sheet, pending && pending.to === sheet && pending.from === ev.model ? pending.ops : undefined);
-    }
+    } else if (contextChanged || this.#recalcPending) ev.recalc();
+    this.#recalcPending = false;
     return {
       model: sheet,
       valueAt: (row, col) => ev.valueAt(row, col),
       errorAt: (row, col) => ev.errorAt(row, col),
+      errorMessageAt: (row, col) => ev.errorMessageAt(row, col),
       isFormulaAt: (row, col) => ev.isFormulaAt(row, col),
     };
   });
+
+  /** The functions formulas resolve against: `functions` merged over the built-ins. */
+  readonly functionRegistry = computed(() => {
+    const functions = this.functions();
+    return functions instanceof SheetFunctionRegistry ? functions : new SheetFunctionRegistry(functions);
+  });
+
+  #recalcPending = false;
+
+  /**
+   * Recompute every formula against the current `functionContext`: for a
+   * host whose function data changed without a new context object.
+   */
+  recalc(): void {
+    this.#recalcPending = true;
+    this.#recalcTick.update((n) => n + 1);
+  }
 
   /** The input names a renderer component declares, so only those are set. */
   readonly #inputNames = new Map<Type<unknown>, Set<string>>();
@@ -407,8 +469,16 @@ export class ShipSpreadsheet {
       if (extra) cls = cls ? `${cls} ${extra}` : extra;
       if (kind === 'group') {
         // A heading: the first cell's text across the whole row, no cell grid.
-        parts.push(`<span class="shs-c shs-group" style="left:${groupLeft}px;width:${groupWidth}px">${escapeSheetHtml(sheet.cells[r * sheet.cols] ?? '')}</span>`);
-        out.push({ index: r, height: sheet.rowHeights[r] ?? this.defaultRowHeight(), cls, html: this.#sanitizer.bypassSecurityTrustHtml(parts.join('')), hosted });
+        parts.push(
+          `<span class="shs-c shs-group" style="left:${groupLeft}px;width:${groupWidth}px">${escapeSheetHtml(sheet.cells[r * sheet.cols] ?? '')}</span>`
+        );
+        out.push({
+          index: r,
+          height: sheet.rowHeights[r] ?? this.defaultRowHeight(),
+          cls,
+          html: this.#sanitizer.bypassSecurityTrustHtml(parts.join('')),
+          hosted,
+        });
         continue;
       }
       for (let c = c0; c < c1; c++) {
@@ -425,7 +495,11 @@ export class ShipSpreadsheet {
           // A formula shows its value through the column's type; an error shows its token.
           const code = values.errorAt(r, c);
           if (code) {
-            parts.push(`<span class="${cls} shs-formula shs-error" title="${escapeSheetHtml(raw).replace(/"/g, '&quot;')}">${code}</span>`);
+            const message = values.errorMessageAt(r, c);
+            const title = message ? `${raw}\n${message}` : raw;
+            parts.push(
+              `<span class="${cls} shs-formula shs-error" title="${escapeSheetHtml(title).replace(/"/g, '&quot;')}">${code}</span>`
+            );
             continue;
           }
           value = values.valueAt(r, c);
@@ -443,10 +517,22 @@ export class ShipSpreadsheet {
             if (names.has('ctx')) inputs['ctx'] = ctx;
             if (names.has('extension')) inputs['extension'] = ext;
           }
-          hosted.push({ col: c, cls: `${cls} shs-hosted`, title: error, component, template, inputs, context: { $implicit: value, ctx, extension: ext } });
+          hosted.push({
+            col: c,
+            cls: `${cls} shs-hosted`,
+            title: error,
+            component,
+            template,
+            inputs,
+            context: { $implicit: value, ctx, extension: ext },
+          });
           continue;
         }
-        parts.push(error ? `<span class="${cls}" title="${escapeSheetHtml(error).replace(/"/g, '&quot;')}">${ext.render(value, ctx)}</span>` : `<span class="${cls}">${ext.render(value, ctx)}</span>`);
+        parts.push(
+          error
+            ? `<span class="${cls}" title="${escapeSheetHtml(error).replace(/"/g, '&quot;')}">${ext.render(value, ctx)}</span>`
+            : `<span class="${cls}">${ext.render(value, ctx)}</span>`
+        );
       }
       out.push({
         index: r,
@@ -684,9 +770,11 @@ export class ShipSpreadsheet {
     const headW = this.headOffset();
     const top = headH + box.top;
     if (top < scroller.scrollTop + headH) scroller.scrollTop = box.top;
-    else if (top + box.height > scroller.scrollTop + scroller.clientHeight) scroller.scrollTop = top + box.height - scroller.clientHeight;
+    else if (top + box.height > scroller.scrollTop + scroller.clientHeight)
+      scroller.scrollTop = top + box.height - scroller.clientHeight;
     if (box.left < scroller.scrollLeft + headW) scroller.scrollLeft = box.left - headW;
-    else if (box.left + box.width > scroller.scrollLeft + scroller.clientWidth) scroller.scrollLeft = box.left + box.width - scroller.clientWidth;
+    else if (box.left + box.width > scroller.scrollLeft + scroller.clientWidth)
+      scroller.scrollLeft = box.left + box.width - scroller.clientWidth;
   }
 
   // -------------------------------------------------------------------------
@@ -726,7 +814,11 @@ export class ShipSpreadsheet {
     if (editing) {
       // The cell under the editor may have moved; the current text is the
       // user's, so re-anchor by rebasing a probe op rather than guessing.
-      const [probe] = transformSheetOps([{ kind: 'set-cells', row: editing.row, col: editing.col, values: [['']] }], ops, 'right').ops;
+      const [probe] = transformSheetOps(
+        [{ kind: 'set-cells', row: editing.row, col: editing.col, values: [['']] }],
+        ops,
+        'right'
+      ).ops;
       if (probe?.kind === 'set-cells') this.editing.set({ ...editing, row: probe.row, col: probe.col });
       else this.#closeEditor();
     }
@@ -867,7 +959,8 @@ export class ShipSpreadsheet {
     const range = this.activeRange();
     if (!range) return;
     const ops: SheetOp[] = [];
-    for (let c = range.c0; c <= range.c1; c++) ops.push({ kind: 'set-col-type', col: c, type: type === 'text' ? null : type });
+    for (let c = range.c0; c <= range.c1; c++)
+      ops.push({ kind: 'set-col-type', col: c, type: type === 'text' ? null : type });
     this.apply(ops);
   }
 
@@ -936,7 +1029,14 @@ export class ShipSpreadsheet {
   onBodyClick(event: MouseEvent) {
     const press = this.#pressCell;
     this.#pressCell = null;
-    if (!press || event.shiftKey || event.metaKey || event.ctrlKey || (event.target as HTMLElement).closest('.shs-editor, .shs-rh')) return;
+    if (
+      !press ||
+      event.shiftKey ||
+      event.metaKey ||
+      event.ctrlKey ||
+      (event.target as HTMLElement).closest('.shs-editor, .shs-rh')
+    )
+      return;
     const cell = this.#cellFromMouse(event);
     if (!cell || cell.row !== press.row || cell.col !== press.col) return;
     const range = this.activeRange();
@@ -1055,7 +1155,11 @@ export class ShipSpreadsheet {
       this.resizeDrag.set(null);
       this.resizeHover.set(null);
       if (!drag || drag.size === start) return;
-      this.apply([axis === 'col' ? { kind: 'set-col-width', col: index, width: drag.size } : { kind: 'set-row-height', row: index, height: drag.size }]);
+      this.apply([
+        axis === 'col'
+          ? { kind: 'set-col-width', col: index, width: drag.size }
+          : { kind: 'set-row-height', row: index, height: drag.size },
+      ]);
     };
     document.addEventListener('mousemove', move);
     document.addEventListener('mouseup', up);
@@ -1094,7 +1198,8 @@ export class ShipSpreadsheet {
     let text = initial ?? (formula || !ext.format ? raw : ext.format(raw, ctx));
     // A typed input (a date picker) only takes its own value shape: seed it
     // with what the typed character parses to, or the cell's own value.
-    if (ext.inputType && !formula && initial !== undefined) text = (ext.parse ? ext.parse(initial, ctx) : initial) || raw;
+    if (ext.inputType && !formula && initial !== undefined)
+      text = (ext.parse ? ext.parse(initial, ctx) : initial) || raw;
     this.editing.set({ row: cell.row, col: cell.col, initial: text, inputType: formula ? undefined : ext.inputType });
     this.#revealCell(cell.row, cell.col);
     afterNextRender(
@@ -1113,7 +1218,14 @@ export class ShipSpreadsheet {
    * Create the type's editor component in the overlay over the cell and hand
    * it the inputs it declares: `value`, `ctx`, `typed`, `editor`.
    */
-  #startComponentEdit(row: number, col: number, raw: string, ctx: SheetCellContext, ext: SheetCellExtension, typed: string | null): void {
+  #startComponentEdit(
+    row: number,
+    col: number,
+    raw: string,
+    ctx: SheetCellContext,
+    ext: SheetCellExtension,
+    typed: string | null
+  ): void {
     const component = ext.editor as Type<SheetCellEditor>;
     this.editing.set({ row, col, initial: raw, component });
     this.#revealCell(row, col);
@@ -1199,7 +1311,9 @@ export class ShipSpreadsheet {
     }
     const { ext, ctx } = this.#cell(row, col);
     this.apply([{ kind: 'set-cells', row, col, values: [[next]] }]);
-    this.#announcer.announce(`${sheetCellLabel(row, col)} set to ${(ext.toText ? ext.toText(next, ctx) : next) || 'empty'}`);
+    this.#announcer.announce(
+      `${sheetCellLabel(row, col)} set to ${(ext.toText ? ext.toText(next, ctx) : next) || 'empty'}`
+    );
   }
 
   cancelEdit(): void {
@@ -1236,6 +1350,61 @@ export class ShipSpreadsheet {
     this.#barCell = this.activeCell();
   }
 
+  /**
+   * The autocomplete list: the registered functions whose name starts with
+   * the word at the caret, while the bar holds a formula. `null` when
+   * closed.
+   */
+  readonly barHints = signal<SheetBarHints | null>(null);
+
+  /** Recompute the autocomplete from the bar's text and caret. */
+  onBarInput() {
+    const el = this.barRef()?.nativeElement;
+    if (!el || !this.editable() || (!isFormula(el.value) && el.value !== '=')) {
+      this.barHints.set(null);
+      return;
+    }
+    const caret = el.selectionStart ?? el.value.length;
+    const before = el.value.slice(0, caret);
+    // Inside a string literal, or not on a word: nothing to complete.
+    const inString = (before.match(/"/g)?.length ?? 0) % 2 === 1;
+    const word = inString ? null : /(^|[^A-Za-z0-9_.$])([A-Za-z_][A-Za-z0-9_.]*)$/.exec(before);
+    if (!word) {
+      this.barHints.set(null);
+      return;
+    }
+    const prefix = word[2].toUpperCase();
+    const items = this.functionRegistry()
+      .list()
+      .filter((fn) => fn.name.toUpperCase().startsWith(prefix))
+      .slice(0, 8);
+    this.barHints.set(items.length ? { items, active: 0, start: caret - word[2].length, end: caret } : null);
+  }
+
+  /** Put the hint's name (with its opening parenthesis) in place of the word being completed. */
+  completeHint(index = this.barHints()?.active ?? 0): void {
+    const hints = this.barHints();
+    const el = this.barRef()?.nativeElement;
+    this.barHints.set(null);
+    if (!hints || !el) return;
+    const fn = hints.items[index];
+    if (!fn) return;
+    const after = el.value.slice(hints.end);
+    const paren = after.startsWith('(') ? '' : '(';
+    const name = fn.name.toUpperCase();
+    el.value = el.value.slice(0, hints.start) + name + paren + after;
+    const caret = hints.start + name.length + 1;
+    el.setSelectionRange(caret, caret);
+    el.focus();
+  }
+
+  /** Move the active hint by `delta`, wrapping. */
+  moveHint(delta: number): void {
+    this.barHints.update((hints) =>
+      hints ? { ...hints, active: (hints.active + delta + hints.items.length) % hints.items.length } : null
+    );
+  }
+
   /** Write the formula bar's text into its cell (through `parse`, a formula as is) and return focus to the grid. */
   commitBar(): void {
     this.#commitBar();
@@ -1246,6 +1415,7 @@ export class ShipSpreadsheet {
     const cell = this.#barCell ?? this.activeCell();
     const el = this.barRef()?.nativeElement;
     this.#barCell = null;
+    this.barHints.set(null);
     if (!cell || !el) return;
     if (this.editing()) this.cancelEdit();
     if (el.value !== this.#sourceAt(cell.row, cell.col)) this.#commitParsed(cell.row, cell.col, el.value);
@@ -1256,12 +1426,31 @@ export class ShipSpreadsheet {
   cancelBar(): void {
     const el = this.barRef()?.nativeElement;
     this.#barCell = null;
+    this.barHints.set(null);
     if (el) el.value = this.activeSource();
     this.focus();
   }
 
   onBarKeydown(event: KeyboardEvent) {
     event.stopPropagation();
+    if (this.barHints()) {
+      switch (event.key) {
+        case 'ArrowDown':
+        case 'ArrowUp':
+          event.preventDefault();
+          this.moveHint(event.key === 'ArrowDown' ? 1 : -1);
+          return;
+        case 'Tab':
+        case 'Enter':
+          event.preventDefault();
+          this.completeHint();
+          return;
+        case 'Escape':
+          event.preventDefault();
+          this.barHints.set(null);
+          return;
+      }
+    }
     switch (event.key) {
       case 'Enter':
         event.preventDefault();
@@ -1365,7 +1554,10 @@ export class ShipSpreadsheet {
     }
     const head = this.#headCell();
     const from = event.shiftKey && key.startsWith('Arrow') ? head : cell;
-    const page = Math.max(1, Math.floor((this.scroller?.()?.nativeElement.clientHeight ?? 300) / this.defaultRowHeight()) - 1);
+    const page = Math.max(
+      1,
+      Math.floor((this.scroller?.()?.nativeElement.clientHeight ?? 300) / this.defaultRowHeight()) - 1
+    );
     let to: { row: number; col: number } | null = null;
     switch (key) {
       case 'ArrowUp':
@@ -1406,7 +1598,11 @@ export class ShipSpreadsheet {
       const settled = this.activeCell();
       if (settled) {
         const headNow = this.#headCell();
-        this.#announcer.announce(extend ? `${sheetCellLabel(settled.row, settled.col)} to ${sheetCellLabel(headNow.row, headNow.col)}` : sheetCellLabel(settled.row, settled.col));
+        this.#announcer.announce(
+          extend
+            ? `${sheetCellLabel(settled.row, settled.col)} to ${sheetCellLabel(headNow.row, headNow.col)}`
+            : sheetCellLabel(settled.row, settled.col)
+        );
       }
       return;
     }
@@ -1433,7 +1629,10 @@ export class ShipSpreadsheet {
     const sheet = this.sheet();
     const cell = this.activeCell()!;
     if (!range) return cell;
-    return { row: Math.max(0, Math.min(range.r1, sheet.rows - 1)), col: Math.max(0, Math.min(range.c1, sheet.cols - 1)) };
+    return {
+      row: Math.max(0, Math.min(range.r1, sheet.rows - 1)),
+      col: Math.max(0, Math.min(range.c1, sheet.cols - 1)),
+    };
   }
 
   // -------------------------------------------------------------------------
@@ -1476,7 +1675,8 @@ export class ShipSpreadsheet {
     if (html && typeof DOMParser !== 'undefined') {
       const table = new DOMParser().parseFromString(html, 'text/html').querySelector('table');
       const model = table ? sheetFromTable(table) : null;
-      if (model) values = Array.from({ length: model.rows }, (_, r) => model.cells.slice(r * model.cols, (r + 1) * model.cols));
+      if (model)
+        values = Array.from({ length: model.rows }, (_, r) => model.cells.slice(r * model.cols, (r + 1) * model.cols));
     }
     if (!values) {
       const text = data.getData('text/plain');
@@ -1508,7 +1708,9 @@ export class ShipSpreadsheet {
         const type = colTypeAt(sheet, col + c);
         const ext = registry.get(type);
         if (!ext.parse || isFormula(input)) return input;
-        return ext.parse(input, { row: row + r, col: col + c, type: type ?? 'text' }) ?? cellAt(sheet, row + r, col + c);
+        return (
+          ext.parse(input, { row: row + r, col: col + c, type: type ?? 'text' }) ?? cellAt(sheet, row + r, col + c)
+        );
       })
     );
     ops.push({ kind: 'set-cells', row, col, values: parsed });
@@ -1516,7 +1718,9 @@ export class ShipSpreadsheet {
     const r1 = row + values.length - 1;
     const c1 = col + Math.max(1, ...values.map((line) => line.length)) - 1;
     this.selectRange({ r0: row, c0: col, r1, c1 });
-    this.#announcer.announce(`Pasted ${values.length} row${values.length === 1 ? '' : 's'} at ${sheetCellLabel(row, col)}`);
+    this.#announcer.announce(
+      `Pasted ${values.length} row${values.length === 1 ? '' : 's'} at ${sheetCellLabel(row, col)}`
+    );
   }
 
   // -------------------------------------------------------------------------
@@ -1531,7 +1735,11 @@ export class ShipSpreadsheet {
     const ops: SheetOp[] = selection.ranges.map((raw) => {
       const { r0, c0, r1, c1 } = normalizedRange(sheet, raw);
       // A read-only row keeps its cells.
-      const values = Array.from({ length: r1 - r0 + 1 }, (_, i) => (this.#rowEditable(r0 + i) ? new Array<string>(c1 - c0 + 1).fill('') : sheet.cells.slice((r0 + i) * sheet.cols + c0, (r0 + i) * sheet.cols + c1 + 1)));
+      const values = Array.from({ length: r1 - r0 + 1 }, (_, i) =>
+        this.#rowEditable(r0 + i)
+          ? new Array<string>(c1 - c0 + 1).fill('')
+          : sheet.cells.slice((r0 + i) * sheet.cols + c0, (r0 + i) * sheet.cols + c1 + 1)
+      );
       return { kind: 'set-cells', row: r0, col: c0, values };
     });
     this.apply(ops);

@@ -29,6 +29,7 @@ sh-spreadsheet {
   }
 
   .shs-bar {
+    position: relative;
     display: flex;
     align-items: center;
     gap: #{p2r(6)};
@@ -71,6 +72,47 @@ sh-spreadsheet {
     &:read-only {
       background: transparent;
     }
+  }
+
+  // Function autocomplete under the bar: name and signature, one line of help.
+  .shs-bar-hints {
+    position: absolute;
+    z-index: 3;
+    top: 100%;
+    left: #{p2r(8)};
+    right: #{p2r(8)};
+    max-width: #{p2r(420)};
+    margin: #{p2r(2)} 0 0;
+    padding: #{p2r(4)};
+    list-style: none;
+    border: 1px solid var(--shs-grid);
+    border-radius: var(--shape-2);
+    background: var(--shs-bg);
+    box-shadow: var(--shadow-2, 0 4px 12px rgba(0, 0, 0, 0.12));
+    font-size: 0.9em;
+  }
+
+  .shs-bar-hint {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 #{p2r(8)};
+    align-items: baseline;
+    padding: #{p2r(4)} #{p2r(6)};
+    border-radius: var(--shape-1, 4px);
+    cursor: pointer;
+
+    &.active {
+      background: var(--shs-selection-bg, var(--shs-head-bg));
+    }
+  }
+
+  .shs-bar-hint-name {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    white-space: nowrap;
+  }
+
+  .shs-bar-hint-desc {
+    color: var(--shs-head-fg);
   }
 
   .shs-frame {

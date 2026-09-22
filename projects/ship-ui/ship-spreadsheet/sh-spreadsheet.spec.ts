@@ -4,13 +4,24 @@ import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { matchSheetSelectOption, sheetSelectExtension } from './cells/sheet-select';
 import { sheetRangeToTsv } from './core/sheet-clipboard';
 import { SheetCellContext, SheetCellEditor, SheetCellEditorApi, SheetCellExtension } from './core/sheet-extensions';
-import { SheetModel, SheetOp, SheetSelection, applySheetOps, cellAt, createSheet, sheetCellSelection } from './core/sheet-model';
+import { SheetFunction } from './core/sheet-formulas';
+import {
+  SheetModel,
+  SheetOp,
+  SheetSelection,
+  applySheetOps,
+  cellAt,
+  createSheet,
+  sheetCellSelection,
+} from './core/sheet-model';
 import { SheetRowKind, ShipSpreadsheet } from './sh-spreadsheet';
 
 /** A component editor under test: echoes its inputs, commits through the API. */
 @Component({
   standalone: true,
-  template: `<span class="probe">{{ value() }}|{{ typed() ?? '-' }}|{{ ctx().type }}</span>`,
+  template: `
+    <span class="probe">{{ value() }}|{{ typed() ?? '-' }}|{{ ctx().type }}</span>
+  `,
 })
 class ProbeEditor implements SheetCellEditor {
   static last: ProbeEditor | null = null;
@@ -31,7 +42,9 @@ const PROBE: SheetCellExtension = { type: 'probe', editor: ProbeEditor, render: 
 /** A component renderer under test: counts instances, echoes its inputs. */
 @Component({
   standalone: true,
-  template: `<b class="drawn">{{ value() }}#{{ ctx().row }}</b>`,
+  template: `
+    <b class="drawn">{{ value() }}#{{ ctx().row }}</b>
+  `,
 })
 class ProbeCell {
   static created = 0;
@@ -42,7 +55,12 @@ class ProbeCell {
   }
 }
 
-const DRAWN: SheetCellExtension = { type: 'drawn', renderer: ProbeCell, render: (raw) => raw, validate: (raw) => (raw === 'bad' ? 'Bad' : null) };
+const DRAWN: SheetCellExtension = {
+  type: 'drawn',
+  renderer: ProbeCell,
+  render: (raw) => raw,
+  validate: (raw) => (raw === 'bad' ? 'Bad' : null),
+};
 const STATUS = sheetSelectExtension({
   type: 'status',
   options: [
@@ -56,13 +74,17 @@ const STATUS = sheetSelectExtension({
   standalone: true,
   imports: [ShipSpreadsheet],
   template: `
-    <ng-template #tpl let-value let-ctx="ctx"><i class="tpl">{{ value }}/{{ ctx.col }}</i></ng-template>
+    <ng-template #tpl let-value let-ctx="ctx">
+      <i class="tpl">{{ value }}/{{ ctx.col }}</i>
+    </ng-template>
     <sh-spreadsheet
       style="height: 300px"
       [(sheet)]="sheet"
       [(selection)]="selection"
       [editable]="editable()"
       [formulaBar]="formulaBar()"
+      [functions]="functions()"
+      [functionContext]="functionContext()"
       [extensions]="extensions()"
       [headers]="headers()"
       [letters]="letters()"
@@ -74,15 +96,24 @@ const STATUS = sheetSelectExtension({
 class Host {
   grid = viewChild.required(ShipSpreadsheet);
   tpl = viewChild.required('tpl', { read: TemplateRef });
-  sheet = signal<SheetModel>(createSheet(4, 3, ['a1', 'b1', 'c1', 'a2', 'b2', 'c2', 'a3', 'b3', 'c3', 'a4', 'b4', 'c4']));
+  sheet = signal<SheetModel>(
+    createSheet(4, 3, ['a1', 'b1', 'c1', 'a2', 'b2', 'c2', 'a3', 'b3', 'c3', 'a4', 'b4', 'c4'])
+  );
   selection = signal<SheetSelection | null>(sheetCellSelection(0, 0));
   editable = signal(true);
   formulaBar = signal(false);
+  functions = signal<SheetFunction[]>([]);
+  functionContext = signal<unknown>(undefined);
   headers = signal<boolean | readonly string[]>(true);
   letters = signal(true);
   rowClass = signal<((row: number) => string | null) | null>(null);
   rowKind = signal<((row: number) => SheetRowKind | null) | null>(null);
-  extensions = computed<SheetCellExtension[]>(() => [PROBE, STATUS, DRAWN, { type: 'tpl', renderer: this.tpl(), render: (raw) => raw }]);
+  extensions = computed<SheetCellExtension[]>(() => [
+    PROBE,
+    STATUS,
+    DRAWN,
+    { type: 'tpl', renderer: this.tpl(), render: (raw) => raw },
+  ]);
   log: SheetOp[][] = [];
 }
 
@@ -96,7 +127,10 @@ function clipboard(kind: 'paste' | 'copy' | 'cut', data: Record<string, string> 
   const store = { ...data };
   const event = new Event(kind, { bubbles: true, cancelable: true }) as ClipboardEvent;
   Object.defineProperty(event, 'clipboardData', {
-    value: { getData: (type: string) => store[type] ?? '', setData: (type: string, value: string) => void (store[type] = value) },
+    value: {
+      getData: (type: string) => store[type] ?? '',
+      setData: (type: string, value: string) => void (store[type] = value),
+    },
   });
   return { event, store };
 }
@@ -216,7 +250,10 @@ describe('ShipSpreadsheet composer', () => {
   });
 
   it('prefers the table flavor on paste', () => {
-    const { event } = clipboard('paste', { 'text/plain': 'ignored', 'text/html': '<table><tr><td>p</td><td>q</td></tr></table>' });
+    const { event } = clipboard('paste', {
+      'text/plain': 'ignored',
+      'text/html': '<table><tr><td>p</td><td>q</td></tr></table>',
+    });
     frame.dispatchEvent(event);
     expect(host.sheet().cells.slice(0, 2)).toEqual(['p', 'q']);
   });
@@ -295,7 +332,13 @@ describe('ShipSpreadsheet composer', () => {
     frame.dispatchEvent(event);
     expect(host.sheet().cells.slice(3, 5)).toEqual(['raw', 'true']);
     expect(host.sheet().cells.slice(6, 8)).toEqual(['more', '']);
-    expect(host.log.map((t) => t[0].kind)).toEqual(['set-col-type', 'set-cells', 'set-cells', 'set-cells', 'set-cells']);
+    expect(host.log.map((t) => t[0].kind)).toEqual([
+      'set-col-type',
+      'set-cells',
+      'set-cells',
+      'set-cells',
+      'set-cells',
+    ]);
   });
 
   it('a click on an activatable cell toggles it, a sweep does not', () => {
@@ -303,7 +346,13 @@ describe('ShipSpreadsheet composer', () => {
     const body = fixture.nativeElement.querySelector('.shs-body') as HTMLElement;
     const rect = body.getBoundingClientRect();
     // jsdom has no layout: the body rect is 0×0 at (0,0) and every track has its default size.
-    const at = (row: number, col: number) => ({ clientX: rect.left + 44 + 96 * col + 10, clientY: rect.top + 28 * row + 10, bubbles: true, cancelable: true, button: 0 });
+    const at = (row: number, col: number) => ({
+      clientX: rect.left + 44 + 96 * col + 10,
+      clientY: rect.top + 28 * row + 10,
+      bubbles: true,
+      cancelable: true,
+      button: 0,
+    });
     body.dispatchEvent(new MouseEvent('mousedown', at(2, 2)));
     body.dispatchEvent(new MouseEvent('mouseup', at(2, 2)));
     body.dispatchEvent(new MouseEvent('click', at(2, 2)));
@@ -343,7 +392,7 @@ describe('ShipSpreadsheet composer', () => {
     };
     const hostEl = () => fixture.nativeElement.querySelector('.shs-editor-host') as HTMLElement | null;
 
-    it('mounts the type\'s component in the overlay with its inputs; commit stores the raw and moves; Escape cancels', async () => {
+    it("mounts the type's component in the overlay with its inputs; commit stores the raw and moves; Escape cancels", async () => {
       grid.setColType(1, 'probe');
       grid.selectCell(0, 1);
       key(frame, 'F2');
@@ -380,7 +429,9 @@ describe('ShipSpreadsheet composer', () => {
       grid.selectCell(1, 1);
       key(frame, 'Enter');
       await settle();
-      fixture.nativeElement.querySelector('.shs-body').dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0, clientX: 300, clientY: 300 }));
+      fixture.nativeElement
+        .querySelector('.shs-body')
+        .dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0, clientX: 300, clientY: 300 }));
       await settle();
       expect(cellAt(host.sheet(), 1, 1)).toBe('b2!');
       expect(hostEl()).toBeNull();
@@ -395,7 +446,11 @@ describe('ShipSpreadsheet composer', () => {
       expect(matchSheetSelectOption('rev', STATUS.options())?.key).toBe('review');
       expect(matchSheetSelectOption('In Progress', STATUS.options())?.key).toBe('doing');
       expect(matchSheetSelectOption('nope', STATUS.options())).toBeNull();
-      host.sheet.set(applySheetOps(createSheet(2, 2, ['x', 'doing', 'y', 'gone']), [{ kind: 'set-col-type', col: 1, type: 'status' }]).model);
+      host.sheet.set(
+        applySheetOps(createSheet(2, 2, ['x', 'doing', 'y', 'gone']), [
+          { kind: 'set-col-type', col: 1, type: 'status' },
+        ]).model
+      );
       await settle();
       const cells = fixture.nativeElement.querySelectorAll('.shs-c.t-status') as NodeListOf<HTMLElement>;
       expect(cells[0].textContent?.trim()).toBe('In progress');
@@ -406,7 +461,8 @@ describe('ShipSpreadsheet composer', () => {
       grid.startEdit('rev');
       expect(cellAt(host.sheet(), 0, 1)).toBe('doing');
       await settle();
-      const options = () => Array.from(hostEl()?.querySelectorAll('sh-sheet-select-editor .options button') ?? []) as HTMLButtonElement[];
+      const options = () =>
+        Array.from(hostEl()?.querySelectorAll('sh-sheet-select-editor .options button') ?? []) as HTMLButtonElement[];
       expect(options().map((b) => b.textContent?.trim())).toEqual(['To do', 'In progress', 'Review', 'Clear']);
       expect(options()[1].classList.contains('active')).toBe(true);
       options()[2].click();
@@ -419,7 +475,9 @@ describe('ShipSpreadsheet composer', () => {
       const { event } = clipboard('paste', { 'text/plain': 'to do' });
       frame.dispatchEvent(event);
       expect(cellAt(host.sheet(), 1, 1)).toBe('todo');
-      expect(sheetRangeToTsv(host.sheet(), { r0: 0, c0: 1, r1: 1, c1: 1 }, grid.registry())).toBe('Review\ntodo'.replace('todo', 'To do'));
+      expect(sheetRangeToTsv(host.sheet(), { r0: 0, c0: 1, r1: 1, c1: 1 }, grid.registry())).toBe(
+        'Review\ntodo'.replace('todo', 'To do')
+      );
     });
   });
 
@@ -460,11 +518,18 @@ describe('ShipSpreadsheet composer', () => {
     it('a template renderer gets the value as $implicit and the cell context', async () => {
       grid.setColType(2, 'tpl');
       await settle();
-      expect(hosted().map((cell) => cell.querySelector('i.tpl')?.textContent)).toEqual(['c1/2', 'c2/2', 'c3/2', 'c4/2']);
+      expect(hosted().map((cell) => cell.querySelector('i.tpl')?.textContent)).toEqual([
+        'c1/2',
+        'c2/2',
+        'c3/2',
+        'c4/2',
+      ]);
     });
 
     it('select cells render the option as a real sh-chip', async () => {
-      host.sheet.set(applySheetOps(createSheet(2, 1, ['doing', 'gone']), [{ kind: 'set-col-type', col: 0, type: 'status' }]).model);
+      host.sheet.set(
+        applySheetOps(createSheet(2, 1, ['doing', 'gone']), [{ kind: 'set-col-type', col: 0, type: 'status' }]).model
+      );
       await settle();
       const chips = fixture.nativeElement.querySelectorAll('.shs-hosted sh-chip') as NodeListOf<HTMLElement>;
       expect(chips).toHaveLength(2);
@@ -553,7 +618,9 @@ describe('ShipSpreadsheet composer', () => {
   });
 
   describe('formulas', () => {
-    const cellText = (row: number, col: number) => (fixture.nativeElement.querySelectorAll('.shs-row')[row].querySelectorAll('.shs-c')[col] as HTMLElement).textContent;
+    const cellText = (row: number, col: number) =>
+      (fixture.nativeElement.querySelectorAll('.shs-row')[row].querySelectorAll('.shs-c')[col] as HTMLElement)
+        .textContent;
 
     it('shows the evaluated value in the grid, the source in the editor, and re-evaluates on edits and undo', async () => {
       grid.apply([{ kind: 'set-cells', row: 0, col: 0, values: [['1', '2', '=A1+B1'], ['=SUM(A1:B1)*2']] }]);
@@ -596,7 +663,11 @@ describe('ShipSpreadsheet composer', () => {
     });
 
     it('a formula in a typed column formats its value, stores its source, and survives a row insert', () => {
-      host.sheet.set(applySheetOps(createSheet(3, 2, ['10', '', '20', '', '', '']), [{ kind: 'set-col-type', col: 0, type: 'currency' }]).model);
+      host.sheet.set(
+        applySheetOps(createSheet(3, 2, ['10', '', '20', '', '', '']), [
+          { kind: 'set-col-type', col: 0, type: 'currency' },
+        ]).model
+      );
       fixture.detectChanges();
       grid.selectCell(2, 0);
       grid.startEdit('=SUM(A1:A2)');
@@ -617,13 +688,18 @@ describe('ShipSpreadsheet composer', () => {
       expect(cellAt(host.sheet(), 3, 0)).toBe('=SUM(A1:A3)');
       expect(cellText(3, 0)).toBe('$30.00');
       // A text export through the registry and the values carries the display form of the value.
-      expect(sheetRangeToTsv(host.sheet(), { r0: 3, c0: 0, r1: 3, c1: 1 }, grid.registry(), grid.values())).toBe('$30.00\t10');
+      expect(sheetRangeToTsv(host.sheet(), { r0: 3, c0: 0, r1: 3, c1: 1 }, grid.registry(), grid.values())).toBe(
+        '$30.00\t10'
+      );
       expect(sheetRangeToTsv(host.sheet(), { r0: 3, c0: 0, r1: 3, c1: 1 })).toBe('=SUM(A1:A3)\t=A4/3');
     });
 
     it('formula bar: shows the active source, Enter commits it, Escape reverts, read-only without editable', async () => {
       host.formulaBar.set(true);
-      host.sheet.set(applySheetOps(createSheet(2, 2, ['1', '=A1+1', '0.5', '']), [{ kind: 'set-col-type', col: 0, type: 'percent' }]).model);
+      host.sheet.set(
+        applySheetOps(createSheet(2, 2, ['1', '=A1+1', '0.5', '']), [{ kind: 'set-col-type', col: 0, type: 'percent' }])
+          .model
+      );
       fixture.detectChanges();
       await fixture.whenStable();
       const bar = () => fixture.nativeElement.querySelector('input.shs-bar-input') as HTMLInputElement;
@@ -676,6 +752,138 @@ describe('ShipSpreadsheet composer', () => {
       host.editable.set(false);
       fixture.detectChanges();
       expect(bar().readOnly).toBe(true);
+    });
+
+    it('custom functions: merged over the built-ins, reading the context; a new context or recalc() recomputes', () => {
+      const DOUBLE: SheetFunction = {
+        name: 'DOUBLE',
+        minArgs: 1,
+        maxArgs: 1,
+        signature: 'DOUBLE(x)',
+        description: 'Twice x.',
+        call: ([x]) => (typeof x === 'number' ? x * 2 : { error: '#VALUE!' }),
+      };
+      const USERNAME: SheetFunction = {
+        name: 'USERNAME',
+        maxArgs: 0,
+        volatile: true,
+        call: (_, ctx) => (ctx.external as { user: string }).user,
+      };
+      const FAILS: SheetFunction = {
+        name: 'FAILS',
+        call: () => {
+          throw new Error('not linked');
+        },
+      };
+      host.sheet.set(createSheet(1, 4, ['=DOUBLE(21)', '=USERNAME()', '=FAILS()', '=DOUBLE()']));
+      fixture.detectChanges();
+      expect(cellText(0, 0)).toBe('#NAME?');
+      host.functions.set([DOUBLE, USERNAME, FAILS]);
+      const bag = { user: 'ann' };
+      host.functionContext.set(bag);
+      fixture.detectChanges();
+      expect(cellText(0, 0)).toBe('42');
+      expect(cellText(0, 1)).toBe('ann');
+      expect(cellText(0, 2)).toBe('#ERROR!');
+      const cells = fixture.nativeElement
+        .querySelectorAll('.shs-row')[0]
+        .querySelectorAll('.shs-c') as NodeListOf<HTMLElement>;
+      expect(cells[2].title).toBe('=FAILS()\nnot linked');
+      expect(cells[3].title).toBe('=DOUBLE()\nDOUBLE takes 1 argument, got 0');
+      expect(grid.values().errorMessageAt(0, 2)).toBe('not linked');
+      expect(grid.functionRegistry().has('sum')).toBe(true);
+      // A new context object recomputes.
+      host.functionContext.set({ user: 'bob' });
+      fixture.detectChanges();
+      expect(cellText(0, 1)).toBe('bob');
+      // Data that changed behind the same object needs recalc().
+      const same = { user: 'cy' };
+      host.functionContext.set(same);
+      fixture.detectChanges();
+      expect(cellText(0, 1)).toBe('cy');
+      same.user = 'dee';
+      fixture.detectChanges();
+      expect(cellText(0, 1)).toBe('cy');
+      grid.recalc();
+      fixture.detectChanges();
+      expect(cellText(0, 1)).toBe('dee');
+      // An edit recomputes the volatile cell as well.
+      same.user = 'eve';
+      grid.apply([{ kind: 'set-cells', row: 0, col: 3, values: [['=DOUBLE(2)']] }]);
+      fixture.detectChanges();
+      expect(cellText(0, 3)).toBe('4');
+      expect(cellText(0, 1)).toBe('eve');
+    });
+
+    it('formula bar autocomplete: typing = and letters lists matching functions, Tab or Enter completes, Escape closes', async () => {
+      host.formulaBar.set(true);
+      host.functions.set([
+        { name: 'DOUBLE', signature: 'DOUBLE(x)', description: 'Twice x.', call: ([x]) => (x as number) * 2 },
+      ]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const bar = () => fixture.nativeElement.querySelector('input.shs-bar-input') as HTMLInputElement;
+      const hints = () =>
+        Array.from(fixture.nativeElement.querySelectorAll('.shs-bar-hint') as NodeListOf<HTMLElement>).map((li) =>
+          Array.from(li.children, (c) => c.textContent!.trim()).join(' ')
+        );
+      const type = (text: string) => {
+        bar().value = text;
+        bar().setSelectionRange(text.length, text.length);
+        bar().dispatchEvent(new Event('input', { bubbles: true }));
+        fixture.detectChanges();
+      };
+      bar().dispatchEvent(new FocusEvent('focus'));
+      type('=d');
+      expect(hints()).toEqual(['DOUBLE(x) Twice x.']);
+      type('=s');
+      expect(hints()).toEqual(['SUM(a, b, ...) Adds the numbers; text and blanks are skipped.']);
+      // Plain text is never completed; nor is a word inside a string literal.
+      type('do');
+      expect(hints()).toEqual([]);
+      type('="do');
+      expect(hints()).toEqual([]);
+      type('=1+co');
+      expect(hints()).toEqual([
+        'COUNT(a, b, ...) How many of the values are numbers.',
+        'COUNTA(a, b, ...) How many of the values are not blank.',
+        'CONCAT(a, b, ...) Joins the values as text.',
+      ]);
+      key(bar(), 'ArrowDown');
+      fixture.detectChanges();
+      expect(grid.barHints()?.active).toBe(1);
+      key(bar(), 'Tab');
+      fixture.detectChanges();
+      expect(bar().value).toBe('=1+COUNTA(');
+      expect(bar().selectionStart).toBe(10);
+      expect(grid.barHints()).toBeNull();
+      // Enter completes while the list is open and commits once it is closed.
+      type('=dou');
+      key(bar(), 'Enter');
+      fixture.detectChanges();
+      expect(bar().value).toBe('=DOUBLE(');
+      expect(cellAt(host.sheet(), 0, 0)).toBe('a1');
+      type('=DOUBLE(4)');
+      expect(hints()).toEqual([]);
+      key(bar(), 'Enter');
+      fixture.detectChanges();
+      expect(cellAt(host.sheet(), 0, 0)).toBe('=DOUBLE(4)');
+      expect(cellText(0, 0)).toBe('8');
+      // Escape closes the list without reverting the text.
+      bar().dispatchEvent(new FocusEvent('focus'));
+      type('=ab');
+      expect(hints()).toEqual(['ABS(x) The absolute value.']);
+      key(bar(), 'Escape');
+      fixture.detectChanges();
+      expect(grid.barHints()).toBeNull();
+      expect(bar().value).toBe('=ab');
+      // A hint completes on click too.
+      type('=le');
+      (fixture.nativeElement.querySelector('.shs-bar-hint') as HTMLElement).click();
+      fixture.detectChanges();
+      expect(bar().value).toBe('=LEN(');
+      key(bar(), 'Escape');
+      expect(bar().value).toBe('=DOUBLE(4)');
     });
   });
 });

@@ -11,9 +11,38 @@
       autocomplete="off"
       [attr.aria-label]="activeLabel() ? 'Formula bar, ' + activeLabel() : 'Formula bar'"
       [readOnly]="!editable() || !activeCell()"
+      [attr.aria-autocomplete]="editable() ? 'list' : null"
+      [attr.aria-expanded]="editable() ? !!barHints() : null"
+      [attr.aria-controls]="editable() ? uid + '-hints' : null"
+      [attr.aria-activedescendant]="barHints() ? uid + '-hint-' + barHints()!.active : null"
+      (input)="onBarInput()"
       (keydown)="onBarKeydown($event)"
       (focus)="onBarFocus()"
       (blur)="onBarBlur()" />
+    @if (barHints(); as hints) {
+      <ul
+        class="shs-bar-hints"
+        role="listbox"
+        [id]="uid + '-hints'"
+        aria-label="Functions"
+        (mousedown)="$event.preventDefault()">
+        @for (fn of hints.items; track fn.name; let i = $index) {
+          <li
+            class="shs-bar-hint"
+            role="option"
+            [id]="uid + '-hint-' + i"
+            [class.active]="i === hints.active"
+            [attr.aria-selected]="i === hints.active"
+            (mouseenter)="barHints.set({ ...hints, active: i })"
+            (click)="completeHint(i)">
+            <code class="shs-bar-hint-name">{{ fn.signature || fn.name.toUpperCase() + '()' }}</code>
+            @if (fn.description) {
+              <span class="shs-bar-hint-desc">{{ fn.description }}</span>
+            }
+          </li>
+        }
+      </ul>
+    }
   </div>
 }
 <div
@@ -141,7 +170,12 @@
       }
 
       @if (resizeGuide(); as guide) {
-        <div class="shs-guide" [class.x]="guide.x !== null" [class.y]="guide.y !== null" [style.left.px]="guide.x" [style.top.px]="guide.y"></div>
+        <div
+          class="shs-guide"
+          [class.x]="guide.x !== null"
+          [class.y]="guide.y !== null"
+          [style.left.px]="guide.x"
+          [style.top.px]="guide.y"></div>
       }
 
       <!-- Overlays projected by the consumer (e.g. sh-spreadsheet-remote-selections)
@@ -153,26 +187,34 @@
   <!-- Always mounted: content projected into the popover's lazily rendered
        [menu] slot is dropped when the menu itself lives in a conditional block. -->
   <sh-menu
-      class="shs-menu"
-      [style.left.px]="menuAt()?.x ?? 0"
-      [style.top.px]="menuAt()?.y ?? 0"
-      [(isOpen)]="menuOpen"
-      [searchable]="false"
-      (closed)="onMenuClosed()"
-      (mousedown)="$event.stopPropagation()"
-      (keydown)="$event.stopPropagation()">
-      <span trigger class="shs-menu-anchor"></span>
-      <div menu>
-        <button type="button" (click)="insertRows('above')">Insert {{ menuScope().rows }} row{{ menuScope().rows === 1 ? '' : 's' }} above</button>
-        <button type="button" (click)="insertRows('below')">Insert {{ menuScope().rows }} row{{ menuScope().rows === 1 ? '' : 's' }} below</button>
-        <button type="button" (click)="deleteRows()">Delete row{{ menuScope().rows === 1 ? '' : 's' }}</button>
-        <button type="button" (click)="insertCols('left')">Insert {{ menuScope().cols }} column{{ menuScope().cols === 1 ? '' : 's' }} left</button>
-        <button type="button" (click)="insertCols('right')">Insert {{ menuScope().cols }} column{{ menuScope().cols === 1 ? '' : 's' }} right</button>
-        <button type="button" (click)="deleteCols()">Delete column{{ menuScope().cols === 1 ? '' : 's' }}</button>
-        <button type="button" (click)="clearSelection()">Clear contents</button>
-        @for (type of registryTypes(); track type) {
-          <button type="button" (click)="setSelectionColType(type)">Column type: {{ type }}</button>
-        }
-      </div>
+    class="shs-menu"
+    [style.left.px]="menuAt()?.x ?? 0"
+    [style.top.px]="menuAt()?.y ?? 0"
+    [(isOpen)]="menuOpen"
+    [searchable]="false"
+    (closed)="onMenuClosed()"
+    (mousedown)="$event.stopPropagation()"
+    (keydown)="$event.stopPropagation()">
+    <span trigger class="shs-menu-anchor"></span>
+    <div menu>
+      <button type="button" (click)="insertRows('above')">
+        Insert {{ menuScope().rows }} row{{ menuScope().rows === 1 ? '' : 's' }} above
+      </button>
+      <button type="button" (click)="insertRows('below')">
+        Insert {{ menuScope().rows }} row{{ menuScope().rows === 1 ? '' : 's' }} below
+      </button>
+      <button type="button" (click)="deleteRows()">Delete row{{ menuScope().rows === 1 ? '' : 's' }}</button>
+      <button type="button" (click)="insertCols('left')">
+        Insert {{ menuScope().cols }} column{{ menuScope().cols === 1 ? '' : 's' }} left
+      </button>
+      <button type="button" (click)="insertCols('right')">
+        Insert {{ menuScope().cols }} column{{ menuScope().cols === 1 ? '' : 's' }} right
+      </button>
+      <button type="button" (click)="deleteCols()">Delete column{{ menuScope().cols === 1 ? '' : 's' }}</button>
+      <button type="button" (click)="clearSelection()">Clear contents</button>
+      @for (type of registryTypes(); track type) {
+        <button type="button" (click)="setSelectionColType(type)">Column type: {{ type }}</button>
+      }
+    </div>
   </sh-menu>
 </div>
