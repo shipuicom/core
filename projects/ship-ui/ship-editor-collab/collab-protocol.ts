@@ -1,21 +1,29 @@
 import { Signal } from '@angular/core';
 import { ASTDocument, EditorOp, LogicalSelection } from '@ship-ui/core/ship-editor';
 
-/** A peer's identity and live cursor, broadcast alongside document ops. */
-export interface CollabPresence {
+/**
+ * A peer's identity and live cursor, broadcast alongside document ops. The
+ * selection is whatever the document being edited calls one — an editor's
+ * `LogicalSelection` by default, a spreadsheet's range list for a sheet.
+ */
+export interface CollabPresence<Sel = LogicalSelection> {
   clientId: string;
   name: string;
   color: string;
-  selection: LogicalSelection | null;
+  selection: Sel | null;
   /** The peer's engine version when this presence was captured. */
   version: number;
 }
 
 /**
- * Wire protocol between collaborating editors. Every message is plain JSON —
- * safe for `postMessage`, WebSockets, or any other transport.
+ * Wire protocol between collaborating peers. Every message is plain JSON —
+ * safe for `postMessage`, WebSockets, or any other transport. The type
+ * parameters name the op, snapshot and selection shapes; the defaults are
+ * the editor's, and a spreadsheet session uses `SheetOp[]` transactions,
+ * `SheetJSON` snapshots and `SheetSelection` — same envelope, same
+ * transports, same relay endpoint shape.
  */
-export type CollabMessage =
+export type CollabMessage<Op = EditorOp, Doc = ASTDocument, Sel = LogicalSelection> =
   | {
       type: 'op';
       clientId: string;
@@ -27,12 +35,12 @@ export type CollabMessage =
        * over any of its own ops the sender had not yet seen.
        */
       seen: Record<string, number>;
-      op: EditorOp;
-      presence?: CollabPresence;
+      op: Op;
+      presence?: CollabPresence<Sel>;
     }
-  | { type: 'presence'; presence: CollabPresence }
+  | { type: 'presence'; presence: CollabPresence<Sel> }
   | { type: 'join'; clientId: string }
-  | { type: 'snapshot'; toClientId: string; clientId: string; doc: ASTDocument; seen: Record<string, number> }
+  | { type: 'snapshot'; toClientId: string; clientId: string; doc: Doc; seen: Record<string, number> }
   | { type: 'leave'; clientId: string };
 
 /**
@@ -42,10 +50,10 @@ export type CollabMessage =
  * peers; production multi-peer setups should relay through a server that
  * assigns a total order).
  */
-export interface CollabTransport {
-  send(message: CollabMessage): void;
+export interface CollabTransport<Op = EditorOp, Doc = ASTDocument, Sel = LogicalSelection> {
+  send(message: CollabMessage<Op, Doc, Sel>): void;
   /** Register a receive callback; returns an unsubscribe function. */
-  subscribe(callback: (message: CollabMessage) => void): () => void;
+  subscribe(callback: (message: CollabMessage<Op, Doc, Sel>) => void): () => void;
   readonly connected: Signal<boolean>;
   destroy?(): void;
 }

@@ -19,6 +19,12 @@
 // concurrent insert at the same index, its cell values lose an overlap, its
 // size for the same track is dropped. Both peers must pick opposite sides
 // for the same pair (the collab service derives it from client ids).
+//
+// Precondition: ops are in range for the model they were authored against
+// (`applySheetOp` clamps an out-of-range op, so its meaning would depend on
+// the model size and no model-free transform could converge it). The
+// composer only emits in-range ops; a transport that accepts ops from
+// elsewhere should validate them against its snapshot before applying.
 
 import { SheetOp } from './sheet-model';
 

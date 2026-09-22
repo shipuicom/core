@@ -1,6 +1,7 @@
 export * from './collab-protocol';
 export * from './broadcast-channel-transport';
 export * from './websocket-transport';
+export * from './collab-session';
 export * from './ship-editor-collab';
 export * from './sh-editor-remote-cursors';
 export * from './sh-editor-collab.directive';
