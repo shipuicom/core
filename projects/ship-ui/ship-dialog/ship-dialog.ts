@@ -2,11 +2,14 @@ import { ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, Element
 import { SHIP_CONFIG } from '@ship-ui/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 
-export type ShipDialogType = 'modal' | 'bottom-sheet';
+export type ShipDialogType = 'modal' | 'bottom-sheet' | 'side-sheet';
 
 export type ShipDialogOptions = {
   class?: 'default' | 'type-b' | 'type-c' | string;
-  /** `'modal'` (default) centers; `'bottom-sheet'` anchors a drag-dismissable card to the bottom edge. */
+  /**
+   * `'modal'` (default) centers; `'bottom-sheet'` anchors a drag-dismissable card to the bottom edge;
+   * `'side-sheet'` slides a full-height panel in from the trailing edge (desktop detail/edit panels).
+   */
   type?: ShipDialogType;
   width?: string;
   maxWidth?: string;
@@ -58,6 +61,7 @@ const SHEET_DISMISS_MS = 220;
         #dialogRef
         [class]="options.class"
         [class.bottom-sheet]="options.type === 'bottom-sheet'"
+        [class.side-sheet]="options.type === 'side-sheet'"
         [class.sheet-dragging]="sheetDragging()"
         [class.sheet-dismissing]="sheetDismissing()"
         [style.width]="options.width ?? ''"
