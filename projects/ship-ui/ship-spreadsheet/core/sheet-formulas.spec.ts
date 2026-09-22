@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { SheetEvaluator, formulaColIndex, formulaColLabel, parseFormula, rewriteFormulaRefs } from './sheet-formulas';
+import {
+  SHEET_BUILTIN_FUNCTIONS,
+  SheetEvaluator,
+  SheetFunction,
+  SheetFunctionRegistry,
+  formulaColIndex,
+  formulaColLabel,
+  parseFormula,
+  rewriteFormulaRefs,
+} from './sheet-formulas';
 import { SheetModel, SheetOp, applySheetOps, createSheet } from './sheet-model';
 
 const sheet = (rows: number, cols: number, cells: string[]) => createSheet(rows, cols, cells);
@@ -28,10 +37,16 @@ describe('formula grammar', () => {
     expect(parseFormula('=2^3^2')).toMatchObject({ t: 'bin', op: '^', r: { t: 'bin', op: '^' } });
     expect(parseFormula('=-A1')).toMatchObject({ t: 'neg' });
     expect(parseFormula('=50%')).toMatchObject({ t: 'bin', op: '/' });
-    expect(parseFormula('=SUM(A1:B2, 3)')).toMatchObject({ t: 'call', name: 'SUM', args: [{ t: 'range' }, { t: 'num', v: 3 }] });
+    expect(parseFormula('=SUM(A1:B2, 3)')).toMatchObject({
+      t: 'call',
+      name: 'SUM',
+      args: [{ t: 'range' }, { t: 'num', v: 3 }],
+    });
     expect(parseFormula('=sum(a1;b1)')).toMatchObject({ t: 'call', name: 'SUM' });
     expect(parseFormula('="a""b"&A1')).toMatchObject({ t: 'bin', op: '&', l: { t: 'str', v: 'a"b' } });
     expect(parseFormula('=A1<>B1')).toMatchObject({ t: 'bin', op: '<>' });
+    // A reference-shaped word followed by `(` is a call, not a reference.
+    expect(parseFormula('=LOG10(A1)')).toMatchObject({ t: 'call', name: 'LOG10', args: [{ t: 'ref' }] });
   });
 
   it('rejects malformed input', () => {
@@ -46,7 +61,22 @@ describe('formula grammar', () => {
 
 describe('SheetEvaluator', () => {
   it('evaluates arithmetic, refs, ranges and the built-in functions', () => {
-    const ev = evaluated(sheet(4, 3, ['1', '2', '=A1+B1', '3', 'x', '=SUM(A1:A3)', '', '', '=AVG(A1:A3)*2', '=MAX(A1:B2)', '=MIN(A1:B2)', '=COUNT(A1:B3)']));
+    const ev = evaluated(
+      sheet(4, 3, [
+        '1',
+        '2',
+        '=A1+B1',
+        '3',
+        'x',
+        '=SUM(A1:A3)',
+        '',
+        '',
+        '=AVG(A1:A3)*2',
+        '=MAX(A1:B2)',
+        '=MIN(A1:B2)',
+        '=COUNT(A1:B3)',
+      ])
+    );
     expect(ev.valueAt(0, 2)).toBe('3');
     expect(ev.valueAt(1, 2)).toBe('4');
     expect(ev.valueAt(2, 2)).toBe(String((4 / 3) * 2).slice(0, 10) === '2.66666666' ? ev.valueAt(2, 2) : 'x');
@@ -59,7 +89,18 @@ describe('SheetEvaluator', () => {
   });
 
   it('strings, comparisons, IF, ROUND, CONCAT, LEN, percent', () => {
-    const ev = evaluated(sheet(2, 4, ['ab', '=A1&"c"', '=LEN(B1)', '=IF(C1>2,"big","small")', '2.345', '=ROUND(A2,2)', '=CONCAT(A1,1,TRUE)', '=A2*10%']));
+    const ev = evaluated(
+      sheet(2, 4, [
+        'ab',
+        '=A1&"c"',
+        '=LEN(B1)',
+        '=IF(C1>2,"big","small")',
+        '2.345',
+        '=ROUND(A2,2)',
+        '=CONCAT(A1,1,TRUE)',
+        '=A2*10%',
+      ])
+    );
     expect(ev.valueAt(0, 1)).toBe('abc');
     expect(ev.valueAt(0, 2)).toBe('3');
     expect(ev.valueAt(0, 3)).toBe('big');
@@ -69,7 +110,9 @@ describe('SheetEvaluator', () => {
   });
 
   it('errors: #DIV/0!, #VALUE!, #NAME?, #REF!, syntax, and propagation', () => {
-    const ev = evaluated(sheet(2, 4, ['=1/0', '=A1+1', '="x"*2', '=FOO(1)', '=ZZ9999', '=1+', '=SUM(A1:B1)', '=B1=B1']));
+    const ev = evaluated(
+      sheet(2, 4, ['=1/0', '=A1+1', '="x"*2', '=FOO(1)', '=ZZ9999', '=1+', '=SUM(A1:B1)', '=B1=B1'])
+    );
     expect(ev.valueAt(0, 0)).toBe('#DIV/0!');
     expect(ev.valueAt(0, 1)).toBe('#DIV/0!');
     expect(ev.errorAt(0, 1)).toBe('#DIV/0!');
@@ -108,7 +151,10 @@ describe('SheetEvaluator', () => {
     expect(ev.valueAt(2, 1)).toBe('36');
 
     // A formula becomes text, text becomes a formula, a cycle is created then broken.
-    const ops2: SheetOp[] = [{ kind: 'set-cells', row: 0, col: 1, values: [['hello']] }, { kind: 'set-cells', row: 2, col: 0, values: [['=B3']] }];
+    const ops2: SheetOp[] = [
+      { kind: 'set-cells', row: 0, col: 1, values: [['hello']] },
+      { kind: 'set-cells', row: 2, col: 0, values: [['=B3']] },
+    ];
     model = applySheetOps(model, ops2).model;
     ev.update(model, ops2);
     expect(ev.valueAt(0, 1)).toBe('hello');
@@ -180,6 +226,13 @@ describe('rewriteFormulaRefs', () => {
     expect(rewriteFormulaRefs('=C1', { kind: 'remove-cols', at: 1, count: 1 })).toBe('=B1');
   });
 
+  it('is unaffected by function names, custom or reference-shaped', () => {
+    const op: SheetOp = { kind: 'insert-rows', at: 0, count: 1 };
+    expect(rewriteFormulaRefs('=DOUBLE(A1)+USERNAME()', op)).toBe('=DOUBLE(A2)+USERNAME()');
+    expect(rewriteFormulaRefs('=LOG10(A1)+AB1(B1)', op)).toBe('=LOG10(A2)+AB1(B2)');
+    expect(rewriteFormulaRefs('=LINKED("tasks")', op)).toBe('=LINKED("tasks")');
+  });
+
   it('leaves strings, non-formulas and non-structural ops alone', () => {
     expect(rewriteFormulaRefs('="A5"&A5', { kind: 'insert-rows', at: 0, count: 1 })).toBe('="A5"&A6');
     expect(rewriteFormulaRefs('A5', { kind: 'insert-rows', at: 0, count: 1 })).toBe('A5');
@@ -187,5 +240,115 @@ describe('rewriteFormulaRefs', () => {
     expect(rewriteFormulaRefs('=FOO(A1)', { kind: 'insert-rows', at: 0, count: 1 })).toBe('=FOO(A2)');
     // `SUM1` is a cell (column SUM, row 1), as in every spreadsheet.
     expect(rewriteFormulaRefs('=SUM1', { kind: 'insert-rows', at: 0, count: 1 })).toBe('=SUM2');
+  });
+});
+
+describe('SheetFunctionRegistry and custom functions', () => {
+  const DOUBLE: SheetFunction = {
+    name: 'double',
+    minArgs: 1,
+    maxArgs: 1,
+    signature: 'DOUBLE(x)',
+    call: ([x]) => (typeof x === 'number' ? x * 2 : { error: '#VALUE!' }),
+  };
+  const USERNAME: SheetFunction = {
+    name: 'USERNAME',
+    maxArgs: 0,
+    volatile: true,
+    call: (_, ctx) => (ctx.external as { user: string }).user,
+  };
+  const custom = (functions: SheetFunction[], model: SheetModel, external?: unknown) => {
+    const ev = new SheetEvaluator(new SheetFunctionRegistry(functions));
+    ev.external = external;
+    ev.update(model);
+    return ev;
+  };
+
+  it('merges over the built-ins, case-insensitively, and a same-named function overrides', () => {
+    const reg = new SheetFunctionRegistry([DOUBLE]);
+    expect(reg.has('sum')).toBe(true);
+    expect(reg.get('AVERAGE')?.name).toBe('AVERAGE');
+    expect(reg.get('Double')).toBe(DOUBLE);
+    expect(reg.names()).toEqual([...SHEET_BUILTIN_FUNCTIONS.map((f) => f.name), 'DOUBLE']);
+    expect(reg.list().every((f) => f.signature)).toBe(true);
+    const over = reg.with([{ name: 'SUM', variadic: true, call: () => 'mine' }]);
+    expect(over.get('sum')?.call([], null!)).toBe('mine');
+    expect(over.names().length).toBe(reg.names().length);
+    expect(reg.get('SUM')?.call([1, 2], null!)).toBe(3);
+    // A registry built on an empty base has nothing but its own.
+    expect(new SheetFunctionRegistry([DOUBLE], []).names()).toEqual(['DOUBLE']);
+  });
+
+  it('evaluates custom functions; unknown names stay #NAME?', () => {
+    const ev = custom([DOUBLE], sheet(1, 4, ['21', '=double(A1)', '=DOUBLE(A1)+DOUBLE(1)', '=TRIPLE(A1)']));
+    expect(ev.valueAt(0, 1)).toBe('42');
+    expect(ev.valueAt(0, 2)).toBe('44');
+    expect(ev.valueAt(0, 3)).toBe('#NAME?');
+    expect(ev.errorAt(0, 3)).toBe('#NAME?');
+    // The default evaluator does not know it.
+    expect(evaluated(sheet(1, 1, ['=DOUBLE(2)'])).valueAt(0, 0)).toBe('#NAME?');
+  });
+
+  it('arity errors read #ERROR! with a message; a thrown error too', () => {
+    const THROWS: SheetFunction = {
+      name: 'THROWS',
+      call: () => {
+        throw new Error('no such table');
+      },
+    };
+    const ev = custom([DOUBLE, THROWS], sheet(1, 4, ['=DOUBLE()', '=DOUBLE(1,2)', '=THROWS()', '=THROWS()+1']));
+    expect(ev.valueAt(0, 0)).toBe('#ERROR!');
+    expect(ev.errorMessageAt(0, 0)).toBe('DOUBLE takes 1 argument, got 0');
+    expect(ev.errorMessageAt(0, 1)).toBe('DOUBLE takes 1 argument, got 2');
+    expect(ev.valueAt(0, 2)).toBe('#ERROR!');
+    expect(ev.errorMessageAt(0, 2)).toBe('no such table');
+    // Propagated errors keep the message.
+    expect(ev.valueAt(0, 3)).toBe('#ERROR!');
+    expect(ev.errorMessageAt(0, 3)).toBe('no such table');
+    expect(ev.errorMessageAt(0, 4)).toBeNull();
+    expect(evaluated(sheet(1, 1, ['=ABS(1,2)'])).errorMessageAt(0, 0)).toBe('ABS takes 1 argument, got 2');
+    expect(evaluated(sheet(1, 1, ['=IF()'])).errorMessageAt(0, 0)).toBe('IF takes 1 to 3 arguments, got 0');
+  });
+
+  it('the context gives the cell, the model, other values and the external bag', () => {
+    const seen: unknown[] = [];
+    const PROBE: SheetFunction = {
+      name: 'PROBE',
+      call: (_, ctx) => {
+        seen.push([ctx.row, ctx.col, ctx.address, ctx.model.rows, ctx.external]);
+        return `${ctx.valueAt('A1')}/${ctx.valueAt({ row: 0, col: 1 })}/${(ctx.valueAt('Z99') as { error: string }).error}/${(ctx.valueAt('junk') as { error: string }).error}`;
+      },
+    };
+    const ev = custom([PROBE], sheet(2, 2, ['5', '=A1*2', '', '=PROBE()']), { user: 'sp90' });
+    expect(ev.valueAt(1, 1)).toBe('5/10/#REF!/#REF!');
+    expect(seen).toEqual([[1, 1, 'B2', 2, { user: 'sp90' }]]);
+  });
+
+  it('volatile functions recompute on every update and on recalc(); others only when their inputs change', () => {
+    let calls = 0;
+    const COUNTER: SheetFunction = { name: 'COUNTER', call: () => ++calls };
+    let model = sheet(1, 3, ['=USERNAME()', '=COUNTER()', '=A1&"!"']);
+    const ev = custom([USERNAME, COUNTER], model, { user: 'ann' });
+    expect(ev.valueAt(0, 0)).toBe('ann');
+    expect(ev.valueAt(0, 1)).toBe('1');
+    expect(ev.valueAt(0, 2)).toBe('ann!');
+    // An unrelated edit: the volatile cell and its dependents recompute, the plain custom one does not.
+    ev.external = { user: 'bob' };
+    const ops: SheetOp[] = [{ kind: 'set-cells', row: 0, col: 2, values: [['=A1&"?"']] }];
+    model = applySheetOps(model, ops).model;
+    ev.update(model, ops);
+    expect(ev.valueAt(0, 0)).toBe('bob');
+    expect(ev.valueAt(0, 2)).toBe('bob?');
+    expect(ev.valueAt(0, 1)).toBe('1');
+    // recalc() recomputes everything.
+    ev.external = { user: 'cy' };
+    ev.recalc();
+    expect(ev.valueAt(0, 0)).toBe('cy');
+    expect(ev.valueAt(0, 2)).toBe('cy?');
+    expect(ev.valueAt(0, 1)).toBe('2');
+    // A rebuild (structural op) recomputes everything too.
+    const ops2: SheetOp[] = [{ kind: 'insert-rows', at: 1, count: 1 }];
+    ev.update(applySheetOps(model, ops2).model, ops2);
+    expect(ev.valueAt(0, 1)).toBe('3');
   });
 });

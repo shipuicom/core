@@ -17,11 +17,16 @@ import type { SheetModel, SheetOp } from './sheet-model';
 export type FormulaErrorCode = '#CYCLE' | '#REF!' | '#NAME?' | '#DIV/0!' | '#VALUE!' | '#ERROR!';
 export interface FormulaError {
   readonly error: FormulaErrorCode;
+  /** What went wrong, when known: the message of an error a function threw, an arity mismatch. */
+  readonly message?: string;
 }
 /** `null` is an empty cell. */
 export type FormulaValue = number | string | boolean | null | FormulaError;
+/** What a function receives and returns. */
+export type SheetValue = FormulaValue;
 
-const err = (error: FormulaErrorCode): FormulaError => ({ error });
+const err = (error: FormulaErrorCode, message?: string): FormulaError =>
+  message === undefined ? { error } : { error, message };
 export const isFormulaError = (v: FormulaValue): v is FormulaError => typeof v === 'object' && v !== null;
 
 /** Whether a raw cell string is a formula. */
@@ -98,6 +103,8 @@ type Token =
   | { k: 'end' };
 
 const REF_RE = /^(\$?)([A-Za-z]{1,3})(\$?)(\d{1,7})(?![A-Za-z0-9_])/;
+/** A reference-shaped word followed by `(` is a function call (`LOG10(`, `ATAN2(`), not a reference. */
+const CALL_AFTER_RE = /^\s*\(/;
 const ERR_RE = /^#(CYCLE|REF!|NAME\?|DIV\/0!|VALUE!|ERROR!)/;
 
 function tokenize(source: string): Token[] | null {
@@ -131,8 +138,11 @@ function tokenize(source: string): Token[] | null {
     } else if ((m = ERR_RE.exec(rest))) {
       out.push({ k: 'err', v: `#${m[1]}` as FormulaErrorCode });
       i += m[0].length;
-    } else if ((m = REF_RE.exec(rest))) {
-      out.push({ k: 'ref', ref: { row: Number(m[4]) - 1, col: formulaColIndex(m[2]), absRow: m[3] === '$', absCol: m[1] === '$' } });
+    } else if ((m = REF_RE.exec(rest)) && !CALL_AFTER_RE.test(rest.slice(m[0].length))) {
+      out.push({
+        k: 'ref',
+        ref: { row: Number(m[4]) - 1, col: formulaColIndex(m[2]), absRow: m[3] === '$', absCol: m[1] === '$' },
+      });
       i += m[0].length;
     } else if ((m = /^[A-Za-z_][A-Za-z0-9_.]*/.exec(rest))) {
       out.push({ k: 'id', v: m[0].toUpperCase() });
@@ -222,7 +232,20 @@ export function parseFormula(source: string): FormulaNode | null {
     return e;
   }
 
-  const PREC: Record<string, number> = { '=': 1, '<>': 1, '<': 1, '>': 1, '<=': 1, '>=': 1, '&': 2, '+': 3, '-': 3, '*': 4, '/': 4, '^': 5 };
+  const PREC: Record<string, number> = {
+    '=': 1,
+    '<>': 1,
+    '<': 1,
+    '>': 1,
+    '<=': 1,
+    '>=': 1,
+    '&': 2,
+    '+': 3,
+    '-': 3,
+    '*': 4,
+    '/': 4,
+    '^': 5,
+  };
 
   function expr(minPrec: number): FormulaNode | null {
     let left = unary();
@@ -246,7 +269,8 @@ export function parseFormula(source: string): FormulaNode | null {
 // Reference rewriting on structural ops
 // ---------------------------------------------------------------------------
 
-const refText = (r: FormulaRef): string => `${r.absCol ? '$' : ''}${formulaColLabel(r.col)}${r.absRow ? '$' : ''}${r.row + 1}`;
+const refText = (r: FormulaRef): string =>
+  `${r.absCol ? '$' : ''}${formulaColLabel(r.col)}${r.absRow ? '$' : ''}${r.row + 1}`;
 
 /** Shift one axis of a reference across an insert or removal; `null` when it was removed. */
 function shiftAxis(index: number, op: { kind: 'insert' | 'remove'; at: number; count: number }): number | null {
@@ -308,14 +332,24 @@ export function rewriteFormulaRefs(source: string, op: SheetOp): string {
     const rest = source.slice(i);
     const m = REF_RE.exec(rest);
     const before = i === 0 ? '' : source[i - 1];
-    if (m && !/[A-Za-z0-9_$.]/.test(before)) {
-      const ref: FormulaRef = { row: Number(m[4]) - 1, col: formulaColIndex(m[2]), absRow: m[3] === '$', absCol: m[1] === '$' };
+    if (m && !/[A-Za-z0-9_$.]/.test(before) && !CALL_AFTER_RE.test(rest.slice(m[0].length))) {
+      const ref: FormulaRef = {
+        row: Number(m[4]) - 1,
+        col: formulaColIndex(m[2]),
+        absRow: m[3] === '$',
+        absCol: m[1] === '$',
+      };
       i += m[0].length;
       const colon = /^\s*:\s*/.exec(source.slice(i));
       const m2 = colon ? REF_RE.exec(source.slice(i + colon[0].length)) : null;
       if (colon && m2) {
         i += colon[0].length + m2[0].length;
-        const to: FormulaRef = { row: Number(m2[4]) - 1, col: formulaColIndex(m2[2]), absRow: m2[3] === '$', absCol: m2[1] === '$' };
+        const to: FormulaRef = {
+          row: Number(m2[4]) - 1,
+          col: formulaColIndex(m2[2]),
+          absRow: m2[3] === '$',
+          absCol: m2[1] === '$',
+        };
         const lo = Math.min(ref[axis], to[axis]);
         const hi = Math.max(ref[axis], to[axis]);
         let nlo: number | null;
@@ -388,56 +422,237 @@ function numbers(args: Args): number[] | FormulaError {
   return out;
 }
 
-type Fn = (args: Args) => FormulaValue;
-const withNumbers = (f: (ns: number[]) => FormulaValue): Fn => (args) => {
+// ---------------------------------------------------------------------------
+// Functions
+// ---------------------------------------------------------------------------
+
+/**
+ * What a function sees while it runs: the cell being evaluated, the model,
+ * the evaluated value of any other cell, and the host's `external` bag
+ * (`[functionContext]` on `sh-spreadsheet`; app data a function reads).
+ *
+ * Cells read through `valueAt` are not dependencies of the formula — the
+ * graph is built from the references in the source. A function whose result
+ * depends on `external` or on `valueAt` should be `volatile` so that it is
+ * recomputed on every update and on `recalc()`.
+ */
+export interface SheetFunctionContext {
+  readonly row: number;
+  readonly col: number;
+  /** The cell's A1 address. */
+  readonly address: string;
+  readonly model: SheetModel;
+  /** The evaluated value of another cell, by A1 text or by index; `#REF!` off the sheet. */
+  valueAt(ref: string | { row: number; col: number }): SheetValue;
+  /** The host's bag — whatever `[functionContext]` was given, `undefined` by default. */
+  readonly external: unknown;
+}
+
+/** A formula function. Names are case-insensitive; ranges arrive flattened into `args`. */
+export interface SheetFunction {
+  readonly name: string;
+  readonly minArgs?: number;
+  /** Ignored when `variadic`. */
+  readonly maxArgs?: number;
+  readonly variadic?: boolean;
+  /** Return a value, a `FormulaError`, or throw: a thrown error reads `#ERROR!` with its message. */
+  call(args: SheetValue[], ctx: SheetFunctionContext): SheetValue;
+  /** Recomputed on every update and `recalc()`, not only when a referenced cell changes. */
+  readonly volatile?: boolean;
+  /** One line for the formula bar's help. */
+  readonly description?: string;
+  /** How to call it, e.g. `SUM(a, b, ...)`. */
+  readonly signature?: string;
+}
+
+const withNumbers = (f: (ns: number[]) => FormulaValue) => (args: Args) => {
   const ns = numbers(args);
   return Array.isArray(ns) ? f(ns) : ns;
 };
 
-const FUNCTIONS: Record<string, Fn> = {
-  SUM: withNumbers((ns) => ns.reduce((a, b) => a + b, 0)),
-  AVG: withNumbers((ns) => (ns.length ? ns.reduce((a, b) => a + b, 0) / ns.length : err('#DIV/0!'))),
-  MIN: withNumbers((ns) => (ns.length ? Math.min(...ns) : 0)),
-  MAX: withNumbers((ns) => (ns.length ? Math.max(...ns) : 0)),
-  COUNT: withNumbers((ns) => ns.length),
-  COUNTA: (args) => args.filter((v) => v !== null).length,
-  ABS: (args) => {
-    const n = toNumber(args[0] ?? null);
-    return typeof n === 'number' ? Math.abs(n) : n;
+/** The functions every evaluator has: SUM AVG AVERAGE MIN MAX COUNT COUNTA ABS ROUND IF CONCAT LEN TODAY. */
+export const SHEET_BUILTIN_FUNCTIONS: readonly SheetFunction[] = [
+  {
+    name: 'SUM',
+    variadic: true,
+    signature: 'SUM(a, b, ...)',
+    description: 'Adds the numbers; text and blanks are skipped.',
+    call: withNumbers((ns) => ns.reduce((a, b) => a + b, 0)),
   },
-  ROUND: (args) => {
-    const n = toNumber(args[0] ?? null);
-    const d = toNumber(args[1] ?? 0);
-    if (typeof n !== 'number') return n;
-    if (typeof d !== 'number') return d;
-    const f = 10 ** Math.trunc(d);
-    return Math.round(n * f) / f;
+  ...['AVG', 'AVERAGE'].map((name): SheetFunction => ({
+    name,
+    variadic: true,
+    signature: `${name}(a, b, ...)`,
+    description: 'The mean of the numbers.',
+    call: withNumbers((ns) => (ns.length ? ns.reduce((a, b) => a + b, 0) / ns.length : err('#DIV/0!'))),
+  })),
+  {
+    name: 'MIN',
+    variadic: true,
+    signature: 'MIN(a, b, ...)',
+    description: 'The smallest number.',
+    call: withNumbers((ns) => (ns.length ? Math.min(...ns) : 0)),
   },
-  IF: (args) => {
-    const c = args[0] ?? null;
-    if (isFormulaError(c)) return c;
-    const truthy = typeof c === 'string' ? c !== '' : !!c;
-    return truthy ? (args[1] ?? true) : (args[2] ?? false);
+  {
+    name: 'MAX',
+    variadic: true,
+    signature: 'MAX(a, b, ...)',
+    description: 'The largest number.',
+    call: withNumbers((ns) => (ns.length ? Math.max(...ns) : 0)),
   },
-  CONCAT: (args) => {
-    let s = '';
-    for (const v of args) {
-      const t = toText(v);
-      if (typeof t !== 'string') return t;
-      s += t;
-    }
-    return s;
+  {
+    name: 'COUNT',
+    variadic: true,
+    signature: 'COUNT(a, b, ...)',
+    description: 'How many of the values are numbers.',
+    call: withNumbers((ns) => ns.length),
   },
-  LEN: (args) => {
-    const t = toText(args[0] ?? null);
-    return typeof t === 'string' ? t.length : t;
+  {
+    name: 'COUNTA',
+    variadic: true,
+    signature: 'COUNTA(a, b, ...)',
+    description: 'How many of the values are not blank.',
+    call: (args) => args.filter((v) => v !== null).length,
   },
-  TODAY: () => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  {
+    name: 'ABS',
+    minArgs: 1,
+    maxArgs: 1,
+    signature: 'ABS(x)',
+    description: 'The absolute value.',
+    call: (args) => {
+      const n = toNumber(args[0] ?? null);
+      return typeof n === 'number' ? Math.abs(n) : n;
+    },
   },
-};
-FUNCTIONS['AVERAGE'] = FUNCTIONS['AVG'];
+  {
+    name: 'ROUND',
+    minArgs: 1,
+    maxArgs: 2,
+    signature: 'ROUND(x, digits)',
+    description: 'Rounds to the given number of decimals (0 by default).',
+    call: (args) => {
+      const n = toNumber(args[0] ?? null);
+      const d = toNumber(args[1] ?? 0);
+      if (typeof n !== 'number') return n;
+      if (typeof d !== 'number') return d;
+      const f = 10 ** Math.trunc(d);
+      return Math.round(n * f) / f;
+    },
+  },
+  {
+    name: 'IF',
+    minArgs: 1,
+    maxArgs: 3,
+    signature: 'IF(test, then, else)',
+    description: 'One value when the test holds, the other when it does not.',
+    call: (args) => {
+      const c = args[0] ?? null;
+      if (isFormulaError(c)) return c;
+      const truthy = typeof c === 'string' ? c !== '' : !!c;
+      return truthy ? (args[1] ?? true) : (args[2] ?? false);
+    },
+  },
+  {
+    name: 'CONCAT',
+    variadic: true,
+    signature: 'CONCAT(a, b, ...)',
+    description: 'Joins the values as text.',
+    call: (args) => {
+      let s = '';
+      for (const v of args) {
+        const t = toText(v);
+        if (typeof t !== 'string') return t;
+        s += t;
+      }
+      return s;
+    },
+  },
+  {
+    name: 'LEN',
+    minArgs: 1,
+    maxArgs: 1,
+    signature: 'LEN(text)',
+    description: 'The length of the text.',
+    call: (args) => {
+      const t = toText(args[0] ?? null);
+      return typeof t === 'string' ? t.length : t;
+    },
+  },
+  {
+    name: 'TODAY',
+    maxArgs: 0,
+    volatile: true,
+    signature: 'TODAY()',
+    description: "Today's date, ISO.",
+    call: () => {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    },
+  },
+];
+
+/**
+ * The functions an evaluator knows, by upper-case name. Mirrors
+ * `SheetCellRegistry`: the given functions are merged over the built-ins,
+ * a function with a built-in's name replaces it.
+ */
+export class SheetFunctionRegistry {
+  readonly #byName = new Map<string, SheetFunction>();
+
+  constructor(
+    functions: readonly SheetFunction[] = [],
+    base: readonly SheetFunction[] | SheetFunctionRegistry = SHEET_BUILTIN_FUNCTIONS
+  ) {
+    const inherited = base instanceof SheetFunctionRegistry ? base.list() : base;
+    for (const fn of [...inherited, ...functions]) this.#byName.set(fn.name.toUpperCase(), fn);
+  }
+
+  get(name: string): SheetFunction | undefined {
+    return this.#byName.get(name.toUpperCase());
+  }
+
+  has(name: string): boolean {
+    return this.#byName.has(name.toUpperCase());
+  }
+
+  /** Upper-case names, in registration order. */
+  names(): string[] {
+    return [...this.#byName.keys()];
+  }
+
+  /** Every function, in registration order. */
+  list(): SheetFunction[] {
+    return [...this.#byName.values()];
+  }
+
+  /** A new registry with `functions` merged over this one. */
+  with(functions: readonly SheetFunction[]): SheetFunctionRegistry {
+    return new SheetFunctionRegistry(functions, this);
+  }
+}
+
+/** The registry every `SheetEvaluator` uses unless given another: the built-ins. */
+export const SHEET_DEFAULT_FUNCTIONS = new SheetFunctionRegistry();
+
+/** Call a registered function with arity checks and thrown errors turned into `#ERROR!`. */
+function callFunction(fn: SheetFunction, args: Args, ctx: SheetFunctionContext): FormulaValue {
+  const min = fn.minArgs ?? 0;
+  const max = fn.variadic ? Infinity : (fn.maxArgs ?? Infinity);
+  if (args.length < min || args.length > max) {
+    const expected = max === Infinity ? `at least ${min}` : min === max ? `${min}` : `${min} to ${max}`;
+    return err(
+      '#ERROR!',
+      `${fn.name.toUpperCase()} takes ${expected} argument${expected === '1' ? '' : 's'}, got ${args.length}`
+    );
+  }
+  try {
+    const value = fn.call(args, ctx);
+    return value === undefined ? null : value;
+  } catch (e) {
+    return err('#ERROR!', e instanceof Error ? e.message : String(e));
+  }
+}
 
 function binary(op: string, l: FormulaValue, r: FormulaValue): FormulaValue {
   if (isFormulaError(l)) return l;
@@ -458,7 +673,17 @@ function binary(op: string, l: FormulaValue, r: FormulaValue): FormulaValue {
       const b = typeof r === 'string' ? r.toLowerCase() : (r ?? 0);
       if (typeof a !== typeof b) return op === '<>' ? true : op === '=' ? false : err('#VALUE!');
       const cmp = a < b ? -1 : a > b ? 1 : 0;
-      return op === '=' ? cmp === 0 : op === '<>' ? cmp !== 0 : op === '<' ? cmp < 0 : op === '>' ? cmp > 0 : op === '<=' ? cmp <= 0 : cmp >= 0;
+      return op === '='
+        ? cmp === 0
+        : op === '<>'
+          ? cmp !== 0
+          : op === '<'
+            ? cmp < 0
+            : op === '>'
+              ? cmp > 0
+              : op === '<='
+                ? cmp <= 0
+                : cmp >= 0;
     }
   }
   const a = toNumber(l);
@@ -495,10 +720,22 @@ export class SheetEvaluator {
   #dependents = new Map<number, Set<number>>();
   /** Formulas whose ranges are too large to track per cell: dirty on any change. */
   #wide = new Set<number>();
+  /** Formulas calling a volatile function: dirty on every update and on `recalc()`. */
+  #volatile = new Set<number>();
   #values = new Map<number, FormulaValue>();
   #visiting = new Set<number>();
   /** Set when an evaluation runs into a cell that is still being evaluated. */
   #cycleHit = false;
+
+  /**
+   * The host's bag, handed to every function as `ctx.external`. Setting it
+   * does not recompute anything by itself: call `recalc()` after (the
+   * composer does, whenever `[functionContext]` changes).
+   */
+  external: unknown = undefined;
+
+  /** `functions`: the registry the formulas resolve names against — the built-ins by default. */
+  constructor(readonly functions: SheetFunctionRegistry = SHEET_DEFAULT_FUNCTIONS) {}
 
   /** The model as last seen. */
   get model(): SheetModel | null {
@@ -509,12 +746,17 @@ export class SheetEvaluator {
   update(model: SheetModel, ops?: readonly SheetOp[]): void {
     const previous = this.#model;
     this.#model = model;
-    const incremental = previous !== null && ops !== undefined && previous.rows === model.rows && previous.cols === model.cols && ops.every((op) => op.kind === 'set-cells');
+    const incremental =
+      previous !== null &&
+      ops !== undefined &&
+      previous.rows === model.rows &&
+      previous.cols === model.cols &&
+      ops.every((op) => op.kind === 'set-cells');
     if (!incremental) {
       this.#rebuild();
       return;
     }
-    const changed = new Set<number>();
+    const changed = new Set<number>(this.#volatile);
     for (const op of ops) {
       if (op.kind !== 'set-cells') continue;
       for (let r = 0; r < op.values.length; r++) {
@@ -548,6 +790,24 @@ export class SheetEvaluator {
     return v !== undefined && isFormulaError(v) ? v.error : null;
   }
 
+  /** The message behind a formula cell's error (a thrown error's, an arity mismatch), or null. */
+  errorMessageAt(row: number, col: number): string | null {
+    const model = this.#model;
+    if (!model) return null;
+    const v = this.#values.get(row * model.cols + col);
+    return v !== undefined && isFormulaError(v) ? (v.message ?? null) : null;
+  }
+
+  /**
+   * Recompute every formula against the current model and `external`. For
+   * a host whose function data changed outside the model; `update` alone
+   * recomputes only the volatile formulas and what the ops touched.
+   */
+  recalc(): void {
+    if (!this.#model) return;
+    this.#recompute(new Set(this.#ast.keys()));
+  }
+
   /** Whether the cell holds a formula. */
   isFormulaAt(row: number, col: number): boolean {
     const model = this.#model;
@@ -564,6 +824,7 @@ export class SheetEvaluator {
     this.#deps.clear();
     this.#dependents.clear();
     this.#wide.clear();
+    this.#volatile.clear();
     this.#values.clear();
     const model = this.#model!;
     const cells = model.cells;
@@ -579,6 +840,7 @@ export class SheetEvaluator {
       this.#deps.delete(index);
     }
     this.#wide.delete(index);
+    this.#volatile.delete(index);
     this.#values.delete(index);
     if (!isFormula(raw)) {
       this.#ast.delete(index);
@@ -592,7 +854,8 @@ export class SheetEvaluator {
     const visit = (node: FormulaNode): void => {
       switch (node.t) {
         case 'ref':
-          if (node.ref.row < model.rows && node.ref.col < model.cols) deps.add(node.ref.row * model.cols + node.ref.col);
+          if (node.ref.row < model.rows && node.ref.col < model.cols)
+            deps.add(node.ref.row * model.cols + node.ref.col);
           return;
         case 'range': {
           const r0 = Math.min(node.from.row, node.to.row);
@@ -613,6 +876,7 @@ export class SheetEvaluator {
           visit(node.r);
           return;
         case 'call':
+          if (this.functions.get(node.name)?.volatile) this.#volatile.add(index);
           node.args.forEach(visit);
           return;
         default:
@@ -661,7 +925,7 @@ export class SheetEvaluator {
     this.#visiting.add(index);
     const outer = this.#cycleHit;
     this.#cycleHit = false;
-    let value = this.#eval(ast);
+    let value = this.#eval(ast, index);
     this.#visiting.delete(index);
     // Cycles are structural: a cell whose evaluation ran into one — it is on
     // the cycle or downstream of it — shows #CYCLE whatever else its
@@ -678,7 +942,29 @@ export class SheetEvaluator {
     return this.#evaluate(row * model.cols + col);
   }
 
-  #eval(node: FormulaNode): FormulaValue {
+  /** The context a function called from cell `index` sees. */
+  #context(index: number): SheetFunctionContext {
+    const model = this.#model!;
+    const row = Math.floor(index / model.cols);
+    const col = index % model.cols;
+    return {
+      row,
+      col,
+      address: `${formulaColLabel(col)}${row + 1}`,
+      model,
+      external: this.external,
+      valueAt: (ref) => {
+        if (typeof ref === 'string') {
+          const m = REF_RE.exec(ref.trim());
+          if (!m || m[0].length !== ref.trim().length) return err('#REF!');
+          return this.#cell(Number(m[4]) - 1, formulaColIndex(m[2]));
+        }
+        return this.#cell(ref.row, ref.col);
+      },
+    };
+  }
+
+  #eval(node: FormulaNode, index: number): FormulaValue {
     switch (node.t) {
       case 'num':
       case 'str':
@@ -691,13 +977,13 @@ export class SheetEvaluator {
       case 'range':
         return err('#VALUE!');
       case 'neg': {
-        const n = toNumber(this.#eval(node.e));
+        const n = toNumber(this.#eval(node.e, index));
         return typeof n === 'number' ? -n : n;
       }
       case 'bin':
-        return binary(node.op, this.#eval(node.l), this.#eval(node.r));
+        return binary(node.op, this.#eval(node.l, index), this.#eval(node.r, index));
       case 'call': {
-        const fn = FUNCTIONS[node.name];
+        const fn = this.functions.get(node.name);
         if (!fn) return err('#NAME?');
         const args: Args = [];
         for (const arg of node.args) {
@@ -708,9 +994,9 @@ export class SheetEvaluator {
             const c0 = Math.min(arg.from.col, arg.to.col);
             const c1 = Math.min(Math.max(arg.from.col, arg.to.col), model.cols - 1);
             for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) args.push(this.#cell(r, c));
-          } else args.push(this.#eval(arg));
+          } else args.push(this.#eval(arg, index));
         }
-        return fn(args);
+        return callFunction(fn, args, this.#context(index));
       }
     }
   }
