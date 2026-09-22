@@ -119,8 +119,34 @@ describe('transformOp', () => {
     expect(textOf(viaA, 0)).toBe('aABb');
   });
 
-  it('overlapping same-block edits conflict (null)', () => {
-    expect(transformOp(iop(0, 2, 'cde', 'X'), iop(0, 3, 'd', 'Y'))).toBeNull();
+  it('overlapping same-block replacements converge on the left op alone', () => {
+    const doc = [p('abcdefg')] as ASTDocument;
+    const a = iop(0, 2, 'cde', 'X');
+    const b = iop(0, 3, 'd', 'Y');
+    const viaA = applyOp(applyOp(doc, a), transformOp(b, a, 'right')!);
+    const viaB = applyOp(applyOp(doc, b), transformOp(a, b, 'left')!);
+    deepEq(viaA, viaB);
+    expect(textOf(viaA, 0)).toBe('abXfg');
+  });
+
+  it('an insert strictly inside a concurrent deletion survives on both sides', () => {
+    const doc = [p('foxtrot')] as ASTDocument;
+    const insert = iop(0, 6, '', 'XY');
+    const del = iop(0, 4, 'rot', '');
+    const viaInsert = applyOp(applyOp(doc, insert), transformOp(del, insert, 'right')!);
+    const viaDelete = applyOp(applyOp(doc, del), transformOp(insert, del, 'left')!);
+    deepEq(viaInsert, viaDelete);
+    expect(textOf(viaInsert, 0)).toBe('foxtXY');
+  });
+
+  it('two concurrent splits of one block converge on the left split', () => {
+    const doc = [p('delta echo')] as ASTDocument;
+    const a: EditorOp = { kind: 'block', at: 0, removed: [p('delta echo')], inserted: [p('delta '), p('echo')] };
+    const b: EditorOp = { kind: 'block', at: 0, removed: [p('delta echo')], inserted: [p('del'), p('ta echo')] };
+    const viaA = applyOp(applyOp(doc, a), transformOp(b, a, 'right')!);
+    const viaB = applyOp(applyOp(doc, b), transformOp(a, b, 'left')!);
+    deepEq(viaA, viaB);
+    expect(viaA.map((block) => textOf([block], 0))).toEqual(['delta ', 'echo']);
   });
 
   it('an inline op survives a block splice before its block (index shifted)', () => {

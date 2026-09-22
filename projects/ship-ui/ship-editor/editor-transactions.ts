@@ -219,6 +219,47 @@ export function applyOp(doc: ASTDocument, op: EditorOp): ASTDocument {
   return next;
 }
 
+interface Splice<T> {
+  at: number;
+  removed: T[];
+  inserted: T[];
+}
+
+/**
+ * Two splices whose ranges strictly overlap (an insertion strictly inside the other's range counts) cannot
+ * be shifted past each other, so `op` is rewritten into one splice over the whole region as it stands after
+ * `against`, with content both peers compute identically — the pair converges (TP1) instead of each side
+ * dropping the other's edit. When both replaced something, the `left` op's insertion stands alone (two
+ * concurrent splits of one block do not both apply); when at least one only inserted, both insertions
+ * survive in order of position (`left` first on a tie) and the union of the removed ranges is gone. The
+ * region's original content is reassembled from the two `removed` copies, so the result inverts cleanly.
+ */
+function resolveOverlap<T>(op: Splice<T>, against: Splice<T>, side: 'left' | 'right', slice: (items: T[], from: number, to: number) => T[], len: (items: T[]) => number): Splice<T> {
+  const os = op.at;
+  const oe = os + len(op.removed);
+  const as = against.at;
+  const ae = as + len(against.removed);
+  const s = Math.min(os, as);
+  const e = Math.max(oe, ae);
+  const points = [...new Set([s, os, oe, as, ae, e])].sort((a, b) => a - b);
+  const original: T[] = [];
+  for (let i = 0; i + 1 < points.length; i++) {
+    const [x, y] = [points[i], points[i + 1]];
+    original.push(...(os <= x && y <= oe ? slice(op.removed, x - os, y - os) : slice(against.removed, x - as, y - as)));
+  }
+  const removed = [...slice(original, 0, as - s), ...structuredClone(against.inserted), ...slice(original, ae - s, e - s)];
+  const conflict = len(op.removed) > 0 && len(against.removed) > 0;
+  const opFirst = os < as || (os === as && side === 'left');
+  const inserted = conflict
+    ? side === 'left'
+      ? op.inserted
+      : structuredClone(against.inserted)
+    : opFirst
+      ? [...op.inserted, ...structuredClone(against.inserted)]
+      : [...structuredClone(against.inserted), ...op.inserted];
+  return { at: s, removed, inserted };
+}
+
 function shiftIndex(
   opStart: number,
   opRemovedLen: number,
@@ -248,7 +289,7 @@ export function transformOp(op: EditorOp, against: EditorOp, side: 'left' | 'rig
     const delta = against.inserted.length - against.removed.length;
     if (op.kind === 'block') {
       const at = shiftIndex(op.at, op.removed.length, against.at, against.removed.length, against.inserted.length, side);
-      if (at === null) return null;
+      if (at === null) return { ...op, ...resolveOverlap(op, against, side, (items, from, to) => items.slice(from, to), (items) => items.length) };
       return at === op.at ? op : { ...op, at };
     }
 
@@ -292,7 +333,7 @@ export function transformOp(op: EditorOp, against: EditorOp, side: 'left' | 'rig
   if (op.kind === 'inline') {
     if (op.blockIndex !== against.blockIndex) return op;
     const at = shiftIndex(op.at, fragLen(op.removed), against.at, fragLen(against.removed), fragLen(against.inserted), side);
-    if (at === null) return null;
+    if (at === null) return { ...op, ...resolveOverlap(op, against, side, sliceInline, fragLen) };
     return at === op.at ? op : { ...op, at };
   }
 
