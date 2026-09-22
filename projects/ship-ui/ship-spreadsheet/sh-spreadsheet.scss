@@ -17,6 +17,62 @@ sh-spreadsheet {
   background: var(--shs-bg);
   overflow: hidden;
 
+  // With the formula bar the host stacks bar over grid; the grid takes the rest.
+  &.has-bar {
+    display: flex;
+    flex-direction: column;
+
+    .shs-frame {
+      flex: 1;
+      min-height: 0;
+    }
+  }
+
+  .shs-bar {
+    display: flex;
+    align-items: center;
+    gap: #{p2r(6)};
+    padding: #{p2r(4)} #{p2r(8)};
+    border-bottom: 1px solid var(--shs-grid);
+    background: var(--shs-head-bg);
+    font: var(--shs-font);
+    color: var(--shs-fg);
+  }
+
+  .shs-bar-label {
+    min-width: #{p2r(44)};
+    color: var(--shs-head-fg);
+    font-size: 0.85em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .shs-bar-fx {
+    color: var(--shs-head-fg);
+    font-style: italic;
+    user-select: none;
+  }
+
+  .shs-bar-input {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    padding: #{p2r(2)} #{p2r(6)};
+    border: 1px solid transparent;
+    border-radius: var(--shape-1, 4px);
+    background: var(--shs-bg);
+    color: inherit;
+    font: inherit;
+    outline: none;
+
+    &:focus-visible {
+      border-color: var(--shs-selection-border);
+    }
+
+    &:read-only {
+      background: transparent;
+    }
+  }
+
   .shs-frame {
     position: relative;
     height: 100%;
@@ -133,6 +189,12 @@ sh-spreadsheet {
   // A stored string its column type rejects (`validate`).
   .shs-c.shs-invalid {
     box-shadow: inset 0 -2px 0 var(--shs-invalid, #d33);
+  }
+
+  // A formula cell shows its value; one that failed shows its error token.
+  .shs-c.shs-error {
+    color: var(--shs-invalid, #d33);
+    font-variant-numeric: tabular-nums;
   }
 
   // Built-in checkbox type: a glyph centered in the cell.

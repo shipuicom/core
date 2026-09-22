@@ -23,6 +23,7 @@ import { ShipVirtualWindow } from '@ship-ui/core/ship-virtual-scroll';
 import { parseTsv, sheetRangeToHtml, sheetRangeToTsv } from './core/sheet-clipboard';
 import { escapeSheetHtml } from './core/sheet-html';
 import { SheetCellContext, SheetCellExtension, SheetCellRegistry } from './core/sheet-extensions';
+import { FormulaErrorCode, SheetEvaluator, isFormula } from './core/sheet-formulas';
 import {
   SheetModel,
   SheetOp,
@@ -76,6 +77,18 @@ export function sheetCellLabel(row: number, col: number): string {
   return `${sheetColLabel(col)}${row + 1}`;
 }
 
+/**
+ * The evaluated view of a sheet — what `sh-spreadsheet` shows for formula
+ * cells. One object per model (see `ShipSpreadsheet.values`); the raw
+ * string for every non-formula cell.
+ */
+export interface SheetValues {
+  readonly model: SheetModel;
+  valueAt(row: number, col: number): string;
+  errorAt(row: number, col: number): FormulaErrorCode | null;
+  isFormulaAt(row: number, col: number): boolean;
+}
+
 /** Where the caret goes after a commit. */
 export type SheetCommitMove = 'none' | 'down' | 'up' | 'right' | 'left';
 
@@ -107,12 +120,15 @@ interface ResizeDrag {
  * `applyRemote`, which rebases the history over them with
  * `transformSheetOps` instead of discarding it.
  *
- * Cells stay raw strings: what the model holds is the source text (a
- * future formula engine derives displayed values from it separately), so
- * ops, clipboard, and the `<table>` form never see a computed value. How a
- * column's strings look and edit is a `SheetCellExtension` resolved from
- * the column's type (`colTypes`) through the registry built from
- * `extensions` — text by default, checkbox built in.
+ * Cells stay raw strings: what the model holds is the source text, so ops,
+ * clipboard, and the `<table>` form never see a computed value. A cell
+ * whose text starts with `=` is a formula: a `SheetEvaluator` kept in step
+ * with the model derives its value (`values`), the grid shows the value or
+ * the error token, and the in-cell editor and the formula bar show the
+ * source. How a column's strings look and edit is a `SheetCellExtension`
+ * resolved from the column's type (`colTypes`) through the registry built
+ * from `extensions` — text by default, checkbox and the formatted types
+ * built in; a formula in a typed column formats its evaluated value.
  */
 @Component({
   selector: 'sh-spreadsheet',
@@ -126,6 +142,7 @@ interface ResizeDrag {
   host: {
     '[attr.data-shs]': 'uid',
     '[class.editable]': 'editable()',
+    '[class.has-bar]': 'formulaBar()',
     '[style.--shs-row-h.px]': 'defaultRowHeight()',
     '[style.--shs-head-w.px]': 'headOffset()',
   },
@@ -134,6 +151,7 @@ export class ShipSpreadsheet {
   scroller = viewChild.required<ElementRef<HTMLElement>>('scroller');
   frame = viewChild.required<ElementRef<HTMLElement>>('frame');
   private editorRef = viewChild<ElementRef<HTMLTextAreaElement | HTMLInputElement>>('cellEditor');
+  private barRef = viewChild<ElementRef<HTMLInputElement>>('barInput');
   private menu = viewChild(ShipMenu);
 
   /**
@@ -162,6 +180,12 @@ export class ShipSpreadsheet {
   editable = input(false);
   /** Cell extensions beyond the built-in text and checkbox types, resolved by `colTypes`. */
   extensions = input<readonly SheetCellExtension[]>([]);
+  /**
+   * Show a formula bar above the grid: the active cell's address and its
+   * source (the `=` text of a formula, the typed form of a value), editable
+   * when the grid is — Enter commits, Escape reverts.
+   */
+  formulaBar = input(false);
   /**
    * Every transaction the user makes, as the ops that were applied — one
    * emission per edit, paste, structural change, resize, undo, or redo.
@@ -197,6 +221,10 @@ export class ShipSpreadsheet {
   #redo: SheetOp[][] = [];
   /** The last model this instance wrote to `sheet`, to tell own writes from adopted ones. */
   #own: SheetModel | null = null;
+  /** Formula values, kept in step with the model by `values`. */
+  #evaluator = new SheetEvaluator();
+  /** The ops that turned the evaluator's last model into the one just committed — the incremental path. */
+  #pending: { readonly from: SheetModel | null; readonly to: SheetModel; readonly ops: readonly SheetOp[] } | null = null;
   readonly canUndo = signal(false);
   readonly canRedo = signal(false);
 
@@ -239,6 +267,36 @@ export class ShipSpreadsheet {
     const cell = this.activeCell();
     return cell ? sheetCellLabel(cell.row, cell.col) : '';
   });
+  /** What the formula bar and the editor show for the active cell: a formula's source, else the type's `format`. */
+  readonly activeSource = computed(() => {
+    const cell = this.activeCell();
+    if (!cell) return '';
+    const raw = cellAt(this.sheet(), cell.row, cell.col);
+    if (isFormula(raw)) return raw;
+    const { ext, ctx } = this.#cell(cell.row, cell.col);
+    return ext.format ? ext.format(raw, ctx) : raw;
+  });
+
+  /**
+   * The evaluated sheet: one `SheetValues` per model. The evaluator is
+   * brought up to the current model on read — incrementally when the model
+   * is the one this instance just committed (the ops are known), from
+   * scratch for an adopted one — so a consumer never sees stale values.
+   */
+  readonly values = computed<SheetValues>(() => {
+    const sheet = this.sheet();
+    const ev = this.#evaluator;
+    if (ev.model !== sheet) {
+      const pending = this.#pending;
+      ev.update(sheet, pending && pending.to === sheet && pending.from === ev.model ? pending.ops : undefined);
+    }
+    return {
+      model: sheet,
+      valueAt: (row, col) => ev.valueAt(row, col),
+      errorAt: (row, col) => ev.errorAt(row, col),
+      isFormulaAt: (row, col) => ev.isFormulaAt(row, col),
+    };
+  });
 
   /**
    * The mounted rows: absolute index, resolved height, and the row's cells as
@@ -254,6 +312,7 @@ export class ShipSpreadsheet {
     const c0 = this.colStart();
     const c1 = Math.min(this.colEnd(), sheet.cols);
     const registry = this.registry();
+    const values = this.values();
     // One extension lookup per mounted column, not per cell.
     const exts: SheetCellExtension[] = [];
     const types: string[] = [];
@@ -266,14 +325,25 @@ export class ShipSpreadsheet {
     for (let r = from; r < to; r++) {
       const parts: string[] = [];
       for (let c = c0; c < c1; c++) {
-        const value = sheet.cells[r * sheet.cols + c];
+        const raw = sheet.cells[r * sheet.cols + c];
         const ext = exts[c - c0];
         let cls = types[c - c0] === 'text' ? `shs-c c${c}` : `shs-c c${c} t-${types[c - c0]}`;
-        if (!value && ext.editor !== 'none') {
+        if (!raw && ext.editor !== 'none') {
           parts.push(`<span class="${cls}"></span>`);
           continue;
         }
         const ctx = { row: r, col: c, type: types[c - c0] };
+        let value = raw;
+        if (isFormula(raw)) {
+          // A formula shows its value through the column's type; an error shows its token.
+          const code = values.errorAt(r, c);
+          if (code) {
+            parts.push(`<span class="${cls} shs-formula shs-error" title="${escapeSheetHtml(raw).replace(/"/g, '&quot;')}">${code}</span>`);
+            continue;
+          }
+          value = values.valueAt(r, c);
+          cls += ' shs-formula';
+        }
         const error = ext.validate ? ext.validate(value, ctx) : null;
         if (error) cls += ' shs-invalid';
         parts.push(error ? `<span class="${cls}" title="${escapeSheetHtml(error).replace(/"/g, '&quot;')}">${ext.render(value, ctx)}</span>` : `<span class="${cls}">${ext.render(value, ctx)}</span>`);
@@ -486,7 +556,7 @@ export class ShipSpreadsheet {
     if (ops.length === 0) return;
     const { model, inverse } = applySheetOps(this.sheet(), ops);
     if (inverse.length === 0) return;
-    this.#commit(model);
+    this.#commit(model, ops);
     this.#undo.push(inverse.slice());
     if (this.#undo.length > HISTORY_DEPTH) this.#undo.shift();
     this.#redo = [];
@@ -502,7 +572,7 @@ export class ShipSpreadsheet {
   applyRemote(ops: readonly SheetOp[]): void {
     if (ops.length === 0) return;
     const { model } = applySheetOps(this.sheet(), ops);
-    this.#commit(model);
+    this.#commit(model, ops);
     this.#undo = this.#rebaseStack(this.#undo, ops);
     this.#redo = this.#rebaseStack(this.#redo, ops);
     this.#syncHistoryFlags();
@@ -541,7 +611,7 @@ export class ShipSpreadsheet {
     const inverse = this.#undo.pop();
     if (!inverse) return;
     const { model, inverse: redo } = applySheetOps(this.sheet(), inverse);
-    this.#commit(model);
+    this.#commit(model, inverse);
     this.#redo.push(redo.slice());
     this.#syncHistoryFlags();
     this.ops.emit(inverse);
@@ -551,13 +621,14 @@ export class ShipSpreadsheet {
     const ops = this.#redo.pop();
     if (!ops) return;
     const { model, inverse } = applySheetOps(this.sheet(), ops);
-    this.#commit(model);
+    this.#commit(model, ops);
     this.#undo.push(inverse.slice());
     this.#syncHistoryFlags();
     this.ops.emit(ops);
   }
 
-  #commit(model: SheetModel) {
+  #commit(model: SheetModel, ops: readonly SheetOp[]) {
+    this.#pending = { from: this.sheet(), to: model, ops };
     this.#own = model;
     this.sheet.set(model);
     // Keep the selection inside the (possibly smaller) grid.
@@ -856,11 +927,13 @@ export class ShipSpreadsheet {
       return;
     }
     const raw = cellAt(this.sheet(), cell.row, cell.col);
-    let text = initial ?? (ext.format ? ext.format(raw, ctx) : raw);
+    // A formula edits as its source, in the text editor whatever the column type.
+    const formula = isFormula(initial ?? raw) || initial === '=';
+    let text = initial ?? (formula || !ext.format ? raw : ext.format(raw, ctx));
     // A typed input (a date picker) only takes its own value shape: seed it
     // with what the typed character parses to, or the cell's own value.
-    if (ext.inputType && initial !== undefined) text = (ext.parse ? ext.parse(initial, ctx) : initial) || raw;
-    this.editing.set({ row: cell.row, col: cell.col, initial: text, inputType: ext.inputType });
+    if (ext.inputType && !formula && initial !== undefined) text = (ext.parse ? ext.parse(initial, ctx) : initial) || raw;
+    this.editing.set({ row: cell.row, col: cell.col, initial: text, inputType: formula ? undefined : ext.inputType });
     this.#revealCell(cell.row, cell.col);
     afterNextRender(
       () => {
@@ -885,10 +958,10 @@ export class ShipSpreadsheet {
     this.focus();
   }
 
-  /** Store `input` in a cell through its type's `parse`; a rejected input leaves the cell alone. */
+  /** Store `input` in a cell through its type's `parse` (a formula is stored as typed); a rejected input leaves the cell alone. */
   #commitParsed(row: number, col: number, input: string): void {
     const { ext, ctx } = this.#cell(row, col);
-    const next = ext.parse ? ext.parse(input, ctx) : input;
+    const next = isFormula(input) ? input : ext.parse ? ext.parse(input, ctx) : input;
     if (next === null) {
       this.#announcer.announce(`${sheetCellLabel(row, col)} rejected ${input}`, 'assertive');
       return;
@@ -902,6 +975,47 @@ export class ShipSpreadsheet {
     if (!this.editing()) return;
     this.editing.set(null);
     this.focus();
+  }
+
+  // -------------------------------------------------------------------------
+  // Formula bar
+  // -------------------------------------------------------------------------
+
+  /** Write the formula bar's text into the active cell (through `parse`, a formula as is) and return focus to the grid. */
+  commitBar(): void {
+    const cell = this.activeCell();
+    const el = this.barRef()?.nativeElement;
+    if (!cell || !el) return;
+    if (this.editing()) this.cancelEdit();
+    if (el.value !== this.activeSource()) this.#commitParsed(cell.row, cell.col, el.value);
+    el.value = this.activeSource();
+    this.focus();
+  }
+
+  /** Drop the formula bar's edit: the input shows the cell's source again. */
+  cancelBar(): void {
+    const el = this.barRef()?.nativeElement;
+    if (el) el.value = this.activeSource();
+    this.focus();
+  }
+
+  onBarKeydown(event: KeyboardEvent) {
+    event.stopPropagation();
+    switch (event.key) {
+      case 'Enter':
+        event.preventDefault();
+        this.commitBar();
+        return;
+      case 'Escape':
+        event.preventDefault();
+        this.cancelBar();
+        return;
+    }
+  }
+
+  onBarBlur() {
+    const el = this.barRef()?.nativeElement;
+    if (el && el.value !== this.activeSource()) this.commitBar();
   }
 
   #moveFrom(row: number, col: number, move: SheetCommitMove) {
@@ -1130,7 +1244,7 @@ export class ShipSpreadsheet {
       line.map((input, c) => {
         const type = colTypeAt(sheet, col + c);
         const ext = registry.get(type);
-        if (!ext.parse) return input;
+        if (!ext.parse || isFormula(input)) return input;
         return ext.parse(input, { row: row + r, col: col + c, type: type ?? 'text' }) ?? cellAt(sheet, row + r, col + c);
       })
     );

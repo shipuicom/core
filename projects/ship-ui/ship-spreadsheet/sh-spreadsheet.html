@@ -1,3 +1,21 @@
+@if (formulaBar()) {
+  <div class="shs-bar" (mousedown)="$event.stopPropagation()">
+    <span class="shs-bar-label" aria-hidden="true">{{ activeLabel() || '—' }}</span>
+    <span class="shs-bar-fx" aria-hidden="true">fx</span>
+    <input
+      #barInput
+      class="shs-bar-input"
+      type="text"
+      spellcheck="false"
+      autocapitalize="off"
+      autocomplete="off"
+      [attr.aria-label]="activeLabel() ? 'Formula bar, ' + activeLabel() : 'Formula bar'"
+      [value]="activeSource()"
+      [readOnly]="!editable() || !activeCell()"
+      (keydown)="onBarKeydown($event)"
+      (blur)="onBarBlur()" />
+  </div>
+}
 <div
   class="shs-frame"
   #frame

@@ -1,19 +1,21 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { SheetModel, SheetOp, SheetSelection, cellAt, createSheet, sheetCellSelection } from './core/sheet-model';
+import { sheetRangeToTsv } from './core/sheet-clipboard';
+import { SheetModel, SheetOp, SheetSelection, applySheetOps, cellAt, createSheet, sheetCellSelection } from './core/sheet-model';
 import { ShipSpreadsheet } from './sh-spreadsheet';
 
 @Component({
   standalone: true,
   imports: [ShipSpreadsheet],
-  template: `<sh-spreadsheet style="height: 300px" [(sheet)]="sheet" [(selection)]="selection" [editable]="editable()" (ops)="log.push($event)" />`,
+  template: `<sh-spreadsheet style="height: 300px" [(sheet)]="sheet" [(selection)]="selection" [editable]="editable()" [formulaBar]="formulaBar()" (ops)="log.push($event)" />`,
 })
 class Host {
   grid = viewChild.required(ShipSpreadsheet);
   sheet = signal<SheetModel>(createSheet(4, 3, ['a1', 'b1', 'c1', 'a2', 'b2', 'c2', 'a3', 'b3', 'c3', 'a4', 'b4', 'c4']));
   selection = signal<SheetSelection | null>(sheetCellSelection(0, 0));
   editable = signal(true);
+  formulaBar = signal(false);
   log: SheetOp[][] = [];
 }
 
@@ -258,5 +260,107 @@ describe('ShipSpreadsheet composer', () => {
     const paste = clipboard('paste', { 'text/plain': 'nope' });
     frame.dispatchEvent(paste.event);
     expect(host.sheet().cells[3]).toBe('a2');
+  });
+
+  describe('formulas', () => {
+    const cellText = (row: number, col: number) => (fixture.nativeElement.querySelectorAll('.shs-row')[row].querySelectorAll('.shs-c')[col] as HTMLElement).textContent;
+
+    it('shows the evaluated value in the grid, the source in the editor, and re-evaluates on edits and undo', async () => {
+      grid.apply([{ kind: 'set-cells', row: 0, col: 0, values: [['1', '2', '=A1+B1'], ['=SUM(A1:B1)*2']] }]);
+      fixture.detectChanges();
+      expect(cellText(0, 2)).toBe('3');
+      expect(cellText(1, 0)).toBe('6');
+      expect(grid.values().valueAt(0, 2)).toBe('3');
+      expect(grid.values().isFormulaAt(0, 2)).toBe(true);
+      grid.selectCell(0, 2);
+      key(frame, 'F2');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(grid.editing()?.initial).toBe('=A1+B1');
+      editor()!.value = '=A1*10';
+      key(editor()!, 'Enter');
+      fixture.detectChanges();
+      expect(cellAt(host.sheet(), 0, 2)).toBe('=A1*10');
+      expect(cellText(0, 2)).toBe('10');
+      // Editing an input recomputes the dependents incrementally.
+      grid.apply([{ kind: 'set-cells', row: 0, col: 0, values: [['5']] }]);
+      fixture.detectChanges();
+      expect(cellText(0, 2)).toBe('50');
+      expect(cellText(1, 0)).toBe('14');
+      key(frame, 'z', { metaKey: true });
+      fixture.detectChanges();
+      expect(cellText(0, 2)).toBe('10');
+      expect(cellText(1, 0)).toBe('6');
+    });
+
+    it('errors show their token with the source as title; a model set from outside is evaluated from scratch', () => {
+      host.sheet.set(createSheet(2, 2, ['=1/0', '=A1', '=A2', 'x']));
+      fixture.detectChanges();
+      expect(cellText(0, 0)).toBe('#DIV/0!');
+      expect(cellText(0, 1)).toBe('#DIV/0!');
+      expect(cellText(1, 0)).toBe('#CYCLE');
+      const cell = fixture.nativeElement.querySelectorAll('.shs-row')[0].querySelector('.shs-c') as HTMLElement;
+      expect(cell.classList.contains('shs-error')).toBe(true);
+      expect(cell.title).toBe('=1/0');
+      expect(grid.values().errorAt(1, 0)).toBe('#CYCLE');
+    });
+
+    it('a formula in a typed column formats its value, stores its source, and survives a row insert', () => {
+      host.sheet.set(applySheetOps(createSheet(3, 2, ['10', '', '20', '', '', '']), [{ kind: 'set-col-type', col: 0, type: 'currency' }]).model);
+      fixture.detectChanges();
+      grid.selectCell(2, 0);
+      grid.startEdit('=SUM(A1:A2)');
+      grid.commitEdit();
+      expect(cellAt(host.sheet(), 2, 0)).toBe('=SUM(A1:A2)');
+      fixture.detectChanges();
+      expect(cellText(2, 0)).toBe('$30.00');
+      expect(cellText(0, 0)).toBe('$10.00');
+      // Pasting a formula into a typed column keeps the formula.
+      grid.selectCell(2, 1);
+      const { event } = clipboard('paste', { 'text/plain': '=A3/3' });
+      frame.dispatchEvent(event);
+      fixture.detectChanges();
+      expect(cellAt(host.sheet(), 2, 1)).toBe('=A3/3');
+      expect(cellText(2, 1)).toBe('10');
+      grid.apply([{ kind: 'insert-rows', at: 1, count: 1 }]);
+      fixture.detectChanges();
+      expect(cellAt(host.sheet(), 3, 0)).toBe('=SUM(A1:A3)');
+      expect(cellText(3, 0)).toBe('$30.00');
+      // A text export through the registry and the values carries the display form of the value.
+      expect(sheetRangeToTsv(host.sheet(), { r0: 3, c0: 0, r1: 3, c1: 1 }, grid.registry(), grid.values())).toBe('$30.00\t10');
+      expect(sheetRangeToTsv(host.sheet(), { r0: 3, c0: 0, r1: 3, c1: 1 })).toBe('=SUM(A1:A3)\t=A4/3');
+    });
+
+    it('formula bar: shows the active source, Enter commits it, Escape reverts, read-only without editable', async () => {
+      host.formulaBar.set(true);
+      host.sheet.set(applySheetOps(createSheet(2, 2, ['1', '=A1+1', '0.5', '']), [{ kind: 'set-col-type', col: 0, type: 'percent' }]).model);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const bar = () => fixture.nativeElement.querySelector('input.shs-bar-input') as HTMLInputElement;
+      expect(bar().value).toBe('50%'.replace('50%', grid.activeSource()));
+      grid.selectCell(0, 1);
+      fixture.detectChanges();
+      expect(bar().value).toBe('=A1+1');
+      grid.selectCell(1, 0);
+      fixture.detectChanges();
+      expect(bar().value).toBe('50%');
+      bar().value = '=A1*3';
+      key(bar(), 'Enter');
+      fixture.detectChanges();
+      expect(cellAt(host.sheet(), 1, 0)).toBe('=A1*3');
+      expect(cellText(1, 0)).toBe('300%');
+      expect(host.log.at(-1)).toEqual([{ kind: 'set-cells', row: 1, col: 0, values: [['=A1*3']] }]);
+      bar().value = 'junk';
+      key(bar(), 'Escape');
+      expect(bar().value).toBe('=A1*3');
+      expect(cellAt(host.sheet(), 1, 0)).toBe('=A1*3');
+      // A plain value goes through the column type's parse.
+      bar().value = '25';
+      key(bar(), 'Enter');
+      expect(cellAt(host.sheet(), 1, 0)).toBe('0.25');
+      host.editable.set(false);
+      fixture.detectChanges();
+      expect(bar().readOnly).toBe(true);
+    });
   });
 });
