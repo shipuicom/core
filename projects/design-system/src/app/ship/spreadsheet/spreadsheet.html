@@ -68,6 +68,18 @@
     </div>
   </app-previewer>
 
+  <app-previewer path="/spreadsheet" title="Records: select columns with component editors" class="no-space">
+    <div class="sheet-demo">
+      <sh-spreadsheet class="sheet-small" [(sheet)]="records" [(selection)]="recordsSelection" [editable]="true" [extensions]="recordExtensions" />
+      <p class="sheet-note">
+        B and C are <code>select</code> columns (<code>status</code>, <code>priority</code>): press Enter on one
+        for a menu of the options, type to filter it, or paste <code>rev</code> and watch it resolve to
+        <em>Review</em>. D is a <code>checkbox</code>.
+      </p>
+      <app-highlight lang="ts" [content]="selectExample" />
+    </div>
+  </app-previewer>
+
   <app-previewer path="/spreadsheet" title="Virtualized: 10,000,000 cells" class="no-space">
     <div class="sheet-demo">
       <p class="sheet-note">

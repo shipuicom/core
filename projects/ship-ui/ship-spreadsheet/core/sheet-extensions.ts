@@ -24,12 +24,36 @@ export interface SheetCellContext {
   readonly type: string;
 }
 
-/** Contract for a mounted custom editor (see `SheetCellExtension.editor`). */
+/** Where the caret goes after a commit. */
+export type SheetCommitMove = 'none' | 'down' | 'up' | 'right' | 'left';
+
+/**
+ * What the composer hands a component editor (its `editor` input): the
+ * verbs that end the edit. `commit` stores the string as the cell's raw
+ * value (it is the stored form already, not typed text — `parse` is not
+ * applied), moves the selection and returns focus to the grid; `cancel`
+ * closes the editor and leaves the cell alone.
+ */
+export interface SheetCellEditorApi {
+  commit(raw: string, move?: SheetCommitMove): void;
+  cancel(): void;
+}
+
+/**
+ * Contract for a component editor (`SheetCellExtension.editor`). The
+ * composer creates it in the edit overlay over the cell and sets the inputs
+ * it declares, by name: `value` (the cell's raw string), `ctx`
+ * (`SheetCellContext`), `typed` (the character that opened the editor, or
+ * `null` for Enter/F2/double-click), `extension` (the `SheetCellExtension`
+ * the cell resolved to, so one component can serve many configured types)
+ * and `editor` (`SheetCellEditorApi`).
+ * Enter, Tab and Escape inside the editor are the component's own; a Tab
+ * or a click elsewhere commits through `readValue` when the component has
+ * one, else the edit is cancelled.
+ */
 export interface SheetCellEditor {
-  /** The raw string to start from; set by the composer right after creation. */
-  value: string;
-  /** Called by the composer to read the result when the edit commits. */
-  readValue(): string;
+  /** The raw string to store when the composer ends the edit from outside (Tab, a click elsewhere). */
+  readValue?(): string;
 }
 
 export interface SheetCellExtension {
@@ -55,8 +79,9 @@ export interface SheetCellExtension {
   activate?(raw: string, ctx: SheetCellContext): string | null;
   /**
    * How the cell is edited: `'text'` (the built-in overlay, default),
-   * `'none'` (activation only), or a component the composer mounts in the
-   * overlay's place (a date picker, a select) implementing `SheetCellEditor`.
+   * `'none'` (activation only), or a component the composer creates in the
+   * overlay's place (a select, a picker, a date picker) — see
+   * `SheetCellEditor` for the inputs it receives and how it commits.
    */
   readonly editor?: 'text' | 'none' | Type<SheetCellEditor>;
   /**

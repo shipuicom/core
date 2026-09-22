@@ -1,14 +1,45 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, input, signal, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { matchSheetSelectOption, sheetSelectExtension } from './cells/sheet-select';
 import { sheetRangeToTsv } from './core/sheet-clipboard';
+import { SheetCellContext, SheetCellEditor, SheetCellEditorApi, SheetCellExtension } from './core/sheet-extensions';
 import { SheetModel, SheetOp, SheetSelection, applySheetOps, cellAt, createSheet, sheetCellSelection } from './core/sheet-model';
 import { ShipSpreadsheet } from './sh-spreadsheet';
+
+/** A component editor under test: echoes its inputs, commits through the API. */
+@Component({
+  standalone: true,
+  template: `<span class="probe">{{ value() }}|{{ typed() ?? '-' }}|{{ ctx().type }}</span>`,
+})
+class ProbeEditor implements SheetCellEditor {
+  static last: ProbeEditor | null = null;
+  value = input('');
+  ctx = input.required<SheetCellContext>();
+  typed = input<string | null>(null);
+  editor = input.required<SheetCellEditorApi>();
+  constructor() {
+    ProbeEditor.last = this;
+  }
+  readValue() {
+    return `${this.value()}!`;
+  }
+}
+
+const PROBE: SheetCellExtension = { type: 'probe', editor: ProbeEditor, render: (raw) => raw.toUpperCase() };
+const STATUS = sheetSelectExtension({
+  type: 'status',
+  options: [
+    { key: 'todo', label: 'To do' },
+    { key: 'doing', label: 'In progress', color: '#08f' },
+    { key: 'review', label: 'Review' },
+  ],
+});
 
 @Component({
   standalone: true,
   imports: [ShipSpreadsheet],
-  template: `<sh-spreadsheet style="height: 300px" [(sheet)]="sheet" [(selection)]="selection" [editable]="editable()" [formulaBar]="formulaBar()" (ops)="log.push($event)" />`,
+  template: `<sh-spreadsheet style="height: 300px" [(sheet)]="sheet" [(selection)]="selection" [editable]="editable()" [formulaBar]="formulaBar()" [extensions]="extensions" (ops)="log.push($event)" />`,
 })
 class Host {
   grid = viewChild.required(ShipSpreadsheet);
@@ -16,6 +47,7 @@ class Host {
   selection = signal<SheetSelection | null>(sheetCellSelection(0, 0));
   editable = signal(true);
   formulaBar = signal(false);
+  extensions = [PROBE, STATUS];
   log: SheetOp[][] = [];
 }
 
@@ -260,6 +292,94 @@ describe('ShipSpreadsheet composer', () => {
     const paste = clipboard('paste', { 'text/plain': 'nope' });
     frame.dispatchEvent(paste.event);
     expect(host.sheet().cells[3]).toBe('a2');
+  });
+
+  describe('component editors', () => {
+    const settle = async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+    };
+    const hostEl = () => fixture.nativeElement.querySelector('.shs-editor-host') as HTMLElement | null;
+
+    it('mounts the type\'s component in the overlay with its inputs; commit stores the raw and moves; Escape cancels', async () => {
+      grid.setColType(1, 'probe');
+      grid.selectCell(0, 1);
+      key(frame, 'F2');
+      await settle();
+      expect(editor()).toBeNull();
+      expect(hostEl()?.querySelector('.probe')?.textContent).toBe('b1|-|probe');
+      expect(grid.editing()?.component).toBe(ProbeEditor);
+      ProbeEditor.last!.editor().commit('picked', 'down');
+      await settle();
+      expect(hostEl()).toBeNull();
+      expect(cellAt(host.sheet(), 0, 1)).toBe('picked');
+      expect(host.log.at(-1)).toEqual([{ kind: 'set-cells', row: 0, col: 1, values: [['picked']] }]);
+      expect(active()).toEqual({ row: 1, col: 1 });
+      // A typed character opens the editor with `typed` set, the value untouched.
+      key(frame, 'q');
+      await settle();
+      expect(hostEl()?.querySelector('.probe')?.textContent).toBe('b2|q|probe');
+      key(hostEl()!, 'Escape');
+      await settle();
+      expect(hostEl()).toBeNull();
+      expect(cellAt(host.sheet(), 1, 1)).toBe('b2');
+      expect(host.log).toHaveLength(2);
+    });
+
+    it('Tab and a click elsewhere commit through readValue; a formula still opens the text editor', async () => {
+      grid.setColType(1, 'probe');
+      grid.selectCell(0, 1);
+      key(frame, 'Enter');
+      await settle();
+      key(hostEl()!, 'Tab');
+      await settle();
+      expect(cellAt(host.sheet(), 0, 1)).toBe('b1!');
+      expect(active()).toEqual({ row: 0, col: 2 });
+      grid.selectCell(1, 1);
+      key(frame, 'Enter');
+      await settle();
+      fixture.nativeElement.querySelector('.shs-body').dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0, clientX: 300, clientY: 300 }));
+      await settle();
+      expect(cellAt(host.sheet(), 1, 1)).toBe('b2!');
+      expect(hostEl()).toBeNull();
+      grid.selectCell(2, 1);
+      key(frame, '=');
+      await settle();
+      expect(hostEl()).toBeNull();
+      expect(editor()?.value).toBe('=');
+    });
+
+    it('select: renders labels, parses keys, labels and prefixes, edits through a menu of the options', async () => {
+      expect(matchSheetSelectOption('rev', STATUS.options())?.key).toBe('review');
+      expect(matchSheetSelectOption('In Progress', STATUS.options())?.key).toBe('doing');
+      expect(matchSheetSelectOption('nope', STATUS.options())).toBeNull();
+      host.sheet.set(applySheetOps(createSheet(2, 2, ['x', 'doing', 'y', 'gone']), [{ kind: 'set-col-type', col: 1, type: 'status' }]).model);
+      await settle();
+      const cells = fixture.nativeElement.querySelectorAll('.shs-c.t-status') as NodeListOf<HTMLElement>;
+      expect(cells[0].textContent).toBe('In progress');
+      expect(cells[0].querySelector('.shs-chip')?.getAttribute('style')).toContain('--chip-c:#08f');
+      expect(cells[1].classList.contains('shs-invalid')).toBe(true);
+      expect(cells[1].textContent).toBe('gone');
+      grid.selectCell(0, 1);
+      grid.startEdit('rev');
+      expect(cellAt(host.sheet(), 0, 1)).toBe('doing');
+      await settle();
+      const options = () => Array.from(hostEl()?.querySelectorAll('sh-sheet-select-editor .options button') ?? []) as HTMLButtonElement[];
+      expect(options().map((b) => b.textContent?.trim())).toEqual(['To do', 'In progress', 'Review', 'Clear']);
+      expect(options()[1].classList.contains('active')).toBe(true);
+      options()[2].click();
+      await settle();
+      expect(cellAt(host.sheet(), 0, 1)).toBe('review');
+      expect(hostEl()).toBeNull();
+      expect(active()).toEqual({ row: 0, col: 1 });
+      // Paste resolves through parse; the formula bar's typed text does too.
+      grid.selectCell(1, 1);
+      const { event } = clipboard('paste', { 'text/plain': 'to do' });
+      frame.dispatchEvent(event);
+      expect(cellAt(host.sheet(), 1, 1)).toBe('todo');
+      expect(sheetRangeToTsv(host.sheet(), { r0: 0, c0: 1, r1: 1, c1: 1 }, grid.registry())).toBe('Review\ntodo'.replace('todo', 'To do'));
+    });
   });
 
   describe('formulas', () => {

@@ -33,7 +33,7 @@ as a sparse `cellTypes: Record<number, string>` keyed by cell index with an `ins
 | `parse(input, ctx)` | typed/pasted text → stored string; `null` rejects | identity |
 | `format(raw, ctx)` | what the text editor and a formula bar show | raw |
 | `activate(raw, ctx)` | Enter / Space / click → new raw, or `null` | none |
-| `editor` | `'text'` (built-in overlay), `'none'` (activation only), or a component | `'text'` |
+| `editor` | `'text'` (built-in overlay), `'none'` (activation only), or a component (`SheetCellEditor`, §3.1) | `'text'` |
 | `validate(raw, ctx)` | error message for a stored string | none |
 | `toText` / `toMarkdown` / `toHtml` | export forms | raw / `toText` / escaped `toText` |
 
@@ -68,10 +68,17 @@ title; serialisers taking an optional registry (`sheetRangeToTsv(model, range, r
 `sheetRangeToHtml(..., registry?)` for `toHtml` with the raw in `data-raw`, which `sheetFromTable` reads back).
 The composer's copy keeps TSV raw and gives the HTML flavor the registry.
 
-1. **Component editors.** `editor: Type<SheetCellEditor>` — the composer mounts the component in the
-   overlay's box with `createComponent`, sets `value`, reads `readValue()` on commit, and forwards
-   Enter/Tab/Escape the way the textarea does. Date (`sh-datepicker`), select/tags (`sh-select`), rating.
-   ~1 day. Until then a `Type` is treated as `'text'`.
+1. **Component editors** (landed). `editor: Type<SheetCellEditor>` — the composer creates the component in
+   the overlay's box (`.shs-editor-host`, the cell's geometry) and sets the inputs it declares: `value` (raw),
+   `ctx`, `typed` (the character that opened it, `null` for Enter/F2), `extension` (the resolved extension,
+   so one component serves many configured types) and `editor` (`SheetCellEditorApi`: `commit(raw, move?)`
+   stores the string as is — not through `parse` — and moves; `cancel()`). Keys inside the component are
+   its own; an unconsumed Escape cancels, Tab and a click elsewhere commit through the component's optional
+   `readValue()` (no `readValue` → cancel). A formula (`=`) still opens the text editor. Reference: `select`
+   (`cells/sheet-select.ts`): `sheetSelectExtension({ type, options })` stores an option key, renders the
+   label, parses a key / label / label prefix, and edits through `ShipSheetSelectEditor` — an `sh-menu` of
+   the options, searchable, opened over the cell; a pick commits the key. Next: date (`sh-datepicker`),
+   record pickers app side.
 2. **Serialisers.** `sheetToTableHtml` uses `toHtml`, a Markdown table export uses `toMarkdown`, the app's
    CSV/search text uses `toText`. Requires passing a registry to the pure functions (optional argument,
    default text). ~half a day.

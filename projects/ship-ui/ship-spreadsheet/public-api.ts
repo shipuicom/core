@@ -5,6 +5,7 @@ export * from './core/sheet-formats';
 export * from './core/sheet-formulas';
 export * from './core/sheet-table';
 export * from './core/sheet-clipboard';
+export * from './cells/sheet-select';
 export * from './sh-spreadsheet';
 export * from './spreadsheet-block';
 export * from './sheet-collab';

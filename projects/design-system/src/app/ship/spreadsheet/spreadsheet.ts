@@ -10,6 +10,7 @@ import {
   createSheet,
   primarySheetRange,
   sheetRangeToTsv,
+  sheetSelectExtension,
 } from '@ship-ui/core/ship-spreadsheet';
 import { Highlight } from '../../previewer/highlight/highlight';
 import { Previewer } from '../../previewer/previewer';
@@ -35,6 +36,23 @@ function bigSheet(rows: number, cols: number): SheetModel {
     for (let c = 0; c < cols; c++) cells[r * cols + c] = `r${r + 1}·c${c + 1}`;
   }
   return createSheet(rows, cols, cells);
+}
+
+/** A database-style sheet: records as rows, typed columns, a select column edited through a menu. */
+function recordsSheet(): SheetModel {
+  const cells = [
+    'Ship the composer', 'doing', 'high', 'true',
+    'Write the docs', 'todo', 'medium', '',
+    'Review the a11y pass', 'review', 'low', '',
+    'Cut a release', 'done', 'urgent', 'true',
+  ];
+  return applySheetOps(createSheet(4, 4, cells), [
+    { kind: 'set-col-width', col: 0, width: 200 },
+    { kind: 'set-col-type', col: 1, type: 'status' },
+    { kind: 'set-col-type', col: 2, type: 'priority' },
+    { kind: 'set-col-type', col: 3, type: 'checkbox' },
+    { kind: 'set-col-width', col: 3, width: 60 },
+  ]).model;
 }
 
 const EDITOR_DOC = `
@@ -128,6 +146,39 @@ save(ops: SheetOp[]) { ... }
 // a configured instance of the same type through [extensions]:
 extensions = [sheetCurrencyExtension({ code: 'DKK', locale: 'da-DK', decimals: 2 }), sheetDateExtension({ locale: 'da-DK' })];`;
   editableSelection = signal<SheetSelection | null>(null);
+
+  // Select columns: the cell stores an option's key, shows its label, and edits
+  // through a menu of the options (the reference component editor). One
+  // extension per option set, each with its own type.
+  recordExtensions = [
+    sheetSelectExtension({
+      type: 'status',
+      options: [
+        { key: 'todo', label: 'To do' },
+        { key: 'doing', label: 'In progress', color: 'var(--primary-8)' },
+        { key: 'review', label: 'Review', color: 'var(--warn-8)' },
+        { key: 'done', label: 'Done', color: 'var(--success-8)' },
+      ],
+    }),
+    sheetSelectExtension({
+      type: 'priority',
+      options: [
+        { key: 'low', label: 'Low' },
+        { key: 'medium', label: 'Medium' },
+        { key: 'high', label: 'High', color: 'var(--warn-8)' },
+        { key: 'urgent', label: 'Urgent', color: 'var(--error-8)' },
+      ],
+    }),
+  ];
+  records = signal(recordsSheet());
+  recordsSelection = signal<SheetSelection | null>(null);
+  selectExample = `import { sheetSelectExtension } from '@ship-ui/core/ship-spreadsheet';
+
+// The cell stores the key; the label shows; Enter, F2 or typing opens a menu of the
+// options (arrows move, Enter picks, typed text filters); paste resolves a key, a label
+// or a label prefix. A component of your own: editor: MyEditor — the composer sets its
+// value / ctx / typed / extension / editor inputs and MyEditor calls editor.commit(raw).
+extensions = [sheetSelectExtension({ type: 'status', options: [{ key: 'todo', label: 'To do' }, ...] })];`;
   lastOps = signal('—');
   onOps(ops: SheetOp[]) {
     this.lastOps.set(JSON.stringify(ops, null, 1));

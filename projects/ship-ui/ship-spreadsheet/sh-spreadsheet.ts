@@ -966,7 +966,7 @@ export class ShipSpreadsheet {
     // A formula edits as its source, in the text editor whatever the column type.
     const formula = isFormula(initial ?? raw) || initial === '=';
     if (typeof ext.editor === 'function' && !formula) {
-      this.#startComponentEdit(cell.row, cell.col, raw, ctx, ext.editor, initial ?? null);
+      this.#startComponentEdit(cell.row, cell.col, raw, ctx, ext, initial ?? null);
       return;
     }
     let text = initial ?? (formula || !ext.format ? raw : ext.format(raw, ctx));
@@ -991,7 +991,8 @@ export class ShipSpreadsheet {
    * Create the type's editor component in the overlay over the cell and hand
    * it the inputs it declares: `value`, `ctx`, `typed`, `editor`.
    */
-  #startComponentEdit(row: number, col: number, raw: string, ctx: SheetCellContext, component: Type<SheetCellEditor>, typed: string | null): void {
+  #startComponentEdit(row: number, col: number, raw: string, ctx: SheetCellContext, ext: SheetCellExtension, typed: string | null): void {
+    const component = ext.editor as Type<SheetCellEditor>;
     this.editing.set({ row, col, initial: raw, component });
     this.#revealCell(row, col);
     const api: SheetCellEditorApi = {
@@ -1009,6 +1010,7 @@ export class ShipSpreadsheet {
         set('value', raw);
         set('ctx', ctx);
         set('typed', typed);
+        set('extension', ext);
         set('editor', api);
         ref.changeDetectorRef.detectChanges();
         this.#editorCmp = ref;

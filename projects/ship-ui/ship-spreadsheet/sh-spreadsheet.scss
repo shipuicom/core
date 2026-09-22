@@ -254,6 +254,21 @@ sh-spreadsheet {
     max-width: #{p2r(480)};
   }
 
+  // A component editor's box: the same outline as the text editor, the
+  // component filling it; a popover it opens (a select's list) hangs off it.
+  .shs-editor-host {
+    display: flex;
+    align-items: stretch;
+    padding: 0;
+    overflow: visible;
+    white-space: normal;
+
+    > * {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
   .shs-guide {
     position: absolute;
     pointer-events: none;
