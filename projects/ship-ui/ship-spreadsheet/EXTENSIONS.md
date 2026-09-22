@@ -59,6 +59,15 @@ registered.
 
 ## 3. Next slices, in order
 
+Landed since the first slice: `number`, `currency`, `percent` and `date` as built-ins (`core/sheet-formats.ts`;
+factories `sheetNumberExtension({ decimals, thousands, locale })`, `sheetCurrencyExtension({ code, ... })`,
+`sheetPercentExtension`, `sheetDateExtension({ locale, dateStyle })` for configured instances — an app-provided
+extension of the same `type` replaces the built-in); `SheetCellExtension.inputType` (the text editor opens as
+`<input type="date">` for a date column); `validate` driving a `shs-invalid` cell class with the message as
+title; serialisers taking an optional registry (`sheetRangeToTsv(model, range, registry?)` for `toText`,
+`sheetRangeToHtml(..., registry?)` for `toHtml` with the raw in `data-raw`, which `sheetFromTable` reads back).
+The composer's copy keeps TSV raw and gives the HTML flavor the registry.
+
 1. **Component editors.** `editor: Type<SheetCellEditor>` — the composer mounts the component in the
    overlay's box with `createComponent`, sets `value`, reads `readValue()` on commit, and forwards
    Enter/Tab/Escape the way the textarea does. Date (`sh-datepicker`), select/tags (`sh-select`), rating.

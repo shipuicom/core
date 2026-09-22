@@ -56,9 +56,13 @@
       <sh-spreadsheet class="sheet-small" [(sheet)]="editableSheet" [(selection)]="editableSelection" [editable]="true" (ops)="onOps($event)" />
       <p class="sheet-note">
         Type into a cell, paste a range, right-click for rows, columns and column types, drag a header edge to
-        resize. Column F is a <code>checkbox</code> column (click or Space toggles). Last transaction:
+        resize. B–E are <code>number</code> columns, F is <code>currency</code>, G <code>percent</code> (type
+        <code>25</code> or <code>25%</code>), H <code>date</code> (ISO in the model, a date input to edit) and I a
+        <code>checkbox</code> (click or Space toggles). Copy a range: TSV carries the raw strings, HTML the
+        display form. Last transaction:
       </p>
       <pre class="sheet-tsv">{{ lastOps() }}</pre>
+      <app-highlight lang="ts" [content]="formatsExample" />
     </div>
   </app-previewer>
 

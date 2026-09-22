@@ -84,15 +84,35 @@ save(ops: SheetOp[]) { ... }
 // Concurrent changes from elsewhere: grid.applyRemote(ops) — not echoed, history rebased.`;
 
   sample = signal(sampleSheet());
-  // Column F is a checkbox column: the built-in `checkbox` cell extension interprets its strings.
+  // Columns B–E are `number` columns (canonical strings in the model, the
+  // locale's grouping in the cell); F is `currency`, G `percent`, H `date`
+  // (ISO in the model, a date input to edit), I a `checkbox`. Every one is a
+  // built-in cell extension interpreting the column's strings.
   editableSheet = signal(
     applySheetOps(sampleSheet(), [
-      { kind: 'insert-cols', at: 5, count: 1 },
-      { kind: 'set-col-width', col: 5, width: 60 },
-      { kind: 'set-col-type', col: 5, type: 'checkbox' },
-      { kind: 'set-cells', row: 1, col: 5, values: [['true'], [''], ['true'], ['']] },
+      { kind: 'set-cells', row: 1, col: 1, values: [['1200', '1340', '1510', '1725'], ['860', '905', '870', '990'], ['410', '515', '640', '780'], ['95', '120', '180', '260']] },
+      ...[1, 2, 3, 4].map((col): SheetOp => ({ kind: 'set-col-type', col, type: 'number' })),
+      { kind: 'insert-cols', at: 5, count: 4 },
+      { kind: 'set-cells', row: 0, col: 5, values: [['Unit price', 'Margin', 'Launched', 'Active']] },
+      { kind: 'set-col-type', col: 5, type: 'currency' },
+      { kind: 'set-col-width', col: 5, width: 96 },
+      { kind: 'set-cells', row: 1, col: 5, values: [['19.5'], ['7'], ['42'], ['3.25']] },
+      { kind: 'set-col-type', col: 6, type: 'percent' },
+      { kind: 'set-cells', row: 1, col: 6, values: [['0.32'], ['0.185'], ['0.41'], ['0.05']] },
+      { kind: 'set-col-type', col: 7, type: 'date' },
+      { kind: 'set-col-width', col: 7, width: 110 },
+      { kind: 'set-cells', row: 1, col: 7, values: [['2024-03-01'], ['2023-11-15'], ['2025-06-30'], ['2026-01-12']] },
+      { kind: 'set-col-type', col: 8, type: 'checkbox' },
+      { kind: 'set-col-width', col: 8, width: 60 },
+      { kind: 'set-cells', row: 1, col: 8, values: [['true'], [''], ['true'], ['']] },
     ]).model
   );
+
+  formatsExample = `import { sheetCurrencyExtension, sheetDateExtension } from '@ship-ui/core/ship-spreadsheet';
+
+// Built in: number, currency (USD), percent, date — host locale. Override with
+// a configured instance of the same type through [extensions]:
+extensions = [sheetCurrencyExtension({ code: 'DKK', locale: 'da-DK', decimals: 2 }), sheetDateExtension({ locale: 'da-DK' })];`;
   editableSelection = signal<SheetSelection | null>(null);
   lastOps = signal('—');
   onOps(ops: SheetOp[]) {
