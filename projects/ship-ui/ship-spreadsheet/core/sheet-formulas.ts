@@ -80,6 +80,8 @@ export interface FormulaRef {
   readonly col: number;
   readonly absRow: boolean;
   readonly absCol: boolean;
+  /** The sheet the reference points into (`Sheet2!A1`); absent for the formula's own sheet. */
+  readonly sheet?: string;
 }
 
 export type FormulaNode =
@@ -88,7 +90,10 @@ export type FormulaNode =
   | { readonly t: 'bool'; readonly v: boolean }
   | { readonly t: 'err'; readonly v: FormulaErrorCode }
   | { readonly t: 'ref'; readonly ref: FormulaRef }
+  /** `from.sheet` names the sheet of the whole range. */
   | { readonly t: 'range'; readonly from: FormulaRef; readonly to: FormulaRef }
+  /** A named column of another sheet (`Tasks!Title`): a range the workbook resolves by header. */
+  | { readonly t: 'column'; readonly sheet: string; readonly name: string }
   | { readonly t: 'neg'; readonly e: FormulaNode }
   | { readonly t: 'bin'; readonly op: string; readonly l: FormulaNode; readonly r: FormulaNode }
   | { readonly t: 'call'; readonly name: string; readonly args: readonly FormulaNode[] };
@@ -97,15 +102,36 @@ type Token =
   | { k: 'num'; v: number }
   | { k: 'str'; v: string }
   | { k: 'ref'; ref: FormulaRef }
+  | { k: 'col'; sheet: string; name: string }
   | { k: 'id'; v: string }
   | { k: 'err'; v: FormulaErrorCode }
   | { k: 'op'; v: string }
   | { k: 'end' };
 
 const REF_RE = /^(\$?)([A-Za-z]{1,3})(\$?)(\d{1,7})(?![A-Za-z0-9_])/;
+/** A sheet prefix: a bare name or a quoted one (`'` doubled inside), then `!`. */
+const SHEET_RE = /^(?:'((?:[^']|'')+)'|([A-Za-z_][A-Za-z0-9_]*))!/;
+/** A column name after a sheet prefix: bare or quoted. */
+const NAME_RE = /^(?:'((?:[^']|'')+)'|([A-Za-z_][A-Za-z0-9_]*))(?![A-Za-z0-9_(])/;
 /** A reference-shaped word followed by `(` is a function call (`LOG10(`, `ATAN2(`), not a reference. */
 const CALL_AFTER_RE = /^\s*\(/;
 const ERR_RE = /^#(CYCLE|REF!|NAME\?|DIV\/0!|VALUE!|ERROR!)/;
+
+const unquote = (quoted: string | undefined, bare: string | undefined): string =>
+  quoted !== undefined ? quoted.replace(/''/g, "'") : (bare ?? '');
+
+/** A sheet or column name as formula text: bare when it is identifier-shaped, quoted otherwise. */
+export function formulaNameText(name: string): string {
+  return /^[A-Za-z_][A-Za-z0-9_]*$/.test(name) ? name : `'${name.replace(/'/g, "''")}'`;
+}
+
+const refOf = (m: RegExpExecArray, sheet?: string): FormulaRef => {
+  const ref: FormulaRef = { row: Number(m[4]) - 1, col: formulaColIndex(m[2]), absRow: m[3] === '$', absCol: m[1] === '$' };
+  return sheet === undefined ? ref : { ...ref, sheet };
+};
+
+const sameSheet = (a: string | undefined, b: string | undefined): boolean =>
+  (a ?? '').toLowerCase() === (b ?? '').toLowerCase();
 
 function tokenize(source: string): Token[] | null {
   const out: Token[] = [];
@@ -138,11 +164,20 @@ function tokenize(source: string): Token[] | null {
     } else if ((m = ERR_RE.exec(rest))) {
       out.push({ k: 'err', v: `#${m[1]}` as FormulaErrorCode });
       i += m[0].length;
+    } else if ((m = SHEET_RE.exec(rest))) {
+      const sheet = unquote(m[1], m[2]);
+      const after = rest.slice(m[0].length);
+      const ref = REF_RE.exec(after);
+      const name = ref && !CALL_AFTER_RE.test(after.slice(ref[0].length)) ? null : NAME_RE.exec(after);
+      if (ref && name === null) {
+        out.push({ k: 'ref', ref: refOf(ref, sheet) });
+        i += m[0].length + ref[0].length;
+      } else if (name) {
+        out.push({ k: 'col', sheet, name: unquote(name[1], name[2]) });
+        i += m[0].length + name[0].length;
+      } else return null;
     } else if ((m = REF_RE.exec(rest)) && !CALL_AFTER_RE.test(rest.slice(m[0].length))) {
-      out.push({
-        k: 'ref',
-        ref: { row: Number(m[4]) - 1, col: formulaColIndex(m[2]), absRow: m[3] === '$', absCol: m[1] === '$' },
-      });
+      out.push({ k: 'ref', ref: refOf(m) });
       i += m[0].length;
     } else if ((m = /^[A-Za-z_][A-Za-z0-9_.]*/.exec(rest))) {
       out.push({ k: 'id', v: m[0].toUpperCase() });
@@ -178,11 +213,14 @@ export function parseFormula(source: string): FormulaNode | null {
         if (isOp(':')) {
           take();
           const to = take();
-          if (to.k !== 'ref') return null;
-          return { t: 'range', from: tok.ref, to: to.ref };
+          if (to.k !== 'ref' || (to.ref.sheet !== undefined && !sameSheet(to.ref.sheet, tok.ref.sheet))) return null;
+          const { sheet: _, ...end } = to.ref;
+          return { t: 'range', from: tok.ref, to: end };
         }
         return { t: 'ref', ref: tok.ref };
       }
+      case 'col':
+        return { t: 'column', sheet: tok.sheet, name: tok.name };
       case 'id': {
         if (tok.v === 'TRUE') return { t: 'bool', v: true };
         if (tok.v === 'FALSE') return { t: 'bool', v: false };
@@ -280,6 +318,72 @@ function shiftAxis(index: number, op: { kind: 'insert' | 'remove'; at: number; c
   return index - op.count;
 }
 
+/** One reference or range met while walking a formula's text; `sheet` is `null` for the own sheet. */
+interface RefMatch {
+  readonly sheet: string | null;
+  /** The sheet prefix as written (`'Budget 2026'!`), empty without one. */
+  readonly prefix: string;
+  readonly from: FormulaRef;
+  readonly to: FormulaRef | null;
+}
+
+/**
+ * Walk a formula's text: string literals are copied, every reference or
+ * range (with its sheet prefix, when any) is handed to `map`, which returns
+ * its replacement text or `null` to keep it as written; named columns
+ * (`Tasks!Title`) go to `column` the same way. Text-level, no full parse.
+ */
+function mapFormulaRefs(
+  source: string,
+  map: (match: RefMatch) => string | null,
+  column?: (sheet: string, name: string) => string | null
+): string {
+  if (!isFormula(source)) return source;
+  let out = '=';
+  let i = 1;
+  while (i < source.length) {
+    const ch = source[i];
+    if (ch === '"') {
+      let j = i + 1;
+      while (j < source.length && !(source[j] === '"' && source[j + 1] !== '"')) j += source[j] === '"' ? 2 : 1;
+      out += source.slice(i, j + 1);
+      i = j + 1;
+      continue;
+    }
+    const rest = source.slice(i);
+    const before = source[i - 1];
+    if (!/[A-Za-z0-9_$.]/.test(before)) {
+      const sm = SHEET_RE.exec(rest);
+      const prefix = sm ? sm[0] : '';
+      const sheet = sm ? unquote(sm[1], sm[2]) : null;
+      const after = rest.slice(prefix.length);
+      const m = REF_RE.exec(after);
+      if (m && !CALL_AFTER_RE.test(after.slice(m[0].length))) {
+        let consumed = prefix.length + m[0].length;
+        const colon = /^\s*:\s*/.exec(after.slice(m[0].length));
+        const m2 = colon ? REF_RE.exec(after.slice(m[0].length + colon[0].length)) : null;
+        const to = colon && m2 ? refOf(m2) : null;
+        if (colon && m2) consumed += colon[0].length + m2[0].length;
+        const replacement = map({ sheet, prefix, from: refOf(m), to });
+        out += replacement ?? source.slice(i, i + consumed);
+        i += consumed;
+        continue;
+      }
+      if (sm) {
+        const name = NAME_RE.exec(after);
+        if (name) {
+          out += column?.(sheet ?? '', unquote(name[1], name[2])) ?? prefix + name[0];
+          i += prefix.length + name[0].length;
+          continue;
+        }
+      }
+    }
+    out += ch;
+    i++;
+  }
+  return out;
+}
+
 /**
  * Rewrite the references in a formula's source for a structural op so
  * they keep pointing at the same cells: `=A5` becomes `=A6` when a row is
@@ -288,8 +392,13 @@ function shiftAxis(index: number, op: { kind: 'insert' | 'remove'; at: number; c
  * unchanged. Pure text-level; `applySheetOp` runs it over every surviving
  * formula of a structural op, and `transformSheetOp` over the strings an
  * op carries, so both sides of a concurrent pair rewrite identically.
+ *
+ * Without `sheet`, only the formula's own (unqualified) references are
+ * rewritten; with it, only the references qualified with that sheet's
+ * name — what a workbook runs over its other sheets when one of them
+ * takes a structural op.
  */
-export function rewriteFormulaRefs(source: string, op: SheetOp): string {
+export function rewriteFormulaRefs(source: string, op: SheetOp, sheet?: string): string {
   if (!isFormula(source)) return source;
   let axis: 'row' | 'col';
   let splice: { kind: 'insert' | 'remove'; at: number; count: number };
@@ -313,80 +422,69 @@ export function rewriteFormulaRefs(source: string, op: SheetOp): string {
     default:
       return source;
   }
-  const shift = (r: FormulaRef): FormulaRef | null => {
-    const next = shiftAxis(r[axis], splice);
-    return next === null ? null : { ...r, [axis]: next };
-  };
-  // Walk the text: string literals are copied, references rewritten.
-  let out = '=';
-  let i = 1;
-  while (i < source.length) {
-    const ch = source[i];
-    if (ch === '"') {
-      let j = i + 1;
-      while (j < source.length && !(source[j] === '"' && source[j + 1] !== '"')) j += source[j] === '"' ? 2 : 1;
-      out += source.slice(i, j + 1);
-      i = j + 1;
-      continue;
+  return mapFormulaRefs(source, ({ sheet: refSheet, prefix, from, to }) => {
+    if (sheet === undefined ? refSheet !== null : refSheet === null || !sameSheet(refSheet, sheet)) return null;
+    if (to === null) {
+      const next = shiftAxis(from[axis], splice);
+      return next === null ? '#REF!' : prefix + refText({ ...from, [axis]: next });
     }
-    const rest = source.slice(i);
-    const m = REF_RE.exec(rest);
-    const before = i === 0 ? '' : source[i - 1];
-    if (m && !/[A-Za-z0-9_$.]/.test(before) && !CALL_AFTER_RE.test(rest.slice(m[0].length))) {
-      const ref: FormulaRef = {
-        row: Number(m[4]) - 1,
-        col: formulaColIndex(m[2]),
-        absRow: m[3] === '$',
-        absCol: m[1] === '$',
-      };
-      i += m[0].length;
-      const colon = /^\s*:\s*/.exec(source.slice(i));
-      const m2 = colon ? REF_RE.exec(source.slice(i + colon[0].length)) : null;
-      if (colon && m2) {
-        i += colon[0].length + m2[0].length;
-        const to: FormulaRef = {
-          row: Number(m2[4]) - 1,
-          col: formulaColIndex(m2[2]),
-          absRow: m2[3] === '$',
-          absCol: m2[1] === '$',
-        };
-        const lo = Math.min(ref[axis], to[axis]);
-        const hi = Math.max(ref[axis], to[axis]);
-        let nlo: number | null;
-        let nhi: number | null;
-        if (splice.kind === 'insert') {
-          // An insert inside the range grows it; at its start moves it.
-          nlo = shiftAxis(lo, splice);
-          nhi = hi >= splice.at ? hi + splice.count : hi;
-        } else {
-          // A range is the tracks between its two end tracks. A removal
-          // strictly inside shrinks it; one that takes either end is
-          // `#REF!` — where Excel would shrink to the survivors. Ends are
-          // tracks, and the transform preserves track identity, so this is
-          // what keeps concurrent structural edits convergent (TP1): after
-          // a shrink, "the first track" and "just before the first track"
-          // could no longer be told apart by a concurrent insert.
-          nlo = shiftAxis(lo, splice);
-          nhi = shiftAxis(hi, splice);
-        }
-        if (nlo === null || nhi === null) out += '#REF!';
-        else {
-          const a = { ...ref, [axis]: ref[axis] <= to[axis] ? nlo : nhi };
-          const b = { ...to, [axis]: ref[axis] <= to[axis] ? nhi : nlo };
-          out += `${refText(a)}:${refText(b)}`;
-        }
-        continue;
-      }
-      const next = shift(ref);
-      out += next ? refText(next) : '#REF!';
-      continue;
+    const lo = Math.min(from[axis], to[axis]);
+    const hi = Math.max(from[axis], to[axis]);
+    let nlo: number | null;
+    let nhi: number | null;
+    if (splice.kind === 'insert') {
+      // An insert inside the range grows it; at its start moves it.
+      nlo = shiftAxis(lo, splice);
+      nhi = hi >= splice.at ? hi + splice.count : hi;
+    } else {
+      // A range is the tracks between its two end tracks. A removal
+      // strictly inside shrinks it; one that takes either end is
+      // `#REF!` — where Excel would shrink to the survivors. Ends are
+      // tracks, and the transform preserves track identity, so this is
+      // what keeps concurrent structural edits convergent (TP1): after
+      // a shrink, "the first track" and "just before the first track"
+      // could no longer be told apart by a concurrent insert.
+      nlo = shiftAxis(lo, splice);
+      nhi = shiftAxis(hi, splice);
     }
-    out += ch;
-    i++;
-  }
-  return out;
+    if (nlo === null || nhi === null) return '#REF!';
+    const a = { ...from, [axis]: from[axis] <= to[axis] ? nlo : nhi };
+    const b = { ...to, [axis]: from[axis] <= to[axis] ? nhi : nlo };
+    return `${prefix}${refText(a)}:${refText(b)}`;
+  });
 }
 
+/**
+ * The formula moved by (`rows`, `cols`) cells: relative references shift
+ * with it, `$`-anchored axes stay — what a fill or a copy-paste does to a
+ * formula. A reference shifted off the sheet's top or left is `#REF!`.
+ */
+export function shiftFormulaRefs(source: string, rows: number, cols: number): string {
+  const move = (ref: FormulaRef): FormulaRef | null => {
+    const row = ref.absRow ? ref.row : ref.row + rows;
+    const col = ref.absCol ? ref.col : ref.col + cols;
+    return row < 0 || col < 0 ? null : { ...ref, row, col };
+  };
+  return mapFormulaRefs(source, ({ prefix, from, to }) => {
+    const a = move(from);
+    const b = to === null ? null : move(to);
+    if (a === null || (to !== null && b === null)) return '#REF!';
+    return prefix + refText(a) + (b === null ? '' : `:${refText(b)}`);
+  });
+}
+
+/** The formula with every reference into sheet `from` re-pointed at sheet `to` (a renamed sheet). */
+export function renameFormulaSheet(source: string, from: string, to: string): string {
+  const prefix = `${formulaNameText(to)}!`;
+  return mapFormulaRefs(
+    source,
+    (match) =>
+      match.sheet !== null && sameSheet(match.sheet, from)
+        ? prefix + refText(match.from) + (match.to === null ? '' : `:${refText(match.to)}`)
+        : null,
+    (sheet, name) => (sameSheet(sheet, from) ? prefix + formulaNameText(name) : null)
+  );
+}
 // ---------------------------------------------------------------------------
 // Evaluator
 // ---------------------------------------------------------------------------
@@ -705,12 +803,36 @@ function binary(op: string, l: FormulaValue, r: FormulaValue): FormulaValue {
   return err('#ERROR!');
 }
 
+/** One sheet of a workbook as a formula on another sheet reads it. */
+export interface SheetWorkbookSheet {
+  readonly rows: number;
+  readonly cols: number;
+  /** The evaluated value of a cell; `null` when empty or off the sheet. */
+  cell(row: number, col: number): SheetValue;
+  /** The values of a named column (`Tasks!Title`), top to bottom; `null` when the sheet has no such column. */
+  column?(name: string): readonly SheetValue[] | null;
+}
+
+/**
+ * What resolves `Sheet2!A1` and `Tasks!Title`: the other sheets of the
+ * workbook, by name (case-insensitive is the host's call). Cross-sheet
+ * references are not dependencies in a sheet's graph: a formula holding one
+ * is recomputed on every `update` and on `recalc()`, so the host recalcs
+ * when a referenced sheet changes (the composer does, whenever `[workbook]`
+ * is a new value).
+ */
+export interface SheetWorkbook {
+  sheet(name: string): SheetWorkbookSheet | null;
+}
+
 /**
  * Evaluates the formulas of a sheet and keeps the result current across
  * ops. Values are derived state: the model is never written. `update`
- * with the ops that produced the new model recomputes only the formulas
- * whose inputs changed (transitively); without ops — a loaded document, a
- * structural op — everything is recomputed once.
+ * with the ops that produced the new model marks only the formulas whose
+ * inputs changed (transitively) for recomputation; without ops — a loaded
+ * document, a structural op — everything is. Values are computed on read
+ * (`valueAt`), so a chain of sheets reading each other through a workbook
+ * resolves in whatever order the host brings them up to date.
  */
 export class SheetEvaluator {
   #model: SheetModel | null = null;
@@ -720,7 +842,7 @@ export class SheetEvaluator {
   #dependents = new Map<number, Set<number>>();
   /** Formulas whose ranges are too large to track per cell: dirty on any change. */
   #wide = new Set<number>();
-  /** Formulas calling a volatile function: dirty on every update and on `recalc()`. */
+  /** Formulas calling a volatile function or reading another sheet: dirty on every update and on `recalc()`. */
   #volatile = new Set<number>();
   #values = new Map<number, FormulaValue>();
   #visiting = new Set<number>();
@@ -733,6 +855,9 @@ export class SheetEvaluator {
    * composer does, whenever `[functionContext]` changes).
    */
   external: unknown = undefined;
+
+  /** The other sheets, for `Sheet2!A1`; without one every cross-sheet reference is `#REF!`. Set, then `recalc()`. */
+  workbook: SheetWorkbook | null = null;
 
   /** `functions`: the registry the formulas resolve names against — the built-ins by default. */
   constructor(readonly functions: SheetFunctionRegistry = SHEET_DEFAULT_FUNCTIONS) {}
@@ -778,24 +903,33 @@ export class SheetEvaluator {
     const model = this.#model;
     if (!model || row < 0 || col < 0 || row >= model.rows || col >= model.cols) return '';
     const index = row * model.cols + col;
-    const raw = model.cells[index];
-    return this.#ast.has(index) ? formatFormulaValue(this.#values.get(index) ?? null) : raw;
+    return this.#ast.has(index) ? formatFormulaValue(this.#evaluate(index)) : model.cells[index];
+  }
+
+  /** The typed value of a cell: a formula's result, else the literal's value; `null` when empty or off the sheet. */
+  cellValue(row: number, col: number): FormulaValue {
+    const model = this.#model;
+    if (!model || row < 0 || col < 0 || row >= model.rows || col >= model.cols) return null;
+    return this.#evaluate(row * model.cols + col);
   }
 
   /** The error a formula cell shows, or null. */
   errorAt(row: number, col: number): FormulaErrorCode | null {
-    const model = this.#model;
-    if (!model) return null;
-    const v = this.#values.get(row * model.cols + col);
-    return v !== undefined && isFormulaError(v) ? v.error : null;
+    const v = this.#formulaValue(row, col);
+    return v !== null && isFormulaError(v) ? v.error : null;
   }
 
   /** The message behind a formula cell's error (a thrown error's, an arity mismatch), or null. */
   errorMessageAt(row: number, col: number): string | null {
+    const v = this.#formulaValue(row, col);
+    return v !== null && isFormulaError(v) ? (v.message ?? null) : null;
+  }
+
+  #formulaValue(row: number, col: number): FormulaValue {
     const model = this.#model;
-    if (!model) return null;
-    const v = this.#values.get(row * model.cols + col);
-    return v !== undefined && isFormulaError(v) ? (v.message ?? null) : null;
+    if (!model || row < 0 || col < 0 || row >= model.rows || col >= model.cols) return null;
+    const index = row * model.cols + col;
+    return this.#ast.has(index) ? this.#evaluate(index) : null;
   }
 
   /**
@@ -854,10 +988,18 @@ export class SheetEvaluator {
     const visit = (node: FormulaNode): void => {
       switch (node.t) {
         case 'ref':
-          if (node.ref.row < model.rows && node.ref.col < model.cols)
+          if (node.ref.sheet !== undefined) this.#volatile.add(index);
+          else if (node.ref.row < model.rows && node.ref.col < model.cols)
             deps.add(node.ref.row * model.cols + node.ref.col);
           return;
+        case 'column':
+          this.#volatile.add(index);
+          return;
         case 'range': {
+          if (node.from.sheet !== undefined) {
+            this.#volatile.add(index);
+            return;
+          }
           const r0 = Math.min(node.from.row, node.to.row);
           const r1 = Math.min(Math.max(node.from.row, node.to.row), model.rows - 1);
           const c0 = Math.min(node.from.col, node.to.col);
@@ -903,10 +1045,10 @@ export class SheetEvaluator {
       if (deps) for (const d of deps) if (!dirty.has(d)) stack.push(d);
       if (this.#wide.size) for (const w of this.#wide) if (!dirty.has(w)) stack.push(w);
     }
+    // Values are dropped, not recomputed: `#evaluate` fills them in on read.
     for (const i of dirty) this.#values.delete(i);
     this.#visiting.clear();
     this.#cycleHit = false;
-    for (const i of dirty) this.#evaluate(i);
   }
 
   #evaluate(index: number): FormulaValue {
@@ -973,8 +1115,9 @@ export class SheetEvaluator {
       case 'err':
         return err(node.v);
       case 'ref':
-        return this.#cell(node.ref.row, node.ref.col);
+        return node.ref.sheet === undefined ? this.#cell(node.ref.row, node.ref.col) : this.#externalCell(node.ref);
       case 'range':
+      case 'column':
         return err('#VALUE!');
       case 'neg': {
         const n = toNumber(this.#eval(node.e, index));
@@ -987,17 +1130,39 @@ export class SheetEvaluator {
         if (!fn) return err('#NAME?');
         const args: Args = [];
         for (const arg of node.args) {
-          if (arg.t === 'range') {
+          if (arg.t === 'range' && arg.from.sheet !== undefined) {
+            const sheet = this.workbook?.sheet(arg.from.sheet) ?? null;
+            if (!sheet) args.push(err('#REF!'));
+            else {
+              const r0 = Math.min(arg.from.row, arg.to.row);
+              const r1 = Math.min(Math.max(arg.from.row, arg.to.row), sheet.rows - 1);
+              const c0 = Math.min(arg.from.col, arg.to.col);
+              const c1 = Math.min(Math.max(arg.from.col, arg.to.col), sheet.cols - 1);
+              for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) args.push(sheet.cell(r, c));
+            }
+          } else if (arg.t === 'range') {
             const model = this.#model!;
             const r0 = Math.min(arg.from.row, arg.to.row);
             const r1 = Math.min(Math.max(arg.from.row, arg.to.row), model.rows - 1);
             const c0 = Math.min(arg.from.col, arg.to.col);
             const c1 = Math.min(Math.max(arg.from.col, arg.to.col), model.cols - 1);
             for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) args.push(this.#cell(r, c));
+          } else if (arg.t === 'column') {
+            const values = this.workbook?.sheet(arg.sheet)?.column?.(arg.name) ?? null;
+            if (values) args.push(...values);
+            else args.push(err('#REF!'));
           } else args.push(this.#eval(arg, index));
         }
         return callFunction(fn, args, this.#context(index));
       }
     }
+  }
+
+  /** A cell on another sheet through the workbook; `#REF!` without one or when the sheet is unknown. */
+  #externalCell(ref: FormulaRef): FormulaValue {
+    const sheet = ref.sheet === undefined ? null : (this.workbook?.sheet(ref.sheet) ?? null);
+    if (!sheet) return err('#REF!');
+    if (ref.row >= sheet.rows || ref.col >= sheet.cols) return null;
+    return sheet.cell(ref.row, ref.col);
   }
 }

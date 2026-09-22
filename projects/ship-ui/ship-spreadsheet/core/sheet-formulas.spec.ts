@@ -4,10 +4,15 @@ import {
   SheetEvaluator,
   SheetFunction,
   SheetFunctionRegistry,
+  SheetValue,
+  SheetWorkbook,
   formulaColIndex,
   formulaColLabel,
+  formulaNameText,
   parseFormula,
+  renameFormulaSheet,
   rewriteFormulaRefs,
+  shiftFormulaRefs,
 } from './sheet-formulas';
 import { SheetModel, SheetOp, applySheetOps, createSheet } from './sheet-model';
 
@@ -350,5 +355,119 @@ describe('SheetFunctionRegistry and custom functions', () => {
     const ops2: SheetOp[] = [{ kind: 'insert-rows', at: 1, count: 1 }];
     ev.update(applySheetOps(model, ops2).model, ops2);
     expect(ev.valueAt(0, 1)).toBe('3');
+  });
+});
+
+describe('cross-sheet references', () => {
+  /** A workbook over evaluators by name (case-insensitive), with named columns per sheet. */
+  function workbook(
+    sheets: Record<string, SheetEvaluator>,
+    columns: Record<string, Record<string, SheetValue[]>> = {}
+  ): SheetWorkbook {
+    return {
+      sheet(name) {
+        const key = [...Object.keys(sheets), ...Object.keys(columns)].find((k) => k.toLowerCase() === name.toLowerCase());
+        if (key === undefined) return null;
+        const ev = sheets[key];
+        return {
+          rows: ev?.model?.rows ?? 0,
+          cols: ev?.model?.cols ?? 0,
+          cell: (r, c) => ev?.cellValue(r, c) ?? null,
+          column: (col) => columns[key]?.[col] ?? null,
+        };
+      },
+    };
+  }
+
+  it('parses sheet-qualified references, quoted names and named columns', () => {
+    expect(parseFormula('=Sheet2!A1')).toEqual({
+      t: 'ref',
+      ref: { row: 0, col: 0, absRow: false, absCol: false, sheet: 'Sheet2' },
+    });
+    expect(parseFormula("='Budget 2026'!B2:B9")).toMatchObject({
+      t: 'range',
+      from: { sheet: 'Budget 2026', row: 1, col: 1 },
+      to: { row: 8, col: 1 },
+    });
+    expect(parseFormula('=Sheet2!A1:Sheet2!B2')).toMatchObject({ t: 'range', from: { sheet: 'Sheet2' } });
+    expect(parseFormula('=Sheet2!A1:Sheet3!B2')).toBeNull();
+    expect(parseFormula('=COUNTA(Tasks!Title)')).toMatchObject({
+      t: 'call',
+      args: [{ t: 'column', sheet: 'Tasks', name: 'Title' }],
+    });
+    expect(parseFormula("=SUM(Tasks!'Due date')")).toMatchObject({
+      t: 'call',
+      args: [{ t: 'column', sheet: 'Tasks', name: 'Due date' }],
+    });
+    expect(parseFormula('=Sheet2!')).toBeNull();
+    expect(formulaNameText('Sheet2')).toBe('Sheet2');
+    expect(formulaNameText("Budget '26")).toBe("'Budget ''26'");
+  });
+
+  it('reads cells, ranges and columns of other sheets through the workbook; #REF! without one', () => {
+    const other = evaluated(sheet(3, 1, ['10', '=A1*2', 'x']));
+    const ev = new SheetEvaluator();
+    const model = sheet(1, 5, [
+      '=Sheet2!A2*2',
+      "=SUM('Sheet2'!A1:A3)",
+      '=COUNTA(Tasks!Title)',
+      '=Nope!A1',
+      '=Sheet2!A9',
+    ]);
+    ev.update(model);
+    expect(ev.valueAt(0, 0)).toBe('#REF!');
+    ev.workbook = workbook({ Sheet2: other }, { Tasks: { Title: ['a', 'b', 'c'] } });
+    ev.recalc();
+    expect(ev.valueAt(0, 0)).toBe('40');
+    expect(ev.valueAt(0, 1)).toBe('30');
+    expect(ev.valueAt(0, 2)).toBe('3');
+    expect(ev.valueAt(0, 3)).toBe('#REF!');
+    expect(ev.valueAt(0, 4)).toBe('');
+    // The referenced sheet changes: a recalc (or any update) re-reads it.
+    const ops: SheetOp[] = [{ kind: 'set-cells', row: 0, col: 0, values: [['5']] }];
+    other.update(applySheetOps(other.model!, ops).model, ops);
+    ev.recalc();
+    expect(ev.valueAt(0, 0)).toBe('20');
+    expect(ev.valueAt(0, 1)).toBe('15');
+  });
+
+  it('a cycle across sheets ends in #CYCLE; chains resolve whatever the update order', () => {
+    const a = new SheetEvaluator();
+    const b = new SheetEvaluator();
+    const book = workbook({ A: a, B: b });
+    a.workbook = book;
+    b.workbook = book;
+    a.update(sheet(1, 2, ['=B!A1', '1']));
+    b.update(sheet(1, 1, ['=A!A1']));
+    expect(a.valueAt(0, 0)).toBe('#CYCLE');
+    b.update(sheet(1, 1, ['=A!B1+1']));
+    a.recalc();
+    expect(a.valueAt(0, 0)).toBe('2');
+  });
+
+  it('rewriteFormulaRefs rewrites only the own sheet, or only the named sheet', () => {
+    const insert: SheetOp = { kind: 'insert-rows', at: 0, count: 1 };
+    expect(rewriteFormulaRefs('=A1+Sheet2!A1', insert)).toBe('=A2+Sheet2!A1');
+    expect(rewriteFormulaRefs('=A1+Sheet2!A1', insert, 'sheet2')).toBe('=A1+Sheet2!A2');
+    expect(
+      rewriteFormulaRefs("=SUM('Budget 2026'!B2:B9)", { kind: 'remove-rows', at: 2, count: 2 }, 'Budget 2026')
+    ).toBe("=SUM('Budget 2026'!B2:B7)");
+    expect(rewriteFormulaRefs('=Sheet2!A1', { kind: 'remove-rows', at: 0, count: 1 }, 'Sheet2')).toBe('=#REF!');
+    expect(rewriteFormulaRefs('=COUNTA(Tasks!Title)+A1', insert)).toBe('=COUNTA(Tasks!Title)+A2');
+  });
+
+  it('shiftFormulaRefs moves relative references, keeps anchors, #REF! off the sheet', () => {
+    expect(shiftFormulaRefs('=A1+$B$1+C$2+Sheet2!A1', 2, 1)).toBe('=B3+$B$1+D$2+Sheet2!B3');
+    expect(shiftFormulaRefs('=SUM(A1:B2)', 1, 0)).toBe('=SUM(A2:B3)');
+    expect(shiftFormulaRefs('=A1', -1, 0)).toBe('=#REF!');
+    expect(shiftFormulaRefs('="A1"&A1', 0, 1)).toBe('="A1"&B1');
+  });
+
+  it('renameFormulaSheet re-points references and named columns', () => {
+    expect(renameFormulaSheet('=Sheet2!A1+SUM(sheet2!B1:B3)+A1', 'Sheet2', 'Budget 2026')).toBe(
+      "='Budget 2026'!A1+SUM('Budget 2026'!B1:B3)+A1"
+    );
+    expect(renameFormulaSheet('=COUNTA(Tasks!Title)', 'Tasks', 'Work')).toBe('=COUNTA(Work!Title)');
+    expect(renameFormulaSheet('=Other!A1', 'Tasks', 'Work')).toBe('=Other!A1');
   });
 });
