@@ -121,6 +121,20 @@ sh-spreadsheet {
     text-overflow: ellipsis;
   }
 
+  // Numbers, amounts, percentages and dates read right-aligned.
+  .shs-c.t-number,
+  .shs-c.t-currency,
+  .shs-c.t-percent,
+  .shs-c.t-date {
+    justify-content: flex-end;
+    font-variant-numeric: tabular-nums;
+  }
+
+  // A stored string its column type rejects (`validate`).
+  .shs-c.shs-invalid {
+    box-shadow: inset 0 -2px 0 var(--shs-invalid, #d33);
+  }
+
   // Built-in checkbox type: a glyph centered in the cell.
   .shs-c.t-checkbox {
     justify-content: center;

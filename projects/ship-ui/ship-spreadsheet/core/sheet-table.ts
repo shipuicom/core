@@ -60,7 +60,9 @@ export function sheetFromTable(table: Element): SheetModel | null {
     for (const cell of Array.from(tr.children)) {
       const tag = cell.tagName.toLowerCase();
       if (tag !== 'td' && tag !== 'th') continue;
-      cells.push(normalizeCellText(cell));
+      // A sheet's own clipboard fragment carries the raw string beside the display text.
+      const raw = cell.getAttribute('data-raw');
+      cells.push(raw ?? normalizeCellText(cell));
       const span = parseSpan(cell.getAttribute('colspan'));
       for (let i = 1; i < span; i++) cells.push('');
     }

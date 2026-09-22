@@ -6,23 +6,32 @@
 // editors, spreadsheet paste) and a `<table>` fragment for rich targets —
 // the same pairing Excel and Google Sheets put on the clipboard.
 
-import { SheetModel, SheetRange, cellAt, normalizedRange } from './sheet-model';
+import { SheetCellRegistry } from './sheet-extensions';
+import { escapeSheetHtml } from './sheet-html';
+import { SheetModel, SheetRange, cellAt, colTypeAt, normalizedRange } from './sheet-model';
 
-function escapeHtml(text: string): string {
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+/** The cell's text through its column type's `toText`; raw without a registry. */
+function textAt(model: SheetModel, r: number, c: number, registry?: SheetCellRegistry): string {
+  const raw = cellAt(model, r, c);
+  if (!registry) return raw;
+  const type = colTypeAt(model, c);
+  const ext = registry.get(type);
+  return ext.toText ? ext.toText(raw, { row: r, col: c, type: type ?? 'text' }) : raw;
 }
 
 /**
  * The range as tab-separated values. Cells containing tabs, newlines, or
- * quotes are quoted the way spreadsheet TSV expects.
+ * quotes are quoted the way spreadsheet TSV expects. Raw strings — the
+ * lossless interchange form — unless a `registry` is given, in which case
+ * each column type's `toText` supplies the text (a CSV export, search).
  */
-export function sheetRangeToTsv(model: SheetModel, range: SheetRange): string {
+export function sheetRangeToTsv(model: SheetModel, range: SheetRange, registry?: SheetCellRegistry): string {
   const { r0, c0, r1, c1 } = normalizedRange(model, range);
   const lines: string[] = [];
   for (let r = r0; r <= r1; r++) {
     const cells: string[] = [];
     for (let c = c0; c <= c1; c++) {
-      const value = cellAt(model, r, c);
+      const value = textAt(model, r, c, registry);
       cells.push(/[\t\n"]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value);
     }
     lines.push(cells.join('\t'));
@@ -30,13 +39,29 @@ export function sheetRangeToTsv(model: SheetModel, range: SheetRange): string {
   return lines.join('\n');
 }
 
-/** The range as a `<table>` clipboard fragment. */
-export function sheetRangeToHtml(model: SheetModel, range: SheetRange): string {
+/**
+ * The range as a `<table>` clipboard fragment. With a `registry`, cells
+ * show their column type's `toHtml` (rich targets get `$1,234.00`) and
+ * carry the raw string in `data-raw`, which `sheetFromTable` reads back —
+ * so a sheet-to-sheet paste stays lossless.
+ */
+export function sheetRangeToHtml(model: SheetModel, range: SheetRange, registry?: SheetCellRegistry): string {
   const { r0, c0, r1, c1 } = normalizedRange(model, range);
   const parts: string[] = ['<table><tbody>'];
   for (let r = r0; r <= r1; r++) {
     parts.push('<tr>');
-    for (let c = c0; c <= c1; c++) parts.push(`<td>${escapeHtml(cellAt(model, r, c))}</td>`);
+    for (let c = c0; c <= c1; c++) {
+      const raw = cellAt(model, r, c);
+      if (!registry) {
+        parts.push(`<td>${escapeSheetHtml(raw)}</td>`);
+        continue;
+      }
+      const type = colTypeAt(model, c);
+      const ext = registry.get(type);
+      const ctx = { row: r, col: c, type: type ?? 'text' };
+      const html = ext.toHtml ? ext.toHtml(raw, ctx) : escapeSheetHtml(ext.toText ? ext.toText(raw, ctx) : raw);
+      parts.push(html === escapeSheetHtml(raw) ? `<td>${html}</td>` : `<td data-raw="${escapeSheetHtml(raw).replace(/"/g, '&quot;')}">${html}</td>`);
+    }
     parts.push('</tr>');
   }
   parts.push('</tbody></table>');

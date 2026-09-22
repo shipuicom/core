@@ -21,6 +21,7 @@ import { ShipA11yAnnouncerService } from '@ship-ui/core/ship-a11y-announcer';
 import { ShipMenu } from '@ship-ui/core/ship-menu';
 import { ShipVirtualWindow } from '@ship-ui/core/ship-virtual-scroll';
 import { parseTsv, sheetRangeToHtml, sheetRangeToTsv } from './core/sheet-clipboard';
+import { escapeSheetHtml } from './core/sheet-html';
 import { SheetCellContext, SheetCellExtension, SheetCellRegistry } from './core/sheet-extensions';
 import {
   SheetModel,
@@ -132,7 +133,7 @@ interface ResizeDrag {
 export class ShipSpreadsheet {
   scroller = viewChild.required<ElementRef<HTMLElement>>('scroller');
   frame = viewChild.required<ElementRef<HTMLElement>>('frame');
-  private editorRef = viewChild<ElementRef<HTMLTextAreaElement>>('cellEditor');
+  private editorRef = viewChild<ElementRef<HTMLTextAreaElement | HTMLInputElement>>('cellEditor');
   private menu = viewChild(ShipMenu);
 
   /**
@@ -200,7 +201,7 @@ export class ShipSpreadsheet {
   readonly canRedo = signal(false);
 
   /** The in-cell editor, when open: the cell and the text it started with. */
-  readonly editing = signal<{ row: number; col: number; initial: string } | null>(null);
+  readonly editing = signal<{ row: number; col: number; initial: string; inputType?: string } | null>(null);
   /** Context menu anchor (frame-relative px), `null` when closed. */
   readonly menuAt = signal<{ x: number; y: number } | null>(null);
   readonly menuOpen = signal(false);
@@ -267,8 +268,15 @@ export class ShipSpreadsheet {
       for (let c = c0; c < c1; c++) {
         const value = sheet.cells[r * sheet.cols + c];
         const ext = exts[c - c0];
-        const cls = types[c - c0] === 'text' ? `shs-c c${c}` : `shs-c c${c} t-${types[c - c0]}`;
-        parts.push(value || ext.editor === 'none' ? `<span class="${cls}">${ext.render(value, { row: r, col: c, type: types[c - c0] })}</span>` : `<span class="${cls}"></span>`);
+        let cls = types[c - c0] === 'text' ? `shs-c c${c}` : `shs-c c${c} t-${types[c - c0]}`;
+        if (!value && ext.editor !== 'none') {
+          parts.push(`<span class="${cls}"></span>`);
+          continue;
+        }
+        const ctx = { row: r, col: c, type: types[c - c0] };
+        const error = ext.validate ? ext.validate(value, ctx) : null;
+        if (error) cls += ' shs-invalid';
+        parts.push(error ? `<span class="${cls}" title="${escapeSheetHtml(error).replace(/"/g, '&quot;')}">${ext.render(value, ctx)}</span>` : `<span class="${cls}">${ext.render(value, ctx)}</span>`);
       }
       out.push({
         index: r,
@@ -848,8 +856,11 @@ export class ShipSpreadsheet {
       return;
     }
     const raw = cellAt(this.sheet(), cell.row, cell.col);
-    const text = initial ?? (ext.format ? ext.format(raw, ctx) : raw);
-    this.editing.set({ row: cell.row, col: cell.col, initial: text });
+    let text = initial ?? (ext.format ? ext.format(raw, ctx) : raw);
+    // A typed input (a date picker) only takes its own value shape: seed it
+    // with what the typed character parses to, or the cell's own value.
+    if (ext.inputType && initial !== undefined) text = (ext.parse ? ext.parse(initial, ctx) : initial) || raw;
+    this.editing.set({ row: cell.row, col: cell.col, initial: text, inputType: ext.inputType });
     this.#revealCell(cell.row, cell.col);
     afterNextRender(
       () => {
@@ -857,7 +868,7 @@ export class ShipSpreadsheet {
         if (!el) return;
         el.value = text;
         el.focus({ preventScroll: true });
-        el.setSelectionRange(text.length, text.length);
+        if (el instanceof HTMLTextAreaElement || el.type === 'text') el.setSelectionRange(text.length, text.length);
       },
       { injector: this.#injector }
     );
@@ -1060,8 +1071,10 @@ export class ShipSpreadsheet {
     const range = primarySheetRange(this.selection());
     if (!range || !event.clipboardData) return;
     event.preventDefault();
+    // TSV stays raw (lossless between sheets); the HTML flavor shows each
+    // type's display form for rich targets and carries the raw in data-raw.
     event.clipboardData.setData('text/plain', sheetRangeToTsv(this.sheet(), range));
-    event.clipboardData.setData('text/html', sheetRangeToHtml(this.sheet(), range));
+    event.clipboardData.setData('text/html', sheetRangeToHtml(this.sheet(), range, this.registry()));
     const { r0, c0, r1, c1 } = normalizedRange(this.sheet(), range);
     const from = sheetCellLabel(r0, c0);
     const to = sheetCellLabel(r1, c1);

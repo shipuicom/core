@@ -12,6 +12,10 @@
 // See EXTENSIONS.md for the design and the extension points to come.
 
 import { Type } from '@angular/core';
+import { SHEET_CURRENCY_EXTENSION, SHEET_DATE_EXTENSION, SHEET_NUMBER_EXTENSION, SHEET_PERCENT_EXTENSION } from './sheet-formats';
+import { escapeSheetHtml } from './sheet-html';
+
+export { escapeSheetHtml };
 
 /** What an extension knows about the cell it is asked about. */
 export interface SheetCellContext {
@@ -55,6 +59,12 @@ export interface SheetCellExtension {
    * overlay's place (a date picker, a select) implementing `SheetCellEditor`.
    */
   readonly editor?: 'text' | 'none' | Type<SheetCellEditor>;
+  /**
+   * For the `'text'` editor: the HTML input type to edit with (`'date'`,
+   * `'time'`, `'number'`) instead of the multiline textarea. The editor
+   * opens on `format(raw)` and commits through `parse` as usual.
+   */
+  readonly inputType?: string;
   /** Validation for a stored string: an error message, or `null` when fine. */
   validate?(raw: string, ctx: SheetCellContext): string | null;
   /** Plain-text export (TSV/CSV/search); default: the raw string. */
@@ -63,10 +73,6 @@ export interface SheetCellExtension {
   toMarkdown?(raw: string, ctx: SheetCellContext): string;
   /** HTML export for the `<table>` document form; default: escaped `toText`. */
   toHtml?(raw: string, ctx: SheetCellContext): string;
-}
-
-export function escapeSheetHtml(text: string): string {
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 /** The default: the raw string, escaped. */
@@ -88,6 +94,16 @@ export const SHEET_CHECKBOX_EXTENSION: SheetCellExtension = {
   toMarkdown: (raw) => (raw === 'true' ? '[x]' : '[ ]'),
 };
 
+/** Every built-in type, in registry order: text, checkbox, number, currency, percent, date. */
+export const SHEET_BUILTIN_EXTENSIONS: readonly SheetCellExtension[] = [
+  SHEET_TEXT_EXTENSION,
+  SHEET_CHECKBOX_EXTENSION,
+  SHEET_NUMBER_EXTENSION,
+  SHEET_CURRENCY_EXTENSION,
+  SHEET_PERCENT_EXTENSION,
+  SHEET_DATE_EXTENSION,
+];
+
 /**
  * The extensions a composer instance resolves types against. Unknown types
  * fall back to text, so a document typed by an app-side extension the
@@ -97,7 +113,7 @@ export class SheetCellRegistry {
   readonly #byType = new Map<string, SheetCellExtension>();
 
   constructor(extensions: readonly SheetCellExtension[] = []) {
-    for (const ext of [SHEET_TEXT_EXTENSION, SHEET_CHECKBOX_EXTENSION, ...extensions]) this.#byType.set(ext.type, ext);
+    for (const ext of [...SHEET_BUILTIN_EXTENSIONS, ...extensions]) this.#byType.set(ext.type, ext);
   }
 
   get(type: string | null | undefined): SheetCellExtension {

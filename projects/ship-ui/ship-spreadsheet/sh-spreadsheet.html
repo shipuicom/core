@@ -64,22 +64,38 @@
       }
 
       @if (editing() && activeRect(); as rect) {
-        <textarea
-          #cellEditor
-          class="shs-editor"
-          rows="1"
-          spellcheck="false"
-          autocapitalize="off"
-          autocomplete="off"
-          [attr.aria-label]="'Edit ' + activeLabel()"
-          [style.top.px]="rect.top"
-          [style.left.px]="rect.left"
-          [style.min-width.px]="rect.width"
-          [style.min-height.px]="rect.height"
-          (keydown)="onEditorKeydown($event)"
-          (blur)="onEditorBlur()"
-          (mousedown)="$event.stopPropagation()"
-          (dblclick)="$event.stopPropagation()"></textarea>
+        @if (editing()?.inputType; as inputType) {
+          <input
+            #cellEditor
+            class="shs-editor"
+            [type]="inputType"
+            [attr.aria-label]="'Edit ' + activeLabel()"
+            [style.top.px]="rect.top"
+            [style.left.px]="rect.left"
+            [style.min-width.px]="rect.width"
+            [style.height.px]="rect.height"
+            (keydown)="onEditorKeydown($event)"
+            (blur)="onEditorBlur()"
+            (mousedown)="$event.stopPropagation()"
+            (dblclick)="$event.stopPropagation()" />
+        } @else {
+          <textarea
+            #cellEditor
+            class="shs-editor"
+            rows="1"
+            spellcheck="false"
+            autocapitalize="off"
+            autocomplete="off"
+            [attr.aria-label]="'Edit ' + activeLabel()"
+            [style.top.px]="rect.top"
+            [style.left.px]="rect.left"
+            [style.min-width.px]="rect.width"
+            [style.min-height.px]="rect.height"
+            (keydown)="onEditorKeydown($event)"
+            (blur)="onEditorBlur()"
+            (mousedown)="$event.stopPropagation()"
+            (dblclick)="$event.stopPropagation()"></textarea>
+        }
       }
 
       @if (resizeGuide(); as guide) {
