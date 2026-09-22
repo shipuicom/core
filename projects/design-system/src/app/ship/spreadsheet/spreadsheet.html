@@ -68,15 +68,28 @@
     </div>
   </app-previewer>
 
-  <app-previewer path="/spreadsheet" title="Records: select columns with component editors" class="no-space">
+  <app-previewer path="/spreadsheet" title="Records: labelled columns, group rows, select and checkbox cells" class="no-space">
     <div class="sheet-demo">
-      <sh-spreadsheet class="sheet-small" [(sheet)]="records" [(selection)]="recordsSelection" [editable]="true" [extensions]="recordExtensions" />
+      <sh-spreadsheet
+        class="sheet-small sheet-records"
+        [(sheet)]="records"
+        [(selection)]="recordsSelection"
+        [editable]="true"
+        [extensions]="recordExtensions"
+        [headers]="recordHeaders"
+        [letters]="false"
+        [rowKind]="recordRowKind"
+        [rowClass]="recordRowClass" />
       <p class="sheet-note">
-        B and C are <code>select</code> columns (<code>status</code>, <code>priority</code>): each cell is a real
+        The column rail carries the field labels (<code>headers</code>) and the row-number rail is off
+        (<code>letters</code>); <em>Sprint 12</em> and <em>Backlog</em> are group rows (<code>rowKind</code>) — one
+        band, read-only — and a done record is dimmed through <code>rowClass</code>. Status and Priority are
+        <code>select</code> columns (<code>status</code>, <code>priority</code>): each cell is a real
         <code>sh-chip</code> drawn by the type's <code>renderer</code> component — one instance per visible cell,
         re-fed as you scroll. Press Enter on one for a menu of the options, type to filter it, or paste
         <code>rev</code> and watch it resolve to <em>Review</em>. D is a <code>checkbox</code>.
       </p>
+      <app-highlight lang="html" [content]="headersExample" />
       <app-highlight lang="ts" [content]="selectExample" />
     </div>
   </app-previewer>

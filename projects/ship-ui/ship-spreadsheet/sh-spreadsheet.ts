@@ -106,6 +106,13 @@ export interface SheetValues {
 export type { SheetCommitMove };
 
 /**
+ * What a host's `rowKind` says about a row: `'group'` draws it as one
+ * full-width heading (the first cell's text) and makes it read-only,
+ * `'readonly'` keeps the cells but refuses edits, paste and clears.
+ */
+export type SheetRowKind = 'group' | 'readonly';
+
+/**
  * A cell drawn by a component or a template (`SheetCellExtension.renderer`)
  * rather than by the row's HTML string: positioned by the same generated
  * column class, fed the cell's display value.
@@ -203,8 +210,22 @@ export class ShipSpreadsheet {
   defaultColWidth = input(96);
   /** Height for rows without an explicit height. */
   defaultRowHeight = input(28);
-  /** Show the A/B/C column header and 1/2/3 row header rails. */
-  headers = input(true);
+  /**
+   * The header rails: `true` for A/B/C over the columns and 1/2/3 down the
+   * rows, `false` for none, or the column labels themselves (`['Title',
+   * 'Status', …]`, a column past the list falls back to its letter) for a
+   * database view. Cell addresses stay A1-style whatever the labels.
+   */
+  headers = input<boolean | readonly string[]>(true);
+  /**
+   * With labelled `headers`, `false` drops the letter and row-number rails:
+   * the label row is the only chrome. With `headers: true` it hides both.
+   */
+  letters = input(true);
+  /** Extra classes for a row element (`.shs-row`), by row index — a group heading, a done record. */
+  rowClass = input<((row: number) => string | null | undefined) | null>(null);
+  /** What kind of row a row is (`SheetRowKind`), by index; `null`/`undefined` for an ordinary one. */
+  rowKind = input<((row: number) => SheetRowKind | null | undefined) | null>(null);
   /** When `false`, mouse and keyboard selection is off — pure display surface. */
   selectable = input(true);
   /** Turns the renderer into the composer: cell editing, paste, structure, resize, history. */
@@ -271,7 +292,14 @@ export class ShipSpreadsheet {
   /** The resize drag in progress, painting a guide line. */
   readonly resizeDrag = signal<ResizeDrag | null>(null);
 
-  readonly headOffset = computed(() => (this.headers() ? 44 : 0));
+  /** The column rail shows: letters (with `letters`) or the given labels. */
+  readonly showColHead = computed(() => {
+    const headers = this.headers();
+    return headers === true ? this.letters() : Array.isArray(headers);
+  });
+  /** The row-number rail shows: any headers, unless `letters` is off. */
+  readonly showRowRail = computed(() => this.headers() !== false && this.letters());
+  readonly headOffset = computed(() => (this.showRowRail() ? 44 : 0));
   readonly registry = computed(() => new SheetCellRegistry(this.extensions()));
   /** The cell types the context menu offers for a column. */
   readonly registryTypes = computed(() => this.registry().types());
@@ -357,6 +385,10 @@ export class ShipSpreadsheet {
     const c1 = Math.min(this.colEnd(), sheet.cols);
     const registry = this.registry();
     const values = this.values();
+    const rowClass = this.rowClass();
+    const rowKind = this.rowKind();
+    const groupLeft = this.headOffset();
+    const groupWidth = this.#colWin.totalSize();
     // One extension lookup per mounted column, not per cell.
     const exts: SheetCellExtension[] = [];
     const types: string[] = [];
@@ -365,10 +397,20 @@ export class ShipSpreadsheet {
       exts.push(registry.get(type));
       types.push(type ?? 'text');
     }
-    const out: { index: number; height: number; html: SafeHtml; hosted: SheetHostedCell[] }[] = [];
+    const out: { index: number; height: number; cls: string; html: SafeHtml; hosted: SheetHostedCell[] }[] = [];
     for (let r = from; r < to; r++) {
       const parts: string[] = [];
       const hosted: SheetHostedCell[] = [];
+      const kind = rowKind?.(r) ?? null;
+      let cls = kind ? `shs-row-${kind}` : '';
+      const extra = rowClass?.(r);
+      if (extra) cls = cls ? `${cls} ${extra}` : extra;
+      if (kind === 'group') {
+        // A heading: the first cell's text across the whole row, no cell grid.
+        parts.push(`<span class="shs-c shs-group" style="left:${groupLeft}px;width:${groupWidth}px">${escapeSheetHtml(sheet.cells[r * sheet.cols] ?? '')}</span>`);
+        out.push({ index: r, height: sheet.rowHeights[r] ?? this.defaultRowHeight(), cls, html: this.#sanitizer.bypassSecurityTrustHtml(parts.join('')), hosted });
+        continue;
+      }
       for (let c = c0; c < c1; c++) {
         const raw = sheet.cells[r * sheet.cols + c];
         const ext = exts[c - c0];
@@ -409,6 +451,7 @@ export class ShipSpreadsheet {
       out.push({
         index: r,
         height: sheet.rowHeights[r] ?? this.defaultRowHeight(),
+        cls,
         html: this.#sanitizer.bypassSecurityTrustHtml(parts.join('')),
         hosted,
       });
@@ -416,14 +459,33 @@ export class ShipSpreadsheet {
     return out;
   });
 
-  /** The mounted column headers, positioned by the same generated classes. */
+  /** The mounted column headers — the given labels or the letters — positioned by the same generated classes. */
   readonly colHeadHtml = computed<SafeHtml>(() => {
     const sheet = this.sheet();
     const c1 = Math.min(this.colEnd(), sheet.cols);
+    const headers = this.headers();
+    const labels = Array.isArray(headers) ? headers : null;
+    const letters = this.letters();
     const parts: string[] = [];
-    for (let c = this.colStart(); c < c1; c++) parts.push(`<span class="shs-ch c${c}">${sheetColLabel(c)}</span>`);
+    for (let c = this.colStart(); c < c1; c++) {
+      const label = labels?.[c];
+      if (label !== undefined) {
+        const text = escapeSheetHtml(label);
+        parts.push(`<span class="shs-ch shs-ch-label c${c}" title="${text.replace(/"/g, '&quot;')}">${text}</span>`);
+      } else parts.push(`<span class="shs-ch c${c}">${letters ? sheetColLabel(c) : ''}</span>`);
+    }
     return this.#sanitizer.bypassSecurityTrustHtml(parts.join(''));
   });
+
+  /** The host's kind for a row, `null` for an ordinary one. */
+  #kindOf(row: number): SheetRowKind | null {
+    return this.rowKind()?.(row) ?? null;
+  }
+
+  /** Whether a row takes edits: not a group heading, not a read-only row. */
+  #rowEditable(row: number): boolean {
+    return this.#kindOf(row) === null;
+  }
 
   /** One paint box per selected range; the last is the active one. */
   readonly selectionRects = computed(() => {
@@ -782,7 +844,7 @@ export class ShipSpreadsheet {
    * returns whether the extension handled it.
    */
   activateCell(row: number, col: number): boolean {
-    if (!this.editable()) return false;
+    if (!this.editable() || !this.#rowEditable(row)) return false;
     const { ext, ctx } = this.#cell(row, col);
     if (!ext.activate) return false;
     const raw = cellAt(this.sheet(), row, col);
@@ -1012,6 +1074,10 @@ export class ShipSpreadsheet {
   startEdit(initial?: string): void {
     const cell = this.activeCell();
     if (!this.editable() || !cell) return;
+    if (!this.#rowEditable(cell.row)) {
+      this.#announcer.announce(`${sheetCellLabel(cell.row, cell.col)} is read-only`);
+      return;
+    }
     const { ext, ctx } = this.#cell(cell.row, cell.col);
     if (ext.editor === 'none') {
       if (initial === undefined) this.activateCell(cell.row, cell.col);
@@ -1127,6 +1193,10 @@ export class ShipSpreadsheet {
   /** Store a raw string in a cell (when changed) as one `set-cells` op and voice it. */
   #store(row: number, col: number, next: string): void {
     if (next === cellAt(this.sheet(), row, col)) return;
+    if (!this.#rowEditable(row)) {
+      this.#announcer.announce(`${sheetCellLabel(row, col)} is read-only`, 'assertive');
+      return;
+    }
     const { ext, ctx } = this.#cell(row, col);
     this.apply([{ kind: 'set-cells', row, col, values: [[next]] }]);
     this.#announcer.announce(`${sheetCellLabel(row, col)} set to ${(ext.toText ? ext.toText(next, ctx) : next) || 'empty'}`);
@@ -1433,6 +1503,8 @@ export class ShipSpreadsheet {
     const registry = this.registry();
     const parsed = values.map((line, r) =>
       line.map((input, c) => {
+        // A read-only row keeps what it has (a new row past the end is ordinary).
+        if (row + r < sheet.rows && !this.#rowEditable(row + r)) return cellAt(sheet, row + r, col + c);
         const type = colTypeAt(sheet, col + c);
         const ext = registry.get(type);
         if (!ext.parse || isFormula(input)) return input;
@@ -1458,7 +1530,9 @@ export class ShipSpreadsheet {
     if (!selection?.ranges.length || sheet.rows === 0 || sheet.cols === 0) return;
     const ops: SheetOp[] = selection.ranges.map((raw) => {
       const { r0, c0, r1, c1 } = normalizedRange(sheet, raw);
-      return { kind: 'set-cells', row: r0, col: c0, values: Array.from({ length: r1 - r0 + 1 }, () => new Array<string>(c1 - c0 + 1).fill('')) };
+      // A read-only row keeps its cells.
+      const values = Array.from({ length: r1 - r0 + 1 }, (_, i) => (this.#rowEditable(r0 + i) ? new Array<string>(c1 - c0 + 1).fill('') : sheet.cells.slice((r0 + i) * sheet.cols + c0, (r0 + i) * sheet.cols + c1 + 1)));
+      return { kind: 'set-cells', row: r0, col: c0, values };
     });
     this.apply(ops);
   }

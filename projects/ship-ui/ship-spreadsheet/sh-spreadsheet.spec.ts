@@ -5,7 +5,7 @@ import { matchSheetSelectOption, sheetSelectExtension } from './cells/sheet-sele
 import { sheetRangeToTsv } from './core/sheet-clipboard';
 import { SheetCellContext, SheetCellEditor, SheetCellEditorApi, SheetCellExtension } from './core/sheet-extensions';
 import { SheetModel, SheetOp, SheetSelection, applySheetOps, cellAt, createSheet, sheetCellSelection } from './core/sheet-model';
-import { ShipSpreadsheet } from './sh-spreadsheet';
+import { SheetRowKind, ShipSpreadsheet } from './sh-spreadsheet';
 
 /** A component editor under test: echoes its inputs, commits through the API. */
 @Component({
@@ -57,7 +57,18 @@ const STATUS = sheetSelectExtension({
   imports: [ShipSpreadsheet],
   template: `
     <ng-template #tpl let-value let-ctx="ctx"><i class="tpl">{{ value }}/{{ ctx.col }}</i></ng-template>
-    <sh-spreadsheet style="height: 300px" [(sheet)]="sheet" [(selection)]="selection" [editable]="editable()" [formulaBar]="formulaBar()" [extensions]="extensions()" (ops)="log.push($event)" />
+    <sh-spreadsheet
+      style="height: 300px"
+      [(sheet)]="sheet"
+      [(selection)]="selection"
+      [editable]="editable()"
+      [formulaBar]="formulaBar()"
+      [extensions]="extensions()"
+      [headers]="headers()"
+      [letters]="letters()"
+      [rowClass]="rowClass()"
+      [rowKind]="rowKind()"
+      (ops)="log.push($event)" />
   `,
 })
 class Host {
@@ -67,6 +78,10 @@ class Host {
   selection = signal<SheetSelection | null>(sheetCellSelection(0, 0));
   editable = signal(true);
   formulaBar = signal(false);
+  headers = signal<boolean | readonly string[]>(true);
+  letters = signal(true);
+  rowClass = signal<((row: number) => string | null) | null>(null);
+  rowKind = signal<((row: number) => SheetRowKind | null) | null>(null);
   extensions = computed<SheetCellExtension[]>(() => [PROBE, STATUS, DRAWN, { type: 'tpl', renderer: this.tpl(), render: (raw) => raw }]);
   log: SheetOp[][] = [];
 }
@@ -452,6 +467,82 @@ describe('ShipSpreadsheet composer', () => {
       expect(chips[0].style.getPropertyValue('--chip-c')).toBe('#08f');
       expect(chips[1].classList.contains('unknown')).toBe(true);
       expect(chips[1].textContent?.trim()).toBe('gone');
+    });
+  });
+
+  describe('headers and row hooks', () => {
+    const colHead = () => Array.from(fixture.nativeElement.querySelectorAll('.shs-ch')) as HTMLElement[];
+    const rows = () => Array.from(fixture.nativeElement.querySelectorAll('.shs-row')) as HTMLElement[];
+
+    it('labels replace the letters in the column rail; letters:false drops the row rail', () => {
+      expect(colHead().map((el) => el.textContent)).toEqual(['A', 'B', 'C']);
+      host.headers.set(['Title', 'Status']);
+      fixture.detectChanges();
+      expect(colHead().map((el) => el.textContent)).toEqual(['Title', 'Status', 'C']);
+      expect(colHead()[0].classList.contains('shs-ch-label')).toBe(true);
+      expect(colHead()[0].title).toBe('Title');
+      expect(rows()[0].querySelector('.shs-rh')).not.toBeNull();
+      expect(grid.headOffset()).toBe(44);
+      host.letters.set(false);
+      fixture.detectChanges();
+      expect(colHead().map((el) => el.textContent)).toEqual(['Title', 'Status', '']);
+      expect(rows()[0].querySelector('.shs-rh')).toBeNull();
+      expect(grid.headOffset()).toBe(0);
+      expect(grid.activeLabel()).toBe('A1');
+      // Plain headers without letters: no rails at all.
+      host.headers.set(true);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.shs-colhead')).toBeNull();
+      host.letters.set(true);
+      host.headers.set(false);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.shs-colhead')).toBeNull();
+      expect(grid.headOffset()).toBe(0);
+    });
+
+    it('rowClass styles rows; a group row is one heading band; group and readonly rows refuse edits', async () => {
+      host.rowClass.set((row) => (row === 3 ? 'done' : null));
+      host.rowKind.set((row) => (row === 0 ? 'group' : row === 2 ? 'readonly' : null));
+      fixture.detectChanges();
+      expect(rows()[3].classList.contains('done')).toBe(true);
+      expect(rows()[0].classList.contains('shs-row-group')).toBe(true);
+      expect(rows()[2].classList.contains('shs-row-readonly')).toBe(true);
+      const heading = rows()[0].querySelectorAll('.shs-c');
+      expect(heading).toHaveLength(1);
+      expect(heading[0].classList.contains('shs-group')).toBe(true);
+      expect(heading[0].textContent).toBe('a1');
+      expect((heading[0] as HTMLElement).style.left).toBe('44px');
+      expect(rows()[1].querySelectorAll('.shs-c')).toHaveLength(3);
+      // Typing, Enter, Delete and paste leave the group and the read-only row alone.
+      expect(key(frame, 'x').defaultPrevented).toBe(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(grid.editing()).toBeNull();
+      grid.selectCell(2, 0);
+      key(frame, 'Enter');
+      fixture.detectChanges();
+      expect(grid.editing()).toBeNull();
+      grid.selectRange({ r0: 1, c0: 0, r1: 2, c1: 0 });
+      key(frame, 'Delete');
+      expect(host.sheet().cells.slice(3, 7)).toEqual(['', 'b2', 'c2', 'a3']);
+      grid.selectCell(1, 1);
+      frame.dispatchEvent(clipboard('paste', { 'text/plain': 'p\nq\nr' }).event);
+      expect(cellAt(host.sheet(), 1, 1)).toBe('p');
+      expect(cellAt(host.sheet(), 2, 1)).toBe('b3');
+      expect(cellAt(host.sheet(), 3, 1)).toBe('r');
+      // The formula bar and a programmatic edit are refused too; an ordinary row still takes them.
+      grid.selectCell(2, 2);
+      grid.startEdit('z');
+      expect(grid.editing()).toBeNull();
+      expect(cellAt(host.sheet(), 2, 2)).toBe('c3');
+      grid.selectCell(1, 2);
+      grid.startEdit('z');
+      grid.commitEdit();
+      expect(cellAt(host.sheet(), 1, 2)).toBe('z');
+      // Checkbox activation on a read-only row is refused.
+      grid.setColType(2, 'checkbox');
+      expect(grid.activateCell(2, 2)).toBe(false);
+      expect(grid.activateCell(1, 2)).toBe(true);
     });
   });
 

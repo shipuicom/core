@@ -3,6 +3,7 @@ import { ShipEditor, ShipEditorToolbar } from '@ship-ui/core/ship-editor';
 import {
   SheetModel,
   SheetOp,
+  SheetRowKind,
   SheetSelection,
   ShipSpreadsheetBlockBehavior,
   ShipSpreadsheet,
@@ -38,15 +39,20 @@ function bigSheet(rows: number, cols: number): SheetModel {
   return createSheet(rows, cols, cells);
 }
 
-/** A database-style sheet: records as rows, typed columns, a select column edited through a menu. */
+/** The rows of the records demo that are group headings (their first cell is the heading). */
+const RECORD_GROUPS = new Set([0, 3]);
+
+/** A database-style sheet: records as rows under group headings, typed columns, select columns edited through a menu. */
 function recordsSheet(): SheetModel {
   const cells = [
+    'Sprint 12', '', '', '',
     'Ship the composer', 'doing', 'high', 'true',
     'Write the docs', 'todo', 'medium', '',
+    'Backlog', '', '', '',
     'Review the a11y pass', 'review', 'low', '',
     'Cut a release', 'done', 'urgent', 'true',
   ];
-  return applySheetOps(createSheet(4, 4, cells), [
+  return applySheetOps(createSheet(6, 4, cells), [
     { kind: 'set-col-width', col: 0, width: 200 },
     { kind: 'set-col-type', col: 1, type: 'status' },
     { kind: 'set-col-type', col: 2, type: 'priority' },
@@ -172,6 +178,18 @@ extensions = [sheetCurrencyExtension({ code: 'DKK', locale: 'da-DK', decimals: 2
   ];
   records = signal(recordsSheet());
   recordsSelection = signal<SheetSelection | null>(null);
+  recordHeaders = ['Title', 'Status', 'Priority', 'Done'];
+  // Rows 1 and 4 are headings: drawn as one band, read-only; a done record is dimmed through rowClass.
+  recordRowKind = (row: number): SheetRowKind | null => (RECORD_GROUPS.has(row) ? 'group' : null);
+  recordRowClass = (row: number): string | null => (this.records().cells[row * 4 + 3] === 'true' ? 'is-done' : null);
+  headersExample = `<sh-spreadsheet
+  [headers]="['Title', 'Status', 'Priority', 'Done']"  <!-- labels in the column rail instead of A/B/C -->
+  [letters]="false"                                     <!-- no row-number rail either -->
+  [rowKind]="rowKind"                                   <!-- (row) => 'group' | 'readonly' | null -->
+  [rowClass]="rowClass" />                              <!-- (row) => string | null, on the .shs-row -->
+
+// A 'group' row draws its first cell as one heading band across the columns and is read-only —
+// typing, Enter, paste, Delete and activation leave it alone; 'readonly' keeps the cells but refuses the same.`;
   selectExample = `import { sheetSelectExtension } from '@ship-ui/core/ship-spreadsheet';
 
 // The cell stores the key; the label shows; Enter, F2 or typing opens a menu of the

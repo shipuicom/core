@@ -136,9 +136,33 @@ sh-spreadsheet {
     user-select: none;
   }
 
+  // A labelled column header reads like a field name: left-aligned, clipped.
+  .shs-ch.shs-ch-label {
+    justify-content: flex-start;
+    padding: 0 #{p2r(6)};
+    box-sizing: border-box;
+    color: var(--shs-fg);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .shs-body {
     position: relative;
     cursor: cell;
+  }
+
+  // A group heading row (`rowKind` → 'group'): one band across the columns.
+  .shs-row.shs-row-group .shs-group {
+    background: var(--shs-head-bg);
+    color: var(--shs-fg);
+    font-weight: 600;
+    box-sizing: border-box;
+  }
+
+  .shs-row.shs-row-readonly .shs-c {
+    color: var(--shs-head-fg);
   }
 
   .shs-row {

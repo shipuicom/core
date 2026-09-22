@@ -32,3 +32,8 @@ sh-spreadsheet.sheet-big {
   height: p2r(420);
 }
 
+// The records demo: a done record reads dimmed and struck through in its title.
+sh-spreadsheet.sheet-records .shs-row.is-done .c0 {
+  color: var(--base-9);
+  text-decoration: line-through;
+}

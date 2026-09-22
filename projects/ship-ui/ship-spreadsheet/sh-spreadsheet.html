@@ -32,7 +32,7 @@
   (contextmenu)="onContextMenu($event)"
   (mouseup)="onMouseUp()">
   <div class="shs-scroller" #scroller>
-    @if (headers()) {
+    @if (showColHead()) {
       <div
         class="shs-colhead"
         [style.width.px]="contentWidth()"
@@ -73,8 +73,8 @@
       }
 
       @for (row of visibleRows(); track row.index) {
-        <div class="shs-row" [style.height.px]="row.height">
-          @if (headers()) {
+        <div class="shs-row" [class]="row.cls" [style.height.px]="row.height">
+          @if (showRowRail()) {
             <span class="shs-rh">{{ row.index + 1 }}</span>
           }
           <span [innerHTML]="row.html"></span>
