@@ -386,10 +386,14 @@ export class ShipSpreadsheet {
     if (ev.functions !== registry) ev = this.#evaluator = new SheetEvaluator(registry);
     const contextChanged = ev.external !== external;
     ev.external = external;
+    // A fresh evaluator computes everything in `update`; otherwise a new
+    // context or a pending `recalc()` recomputes on top of the incremental step.
+    const fresh = ev.model === null;
     if (ev.model !== sheet) {
       const pending = this.#pending;
       ev.update(sheet, pending && pending.to === sheet && pending.from === ev.model ? pending.ops : undefined);
-    } else if (contextChanged || this.#recalcPending) ev.recalc();
+    }
+    if (!fresh && (contextChanged || this.#recalcPending)) ev.recalc();
     this.#recalcPending = false;
     return {
       model: sheet,

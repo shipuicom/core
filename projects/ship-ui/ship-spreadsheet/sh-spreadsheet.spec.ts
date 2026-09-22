@@ -813,6 +813,17 @@ describe('ShipSpreadsheet composer', () => {
       fixture.detectChanges();
       expect(cellText(0, 3)).toBe('4');
       expect(cellText(0, 1)).toBe('eve');
+      // recalc() followed by an edit before the next render: the recalc still lands (a non-volatile cell sees it).
+      let calls = 0;
+      host.functions.set([DOUBLE, USERNAME, FAILS, { name: 'TICK', call: () => ++calls }]);
+      grid.apply([{ kind: 'set-cells', row: 0, col: 2, values: [['=TICK()']] }]);
+      fixture.detectChanges();
+      expect(cellText(0, 2)).toBe('1');
+      grid.recalc();
+      grid.apply([{ kind: 'set-cells', row: 0, col: 3, values: [['=DOUBLE(3)']] }]);
+      fixture.detectChanges();
+      expect(cellText(0, 3)).toBe('6');
+      expect(cellText(0, 2)).toBe('2');
     });
 
     it('formula bar autocomplete: typing = and letters lists matching functions, Tab or Enter completes, Escape closes', async () => {
