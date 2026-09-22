@@ -3,6 +3,7 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { ASTDocument } from './editor.types';
 import { ShipEditor } from './ship-editor';
 
 @Component({
@@ -86,5 +87,36 @@ describe('value sync with a synchronous write-back subscriber', () => {
     // The echoed value must not round-trip into a document reset.
     expect(ed.engine.version()).toBe(versionAfterEdit);
     expect(ed.value()).toBe('<p>zzseed</p>');
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [ShipEditor],
+  template: `<sh-editor [(value)]="content" format="json" />`,
+})
+class JsonHost {
+  content = signal<ASTDocument>([
+    { type: 'paragraph', content: [{ type: 'text', text: 'intro' }] },
+    {
+      type: 'bullet-list',
+      content: [
+        { type: 'list-item', content: [{ type: 'text', text: 'one' }] },
+        { type: 'list-item', content: [{ type: 'text', text: 'two' }] },
+      ],
+    },
+  ]);
+}
+
+describe('value input in json format', () => {
+  it('keeps a list that is not the first block', async () => {
+    await TestBed.configureTestingModule({ imports: [JsonHost] }).compileComponents();
+    const fixture = TestBed.createComponent(JsonHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const ed = fixture.debugElement.children[0].componentInstance as ShipEditor;
+    expect(ed.engine.serialize('html')).toBe('<p>intro</p><ul><li>one</li><li>two</li></ul>');
   });
 });

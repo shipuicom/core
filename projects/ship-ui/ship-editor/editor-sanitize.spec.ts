@@ -314,6 +314,20 @@ describe('normalizeDocument (JSON schema guard)', () => {
     expect(() => render(doc)).not.toThrow();
   });
 
+  it('keeps a container block that is not the first block of the document', () => {
+    // Array#map hands the index in as the second argument; it must not reach normalizeBlock's `depth`.
+    const list = {
+      type: 'bullet-list',
+      content: [
+        { type: 'list-item', content: [{ type: 'text', text: 'one' }] },
+        { type: 'list-item', content: [{ type: 'text', text: 'two' }] },
+      ],
+    };
+    const doc = normalizeDocument([{ type: 'paragraph', content: [{ type: 'text', text: 'intro' }] }, list, list] as any);
+    expect(doc[1]).toEqual(list);
+    expect(doc[2]).toEqual(list);
+  });
+
   it('is wired into the value path together with URL scrubbing', () => {
     const hostile = [
       { type: 'paragraph', content: [{ type: 'text', text: 'x', marks: [{ type: 'link', attrs: { href: 'javascript:alert(1)' } }] }] },

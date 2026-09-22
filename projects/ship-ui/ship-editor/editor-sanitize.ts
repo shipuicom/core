@@ -216,7 +216,7 @@ export function sanitizeHtmlToBody(html: string, option: SanitizeOption = true):
 }
 
 export function normalizeDocument(input: unknown): ASTBlockNodeLike[] {
-  const doc = Array.isArray(input) ? input.map(normalizeBlock).filter((b): b is ASTBlockNodeLike => b !== null) : [];
+  const doc = Array.isArray(input) ? input.map((block) => normalizeBlock(block)).filter((b): b is ASTBlockNodeLike => b !== null) : [];
   if (doc.length === 0) return [{ type: 'paragraph', content: [{ type: 'text', text: '' }] }];
   return doc;
 }
