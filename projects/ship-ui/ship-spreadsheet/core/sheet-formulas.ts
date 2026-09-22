@@ -8,7 +8,7 @@
 // the ops that changed it. See FORMULAS.md for the design; this is its
 // first step (the pure core), not yet wired into the composer.
 
-import { SheetModel, SheetOp } from './sheet-model';
+import type { SheetModel, SheetOp } from './sheet-model';
 
 // ---------------------------------------------------------------------------
 // Values
@@ -261,7 +261,9 @@ function shiftAxis(index: number, op: { kind: 'insert' | 'remove'; at: number; c
  * they keep pointing at the same cells: `=A5` becomes `=A6` when a row is
  * inserted above 5; a reference into a removed band becomes `#REF!`; a
  * range that overlaps a removed band shrinks. Other ops return the source
- * unchanged. Pure text-level, so it can run inside `applySheetOp` later.
+ * unchanged. Pure text-level; `applySheetOp` runs it over every surviving
+ * formula of a structural op, and `transformSheetOp` over the strings an
+ * op carries, so both sides of a concurrent pair rewrite identically.
  */
 export function rewriteFormulaRefs(source: string, op: SheetOp): string {
   if (!isFormula(source)) return source;
@@ -319,17 +321,19 @@ export function rewriteFormulaRefs(source: string, op: SheetOp): string {
         let nlo: number | null;
         let nhi: number | null;
         if (splice.kind === 'insert') {
-          nlo = shiftAxis(lo, splice);
           // An insert inside the range grows it; at its start moves it.
+          nlo = shiftAxis(lo, splice);
           nhi = hi >= splice.at ? hi + splice.count : hi;
         } else {
-          const end = splice.at + splice.count;
-          if (lo >= splice.at && hi < end) {
-            nlo = nhi = null;
-          } else {
-            nlo = lo < splice.at ? lo : lo < end ? splice.at : lo - splice.count;
-            nhi = hi < splice.at ? hi : hi < end ? splice.at - 1 : hi - splice.count;
-          }
+          // A range is the tracks between its two end tracks. A removal
+          // strictly inside shrinks it; one that takes either end is
+          // `#REF!` — where Excel would shrink to the survivors. Ends are
+          // tracks, and the transform preserves track identity, so this is
+          // what keeps concurrent structural edits convergent (TP1): after
+          // a shrink, "the first track" and "just before the first track"
+          // could no longer be told apart by a concurrent insert.
+          nlo = shiftAxis(lo, splice);
+          nhi = shiftAxis(hi, splice);
         }
         if (nlo === null || nhi === null) out += '#REF!';
         else {

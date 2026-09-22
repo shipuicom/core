@@ -26,7 +26,8 @@
 // composer only emits in-range ops; a transport that accepts ops from
 // elsewhere should validate them against its snapshot before applying.
 
-import { SheetOp } from './sheet-model';
+import { isFormula, rewriteFormulaRefs } from './sheet-formulas';
+import type { SheetOp } from './sheet-model';
 
 export type SheetOpSide = 'left' | 'right';
 
@@ -55,7 +56,32 @@ function spliceOf(op: SheetOp): Splice | null {
   }
 }
 
+type SetCells = Extract<SheetOp, { kind: 'set-cells' }>;
+
 const other = (side: SheetOpSide): SheetOpSide => (side === 'left' ? 'right' : 'left');
+
+/** A splice back as the structural op `rewriteFormulaRefs` reads. */
+function opOfSplice(s: Splice): SheetOp {
+  if (s.axis === 'row') return s.insert > 0 ? { kind: 'insert-rows', at: s.at, count: s.insert } : { kind: 'remove-rows', at: s.at, count: s.remove };
+  return s.insert > 0 ? { kind: 'insert-cols', at: s.at, count: s.insert } : { kind: 'remove-cols', at: s.at, count: s.remove };
+}
+
+/**
+ * The strings an op carries, with every formula's references rewritten for
+ * the splices in `through` — what `applySheetOp` does to the model's own
+ * formulas when those splices apply, so a formula written concurrently
+ * lands with the same references either way.
+ */
+function rewriteStrings(cells: readonly string[], through: readonly Splice[]): readonly string[] {
+  if (through.length === 0 || !cells.some(isFormula)) return cells;
+  const ops = through.map(opOfSplice);
+  return cells.map((raw) => (isFormula(raw) ? ops.reduce((text, op) => rewriteFormulaRefs(text, op), raw) : raw));
+}
+
+function rewriteValues(op: SetCells, s: Splice): SetCells {
+  if (!op.values.some((line) => line.some(isFormula))) return op;
+  return { ...op, values: op.values.map((line) => rewriteStrings(line, [s])) };
+}
 
 /** A `set-cells` with nothing to write is dropped rather than carried. */
 function pruneSetCells(op: Extract<SheetOp, { kind: 'set-cells' }>): SheetOp[] {
@@ -108,11 +134,15 @@ function mapRemoveBand(at: number, count: number, s: Splice): { at: number; coun
   return [{ at: start, count: remaining }];
 }
 
+/** `s` as it applies after the same-axis `mine` (an insert): moved past it, or split around it. */
+function spliceThrough(s: Splice, mine: Splice, side: SheetOpSide): Splice[] {
+  if (s.insert > 0) return [{ ...s, at: mapInsertAt(s.at, mine, side) }];
+  return mapRemoveBand(s.at, s.remove, mine).map((band) => ({ ...s, at: band.at, remove: band.count }));
+}
+
 // ---------------------------------------------------------------------------
 // set-cells through a splice — split on insert, clip on remove
 // ---------------------------------------------------------------------------
-
-type SetCells = Extract<SheetOp, { kind: 'set-cells' }>;
 
 function setCellsThroughSplice(op: SetCells, s: Splice): SheetOp[] {
   const start = s.axis === 'row' ? op.row : op.col;
@@ -209,7 +239,8 @@ export function transformSheetOp(op: SheetOp, against: SheetOp, side: SheetOpSid
   const s = spliceOf(against);
 
   if (op.kind === 'set-cells') {
-    if (s) return setCellsThroughSplice(op, s);
+    // Its values were authored in the base frame, the frame `against` splices.
+    if (s) return setCellsThroughSplice(rewriteValues(op, s), s);
     if (against.kind === 'set-cells' && side === 'right') return yieldOverlap(op, against);
     return [op];
   }
@@ -236,15 +267,20 @@ export function transformSheetOp(op: SheetOp, against: SheetOp, side: SheetOpSid
   if (!s) return [op];
 
   if (s.axis !== mine.axis) {
-    // Independent axes; only restored data on an insert needs reshaping.
-    if (op.kind === 'insert-rows' && op.cells) return [{ ...op, cells: reshapeLines(op.cells, op.count, s) }];
-    if (op.kind === 'insert-cols' && op.cells) return [{ ...op, cells: reshapeLines(op.cells, op.count, s) }];
+    // Independent axes; only restored data on an insert needs reshaping —
+    // and its formulas rewritten, as the model's own are when `against` applies.
+    if (op.kind === 'insert-rows' && op.cells) return [{ ...op, cells: reshapeLines(rewriteStrings(op.cells, [s]), op.count, s) }];
+    if (op.kind === 'insert-cols' && op.cells) return [{ ...op, cells: reshapeLines(rewriteStrings(op.cells, [s]), op.count, s) }];
     return [op];
   }
 
-  if (mine.insert > 0) {
+  if (op.kind === 'insert-rows' || op.kind === 'insert-cols') {
     const at = mapInsertAt(mine.at, s, side);
-    return [at === op.at ? op : { ...op, at }];
+    // Restored data lives in the frame after this insert, where `against`
+    // lands as its own transform — through this op, from the other side.
+    const cells = op.cells ? rewriteStrings(op.cells, spliceThrough(s, mine, other(side))) : undefined;
+    if (at === op.at && cells === op.cells) return [op];
+    return [cells === op.cells ? { ...op, at } : { ...op, at, cells }];
   }
 
   return mapRemoveBand(mine.at, mine.remove, s).map((band) => ({ ...op, at: band.at, count: band.count }));

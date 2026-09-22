@@ -13,6 +13,8 @@
 // stack — and eventually the editor's collab rebasing — consumes them
 // without the model growing a second change representation.
 
+import { isFormula, rewriteFormulaRefs } from './sheet-formulas';
+
 export interface SheetModel {
   readonly rows: number;
   readonly cols: number;
@@ -229,7 +231,8 @@ function applyInsertRows(
   if (restoreCells) {
     for (let i = 0; i < Math.min(restoreCells.length, inserted.length); i++) inserted[i] = restoreCells[i] ?? '';
   }
-  const cells = [...model.cells.slice(0, at * model.cols), ...inserted, ...model.cells.slice(at * model.cols)];
+  const op: SheetOp = { kind: 'insert-rows', at, count };
+  const cells = [...rewriteFormulas(model.cells.slice(0, at * model.cols), op), ...inserted, ...rewriteFormulas(model.cells.slice(at * model.cols), op)];
   const heights = new Array<number | null>(count).fill(null);
   if (restoreHeights) for (let i = 0; i < Math.min(restoreHeights.length, count); i++) heights[i] = restoreHeights[i];
   const rowHeights = [...model.rowHeights.slice(0, at), ...heights, ...model.rowHeights.slice(at)];
@@ -245,11 +248,16 @@ function applyRemoveRows(model: SheetModel, rawAt: number, rawCount: number): Sh
   if (count === 0) return { model, inverse: [] };
   const removedCells = model.cells.slice(at * model.cols, (at + count) * model.cols);
   const removedHeights = model.rowHeights.slice(at, at + count);
-  const cells = [...model.cells.slice(0, at * model.cols), ...model.cells.slice((at + count) * model.cols)];
+  const op: SheetOp = { kind: 'remove-rows', at, count };
+  const survivors = [...model.cells.slice(0, at * model.cols), ...model.cells.slice((at + count) * model.cols)];
+  const cells = rewriteFormulas(survivors, op);
   const rowHeights = [...model.rowHeights.slice(0, at), ...model.rowHeights.slice(at + count)];
+  const restore: SheetOp = { kind: 'insert-rows', at, count, cells: removedCells, heights: removedHeights };
+  const cols = model.cols;
+  const lost = lostFormulas(survivors, cells, restore, (i) => [Math.floor(i / cols) + (Math.floor(i / cols) >= at ? count : 0), i % cols]);
   return {
     model: { ...model, rows: model.rows - count, cells, rowHeights },
-    inverse: [{ kind: 'insert-rows', at, count, cells: removedCells, heights: removedHeights }],
+    inverse: [restore, ...lost],
   };
 }
 
@@ -266,9 +274,11 @@ function applyInsertCols(
   const at = Math.max(0, Math.min(rawAt, model.cols));
   const cols = model.cols + count;
   const cells = new Array<string>(model.rows * cols).fill('');
+  const op: SheetOp = { kind: 'insert-cols', at, count };
   for (let r = 0; r < model.rows; r++) {
     for (let c = 0; c < model.cols; c++) {
-      cells[r * cols + (c < at ? c : c + count)] = model.cells[r * model.cols + c];
+      const value = model.cells[r * model.cols + c];
+      cells[r * cols + (c < at ? c : c + count)] = isFormula(value) ? rewriteFormulaRefs(value, op) : value;
     }
     if (restoreCells) {
       // Restored column data arrives column-major: count columns × rows cells.
@@ -296,26 +306,54 @@ function applyRemoveCols(model: SheetModel, rawAt: number, rawCount: number): Sh
   const count = Math.max(0, Math.min(rawCount, model.cols - at));
   if (count === 0) return { model, inverse: [] };
   const cols = model.cols - count;
-  const cells = new Array<string>(model.rows * cols).fill('');
+  const survivors = new Array<string>(model.rows * cols).fill('');
   const removed = new Array<string>(model.rows * count).fill('');
   for (let r = 0; r < model.rows; r++) {
     for (let c = 0; c < model.cols; c++) {
       const value = model.cells[r * model.cols + c];
-      if (c < at) cells[r * cols + c] = value;
+      if (c < at) survivors[r * cols + c] = value;
       else if (c < at + count) removed[(c - at) * model.rows + r] = value;
-      else cells[r * cols + (c - count)] = value;
+      else survivors[r * cols + (c - count)] = value;
     }
   }
+  const cells = rewriteFormulas(survivors, { kind: 'remove-cols', at, count });
   const removedWidths = model.colWidths.slice(at, at + count);
   const colWidths = [...model.colWidths.slice(0, at), ...model.colWidths.slice(at + count)];
   const existingTypes = colTypesOf(model);
   const removedTypes = existingTypes.slice(at, at + count);
   const colTypes = [...existingTypes.slice(0, at), ...existingTypes.slice(at + count)];
   const inverse: SheetOp = { kind: 'insert-cols', at, count, cells: removed, widths: removedWidths };
+  const restore = removedTypes.some((t) => t !== null) ? { ...inverse, types: removedTypes } : inverse;
+  const lost = lostFormulas(survivors, cells, restore, (i) => [Math.floor(i / cols), (i % cols) + (i % cols >= at ? count : 0)]);
   return {
     model: { ...model, cols, cells, colWidths, colTypes },
-    inverse: [removedTypes.some((t) => t !== null) ? { ...inverse, types: removedTypes } : inverse],
+    inverse: [restore, ...lost],
   };
+}
+
+/** The cells with every formula's references rewritten for a structural op (see `rewriteFormulaRefs`). */
+function rewriteFormulas(cells: readonly string[], op: SheetOp): string[] {
+  const out = cells.slice();
+  for (let i = 0; i < out.length; i++) if (isFormula(out[i])) out[i] = rewriteFormulaRefs(out[i], op);
+  return out;
+}
+
+/**
+ * A removal's inverse insert shifts the survivors' references back, but a
+ * reference into the removed band became `#REF!` and a range that shrank
+ * against it does not grow back: those cells get a `set-cells` with their
+ * pre-removal source, addressed in the restored (pre-removal) frame, so
+ * the inverse stays exact.
+ */
+function lostFormulas(before: readonly string[], after: readonly string[], restore: SheetOp, place: (index: number) => [number, number]): SheetOp[] {
+  const out: SheetOp[] = [];
+  for (let i = 0; i < before.length; i++) {
+    if (before[i] === after[i] || !isFormula(before[i])) continue;
+    if (rewriteFormulaRefs(after[i], restore) === before[i]) continue;
+    const [row, col] = place(i);
+    out.push({ kind: 'set-cells', row, col, values: [[before[i]]] });
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------------------

@@ -192,4 +192,33 @@ describe('column types', () => {
     expect(sheetFromJSON(sheetToJSON(typed))).toEqual(typed);
     expect(sheetFromJSON({ rows: 1, cols: 2, cells: [], colTypes: [42, ''] })!.colTypes).toEqual([null, null]);
   });
+
+  describe('formulas across structural ops', () => {
+    const base = createSheet(4, 3, ['1', '2', '=A1+B1', '3', '4', '=SUM(A1:A3)', '5', '6', '=A4', '', '', '=C2']);
+
+    it('insert-rows shifts the references of every surviving formula, not the inserted cells', () => {
+      const { model } = applySheetOp(base, { kind: 'insert-rows', at: 1, count: 1, cells: ['', '', '=A1'] });
+      expect(model.cells).toEqual(['1', '2', '=A1+B1', '', '', '=A1', '3', '4', '=SUM(A1:A4)', '5', '6', '=A5', '', '', '=C3']);
+    });
+
+    it('insert-cols and remove-cols rewrite column references', () => {
+      const { model } = applySheetOp(base, { kind: 'insert-cols', at: 1, count: 1 });
+      expect(cellAt(model, 0, 3)).toBe('=A1+C1');
+      expect(cellAt(model, 3, 3)).toBe('=D2');
+      const removed = applySheetOp(base, { kind: 'remove-cols', at: 0, count: 1 });
+      expect(removed.model.cells).toEqual(['2', '=#REF!+A1', '4', '=SUM(#REF!)', '6', '=#REF!', '', '=B2']);
+    });
+
+    it('remove-rows turns references into the band into #REF! and inverts exactly, redo included', () => {
+      const removed = applySheetOp(base, { kind: 'remove-rows', at: 1, count: 1 });
+      expect(removed.model.cells).toEqual(['1', '2', '=A1+B1', '5', '6', '=A3', '', '', '=#REF!']);
+      expect(removed.inverse).toEqual([
+        { kind: 'insert-rows', at: 1, count: 1, cells: ['3', '4', '=SUM(A1:A3)'], heights: [null] },
+        { kind: 'set-cells', row: 3, col: 2, values: [['=C2']] },
+      ]);
+      const undone = applySheetOps(removed.model, removed.inverse);
+      expect(undone.model).toEqual(base);
+      expect(applySheetOps(undone.model, undone.inverse).model).toEqual(removed.model);
+    });
+  });
 });

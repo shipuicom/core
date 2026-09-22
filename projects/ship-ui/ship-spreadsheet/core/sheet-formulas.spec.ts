@@ -136,8 +136,9 @@ describe('SheetEvaluator', () => {
     const ops: SheetOp[] = [{ kind: 'insert-rows', at: 0, count: 1 }];
     model = applySheetOps(model, ops).model;
     ev.update(model, ops);
-    // Not rewritten yet (FORMULAS.md step 2): the formula now reads the empty new row.
-    expect(ev.valueAt(2, 0)).toBe('0');
+    // The apply rewrote the range past the new row; the value survives.
+    expect(model.cells[4]).toBe('=SUM(A2:B2)');
+    expect(ev.valueAt(2, 0)).toBe('3');
     expect(ev.formulaCells()).toEqual([4]);
   });
 
@@ -168,7 +169,11 @@ describe('rewriteFormulaRefs', () => {
     expect(rewriteFormulaRefs('=A5+A9', { kind: 'remove-rows', at: 4, count: 2 })).toBe('=#REF!+A7');
     expect(rewriteFormulaRefs('=A2', { kind: 'remove-rows', at: 4, count: 2 })).toBe('=A2');
     expect(rewriteFormulaRefs('=SUM(A1:A5)', { kind: 'remove-rows', at: 2, count: 2 })).toBe('=SUM(A1:A3)');
-    expect(rewriteFormulaRefs('=SUM(A3:A5)', { kind: 'remove-rows', at: 0, count: 4 })).toBe('=SUM(A1:A1)');
+    expect(rewriteFormulaRefs('=SUM(A1:A5)', { kind: 'remove-rows', at: 5, count: 2 })).toBe('=SUM(A1:A5)');
+    expect(rewriteFormulaRefs('=SUM(A6:A9)', { kind: 'remove-rows', at: 0, count: 4 })).toBe('=SUM(A2:A5)');
+    // A removal taking either end of a range is #REF! (see the rewrite's note on convergence).
+    expect(rewriteFormulaRefs('=SUM(A3:A5)', { kind: 'remove-rows', at: 0, count: 4 })).toBe('=SUM(#REF!)');
+    expect(rewriteFormulaRefs('=SUM(A3:A5)', { kind: 'remove-rows', at: 4, count: 4 })).toBe('=SUM(#REF!)');
     expect(rewriteFormulaRefs('=SUM(A3:A4)', { kind: 'remove-rows', at: 2, count: 2 })).toBe('=SUM(#REF!)');
     expect(rewriteFormulaRefs('=SUM(A3:A4)', { kind: 'remove-rows', at: 1, count: 5 })).toBe('=SUM(#REF!)');
     expect(rewriteFormulaRefs('=B1', { kind: 'remove-cols', at: 1, count: 1 })).toBe('=#REF!');

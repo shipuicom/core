@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SheetModel, SheetOp, applySheetOp, applySheetOps, createSheet } from './sheet-model';
+import { formulaColLabel } from './sheet-formulas';
 import { rebaseSheetOps, transformSheetOp, transformSheetOps } from './sheet-transform';
 
 const SCALE = Math.max(1, Number(globalThis.process?.env?.['FUZZ_SCALE'] ?? 1) || 1);
@@ -16,9 +17,25 @@ type Rnd = () => number;
 const pick = (rnd: Rnd, n: number) => Math.floor(rnd() * n);
 const deepEq = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
-function labelled(rows: number, cols: number): SheetModel {
+/** A random formula: refs and ranges around (not necessarily inside) a `rows` × `cols` grid, some absolute. */
+function randomFormula(rnd: Rnd, rows: number, cols: number): string {
+  const ref = () => `${rnd() < 0.2 ? '$' : ''}${formulaColLabel(pick(rnd, cols + 1))}${rnd() < 0.2 ? '$' : ''}${1 + pick(rnd, rows + 1)}`;
+  const range = () => `${ref()}:${ref()}`;
+  switch (pick(rnd, 4)) {
+    case 0:
+      return `=${ref()}`;
+    case 1:
+      return `=${ref()}+${ref()}*2`;
+    case 2:
+      return `=SUM(${range()})`;
+    default:
+      return `=IF(${ref()}>1,"${ref()}",AVG(${range()}))&${ref()}`;
+  }
+}
+
+function labelled(rows: number, cols: number, rnd?: Rnd): SheetModel {
   const cells: string[] = [];
-  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) cells.push(`r${r}c${c}`);
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) cells.push(rnd && rnd() < 0.3 ? randomFormula(rnd, rows, cols) : `r${r}c${c}`);
   let model = createSheet(rows, cols, cells);
   for (let c = 0; c < cols; c += 2) model = applySheetOp(model, { kind: 'set-col-width', col: c, width: 50 + c }).model;
   for (let r = 1; r < rows; r += 3) model = applySheetOp(model, { kind: 'set-row-height', row: r, height: 20 + r }).model;
@@ -27,8 +44,11 @@ function labelled(rows: number, cols: number): SheetModel {
 }
 
 function randomModel(rnd: Rnd): SheetModel {
-  return labelled(1 + pick(rnd, 6), 1 + pick(rnd, 6));
+  return labelled(1 + pick(rnd, 6), 1 + pick(rnd, 6), rnd);
 }
+
+/** A cell string for an op: a label, or (one in four) a formula over the model's grid. */
+const cellText = (rnd: Rnd, model: SheetModel, label: string) => (rnd() < 0.25 ? randomFormula(rnd, model.rows + 1, model.cols + 1) : label);
 
 let tag = 0;
 
@@ -47,7 +67,7 @@ function randomOp(rnd: Rnd, model: SheetModel): SheetOp {
       for (let r = 0; r < h; r++) {
         // Ragged lines: some rows are shorter than the rectangle.
         const width = rnd() < 0.25 ? pick(rnd, w + 1) : w;
-        values.push(Array.from({ length: width }, (_, c) => `s${t}_${r}_${c}`));
+        values.push(Array.from({ length: width }, (_, c) => cellText(rnd, model, `s${t}_${r}_${c}`)));
       }
       return { kind: 'set-cells', row, col, values };
     }
@@ -59,7 +79,7 @@ function randomOp(rnd: Rnd, model: SheetModel): SheetOp {
         kind: 'insert-rows',
         at,
         count,
-        cells: Array.from({ length: count * model.cols }, (_, i) => `ir${t}_${i}`),
+        cells: Array.from({ length: count * model.cols }, (_, i) => cellText(rnd, model, `ir${t}_${i}`)),
         heights: Array.from({ length: count }, (_, i) => (i % 2 ? 33 : null)),
       };
     }
@@ -75,7 +95,7 @@ function randomOp(rnd: Rnd, model: SheetModel): SheetOp {
         kind: 'insert-cols',
         at,
         count,
-        cells: Array.from({ length: count * model.rows }, (_, i) => `ic${t}_${i}`),
+        cells: Array.from({ length: count * model.rows }, (_, i) => cellText(rnd, model, `ic${t}_${i}`)),
         widths: Array.from({ length: count }, (_, i) => (i % 2 ? 77 : null)),
         types: Array.from({ length: count }, (_, i) => (i % 2 ? 'checkbox' : null)),
       };
@@ -168,6 +188,21 @@ describe('transformSheetOp', () => {
     expect(transformSheetOp(t, { kind: 'insert-cols', at: 0, count: 1 })).toEqual([{ ...t, col: 2 }]);
     expect(transformSheetOp(t, { kind: 'set-col-type', col: 1, type: 'date' }, 'right')).toEqual([]);
     expect(transformSheetOp(t, w)).toEqual([t]);
+  });
+
+  it('rewrites the formulas an op carries so both orders land the same references', () => {
+    const set: SheetOp = { kind: 'set-cells', row: 0, col: 0, values: [['=A5', '=SUM(B2:B4)']] };
+    expect(transformSheetOp(set, { kind: 'insert-rows', at: 2, count: 1 })).toEqual([{ ...set, values: [['=A6', '=SUM(B2:B5)']] }]);
+    expect(transformSheetOp(set, { kind: 'remove-rows', at: 4, count: 1 })).toEqual([{ ...set, values: [['=#REF!', '=SUM(B2:B4)']] }]);
+    expect(transformSheetOp(set, { kind: 'remove-cols', at: 1, count: 1 })).toEqual([{ kind: 'set-cells', row: 0, col: 0, values: [['=A5']] }]);
+    // Restored rows live in the frame after their own insert: a concurrent
+    // insert at the same index lands after them on the left, so `A3` — the
+    // restored row itself — stays put; from the right it moves past.
+    const undo: SheetOp = { kind: 'insert-rows', at: 2, count: 1, cells: ['=A3', '=A7'] };
+    const other: SheetOp = { kind: 'insert-rows', at: 2, count: 1 };
+    expect(transformSheetOp(undo, other, 'left')).toEqual([{ ...undo, cells: ['=A3', '=A8'] }]);
+    expect(transformSheetOp(undo, other, 'right')).toEqual([{ ...undo, at: 3, cells: ['=A4', '=A8'] }]);
+    expect(transformSheetOp(undo, { kind: 'remove-cols', at: 0, count: 1 })).toEqual([{ ...undo, cells: ['=#REF!'] }]);
   });
 
   it('reshapes restored cells on an insert against a splice on the other axis', () => {
