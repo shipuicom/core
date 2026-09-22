@@ -1567,6 +1567,14 @@ export class ShipEditor implements ControlValueAccessor {
         this.engine.updateBlockAttrs(indexSig(), patch);
         this.#render();
       },
+      applyInner: (inner) => {
+        this.engine.applyBlockInner(indexSig(), inner);
+        this.#render();
+      },
+      innerOps: computed(() => {
+        const last = this.engine.lastInnerOp();
+        return last && last.blockIndex === indexSig() ? { seq: last.seq, inner: last.inner } : null;
+      }),
       select: () => this.engine.selectBlock(indexSig()),
       remove: () => {
         this.engine.deleteBlock(indexSig());

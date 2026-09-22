@@ -1,5 +1,5 @@
 import { ColumnarDocument, ColumnarRowInput, RowKind, toColumnar } from './editor-columnar';
-import { EditorOp } from './editor-transactions';
+import { EditorOp, blockInnerAlgebra } from './editor-transactions';
 import { ASTBlockNode, ASTInlineNode, ASTMark } from './editor.types';
 
 /**
@@ -88,6 +88,14 @@ export function rowsForBlocks(blocks: ASTBlockNode[], baseRow: number): Columnar
  * plus one per descendant.
  */
 export function applyOpToColumnar(cd: ColumnarDocument, op: EditorOp): void {
+  if (op.kind === 'block-inner') {
+    // Attrs live on the row; a void block keeps its size, so no position moves.
+    const row = cd.rowOfTopLevel(op.blockIndex);
+    const algebra = blockInnerAlgebra(op.type);
+    if (row >= cd.rows || cd.typeOf(row) !== op.type || !algebra) return;
+    cd.setAttrs(row, algebra.apply(cd.attrsOf(row) ?? {}, op.inner));
+    return;
+  }
   if (op.kind === 'inline') {
     const row = cd.rowOfTopLevel(op.blockIndex);
     if (row >= cd.rows) return;

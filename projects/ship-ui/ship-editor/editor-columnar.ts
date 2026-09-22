@@ -437,6 +437,13 @@ export class ColumnarDocument {
     return this.#attrs.get(row);
   }
 
+  /** Replace one row's attrs (a block-inner op); empty attrs clear the entry. */
+  setAttrs(row: number, attrs: Record<string, unknown> | undefined): void {
+    if (attrs && Object.keys(attrs).length) this.#attrs.set(row, { ...attrs });
+    else this.#attrs.delete(row);
+    this.version++;
+  }
+
   /**
    * Row index of the `n`-th top-level block.
    *

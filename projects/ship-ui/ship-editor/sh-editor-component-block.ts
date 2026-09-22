@@ -1,6 +1,7 @@
 import { InjectionToken, Signal, Type } from '@angular/core';
 import { BaseBlockBehavior } from './editor-behaviors';
 import { escapeAttr } from './editor-sanitize';
+import { BlockInnerAlgebra } from './editor-transactions';
 import { ASTBlockNode } from './editor.types';
 
 /**
@@ -23,6 +24,22 @@ export interface ShipEditorBlockContext {
   readonly readonly: Signal<boolean>;
   /** Merge a patch into the block's attrs as one undoable transaction. */
   updateAttrs(patch: Record<string, unknown>): void;
+  /**
+   * Apply an inner op (a `SheetOp[]` transaction for a sheet) as one
+   * undoable transaction through the behavior's `innerAlgebra`. Concurrent
+   * inner ops from peers merge instead of one of them losing to a block
+   * splice. Only present when the editor supports inner ops; a block falls
+   * back to `updateAttrs` otherwise.
+   */
+  applyInner?(inner: unknown): void;
+  /**
+   * The last inner op that reached this block from outside its own
+   * `applyInner` call — a peer's edit, an editor undo/redo — with a sequence
+   * number that changes per op. A block can apply it to its live model and
+   * keep its in-component history; `attrs` carries the resulting state
+   * either way.
+   */
+  readonly innerOps?: Signal<{ seq: number; inner: unknown } | null>;
   /**
    * Hand control back to the editor: selects the block (border + editor
    * keybindings) and moves focus to the editing surface. While focus is
@@ -74,6 +91,13 @@ export abstract class BaseComponentBlockBehavior extends BaseBlockBehavior {
 
   /** The Angular component mounted inside the block's wrapper element. */
   abstract readonly component: Type<unknown>;
+
+  /**
+   * The algebra for ops that edit inside this block (see `BlockInnerOp`).
+   * With it, `ShipEditorBlockContext.applyInner` records an inner op
+   * instead of a block splice, and concurrent inner edits converge.
+   */
+  readonly innerAlgebra?: BlockInnerAlgebra;
 
   readonly enterPhysics = { strategy: 'insert-default-below' as const, defaultSplitTarget: 'paragraph' };
   readonly backspacePhysics = {};

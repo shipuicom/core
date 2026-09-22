@@ -1599,6 +1599,8 @@ export function deleteBlockOp(cd: ColumnarDocument, index: number): ColumnarMuta
  */
 export function remoteStepMap(cd: ColumnarDocument, op: EditorOp): StepMap | null {
   const tops = countTops(cd);
+  // An inner op rewrites a void block's attrs; the flat positions are untouched.
+  if (op.kind === 'block-inner') return op.blockIndex >= 0 && op.blockIndex < tops ? new StepMap([]) : null;
   const rootRows: number[] = [];
   for (let r = 0; r < cd.rows; r++) if (cd.parentOf(r) === -1) rootRows.push(r);
 

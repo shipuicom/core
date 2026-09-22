@@ -25,5 +25,9 @@ export {
   type EditorTransaction,
   type BlockSplice,
   type InlineSplice,
+  type BlockInnerOp,
+  type BlockInnerAlgebra,
+  registerBlockInnerAlgebra,
+  blockInnerAlgebra,
 } from './editor-transactions';
 export { StepMap, stepMapFromOp, diffFlat, posToLogical, logicalToPos, nodeSize, docSize } from './editor-flat-positions';

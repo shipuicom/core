@@ -29,7 +29,7 @@ import {
   topLevelCount,
 } from './editor-columnar-mutations';
 import { applyOpToColumnar } from './editor-columnar-ops';
-import { EditorOp, EditorTransaction, diffDocuments, invertOp, transformOp } from './editor-transactions';
+import { BlockInnerAlgebra, BlockInnerOp, EditorOp, EditorTransaction, blockInnerAlgebra, diffDocuments, invertOp, registerBlockInnerAlgebra, transformOp } from './editor-transactions';
 import { ASTBlockNode, ASTDocument, ASTMark, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import { shiftRange } from './editor-multi-selection';
@@ -90,10 +90,11 @@ export class EditorEngineService {
   #renderHints: RenderHint[] = [{ kind: 'all' }];
 
   #noteOp(op: EditorOp) {
-    if (op.kind === 'inline') {
+    if (op.kind === 'inline' || op.kind === 'block-inner') {
       this.#renderHints.push({ kind: 'block', index: op.blockIndex });
       this.#htmlCache[op.blockIndex] = undefined;
       this.#mdCache[op.blockIndex] = undefined;
+      if (op.kind === 'block-inner') this.lastInnerOp.set({ blockIndex: op.blockIndex, inner: op.inner, seq: ++this.#innerSeq });
     } else {
       // A `block` hint names its block by index, and that index is resolved
       // against the AST when the DOM is painted rather than when the hint was
@@ -171,6 +172,14 @@ export class EditorEngineService {
 
   readonly lastTransaction = signal<EditorTransaction | null>(null);
 
+  /**
+   * The last block-inner op applied here — local, undo/redo or remote — so a
+   * mounted component block can apply it to its own model (and keep its
+   * in-component history) instead of re-adopting the attrs wholesale.
+   */
+  readonly lastInnerOp = signal<{ blockIndex: number; inner: unknown; seq: number } | null>(null);
+  #innerSeq = 0;
+
   readonly canUndo = computed(() => this.#undoStack().length > 0);
   readonly canRedo = computed(() => this.#redoStack().length > 0);
 
@@ -186,8 +195,11 @@ export class EditorEngineService {
   }
 
   register(behavior: BaseBlockBehavior | BaseInlineBehavior) {
-    if (behavior instanceof BaseBlockBehavior) this.blocks.set(behavior.type, behavior);
-    else this.inlines.set(behavior.type, behavior);
+    if (behavior instanceof BaseBlockBehavior) {
+      this.blocks.set(behavior.type, behavior);
+      const algebra = (behavior as { innerAlgebra?: BlockInnerAlgebra }).innerAlgebra;
+      if (algebra) registerBlockInnerAlgebra(behavior.type, algebra);
+    } else this.inlines.set(behavior.type, behavior);
   }
 
   unregister(behavior: BaseBlockBehavior | BaseInlineBehavior) {
@@ -509,6 +521,25 @@ export class EditorEngineService {
     patched.attrs = { ...(patched.attrs ?? {}), ...attrs };
     const sel = this.selection.active() ?? { from: 0, to: 0 };
     this.#apply(replaceBlocksOp(cd, index, 1, [patched], sel), sel);
+  }
+
+  /**
+   * Apply an inner op to a component block as one undoable transaction —
+   * a `SheetOp[]` transaction to a sheet block. Needs the block type's
+   * `innerAlgebra`; a block without one keeps using `updateBlockAttrs`.
+   */
+  applyBlockInner(index: number, inner: unknown): void {
+    const cd = this.columnar;
+    const row = cd.rowOfTopLevel(index);
+    if (row >= cd.rows) return;
+    const type = cd.typeOf(row);
+    const algebra = blockInnerAlgebra(type);
+    if (!algebra || this.blocks.get(type)?.category !== 'void') return;
+    const inverse = algebra.invert(inner, cd.attrsOf(row) ?? {});
+    const op: BlockInnerOp = { kind: 'block-inner', blockIndex: index, type, inner, inverse };
+    applyOpToColumnar(cd, op);
+    const sel = this.selection.active() ?? { from: 0, to: 0 };
+    this.#apply({ op, selAfter: sel }, sel);
   }
 
   moveBlock(from: number, to: number) {

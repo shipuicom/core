@@ -17,7 +17,54 @@ export interface InlineSplice {
   inserted: ASTInlineNode[];
 }
 
-export type EditorOp = BlockSplice | InlineSplice;
+/**
+ * An op that edits *inside* a component block — a `SheetOp[]` transaction
+ * for a sheet block — instead of replacing the block wholesale. Two peers
+ * editing the same embedded sheet converge cell by cell through the block
+ * type's {@link BlockInnerAlgebra}; a block splice would let one of them lose.
+ * `inner` is opaque to the editor; the algebra registered for `type`
+ * interprets it.
+ */
+export interface BlockInnerOp {
+  kind: 'block-inner';
+  blockIndex: number;
+  /** The block type whose algebra interprets `inner` (`'sheet'`). */
+  type: string;
+  inner: unknown;
+  /**
+   * The inner op that undoes `inner` against the attrs it was applied to.
+   * The engine computes it at apply time (an inverse needs the pre-state),
+   * so `invertOp` can stay pure. Absent on an op that was never applied.
+   */
+  inverse?: unknown;
+}
+
+export type EditorOp = BlockSplice | InlineSplice | BlockInnerOp;
+
+/** The algebra a block type supplies so the editor can transform, invert and apply its inner ops. */
+export interface BlockInnerAlgebra<Inner = unknown> {
+  transform(op: Inner, against: Inner, side: 'left' | 'right'): Inner | null;
+  /** The op that undoes `op` when applied to `attrsBefore`. */
+  invert(op: Inner, attrsBefore: Record<string, unknown>): Inner;
+  /** The attrs after applying `op` — attrs are the block's persisted state. */
+  apply(attrs: Record<string, unknown>, op: Inner): Record<string, unknown>;
+}
+
+const innerAlgebras = new Map<string, BlockInnerAlgebra>();
+
+/**
+ * Register the inner-op algebra for a block type. The engine does this for
+ * every registered `BaseComponentBlockBehavior` that carries an
+ * `innerAlgebra`; the module-level registry is what lets the pure
+ * `transformOp`/`applyOp`/`invertOp` see it.
+ */
+export function registerBlockInnerAlgebra(type: string, algebra: BlockInnerAlgebra): void {
+  innerAlgebras.set(type, algebra);
+}
+
+export function blockInnerAlgebra(type: string): BlockInnerAlgebra | undefined {
+  return innerAlgebras.get(type);
+}
 
 export interface EditorTransaction {
 
@@ -144,12 +191,25 @@ export function diffDocuments(oldDoc: ASTDocument, newDoc: ASTDocument): EditorO
 }
 
 export function invertOp(op: EditorOp): EditorOp {
+  if (op.kind === 'block-inner') {
+    // An op that never carried its inverse cannot be undone; keep it as is
+    // rather than invent one.
+    return op.inverse === undefined ? op : { ...op, inner: op.inverse, inverse: op.inner };
+  }
   return { ...op, removed: op.inserted, inserted: op.removed } as EditorOp;
 }
 
 export function applyOp(doc: ASTDocument, op: EditorOp): ASTDocument {
   if (op.kind === 'block') {
     return [...doc.slice(0, op.at), ...structuredClone(op.inserted), ...doc.slice(op.at + op.removed.length)];
+  }
+  if (op.kind === 'block-inner') {
+    const block = doc[op.blockIndex];
+    const algebra = blockInnerAlgebra(op.type);
+    if (!block || block.type !== op.type || !algebra) return doc;
+    const next = [...doc];
+    next[op.blockIndex] = { ...block, attrs: algebra.apply(block.attrs ?? {}, op.inner) };
+    return next;
   }
   const block = doc[op.blockIndex];
   if (!block || !isInlineContent(block.content)) return doc;
@@ -192,10 +252,41 @@ export function transformOp(op: EditorOp, against: EditorOp, side: 'left' | 'rig
       return at === op.at ? op : { ...op, at };
     }
 
+    // Inline and inner ops address one block: it moves with the splice, or
+    // is gone (or replaced wholesale) when the splice removed it.
     const aEnd = against.at + against.removed.length;
     if (aEnd <= op.blockIndex) return delta === 0 ? op : { ...op, blockIndex: op.blockIndex + delta };
     if (op.blockIndex < against.at) return op;
     return null;
+  }
+
+  if (against.kind === 'block-inner') {
+    if (op.kind === 'inline') return op;
+    if (op.kind === 'block-inner') {
+      if (op.blockIndex !== against.blockIndex || op.type !== against.type) return op;
+      const algebra = blockInnerAlgebra(op.type);
+      if (!algebra) return op;
+      const inner = algebra.transform(op.inner, against.inner, side);
+      if (inner === null) return null;
+      // The inverse rides along, transformed the same way — the ladder the
+      // sheet's own history runs; exact for disjoint edits, best-effort for
+      // a tie on the same cell.
+      const inverse = op.inverse === undefined ? undefined : algebra.transform(op.inverse, against.inner, side);
+      return { ...op, inner, ...(inverse === null || inverse === undefined ? { inverse: undefined } : { inverse }) };
+    }
+    // A splice that removes the block the inner op edited: patch the stale
+    // removed block so a later invert re-inserts it as the peer last saw it.
+    if (against.blockIndex >= op.at && against.blockIndex < op.at + op.removed.length) {
+      const idx = against.blockIndex - op.at;
+      const stale = op.removed[idx];
+      const algebra = blockInnerAlgebra(against.type);
+      if (stale.type === against.type && algebra) {
+        const removed = [...op.removed];
+        removed[idx] = { ...stale, attrs: algebra.apply(stale.attrs ?? {}, against.inner) };
+        return { ...op, removed };
+      }
+    }
+    return op;
   }
 
   if (op.kind === 'inline') {
@@ -204,6 +295,8 @@ export function transformOp(op: EditorOp, against: EditorOp, side: 'left' | 'rig
     if (at === null) return null;
     return at === op.at ? op : { ...op, at };
   }
+
+  if (op.kind === 'block-inner') return op;
 
   if (against.blockIndex >= op.at && against.blockIndex < op.at + op.removed.length) {
     const idx = against.blockIndex - op.at;
