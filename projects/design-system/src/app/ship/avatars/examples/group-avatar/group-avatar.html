@@ -1,0 +1,16 @@
+<sh-avatar-group [max]="3">
+  @for (name of people(); track name) {
+    <sh-avatar [name]="name" />
+  }
+</sh-avatar-group>
+
+<sh-avatar-group [max]="4" size="small">
+  @for (name of people(); track name) {
+    <sh-avatar [name]="name" />
+  }
+</sh-avatar-group>
+
+<div class="actions">
+  <button shButton class="small" (click)="add()">Add</button>
+  <button shButton class="small" (click)="remove()">Remove</button>
+</div>

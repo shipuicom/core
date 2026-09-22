@@ -1,0 +1,117 @@
+@use 'helpers' as *;
+
+$shipAvatar: true !default;
+
+@if $shipAvatar == true {
+  sh-avatar {
+    --avatar-size: #{p2r(32)};
+    --avatar-font: var(--paragraph-30B);
+    --avatar-bg: var(--base-3);
+    --avatar-c: var(--base-11);
+    --avatar-ring-c: var(--primary-8);
+    --avatar-border-c: var(--base-1);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    width: var(--avatar-size);
+    height: var(--avatar-size);
+    border-radius: 50%;
+    background: var(--avatar-bg);
+    color: var(--avatar-c);
+    font: var(--avatar-font);
+    letter-spacing: 0.02em;
+    overflow: hidden;
+    user-select: none;
+    vertical-align: middle;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .initials {
+      line-height: 1;
+    }
+
+    &.small {
+      --avatar-size: #{p2r(24)};
+      --avatar-font: var(--paragraph-40B);
+      font-size: p2r(10);
+    }
+
+    &.ring {
+      box-shadow: 0 0 0 2px var(--avatar-border-c), 0 0 0 4px var(--avatar-ring-c);
+    }
+
+    &.ring-primary { --avatar-ring-c: var(--primary-8); }
+    &.ring-accent { --avatar-ring-c: var(--accent-8); }
+    &.ring-warn { --avatar-ring-c: var(--warn-8); }
+    &.ring-error { --avatar-ring-c: var(--error-8); }
+    &.ring-success { --avatar-ring-c: var(--success-8); }
+
+    &.primary { --avatar-bg: var(--primary-3); --avatar-c: var(--primary-11); }
+    &.accent { --avatar-bg: var(--accent-3); --avatar-c: var(--accent-11); }
+    &.warn { --avatar-bg: var(--warn-3); --avatar-c: var(--warn-11); }
+    &.error { --avatar-bg: var(--error-3); --avatar-c: var(--error-11); }
+    &.success { --avatar-bg: var(--success-3); --avatar-c: var(--success-11); }
+
+    // Name-derived hues: eight evenly spaced oklch hues, a tint behind a dark ink in light mode and
+    // the reverse in dark mode.
+    @for $i from 0 through 7 {
+      &.hue-#{$i} {
+        --avatar-h: #{$i * 45 + 20};
+        --avatar-bg: light-dark(oklch(0.9 0.07 var(--avatar-h)), oklch(0.35 0.08 var(--avatar-h)));
+        --avatar-c: light-dark(oklch(0.4 0.12 var(--avatar-h)), oklch(0.9 0.07 var(--avatar-h)));
+      }
+    }
+
+    &.hidden {
+      display: none;
+    }
+  }
+
+  sh-avatar-group {
+    --avatar-overlap: #{p2r(-8)};
+
+    display: inline-flex;
+    align-items: center;
+
+    sh-avatar,
+    .sh-avatar-overflow {
+      border: 2px solid var(--avatar-border-c, var(--base-1));
+      box-sizing: content-box;
+    }
+
+    > * + * {
+      margin-left: var(--avatar-overlap);
+    }
+
+    .sh-avatar-overflow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: p2r(32);
+      height: p2r(32);
+      border-radius: 50%;
+      background: var(--base-3);
+      color: var(--base-11);
+      font: var(--paragraph-40B);
+    }
+
+    &.small {
+      --avatar-overlap: #{p2r(-6)};
+
+      .sh-avatar-overflow {
+        width: p2r(24);
+        height: p2r(24);
+        font-size: p2r(10);
+      }
+    }
+  }
+}

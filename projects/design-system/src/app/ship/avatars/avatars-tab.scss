@@ -1,0 +1,5 @@
+@use '../showcase' as *;
+
+:host {
+  @extend %tab-host;
+}

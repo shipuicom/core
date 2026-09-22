@@ -59,6 +59,7 @@ export const appConfig: ApplicationConfig = {
         },
         { id: 'accordions', label: 'Accordions', category: 'Components', data: { route: '/accordions' } },
         { id: 'alerts', label: 'Alerts', category: 'Components', data: { route: '/alerts' } },
+        { id: 'avatars', label: 'Avatars', category: 'Components', data: { route: '/avatars' } },
         {
           id: 'blueprints',
           label: 'Blueprints',

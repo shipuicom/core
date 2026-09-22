@@ -1,0 +1,16 @@
+<app-previewer defaultView="markup" path="/avatars/examples/basic-avatar/basic-avatar" title="Basic">
+  <app-basic-avatar class="example" />
+</app-previewer>
+
+<p>
+  <code>sh-avatar</code> shows a picture when <code>src</code> loads and otherwise one or two initials taken from
+  <code>name</code> (first and last word). The background colour is derived from the name, so the same person always
+  gets the same colour; set <code>color</code> to use a semantic scale instead. Sizes are <code>small</code> and the
+  regular size.
+</p>
+
+<p>
+  <code>sh-avatar-group</code> stacks its avatars and folds everything past <code>max</code> into a <code>+N</code>
+  badge. The <code>ring</code> attribute draws an activity ring for states such as "is dragging" or "is editing", and
+  the host takes <code>shTooltip</code> like any other element.
+</p>

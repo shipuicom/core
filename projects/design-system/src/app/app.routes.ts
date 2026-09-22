@@ -49,6 +49,16 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'avatars',
+        loadComponent: () => import('./ship/avatars/avatars'),
+        children: [
+          { path: '', loadComponent: () => import('./ship/avatars/avatars-overview') },
+          { path: 'api', loadComponent: () => import('./ship/avatars/avatars-api') },
+          { path: 'examples', loadComponent: () => import('./ship/avatars/avatars-examples') },
+          fallbackOverview,
+        ],
+      },
+      {
         path: 'blueprints',
         loadComponent: () => import('./ship/blueprints/blueprints'),
         children: [
