@@ -33,6 +33,7 @@
       [style.padding-bottom.px]="padBottom()"
       (mousedown)="onBodyMouseDown($event)"
       (mousemove)="onBodyMouseMove($event)"
+      (click)="onBodyClick($event)"
       (dblclick)="onBodyDoubleClick($event)">
       @for (rect of selectionRects(); track $index) {
         <div
@@ -107,6 +108,9 @@
         <button type="button" (click)="insertCols('right')">Insert {{ menuScope().cols }} column{{ menuScope().cols === 1 ? '' : 's' }} right</button>
         <button type="button" (click)="deleteCols()">Delete column{{ menuScope().cols === 1 ? '' : 's' }}</button>
         <button type="button" (click)="clearSelection()">Clear contents</button>
+        @for (type of registryTypes(); track type) {
+          <button type="button" (click)="setSelectionColType(type)">Column type: {{ type }}</button>
+        }
       </div>
   </sh-menu>
 </div>

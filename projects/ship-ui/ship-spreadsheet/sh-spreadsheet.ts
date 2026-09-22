@@ -21,6 +21,7 @@ import { ShipA11yAnnouncerService } from '@ship-ui/core/ship-a11y-announcer';
 import { ShipMenu } from '@ship-ui/core/ship-menu';
 import { ShipVirtualWindow } from '@ship-ui/core/ship-virtual-scroll';
 import { parseTsv, sheetRangeToHtml, sheetRangeToTsv } from './core/sheet-clipboard';
+import { SheetCellContext, SheetCellExtension, SheetCellRegistry } from './core/sheet-extensions';
 import {
   SheetModel,
   SheetOp,
@@ -28,6 +29,7 @@ import {
   SheetSelection,
   applySheetOps,
   cellAt,
+  colTypeAt,
   normalizedRange,
   primarySheetRange,
   sheetCellSelection,
@@ -48,10 +50,6 @@ const MIN_COL_WIDTH = 24;
 const MIN_ROW_HEIGHT = 16;
 
 let nextInstanceId = 1;
-
-function escapeHtml(text: string): string {
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
 
 /** The selection with the active range's head corner moved to (row, col). */
 function withActiveHead(selection: SheetSelection, row: number, col: number): SheetSelection {
@@ -110,7 +108,10 @@ interface ResizeDrag {
  *
  * Cells stay raw strings: what the model holds is the source text (a
  * future formula engine derives displayed values from it separately), so
- * ops, clipboard, and the `<table>` form never see a computed value.
+ * ops, clipboard, and the `<table>` form never see a computed value. How a
+ * column's strings look and edit is a `SheetCellExtension` resolved from
+ * the column's type (`colTypes`) through the registry built from
+ * `extensions` — text by default, checkbox built in.
  */
 @Component({
   selector: 'sh-spreadsheet',
@@ -158,6 +159,8 @@ export class ShipSpreadsheet {
   selectable = input(true);
   /** Turns the renderer into the composer: cell editing, paste, structure, resize, history. */
   editable = input(false);
+  /** Cell extensions beyond the built-in text and checkbox types, resolved by `colTypes`. */
+  extensions = input<readonly SheetCellExtension[]>([]);
   /**
    * Every transaction the user makes, as the ops that were applied — one
    * emission per edit, paste, structural change, resize, undo, or redo.
@@ -207,6 +210,9 @@ export class ShipSpreadsheet {
   readonly resizeDrag = signal<ResizeDrag | null>(null);
 
   readonly headOffset = computed(() => (this.headers() ? 44 : 0));
+  readonly registry = computed(() => new SheetCellRegistry(this.extensions()));
+  /** The cell types the context menu offers for a column. */
+  readonly registryTypes = computed(() => this.registry().types());
 
   readonly contentWidth = computed(() => this.headOffset() + this.#colWin.totalSize());
   readonly padTop = this.#rowWin.padStart;
@@ -246,12 +252,23 @@ export class ShipSpreadsheet {
     const to = Math.min(this.rowEnd(), sheet.rows);
     const c0 = this.colStart();
     const c1 = Math.min(this.colEnd(), sheet.cols);
+    const registry = this.registry();
+    // One extension lookup per mounted column, not per cell.
+    const exts: SheetCellExtension[] = [];
+    const types: string[] = [];
+    for (let c = c0; c < c1; c++) {
+      const type = colTypeAt(sheet, c);
+      exts.push(registry.get(type));
+      types.push(type ?? 'text');
+    }
     const out: { index: number; height: number; html: SafeHtml }[] = [];
     for (let r = from; r < to; r++) {
       const parts: string[] = [];
       for (let c = c0; c < c1; c++) {
         const value = sheet.cells[r * sheet.cols + c];
-        parts.push(value ? `<span class="shs-c c${c}">${escapeHtml(value)}</span>` : `<span class="shs-c c${c}"></span>`);
+        const ext = exts[c - c0];
+        const cls = types[c - c0] === 'text' ? `shs-c c${c}` : `shs-c c${c} t-${types[c - c0]}`;
+        parts.push(value || ext.editor === 'none' ? `<span class="${cls}">${ext.render(value, { row: r, col: c, type: types[c - c0] })}</span>` : `<span class="${cls}"></span>`);
       }
       out.push({
         index: r,
@@ -583,6 +600,46 @@ export class ShipSpreadsheet {
     return range && sheet.rows > 0 && sheet.cols > 0 ? normalizedRange(sheet, range) : null;
   }
 
+  /** The extension and context for a cell. */
+  #cell(row: number, col: number): { ext: SheetCellExtension; ctx: SheetCellContext } {
+    const type = colTypeAt(this.sheet(), col);
+    return { ext: this.registry().get(type), ctx: { row, col, type: type ?? 'text' } };
+  }
+
+  /**
+   * Activate a cell the way its extension defines (a checkbox toggles);
+   * returns whether the extension handled it.
+   */
+  activateCell(row: number, col: number): boolean {
+    if (!this.editable()) return false;
+    const { ext, ctx } = this.#cell(row, col);
+    if (!ext.activate) return false;
+    const raw = cellAt(this.sheet(), row, col);
+    const next = ext.activate(raw, ctx);
+    if (next !== null && next !== raw) {
+      this.apply([{ kind: 'set-cells', row, col, values: [[next]] }]);
+      this.#announcer.announce(`${sheetCellLabel(row, col)} ${ext.toText?.(next, ctx) ?? next}`);
+    }
+    return true;
+  }
+
+  /** Set (or clear) a column's cell type; the strings stay, only their interpretation changes. */
+  setColType(col: number, type: string | null): void {
+    if (col < 0 || col >= this.sheet().cols) return;
+    this.apply([{ kind: 'set-col-type', col, type: type === 'text' ? null : type }]);
+  }
+
+  /** Apply a cell type to every column the selection spans (the context menu's verb). */
+  setSelectionColType(type: string | null): void {
+    const range = this.activeRange();
+    if (!range) return;
+    const ops: SheetOp[] = [];
+    for (let c = range.c0; c <= range.c1; c++) ops.push({ kind: 'set-col-type', col: c, type: type === 'text' ? null : type });
+    this.apply(ops);
+  }
+
+  #pressCell: { row: number; col: number } | null = null;
+
   onBodyMouseDown(event: MouseEvent) {
     if (!this.selectable() || event.button !== 0) return;
     const target = event.target as HTMLElement;
@@ -590,6 +647,7 @@ export class ShipSpreadsheet {
     event.preventDefault();
     if (this.editing()) this.commitEdit('none');
     this.focus();
+    this.#pressCell = null;
     // Row header: a boundary grab resizes, a click selects the row.
     if (target.classList.contains('shs-rh')) {
       const hit = this.#rowBoundaryAt(event);
@@ -604,6 +662,7 @@ export class ShipSpreadsheet {
     const cell = this.#cellFromMouse(event);
     if (!cell) return;
     this.#dragging = true;
+    this.#pressCell = cell;
     const current = this.selection();
     if (event.shiftKey && current?.ranges.length) {
       // Shift: the active range keeps its anchor corner, its head moves here.
@@ -638,6 +697,18 @@ export class ShipSpreadsheet {
   onMouseUp() {
     if (this.#dragging) this.#announceSelection();
     this.#dragging = false;
+  }
+
+  /** A plain click (no sweep, no modifier) on an activatable cell activates it. */
+  onBodyClick(event: MouseEvent) {
+    const press = this.#pressCell;
+    this.#pressCell = null;
+    if (!press || event.shiftKey || event.metaKey || event.ctrlKey || (event.target as HTMLElement).closest('.shs-editor, .shs-rh')) return;
+    const cell = this.#cellFromMouse(event);
+    if (!cell || cell.row !== press.row || cell.col !== press.col) return;
+    const range = this.activeRange();
+    if (range && (range.r0 !== range.r1 || range.c0 !== range.c1)) return;
+    this.activateCell(cell.row, cell.col);
   }
 
   /** Column header: a boundary grab resizes, a click selects the column. */
@@ -761,11 +832,23 @@ export class ShipSpreadsheet {
   // In-cell editing
   // -------------------------------------------------------------------------
 
-  /** Open the editor on the active cell, with `initial` (default: the cell's text) as its content. */
+  /**
+   * Open the editor on the active cell, with `initial` (default: the cell's
+   * text) as its content. A cell whose type edits by activation only
+   * (`editor: 'none'`) is activated instead; typed text goes through the
+   * type's `parse` and commits directly.
+   */
   startEdit(initial?: string): void {
     const cell = this.activeCell();
     if (!this.editable() || !cell) return;
-    const text = initial ?? cellAt(this.sheet(), cell.row, cell.col);
+    const { ext, ctx } = this.#cell(cell.row, cell.col);
+    if (ext.editor === 'none') {
+      if (initial === undefined) this.activateCell(cell.row, cell.col);
+      else this.#commitParsed(cell.row, cell.col, initial);
+      return;
+    }
+    const raw = cellAt(this.sheet(), cell.row, cell.col);
+    const text = initial ?? (ext.format ? ext.format(raw, ctx) : raw);
     this.editing.set({ row: cell.row, col: cell.col, initial: text });
     this.#revealCell(cell.row, cell.col);
     afterNextRender(
@@ -786,12 +869,22 @@ export class ShipSpreadsheet {
     if (!editing) return;
     const value = this.editorRef()?.nativeElement.value ?? editing.initial;
     this.editing.set(null);
-    if (value !== cellAt(this.sheet(), editing.row, editing.col)) {
-      this.apply([{ kind: 'set-cells', row: editing.row, col: editing.col, values: [[value]] }]);
-      this.#announcer.announce(`${sheetCellLabel(editing.row, editing.col)} set to ${value || 'empty'}`);
-    }
+    this.#commitParsed(editing.row, editing.col, value);
     this.#moveFrom(editing.row, editing.col, move);
     this.focus();
+  }
+
+  /** Store `input` in a cell through its type's `parse`; a rejected input leaves the cell alone. */
+  #commitParsed(row: number, col: number, input: string): void {
+    const { ext, ctx } = this.#cell(row, col);
+    const next = ext.parse ? ext.parse(input, ctx) : input;
+    if (next === null) {
+      this.#announcer.announce(`${sheetCellLabel(row, col)} rejected ${input}`, 'assertive');
+      return;
+    }
+    if (next === cellAt(this.sheet(), row, col)) return;
+    this.apply([{ kind: 'set-cells', row, col, values: [[next]] }]);
+    this.#announcer.announce(`${sheetCellLabel(row, col)} set to ${(ext.toText ? ext.toText(next, ctx) : next) || 'empty'}`);
   }
 
   cancelEdit(): void {
@@ -933,7 +1026,7 @@ export class ShipSpreadsheet {
     }
 
     if (!editable || meta) return;
-    if (key === 'Enter' || key === 'F2') {
+    if (key === 'Enter' || key === 'F2' || (key === ' ' && this.#cell(cell.row, cell.col).ext.activate)) {
       event.preventDefault();
       event.stopPropagation();
       this.startEdit();
@@ -1007,7 +1100,11 @@ export class ShipSpreadsheet {
     this.pasteValues(cell.row, cell.col, values);
   }
 
-  /** Write a block of values at (row, col), inserting rows/columns so it fits. */
+  /**
+   * Write a block of values at (row, col), inserting rows/columns so it
+   * fits. Each value passes through its column type's `parse`; a rejected
+   * value keeps the cell's current text.
+   */
   pasteValues(row: number, col: number, values: readonly (readonly string[])[]): void {
     const sheet = this.sheet();
     const ops: SheetOp[] = [];
@@ -1015,7 +1112,16 @@ export class ShipSpreadsheet {
     const needCols = col + Math.max(0, ...values.map((line) => line.length)) - sheet.cols;
     if (needRows > 0) ops.push({ kind: 'insert-rows', at: sheet.rows, count: needRows });
     if (needCols > 0) ops.push({ kind: 'insert-cols', at: sheet.cols, count: needCols });
-    ops.push({ kind: 'set-cells', row, col, values });
+    const registry = this.registry();
+    const parsed = values.map((line, r) =>
+      line.map((input, c) => {
+        const type = colTypeAt(sheet, col + c);
+        const ext = registry.get(type);
+        if (!ext.parse) return input;
+        return ext.parse(input, { row: row + r, col: col + c, type: type ?? 'text' }) ?? cellAt(sheet, row + r, col + c);
+      })
+    );
+    ops.push({ kind: 'set-cells', row, col, values: parsed });
     this.apply(ops);
     const r1 = row + values.length - 1;
     const c1 = col + Math.max(1, ...values.map((line) => line.length)) - 1;

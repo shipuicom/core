@@ -18,9 +18,15 @@ function escapeHtml(text: string): string {
 /** Serialize the model as a semantic `<table>` fragment. */
 export function sheetToTableHtml(model: SheetModel): string {
   const parts: string[] = ['<table>'];
-  if (model.colWidths.some((w) => w !== null)) {
+  const types = model.colTypes ?? [];
+  if (model.colWidths.some((w) => w !== null) || types.some((t) => t !== null)) {
     parts.push('<colgroup>');
-    for (const width of model.colWidths) parts.push(width === null ? '<col>' : `<col width="${Math.round(width)}">`);
+    for (let c = 0; c < model.cols; c++) {
+      const width = model.colWidths[c];
+      const type = types[c] ?? null;
+      const attrs = (width === null ? '' : ` width="${Math.round(width)}"`) + (type === null ? '' : ` data-type="${escapeHtml(type)}"`);
+      parts.push(`<col${attrs}>`);
+    }
     parts.push('</colgroup>');
   }
   parts.push('<tbody>');
@@ -71,14 +77,20 @@ export function sheetFromTable(table: Element): SheetModel | null {
 
   const base = createSheet(rows.length, cols, flat);
   const colWidths = base.colWidths.slice();
+  const colTypes = base.colTypes.slice();
   let colIndex = 0;
   for (const col of Array.from(table.querySelectorAll('colgroup > col, table > col'))) {
     if (col.closest('table') !== table) continue;
     const span = parseSpan(col.getAttribute('span'));
     const width = parseSize(col.getAttribute('width'));
-    for (let i = 0; i < span && colIndex < cols; i++) colWidths[colIndex++] = width;
+    const type = col.getAttribute('data-type');
+    for (let i = 0; i < span && colIndex < cols; i++) {
+      colWidths[colIndex] = width;
+      colTypes[colIndex] = type && type.length <= 64 ? type : null;
+      colIndex++;
+    }
   }
-  return { ...base, colWidths, rowHeights };
+  return { ...base, colWidths, rowHeights, colTypes };
 }
 
 /** Cell text with block-ish children joined by newlines and nbsp normalized. */

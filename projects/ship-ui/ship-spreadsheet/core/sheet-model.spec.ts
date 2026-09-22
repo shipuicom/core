@@ -166,3 +166,30 @@ describe('sheet JSON round-trip', () => {
     expect(model.colWidths).toEqual([null, null]);
   });
 });
+
+describe('column types', () => {
+  it('sets and clears a column type with an exact inverse', () => {
+    const model = sample();
+    const { model: typed, inverse } = applySheetOp(model, { kind: 'set-col-type', col: 1, type: 'checkbox' });
+    expect(typed.colTypes).toEqual([null, 'checkbox', null]);
+    expect(inverse).toEqual([{ kind: 'set-col-type', col: 1, type: null }]);
+    expect(applySheetOps(typed, inverse).model.colTypes).toEqual([null, null, null]);
+  });
+
+  it('moves with column inserts and rides the remove-cols inverse', () => {
+    const typed = applySheetOp(sample(), { kind: 'set-col-type', col: 1, type: 'checkbox' }).model;
+    expect(applySheetOp(typed, { kind: 'insert-cols', at: 0, count: 2 }).model.colTypes).toEqual([null, null, null, 'checkbox', null]);
+    const removed = applySheetOp(typed, { kind: 'remove-cols', at: 1, count: 1 });
+    expect(removed.model.colTypes).toEqual([null, null]);
+    expect(removed.inverse[0]).toMatchObject({ kind: 'insert-cols', types: ['checkbox'] });
+    expect(applySheetOps(removed.model, removed.inverse).model).toEqual(typed);
+  });
+
+  it('round-trips through JSON, omitted when all text, and validates on the way in', () => {
+    const typed = applySheetOp(sample(), { kind: 'set-col-type', col: 2, type: 'date' }).model;
+    expect(sheetToJSON(sample()).colTypes).toBeUndefined();
+    expect(sheetToJSON(typed).colTypes).toEqual([null, null, 'date']);
+    expect(sheetFromJSON(sheetToJSON(typed))).toEqual(typed);
+    expect(sheetFromJSON({ rows: 1, cols: 2, cells: [], colTypes: [42, ''] })!.colTypes).toEqual([null, null]);
+  });
+});

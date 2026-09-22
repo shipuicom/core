@@ -121,6 +121,19 @@ sh-spreadsheet {
     text-overflow: ellipsis;
   }
 
+  // Built-in checkbox type: a glyph centered in the cell.
+  .shs-c.t-checkbox {
+    justify-content: center;
+    padding: 0;
+    color: var(--shs-head-fg);
+    font-size: 1.1em;
+    user-select: none;
+
+    .shs-check.on {
+      color: var(--shs-selection-border);
+    }
+  }
+
   .shs-selection {
     position: absolute;
     background: var(--shs-selection);

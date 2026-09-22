@@ -55,8 +55,8 @@
     <div class="sheet-demo">
       <sh-spreadsheet class="sheet-small" [(sheet)]="editableSheet" [(selection)]="editableSelection" [editable]="true" (ops)="onOps($event)" />
       <p class="sheet-note">
-        Type into a cell, paste a range, right-click for rows and columns, drag a header edge to resize. Last
-        transaction:
+        Type into a cell, paste a range, right-click for rows, columns and column types, drag a header edge to
+        resize. Column F is a <code>checkbox</code> column (click or Space toggles). Last transaction:
       </p>
       <pre class="sheet-tsv">{{ lastOps() }}</pre>
     </div>

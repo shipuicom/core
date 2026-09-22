@@ -197,6 +197,50 @@ describe('ShipSpreadsheet composer', () => {
     expect(grid.sheet().rows).toBe(2);
   });
 
+  it('checkbox column: click, Space and typed text go through the extension, no text editor opens', async () => {
+    grid.setColType(1, 'checkbox');
+    fixture.detectChanges();
+    expect(host.sheet().colTypes).toEqual([null, 'checkbox', null]);
+    expect(fixture.nativeElement.querySelectorAll('.shs-c.t-checkbox .shs-check').length).toBe(4);
+    grid.selectCell(0, 1);
+    key(frame, 'Enter');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(editor()).toBeNull();
+    expect(cellAt(host.sheet(), 0, 1)).toBe('true');
+    key(frame, ' ');
+    expect(cellAt(host.sheet(), 0, 1)).toBe('');
+    key(frame, 'x');
+    expect(cellAt(host.sheet(), 0, 1)).toBe('true');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.shs-check.on')).not.toBeNull();
+    // Pasting into the column parses each value; text columns take the raw string.
+    grid.selectCell(1, 0);
+    const { event } = clipboard('paste', { 'text/plain': 'raw\tyes\nmore\tnope' });
+    frame.dispatchEvent(event);
+    expect(host.sheet().cells.slice(3, 5)).toEqual(['raw', 'true']);
+    expect(host.sheet().cells.slice(6, 8)).toEqual(['more', '']);
+    expect(host.log.map((t) => t[0].kind)).toEqual(['set-col-type', 'set-cells', 'set-cells', 'set-cells', 'set-cells']);
+  });
+
+  it('a click on an activatable cell toggles it, a sweep does not', () => {
+    grid.setColType(2, 'checkbox');
+    const body = fixture.nativeElement.querySelector('.shs-body') as HTMLElement;
+    const rect = body.getBoundingClientRect();
+    // jsdom has no layout: the body rect is 0×0 at (0,0) and every track has its default size.
+    const at = (row: number, col: number) => ({ clientX: rect.left + 44 + 96 * col + 10, clientY: rect.top + 28 * row + 10, bubbles: true, cancelable: true, button: 0 });
+    body.dispatchEvent(new MouseEvent('mousedown', at(2, 2)));
+    body.dispatchEvent(new MouseEvent('mouseup', at(2, 2)));
+    body.dispatchEvent(new MouseEvent('click', at(2, 2)));
+    expect(cellAt(host.sheet(), 2, 2)).toBe('true');
+    body.dispatchEvent(new MouseEvent('mousedown', at(2, 2)));
+    body.dispatchEvent(new MouseEvent('mousemove', { ...at(3, 2), buttons: 1 }));
+    body.dispatchEvent(new MouseEvent('mouseup', at(3, 2)));
+    body.dispatchEvent(new MouseEvent('click', at(3, 2)));
+    expect(cellAt(host.sheet(), 2, 2)).toBe('true');
+    expect(grid.activeRange()).toEqual({ r0: 2, c0: 2, r1: 3, c1: 2 });
+  });
+
   it('stays read-only without `editable`: navigation and copy work, nothing edits', () => {
     host.editable.set(false);
     fixture.detectChanges();

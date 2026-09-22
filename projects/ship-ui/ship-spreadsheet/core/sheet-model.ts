@@ -22,6 +22,12 @@ export interface SheetModel {
   readonly colWidths: readonly (number | null)[];
   /** Explicit row heights in px, `null` where the default applies. */
   readonly rowHeights: readonly (number | null)[];
+  /**
+   * Cell type per column — the key of a registered `SheetCellExtension`
+   * (`'checkbox'`, `'date'`, …), `null` for plain text. The type only says
+   * how the strings in that column are interpreted; the cells stay strings.
+   */
+  readonly colTypes: readonly (string | null)[];
 }
 
 /** A rectangular cell range; corners may arrive in any order. */
@@ -70,10 +76,13 @@ export type SheetOp =
       readonly count: number;
       readonly cells?: readonly string[];
       readonly widths?: readonly (number | null)[];
+      readonly types?: readonly (string | null)[];
     }
   | { readonly kind: 'remove-cols'; readonly at: number; readonly count: number }
   | { readonly kind: 'set-col-width'; readonly col: number; readonly width: number | null }
-  | { readonly kind: 'set-row-height'; readonly row: number; readonly height: number | null };
+  | { readonly kind: 'set-row-height'; readonly row: number; readonly height: number | null }
+  /** Set (or clear, with `null`) the cell type of one column. */
+  | { readonly kind: 'set-col-type'; readonly col: number; readonly type: string | null };
 
 export interface SheetOpResult {
   readonly model: SheetModel;
@@ -92,7 +101,13 @@ export function createSheet(rows: number, cols: number, cells?: readonly string[
     cells: flat,
     colWidths: new Array<number | null>(c).fill(null),
     rowHeights: new Array<number | null>(r).fill(null),
+    colTypes: new Array<string | null>(c).fill(null),
   };
+}
+
+/** The cell type of a column, `null` for plain text (also for a legacy model without the column). */
+export function colTypeAt(model: SheetModel, col: number): string | null {
+  return model.colTypes?.[col] ?? null;
 }
 
 export function cellAt(model: SheetModel, row: number, col: number): string {
@@ -122,7 +137,7 @@ export function applySheetOp(model: SheetModel, op: SheetOp): SheetOpResult {
     case 'remove-rows':
       return applyRemoveRows(model, op.at, op.count);
     case 'insert-cols':
-      return applyInsertCols(model, op.at, op.count, op.cells, op.widths);
+      return applyInsertCols(model, op.at, op.count, op.cells, op.widths, op.types);
     case 'remove-cols':
       return applyRemoveCols(model, op.at, op.count);
     case 'set-col-width': {
@@ -141,7 +156,20 @@ export function applySheetOp(model: SheetModel, op: SheetOp): SheetOpResult {
       rowHeights[row] = op.height;
       return { model: { ...model, rowHeights }, inverse: [inverse] };
     }
+    case 'set-col-type': {
+      const col = Math.max(0, Math.min(op.col, model.cols - 1));
+      if (model.cols === 0) return { model, inverse: [] };
+      const colTypes = colTypesOf(model).slice();
+      const inverse: SheetOp = { kind: 'set-col-type', col, type: colTypes[col] };
+      colTypes[col] = op.type;
+      return { model: { ...model, colTypes }, inverse: [inverse] };
+    }
   }
+}
+
+/** A model built before `colTypes` existed reads as all-text. */
+function colTypesOf(model: SheetModel): readonly (string | null)[] {
+  return model.colTypes ?? new Array<string | null>(model.cols).fill(null);
 }
 
 /**
@@ -230,7 +258,8 @@ function applyInsertCols(
   rawAt: number,
   rawCount: number,
   restoreCells?: readonly string[],
-  restoreWidths?: readonly (number | null)[]
+  restoreWidths?: readonly (number | null)[],
+  restoreTypes?: readonly (string | null)[]
 ): SheetOpResult {
   const count = Math.max(0, rawCount);
   if (count === 0) return { model, inverse: [] };
@@ -252,8 +281,12 @@ function applyInsertCols(
   const widths = new Array<number | null>(count).fill(null);
   if (restoreWidths) for (let i = 0; i < Math.min(restoreWidths.length, count); i++) widths[i] = restoreWidths[i];
   const colWidths = [...model.colWidths.slice(0, at), ...widths, ...model.colWidths.slice(at)];
+  const types = new Array<string | null>(count).fill(null);
+  if (restoreTypes) for (let i = 0; i < Math.min(restoreTypes.length, count); i++) types[i] = restoreTypes[i];
+  const existingTypes = colTypesOf(model);
+  const colTypes = [...existingTypes.slice(0, at), ...types, ...existingTypes.slice(at)];
   return {
-    model: { ...model, cols, cells, colWidths },
+    model: { ...model, cols, cells, colWidths, colTypes },
     inverse: [{ kind: 'remove-cols', at, count }],
   };
 }
@@ -275,9 +308,13 @@ function applyRemoveCols(model: SheetModel, rawAt: number, rawCount: number): Sh
   }
   const removedWidths = model.colWidths.slice(at, at + count);
   const colWidths = [...model.colWidths.slice(0, at), ...model.colWidths.slice(at + count)];
+  const existingTypes = colTypesOf(model);
+  const removedTypes = existingTypes.slice(at, at + count);
+  const colTypes = [...existingTypes.slice(0, at), ...existingTypes.slice(at + count)];
+  const inverse: SheetOp = { kind: 'insert-cols', at, count, cells: removed, widths: removedWidths };
   return {
-    model: { ...model, cols, cells, colWidths },
-    inverse: [{ kind: 'insert-cols', at, count, cells: removed, widths: removedWidths }],
+    model: { ...model, cols, cells, colWidths, colTypes },
+    inverse: [removedTypes.some((t) => t !== null) ? { ...inverse, types: removedTypes } : inverse],
   };
 }
 
@@ -292,6 +329,7 @@ export interface SheetJSON {
   readonly cells: readonly string[];
   readonly colWidths?: readonly (number | null)[];
   readonly rowHeights?: readonly (number | null)[];
+  readonly colTypes?: readonly (string | null)[];
 }
 
 export function sheetToJSON(model: SheetModel): SheetJSON {
@@ -302,6 +340,7 @@ export function sheetToJSON(model: SheetModel): SheetJSON {
   };
   if (model.colWidths.some((w) => w !== null)) json.colWidths = model.colWidths;
   if (model.rowHeights.some((h) => h !== null)) json.rowHeights = model.rowHeights;
+  if (model.colTypes?.some((t) => t !== null)) json.colTypes = model.colTypes;
   return json;
 }
 
@@ -327,5 +366,12 @@ export function sheetFromJSON(value: unknown): SheetModel | null {
     }
     return out;
   };
-  return { rows, cols, cells, colWidths: size(raw['colWidths'], cols), rowHeights: size(raw['rowHeights'], rows) };
+  const colTypes = new Array<string | null>(cols).fill(null);
+  if (Array.isArray(raw['colTypes'])) {
+    for (let i = 0; i < Math.min(raw['colTypes'].length, cols); i++) {
+      const v = raw['colTypes'][i];
+      colTypes[i] = typeof v === 'string' && v.length > 0 && v.length <= 64 ? v : null;
+    }
+  }
+  return { rows, cols, cells, colWidths: size(raw['colWidths'], cols), rowHeights: size(raw['rowHeights'], rows), colTypes };
 }

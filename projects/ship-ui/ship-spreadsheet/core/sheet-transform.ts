@@ -208,16 +208,18 @@ export function transformSheetOp(op: SheetOp, against: SheetOp, side: SheetOpSid
     return [op];
   }
 
-  if (op.kind === 'set-col-width' || op.kind === 'set-row-height') {
-    const axis: Axis = op.kind === 'set-col-width' ? 'col' : 'row';
+  if (op.kind === 'set-col-width' || op.kind === 'set-col-type' || op.kind === 'set-row-height') {
+    // A point op on one track: it moves with the track, vanishes with it,
+    // and yields to a concurrent write of the same property on the same track.
+    const axis: Axis = op.kind === 'set-row-height' ? 'row' : 'col';
     if (s) {
       if (s.axis !== axis) return [op];
-      const index = mapPoint(axis === 'col' ? (op as { col: number }).col : (op as { row: number }).row, s);
+      const index = mapPoint(op.kind === 'set-row-height' ? op.row : op.col, s);
       if (index === null) return [];
-      return [axis === 'col' ? { ...(op as Extract<SheetOp, { kind: 'set-col-width' }>), col: index } : { ...(op as Extract<SheetOp, { kind: 'set-row-height' }>), row: index }];
+      return [op.kind === 'set-row-height' ? { ...op, row: index } : { ...op, col: index }];
     }
     if (against.kind === op.kind && side === 'right') {
-      const same = op.kind === 'set-col-width' ? op.col === (against as { col: number }).col : op.row === (against as { row: number }).row;
+      const same = op.kind === 'set-row-height' ? op.row === (against as { row: number }).row : op.col === (against as { col: number }).col;
       if (same) return [];
     }
     return [op];

@@ -84,7 +84,15 @@ save(ops: SheetOp[]) { ... }
 // Concurrent changes from elsewhere: grid.applyRemote(ops) — not echoed, history rebased.`;
 
   sample = signal(sampleSheet());
-  editableSheet = signal(sampleSheet());
+  // Column F is a checkbox column: the built-in `checkbox` cell extension interprets its strings.
+  editableSheet = signal(
+    applySheetOps(sampleSheet(), [
+      { kind: 'insert-cols', at: 5, count: 1 },
+      { kind: 'set-col-width', col: 5, width: 60 },
+      { kind: 'set-col-type', col: 5, type: 'checkbox' },
+      { kind: 'set-cells', row: 1, col: 5, values: [['true'], [''], ['true'], ['']] },
+    ]).model
+  );
   editableSelection = signal<SheetSelection | null>(null);
   lastOps = signal('—');
   onOps(ops: SheetOp[]) {

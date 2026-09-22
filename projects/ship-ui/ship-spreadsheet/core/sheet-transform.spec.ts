@@ -22,6 +22,7 @@ function labelled(rows: number, cols: number): SheetModel {
   let model = createSheet(rows, cols, cells);
   for (let c = 0; c < cols; c += 2) model = applySheetOp(model, { kind: 'set-col-width', col: c, width: 50 + c }).model;
   for (let r = 1; r < rows; r += 3) model = applySheetOp(model, { kind: 'set-row-height', row: r, height: 20 + r }).model;
+  for (let c = 1; c < cols; c += 3) model = applySheetOp(model, { kind: 'set-col-type', col: c, type: 'checkbox' }).model;
   return model;
 }
 
@@ -34,7 +35,7 @@ let tag = 0;
 /** A random in-range op on `model`, including inserts that carry restore data. */
 function randomOp(rnd: Rnd, model: SheetModel): SheetOp {
   // Only inserts address an empty axis; everything else needs a track to hit.
-  const kind = model.rows === 0 || model.cols === 0 ? (rnd() < 0.5 ? 1 : 3) : pick(rnd, 7);
+  const kind = model.rows === 0 || model.cols === 0 ? (rnd() < 0.5 ? 1 : 3) : pick(rnd, 8);
   const t = ++tag;
   switch (kind) {
     case 0: {
@@ -76,6 +77,7 @@ function randomOp(rnd: Rnd, model: SheetModel): SheetOp {
         count,
         cells: Array.from({ length: count * model.rows }, (_, i) => `ic${t}_${i}`),
         widths: Array.from({ length: count }, (_, i) => (i % 2 ? 77 : null)),
+        types: Array.from({ length: count }, (_, i) => (i % 2 ? 'checkbox' : null)),
       };
     }
     case 4: {
@@ -84,6 +86,8 @@ function randomOp(rnd: Rnd, model: SheetModel): SheetOp {
     }
     case 5:
       return { kind: 'set-col-width', col: pick(rnd, model.cols), width: rnd() < 0.2 ? null : 100 + t };
+    case 6:
+      return { kind: 'set-col-type', col: pick(rnd, model.cols), type: rnd() < 0.3 ? null : `t${t}` };
     default:
       return { kind: 'set-row-height', row: pick(rnd, model.rows), height: rnd() < 0.2 ? null : 10 + t };
   }
@@ -101,7 +105,7 @@ function randomOps(rnd: Rnd, model: SheetModel, max: number): SheetOp[] {
   return ops;
 }
 
-const grid = (m: SheetModel) => ({ rows: m.rows, cols: m.cols, cells: m.cells, colWidths: m.colWidths, rowHeights: m.rowHeights });
+const grid = (m: SheetModel) => ({ rows: m.rows, cols: m.cols, cells: m.cells, colWidths: m.colWidths, rowHeights: m.rowHeights, colTypes: m.colTypes });
 
 function expectConverge(base: SheetModel, a: SheetOp[], b: SheetOp[], ctx: string) {
   const { ops: aPrime, against: bPrime } = transformSheetOps(a, b, 'left');
@@ -160,6 +164,10 @@ describe('transformSheetOp', () => {
     const w: SheetOp = { kind: 'set-col-width', col: 0, width: 10 };
     expect(transformSheetOp(w, { kind: 'set-col-width', col: 0, width: 20 }, 'right')).toEqual([]);
     expect(transformSheetOp(w, { kind: 'set-col-width', col: 0, width: 20 }, 'left')).toEqual([w]);
+    const t: SheetOp = { kind: 'set-col-type', col: 1, type: 'checkbox' };
+    expect(transformSheetOp(t, { kind: 'insert-cols', at: 0, count: 1 })).toEqual([{ ...t, col: 2 }]);
+    expect(transformSheetOp(t, { kind: 'set-col-type', col: 1, type: 'date' }, 'right')).toEqual([]);
+    expect(transformSheetOp(t, w)).toEqual([t]);
   });
 
   it('reshapes restored cells on an insert against a splice on the other axis', () => {

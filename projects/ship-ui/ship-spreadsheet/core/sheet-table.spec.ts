@@ -90,6 +90,16 @@ describe('clipboard flavors', () => {
   });
 });
 
+describe('column types in the table form', () => {
+  it('writes col data-type and reads it back', () => {
+    const typed = applySheetOps(createSheet(1, 2, ['a', 'true']), [{ kind: 'set-col-type', col: 1, type: 'checkbox' }]).model;
+    const html = sheetToTableHtml(typed);
+    expect(html).toContain('<colgroup><col><col data-type="checkbox"></colgroup>');
+    expect(sheetFromTable(tableEl(html))).toEqual(typed);
+    expect(sheetToTableHtml(createSheet(1, 1, ['x']))).not.toContain('colgroup');
+  });
+});
+
 describe('parseTsv', () => {
   it('splits rows and cells and drops the trailing newline', () => {
     expect(parseTsv('a\tb\nc\td\n')).toEqual([
