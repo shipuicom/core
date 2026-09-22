@@ -8,3 +8,4 @@ export * from './core/sheet-clipboard';
 export * from './sh-spreadsheet';
 export * from './spreadsheet-block';
 export * from './sheet-collab';
+export * from './sh-spreadsheet-remote-selections';

@@ -1,9 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ComponentRef,
   DestroyRef,
   ElementRef,
   Injector,
+  Type,
+  ViewContainerRef,
   ViewEncapsulation,
   afterNextRender,
   computed,
@@ -12,6 +15,7 @@ import {
   input,
   model,
   output,
+  reflectComponentType,
   signal,
   untracked,
   viewChild,
@@ -22,7 +26,7 @@ import { ShipMenu } from '@ship-ui/core/ship-menu';
 import { ShipVirtualWindow } from '@ship-ui/core/ship-virtual-scroll';
 import { parseTsv, sheetRangeToHtml, sheetRangeToTsv } from './core/sheet-clipboard';
 import { escapeSheetHtml } from './core/sheet-html';
-import { SheetCellContext, SheetCellExtension, SheetCellRegistry } from './core/sheet-extensions';
+import { SheetCellContext, SheetCellEditor, SheetCellEditorApi, SheetCellExtension, SheetCellRegistry, SheetCommitMove } from './core/sheet-extensions';
 import { FormulaErrorCode, SheetEvaluator, isFormula } from './core/sheet-formulas';
 import {
   SheetModel,
@@ -89,8 +93,7 @@ export interface SheetValues {
   isFormulaAt(row: number, col: number): boolean;
 }
 
-/** Where the caret goes after a commit. */
-export type SheetCommitMove = 'none' | 'down' | 'up' | 'right' | 'left';
+export type { SheetCommitMove };
 
 /** A live resize drag: the track and its provisional size. */
 interface ResizeDrag {
@@ -151,6 +154,8 @@ export class ShipSpreadsheet {
   scroller = viewChild.required<ElementRef<HTMLElement>>('scroller');
   frame = viewChild.required<ElementRef<HTMLElement>>('frame');
   private editorRef = viewChild<ElementRef<HTMLTextAreaElement | HTMLInputElement>>('cellEditor');
+  private editorOutlet = viewChild('editorOutlet', { read: ViewContainerRef });
+  private editorHost = viewChild<ElementRef<HTMLElement>>('editorHost');
   private barRef = viewChild<ElementRef<HTMLInputElement>>('barInput');
   private menu = viewChild(ShipMenu);
 
@@ -228,8 +233,10 @@ export class ShipSpreadsheet {
   readonly canUndo = signal(false);
   readonly canRedo = signal(false);
 
-  /** The in-cell editor, when open: the cell and the text it started with. */
-  readonly editing = signal<{ row: number; col: number; initial: string; inputType?: string } | null>(null);
+  /** The in-cell editor, when open: the cell and the text it started with; `component` when the type edits through a component. */
+  readonly editing = signal<{ row: number; col: number; initial: string; inputType?: string; component?: Type<SheetCellEditor> } | null>(null);
+  /** The mounted component editor, while `editing().component` is set. */
+  #editorCmp: ComponentRef<SheetCellEditor> | null = null;
   /** Context menu anchor (frame-relative px), `null` when closed. */
   readonly menuAt = signal<{ x: number; y: number } | null>(null);
   readonly menuOpen = signal(false);
@@ -365,22 +372,34 @@ export class ShipSpreadsheet {
   /** One paint box per selected range; the last is the active one. */
   readonly selectionRects = computed(() => {
     const raw = this.selection();
+    if (!raw?.ranges.length) return [];
+    const boxes: { top: number; left: number; width: number; height: number; active: boolean }[] = [];
+    raw.ranges.forEach((range, i) => {
+      const box = this.rangeBox(range);
+      if (box) boxes.push({ ...box, active: i === raw.ranges.length - 1 });
+    });
+    return boxes;
+  });
+
+  /**
+   * The paint box of a range in body coordinates (px, past the row-header rail), clamped to the sheet —
+   * what the selection boxes use, exposed so an overlay projected into the body (a peer's selection)
+   * lands on the same cells. `null` on an empty sheet. Reactive: reads the model and the geometry.
+   */
+  rangeBox(range: SheetRange): { top: number; left: number; width: number; height: number } | null {
     const sheet = this.sheet();
-    if (!raw?.ranges.length || sheet.rows === 0 || sheet.cols === 0) return [];
+    if (sheet.rows === 0 || sheet.cols === 0) return null;
     this.#geometry();
+    const { r0, c0, r1, c1 } = normalizedRange(sheet, range);
     const rows = this.#rowWin.heights;
     const cols = this.#colWin.heights;
-    return raw.ranges.map((range, i) => {
-      const { r0, c0, r1, c1 } = normalizedRange(sheet, range);
-      return {
-        top: rows.prefixHeight(r0),
-        left: this.headOffset() + cols.prefixHeight(c0),
-        width: cols.prefixHeight(c1 + 1) - cols.prefixHeight(c0),
-        height: rows.prefixHeight(r1 + 1) - rows.prefixHeight(r0),
-        active: i === raw.ranges.length - 1,
-      };
-    });
-  });
+    return {
+      top: rows.prefixHeight(r0),
+      left: this.headOffset() + cols.prefixHeight(c0),
+      width: cols.prefixHeight(c1 + 1) - cols.prefixHeight(c0),
+      height: rows.prefixHeight(r1 + 1) - rows.prefixHeight(r0),
+    };
+  }
 
   /** The box of the active cell (or of the cell being edited), for the anchor outline and the editor. */
   readonly activeRect = computed(() => {
@@ -439,7 +458,7 @@ export class ShipSpreadsheet {
           this.#redo = [];
           this.canUndo.set(false);
           this.canRedo.set(false);
-          if (this.editing()) this.editing.set(null);
+          if (this.editing()) this.#closeEditor();
         }
       });
     });
@@ -591,7 +610,7 @@ export class ShipSpreadsheet {
       // user's, so re-anchor by rebasing a probe op rather than guessing.
       const [probe] = transformSheetOps([{ kind: 'set-cells', row: editing.row, col: editing.col, values: [['']] }], ops, 'right').ops;
       if (probe?.kind === 'set-cells') this.editing.set({ ...editing, row: probe.row, col: probe.col });
-      else this.editing.set(null);
+      else this.#closeEditor();
     }
   }
 
@@ -946,6 +965,10 @@ export class ShipSpreadsheet {
     const raw = cellAt(this.sheet(), cell.row, cell.col);
     // A formula edits as its source, in the text editor whatever the column type.
     const formula = isFormula(initial ?? raw) || initial === '=';
+    if (typeof ext.editor === 'function' && !formula) {
+      this.#startComponentEdit(cell.row, cell.col, raw, ctx, ext.editor, initial ?? null);
+      return;
+    }
     let text = initial ?? (formula || !ext.format ? raw : ext.format(raw, ctx));
     // A typed input (a date picker) only takes its own value shape: seed it
     // with what the typed character parses to, or the cell's own value.
@@ -964,15 +987,72 @@ export class ShipSpreadsheet {
     );
   }
 
-  /** Write the editor's text into its cell (when changed) and move the selection on. */
+  /**
+   * Create the type's editor component in the overlay over the cell and hand
+   * it the inputs it declares: `value`, `ctx`, `typed`, `editor`.
+   */
+  #startComponentEdit(row: number, col: number, raw: string, ctx: SheetCellContext, component: Type<SheetCellEditor>, typed: string | null): void {
+    this.editing.set({ row, col, initial: raw, component });
+    this.#revealCell(row, col);
+    const api: SheetCellEditorApi = {
+      commit: (value, move = 'none') => this.commitRaw(value, move),
+      cancel: () => this.cancelEdit(),
+    };
+    afterNextRender(
+      () => {
+        const outlet = this.editorOutlet();
+        if (!outlet || this.editing()?.component !== component) return;
+        outlet.clear();
+        const ref = outlet.createComponent(component, { injector: this.#injector });
+        const inputs = new Set(reflectComponentType(component)?.inputs.map((i) => i.templateName) ?? []);
+        const set = (name: string, value: unknown) => inputs.has(name) && ref.setInput(name, value);
+        set('value', raw);
+        set('ctx', ctx);
+        set('typed', typed);
+        set('editor', api);
+        ref.changeDetectorRef.detectChanges();
+        this.#editorCmp = ref;
+      },
+      { injector: this.#injector }
+    );
+  }
+
+  /**
+   * Write the editor's text into its cell (when changed) and move the
+   * selection on. A component editor is asked for its `readValue`; one
+   * without it is cancelled instead.
+   */
   commitEdit(move: SheetCommitMove = 'none'): void {
     const editing = this.editing();
     if (!editing) return;
+    if (editing.component) {
+      const read = this.#editorCmp?.instance.readValue;
+      if (!read) return this.cancelEdit();
+      return this.commitRaw(read.call(this.#editorCmp!.instance), move);
+    }
     const value = this.editorRef()?.nativeElement.value ?? editing.initial;
     this.editing.set(null);
     this.#commitParsed(editing.row, editing.col, value);
     this.#moveFrom(editing.row, editing.col, move);
     this.focus();
+  }
+
+  /**
+   * End the open edit by storing `raw` as is — the stored form, not typed
+   * text — in the edited cell; what a component editor's `commit` does.
+   */
+  commitRaw(raw: string, move: SheetCommitMove = 'none'): void {
+    const editing = this.editing();
+    if (!editing) return;
+    this.#closeEditor();
+    this.#store(editing.row, editing.col, raw);
+    this.#moveFrom(editing.row, editing.col, move);
+    this.focus();
+  }
+
+  #closeEditor(): void {
+    this.#editorCmp = null;
+    this.editing.set(null);
   }
 
   /** Store `input` in a cell through its type's `parse` (a formula is stored as typed); a rejected input leaves the cell alone. */
@@ -983,15 +1063,38 @@ export class ShipSpreadsheet {
       this.#announcer.announce(`${sheetCellLabel(row, col)} rejected ${input}`, 'assertive');
       return;
     }
+    this.#store(row, col, next);
+  }
+
+  /** Store a raw string in a cell (when changed) as one `set-cells` op and voice it. */
+  #store(row: number, col: number, next: string): void {
     if (next === cellAt(this.sheet(), row, col)) return;
+    const { ext, ctx } = this.#cell(row, col);
     this.apply([{ kind: 'set-cells', row, col, values: [[next]] }]);
     this.#announcer.announce(`${sheetCellLabel(row, col)} set to ${(ext.toText ? ext.toText(next, ctx) : next) || 'empty'}`);
   }
 
   cancelEdit(): void {
     if (!this.editing()) return;
-    this.editing.set(null);
+    this.#closeEditor();
     this.focus();
+  }
+
+  /**
+   * Keys inside a component editor are the component's; the grid's keymap
+   * never sees them. Escape not consumed by the component cancels, Tab
+   * commits (through `readValue`) and moves.
+   */
+  onEditorHostKeydown(event: KeyboardEvent) {
+    event.stopPropagation();
+    if (event.defaultPrevented) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.cancelEdit();
+    } else if (event.key === 'Tab') {
+      event.preventDefault();
+      this.commitEdit(event.shiftKey ? 'left' : 'right');
+    }
   }
 
   // -------------------------------------------------------------------------

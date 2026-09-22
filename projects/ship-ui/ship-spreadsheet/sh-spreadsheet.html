@@ -82,7 +82,22 @@
       }
 
       @if (editing() && activeRect(); as rect) {
-        @if (editing()?.inputType; as inputType) {
+        @if (editing()?.component) {
+          <div
+            #editorHost
+            class="shs-editor shs-editor-host"
+            [attr.aria-label]="'Edit ' + activeLabel()"
+            [style.top.px]="rect.top"
+            [style.left.px]="rect.left"
+            [style.width.px]="rect.width"
+            [style.height.px]="rect.height"
+            (keydown)="onEditorHostKeydown($event)"
+            (mousedown)="$event.stopPropagation()"
+            (click)="$event.stopPropagation()"
+            (dblclick)="$event.stopPropagation()">
+            <ng-container #editorOutlet />
+          </div>
+        } @else if (editing()?.inputType; as inputType) {
           <input
             #cellEditor
             class="shs-editor"
@@ -119,6 +134,10 @@
       @if (resizeGuide(); as guide) {
         <div class="shs-guide" [class.x]="guide.x !== null" [class.y]="guide.y !== null" [style.left.px]="guide.x" [style.top.px]="guide.y"></div>
       }
+
+      <!-- Overlays projected by the consumer (e.g. sh-spreadsheet-remote-selections)
+           anchor to the body, which is the grid's positioning context. -->
+      <ng-content select="sh-spreadsheet-remote-selections"></ng-content>
     </div>
   </div>
 
