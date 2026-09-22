@@ -10,6 +10,9 @@ export * from './standard-behaviors';
 export * from './editor.types';
 export * from './editor-engine.service';
 export * from './editor-sanitize';
+// Parsers and serializers, so a consumer can read Markdown/HTML into a
+// document (and back) without going through the component's `format` input.
+export { astToHtml, astToMarkdown, htmlToAst, markdownToAst, markdownToHtml, parseDOMToAST } from './editor-serializers';
 // Op algebra + flat-position tools, exported for collaborative-editing
 // integrations (custom transports rebase remote ops with these).
 export {

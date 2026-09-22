@@ -440,9 +440,21 @@ export function markdownToHtml(md: string): string {
         const src = isSafeUrl(match[2], { allowDataImage: true }) ? escapeAttr(match[2]) : '';
         return `<img src="${src}" alt="${escapeAttr(match[1])}">`;
       }
+      const list = markdownList(block);
+      if (list) return list;
       return `<p>${escapeHtml(block)}</p>`;
     })
     .join('');
+}
+
+/** `- item` / `* item` lines become a bullet list, `1. item` lines an ordered list; anything else is not a list. */
+function markdownList(block: string): string | null {
+  const lines = block.split('\n');
+  const bullet = lines.every((line) => /^[-*]\s+/.test(line));
+  const ordered = !bullet && lines.every((line) => /^\d+\.\s+/.test(line));
+  if (!bullet && !ordered) return null;
+  const items = lines.map((line) => `<li>${escapeHtml(line.replace(/^([-*]|\d+\.)\s+/, ''))}</li>`).join('');
+  return bullet ? `<ul>${items}</ul>` : `<ol>${items}</ol>`;
 }
 
 export function markdownToAst(
