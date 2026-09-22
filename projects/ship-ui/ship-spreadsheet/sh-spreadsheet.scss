@@ -18,8 +18,25 @@ sh-spreadsheet {
   overflow: hidden;
 
   .shs-frame {
+    position: relative;
     height: 100%;
     outline: none;
+
+    &:focus-visible .shs-selection.active {
+      box-shadow: 0 0 0 1px var(--shs-selection-border);
+    }
+
+    &.resize-x,
+    &.resize-x .shs-body,
+    &.resize-x .shs-colhead {
+      cursor: col-resize;
+    }
+
+    &.resize-y,
+    &.resize-y .shs-body,
+    &.resize-y .shs-rh {
+      cursor: row-resize;
+    }
   }
 
   .shs-scroller {
@@ -113,6 +130,72 @@ sh-spreadsheet {
     // The active range wears the border; added ranges are fill-only.
     &.active {
       border: 1px solid var(--shs-selection-border);
+    }
+  }
+
+  // The anchor cell of a multi-cell range wears its own outline, so the
+  // caret's home is visible inside the fill.
+  .shs-anchor {
+    position: absolute;
+    border: 2px solid var(--shs-selection-border);
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  // The in-cell editor floats over its cell from the same geometry as the
+  // selection boxes; it grows with the text instead of clipping it.
+  .shs-editor {
+    position: absolute;
+    z-index: 4;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0 #{p2r(6)};
+    border: 2px solid var(--shs-selection-border);
+    border-radius: 0;
+    background: var(--shs-bg);
+    color: var(--shs-fg);
+    font: var(--shs-font);
+    line-height: calc(var(--shs-row-h) - 4px);
+    white-space: pre;
+    resize: none;
+    outline: none;
+    overflow: hidden;
+    field-sizing: content;
+    max-width: #{p2r(480)};
+  }
+
+  .shs-guide {
+    position: absolute;
+    pointer-events: none;
+    z-index: 4;
+    background: var(--shs-selection-border);
+
+    &.x {
+      top: 0;
+      bottom: 0;
+      width: 1px;
+    }
+
+    &.y {
+      left: 0;
+      right: 0;
+      height: 1px;
+    }
+  }
+
+  // The context menu anchors an empty trigger at the pointer; the popover
+  // positions itself off that point.
+  .shs-menu {
+    position: absolute;
+    z-index: 5;
+    width: 0;
+    height: 0;
+
+    .shs-menu-anchor {
+      display: block;
+      width: 0;
+      height: 0;
     }
   }
 }

@@ -1,7 +1,26 @@
-<div class="shs-frame" #frame tabindex="0" (copy)="onCopy($event)" (mouseup)="onMouseUp()">
+<div
+  class="shs-frame"
+  #frame
+  tabindex="0"
+  role="grid"
+  [attr.aria-readonly]="!editable()"
+  [attr.aria-label]="activeLabel() ? 'Spreadsheet, ' + activeLabel() + ' selected' : 'Spreadsheet'"
+  [class.resize-x]="resizeHover() === 'col' || resizeDrag()?.axis === 'col'"
+  [class.resize-y]="resizeHover() === 'row' || resizeDrag()?.axis === 'row'"
+  (keydown)="onKeydown($event)"
+  (copy)="onCopy($event)"
+  (cut)="onCut($event)"
+  (paste)="onPaste($event)"
+  (contextmenu)="onContextMenu($event)"
+  (mouseup)="onMouseUp()">
   <div class="shs-scroller" #scroller>
     @if (headers()) {
-      <div class="shs-colhead" [style.width.px]="contentWidth()">
+      <div
+        class="shs-colhead"
+        [style.width.px]="contentWidth()"
+        (mousedown)="onHeadMouseDown($event)"
+        (mousemove)="onHeadMouseMove($event)"
+        (mouseleave)="onHeadMouseLeave()">
         <span class="shs-corner"></span>
         <span [innerHTML]="colHeadHtml()"></span>
       </div>
@@ -13,11 +32,21 @@
       [style.padding-top.px]="padTop()"
       [style.padding-bottom.px]="padBottom()"
       (mousedown)="onBodyMouseDown($event)"
-      (mousemove)="onBodyMouseMove($event)">
+      (mousemove)="onBodyMouseMove($event)"
+      (dblclick)="onBodyDoubleClick($event)">
       @for (rect of selectionRects(); track $index) {
         <div
           class="shs-selection"
           [class.active]="rect.active"
+          [style.top.px]="rect.top"
+          [style.left.px]="rect.left"
+          [style.width.px]="rect.width"
+          [style.height.px]="rect.height"></div>
+      }
+
+      @if (activeRect(); as rect) {
+        <div
+          class="shs-anchor"
           [style.top.px]="rect.top"
           [style.left.px]="rect.left"
           [style.width.px]="rect.width"
@@ -32,6 +61,52 @@
           <span [innerHTML]="row.html"></span>
         </div>
       }
+
+      @if (editing() && activeRect(); as rect) {
+        <textarea
+          #cellEditor
+          class="shs-editor"
+          rows="1"
+          spellcheck="false"
+          autocapitalize="off"
+          autocomplete="off"
+          [attr.aria-label]="'Edit ' + activeLabel()"
+          [style.top.px]="rect.top"
+          [style.left.px]="rect.left"
+          [style.min-width.px]="rect.width"
+          [style.min-height.px]="rect.height"
+          (keydown)="onEditorKeydown($event)"
+          (blur)="onEditorBlur()"
+          (mousedown)="$event.stopPropagation()"
+          (dblclick)="$event.stopPropagation()"></textarea>
+      }
+
+      @if (resizeGuide(); as guide) {
+        <div class="shs-guide" [class.x]="guide.x !== null" [class.y]="guide.y !== null" [style.left.px]="guide.x" [style.top.px]="guide.y"></div>
+      }
     </div>
   </div>
+
+  <!-- Always mounted: content projected into the popover's lazily rendered
+       [menu] slot is dropped when the menu itself lives in a conditional block. -->
+  <sh-menu
+      class="shs-menu"
+      [style.left.px]="menuAt()?.x ?? 0"
+      [style.top.px]="menuAt()?.y ?? 0"
+      [(isOpen)]="menuOpen"
+      [searchable]="false"
+      (closed)="onMenuClosed()"
+      (mousedown)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()">
+      <span trigger class="shs-menu-anchor"></span>
+      <div menu>
+        <button type="button" (click)="insertRows('above')">Insert {{ menuScope().rows }} row{{ menuScope().rows === 1 ? '' : 's' }} above</button>
+        <button type="button" (click)="insertRows('below')">Insert {{ menuScope().rows }} row{{ menuScope().rows === 1 ? '' : 's' }} below</button>
+        <button type="button" (click)="deleteRows()">Delete row{{ menuScope().rows === 1 ? '' : 's' }}</button>
+        <button type="button" (click)="insertCols('left')">Insert {{ menuScope().cols }} column{{ menuScope().cols === 1 ? '' : 's' }} left</button>
+        <button type="button" (click)="insertCols('right')">Insert {{ menuScope().cols }} column{{ menuScope().cols === 1 ? '' : 's' }} right</button>
+        <button type="button" (click)="deleteCols()">Delete column{{ menuScope().cols === 1 ? '' : 's' }}</button>
+        <button type="button" (click)="clearSelection()">Clear contents</button>
+      </div>
+  </sh-menu>
 </div>

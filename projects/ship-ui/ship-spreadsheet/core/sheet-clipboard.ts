@@ -42,3 +42,55 @@ export function sheetRangeToHtml(model: SheetModel, range: SheetRange): string {
   parts.push('</tbody></table>');
   return parts.join('');
 }
+
+/**
+ * Parse tab-separated text — the inverse of `sheetRangeToTsv`, and what
+ * Excel and Google Sheets put on the plain-text clipboard. A quoted cell
+ * may carry tabs, newlines, and doubled quotes; a lone trailing newline is
+ * not a row. Lines keep their own length (ragged input stays ragged).
+ */
+export function parseTsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = '';
+  let quoted = false;
+  let i = 0;
+  const src = text.replace(/\r\n?/g, '\n');
+  while (i < src.length) {
+    const ch = src[i];
+    if (quoted) {
+      if (ch === '"') {
+        if (src[i + 1] === '"') {
+          cell += '"';
+          i += 2;
+          continue;
+        }
+        quoted = false;
+        i++;
+        continue;
+      }
+      cell += ch;
+      i++;
+      continue;
+    }
+    if (ch === '"' && cell === '') {
+      quoted = true;
+    } else if (ch === '\t') {
+      row.push(cell);
+      cell = '';
+    } else if (ch === '\n') {
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = '';
+    } else {
+      cell += ch;
+    }
+    i++;
+  }
+  if (cell !== '' || row.length > 0) {
+    row.push(cell);
+    rows.push(row);
+  }
+  return rows;
+}

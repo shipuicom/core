@@ -15,25 +15,26 @@
   </section>
 
   <section>
+    <h4>Editing</h4>
+    <p>
+      <code>editable</code> turns the same surface into the composer: typing, Enter, or F2 open an in-cell editor over
+      the active cell; Enter/Tab commit and move, Escape cancels; arrows, Shift+arrows, Home/End, PageUp/Down move
+      and extend the selection; Delete clears; paste fills from TSV or a <code>&lt;table&gt;</code> and grows the
+      grid; right-click opens row/column structure; drag a header boundary to resize; Cmd/Ctrl+Z walks the history.
+      Every change is emitted as a <code>SheetOp[]</code> transaction through <code>(ops)</code> and written back to
+      the two-way <code>[(sheet)]</code>; <code>applyRemote(ops)</code> merges concurrent changes and rebases the
+      history over them with <code>transformSheetOps</code>.
+    </p>
+    <app-highlight lang="ts" [content]="editableExample" />
+  </section>
+
+  <section>
     <h4>Not there yet</h4>
-    <p>The surface is display-and-copy only for now. Missing, in rough priority order:</p>
+    <p>Missing, in rough priority order:</p>
     <ul>
-      <li><strong>Cell editing</strong> — no editable composer yet; the model is immutable in, immutable out.</li>
-      <li>
-        <strong>Keyboard navigation</strong> — selection is mouse-only; arrow-key roving and Shift+arrow range
-        extension are not wired up.
-      </li>
-      <li>
-        <strong>Resizable columns and rows</strong> — the model already carries explicit
-        <code>colWidths</code>/<code>rowHeights</code> (see <code>set-col-width</code> /
-        <code>set-row-height</code> ops), but there is no drag-to-resize UI.
-      </li>
-      <li>
-        <strong>Paste into an existing spreadsheet</strong> — pasting a table materializes a <em>new</em> editor
-        block; in-place range paste is not supported.
-      </li>
       <li><strong>Formulas</strong> — cells are plain strings; no computed cells or references.</li>
       <li><strong>Formatting, sorting, merged cells, frozen panes</strong> beyond the built-in header rails.</li>
+      <li><strong>Fill handle</strong> and drag-move of a range.</li>
     </ul>
   </section>
 </div>
@@ -47,6 +48,17 @@
         Copy takes the active range as TSV:
       </p>
       <pre class="sheet-tsv">{{ sampleTsv() }}</pre>
+    </div>
+  </app-previewer>
+
+  <app-previewer path="/spreadsheet" title="Composer: editable" class="no-space">
+    <div class="sheet-demo">
+      <sh-spreadsheet class="sheet-small" [(sheet)]="editableSheet" [(selection)]="editableSelection" [editable]="true" (ops)="onOps($event)" />
+      <p class="sheet-note">
+        Type into a cell, paste a range, right-click for rows and columns, drag a header edge to resize. Last
+        transaction:
+      </p>
+      <pre class="sheet-tsv">{{ lastOps() }}</pre>
     </div>
   </app-previewer>
 

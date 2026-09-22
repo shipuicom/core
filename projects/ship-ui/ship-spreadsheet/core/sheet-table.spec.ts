@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applySheetOps, createSheet } from './sheet-model';
-import { sheetRangeToHtml, sheetRangeToTsv } from './sheet-clipboard';
+import { parseTsv, sheetRangeToHtml, sheetRangeToTsv } from './sheet-clipboard';
 import { sheetFromTable, sheetToTableHtml } from './sheet-table';
 
 function tableEl(html: string): Element {
@@ -87,5 +87,27 @@ describe('clipboard flavors', () => {
 
   it('accepts unordered corners', () => {
     expect(sheetRangeToTsv(model, { r0: 1, c0: 1, r1: 0, c1: 0 })).toBe('a\t"b\tb"\n"c""c"\t"d\nd"');
+  });
+});
+
+describe('parseTsv', () => {
+  it('splits rows and cells and drops the trailing newline', () => {
+    expect(parseTsv('a\tb\nc\td\n')).toEqual([
+      ['a', 'b'],
+      ['c', 'd'],
+    ]);
+    expect(parseTsv('one')).toEqual([['one']]);
+    expect(parseTsv('')).toEqual([]);
+  });
+
+  it('round-trips quoted cells with tabs, newlines, and quotes', () => {
+    const model = createSheet(1, 3, ['tab\there', 'line\nbreak', 'say "hi"']);
+    const tsv = sheetRangeToTsv(model, { r0: 0, c0: 0, r1: 0, c1: 2 });
+    expect(parseTsv(tsv)).toEqual([['tab\there', 'line\nbreak', 'say "hi"']]);
+  });
+
+  it('keeps ragged lines and empty cells', () => {
+    expect(parseTsv('a\t\tc\nd')).toEqual([['a', '', 'c'], ['d']]);
+    expect(parseTsv('a\r\nb')).toEqual([['a'], ['b']]);
   });
 });

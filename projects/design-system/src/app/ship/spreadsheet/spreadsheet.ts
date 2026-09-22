@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/c
 import { ShipEditor, ShipEditorToolbar } from '@ship-ui/core/ship-editor';
 import {
   SheetModel,
+  SheetOp,
   SheetSelection,
   ShipSpreadsheetBlockBehavior,
   ShipSpreadsheet,
@@ -76,7 +77,19 @@ export class MyComponent {
 // <sh-editor [behaviors]="sheetBehaviors" ...> — any pasted <table> becomes a sheet block.
 sheetBehaviors = [new ShipSpreadsheetBlockBehavior()];`;
 
+  editableExample = `<sh-spreadsheet [(sheet)]="sheet" [(selection)]="selection" [editable]="true" (ops)="save($event)" />
+
+// Every user transaction arrives as SheetOp[] — persist it, log it, or relay it.
+save(ops: SheetOp[]) { ... }
+// Concurrent changes from elsewhere: grid.applyRemote(ops) — not echoed, history rebased.`;
+
   sample = signal(sampleSheet());
+  editableSheet = signal(sampleSheet());
+  editableSelection = signal<SheetSelection | null>(null);
+  lastOps = signal('—');
+  onOps(ops: SheetOp[]) {
+    this.lastOps.set(JSON.stringify(ops, null, 1));
+  }
   sampleSelection = signal<SheetSelection | null>({ ranges: [{ r0: 1, c0: 1, r1: 2, c1: 2 }] });
   readonly sampleTsv = computed(() => {
     const range = primarySheetRange(this.sampleSelection());
