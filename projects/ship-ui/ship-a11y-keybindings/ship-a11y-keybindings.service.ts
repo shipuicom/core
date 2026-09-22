@@ -50,6 +50,13 @@ export const DEFAULT_KEYBINDINGS: Record<string, string> = {
   'table.row-resize-decrease': 'Shift+ArrowUp',
   'table.row-resize-increase': 'Shift+ArrowDown',
 
+  'sortable.move-up': 'ArrowUp',
+  'sortable.move-down': 'ArrowDown',
+  'sortable.move-left': 'ArrowLeft',
+  'sortable.move-right': 'ArrowRight',
+  'sortable.move-first': 'Home',
+  'sortable.move-last': 'End',
+
   'grid.focus-up': 'ArrowUp',
   'grid.focus-down': 'ArrowDown',
   'grid.focus-left': 'ArrowLeft',

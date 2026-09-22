@@ -16,6 +16,7 @@ import {
   signal,
   WritableSignal,
 } from '@angular/core';
+import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { firstValueFrom, isObservable, Observable } from 'rxjs';
 
 @Injectable({
@@ -141,6 +142,7 @@ export function createSortableManager<T>(
 })
 export class ShipSortable implements OnInit, OnDestroy {
   #sortableService = inject(ShipSortableService);
+  #keybindings = inject(ShipA11yKeybindingsService);
 
   #document = inject(DOCUMENT);
   #selfEl = inject(ElementRef<HTMLElement>);
@@ -155,6 +157,12 @@ export class ShipSortable implements OnInit, OnDestroy {
   sortingMode = input<'list' | 'grid' | 'tree'>('list');
   /** Two-way bound list of tree nodes, used when `sortingMode` is `'tree'`. */
   treeItems = model<any[]>([]);
+  /**
+   * The axis items move along: `'y'` for a vertical list, `'x'` for a horizontal row (column headers),
+   * `'both'` for a grid. A drag picks the nearest slot measured on that axis only, and the keyboard
+   * uses the matching arrow keys (up/down, left/right, or all four).
+   */
+  shSortableAxis = input<'x' | 'y' | 'both'>('both');
 
   /**
    * Enables touch-based dragging. Off by default and meant to be bound to an
@@ -272,7 +280,16 @@ export class ShipSortable implements OnInit, OnDestroy {
     }
     this.abortController = new AbortController();
 
+    const keyshortcuts = this.keyboardShortcuts();
+
     for (const el of els) {
+      // A handle is the keyboard's grip too: focusable, and it announces the move keys.
+      const handle = el.querySelector<HTMLElement>('[sort-handle]');
+      if (handle) {
+        if (!handle.hasAttribute('tabindex')) this.#renderer.setAttribute(handle, 'tabindex', '0');
+        if (keyshortcuts) this.#renderer.setAttribute(handle, 'aria-keyshortcuts', keyshortcuts);
+      }
+
       el.addEventListener('dragstart', (e) => this.dragStart(e), { signal: this.abortController.signal });
       el.addEventListener('dragend', () => this.dragEnd(), { signal: this.abortController.signal });
       if (this.touchEnabled()) {
@@ -541,12 +558,18 @@ export class ShipSortable implements OnInit, OnDestroy {
     let minDistance = Infinity;
 
     const positions = this.initialPositions();
+    const axis = this.shSortableAxis();
 
     for (let i = 0; i < positions.length; i++) {
       const pos = positions[i];
       const centerX = pos.x + pos.width / 2;
       const centerY = pos.y + pos.height / 2;
-      const dist = Math.hypot(mouseX - centerX, mouseY - centerY);
+      const dist =
+        axis === 'x'
+          ? Math.abs(mouseX - centerX)
+          : axis === 'y'
+            ? Math.abs(mouseY - centerY)
+            : Math.hypot(mouseX - centerX, mouseY - centerY);
 
       if (dist < minDistance) {
         minDistance = dist;
@@ -557,6 +580,84 @@ export class ShipSortable implements OnInit, OnDestroy {
     if (closestSlotIndex !== -1 && this.dragToIndex() !== closestSlotIndex) {
       this.dragToIndex.set(closestSlotIndex);
     }
+  }
+
+  /** The actions the current axis answers to, in the order they are announced. */
+  #keyboardActions(): string[] {
+    const axis = this.shSortableAxis();
+    const actions: string[] = [];
+
+    if (axis !== 'x') actions.push('sortable.move-up', 'sortable.move-down');
+    if (axis !== 'y') actions.push('sortable.move-left', 'sortable.move-right');
+    actions.push('sortable.move-first', 'sortable.move-last');
+
+    return actions;
+  }
+
+  /** `aria-keyshortcuts` text for the handles, from the keybindings service. */
+  keyboardShortcuts = computed(() => {
+    const parts = this.#keyboardActions()
+      .map((action) => this.#keybindings.getDisplayShortcut(action) || this.#keybindings.getShortcut(action))
+      .filter((s): s is string => !!s);
+
+    return parts.length ? parts.join(', ') : null;
+  });
+
+  /**
+   * Keyboard reordering: with a `[sort-handle]` (or the draggable itself) focused, the arrow keys of the
+   * axis move the item one slot, Home/End move it to the ends. The result goes through the same manager
+   * or `sortDrop`/`afterDrop` outputs as a mouse drop, and focus follows the item.
+   */
+  @HostListener('keydown', ['$event'])
+  onKeyDown(e: KeyboardEvent) {
+    if (this.sortingMode() === 'tree' || this.#sortableService.activeSource) return;
+
+    const target = e.target as HTMLElement | null;
+    const item = target?.closest('[draggable]') as HTMLElement | null;
+    if (!item || !this.#selfEl.nativeElement.contains(item)) return;
+
+    const handle = target?.closest('[sort-handle]');
+    if (target !== item && !handle) return;
+
+    const items = this.dragables();
+    const index = items.indexOf(item);
+    if (index === -1) return;
+
+    const axis = this.shSortableAxis();
+    let to: number;
+
+    if (this.#keybindings.matches(e, 'sortable.move-first')) to = 0;
+    else if (this.#keybindings.matches(e, 'sortable.move-last')) to = items.length - 1;
+    else if (axis !== 'x' && this.#keybindings.matches(e, 'sortable.move-up')) to = index - 1;
+    else if (axis !== 'x' && this.#keybindings.matches(e, 'sortable.move-down')) to = index + 1;
+    else if (axis !== 'y' && this.#keybindings.matches(e, 'sortable.move-left')) to = index - 1;
+    else if (axis !== 'y' && this.#keybindings.matches(e, 'sortable.move-right')) to = index + 1;
+    else return;
+
+    e.preventDefault();
+    if (to < 0 || to >= items.length || to === index) return;
+
+    this.moveItem(index, to, !!handle);
+  }
+
+  /** Reorders in place, as an internal drop from `previousIndex` to `currentIndex` would. */
+  moveItem(previousIndex: number, currentIndex: number, focusHandle = false) {
+    this.isDropping = true;
+
+    const event: ShipDropEvent = { previousContainer: this, container: this, previousIndex, currentIndex };
+
+    if (this.shSortable()?.drop) {
+      this.shSortable()!.drop(event);
+    } else {
+      this.sortDrop.emit(event);
+      this.afterDrop.emit({ fromIndex: previousIndex, toIndex: currentIndex });
+    }
+
+    setTimeout(() => {
+      const moved = this.dragables()[currentIndex];
+      const focusTarget = (focusHandle ? moved?.querySelector<HTMLElement>('[sort-handle]') : null) ?? moved;
+      focusTarget?.focus();
+    }, 0);
   }
 
   onTouchStart(e: TouchEvent, el: HTMLElement) {

@@ -503,3 +503,147 @@ describe('ShipSortable', () => {
     });
   });
 });
+
+@Component({
+  template: `
+    <div #row id="row" [shSortable]="manager" shSortableAxis="x">
+      @for (column of columns(); track column) {
+        <div class="header" draggable="true">
+          <span class="handle" sort-handle>::</span>
+          {{ column }}
+        </div>
+      }
+    </div>
+
+    <div #plain id="plain" [shSortable]="items" shSortableAxis="x">
+      @for (item of items(); track item) {
+        <div class="item" draggable="true">{{ item }}</div>
+      }
+    </div>
+
+    <div #list id="list" [shSortable]="listManager" shSortableAxis="y">
+      @for (item of items(); track item) {
+        <div class="item" draggable="true" tabindex="0">{{ item }}</div>
+      }
+    </div>
+  `,
+  standalone: true,
+  imports: [ShipSortable],
+})
+class AxisHostComponent {
+  columns = signal(['To do', 'Doing', 'Review', 'Done']);
+  manager = createSortableManager(this.columns);
+  items = signal(['A', 'B', 'C']);
+  listManager = createSortableManager(this.items);
+  row = viewChild.required('row', { read: ShipSortable });
+  list = viewChild.required('list', { read: ShipSortable });
+  plain = viewChild.required('plain', { read: ShipSortable });
+}
+
+describe('ShipSortable axis and keyboard', () => {
+  let fixture: ComponentFixture<AxisHostComponent>;
+  let host: AxisHostComponent;
+
+  const settle = async () => {
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
+  };
+
+  const key = (el: Element, key: string) => {
+    const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+    el.dispatchEvent(event);
+    return event;
+  };
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({ imports: [AxisHostComponent] }).compileComponents();
+    fixture = TestBed.createComponent(AxisHostComponent);
+    host = fixture.componentInstance;
+    await settle();
+  });
+
+  it('makes the handles focusable and announces the axis keys', () => {
+    const handle = fixture.nativeElement.querySelector('#row [sort-handle]') as HTMLElement;
+    expect(handle.getAttribute('tabindex')).toBe('0');
+    const shortcuts = handle.getAttribute('aria-keyshortcuts') ?? '';
+    expect(shortcuts).toContain('ArrowRight');
+    expect(shortcuts).not.toContain('ArrowDown');
+  });
+
+  it('moves a header with the left/right keys on its handle and keeps focus on it', async () => {
+    const handles = fixture.nativeElement.querySelectorAll('#row [sort-handle]') as NodeListOf<HTMLElement>;
+    handles[0].focus();
+
+    expect(key(handles[0], 'ArrowRight').defaultPrevented).toBe(true);
+    await settle();
+    expect(host.columns()).toEqual(['Doing', 'To do', 'Review', 'Done']);
+    const focused = document.activeElement as HTMLElement;
+    expect(focused.closest('[draggable]')?.textContent).toContain('To do');
+
+    key(focused, 'ArrowLeft');
+    await settle();
+    expect(host.columns()).toEqual(['To do', 'Doing', 'Review', 'Done']);
+
+    key(document.activeElement as HTMLElement, 'End');
+    await settle();
+    expect(host.columns()).toEqual(['Doing', 'Review', 'Done', 'To do']);
+
+    key(document.activeElement as HTMLElement, 'Home');
+    await settle();
+    expect(host.columns()).toEqual(['To do', 'Doing', 'Review', 'Done']);
+  });
+
+  it('ignores the other axis and the ends', async () => {
+    const handle = fixture.nativeElement.querySelector('#row [sort-handle]') as HTMLElement;
+    expect(key(handle, 'ArrowDown').defaultPrevented).toBe(false);
+    expect(key(handle, 'ArrowLeft').defaultPrevented).toBe(true);
+    await settle();
+    expect(host.columns()).toEqual(['To do', 'Doing', 'Review', 'Done']);
+
+    const items = fixture.nativeElement.querySelectorAll('#list .item') as NodeListOf<HTMLElement>;
+    expect(key(items[2], 'ArrowRight').defaultPrevented).toBe(false);
+    key(items[2], 'ArrowUp');
+    await settle();
+    expect(host.items()).toEqual(['A', 'C', 'B']);
+  });
+
+  it('emits the outputs instead when there is no manager', async () => {
+    const plain = host.plain();
+    const drops: ShipDropEvent[] = [];
+    const after: { fromIndex: number; toIndex: number }[] = [];
+    plain.sortDrop.subscribe((e) => drops.push(e));
+    plain.afterDrop.subscribe((e) => after.push(e));
+
+    key(fixture.nativeElement.querySelector('#plain .item') as HTMLElement, 'ArrowRight');
+    await settle();
+    expect(drops).toEqual([{ previousContainer: plain, container: plain, previousIndex: 0, currentIndex: 1 }]);
+    expect(after).toEqual([{ fromIndex: 0, toIndex: 1 }]);
+    expect(host.items()).toEqual(['A', 'B', 'C']);
+  });
+
+  it('targets the nearest slot along the x axis only while dragging', async () => {
+    const row = host.row();
+    const rowEl = fixture.nativeElement.querySelector('#row') as HTMLElement;
+    rowEl.getBoundingClientRect = () => ({ left: 0, top: 0, right: 400, bottom: 40, width: 400, height: 40 } as DOMRect);
+    row.initialPositions.set([
+      { x: 0, y: 0, width: 100, height: 40 },
+      { x: 100, y: 0, width: 100, height: 40 },
+      { x: 200, y: 0, width: 100, height: 40 },
+      { x: 300, y: 0, width: 100, height: 40 },
+    ]);
+    const service = TestBed.inject(ShipSortableService);
+    service.activeSource = row;
+    service.activeTarget = row;
+    row.dragStartIndex.set(0);
+
+    // Far below the row on the y axis, but over the third slot on x: x alone decides.
+    row.processDragOver(260, 600);
+    expect(row.dragToIndex()).toBe(2);
+
+    row.processDragOver(20, -300);
+    expect(row.dragToIndex()).toBe(0);
+
+    row.dragEnd();
+  });
+});

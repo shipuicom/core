@@ -1,0 +1,13 @@
+<p class="hint">Drag a header sideways, or focus its handle and press ArrowLeft / ArrowRight (Home / End for the ends).</p>
+
+<div class="headers" [shSortable]="manager" shSortableAxis="x">
+  @for (column of columns(); track column.key) {
+    <div class="header" draggable="true">
+      <sh-icon sort-handle class="handle" [attr.aria-label]="'Move ' + column.name">dots-six-vertical</sh-icon>
+      <span class="name">{{ column.name }}</span>
+      <span class="count">{{ column.count }}</span>
+    </div>
+  }
+</div>
+
+<pre>{{ columns().map(c => c.name).join(' → ') }}</pre>
