@@ -289,7 +289,7 @@ export class BulletListBehavior extends BaseBlockBehavior {
     return `<ul>${contentHtml}</ul>`;
   }
   override renderMarkdown(block: ASTBlockNode, contentMd: string) {
-    return contentMd;
+    return `${contentMd}\n\n`;
   }
   override slashCommands(): SlashCommand[] {
     return [
@@ -313,7 +313,7 @@ export class OrderedListBehavior extends BaseBlockBehavior {
     return `<ol>${contentHtml}</ol>`;
   }
   override renderMarkdown(block: ASTBlockNode, contentMd: string) {
-    return contentMd;
+    return `${contentMd}\n\n`;
   }
   override slashCommands(): SlashCommand[] {
     return [

@@ -955,6 +955,17 @@ describe('EditorEngine integration', () => {
       expect(engine.serialize('markdown')).toBe('## Head\n\nplain **bold**');
     });
 
+    it('separates a list from the following block with a blank line', () => {
+      const item = (text: string): ASTBlockNode => ({ type: 'list-item', content: [{ type: 'text', text }] });
+      engine.load([
+        p('first'),
+        { type: 'bullet-list', content: [item('one'), item('two')] },
+        { type: 'ordered-list', content: [item('three')] },
+        { type: 'quote', content: [{ type: 'text', text: 'quoted' }] },
+      ] as ASTDocument);
+      expect(engine.serialize('markdown')).toBe('first\n\n- one\n- two\n\n- three\n\n> quoted');
+    });
+
     it('serializes to JSON as a detached deep clone', () => {
       engine.load([p('x')]);
       const json = engine.serialize('json');
