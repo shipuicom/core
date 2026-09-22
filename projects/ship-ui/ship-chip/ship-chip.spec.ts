@@ -69,4 +69,59 @@ describe('ShipChip', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.classList.contains('no-bg')).toBe(false);
   });
+
+  it('applies the selected class from the input', () => {
+    fixture.componentRef.setInput('selected', true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.classList.contains('selected')).toBe(true);
+    expect(fixture.nativeElement.getAttribute('role')).toBeNull();
+
+    fixture.componentRef.setInput('selected', false);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.classList.contains('selected')).toBe(false);
+  });
+
+  it('is a pressed button when selectable and toggles on click, Enter and Space', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    const emitted: boolean[] = [];
+    component.selectedChange.subscribe((v) => emitted.push(v));
+
+    fixture.componentRef.setInput('selectable', true);
+    fixture.detectChanges();
+    expect(host.getAttribute('role')).toBe('button');
+    expect(host.getAttribute('tabindex')).toBe('0');
+    expect(host.getAttribute('aria-pressed')).toBe('false');
+
+    host.click();
+    fixture.detectChanges();
+    expect(host.classList.contains('selected')).toBe(true);
+    expect(host.getAttribute('aria-pressed')).toBe('true');
+
+    host.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    fixture.detectChanges();
+    expect(host.classList.contains('selected')).toBe(false);
+
+    const space = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    host.dispatchEvent(space);
+    fixture.detectChanges();
+    expect(host.classList.contains('selected')).toBe(true);
+    expect(space.defaultPrevented).toBe(true);
+
+    expect(emitted).toEqual([true, false, true]);
+  });
+
+  it('follows the selected input again after a local toggle', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    fixture.componentRef.setInput('selectable', true);
+    fixture.detectChanges();
+
+    host.click();
+    fixture.detectChanges();
+    expect(host.classList.contains('selected')).toBe(true);
+
+    fixture.componentRef.setInput('selected', true);
+    fixture.componentRef.setInput('selected', false);
+    fixture.detectChanges();
+    expect(host.classList.contains('selected')).toBe(false);
+  });
 });

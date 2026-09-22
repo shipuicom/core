@@ -1,0 +1,43 @@
+<div class="row">
+  <span class="hint">Filter bar: click, Enter or Space toggles a chip</span>
+  @for (priority of priorities; track priority) {
+    <sh-chip
+      class="simple small"
+      selectable
+      [selected]="selectedPriorities().includes(priority)"
+      (selectedChange)="togglePriority(priority, $event)">
+      {{ priority }}
+    </sh-chip>
+  }
+
+  @for (label of labels; track label.name) {
+    <sh-chip
+      class="dynamic small sharp"
+      [style.--chip-c]="label.color"
+      selectable
+      [selected]="selectedLabels().includes(label.name)"
+      (selectedChange)="toggleLabel(label.name, $event)">
+      {{ label.name }}
+    </sh-chip>
+  }
+
+  <sh-chip class="simple small" selectable [selected]="mine()" (selectedChange)="mine.set($event)">
+    <sh-icon>circle</sh-icon>
+    Only mine
+  </sh-chip>
+</div>
+
+<pre>priorities: {{ selectedPriorities().join(', ') || '—' }} · labels: {{ selectedLabels().join(', ') || '—' }} · mine: {{ mine() }}</pre>
+
+<div class="row">
+  <span class="hint">Every variant, selected</span>
+  <sh-chip selected>Base</sh-chip>
+  <sh-chip variant="simple" selected>Simple</sh-chip>
+  <sh-chip variant="simple" color="primary" selected>Primary</sh-chip>
+  <sh-chip variant="outlined" color="accent" selected>Outlined</sh-chip>
+  <sh-chip variant="flat" color="success" selected>Flat</sh-chip>
+  <sh-chip variant="raised" color="warn" selected>Raised</sh-chip>
+  <sh-chip class="dynamic" style="--chip-c: #7c3aed" selected>Dynamic</sh-chip>
+  <sh-chip class="simple small sharp" color="error" selected>Small sharp</sh-chip>
+  <sh-chip class="simple small" selected noBg>No bg</sh-chip>
+</div>

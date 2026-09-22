@@ -5,11 +5,12 @@ import { ChipSandbox } from './examples/chip-sandbox/chip-sandbox';
 import { FlatChip } from './examples/flat-chip/flat-chip';
 import { OutlinedChip } from './examples/outlined-chip/outlined-chip';
 import { RaisedChip } from './examples/raised-chip/raised-chip';
+import { SelectedChip } from './examples/selected-chip/selected-chip';
 import { SimpleChip } from './examples/simple-chip/simple-chip';
 
 @Component({
   selector: 'app-chips-examples',
-  imports: [Previewer, ChipSandbox, BaseChip, SimpleChip, OutlinedChip, FlatChip, RaisedChip],
+  imports: [Previewer, ChipSandbox, BaseChip, SimpleChip, OutlinedChip, FlatChip, RaisedChip, SelectedChip],
   templateUrl: './chips-examples.html',
   styleUrl: './chips-tab.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
