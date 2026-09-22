@@ -85,11 +85,18 @@ $shipSidenav: true !default;
     &.simple {
       border-radius: 0;
 
+      // A column: the closed-state top bar takes its own height and main
+      // fills the rest, so the wrapper never has anything to scroll.
       .main-wrap {
         padding: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
 
         main {
-          height: var(--sidenav-wrap-h);
+          flex: 1 1 auto;
+          min-height: 0;
+          height: auto;
           border-radius: 0;
           border-width: 0 0 0 1px;
         }
