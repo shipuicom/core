@@ -2,6 +2,7 @@ export * from './core/sheet-model';
 export * from './core/sheet-transform';
 export * from './core/sheet-extensions';
 export * from './core/sheet-formats';
+export * from './core/sheet-formulas';
 export * from './core/sheet-table';
 export * from './core/sheet-clipboard';
 export * from './sh-spreadsheet';

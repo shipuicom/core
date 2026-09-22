@@ -1,6 +1,14 @@
 # Formulas — design note
 
-Nothing of this is implemented. This note fixes the shape so that the model, the ops, the transform and the
+**Status: step 1 of §5 landed** — `core/sheet-formulas.ts`: the grammar (`parseFormula`), `SheetEvaluator`
+(`update(model, ops?)`, `valueAt`, `errorAt`, `isFormulaAt`), the dependency graph with incremental recompute on
+`set-cells` (a structural op or an update without ops rebuilds), structural cycle detection (`#CYCLE` on the
+cycle and downstream), the errors listed in §2, SUM/AVG(AVERAGE)/MIN/MAX/COUNT/COUNTA/ABS/ROUND/IF/CONCAT/LEN/
+TODAY, and `rewriteFormulaRefs(source, op)` as a pure function. Not yet done: running the rewrite inside the
+structural applies (§3, step 2), and the view boundary (§5 steps 3–4) — the composer does not consult the
+evaluator yet. Ranges over 10 000 cells register on the sheet as a whole rather than per cell.
+
+This note fixes the shape so that the model, the ops, the transform and the
 composer that exist today do not have to change when formulas arrive. It answers the brief's suggestion
 (one Angular `computed` per formula cell) with a different engine and says why.
 
