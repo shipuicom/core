@@ -504,6 +504,10 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'window-manager',
+        loadComponent: () => import('./ship/window-manager/window-manager'),
+      },
+      {
         path: 'kbds',
         loadComponent: () => import('./ship/kbds/kbds'),
         children: [

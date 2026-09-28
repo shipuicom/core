@@ -1,0 +1,93 @@
+<h1>Window Manager</h1>
+<!-- @keywords: window manager, windows, draggable, resizable, drag, resize, snap, tiling, floating panel, desktop -->
+
+<sh-tabs color="primary" [(value)]="activeTab">
+  <button value="overview">Overview</button>
+  <button value="api">API</button>
+  <button value="parts">Sub-components</button>
+  <button value="examples">Examples</button>
+</sh-tabs>
+
+@let _activeTab = activeTab();
+
+<div class="tab-content">
+  @if (_activeTab === 'overview') {
+    <app-previewer path="/window-manager/examples/basic-window-manager/basic-window-manager" title="Basic" defaultView="markup">
+      <app-basic-window-manager class="example" />
+    </app-previewer>
+
+    <app-property-viewer>
+      <section>
+        <h4>Overview</h4>
+        <p>
+          <code>&lt;sh-window-manager&gt;</code>
+          arranges a set of
+          <code>shWindow</code>
+          panes according to its
+          <code>mode</code>
+          — the basis of an in-browser window manager. Declare each window on an
+          <code>&lt;ng-template&gt;</code>
+          with an id, title, and icon, and the manager renders them where they belong.
+        </p>
+        <app-highlight lang="ts" [content]="usageExample" />
+      </section>
+
+      <section>
+        <h4>Modes</h4>
+        <p>Switch the layout strategy with the <code>mode</code> input:</p>
+        <ul>
+          <li><b>tabs</b> — browser-style tabs; one window visible at a time.</li>
+          <li><b>grid</b> — a locked tiling grid; drag the gutters between panes to resize.</li>
+          <li><b>grid-move</b> — the same grid, but drag a tab onto another pane to rearrange.</li>
+          <li><b>dock</b> — the full layout; drag a tab onto another pane's edge to split, or its centre to merge into a tab group.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h4>Resizing</h4>
+        <p>
+          In every tiling mode, the boundaries between panes are draggable gutters that reapportion the adjacent grid
+          tracks. The smallest a pane can shrink to is set by
+          <code>minFraction</code>
+          .
+        </p>
+      </section>
+
+      <section>
+        <h4>Tabs</h4>
+        <p>
+          Each region is a tab group. Click a tab to focus its window, or close it with the
+          <code>×</code>
+          (toggle with
+          <code>closable</code>
+          ). Emptied regions collapse and the layout simplifies automatically.
+        </p>
+      </section>
+    </app-property-viewer>
+  } @else if (_activeTab === 'api') {
+    <app-api-reference name="ShipWindowManager" />
+  } @else if (_activeTab === 'parts') {
+    <p>The directive used to declare each window inside <code>sh-window-manager</code>.</p>
+    <app-api-reference name="ShipWindow" />
+  } @else if (_activeTab === 'examples') {
+    <app-previewer path="/window-manager/examples/basic-window-manager/basic-window-manager" title="All modes (interactive)">
+      <app-basic-window-manager class="example" />
+    </app-previewer>
+
+    <app-previewer path="/window-manager/examples/tabs-window-manager/tabs-window-manager" title="Tabs">
+      <app-tabs-window-manager class="example" />
+    </app-previewer>
+
+    <app-previewer path="/window-manager/examples/grid-window-manager/grid-window-manager" title="Grid (locked)">
+      <app-grid-window-manager class="example" />
+    </app-previewer>
+
+    <app-previewer path="/window-manager/examples/grid-move-window-manager/grid-move-window-manager" title="Grid · move">
+      <app-grid-move-window-manager class="example" />
+    </app-previewer>
+
+    <app-previewer path="/window-manager/examples/dock-window-manager/dock-window-manager" title="Dock">
+      <app-dock-window-manager class="example" />
+    </app-previewer>
+  }
+</div>

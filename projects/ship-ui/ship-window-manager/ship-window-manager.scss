@@ -1,0 +1,158 @@
+@use 'helpers' as *;
+
+.sh-window-manager {
+  position: relative;
+  display: block;
+  overflow: hidden;
+
+  --sh-window-gutter: #{p2r(6)};
+  --sh-window-bar: var(--base-2);
+  --sh-window-bc: var(--base-4);
+}
+
+.sh-window-node {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+}
+
+// --- splits ---------------------------------------------------------------
+
+.sh-window-split {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+
+  &.col {
+    flex-direction: column;
+  }
+}
+
+.sh-window-pane {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sh-window-gutter {
+  flex: 0 0 var(--sh-window-gutter);
+  align-self: stretch;
+  background: transparent;
+  z-index: 2;
+  touch-action: none;
+
+  .sh-window-split:not(.col) > & {
+    cursor: ew-resize;
+  }
+  .sh-window-split.col > & {
+    cursor: ns-resize;
+  }
+
+  &:hover {
+    background: var(--primary-5);
+  }
+}
+
+// --- stacks (tab regions) -------------------------------------------------
+
+.sh-window-stack {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid var(--sh-window-bc);
+  border-radius: var(--shape-2);
+  overflow: hidden;
+  background: var(--base-1);
+}
+
+.sh-window-tabs {
+  display: flex;
+  flex: 0 0 auto;
+  gap: #{p2r(2)};
+  padding: #{p2r(4)} #{p2r(4)} 0;
+  background: var(--sh-window-bar);
+  border-bottom: 1px solid var(--sh-window-bc);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.sh-window-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: #{p2r(6)};
+  flex: 0 0 auto;
+  padding: #{p2r(6)} #{p2r(10)};
+  border: 0;
+  border-radius: var(--shape-1) var(--shape-1) 0 0;
+  background: transparent;
+  color: var(--base-9);
+  font: var(--paragraph-20);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+
+  &:hover {
+    background: var(--base-3);
+    color: var(--base-11);
+  }
+
+  &.active {
+    background: var(--base-1);
+    color: var(--base-12);
+    box-shadow: inset 0 #{p2r(-2)} 0 var(--primary-8);
+  }
+
+  &.dragging {
+    opacity: 0.5;
+  }
+}
+
+.sh-window-tab-close {
+  font-size: #{p2r(14)};
+  opacity: 0.5;
+  border-radius: var(--shape-1);
+
+  &:hover {
+    opacity: 1;
+    color: var(--error-9);
+  }
+}
+
+.sh-window-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+// --- drag / drop feedback -------------------------------------------------
+
+.sh-window-drop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  background: rgb(from var(--primary-8) r g b / 12%);
+  border: #{p2r(2)} solid var(--primary-8);
+  border-radius: var(--shape-2);
+  transition: inset 90ms ease;
+
+  &[data-zone='left'] {
+    inset: 0 50% 0 0;
+  }
+  &[data-zone='right'] {
+    inset: 0 0 0 50%;
+  }
+  &[data-zone='top'] {
+    inset: 0 0 50% 0;
+  }
+  &[data-zone='bottom'] {
+    inset: 50% 0 0 0;
+  }
+}

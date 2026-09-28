@@ -1,0 +1,29 @@
+<div class="controls">
+  <sh-button-group [(value)]="mode">
+    <button value="tabs">Tabs</button>
+    <button value="grid">Grid</button>
+    <button value="grid-move">Grid · move</button>
+    <button value="dock">Dock</button>
+  </sh-button-group>
+</div>
+
+<sh-window-manager class="wm" [mode]="mode()">
+  <ng-template shWindow windowId="editor" windowTitle="Editor" windowIcon="code">
+    <div class="win-body">
+      <p>The editor pane.</p>
+      <p>Drag the gutters to resize, switch tabs, and — in <b>dock</b> mode — drag a tab onto another pane's edge to split.</p>
+    </div>
+  </ng-template>
+
+  <ng-template shWindow windowId="preview" windowTitle="Preview" windowIcon="browser">
+    <div class="win-body">Live preview goes here.</div>
+  </ng-template>
+
+  <ng-template shWindow windowId="files" windowTitle="Files" windowIcon="folder">
+    <div class="win-body">A file tree, a list — anything you like.</div>
+  </ng-template>
+
+  <ng-template shWindow windowId="terminal" windowTitle="Terminal" windowIcon="terminal-window">
+    <div class="win-body">$ npm run start</div>
+  </ng-template>
+</sh-window-manager>
