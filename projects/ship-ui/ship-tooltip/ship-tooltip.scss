@@ -2,12 +2,6 @@
 
 $shipTooltip: true !default;
 
-%hoverState {
-  opacity: 1;
-  z-index: 0;
-  visibility: visible;
-}
-
 @if $shipTooltip == true {
   .tooltip {
     position: relative;

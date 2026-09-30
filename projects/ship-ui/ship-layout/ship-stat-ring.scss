@@ -1,8 +1,8 @@
 @use 'helpers' as *;
 
-$shipStatRing: true !default;
+$shipLayoutStatRing: true !default;
 
-@if $shipStatRing == true {
+@if $shipLayoutStatRing == true {
   sh-lo-stat-ring {
     --ring-bg: var(--base-1);
     --ring-bc: var(--base-4);

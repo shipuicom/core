@@ -1,8 +1,8 @@
 @use 'helpers' as *;
 
-$shipStatTrend: true !default;
+$shipLayoutStatTrend: true !default;
 
-@if $shipStatTrend == true {
+@if $shipLayoutStatTrend == true {
   sh-lo-stat-trend {
     --trend-c: var(--primary-8);
     --trend-bg: var(--base-1);

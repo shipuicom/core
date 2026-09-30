@@ -1,8 +1,8 @@
 @use 'helpers' as *;
 
-$shipPage: true !default;
+$shipLayoutPage: true !default;
 
-@if $shipPage == true {
+@if $shipLayoutPage == true {
   sh-lo-page {
     --page-mw: #{p2r(1200)};
     --page-p: var(--space-6);

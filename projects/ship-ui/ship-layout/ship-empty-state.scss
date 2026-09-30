@@ -1,8 +1,8 @@
 @use 'helpers' as *;
 
-$shipEmptyState: true !default;
+$shipLayoutEmptyState: true !default;
 
-@if $shipEmptyState == true {
+@if $shipLayoutEmptyState == true {
   sh-lo-empty-state {
     --empty-p: var(--space-7) var(--space-5);
     --empty-gap: var(--space-4);

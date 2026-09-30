@@ -1,8 +1,8 @@
 @use 'helpers' as *;
 
-$shipToolbar: true !default;
+$shipLayoutToolbar: true !default;
 
-@if $shipToolbar == true {
+@if $shipLayoutToolbar == true {
   sh-lo-toolbar {
     --toolbar-h: #{p2r(44)};
     --toolbar-gap: var(--space-1);

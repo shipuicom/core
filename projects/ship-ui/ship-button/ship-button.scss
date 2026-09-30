@@ -1,6 +1,5 @@
 @use 'helpers' as *;
 $shipButton: true !default;
-$shipButtonShadow: false !default;
 
 @if $shipButton == true {
   [shButton] {

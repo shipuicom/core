@@ -1,8 +1,8 @@
 @use 'helpers' as *;
 
-$shipAchievement: true !default;
+$shipLayoutAchievement: true !default;
 
-@if $shipAchievement == true {
+@if $shipLayoutAchievement == true {
   sh-lo-achievement {
     --ach-c: var(--primary-8);
     --ach-bg: var(--base-1);

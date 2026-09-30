@@ -1,8 +1,8 @@
 @use 'helpers' as *;
 
-$shipSetting: true !default;
+$shipLayoutSetting: true !default;
 
-@if $shipSetting == true {
+@if $shipLayoutSetting == true {
   sh-lo-setting {
     --setting-p: var(--space-5);
     --setting-gap: var(--space-3) var(--space-6);

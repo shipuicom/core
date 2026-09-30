@@ -1,8 +1,8 @@
 @use 'helpers' as *;
 
-$shipRanking: true !default;
+$shipLayoutRanking: true !default;
 
-@if $shipRanking == true {
+@if $shipLayoutRanking == true {
   sh-lo-ranking {
     --ranking-gap: var(--space-3);
     --ranking-bar-h: #{p2r(6)};

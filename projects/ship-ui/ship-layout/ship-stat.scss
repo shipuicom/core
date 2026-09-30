@@ -1,8 +1,8 @@
 @use 'helpers' as *;
 
-$shipStat: true !default;
+$shipLayoutStat: true !default;
 
-@if $shipStat == true {
+@if $shipLayoutStat == true {
   sh-lo-stat {
     --stat-bg: var(--base-1);
     --stat-bc: var(--base-4);

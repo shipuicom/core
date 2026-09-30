@@ -1,7 +1,6 @@
 @use 'helpers' as *;
 
 $shipChip: true !default;
-$shipChipShadow: false !default;
 
 @if $shipChip == true {
   sh-chip {

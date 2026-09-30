@@ -1,8 +1,8 @@
 @use 'helpers' as *;
 
-$shipInbox: true !default;
+$shipLayoutInbox: true !default;
 
-@if $shipInbox == true {
+@if $shipLayoutInbox == true {
   sh-lo-inbox {
     --inbox-folders-w: #{p2r(220)};
     --inbox-reader-w: minmax(0, 1.3fr);

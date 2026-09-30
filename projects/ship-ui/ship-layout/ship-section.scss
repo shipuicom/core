@@ -1,8 +1,8 @@
 @use 'helpers' as *;
 
-$shipSection: true !default;
+$shipLayoutSection: true !default;
 
-@if $shipSection == true {
+@if $shipLayoutSection == true {
   sh-lo-section {
     --section-gap: var(--space-4);
     --section-bg: var(--base-1);

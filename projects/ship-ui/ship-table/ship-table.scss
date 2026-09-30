@@ -2,14 +2,6 @@
 
 $shipTable: true !default;
 
-@mixin caret($color) {
-  border-left: p2r(3) solid $color;
-  border-bottom: p2r(3) solid $color;
-  width: p2r(8);
-  height: p2r(8);
-  transform: rotate(45deg);
-}
-
 @if $shipTable == true {
   sh-table {
     --table-bc: var(--base-4);

@@ -1,8 +1,8 @@
 @use 'helpers' as *;
 
-$shipDetails: true !default;
+$shipLayoutDetails: true !default;
 
-@if $shipDetails == true {
+@if $shipLayoutDetails == true {
   sh-lo-details {
     --details-gap: var(--space-3);
     --details-term-w: #{p2r(160)};

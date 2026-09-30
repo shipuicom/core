@@ -1,8 +1,8 @@
 @use 'helpers' as *;
 
-$shipTableView: true !default;
+$shipLayoutTableView: true !default;
 
-@if $shipTableView == true {
+@if $shipLayoutTableView == true {
   sh-lo-table-view {
     --tv-p: var(--space-6);
     --tv-gap: var(--space-4);

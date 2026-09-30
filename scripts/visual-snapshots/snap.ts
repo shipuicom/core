@@ -42,6 +42,8 @@ const EXPECTED: Record<string, string> = existsSync(join(ROOT, 'expected-diffs.j
 const FREEZE_CSS = `
   *, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent !important; }
   sh-video, sh-spinner, sh-blueprint canvas, .sh-chat-typing, sh-progress-bar.indeterminate { visibility: hidden !important; }
+  /* docs demos with clocks, random ids or peer presence */
+  app-live-updates-input-datepicker, app-live-updates-range-slider, .collab-toolbar { visibility: hidden !important; }
 `;
 
 const slugOf = (pathname: string) => (pathname === '/' ? 'home' : pathname.replace(/^\//, '').replace(/\//g, '_'));
@@ -140,7 +142,8 @@ function comparePng(baselineFile: string, currentFile: string, diffFile: string)
 
 async function main() {
   const outDir = MODE === 'baseline' ? BASELINE : CURRENT;
-  rmSync(outDir, { recursive: true, force: true });
+  // A filtered run refreshes only its own pages; an unfiltered one starts clean.
+  if (!FILTER) rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
   if (MODE === 'compare') {
     if (!existsSync(BASELINE) || readdirSync(BASELINE).length === 0) {
@@ -185,7 +188,7 @@ async function main() {
   }
 
   const results: Result[] = [];
-  const baselineFiles = new Set(readdirSync(BASELINE));
+  const baselineFiles = new Set(readdirSync(BASELINE).filter((f) => f.endsWith('.png')));
   for (const { pathname, theme, file } of captured) {
     const slug = slugOf(pathname);
     const name = `${slug}--${theme}.png`;

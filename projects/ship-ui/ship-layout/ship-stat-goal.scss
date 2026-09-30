@@ -1,8 +1,8 @@
 @use 'helpers' as *;
 
-$shipStatGoal: true !default;
+$shipLayoutStatGoal: true !default;
 
-@if $shipStatGoal == true {
+@if $shipLayoutStatGoal == true {
   sh-lo-stat-goal {
     --goal-c: var(--primary-8);
     --goal-track: var(--base-3);
