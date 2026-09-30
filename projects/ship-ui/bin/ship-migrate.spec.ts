@@ -56,6 +56,12 @@ describe('ship-migrate 0.26', () => {
     expect(r.text).toBe("template: `<sh-card></sh-card>`, host: { '[style.--crumb-sep]': 'sep()' }");
   });
 
+  it('points at removed SHIP_CONFIG keys without rewriting them', () => {
+    const r = migrateSource("provide: SHIP_CONFIG, useValue: { alertVariant: 'flat', 'event-card': { color: 'primary' } }", '.ts', v026);
+    expect(r.changes).toHaveLength(0);
+    expect(r.warnings.map((w) => w.rule)).toEqual(['config', 'config']);
+  });
+
   it('is idempotent', () => {
     const once = migrateSource('<sh-card color="a" class="warning"></sh-card> --breadcrumbs-c', '.html', v026).text;
     const twice = migrateSource(once, '.html', v026);

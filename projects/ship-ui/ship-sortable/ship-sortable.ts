@@ -134,7 +134,6 @@ export function createSortableManager<T>(
 
 @Directive({
   selector: '[shSortable]',
-  standalone: true,
   host: {
     class: 'sh-sortable',
     '[class.sh-sortable-tree]': "sortingMode() === 'tree'",

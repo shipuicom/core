@@ -61,7 +61,6 @@ export function parseSortByColumn(value: string | null | undefined): ShipSortCha
 
 @Directive({
   selector: '[shResize]',
-  standalone: true,
   host: {
     '[class.resizing]': 'resizingClass()',
   },
@@ -278,7 +277,6 @@ export class ShipResize {
 
 @Directive({
   selector: '[shRowResize]',
-  standalone: true,
   host: {
     '[class.resizing]': 'resizingClass()',
   },
@@ -467,7 +465,6 @@ export class ShipRowResize {
 
 @Directive({
   selector: '[shSort]',
-  standalone: true,
   host: {
     role: 'columnheader',
     '[class.sortable]': '!!shSort()',
@@ -1256,7 +1253,6 @@ export class ShipTable {
 
 @Component({
   selector: 'sh-table-content',
-  standalone: true,
   imports: [NgTemplateOutlet, ShipSort, ShipResize, ShipRowResize, ShipIcon, ShipChip],
   host: {
     style: 'display: contents',

@@ -3,7 +3,6 @@ import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'sh-kbd, [sh-kbd]',
-  standalone: true,
   template: `
     @for (key of displayKeys(); track $index) {
       <span class="key-part">{{ key }}</span>

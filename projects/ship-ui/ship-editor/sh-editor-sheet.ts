@@ -35,7 +35,6 @@ type SheetEditorConfig = {
  */
 @Component({
   selector: 'sh-editor-sheet-surface',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ShipEditor, ShipEditorToolbar, ShipEditorActionDirective, ShipIcon],
@@ -156,7 +155,6 @@ export class ShipEditorSheetSurface {
  */
 @Component({
   selector: 'sh-editor-sheet',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ShipEditor, ShipEditorToolbar, ShipEditorActionDirective, ShipIcon],

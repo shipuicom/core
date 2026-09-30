@@ -190,10 +190,6 @@ export const routes: Routes = [
         ],
       },
       {
-        path: 'form-fields-experimental',
-        loadComponent: () => import('./ship/form-fields/examples/experimental-form-field/experimental-form-field'),
-      },
-      {
         path: 'sidenavs',
         loadComponent: () => import('./ship/sidenavs/sidenavs'),
         children: [

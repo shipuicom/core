@@ -23,7 +23,6 @@ export class ShipListItemSwipeService {
 
 @Component({
   selector: 'sh-list-item-swipe',
-  standalone: true,
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './ship-list-item-swipe.scss',

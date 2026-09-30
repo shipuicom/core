@@ -15,7 +15,6 @@ import { EditorEngineService } from './editor-engine.service';
 
 @Component({
   selector: 'sh-editor-slash-menu',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ShipIcon],

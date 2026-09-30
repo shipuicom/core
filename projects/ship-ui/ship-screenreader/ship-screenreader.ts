@@ -17,7 +17,6 @@ import { ShipScreenreaderService } from './ship-screenreader.service';
  */
 @Component({
   selector: 'sh-screenreader',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     'aria-hidden': 'true',

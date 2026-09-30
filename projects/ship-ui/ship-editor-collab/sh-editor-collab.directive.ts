@@ -40,7 +40,6 @@ import { WebSocketTransport } from './websocket-transport';
  */
 @Directive({
   selector: 'sh-editor[shCollab]',
-  standalone: true,
   exportAs: 'shCollab',
   providers: [ShipEditorCollab],
 })

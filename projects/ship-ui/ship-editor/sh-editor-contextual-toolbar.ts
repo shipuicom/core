@@ -19,7 +19,6 @@ export type ContextualActionExtras = Record<string, (ctx: ContextualActionCtx) =
 
 @Component({
   selector: 'sh-editor-contextual-toolbar',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ShipIcon, ShipTooltip, ShipPopover],

@@ -15,7 +15,6 @@ import { ShipColor, ShipSheetVariant, ShipSize } from '@ship-ui/core';
   styleUrl: './ship-chip.scss',
   encapsulation: ViewEncapsulation.None,
   imports: [],
-  standalone: true,
   template: '<div><ng-content /></div>',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {

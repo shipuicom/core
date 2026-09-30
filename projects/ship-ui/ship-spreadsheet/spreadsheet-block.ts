@@ -56,7 +56,6 @@ export const SHEET_INNER_ALGEBRA: BlockInnerAlgebra<SheetOp[]> = {
  */
 @Component({
   selector: 'sh-spreadsheet-block',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ShipSpreadsheet],
   styles: `

@@ -307,7 +307,7 @@ export class ConfigEditor {
     {
       name: 'Event Card',
       route: '/event-cards',
-      configKey: 'event-card',
+      configKey: 'eventCard',
       controls: [
         { type: 'select', key: 'color', label: 'Color', options: colorOptions },
         { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
@@ -442,9 +442,6 @@ export class ConfigEditor {
   ];
 
   getComponentConfigValue(compKey: keyof import('ship-ui').ShipConfig, ctrlKey: string): any {
-    if (compKey === 'alert' && ctrlKey === 'variant') {
-      return this.config.alertVariant || '';
-    }
     if (compKey === 'sidenavType') {
       return this.config.sidenavType || '';
     }
@@ -505,7 +502,6 @@ export class ConfigEditor {
 
   updateAlertVariant(variant: any) {
     this.configService.updateConfig({
-      alertVariant: variant,
       alert: { ...this.config.alert, variant: variant },
     });
   }
@@ -529,7 +525,6 @@ export class ConfigEditor {
 
     if (comp.configKey === 'alert') {
       this.configService.updateConfig({
-        alertVariant: '',
         alert: { ...(this.config.alert as any), ...updates },
       });
     } else {

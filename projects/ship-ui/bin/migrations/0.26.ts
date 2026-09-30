@@ -154,6 +154,12 @@ const rules: MigrationRules = {
       to: '$shipLayoutToolbar'
     }
   ]
+  tsWarnings: [
+    { pattern: '\\balertVariant\\b', message: 'SHIP_CONFIG.alertVariant is gone: use alert: { variant }' },
+    { pattern: '\\bcardType\\b', message: 'SHIP_CONFIG.cardType is gone: use card: { variant }' },
+    { pattern: '\\btableType\\b', message: 'SHIP_CONFIG.tableType is gone: use table: { variant }' },
+    { pattern: "'event-card'", message: "SHIP_CONFIG['event-card'] is now eventCard" },
+  ],
 };
 
 export default rules;

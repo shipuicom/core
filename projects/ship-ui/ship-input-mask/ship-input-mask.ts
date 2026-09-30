@@ -4,7 +4,6 @@ type MaskingFunction = (cleanValue: string) => string | null;
 
 @Directive({
   selector: '[shInputMask]',
-  standalone: true,
 })
 export class ShipInputMask {
   #selfRef: ElementRef<HTMLInputElement> = inject(ElementRef);

@@ -90,7 +90,6 @@ export function sheetSelectExtension({ type = 'select', options }: SheetSelectEx
  */
 @Component({
   selector: 'sh-sheet-select-cell',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ShipChip],
@@ -137,7 +136,6 @@ export class ShipSheetSelectCell {
  */
 @Component({
   selector: 'sh-sheet-select-editor',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ShipMenu],

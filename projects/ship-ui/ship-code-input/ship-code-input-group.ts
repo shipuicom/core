@@ -13,7 +13,6 @@ export type ShipCodeInputAccept = 'numeric' | 'alphanumeric' | 'any' | RegExp;
  */
 @Directive({
   selector: '[shCodeInputGroup]',
-  standalone: true,
   exportAs: 'shCodeInputGroup',
   host: {
     '(input)': 'onInput($event)',

@@ -14,7 +14,6 @@ import { ShipA11yKeybindingsService } from './ship-a11y-keybindings.service';
 
 @Directive({
   selector: '[shA11yKeybinding]',
-  standalone: true,
 })
 export class ShipA11yKeybindingsDirective {
   #service = inject(ShipA11yKeybindingsService);

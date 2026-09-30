@@ -110,7 +110,6 @@ interface HistoryEntry {
  */
 @Component({
   selector: 'sh-code',
-  standalone: true,
   exportAs: 'shCode',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

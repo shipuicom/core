@@ -85,7 +85,6 @@ const INTERACTIVE_ROLES = new Set([
 
 @Component({
   selector: 'sh-editor',
-  standalone: true,
   exportAs: 'shEditor',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

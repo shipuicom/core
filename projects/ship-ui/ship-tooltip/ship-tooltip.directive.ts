@@ -25,7 +25,6 @@ type Timeout = ReturnType<typeof setTimeout>;
 
 @Component({
   selector: 'ship-tooltip-wrapper',
-  standalone: true,
   styleUrl: './ship-tooltip.scss',
   encapsulation: ViewEncapsulation.None,
   imports: [NgTemplateOutlet],
@@ -216,7 +215,6 @@ let openRef: {
 
 @Directive({
   selector: '[shTooltip]',
-  standalone: true,
   host: {
     class: 'tooltip',
     '[style.anchor-name]': 'anchorName',

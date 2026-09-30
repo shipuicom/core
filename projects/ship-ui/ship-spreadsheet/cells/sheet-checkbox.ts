@@ -15,7 +15,6 @@ import { ShipCheckbox } from '@ship-ui/core/ship-checkbox';
  */
 @Component({
   selector: 'sh-sheet-checkbox-cell',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ShipCheckbox],

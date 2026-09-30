@@ -34,7 +34,6 @@ interface PeerPaint {
  */
 @Component({
   selector: 'sh-editor-remote-cursors',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { 'aria-hidden': 'true' },
   template: `

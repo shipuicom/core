@@ -22,7 +22,6 @@ import { EditorSelectionService } from './selection.service';
 
 @Component({
   selector: 'sh-editor-link-popover',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ShipPopover, ShipFormField, ShipButton, ShipIcon],

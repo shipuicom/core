@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
-import { shipComponentClasses } from '@ship-ui/core';
+import { shipComponentClasses, generateUniqueId } from '@ship-ui/core';
 import { ShipButtonGroupVariant, ShipSize } from '@ship-ui/core';
 import { ShipSelectionGroup } from '@ship-ui/core';
 
@@ -18,7 +18,7 @@ import { ShipSelectionGroup } from '@ship-ui/core';
   },
 })
 export class ShipButtonGroup extends ShipSelectionGroup<string> {
-  id = '--' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 12);
+  id = '--' + generateUniqueId();
 
   /** Visual variant of the button group. */
   variant = input<ShipButtonGroupVariant | null>(null);

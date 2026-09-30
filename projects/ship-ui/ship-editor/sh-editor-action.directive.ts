@@ -3,7 +3,6 @@ import { ShipEditor } from './ship-editor';
 
 @Directive({
   selector: '[shEditorAction]',
-  standalone: true,
   host: {
     '[class.sh-editor-action-active]': 'isActive()',
     '[attr.aria-pressed]': 'isActive() ? "true" : "false"',

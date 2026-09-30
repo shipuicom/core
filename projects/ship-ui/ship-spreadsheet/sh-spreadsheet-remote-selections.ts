@@ -27,7 +27,6 @@ export interface PeerRangePaint {
  */
 @Component({
   selector: 'sh-spreadsheet-remote-selections',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { 'aria-hidden': 'true' },
   template: `

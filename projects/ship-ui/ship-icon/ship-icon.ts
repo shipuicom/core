@@ -9,7 +9,6 @@ const iconTypes = ['bold', 'thin', 'light', 'fill', 'duotone'];
   selector: 'sh-icon',
   styleUrl: './ship-icon.scss',
   encapsulation: ViewEncapsulation.None,
-  standalone: true,
   imports: [],
   template: `
     <ng-content />

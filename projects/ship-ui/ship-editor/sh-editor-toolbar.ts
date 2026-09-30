@@ -3,7 +3,6 @@ import { ShipEditor } from './ship-editor';
 
 @Component({
   selector: 'sh-editor-toolbar',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   templateUrl: './sh-editor-toolbar.html',

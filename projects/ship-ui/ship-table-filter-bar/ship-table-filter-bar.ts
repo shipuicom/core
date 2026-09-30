@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'sh-table-filter-bar',
-  standalone: true,
   imports: [],
   template: `
     <ng-content />

@@ -25,21 +25,6 @@ export function shipComponentClasses(
     }
 
     
-    if (!variant && componentName === 'alert' && config?.alertVariant) {
-      variant = config.alertVariant;
-    }
-
-    
-    if (!variant && componentName === 'card' && config?.cardType) {
-      variant = config.cardType;
-    }
-
-    
-    if (!variant && componentName === 'table' && config?.tableType) {
-      variant = config.tableType;
-    }
-
-    
     const color = inputs.color?.() || componentConfig?.color;
 
     if (!variant) {

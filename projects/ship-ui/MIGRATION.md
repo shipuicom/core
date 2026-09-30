@@ -23,6 +23,12 @@ checks it). A migration script (`ship-migrate`) that rewrites the renames below 
 - `.warning` → `.warn` on `sh-form-field`, `sh-tree` badges, `sh-list-item-swipe` actions
 - `.danger` → `.error` on `sh-list-item-swipe` actions and `sh-editor` toolbar actions
 
+**SHIP_CONFIG**
+- `alertVariant`, `cardType`, `tableType` are gone: set `alert: { variant }`, `card: { variant }`, `table: { variant }` instead.
+- The `'event-card'` key is now `eventCard`.
+- `ShipAlertModule` is removed (every component is standalone; import `ShipAlert` / `ShipAlertContainer` directly).
+- The unpublished `sh-form-field-experimental` entry point is deleted.
+
 **Sass flags** (only matter if you `@use '@ship-ui/core/styles' with (...)`):
 - `$shipPage`, `$shipSection`, `$shipSetting`, `$shipEmptyState`, `$shipStat`, `$shipStatTrend`, `$shipStatGoal`, `$shipStatRing`,
   `$shipRanking`, `$shipAchievement`, `$shipInbox`, `$shipTableView`, `$shipDetails`, `$shipTimeline`, `$shipToolbar` are now

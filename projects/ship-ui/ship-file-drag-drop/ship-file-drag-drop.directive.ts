@@ -2,7 +2,6 @@ import { Directive, HostListener, output, signal } from '@angular/core';
 
 @Directive({
   selector: '[shDragDrop]',
-  standalone: true,
   host: {
     '[class.filesover]': 'filesOver()',
   },

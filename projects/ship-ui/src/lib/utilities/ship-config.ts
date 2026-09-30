@@ -76,7 +76,7 @@ export interface ShipConfig {
   select?: ShipComponentConfig;
   accordion?: ShipComponentConfig;
   tabs?: ShipComponentConfig;
-  'event-card'?: ShipComponentConfig;
+  eventCard?: ShipComponentConfig;
   datepicker?: ShipComponentConfig;
   rangeSlider?: ShipRangeSliderConfig;
   layoutPage?: ShipComponentConfig;
@@ -97,10 +97,8 @@ export interface ShipConfig {
   breadcrumbs?: ShipComponentConfig;
   chat?: ShipComponentConfig;
 
-  
-  alertVariant?: '' | 'simple' | 'outlined' | 'flat' | 'raised';
-  cardType?: '' | 'type-b' | 'type-c' | 'type-d';
+  /** Class the dialog service applies to every dialog it opens. */
   dialogType?: 'type-b';
-  tableType?: 'type-b';
+  /** Sidenav mode used by the docs shell. */
   sidenavType?: 'overlay' | 'simple';
 }

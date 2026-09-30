@@ -8,7 +8,6 @@ type Handle = Corner | Edge;
 
 @Component({
   selector: 'sh-editor-image-resize',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   templateUrl: './sh-editor-image-resize.html',

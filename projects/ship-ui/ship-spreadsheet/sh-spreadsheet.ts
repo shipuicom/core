@@ -187,7 +187,6 @@ interface ResizeDrag {
  */
 @Component({
   selector: 'sh-spreadsheet',
-  standalone: true,
   exportAs: 'shSpreadsheet',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

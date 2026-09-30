@@ -113,6 +113,12 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
     }
   }
 
+  if (ext === '.ts') {
+    for (const { pattern, message } of rules.tsWarnings ?? []) {
+      for (const m of out.matchAll(new RegExp(pattern, 'g'))) warnings.push({ line: lineOf(out, m.index!), rule: 'config', detail: message });
+    }
+  }
+
   return { text: out, changes, warnings };
 }
 
