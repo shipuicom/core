@@ -62,3 +62,9 @@ Thumbs.db
 
 # Claude Code local tooling
 .claude/
+
+# Visual snapshots (generated)
+/scripts/visual-snapshots/.baseline/
+/scripts/visual-snapshots/.current/
+/scripts/visual-snapshots/.diff/
+/scripts/visual-snapshots/REPORT.md
