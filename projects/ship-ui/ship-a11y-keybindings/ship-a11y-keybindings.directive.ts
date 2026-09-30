@@ -3,7 +3,6 @@ import {
   Directive,
   effect,
   ElementRef,
-  HostListener,
   inject,
   input,
   output,
@@ -14,6 +13,9 @@ import { ShipA11yKeybindingsService } from './ship-a11y-keybindings.service';
 
 @Directive({
   selector: '[shA11yKeybinding]',
+  host: {
+    '(keydown)': 'onKeyDown($event)',
+  },
 })
 export class ShipA11yKeybindingsDirective {
   #service = inject(ShipA11yKeybindingsService);
@@ -78,7 +80,6 @@ export class ShipA11yKeybindingsDirective {
   
 
 
-  @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     if (this.mode() === 'local') {
       this.#checkAndTrigger(event);

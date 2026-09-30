@@ -1,4 +1,4 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, input, ViewEncapsulation } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, inject, input, ViewEncapsulation } from '@angular/core';
 import { shipComponentClasses, generateUniqueId } from '@ship-ui/core';
 import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
 
@@ -40,6 +40,7 @@ import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': 'hostClasses()',
+    '(click)': 'onClick()',
   },
 })
 export class ShipFormField {
@@ -61,7 +62,6 @@ export class ShipFormField {
     readonly: this.readonly,
   });
 
-  @HostListener('click')
   onClick() {
     if (this.#selfRef.nativeElement.querySelector('input')) {
       this.#selfRef.nativeElement.querySelector('input').focus();

@@ -5,7 +5,6 @@ import {
   DOCUMENT,
   effect,
   ElementRef,
-  HostListener,
   inject,
   input,
   model,
@@ -137,6 +136,11 @@ export function createSortableManager<T>(
   host: {
     class: 'sh-sortable',
     '[class.sh-sortable-tree]': "sortingMode() === 'tree'",
+    '(dragenter)': 'dragEnter($event)',
+    '(dragleave)': 'dragLeave($event)',
+    '(dragover)': 'dragOver($event)',
+    '(keydown)': 'onKeyDown($event)',
+    '(drop)': 'drop()',
   },
 })
 export class ShipSortable implements OnInit, OnDestroy {
@@ -384,7 +388,6 @@ export class ShipSortable implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('dragenter', ['$event'])
   dragEnter(e: DragEvent) {
     this.processDragEnter();
   }
@@ -456,7 +459,6 @@ export class ShipSortable implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('dragleave', ['$event'])
   dragLeave(e: DragEvent) {
     this.processDragLeave(e.clientX, e.clientY, e.relatedTarget as Node);
   }
@@ -485,7 +487,6 @@ export class ShipSortable implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('dragover', ['$event'])
   dragOver(e: DragEvent) {
     e.preventDefault();
     e.dataTransfer!.dropEffect = 'move';
@@ -607,7 +608,6 @@ export class ShipSortable implements OnInit, OnDestroy {
    * axis move the item one slot, Home/End move it to the ends. The result goes through the same manager
    * or `sortDrop`/`afterDrop` outputs as a mouse drop, and focus follows the item.
    */
-  @HostListener('keydown', ['$event'])
   onKeyDown(e: KeyboardEvent) {
     if (this.sortingMode() === 'tree' || this.#sortableService.activeSource) return;
 
@@ -1018,7 +1018,6 @@ export class ShipSortable implements OnInit, OnDestroy {
     return targetVisualIndex;
   }
 
-  @HostListener('drop')
   drop() {
     if (!this.#sortableService.activeSource) return;
 

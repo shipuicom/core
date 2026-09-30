@@ -8,7 +8,6 @@ import {
   effect,
   ElementRef,
   EnvironmentInjector,
-  HostListener,
   inject,
   input,
   OnDestroy,
@@ -219,6 +218,8 @@ let openRef: {
     class: 'tooltip',
     '[style.anchor-name]': 'anchorName',
     '[class.active]': 'isOpen()',
+    '(mouseenter)': 'onMouseEnter($event)',
+    '(mouseleave)': 'onMouseLeave($event)',
   },
 })
 export class ShipTooltip implements OnDestroy {
@@ -261,7 +262,6 @@ export class ShipTooltip implements OnDestroy {
   anchorName = `--${generateUniqueId()}`;
   isOpen = signal<boolean>(false);
 
-  @HostListener('mouseenter', ['$event'])
   onMouseEnter(event: MouseEvent) {
     event.stopPropagation();
 
@@ -274,7 +274,6 @@ export class ShipTooltip implements OnDestroy {
     this.#showTooltip();
   }
 
-  @HostListener('mouseleave', ['$event'])
   onMouseLeave(event: MouseEvent) {
     event.stopPropagation();
     this.#startCleanupTimer();

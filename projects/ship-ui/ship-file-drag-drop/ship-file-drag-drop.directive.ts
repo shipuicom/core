@@ -1,9 +1,12 @@
-import { Directive, HostListener, output, signal } from '@angular/core';
+import { Directive, output, signal } from '@angular/core';
 
 @Directive({
   selector: '[shDragDrop]',
   host: {
     '[class.filesover]': 'filesOver()',
+    '(dragover)': 'onDragOver($event)',
+    '(dragleave)': 'onDragLeave($event)',
+    '(drop)': 'ondrop($event)',
   },
 })
 export class ShipFileDragDrop {
@@ -11,21 +14,21 @@ export class ShipFileDragDrop {
   /** Emits the dropped `FileList` when one or more files are released over the host element. */
   filesDropped = output<FileList>();
 
-  @HostListener('dragover', ['$event']) onDragOver(e: DragEvent) {
+  onDragOver(e: DragEvent) {
     e.preventDefault();
     e.stopPropagation();
 
     this.filesOver.set(true);
   }
 
-  @HostListener('dragleave', ['$event']) onDragLeave(e: DragEvent) {
+  onDragLeave(e: DragEvent) {
     e.preventDefault();
     e.stopPropagation();
 
     this.filesOver.set(false);
   }
 
-  @HostListener('drop', ['$event']) ondrop(e: DragEvent) {
+  ondrop(e: DragEvent) {
     e.preventDefault();
     e.stopPropagation();
 

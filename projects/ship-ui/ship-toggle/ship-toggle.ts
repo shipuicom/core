@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, ElementRef, HostListener, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
 import { contentProjectionSignal, generateUniqueId } from '@ship-ui/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { shipComponentClasses } from '@ship-ui/core';
@@ -35,6 +35,7 @@ import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
     '[attr.role]': 'noInternalInput() ? "switch" : null',
     '[attr.aria-checked]': 'noInternalInput() ? checked() : null',
     '[attr.tabindex]': 'noInternalInput() ? (disabled() ? "-1" : "0") : null',
+    '(keydown)': 'onKeyDown($event)',
   },
 })
 export class ShipToggle {
@@ -95,7 +96,6 @@ export class ShipToggle {
     readonly: this.readonly,
   });
 
-  @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
     if (this.#keybindings.matches(event, 'toggle.toggle')) {
       const inputEl = this.internalInput()?.nativeElement;

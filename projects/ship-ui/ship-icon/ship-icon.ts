@@ -1,4 +1,4 @@
-import { AfterContentInit, ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, inject, input, PLATFORM_ID, Renderer2, signal, ViewEncapsulation } from '@angular/core';
+import { AfterContentInit, ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, PLATFORM_ID, Renderer2, signal, ViewEncapsulation } from '@angular/core';
 import { isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipIconSize, SHIP_CONFIG, ShipIconConfig } from '@ship-ui/core';
@@ -17,6 +17,8 @@ const iconTypes = ['bold', 'thin', 'light', 'fill', 'duotone'];
   host: {
     '[class]': 'customHostClasses()',
     'aria-hidden': 'true',
+    '(window:blur)': 'onWindowBlur()',
+    '(window:focus)': 'onWindowFocus()',
   },
 })
 export class ShipIcon implements AfterContentInit {
@@ -54,12 +56,10 @@ export class ShipIcon implements AfterContentInit {
     return list.filter(Boolean).join(' ');
   });
 
-  @HostListener('window:blur')
   onWindowBlur() {
     this.isUnfocused.set(true);
   }
 
-  @HostListener('window:focus')
   onWindowFocus() {
     this.isUnfocused.set(false);
   }

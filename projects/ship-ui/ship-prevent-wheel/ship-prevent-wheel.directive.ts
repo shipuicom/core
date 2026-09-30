@@ -1,10 +1,13 @@
-import { Directive, HostListener } from '@angular/core';
+import { Directive } from '@angular/core';
 
 @Directive({
   selector: '[shPreventWheel]',
+  host: {
+    '(wheel)': 'wheel($event)',
+  },
 })
 export class ShipPreventWheel {
-  @HostListener('wheel', ['$event']) wheel(event: WheelEvent) {
+  wheel(event: WheelEvent) {
     event.preventDefault();
   }
 }

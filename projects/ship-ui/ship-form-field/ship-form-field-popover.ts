@@ -1,4 +1,4 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, input, model, output, ViewEncapsulation } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, inject, input, model, output, ViewEncapsulation } from '@angular/core';
 import { ShipPopover } from '@ship-ui/core/ship-popover';
 import { shipComponentClasses, generateUniqueId } from '@ship-ui/core';
 import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
@@ -51,6 +51,7 @@ import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': 'hostClasses()',
+    '(click)': 'onClick($event)',
   },
 })
 export class ShipFormFieldPopover {
@@ -114,7 +115,6 @@ export class ShipFormFieldPopover {
     readonly: this.readonly,
   });
 
-  @HostListener('click', ['$event'])
   onClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
     if (target.closest('.input-wrap')) {

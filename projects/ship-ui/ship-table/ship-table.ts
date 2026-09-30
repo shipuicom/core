@@ -7,7 +7,6 @@ import {
   Directive,
   effect,
   ElementRef,
-  HostListener,
   inject,
   Injector,
   input,
@@ -63,6 +62,10 @@ export function parseSortByColumn(value: string | null | undefined): ShipSortCha
   selector: '[shResize]',
   host: {
     '[class.resizing]': 'resizingClass()',
+    '(keydown)': 'onKeyDown($event)',
+    '(document:mousemove)': 'onMouseMove($event)',
+    '(document:mouseup)': 'onMouseUp($event)',
+    '(document:click)': 'onClick($event)',
   },
 })
 export class ShipResize {
@@ -143,7 +146,6 @@ export class ShipResize {
     }
   }
 
-  @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
     if (!this.resizable()) return;
 
@@ -202,14 +204,12 @@ export class ShipResize {
     }
   }
 
-  @HostListener('document:mousemove', ['$event'])
   onMouseMove(event: MouseEvent) {
     if (!this.#resizing) return;
 
     this.#scheduleResize(event);
   }
 
-  @HostListener('document:mouseup', ['$event'])
   onMouseUp(event: MouseEvent) {
     if (this.#resizing) {
       this.#resizing = false;
@@ -227,7 +227,7 @@ export class ShipResize {
     }
   }
 
-  @HostListener('document:click', ['$event']) onClick(event: MouseEvent) {
+  onClick(event: MouseEvent) {
     if (this.#resizing) {
       event.stopPropagation();
     }
@@ -279,6 +279,10 @@ export class ShipResize {
   selector: '[shRowResize]',
   host: {
     '[class.resizing]': 'resizingClass()',
+    '(keydown)': 'onKeyDown($event)',
+    '(document:mousemove)': 'onMouseMove($event)',
+    '(document:mouseup)': 'onMouseUp($event)',
+    '(document:click)': 'onClick($event)',
   },
 })
 export class ShipRowResize {
@@ -354,7 +358,6 @@ export class ShipRowResize {
     }
   }
 
-  @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
     if (!this.resizable()) return;
 
@@ -387,14 +390,12 @@ export class ShipRowResize {
     }
   }
 
-  @HostListener('document:mousemove', ['$event'])
   onMouseMove(event: MouseEvent) {
     if (!this.#resizing) return;
 
     this.#scheduleResize(event);
   }
 
-  @HostListener('document:mouseup', ['$event'])
   onMouseUp(event: MouseEvent) {
     if (this.#resizing) {
       this.#resizing = false;
@@ -412,7 +413,7 @@ export class ShipRowResize {
     }
   }
 
-  @HostListener('document:click', ['$event']) onClick(event: MouseEvent) {
+  onClick(event: MouseEvent) {
     if (this.#resizing) {
       event.stopPropagation();
     }
@@ -474,6 +475,7 @@ export class ShipRowResize {
     '[class.sort-asc]': 'sortAsc()',
     '[class.sort-desc]': 'sortDesc()',
     '[attr.aria-keyshortcuts]': 'ariaKeyshortcuts()',
+    '(keydown)': 'onKeyDown($event)',
   },
 })
 export class ShipSort {
@@ -524,7 +526,6 @@ export class ShipSort {
     return parts.length > 0 ? parts.join(', ') : null;
   });
 
-  @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
     if (!this.shSort()) return;
 
@@ -712,6 +713,9 @@ type ScrollState = -1 | 0 | 1;
     '[class.scrolled-x-end]': 'scrollXState() === 1',
     '[class.scrolled-y]': 'scrollYState() >= 0',
     '[class.scrolled-y-end]': 'scrollYState() === 1',
+    '(window:resize)': 'onResize($event)',
+    '(focusin)': 'onFocusIn($event)',
+    '(keydown)': 'onGridKeyDown($event)',
   },
 })
 export class ShipTable {
@@ -949,7 +953,6 @@ export class ShipTable {
     this.#checkScroll();
   }
 
-  @HostListener('window:resize', ['$event'])
   onResize(event: Event) {
     this.#checkScroll();
   }
@@ -958,7 +961,6 @@ export class ShipTable {
     queueMicrotask(() => this.#checkScroll());
   }
 
-  @HostListener('focusin', ['$event'])
   onFocusIn(event: FocusEvent) {
     if (!this.grid()) return;
 
@@ -988,7 +990,6 @@ export class ShipTable {
     }
   }
 
-  @HostListener('keydown', ['$event'])
   onGridKeyDown(event: KeyboardEvent) {
     if (!this.grid()) return;
 

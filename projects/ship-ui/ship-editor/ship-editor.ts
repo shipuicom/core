@@ -7,7 +7,6 @@ import {
   DestroyRef,
   ElementRef,
   EnvironmentInjector,
-  HostListener,
   Injector,
   ViewEncapsulation,
   WritableSignal,
@@ -89,7 +88,9 @@ const INTERACTIVE_ROLES = new Set([
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 
-  host: { '[class.document]': "variant() === 'document'" },
+  host: { '[class.document]': "variant() === 'document'",
+    '(document:selectionchange)': 'onSelectionChange()',
+    '(document:mouseup)': 'onDocumentMouseUp()', },
   imports: [ShipEditorLinkPopover, ShipEditorImagePopover, ShipEditorContextualToolbar, ShipEditorImageResize, ShipEditorSlashMenu],
   providers: [
     EditorEngineService,
@@ -602,7 +603,6 @@ export class ShipEditor implements ControlValueAccessor {
     this.onTouched = fn;
   }
 
-  @HostListener('document:selectionchange')
   onSelectionChange() {
     if (this.selection.isSuppressed() || this.#composing || typeof window === 'undefined') return;
     this.#syncLogicalSelectionFromDOM();
@@ -768,7 +768,6 @@ export class ShipEditor implements ControlValueAccessor {
    * drag state itself is cleared by the next mousedown or keydown, so the
    * clamp keeps asserting the logical selection until the user moves on.
    */
-  @HostListener('document:mouseup')
   onDocumentMouseUp() {
     if (this.#selectionDragOverVoid !== null) this.#repaintAfterVoidDrag(this.#selectionDragOverVoid);
   }

@@ -1,8 +1,13 @@
-import { Directive, ElementRef, HostListener, effect, inject, model, input, booleanAttribute } from '@angular/core';
+import { Directive, ElementRef, effect, inject, model, input, booleanAttribute } from '@angular/core';
 import { contentProjectionSignal } from './content-projection-signal';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 
-@Directive()
+@Directive({
+  host: {
+    '(click)': 'onClick($event.target)',
+    '(keydown)': 'onKeyDown($event)',
+  },
+})
 export abstract class ShipSelectionGroup<T = any> {
   hostElement = inject(ElementRef<HTMLElement>).nativeElement;
   #keybindings = inject(ShipA11yKeybindingsService);
@@ -122,7 +127,6 @@ export abstract class ShipSelectionGroup<T = any> {
     return true;
   }
 
-  @HostListener('click', ['$event.target'])
   onClick(target: EventTarget | null) {
     if (!this.selectionEnabled()) return;
 
@@ -143,7 +147,6 @@ export abstract class ShipSelectionGroup<T = any> {
     }
   }
 
-  @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
     if (!this.selectionEnabled()) return;
 

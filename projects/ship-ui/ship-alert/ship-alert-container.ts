@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, HostListener, QueryList, computed, effect, input, viewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, QueryList, computed, effect, input, viewChild, ViewEncapsulation } from '@angular/core';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipAlert } from './ship-alert';
 import { ShipAlertService } from './ship-alert.service';
@@ -6,6 +6,10 @@ import { ShipAlertService } from './ship-alert.service';
 @Component({
   // `ship-alert-container` stays as an alias until v0.27.
   selector: 'sh-alert-container, ship-alert-container',
+  host: {
+    '(mouseover)': 'onMouseOver()',
+    '(mouseout)': 'onMouseOut()',
+  },
   styleUrl: './ship-alert-container.scss',
   encapsulation: ViewEncapsulation.None,
   imports: [ShipAlert, ShipIcon],
@@ -42,14 +46,12 @@ export class ShipAlertContainer {
     }
   }
 
-  @HostListener('mouseover')
   onMouseOver() {
     if (typeof this.inline === 'string') return;
 
     this.alertService().setHidden(false);
   }
 
-  @HostListener('mouseout')
   onMouseOut() {
     if (typeof this.inline === 'string') return;
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, ElementRef, HostListener, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { classMutationSignal, generateUniqueId } from '@ship-ui/core';
@@ -40,6 +40,7 @@ import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
     '[attr.role]': 'noInternalInput() ? "checkbox" : null',
     '[attr.aria-checked]': 'noInternalInput() ? checked() : null',
     '[attr.tabindex]': 'noInternalInput() ? (disabled() ? "-1" : "0") : null',
+    '(keydown)': 'onKeyDown($event)',
   },
 })
 export class ShipCheckbox {
@@ -102,7 +103,6 @@ export class ShipCheckbox {
     readonly: this.readonly,
   });
 
-  @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
     if (this.#keybindings.matches(event, 'checkbox.toggle')) {
       const inputEl = this.internalInput()?.nativeElement;

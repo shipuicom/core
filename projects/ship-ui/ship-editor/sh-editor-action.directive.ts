@@ -1,4 +1,4 @@
-import { Directive, HostListener, computed, inject, input } from '@angular/core';
+import { Directive, computed, inject, input } from '@angular/core';
 import { ShipEditor } from './ship-editor';
 
 @Directive({
@@ -6,6 +6,8 @@ import { ShipEditor } from './ship-editor';
   host: {
     '[class.sh-editor-action-active]': 'isActive()',
     '[attr.aria-pressed]': 'isActive() ? "true" : "false"',
+    '(mousedown)': 'onMouseDown($event)',
+    '(keydown)': 'onKeyDown($event)',
   },
 })
 export class ShipEditorActionDirective {
@@ -27,7 +29,6 @@ export class ShipEditorActionDirective {
 
   isActive = computed(() => this.editor().engine.isActive(this.action(), this.attrs()));
 
-  @HostListener('mousedown', ['$event'])
   onMouseDown(event: MouseEvent) {
     event.preventDefault();
     this.editor().engine.dispatch(this.action(), this.attrs());
@@ -36,7 +37,6 @@ export class ShipEditorActionDirective {
   // Mousedown alone leaves the control keyboard-dead: a focused toolbar
   // button advertising aria-pressed must also react to Enter and Space.
   // (Not `click` — that would double-dispatch after every mousedown.)
-  @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
