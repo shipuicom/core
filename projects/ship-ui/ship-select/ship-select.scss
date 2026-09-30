@@ -4,7 +4,7 @@ $shipSelect: true !default;
 
 @if $shipSelect == true {
   sh-select {
-    --miw: #{p2r(210)};
+    --select-miw: #{p2r(210)};
     --select-option-mih: min-content;
     --select-options-mh: #{p2r(180)};
 
@@ -12,7 +12,7 @@ $shipSelect: true !default;
 
     sh-form-field {
       display: flex;
-      --ff-mw: var(--miw);
+      --ff-mw: var(--select-miw);
     }
 
     sh-popover {

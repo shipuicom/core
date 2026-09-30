@@ -2,3 +2,48 @@
   width: 100%;
   max-width: 360px;
 }
+
+// Demo chrome for the node templates (status badge + hover delete button).
+.status-badge {
+  font-size: p2r(10);
+  padding: p2r(2 6);
+  border-radius: var(--shape-1);
+  text-transform: uppercase;
+  font-weight: 600;
+
+  &.success {
+    background: var(--success-3);
+    color: var(--success-8);
+  }
+  &.warn {
+    background: var(--warn-3);
+    color: var(--warn-8);
+  }
+  &.error {
+    background: var(--error-3);
+    color: var(--error-8);
+  }
+}
+.delete-btn {
+  background: none;
+  border: none;
+  padding: p2r(2);
+  cursor: pointer;
+  color: var(--base-9);
+  border-radius: var(--shape-1);
+  display: flex;
+  opacity: 0;
+  transition: opacity 150ms ease;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: var(--base-4);
+    color: var(--error-8);
+  }
+}
+
+// sh-tree-node is rendered by sh-tree, outside this component's style scope.
+:host ::ng-deep .sh-tree-node:hover .delete-btn {
+  opacity: 1;
+}

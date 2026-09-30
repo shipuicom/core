@@ -68,7 +68,7 @@ export class ShipStepper extends ShipSelectionGroup<string> {
     }
   }
 
-  /** Recalculates the active step position and updates the `--stepper-progress` CSS variable. */
+  /** Recalculates the active step position and updates the `--step-progress` CSS variable. */
   updateProgress() {
     const items = Array.from(
       this.hostElement.querySelectorAll('[value], [step], [routerLinkActive], button, a')
@@ -85,7 +85,7 @@ export class ShipStepper extends ShipSelectionGroup<string> {
       progress = (activeIndex / (totalItems - 1)) * 100;
     }
 
-    this.hostElement.style.setProperty('--stepper-progress', `${progress}%`);
+    this.hostElement.style.setProperty('--step-progress', `${progress}%`);
   }
 
   hostClasses = shipComponentClasses('stepper', {

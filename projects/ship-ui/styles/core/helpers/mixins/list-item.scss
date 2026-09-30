@@ -1,4 +1,4 @@
-@use 'helpers' as *;
+@use '../fn/p2r.scss' as *;
 
 // Shared layout for a list item row. Used by sh-list for its (implicit or
 // [item]/[action]-tagged) children and by sh-list-item-swipe for its content

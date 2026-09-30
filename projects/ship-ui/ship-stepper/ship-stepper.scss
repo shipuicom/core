@@ -1,4 +1,6 @@
 @use 'helpers' as *;
+// structure-lint: allow cross-use — the stepper stamps `.sh-radio` dots itself, so it needs the radio
+// styles even when sh-radio is not in the bundle. Phase 3 moves the radio skin to styles/skins.
 @use '../ship-radio/ship-radio.scss';
 
 $shipStepper: true !default;
@@ -151,7 +153,7 @@ $shipStepper: true !default;
       top: p2r(6);
       left: 0;
       z-index: 0;
-      width: var(--stepper-progress, 0%);
+      width: var(--step-progress, 0%);
       height: p2r(4);
       background-color: var(--step-active-c);
       transition: width 150ms ease-out;

@@ -1,6 +1,7 @@
 $useInterTight: true !default;
 $useApexcharts: false !default;
 $shipSheet: true !default;
+$shipSortable: true !default;
 $shipFormFieldShadow: false !default;
 $shipButtonShadow: false !default;
 $shipChipShadow: false !default;
@@ -9,6 +10,7 @@ $shipChipShadow: false !default;
   $useInterTight: $useInterTight,
   $useApexcharts: $useApexcharts,
   $shipSheet: $shipSheet,
+  $shipSortable: $shipSortable,
   $shipFormFieldShadow: $shipFormFieldShadow,
   $shipButtonShadow: $shipButtonShadow,
   $shipChipShadow: $shipChipShadow
@@ -44,7 +46,6 @@ $shipVirtualScroll: true !default;
 $shipSelect: true !default;
 $shipCard: true !default;
 $shipStepper: true !default;
-$shipSortable: true !default;
 $shipSpinner: true !default;
 $shipToggleCard: true !default;
 $shipTable: true !default;

@@ -1,6 +1,4 @@
 @use 'helpers' as *;
-@use './ship-list-item' as *;
-@use '../ship-sortable/ship-sortable.scss';
 
 $shipList: true !default;
 

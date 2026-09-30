@@ -340,8 +340,8 @@ $shipTable: true !default;
       }
 
       &.sortable {
-        --caret-color: var(--base-10);
-        --caret-size: #{p2r(6)};
+        --table-caret-c: var(--base-10);
+        --table-caret-si: #{p2r(6)};
 
         cursor: pointer;
         user-select: none;
@@ -363,7 +363,7 @@ $shipTable: true !default;
         &:not(:has(sh-icon)) {
           &:after {
             content: '';
-            border: var(--caret-size) solid transparent;
+            border: var(--table-caret-si) solid transparent;
             width: 0;
             height: 0;
             opacity: 0;
@@ -373,13 +373,13 @@ $shipTable: true !default;
           &.sort-desc::after {
             opacity: 1;
             transform: translateY(-4px);
-            border-bottom-color: var(--caret-color);
+            border-bottom-color: var(--table-caret-c);
           }
 
           &.sort-asc::after {
             opacity: 1;
             transform: translateY(4px);
-            border-top-color: var(--caret-color);
+            border-top-color: var(--table-caret-c);
           }
         }
       }
