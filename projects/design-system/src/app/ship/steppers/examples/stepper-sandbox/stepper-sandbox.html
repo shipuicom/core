@@ -1,35 +1,17 @@
-<div class="controls">
-  <p>Controls</p>
-  <header>
-    <div class="row">
-      <sh-button-group class="small" [(value)]="colorClass">
-        <button value="">Default</button>
-        <button value="primary">Primary</button>
-        <button value="accent">Accent</button>
-        <button value="warn">Warn</button>
-        <button value="error">Error</button>
-        <button value="success">Success</button>
-      </sh-button-group>
-    </div>
-  </header>
-</div>
+<sh-stepper [color]="color()" [(value)]="activeStep">
+  <div value="0">Step 1</div>
+  <div value="1">Step 2</div>
+  <div value="2">Step 3</div>
+</sh-stepper>
 
-<div class="sandbox">
-  <sh-stepper [color]="colorClass()" [(value)]="activeStep">
-    <div value="0">Step 1</div>
-    <div value="1">Step 2</div>
-    <div value="2">Step 3</div>
-  </sh-stepper>
+@let _activeStep = activeStep();
 
-  @let _activeStep = activeStep();
-
-  <div class="step-content">
-    @if (_activeStep === '0') {
-      <div>Step 1 Content</div>
-    } @else if (_activeStep === '1') {
-      <div>Step 2 Content</div>
-    } @else if (_activeStep === '2') {
-      <div>Step 3 Content</div>
-    }
-  </div>
+<div class="step-content">
+  @if (_activeStep === '0') {
+    <div>Step 1 Content</div>
+  } @else if (_activeStep === '1') {
+    <div>Step 2 Content</div>
+  } @else if (_activeStep === '2') {
+    <div>Step 3 Content</div>
+  }
 </div>

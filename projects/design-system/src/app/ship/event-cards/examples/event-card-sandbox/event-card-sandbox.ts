@@ -1,27 +1,23 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { ShipButton } from '@ship-ui/core/ship-button';
-import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
 import { ShipEventCard } from '@ship-ui/core/ship-event-card';
-import { ShipToggle } from '@ship-ui/core/ship-toggle';
 
 @Component({
   selector: 'app-event-card-sandbox',
-  imports: [FormsModule, ShipEventCard, ShipButton, ShipToggle, ShipButtonGroup],
+  imports: [ShipEventCard, ShipButton],
   templateUrl: './event-card-sandbox.html',
   styleUrl: './event-card-sandbox.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventCardSandbox {
-  colorClass = signal<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
-  variationClass = signal<'' | 'simple' | 'outlined' | 'flat' | 'raised'>('simple');
-
-  useDynamicColor = signal<boolean>(false);
-  dynamicColor = signal<string>('#2f54eb');
+  color = input<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
+  variant = input<'' | 'simple' | 'outlined' | 'flat' | 'raised'>('simple');
+  useDynamicColor = input(false);
+  dynamicColor = input('#2f54eb');
 
   exampleClass = computed(() => {
     if (this.useDynamicColor()) return 'dynamic';
 
-    return this.variationClass() + ' ' + this.colorClass();
+    return this.variant() + ' ' + this.color();
   });
 }

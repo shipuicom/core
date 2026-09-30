@@ -1,0 +1,12 @@
+<h1>Layouts</h1>
+<!-- @keywords: layout, page, section, setting, settings, empty state, toolbar, filter bar, stat, kpi, details, key value, timeline, activity feed, dashboard, aside, spacing -->
+
+<sh-tabs color="primary">
+  <button routerLink="/layouts" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Overview</button>
+  <button routerLink="/layouts/api" routerLinkActive="active">API</button>
+  <button routerLink="/layouts/examples" routerLinkActive="active">Examples</button>
+</sh-tabs>
+
+<div class="tab-content">
+  <router-outlet />
+</div>

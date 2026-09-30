@@ -1,0 +1,50 @@
+<app-previewer defaultView="markup" path="/chats/examples/basic-chat/basic-chat" title="Basic">
+  <app-basic-chat-example class="example" />
+</app-previewer>
+
+<p>
+  <code>sh-chat</code>
+  is a single chat message. Slot the parts in — an
+  <code>sh-avatar</code>
+  , the sender in a
+  <code>b</code>
+  , a
+  <code>time</code>
+  , the message itself, and
+  <code>sh-chip</code>
+  s or an element marked
+  <code>footer</code>
+  for reactions and read receipts — and it lays them out as a bubble. Set
+  <code>outgoing</code>
+  on the current user's messages and
+  <code>continued</code>
+  on follow-ups from the same sender (leave out their avatar and name) to group them.
+  <code>typing</code>
+  swaps the content for a typing indicator.
+</p>
+
+<p>
+  It's only the message: stack them in any container and combine them with the rest of the kit — an
+  <code>sh-divider</code>
+  for dates, an
+  <code>sh-form-field</code>
+  as the composer, an
+  <code>sh-card</code>
+  around it all. The base style is a filled bubble; use
+  <code>variant="type-b"</code>
+  for outlined bubbles or
+  <code>variant="type-c"</code>
+  for flat team-chat rows, and set a project default with
+  <code>{{ '{' }} chat: {{ '{' }} variant: 'type-b' {{ '}' }} {{ '}' }}</code>
+  in
+  <code>ShipConfig</code>
+  .
+</p>
+
+<app-previewer path="/chats/examples/chat-interface/chat-interface" title="Chat interface" class="no-space">
+  <app-chat-interface-example />
+</app-previewer>
+
+<app-previewer path="/chats/examples/chat-page/chat-page" title="Messages page" class="no-space">
+  <app-chat-page-example />
+</app-previewer>

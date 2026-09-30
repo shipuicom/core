@@ -1,0 +1,9 @@
+@use 'helpers' as *;
+
+:host {
+  display: block;
+  padding: p2r(40 20);
+  width: 100%;
+  max-width: p2r(560);
+  margin: 0 auto;
+}

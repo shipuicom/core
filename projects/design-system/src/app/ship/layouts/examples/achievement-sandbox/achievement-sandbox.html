@@ -1,0 +1,48 @@
+<sh-lo-achievement
+  [variant]="variant()"
+  [color]="dynamicColor() ? null : color()"
+  [dynamic]="!!dynamicColor()"
+  [style.--achievement-c]="dynamicColor() || null">
+  @if (media() === 'image') {
+    <img src="/examples/achievement-badge.svg" alt="" />
+  } @else {
+    <sh-icon>rocket-launch</sh-icon>
+  }
+  <h3>First deploy</h3>
+  <sh-chip size="small" variant="simple">Common</sh-chip>
+  <p>Shipped your first build to production.</p>
+  <small>Unlocked Sep 12, 2026</small>
+</sh-lo-achievement>
+
+<sh-lo-achievement
+  [variant]="variant()"
+  [color]="dynamicColor() ? null : color()"
+  [dynamic]="!!dynamicColor()"
+  [style.--achievement-c]="dynamicColor() || null">
+  @if (media() === 'image') {
+    <img src="/examples/achievement-badge.svg" alt="" />
+  } @else {
+    <sh-icon>fire</sh-icon>
+  }
+  <h3>On fire</h3>
+  <sh-chip size="small" variant="simple" color="primary">Rare</sh-chip>
+  <p>Deployed every day for 30 days in a row.</p>
+  <small>Unlocked Sep 24, 2026</small>
+</sh-lo-achievement>
+
+<sh-lo-achievement
+  [variant]="variant()"
+  [color]="dynamicColor() ? null : color()"
+  [dynamic]="!!dynamicColor()"
+  [style.--achievement-c]="dynamicColor() || null"
+  [locked]="locked()">
+  @if (media() === 'image') {
+    <img src="/examples/achievement-badge.svg" alt="" />
+  } @else {
+    <sh-icon>crown</sh-icon>
+  }
+  <h3>Ship captain</h3>
+  <sh-chip size="small" variant="simple" color="warn">Legendary</sh-chip>
+  <p>Led 10 releases without a rollback.</p>
+  <small>{{ locked() ? '7 of 10 releases' : 'Unlocked Sep 28, 2026' }}</small>
+</sh-lo-achievement>

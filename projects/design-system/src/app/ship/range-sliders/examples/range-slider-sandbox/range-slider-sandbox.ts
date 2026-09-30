@@ -1,29 +1,26 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
-import { ShipFormField } from '@ship-ui/core/ship-form-field';
 import { ShipRangeSlider } from '@ship-ui/core/ship-range-slider';
 import { ShipRangeSliderVariant } from '@ship-ui/core';
-import { ShipToggle } from '@ship-ui/core/ship-toggle';
 
 @Component({
   selector: 'app-range-slider-sandbox',
   standalone: true,
-  imports: [FormsModule, ShipRangeSlider, ShipButtonGroup, ShipToggle, ShipFormField],
+  imports: [FormsModule, ShipRangeSlider],
   templateUrl: './range-slider-sandbox.html',
   styleUrl: './range-slider-sandbox.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RangeSliderSandbox {
   value = signal(50);
-  min = signal(0);
-  max = signal(100);
-  step = signal(1);
-  disabled = signal(false);
-  readonly = signal(false);
-  alwaysShow = signal(false);
-  sharp = signal(false);
-  unit = signal('%');
-  color = signal<'primary' | 'accent' | 'warn' | 'success' | 'error'>('primary');
-  variation = signal<ShipRangeSliderVariant | null>(null);
+  min = input<number | string>(0);
+  max = input<number | string>(100);
+  step = input<number | string>(1);
+  disabled = input(false);
+  readonly = input(false);
+  alwaysShow = input(false);
+  sharp = input(false);
+  unit = input('%');
+  color = input<'primary' | 'accent' | 'warn' | 'success' | 'error'>('primary');
+  variant = input<ShipRangeSliderVariant | null>(null);
 }

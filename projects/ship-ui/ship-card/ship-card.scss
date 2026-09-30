@@ -53,5 +53,13 @@ $shipCard: true !default;
       --card-ibg: var(--card-bg);
       --card-p: 0;
     }
+
+    // Content surface all the way to the hairline border — no inset frame.
+    &.type-d {
+      --card-bg: var(--base-2);
+      --card-ibg: var(--card-bg);
+      --card-sh: none;
+      --card-shp: 0;
+    }
   }
 }

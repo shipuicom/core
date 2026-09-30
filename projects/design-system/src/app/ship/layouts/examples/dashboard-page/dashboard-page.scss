@@ -1,0 +1,26 @@
+@use 'helpers' as *;
+
+// Everything between the slots is plain CSS — the page owns the outer
+// spacing, the content owns its own.
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(p2r(180), 1fr));
+  gap: var(--space-4);
+}
+
+.pages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+
+  .page-row {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
+.activity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}

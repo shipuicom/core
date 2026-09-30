@@ -1,6 +1,6 @@
 @use '../../../../../../../ship-ui/styles/helpers.scss' as *;
 
-.sandbox {
+:host {
   display: flex;
   position: relative;
   width: 100%;

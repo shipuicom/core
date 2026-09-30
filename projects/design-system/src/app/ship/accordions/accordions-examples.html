@@ -1,6 +1,19 @@
 <div class="sandbox-example">
   <app-previewer path="/accordions/examples/sandbox-accordion/sandbox-accordion" title="Sandbox" class="no-space">
-    <app-sandbox-accordion />
+    <ng-container controls>
+      <sh-toggle [(checked)]="allowMultiple" class="primary raised">Allow Multiple Open</sh-toggle>
+      <sh-select color="primary" [selectMultiple]="allowMultiple()" [options]="availablePanels">
+        <label>Open Panels</label>
+        <input type="text" [(ngModel)]="selectedPanelsArray" style="display: none" />
+      </sh-select>
+
+      <sh-select color="primary" [options]="availableVariants" label="label" value="value" [isClearable]="false">
+        <label>Variant</label>
+        <input type="text" [(ngModel)]="variantType" style="display: none" />
+      </sh-select>
+    </ng-container>
+
+    <app-sandbox-accordion [(value)]="openPanels" [allowMultiple]="allowMultiple()" [variant]="variantType()" />
   </app-previewer>
 </div>
 

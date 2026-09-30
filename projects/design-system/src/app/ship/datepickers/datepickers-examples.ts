@@ -1,4 +1,8 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
+import { ShipRangeSlider } from '@ship-ui/core/ship-range-slider';
+import { ShipToggle } from '@ship-ui/core/ship-toggle';
 import { Previewer } from '../../previewer/previewer';
 import { BaseDatepicker } from './examples/base-datepicker/base-datepicker';
 import { DatepickerSandbox } from './examples/datepicker-sandbox/datepicker-sandbox';
@@ -13,7 +17,11 @@ import { RangeInputDatepicker } from './examples/range-input-datepicker/range-in
 @Component({
   selector: 'app-datepickers-examples',
   imports: [
+    FormsModule,
     Previewer,
+    ShipToggle,
+    ShipButtonGroup,
+    ShipRangeSlider,
     DatepickerSandbox,
     RangeDatepickerSandbox,
     BaseDatepicker,
@@ -28,4 +36,16 @@ import { RangeInputDatepicker } from './examples/range-input-datepicker/range-in
   styleUrl: './datepickers-tab.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class DatepickersExamples {}
+export default class DatepickersExamples {
+  // Sandbox controls live here (projected into the previewer's [controls] slot)
+  // so they never show up in the example's source view.
+  disabled = signal(false);
+  sharp = signal(false);
+  startOfWeek = signal('1');
+  color = signal<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
+
+  // Range sandbox
+  rangeDisabled = signal(false);
+  rangeColor = signal<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
+  monthsToShow = signal(2);
+}

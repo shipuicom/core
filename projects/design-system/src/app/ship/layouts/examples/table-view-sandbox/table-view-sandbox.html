@@ -1,0 +1,93 @@
+<sh-lo-table-view [variant]="variant()">
+  <h2>Customers</h2>
+  <p>Everyone with an active or past subscription.</p>
+  <ng-container actions>
+    <button shButton variant="outlined">
+      <sh-icon>download-simple</sh-icon>
+      Export
+    </button>
+    <button shButton variant="raised" color="primary">
+      <sh-icon>plus</sh-icon>
+      Add customer
+    </button>
+  </ng-container>
+
+  <div filters>
+    <sh-form-field class="small search">
+      <sh-icon prefix>magnifying-glass</sh-icon>
+      <input placeholder="Search name or email" [value]="query()" (input)="query.set($any($event.target).value)" />
+    </sh-form-field>
+    <sh-button-group class="small" [(value)]="status">
+      <button value="">All</button>
+      <button value="Active">Active</button>
+      <button value="Trial">Trial</button>
+      <button value="Churned">Churned</button>
+    </sh-button-group>
+  </div>
+
+  <sh-lo-toolbar>
+    <sh-checkbox [checked]="allSelected()" (checkedChange)="toggleAll($event)" />
+    @if (selected().size) {
+      <span>{{ selected().size }} selected</span>
+      <sh-divider />
+      <button shButton shTooltip="Email">
+        <sh-icon>envelope-simple</sh-icon>
+      </button>
+      <button shButton shTooltip="Add tag">
+        <sh-icon>tag</sh-icon>
+      </button>
+      <button shButton shTooltip="Delete">
+        <sh-icon>trash</sh-icon>
+      </button>
+    } @else {
+      <span>Select rows for bulk actions</span>
+    }
+  </sh-lo-toolbar>
+
+  <sh-table [data]="rows()">
+    <tr thead class="sticky">
+      <th></th>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Plan</th>
+      <th>Status</th>
+      <th>MRR</th>
+      <th>Joined</th>
+    </tr>
+
+    @for (row of rows(); track row.id) {
+      <tr>
+        <td>
+          <sh-checkbox [checked]="selected().has(row.id)" (checkedChange)="toggle(row.id, $event)" />
+        </td>
+        <td>
+          <span class="name">
+            <sh-avatar [name]="row.name" size="small" />
+            {{ row.name }}
+          </span>
+        </td>
+        <td>{{ row.email }}</td>
+        <td>{{ row.plan }}</td>
+        <td>
+          <sh-chip size="small" variant="simple" [color]="statusColor[row.status]">{{ row.status }}</sh-chip>
+        </td>
+        <td>{{ row.mrr }}</td>
+        <td>{{ row.joined }}</td>
+      </tr>
+    }
+
+    <div table-no-rows>No customers match your filters.</div>
+  </sh-table>
+
+  <ng-container footer>
+    <span>Showing {{ rows().length }} of {{ customers.length }} customers</span>
+    <span class="pager">
+      <button shButton size="small" variant="outlined" disabled>
+        <sh-icon>caret-left</sh-icon>
+      </button>
+      <button shButton size="small" variant="outlined">
+        <sh-icon>caret-right</sh-icon>
+      </button>
+    </span>
+  </ng-container>
+</sh-lo-table-view>

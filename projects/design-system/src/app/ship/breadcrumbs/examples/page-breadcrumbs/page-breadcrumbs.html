@@ -1,0 +1,40 @@
+<sh-lo-page size="small">
+  <sh-breadcrumbs>
+    @for (crumb of trail(); track crumb.id; let last = $last) {
+      @if (last) {
+        <span aria-current="page">{{ crumb.title }}</span>
+      } @else {
+        <button type="button" (click)="open(crumb.id)">
+          @if (crumb.icon) {
+            <sh-icon>{{ crumb.icon }}</sh-icon>
+          }
+          {{ crumb.title }}
+        </button>
+      }
+    }
+  </sh-breadcrumbs>
+
+  <h1>{{ current().title }}</h1>
+  <p>{{ current().description }}</p>
+
+  @if (children().length) {
+    <sh-list class="type-c">
+      @for (child of children(); track child.id) {
+        <button type="button" (click)="open(child.id)">
+          <sh-icon>{{ child.icon }}</sh-icon>
+          <span class="text-group">
+            <span class="label">{{ child.title }}</span>
+            <span class="description">{{ child.description }}</span>
+          </span>
+          <sh-icon suffix>caret-right</sh-icon>
+        </button>
+      }
+    </sh-list>
+  } @else {
+    <sh-lo-empty-state>
+      <sh-icon>{{ current().icon }}</sh-icon>
+      <h3>You're at the end of the trail</h3>
+      <p>Use the breadcrumbs above to jump back to any level.</p>
+    </sh-lo-empty-state>
+  }
+</sh-lo-page>

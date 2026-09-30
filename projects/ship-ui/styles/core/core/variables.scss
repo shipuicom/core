@@ -184,6 +184,15 @@ html body {
   --shape-4: calc(#{p2r(16)} * var(--shape-scale));
   --shape-5: calc(#{p2r(20)} * var(--shape-scale));
 
+  --space-1: #{p2r(4)};
+  --space-2: #{p2r(8)};
+  --space-3: #{p2r(12)};
+  --space-4: #{p2r(16)};
+  --space-5: #{p2r(24)};
+  --space-6: #{p2r(32)};
+  --space-7: #{p2r(48)};
+  --space-8: #{p2r(64)};
+
   --box-shadow-10: 0 1px 2px 0 rgba(18, 18, 23, 0.07);
   --box-shadow-20: 0 1px 3px 0 rgba(18, 18, 23, 0.1);
   --box-shadow-30: 0 1px 4px -1px rgba(18, 18, 23, 0.08);

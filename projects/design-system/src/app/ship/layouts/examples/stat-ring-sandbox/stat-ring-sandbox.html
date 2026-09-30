@@ -1,0 +1,17 @@
+<sh-lo-stat-ring [variant]="variant()" [value]="42" [max]="60" color="success">
+  <p>Tasks done</p>
+  <sh-chip size="small" variant="raised" color="success">+8 this week</sh-chip>
+  <small footer>42 of 60 tasks</small>
+</sh-lo-stat-ring>
+
+<sh-lo-stat-ring [variant]="variant()" [value]="318" [max]="400" color="primary">
+  <h3>318h</h3>
+  <p>Hours logged</p>
+  <small footer>82h left of the 400h budget</small>
+</sh-lo-stat-ring>
+
+<sh-lo-stat-ring [variant]="variant()" [value]="91" color="warn">
+  <sh-icon>hard-drives</sh-icon>
+  <p>Storage used</p>
+  <small footer>91 GB of 100 GB</small>
+</sh-lo-stat-ring>

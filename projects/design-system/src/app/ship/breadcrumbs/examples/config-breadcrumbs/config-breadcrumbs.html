@@ -1,0 +1,14 @@
+<sh-breadcrumbs>
+  @for (crumb of crumbs; track crumb.label; let last = $last) {
+    @if (last) {
+      <span aria-current="page">{{ crumb.label }}</span>
+    } @else {
+      <a [href]="crumb.href">
+        @if (crumb.icon) {
+          <sh-icon>{{ crumb.icon }}</sh-icon>
+        }
+        {{ crumb.label }}
+      </a>
+    }
+  }
+</sh-breadcrumbs>

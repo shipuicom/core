@@ -1,0 +1,11 @@
+<h1>Chat</h1>
+
+<sh-tabs color="primary">
+  <button routerLink="/chats" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Overview</button>
+  <button routerLink="/chats/api" routerLinkActive="active">API</button>
+  <button routerLink="/chats/examples" routerLinkActive="active">Examples</button>
+</sh-tabs>
+
+<div class="tab-content">
+  <router-outlet />
+</div>

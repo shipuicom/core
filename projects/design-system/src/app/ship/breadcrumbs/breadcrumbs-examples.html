@@ -1,0 +1,29 @@
+<app-previewer path="/breadcrumbs/examples/breadcrumbs-sandbox/breadcrumbs-sandbox" title="Sandbox" class="no-space">
+  <ng-container controls>
+    <sh-button-group class="small" [(value)]="variant">
+      <button value="">Default</button>
+      <button value="type-b">Type B</button>
+      <button value="type-c">Type C</button>
+    </sh-button-group>
+    <sh-button-group class="small" [(value)]="size">
+      <button value="small">Small</button>
+      <button value="">Default</button>
+    </sh-button-group>
+    <sh-button-group class="small" [(value)]="separator">
+      <button value="/">/</button>
+      <button value="›">›</button>
+      <button value="→">→</button>
+      <button value="·">·</button>
+    </sh-button-group>
+  </ng-container>
+
+  <app-breadcrumbs-sandbox [variant]="variant()" [size]="size()" [separator]="separator()" />
+</app-previewer>
+
+<app-previewer path="/breadcrumbs/examples/config-breadcrumbs/config-breadcrumbs" title="From config">
+  <app-config-breadcrumbs-example />
+</app-previewer>
+
+<app-previewer path="/breadcrumbs/examples/page-breadcrumbs/page-breadcrumbs" title="Page navigation" class="no-space">
+  <app-page-breadcrumbs-example />
+</app-previewer>

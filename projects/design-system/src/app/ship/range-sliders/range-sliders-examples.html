@@ -3,7 +3,62 @@
     path="/range-sliders/examples/range-slider-sandbox/range-slider-sandbox"
     title="Sandbox"
     class="no-space">
-    <app-range-slider-sandbox class="example" />
+    <ng-container controls>
+      <sh-toggle class="primary raised" [(checked)]="disabled">Disabled</sh-toggle>
+      <sh-toggle class="primary raised" [(checked)]="readonly">Read-only</sh-toggle>
+      @if (variant() !== 'thick') {
+        <sh-toggle class="primary raised" [(checked)]="alwaysShow">Always show value indicator</sh-toggle>
+      }
+      <sh-toggle class="primary raised" [(checked)]="sharp">Sharp</sh-toggle>
+
+      <sh-button-group [(value)]="color">
+        <button value="primary">Primary</button>
+        <button value="accent">Accent</button>
+        <button value="warn">Warn</button>
+        <button value="error">Error</button>
+        <button value="success">Success</button>
+      </sh-button-group>
+
+      <sh-button-group [(value)]="variant">
+        <button value="base">Default</button>
+        <button value="simple">Simple</button>
+        <button value="outlined">Outlined</button>
+        <button value="flat">Flat</button>
+        <button value="raised">Raised</button>
+      </sh-button-group>
+
+      <sh-form-field>
+        <label>Unit</label>
+        <input type="text" [(ngModel)]="unit" />
+      </sh-form-field>
+
+      <sh-form-field>
+        <label>Min</label>
+        <input type="text" [(ngModel)]="min" />
+      </sh-form-field>
+
+      <sh-form-field>
+        <label>Max</label>
+        <input type="text" [(ngModel)]="max" />
+      </sh-form-field>
+
+      <sh-form-field>
+        <label>Step</label>
+        <input type="text" [(ngModel)]="step" />
+      </sh-form-field>
+    </ng-container>
+
+    <app-range-slider-sandbox
+      [min]="min()"
+      [max]="max()"
+      [step]="step()"
+      [disabled]="disabled()"
+      [readonly]="readonly()"
+      [alwaysShow]="alwaysShow()"
+      [sharp]="sharp()"
+      [unit]="unit()"
+      [color]="color()"
+      [variant]="variant()" />
   </app-previewer>
 </div>
 

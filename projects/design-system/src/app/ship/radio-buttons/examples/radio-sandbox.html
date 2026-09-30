@@ -1,93 +1,63 @@
-<div class="controls">
-  <p>Controls</p>
-  <header>
-    <div class="row">
-      <sh-toggle [(checked)]="isDisabled" color="primary" variant="raised">Disabled</sh-toggle>
-    </div>
-    <div class="row">
-      <sh-button-group class="small" [(value)]="colorClass">
-        <button value="">Default</button>
-        <button value="primary">Primary</button>
-        <button value="accent">Accent</button>
-        <button value="warn">Warn</button>
-        <button value="error">Error</button>
-        <button value="success">Success</button>
-      </sh-button-group>
+<div>
+  <h5>Signal radios (single)</h5>
+  <p>
+    Selected:
+    <b>{{ selected() }}</b>
+  </p>
 
-      <sh-button-group class="small" [(value)]="variationClass">
-        <button value="">Default</button>
-        <button value="simple">Simple</button>
-        <button value="outlined">
-          Outlined
-        </button>
-        <button value="flat">Flat</button>
-        <button value="raised">Raised</button>
-      </sh-button-group>
-    </div>
-  </header>
+  @for (value of values; track value) {
+    <sh-radio
+      [variant]="variant()"
+      [color]="color()"
+      [disabled]="disabled()"
+      [checked]="selected() === value"
+      (click)="selected.set(value)"
+      name="signal-group">
+      {{ value }}
+    </sh-radio>
+  }
 </div>
-<div class="sandbox">
-  <div>
-    <h5>Signal radios (single)</h5>
-    <p>
-      Selected:
-      <b>{{ selected() }}</b>
-    </p>
+<div>
+  <h5>NgModel radios (grouped)</h5>
+  <p>
+    Selected:
+    <b>{{ model() }}</b>
+  </p>
 
-    @for (value of values; track value) {
-      <sh-radio
-        [variant]="variationClass()"
-        [color]="colorClass()"
-        [disabled]="isDisabled()"
-        [checked]="selected() === value"
-        (click)="selected.set(value)"
-        name="signal-group">
-        {{ value }}
-      </sh-radio>
-    }
-  </div>
-  <div>
-    <h5>NgModel radios (grouped)</h5>
-    <p>
-      Selected:
-      <b>{{ model() }}</b>
-    </p>
+  @for (value of values; track value) {
+    <sh-radio [variant]="variant()" [color]="color()">
+      {{ value }}
+      <input type="radio" name="model-group" [disabled]="disabled()" [(ngModel)]="model" [value]="value" />
+    </sh-radio>
+  }
+</div>
 
-    @for (value of values; track value) {
-      <sh-radio [variant]="variationClass()" [color]="colorClass()">
-        {{ value }}
-        <input type="radio" name="model-group" [disabled]="isDisabled()" [(ngModel)]="model" [value]="value" />
-      </sh-radio>
-    }
-  </div>
+<div>
+  <h5>Reactive form radios (grouped)</h5>
+  <p>
+    Form value:
+    <b>{{ formCtrl.value }}</b>
+  </p>
 
-  <div>
-    <h5>Reactive form radios (grouped)</h5>
-    <p>
-      Form value:
-      <b>{{ formCtrl.value }}</b>
-    </p>
+  @for (value of values; track value) {
+    <sh-radio [variant]="variant()" [color]="color()">
+      {{ value }}
+      <input type="radio" name="form-group" [formControl]="formCtrl" [value]="value" />
+    </sh-radio>
+  }
+</div>
 
-    @for (value of values; track value) {
-      <sh-radio [variant]="variationClass()" [color]="colorClass()">
-        {{ value }}
-        <input type="radio" name="form-group" [formControl]="formCtrl" [value]="value" />
-      </sh-radio>
-    }
-  </div>
+<div>
+  <h5>Signal form radios (grouped)</h5>
+  <p>
+    Form value:
+    <b>{{ formFieldAsForm().value() }}</b>
+  </p>
 
-  <div>
-    <h5>Signal form radios (grouped)</h5>
-    <p>
-      Form value:
-      <b>{{ formFieldAsForm().value() }}</b>
-    </p>
-
-    @for (value of values; track value) {
-      <sh-radio [variant]="variationClass()" [color]="colorClass()">
-        {{ value }}
-        <input type="radio" [formField]="formFieldAsForm" [value]="value" />
-      </sh-radio>
-    }
-  </div>
+  @for (value of values; track value) {
+    <sh-radio [variant]="variant()" [color]="color()">
+      {{ value }}
+      <input type="radio" [formField]="formFieldAsForm" [value]="value" />
+    </sh-radio>
+  }
 </div>

@@ -1,0 +1,11 @@
+<h1>Breadcrumbs</h1>
+
+<sh-tabs color="primary">
+  <button routerLink="/breadcrumbs" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Overview</button>
+  <button routerLink="/breadcrumbs/api" routerLinkActive="active">API</button>
+  <button routerLink="/breadcrumbs/examples" routerLinkActive="active">Examples</button>
+</sh-tabs>
+
+<div class="tab-content">
+  <router-outlet />
+</div>

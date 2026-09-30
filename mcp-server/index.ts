@@ -505,7 +505,8 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => {
       },
       {
         name: 'implement_layout',
-        description: 'Get guidance and template code to build structured layouts using sh-sheet and CSS grids',
+        description:
+          'Get the rules and component recipe for page layouts (dashboards, settings, detail pages) using @ship-ui/core/ship-layout',
         arguments: [
           {
             name: 'layoutType',
@@ -634,7 +635,16 @@ Please help me implement this in my project.`,
           role: 'user',
           content: {
             type: 'text',
-            text: `I want to build a ${layoutType} using ShipUI's layout tokens, sheet utilities (sh-sheet), and responsive structural patterns. Provide clean, modern HTML structure and CSS variables (using the correct abbreviations like po, rs, dp, btn, base-1 to base-12 scales) to achieve a beautiful, responsive, and zoneless-compatible interface.`,
+            text: `I want to build a ${layoutType} with ShipUI. Use the layout components from '@ship-ui/core/ship-layout' for the page structure (call get_component_details for each one you use), and plain CSS for everything inside them.
+
+Rules:
+- Layout components are slot based: put the parts in and they arrange them. \`<sh-lo-page>\` takes \`nav\` (breadcrumbs), \`h1\`, \`p\`, buttons marked \`actions\`, \`sh-tabs\`, the content, and an element marked \`aside\`. \`<sh-lo-section>\` takes \`h2\`, \`p\`, \`actions\`, then content. \`<sh-lo-setting>\` takes \`label\`, \`p\`, then the control. \`<sh-lo-empty-state>\` takes \`sh-icon\`, \`h3\`, \`p\`, buttons. \`<sh-lo-toolbar>\` is a Gmail-style action bar: icon-only \`button shButton\`s (one \`sh-icon\` each, \`shTooltip\` for the label) grouped with \`sh-divider\`s, an optional \`sh-checkbox\`/\`sh-menu\` at the start, and count/pagination marked \`end\`; the toolbar makes the buttons flat and square, so don't set variant/noBg on them. \`<sh-lo-stat>\` takes \`sh-icon\`, \`p\` (label), \`h3\` (value), \`sh-chip\` (delta), \`sh-chart-sparkline\`; put stats in a CSS grid. \`<sh-lo-details>\` takes \`h3\`, \`actions\` and \`sh-lo-detail\` rows (\`dt\` + value). \`<sh-lo-timeline>\` takes \`sh-lo-timeline-item\`s (\`sh-avatar\`/\`sh-icon\`, \`b\`, \`time\`, \`p\`).
+- The layout owns the outer rhythm (page padding, gaps between sections, header spacing): never add margins to slotted parts, and never wrap them in extra divs.
+- Inside your own content write normal CSS (flex/grid) and use the spacing scale \`var(--space-1)\` (4px) … \`var(--space-8)\` (64px) for gaps and padding — no other pixel values. Override a layout's rhythm through its variables (\`--page-gap\`, \`--section-gap\`, …) rather than restyling it.
+- Every layout takes \`variant="type-b" | "type-c"\` (see get_component_details); a project default is set in ShipConfig, e.g. \`{ layoutSection: { variant: 'type-b' } }\`, so omit \`variant\` unless the page needs a specific one.
+- \`<sh-lo-page size="small">\` for forms and settings, default for most pages, \`large\` for dense dashboards. Settings pages are \`sh-lo-page size="small"\` → \`sh-lo-section\`s → \`sh-card\` containing \`sh-lo-setting\`s.
+- App chrome (sidebar navigation) is \`<sh-sidenav>\`; the \`<sh-lo-page>\` goes in its main content.`,
+
           },
         },
       ],

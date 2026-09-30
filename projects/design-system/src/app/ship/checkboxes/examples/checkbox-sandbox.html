@@ -1,78 +1,49 @@
-<div class="controls">
-  <p>Controls</p>
-  <header>
-    <div class="row">
-      <sh-toggle [(checked)]="isChecked" color="primary" variant="raised">Checked</sh-toggle>
-      <sh-toggle [(checked)]="isIndeterminate" color="primary" variant="raised">Indeterminate</sh-toggle>
-      <sh-toggle [(checked)]="isDisabled" color="primary" variant="raised">Disabled</sh-toggle>
-    </div>
-    <div class="row">
-      <sh-button-group class="small" [(value)]="colorClass">
-        <button value="">Default</button>
-        <button value="primary">Primary</button>
-        <button value="accent">Accent</button>
-        <button value="warn">Warn</button>
-        <button value="error">Error</button>
-        <button value="success">Success</button>
-      </sh-button-group>
-      <sh-button-group class="small" [(value)]="variationClass">
-        <button value="">Default</button>
-        <button value="simple">Simple</button>
-        <button value="outlined">
-          Outlined
-        </button>
-        <button value="flat">Flat</button>
-        <button value="raised">Raised</button>
-      </sh-button-group>
-    </div>
-  </header>
-</div>
-<div class="sandbox">
-  <sh-checkbox
-    [color]="colorClass()"
-    [variant]="variationClass()"
-    [(checked)]="isChecked"
-    [disabled]="isDisabled()"
-    [class.indeterminate]="isIndeterminate()" label="disabled checkbox" />
+<sh-checkbox
+  [color]="color()"
+  [variant]="variant()"
+  [(checked)]="checked"
+  [disabled]="disabled()"
+  [class.indeterminate]="indeterminate()"
+  label="disabled checkbox" />
 
-  <sh-checkbox
-    [color]="colorClass()"
-    [variant]="variationClass()"
-    [(checked)]="isChecked"
-    [disabled]="isDisabled()"
-    [class.indeterminate]="isIndeterminate()">
-    Checkbox with label
-  </sh-checkbox>
+<sh-checkbox
+  [color]="color()"
+  [variant]="variant()"
+  [(checked)]="checked"
+  [disabled]="disabled()"
+  [class.indeterminate]="indeterminate()">
+  Checkbox with label
+</sh-checkbox>
 
-  <sh-checkbox
-    [variant]="variationClass()"
-    [color]="colorClass()"
-    [(checked)]="isChecked"
-    [disabled]="isDisabled()"
-    [class.indeterminate]="isIndeterminate()" label="disabled checkbox" />
+<sh-checkbox
+  [variant]="variant()"
+  [color]="color()"
+  [(checked)]="checked"
+  [disabled]="disabled()"
+  [class.indeterminate]="indeterminate()"
+  label="disabled checkbox" />
 
-  <sh-checkbox
-    [variant]="variationClass()"
-    [color]="colorClass()"
-    [(checked)]="isChecked"
-    [disabled]="isDisabled()"
-    [class.indeterminate]="isIndeterminate()">
-    Checkbox with link in
-    <a href="https://docs.shipui.com">ShipUI</a>
-  </sh-checkbox>
+<sh-checkbox
+  [variant]="variant()"
+  [color]="color()"
+  [(checked)]="checked"
+  [disabled]="disabled()"
+  [class.indeterminate]="indeterminate()">
+  Checkbox with link in
+  <a href="https://docs.shipui.com">ShipUI</a>
+</sh-checkbox>
 
-  <sh-checkbox [variant]="variationClass()" [color]="colorClass()" [class.indeterminate]="isIndeterminate()">
-    Checkbox with ngModel
-    <input type="checkbox" [(ngModel)]="isChecked" [disabled]="isDisabled()" />
-  </sh-checkbox>
+<sh-checkbox [variant]="variant()" [color]="color()" [class.indeterminate]="indeterminate()">
+  Checkbox with ngModel
+  <input type="checkbox" [(ngModel)]="checked" [disabled]="disabled()" />
+</sh-checkbox>
 
-  <sh-checkbox [variant]="variationClass()" [color]="colorClass()" [class.indeterminate]="isIndeterminate()">
-    Checkbox with input reactive forms {{ formCtrl.value }}
-    <input type="checkbox" [formControl]="formCtrl" />
-  </sh-checkbox>
+<sh-checkbox [variant]="variant()" [color]="color()" [class.indeterminate]="indeterminate()">
+  Checkbox with input reactive forms {{ formCtrl.value }}
+  <input type="checkbox" [formControl]="formCtrl" />
+</sh-checkbox>
 
-  <sh-checkbox [variant]="variationClass()" [color]="colorClass()" [class.indeterminate]="isIndeterminate()">
-    Checkbox with input signal forms {{ formFieldAsForm().value() }}
-    <input type="checkbox" [formField]="formFieldAsForm" />
-  </sh-checkbox>
-</div>
+<sh-checkbox [variant]="variant()" [color]="color()" [class.indeterminate]="indeterminate()">
+  Checkbox with input signal forms {{ formFieldAsForm().value() }}
+  <input type="checkbox" [formField]="formFieldAsForm" />
+</sh-checkbox>

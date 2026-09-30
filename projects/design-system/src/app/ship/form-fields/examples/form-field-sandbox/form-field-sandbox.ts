@@ -1,32 +1,30 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
-import { ShipCheckbox } from '@ship-ui/core/ship-checkbox';
 import { ShipFormField } from '@ship-ui/core/ship-form-field';
 import { ShipFormFieldVariant } from '@ship-ui/core';
 
 @Component({
   selector: 'app-form-field-sandbox',
   standalone: true,
-  imports: [FormsModule, ShipFormField, ShipButtonGroup, ShipCheckbox],
+  imports: [FormsModule, ShipFormField],
   templateUrl: './form-field-sandbox.html',
   styleUrl: './form-field-sandbox.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FormFieldSandbox {
-  label = signal<string>('Label');
-  showLabel = signal<boolean>(true);
-  prefix = signal<string>('');
-  showPrefix = signal<boolean>(false);
-  suffix = signal<string>('');
-  showSuffix = signal<boolean>(false);
-  placeholder = signal<string>('Placeholder...');
-  hint = signal<string>('');
-  showHint = signal<boolean>(false);
-  error = signal<string>('');
-  showError = signal<boolean>(false);
-  disabled = signal<boolean>(false);
-  inputType = signal<'text' | 'number' | 'textarea'>('text');
-  variant = signal<ShipFormFieldVariant>(''); // '', 'small', 'autosize', etc.
+  label = input('Label');
+  showLabel = input(true);
+  prefix = input('');
+  showPrefix = input(false);
+  suffix = input('');
+  showSuffix = input(false);
+  placeholder = input('Placeholder...');
+  hint = input('');
+  showHint = input(false);
+  error = input('');
+  showError = input(false);
+  disabled = input(false);
+  inputType = input<'text' | 'number' | 'textarea'>('text');
+  variant = input<ShipFormFieldVariant>(''); // '', 'small', 'autosize', etc.
   value = signal<string>('');
 }

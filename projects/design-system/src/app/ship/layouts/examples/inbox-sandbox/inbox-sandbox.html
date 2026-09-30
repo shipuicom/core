@@ -1,0 +1,98 @@
+<sh-lo-inbox [variant]="variant()">
+  <nav folders>
+    <button shButton variant="raised" color="primary">
+      <sh-icon>pencil-simple</sh-icon>
+      Compose
+    </button>
+    <button class="active">
+      <sh-icon>tray</sh-icon>
+      Inbox
+      <span count>{{ unreadCount() }}</span>
+    </button>
+    <button>
+      <sh-icon>star</sh-icon>
+      Starred
+    </button>
+    <button>
+      <sh-icon>clock</sh-icon>
+      Snoozed
+    </button>
+    <button>
+      <sh-icon>paper-plane-tilt</sh-icon>
+      Sent
+    </button>
+    <button>
+      <sh-icon>file-dashed</sh-icon>
+      Drafts
+      <span count>2</span>
+    </button>
+  </nav>
+
+  <sh-lo-toolbar variant="type-c">
+    <sh-checkbox />
+    <button shButton shTooltip="Archive">
+      <sh-icon>archive</sh-icon>
+    </button>
+    <button shButton shTooltip="Delete">
+      <sh-icon>trash</sh-icon>
+    </button>
+    <button shButton shTooltip="Mark as read">
+      <sh-icon>envelope-open</sh-icon>
+    </button>
+    <ng-container end>
+      <span>1–{{ mails.length }} of {{ mails.length }}</span>
+    </ng-container>
+  </sh-lo-toolbar>
+
+  @for (mail of mails; track mail.id) {
+    <sh-lo-inbox-item
+      [unread]="mail.unread"
+      [selected]="readingPane() && openId() === mail.id"
+      (click)="openId.set(mail.id)">
+      <sh-checkbox (click)="$event.stopPropagation()" />
+      @if (mail.starred) {
+        <sh-icon star>star-fill</sh-icon>
+      } @else {
+        <sh-icon star class="not-starred">star</sh-icon>
+      }
+      <sh-avatar [name]="mail.from" />
+      <span from>{{ mail.from }}</span>
+      <h4>{{ mail.subject }}</h4>
+      <p>{{ mail.snippet }}</p>
+      @if (mail.label) {
+        <sh-chip size="small" variant="simple" [color]="mail.labelColor ?? null">{{ mail.label }}</sh-chip>
+      }
+      <time>{{ mail.time }}</time>
+    </sh-lo-inbox-item>
+  }
+
+  @if (readingPane() && openMail(); as mail) {
+    <article reader class="reader">
+      <header>
+        <h2>{{ mail.subject }}</h2>
+        <button shButton shTooltip="Close" (click)="openId.set(null)">
+          <sh-icon>x-circle</sh-icon>
+        </button>
+      </header>
+      <div class="sender">
+        <sh-avatar [name]="mail.from" />
+        <div>
+          <b>{{ mail.from }}</b>
+          <small>to me · {{ mail.time }}</small>
+        </div>
+      </div>
+      <p>{{ mail.snippet }}</p>
+      <p>Let me know what you think when you have a minute.</p>
+      <div class="reply">
+        <button shButton variant="outlined">
+          <sh-icon>arrow-bend-up-left</sh-icon>
+          Reply
+        </button>
+        <button shButton variant="outlined">
+          <sh-icon>arrow-bend-up-right</sh-icon>
+          Forward
+        </button>
+      </div>
+    </article>
+  }
+</sh-lo-inbox>

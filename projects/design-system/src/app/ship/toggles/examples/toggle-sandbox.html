@@ -1,50 +1,20 @@
-<div class="controls">
-  <p>Controls</p>
-  <header>
-    <div class="row">
-      <sh-toggle [(checked)]="isChecked" color="primary" variant="raised">Checked</sh-toggle>
-      <sh-toggle [(checked)]="isDisabled" color="primary" variant="raised">Disabled</sh-toggle>
-    </div>
-    <div class="row">
-      <sh-button-group class="small" [(value)]="colorClass">
-        <button value="">Default</button>
-        <button value="primary">Primary</button>
-        <button value="accent">Accent</button>
-        <button value="warn">Warn</button>
-        <button value="error">Error</button>
-        <button value="success">Success</button>
-      </sh-button-group>
-      <sh-button-group class="small" [(value)]="variationClass">
-        <button value="">Default</button>
-        <button value="simple">Simple</button>
-        <button value="outlined">
-          Outlined
-        </button>
-        <button value="flat">Flat</button>
-        <button value="raised">Raised</button>
-      </sh-button-group>
-    </div>
-  </header>
-</div>
-<div class="sandbox">
-  <sh-toggle [color]="colorClass()" [variant]="variationClass()" [(checked)]="isChecked" [disabled]="isDisabled()" label="disabled toggle" />
+<sh-toggle [color]="color()" [variant]="variant()" [(checked)]="checked" [disabled]="disabled()" label="disabled toggle" />
 
-  <sh-toggle [color]="colorClass()" [variant]="variationClass()" [(checked)]="isChecked" [disabled]="isDisabled()">
-    Toggle with label
-  </sh-toggle>
+<sh-toggle [color]="color()" [variant]="variant()" [(checked)]="checked" [disabled]="disabled()">
+  Toggle with label
+</sh-toggle>
 
-  <sh-toggle [color]="colorClass()" [variant]="variationClass()">
-    Toggle with ngModel
-    <input type="checkbox" [(ngModel)]="isChecked" [disabled]="isDisabled()" />
-  </sh-toggle>
+<sh-toggle [color]="color()" [variant]="variant()">
+  Toggle with ngModel
+  <input type="checkbox" [(ngModel)]="checked" [disabled]="disabled()" />
+</sh-toggle>
 
-  <sh-toggle [color]="colorClass()" [variant]="variationClass()">
-    Toggle with input reactive forms {{ formCtrl.value }}
-    <input type="checkbox" [formControl]="formCtrl" />
-  </sh-toggle>
+<sh-toggle [color]="color()" [variant]="variant()">
+  Toggle with input reactive forms {{ formCtrl.value }}
+  <input type="checkbox" [formControl]="formCtrl" />
+</sh-toggle>
 
-  <sh-toggle [color]="colorClass()" [variant]="variationClass()">
-    Toggle with input signal forms {{ formFieldAsForm().value() }}
-    <input type="checkbox" [formField]="formFieldAsForm" />
-  </sh-toggle>
-</div>
+<sh-toggle [color]="color()" [variant]="variant()">
+  Toggle with input signal forms {{ formFieldAsForm().value() }}
+  <input type="checkbox" [formField]="formFieldAsForm" />
+</sh-toggle>

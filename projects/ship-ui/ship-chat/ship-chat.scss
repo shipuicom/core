@@ -1,0 +1,284 @@
+@use 'helpers' as *;
+
+$shipChat: true !default;
+
+@if $shipChat == true {
+  sh-chat {
+    --chat-gap: var(--space-4);
+    --chat-gap-continued: var(--space-1);
+    --chat-avatar-si: #{p2r(32)};
+    --chat-max-w: 75%;
+    --chat-p: var(--space-2) var(--space-3);
+    --chat-s: var(--shape-4);
+    --chat-tail-s: var(--shape-1);
+    --chat-bg: var(--base-3);
+    --chat-c: var(--base-12);
+    --chat-bc: transparent;
+    --chat-meta-c: var(--base-8);
+    --chat-f: var(--paragraph-30);
+
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    min-width: 0;
+    margin-block-start: var(--chat-gap);
+
+    &:first-child {
+      margin-block-start: 0;
+    }
+
+    &.continued {
+      margin-block-start: var(--chat-gap-continued);
+
+      > .body > .meta {
+        display: none;
+      }
+    }
+
+    > .avatar {
+      display: flex;
+      flex: 0 0 auto;
+
+      &:not(:has(> *)) {
+        display: none;
+      }
+    }
+
+    > .body {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-1);
+      min-width: 0;
+      max-width: var(--chat-max-w);
+    }
+
+    > .body > .meta {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      padding-inline: var(--space-1);
+      font: var(--paragraph-40);
+      color: var(--chat-meta-c);
+
+      > b,
+      > [name] {
+        font-weight: 600;
+        color: var(--base-11);
+      }
+
+      &:not(:has(> *)) {
+        display: none;
+      }
+    }
+
+    > .body > .bubble {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      min-width: 0;
+      max-width: 100%;
+      padding: var(--chat-p);
+      font: var(--chat-f);
+      line-height: 1.45;
+      color: var(--chat-c);
+      background-color: var(--chat-bg);
+      border: var(--border-10);
+      border-color: var(--chat-bc);
+      border-radius: var(--chat-s);
+      border-start-start-radius: var(--chat-tail-s);
+      overflow-wrap: anywhere;
+
+      > p {
+        margin: 0;
+        font: inherit;
+        color: inherit;
+      }
+
+      > img,
+      > video {
+        display: block;
+        max-width: 100%;
+        border-radius: var(--shape-2);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: underline;
+      }
+    }
+
+    > .body > .footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-1);
+      font: var(--paragraph-40);
+      color: var(--chat-meta-c);
+
+      &:not(:has(> *)) {
+        display: none;
+      }
+    }
+
+    // Continued messages keep the avatar column when the thread uses avatars on that side.
+    :has(> sh-chat:not(.outgoing) > .avatar > *) > &.continued:not(.outgoing) > .avatar,
+    :has(> sh-chat.outgoing > .avatar > *) > &.continued.outgoing > .avatar {
+      display: block;
+      width: var(--chat-avatar-si);
+    }
+
+    &.outgoing {
+      --chat-bg: var(--base-12);
+      --chat-c: var(--base-1);
+
+      flex-direction: row-reverse;
+
+      > .body {
+        align-items: flex-end;
+      }
+
+      > .body > .meta,
+      > .body > .footer {
+        justify-content: flex-end;
+      }
+
+      > .body > .bubble {
+        border-start-start-radius: var(--chat-s);
+        border-start-end-radius: var(--chat-tail-s);
+      }
+    }
+
+    @each $c in primary, accent, warn, error, success {
+      &.#{$c} {
+        --chat-bg: var(--#{$c}-8);
+        --chat-c: var(--#{$c}-c8);
+      }
+    }
+
+    // Typing indicator.
+    &.typing > .body > .bubble {
+      padding-block: p2r(12);
+    }
+
+    .typing {
+      display: inline-flex;
+      align-items: center;
+      gap: p2r(4);
+
+      > i {
+        width: p2r(6);
+        height: p2r(6);
+        border-radius: 50%;
+        background-color: currentColor;
+        opacity: 0.4;
+        animation: sh-chat-typing 1.2s ease-in-out infinite;
+
+        &:nth-child(2) {
+          animation-delay: 0.15s;
+        }
+
+        &:nth-child(3) {
+          animation-delay: 0.3s;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        > i {
+          animation: none;
+        }
+      }
+    }
+
+    // Outlined bubbles.
+    &.type-b {
+      --chat-bg: var(--base-1);
+      --chat-bc: var(--base-4);
+
+      &.outgoing {
+        --chat-bg: var(--base-3);
+        --chat-c: var(--base-12);
+      }
+
+      @each $c in primary, accent, warn, error, success {
+        &.#{$c} {
+          --chat-bg: var(--#{$c}-2);
+          --chat-bc: var(--#{$c}-6);
+          --chat-c: var(--base-12);
+        }
+      }
+    }
+
+    // Flat rows (team chat): no bubbles, every message start-aligned, full width.
+    &.type-c {
+      --chat-gap: var(--space-2);
+      --chat-gap-continued: 0;
+      --chat-p: 0;
+      --chat-bg: transparent;
+      --chat-c: var(--base-12);
+      --chat-max-w: none;
+
+      gap: var(--space-3);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--shape-2);
+
+      &:hover {
+        background-color: var(--base-2);
+      }
+
+      > .body {
+        flex: 1 1 0;
+        gap: 0;
+      }
+
+      > .body > .meta {
+        padding-inline: 0;
+      }
+
+      &.outgoing {
+        flex-direction: row;
+
+        > .body {
+          align-items: flex-start;
+        }
+
+        > .body > .meta,
+        > .body > .footer {
+          justify-content: flex-start;
+        }
+      }
+
+      // Continued rows always line up under the first message's text.
+      &.continued > .avatar {
+        display: block;
+        width: var(--chat-avatar-si);
+      }
+
+      @each $c in primary, accent, warn, error, success {
+        &.#{$c} {
+          --chat-bg: transparent;
+          --chat-c: var(--base-12);
+
+          > .body > .meta > b,
+          > .body > .meta > [name] {
+            color: var(--#{$c}-8);
+          }
+        }
+      }
+    }
+  }
+
+  @keyframes sh-chat-typing {
+    0%,
+    60%,
+    100% {
+      transform: translateY(0);
+      opacity: 0.4;
+    }
+
+    30% {
+      transform: translateY(#{p2r(-3)});
+      opacity: 1;
+    }
+  }
+}

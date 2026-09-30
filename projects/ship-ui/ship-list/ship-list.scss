@@ -24,6 +24,10 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
     --list-p: #{p2r(20 16)};
     --list-item-p: #{p2r(8 12)};
     --list-item-gap: #{p2r(8)};
+    // Color of the active item's leading icon and, for .outlined, its border.
+    // Follows the color class (.primary, .accent, ...); the plain list keeps
+    // the icon in the text color.
+    --list-accent: var(--base-12);
 
     width: 100%;
     padding: var(--list-p);
@@ -41,11 +45,12 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
       --list-active-bg: transparent;
       --list-active-bs: none;
       --list-item-b: 1px solid transparent;
-      --list-item-active-b: 1px solid var(--primary-8);
+      --list-item-active-b: 1px solid var(--list-accent);
     }
 
     &.type-b {
       --list-p: #{p2r(0)};
+      --list-accent: var(--primary-8);
       --list-item-p: #{p2r(10 12)};
       --list-item-gap: #{p2r(12)};
       --list-s: var(--shape-2);
@@ -59,7 +64,7 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
           color: var(--base-12);
 
           sh-icon:first-child {
-            color: var(--primary-8);
+            color: var(--list-accent);
           }
 
           .description {
@@ -110,6 +115,57 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
       }
     }
 
+    // Bordered navigation rows: each item is a raised surface with a leading
+    // icon, a .label/.description text column and a trailing [suffix] (for
+    // example a caret). Used for "pick a page" lists and drill-down menus.
+    &.type-c {
+      --list-p: #{p2r(0)};
+      --list-item-p: #{p2r(12 16)};
+      --list-item-gap: #{p2r(12)};
+      --list-s: var(--shape-3);
+      --list-color: var(--base-12);
+      --list-active-bg: var(--base-3);
+      --list-item-active-b: 1px solid var(--base-4);
+
+      #{$item} {
+        font: var(--paragraph-30);
+        background: var(--base-2);
+        border: 1px solid var(--base-4);
+        transition:
+          background-color 125ms ease-out,
+          transform 125ms linear,
+          box-shadow 125ms linear;
+
+        sh-icon:first-child {
+          font-size: p2r(18);
+          color: var(--base-9);
+        }
+
+        [suffix] {
+          color: var(--base-7);
+        }
+
+        .text-group {
+          display: flex;
+          flex-direction: column;
+          flex: 1 1 0;
+        }
+
+        .label {
+          font: var(--paragraph-30B);
+        }
+
+        .description {
+          font: var(--paragraph-40);
+          color: var(--base-8);
+        }
+      }
+
+      #{$interactive}:hover {
+        background: var(--base-3);
+      }
+    }
+
     &:empty {
       padding: 0;
     }
@@ -133,28 +189,38 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
     // fade out. Text nodes can't be wrapped, so labels hide by turning the
     // item's text color transparent while the leading icon keeps its color.
     &.collapsed {
-      --list-item-p: #{p2r(8 0)};
+      --list-item-p: 0;
 
       width: var(--list-collapsed-w, #{p2r(68)});
+      // Tiles center themselves with auto margins, so the rail's own side
+      // padding would only push them off-center.
+      padding-inline: 0;
 
       > [title] {
         color: transparent;
       }
 
+      // Every variant collapses to the same square tile, centered in the
+      // rail, whatever its expanded padding, borders or min-height were.
       #{$item} {
+        box-sizing: border-box;
+        width: var(--list-collapsed-item, #{p2r(44)});
+        height: var(--list-collapsed-item, #{p2r(44)});
+        min-height: 0;
+        margin-inline: auto;
         color: transparent;
         white-space: nowrap;
         text-wrap: nowrap;
         overflow: hidden;
 
-        // The leading icon claims the full (icon-only) item width and centers
-        // itself; the faded-out label is pushed past the clipped edge.
+        // sh-icon caps its own width at 1em, so it cannot stretch to fill the
+        // rail. Instead its start margin (50% of the item minus half the icon)
+        // parks it in the middle; the faded-out label and suffix overflow past
+        // the clipped edge.
         sh-icon:first-child {
           color: var(--list-color);
-          display: inline-block;
-          width: 100%;
           flex-shrink: 0;
-          text-align: center;
+          margin-inline-start: calc(50% - 0.5em);
         }
 
         [suffix],
@@ -172,8 +238,10 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
 
           &.active,
           &.selected {
+            color: transparent;
+
             sh-icon:first-child {
-              color: var(--primary-8);
+              color: var(--list-accent);
             }
           }
         }
@@ -226,60 +294,36 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
     }
 
     &.primary {
-      #{$item} {
-        &:has(input:checked),
-        &.active,
-        &.selected {
-          sh-icon:first-child {
-            color: var(--primary-8);
-          }
-        }
-      }
+      --list-accent: var(--primary-8);
     }
 
     &.accent {
-      #{$item} {
-        &:has(input:checked),
-        &.active,
-        &.selected {
-          sh-icon:first-child {
-            color: var(--accent-8);
-          }
-        }
-      }
+      --list-accent: var(--accent-8);
     }
 
     &.warn {
-      #{$item} {
-        &:has(input:checked),
-        &.active,
-        &.selected {
-          sh-icon:first-child {
-            color: var(--warn-8);
-          }
-        }
-      }
+      --list-accent: var(--warn-8);
     }
 
     &.error {
-      #{$item} {
-        &:has(input:checked),
-        &.active,
-        &.selected {
-          sh-icon:first-child {
-            color: var(--error-8);
-          }
-        }
-      }
+      --list-accent: var(--error-8);
     }
 
+    &.success {
+      --list-accent: var(--success-8);
+    }
+
+    &.primary,
+    &.accent,
+    &.warn,
+    &.error,
     &.success {
       #{$item} {
         &:has(input:checked),
         &.active,
         &.selected {
           sh-icon:first-child {
-            color: var(--success-8);
+            color: var(--list-accent);
           }
         }
       }

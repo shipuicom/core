@@ -30,6 +30,19 @@
   </section>
 
   <section>
+    <h4>Avoiding the theme flash</h4>
+    <p>
+      With no stored choice the page follows the OS preference instantly through <code>color-scheme</code> and
+      <code>light-dark()</code>, nothing to do. A stored <code>'dark'</code>/<code>'light'</code> choice, however,
+      is only applied once Angular has bootstrapped, so on a cold reload (or a prerendered page) the browser paints
+      the system theme first and then swaps. Add this blocking script to <code>&lt;head&gt;</code>, before the
+      stylesheet, to apply the stored theme before first paint:
+    </p>
+    <app-highlight lang="html" [content]="codeInit" />
+    <app-highlight lang="ts" [content]="codeInitConst" />
+  </section>
+
+  <section>
     <h4>Reacting to theme changes</h4>
     <app-highlight lang="ts" [content]="codeReact" />
   </section>

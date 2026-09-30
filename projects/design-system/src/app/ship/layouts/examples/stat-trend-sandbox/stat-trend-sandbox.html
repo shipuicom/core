@@ -1,0 +1,17 @@
+<sh-lo-stat-trend [variant]="variant()" color="primary">
+  <sh-icon>currency-dollar</sh-icon>
+  <p>Revenue this month</p>
+  <h3>$32.9k</h3>
+  <sh-chip size="small" variant="raised" color="success">+12%</sh-chip>
+  <small>Up from $29.4k last month</small>
+  <sh-chart-sparkline [data]="revenue" color="primary" area />
+</sh-lo-stat-trend>
+
+<sh-lo-stat-trend [variant]="variant()" color="error">
+  <sh-icon>arrow-u-up-left</sh-icon>
+  <p>Refunds this month</p>
+  <h3>$1.8k</h3>
+  <sh-chip size="small" variant="raised" color="error">+31%</sh-chip>
+  <small>Up from $1.4k last month</small>
+  <sh-chart-sparkline [data]="refunds" color="error" area />
+</sh-lo-stat-trend>

@@ -1,31 +1,6 @@
-<div class="controls">
-  <p>Controls</p>
-  <header>
-    <div class="row">
-      <sh-button-group size="small" [(value)]="colorClass">
-        <button value="">Default</button>
-        <button value="primary">Primary</button>
-        <button value="accent">Accent</button>
-        <button value="warn">Warn</button>
-        <button value="error">Error</button>
-        <button value="success">Success</button>
-      </sh-button-group>
-
-      <sh-button-group size="small" [(value)]="variationClass">
-        <button value="">Default</button>
-        <button value="simple">Simple</button>
-        <button value="outlined">Outlined</button>
-        <button value="flat">Flat</button>
-        <button value="raised">Raised</button>
-      </sh-button-group>
-    </div>
-  </header>
-</div>
-<div class="sandbox">
-  <sh-alert [color]="colorClass()" [variant]="variationClass()">Alert example</sh-alert>
-  <sh-alert [color]="colorClass()" [variant]="variationClass()">
-    Alert with
-    <b>bold</b>
-    text
-  </sh-alert>
-</div>
+<sh-alert [color]="color()" [variant]="variant()">Alert example</sh-alert>
+<sh-alert [color]="color()" [variant]="variant()">
+  Alert with
+  <b>bold</b>
+  text
+</sh-alert>

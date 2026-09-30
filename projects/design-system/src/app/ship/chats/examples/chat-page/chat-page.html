@@ -1,0 +1,96 @@
+<div class="messages" [class.open]="threadOpen()">
+  <aside>
+    <header>
+      <h2>Messages</h2>
+      <button shButton noBg aria-label="New message">
+        <sh-icon>note-pencil</sh-icon>
+      </button>
+    </header>
+
+    <sh-form-field class="search">
+      <sh-icon prefix>magnifying-glass</sh-icon>
+      <input
+        type="search"
+        placeholder="Search"
+        aria-label="Search conversations"
+        [value]="query()"
+        (input)="query.set($any($event.target).value)" />
+    </sh-form-field>
+
+    <sh-list listRole="listbox" label="Conversations" [value]="activeId()" (valueChange)="open($event)">
+      @for (conversation of filtered(); track conversation.id) {
+        <button [value]="conversation.id">
+          <sh-avatar [name]="conversation.name" />
+          <span class="preview">
+            <b>{{ conversation.name }}</b>
+            <small>{{ lastMessage(conversation) }}</small>
+          </span>
+          @if (conversation.unread) {
+            <sh-chip size="small" variant="raised" color="primary">{{ conversation.unread }}</sh-chip>
+          }
+        </button>
+      } @empty {
+        <p class="none">No conversations match "{{ query() }}".</p>
+      }
+    </sh-list>
+  </aside>
+
+  <main>
+    <header>
+      <button shButton noBg class="back" aria-label="Back to conversations" (click)="threadOpen.set(false)">
+        <sh-icon>caret-left</sh-icon>
+      </button>
+      <sh-avatar [name]="active().name" />
+      <div class="title">
+        <b>{{ active().name }}</b>
+        <small>{{ active().status }}</small>
+      </div>
+      <button shButton noBg aria-label="Call">
+        <sh-icon>phone</sh-icon>
+      </button>
+      <button shButton noBg aria-label="Conversation options">
+        <sh-icon>dots-three</sh-icon>
+      </button>
+    </header>
+
+    <div class="thread" #scroller role="log" [attr.aria-label]="'Messages with ' + active().name">
+      <sh-divider>Today</sh-divider>
+
+      @for (message of thread(); track message.id) {
+        <sh-chat [outgoing]="message.me" [continued]="message.continued">
+          @if (!message.continued && !message.me) {
+            <sh-avatar [name]="active().name" />
+          }
+          @if (!message.continued) {
+            <time>{{ message.time }}</time>
+          }
+          {{ message.text }}
+        </sh-chat>
+      }
+
+      @if (typing() === active().id) {
+        <sh-chat typing>
+          <sh-avatar [name]="active().name" />
+        </sh-chat>
+      }
+    </div>
+
+    <form class="composer" (submit)="send($event)">
+      <button shButton noBg type="button" aria-label="Attach file">
+        <sh-icon>paperclip</sh-icon>
+      </button>
+      <sh-form-field>
+        <textarea
+          rows="1"
+          aria-label="Message"
+          [placeholder]="'Message ' + active().name"
+          [value]="draft()"
+          (input)="draft.set($any($event.target).value)"
+          (keydown.enter)="send($event)"></textarea>
+      </sh-form-field>
+      <button shButton type="submit" color="primary" variant="raised" aria-label="Send" [disabled]="!draft().trim()">
+        <sh-icon>paper-plane-right</sh-icon>
+      </button>
+    </form>
+  </main>
+</div>

@@ -1,0 +1,55 @@
+<sh-lo-page>
+  <nav>
+    <a href="#">Workspace</a>
+    <sh-icon size="small">caret-right</sh-icon>
+    <span>Analytics</span>
+  </nav>
+  <h1>Analytics</h1>
+  <p>Traffic and revenue for the last 30 days.</p>
+  <button actions shButton variant="outlined">
+    <sh-icon>export</sh-icon>
+    Export
+  </button>
+  <button actions shButton variant="raised" color="primary">
+    <sh-icon>plus</sh-icon>
+    New report
+  </button>
+
+  <div class="kpis">
+    @for (kpi of kpis; track kpi.label) {
+      <sh-lo-stat variant="type-c">
+        <p>{{ kpi.label }}</p>
+        <h3>{{ kpi.value }}</h3>
+        <sh-chip size="small" variant="raised" [color]="kpi.up ? 'success' : 'error'">{{ kpi.delta }}</sh-chip>
+        <sh-chart-sparkline [data]="kpi.trend" [color]="kpi.up ? 'success' : 'error'" area />
+      </sh-lo-stat>
+    }
+  </div>
+
+  <sh-lo-section>
+    <h2>Top pages</h2>
+    <p>Pages with the most visits this period.</p>
+    <button actions shButton size="small" variant="outlined">View all</button>
+
+    <sh-card class="pages">
+      @for (page of pages; track page.path) {
+        <div class="page-row">
+          <span>{{ page.path }}</span>
+          <b>{{ page.views }}</b>
+        </div>
+      }
+    </sh-card>
+  </sh-lo-section>
+
+  <sh-lo-section aside>
+    <h2>Recent activity</h2>
+    <sh-card class="activity">
+      @for (event of activity; track event.text) {
+        <div>
+          <b>{{ event.text }}</b>
+          <p>{{ event.when }}</p>
+        </div>
+      }
+    </sh-card>
+  </sh-lo-section>
+</sh-lo-page>

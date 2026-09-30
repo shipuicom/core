@@ -320,6 +320,16 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'layouts',
+        loadComponent: () => import('./ship/layouts/layouts'),
+        children: [
+          { path: '', loadComponent: () => import('./ship/layouts/layouts-overview') },
+          { path: 'api', loadComponent: () => import('./ship/layouts/layouts-api') },
+          { path: 'examples', loadComponent: () => import('./ship/layouts/layouts-examples') },
+          fallbackOverview,
+        ],
+      },
+      {
         path: 'cards',
         loadComponent: () => import('./ship/cards/cards'),
         children: [
@@ -500,6 +510,26 @@ export const routes: Routes = [
           { path: 'api', loadComponent: () => import('./ship/virtual-scrolls/virtual-scrolls-api') },
           { path: 'architecture', loadComponent: () => import('./ship/virtual-scrolls/virtual-scrolls-architecture') },
           { path: 'examples', loadComponent: () => import('./ship/virtual-scrolls/virtual-scrolls-examples') },
+          fallbackOverview,
+        ],
+      },
+      {
+        path: 'breadcrumbs',
+        loadComponent: () => import('./ship/breadcrumbs/breadcrumbs'),
+        children: [
+          { path: '', loadComponent: () => import('./ship/breadcrumbs/breadcrumbs-overview') },
+          { path: 'api', loadComponent: () => import('./ship/breadcrumbs/breadcrumbs-api') },
+          { path: 'examples', loadComponent: () => import('./ship/breadcrumbs/breadcrumbs-examples') },
+          fallbackOverview,
+        ],
+      },
+      {
+        path: 'chats',
+        loadComponent: () => import('./ship/chats/chats'),
+        children: [
+          { path: '', loadComponent: () => import('./ship/chats/chats-overview') },
+          { path: 'api', loadComponent: () => import('./ship/chats/chats-api') },
+          { path: 'examples', loadComponent: () => import('./ship/chats/chats-examples') },
           fallbackOverview,
         ],
       },

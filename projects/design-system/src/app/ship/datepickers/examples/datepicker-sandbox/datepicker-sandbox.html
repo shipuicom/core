@@ -1,34 +1,10 @@
-<div class="controls">
-  <sh-toggle class="raised primary" [(checked)]="disabled">Disabled</sh-toggle>
-  <sh-toggle class="raised primary" [(checked)]="sharp">Sharp</sh-toggle>
-
-  <sh-button-group [(value)]="colors">
-    <button value="">Default</button>
-    <button value="primary">Primary</button>
-    <button value="accent">Accent</button>
-    <button value="warn">Warn</button>
-    <button value="error">Error</button>
-    <button value="success">Success</button>
-  </sh-button-group>
-
-  <sh-button-group [(value)]="startOfWeek">
-    <button value="1">Monday</button>
-    <button value="2">Tuesday</button>
-    <button value="3">Wednesday</button>
-    <button value="4">Thursday</button>
-    <button value="5">Friday</button>
-    <button value="6">Saturday</button>
-    <button value="0">Sunday</button>
-  </sh-button-group>
-</div>
-
 <div class="content">
   <sh-datepicker
     class="raised"
     [class]="exampleClass()"
     [(date)]="date"
     [disabled]="disabled()"
-    [startOfWeek]="startOfWeekComputed()" />
+    [startOfWeek]="startOfWeek()" />
 
   <p>Selected date: {{ date() | date: 'mediumDate' }}</p>
 </div>

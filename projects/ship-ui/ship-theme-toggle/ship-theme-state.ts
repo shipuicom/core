@@ -2,6 +2,18 @@ import { isPlatformServer } from '@angular/common';
 import { DOCUMENT, effect, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 
 export type ShipThemeOption = 'light' | 'dark' | null;
+
+/** localStorage key `ShipThemeState` persists the chosen theme under. */
+export const SHIP_THEME_STORAGE_KEY = 'shipTheme';
+
+/**
+ * Inline this in `<head>` of your index.html, before the stylesheet, to apply a stored
+ * theme before first paint. Without it a saved 'dark'/'light' choice is only applied once
+ * Angular bootstraps, so the page briefly renders in the system theme. Apps that only follow
+ * the system preference don't need it.
+ */
+export const SHIP_THEME_INIT_SCRIPT =
+  "try{var t=localStorage.getItem('shipTheme');if(t==='dark'||t==='light')document.documentElement.classList.add(t)}catch(e){}";
 export const THEME_ORDER: ShipThemeOption[] = ['light', 'dark', null];
 
 import { InjectionToken } from '@angular/core';
@@ -18,7 +30,10 @@ export class ShipThemeState {
   #document = inject(DOCUMENT);
   #window = inject(WINDOW);
   #platformId = inject(PLATFORM_ID);
-  #storedDarkMode = this.localStorage()?.getItem('shipTheme') as ShipThemeOption;
+  // `?? null`: on the server localStorage() is null, so the optional chain yields undefined.
+  // undefined fails the `=== null` check in the effect and falls through to the 'light'
+  // branch, which stamped class="light" on the prerendered <html> and caused a theme flash.
+  #storedDarkMode = (this.localStorage()?.getItem(SHIP_THEME_STORAGE_KEY) ?? null) as ShipThemeOption;
   #theme = signal<ShipThemeOption>(this.#storedDarkMode);
 
   theme = this.#theme.asReadonly();
@@ -58,12 +73,12 @@ export class ShipThemeState {
   /** Sets and persists the theme; passing `null` clears the stored preference and reverts to system default. */
   setTheme(theme: ShipThemeOption) {
     if (theme === null) {
-      this.localStorage()?.removeItem('shipTheme');
+      this.localStorage()?.removeItem(SHIP_THEME_STORAGE_KEY);
       this.#theme.set(null);
       return;
     }
 
-    this.localStorage()?.setItem('shipTheme', theme);
+    this.localStorage()?.setItem(SHIP_THEME_STORAGE_KEY, theme);
     this.#theme.set(theme);
   }
 }

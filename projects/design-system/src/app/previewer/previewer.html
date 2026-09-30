@@ -39,6 +39,11 @@
     <ng-content select="[description]" />
   </div>
 
+  <!-- Docs-only controls (toggles, selects) that drive the example but stay out of its source. -->
+  <div class="controls">
+    <ng-content select="[controls]" />
+  </div>
+
   @if (view() !== '') {
     <div class="content">
       @defer (when (view() === 'typescript')) {

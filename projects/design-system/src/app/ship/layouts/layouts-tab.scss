@@ -1,0 +1,42 @@
+@use '../showcase' as *;
+
+:host {
+  @extend %tab-host;
+}
+
+.example {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 500px;
+  width: 100%;
+
+  h3 {
+    margin: 0;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(20);
+}
+
+.demo,
+app-dashboard-page-example,
+app-settings-page-example {
+  display: block;
+  width: 100%;
+}
+
+// Label for the sandbox controls projected into the previewer's controls bar.
+.controls-label {
+  font: var(--paragraph-30B);
+  color: var(--base-12);
+  margin: 0;
+}
+
+// Compact hue slider for the dynamic-color control.
+.controls-hue {
+  width: p2r(200);
+}

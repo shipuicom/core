@@ -1,37 +1,14 @@
-<div class="controls">
-  <p>Controls</p>
-  <header>
-    <div class="row">
-      <sh-toggle [(checked)]="isNavOpen" class="primary raised">Open/Close</sh-toggle>
+<sh-sidenav [class]="sidenavType()" [(isOpen)]="isNavOpen" [disableDrag]="disableDrag()">
+  <ng-container sidenav>
+    <sh-list>
+      <a><sh-icon>squares-four</sh-icon>Dashboard</a>
+      <a><sh-icon>folder</sh-icon>Projects</a>
+      <a><sh-icon>chart-bar</sh-icon>Reports</a>
+      <a><sh-icon>gear</sh-icon>Settings</a>
+    </sh-list>
+  </ng-container>
 
-      <sh-button-group class="small" [(value)]="sidenavType">
-        <button value="">Default</button>
-        <button value="overlay">Overlay</button>
-        <button value="simple">Simple</button>
-      </sh-button-group>
-    </div>
+  <ng-container sidenav-closed-topbar><button (click)="isNavOpen.set(!isNavOpen())">hello</button></ng-container>
 
-    @if (sidenavType() === 'overlay') {
-      <div class="row">
-        <sh-toggle [(checked)]="disableDrag" class="primary raised">Disable Drag</sh-toggle>
-      </div>
-    }
-  </header>
-</div>
-
-<div class="sandbox">
-  <sh-sidenav [class]="sidenavType()" [(isOpen)]="isNavOpen" [disableDrag]="disableDrag()">
-    <ng-container sidenav>
-      <sh-list>
-        <a><sh-icon>squares-four</sh-icon>Dashboard</a>
-        <a><sh-icon>folder</sh-icon>Projects</a>
-        <a><sh-icon>chart-bar</sh-icon>Reports</a>
-        <a><sh-icon>gear</sh-icon>Settings</a>
-      </sh-list>
-    </ng-container>
-
-    <ng-container sidenav-closed-topbar><button (click)="isNavOpen.set(!isNavOpen())">hello</button></ng-container>
-
-    hello world
-  </sh-sidenav>
-</div>
+  hello world
+</sh-sidenav>

@@ -1,69 +1,17 @@
-<div class="controls">
-  <div class="row">
-    <sh-toggle class="primary raised" [(checked)]="disabled">Disabled</sh-toggle>
-    <sh-toggle class="primary raised" [(checked)]="readonly">Read-only</sh-toggle>
-
-    @if (variation() !== 'thick') {
-      <sh-toggle class="primary raised" [(checked)]="alwaysShow">Always show value indicator</sh-toggle>
-    }
-    <sh-toggle class="primary raised" [(checked)]="sharp">Sharp</sh-toggle>
-  </div>
-
-  <sh-button-group [(value)]="color">
-    <button value="primary">Primary</button>
-    <button value="accent">Accent</button>
-    <button value="warn">Warn</button>
-    <button value="error">Error</button>
-    <button value="success">Success</button>
-  </sh-button-group>
-
-  <sh-button-group [(value)]="variation">
-    <button value="base">Default</button>
-    <button value="simple">Simple</button>
-    <button value="outlined">Outlined</button>
-    <button value="flat">Flat</button>
-    <button value="raised">Raised</button>
-  </sh-button-group>
-
-  <div class="fields">
-    <sh-form-field>
-      <label>Unit</label>
-      <input type="text" [(ngModel)]="unit" />
-    </sh-form-field>
-
-    <sh-form-field>
-      <label>Min</label>
-      <input type="text" [(ngModel)]="min" />
-    </sh-form-field>
-
-    <sh-form-field>
-      <label>Max</label>
-      <input type="text" [(ngModel)]="max" />
-    </sh-form-field>
-
-    <sh-form-field>
-      <label>Step</label>
-      <input type="text" [(ngModel)]="step" />
-    </sh-form-field>
-  </div>
-</div>
-
-<div class="sandbox-example">
-  <sh-range-slider
-    [unit]="unit()"
-    [color]="color()"
-    [variant]="variation()"
-    [sharp]="sharp()"
-    [alwaysShow]="alwaysShow()">
-    <label>Sandbox value</label>
-    <input
-      type="range"
-      [min]="min()"
-      [max]="max()"
-      [step]="step()"
-      [(ngModel)]="value"
-      [disabled]="disabled()"
-      [readonly]="readonly()" />
-  </sh-range-slider>
-  <p>Selected: {{ value() }}</p>
-</div>
+<sh-range-slider
+  [unit]="unit()"
+  [color]="color()"
+  [variant]="variant()"
+  [sharp]="sharp()"
+  [alwaysShow]="alwaysShow()">
+  <label>Sandbox value</label>
+  <input
+    type="range"
+    [min]="min()"
+    [max]="max()"
+    [step]="step()"
+    [(ngModel)]="value"
+    [disabled]="disabled()"
+    [readonly]="readonly()" />
+</sh-range-slider>
+<p>Selected: {{ value() }}</p>

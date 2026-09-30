@@ -83,7 +83,10 @@ Command: npx @ship-ui/core ship-mcp`;
    Command: npx
    Args: -y @ship-ui/core ship-mcp`;
 
-  WINDSURF_CONFIG = `Add to your ~/.codeium/config.json:
+  CLAUDE_CODE_CONFIG = `# One-off, for the current user:
+claude mcp add ship-ui -- npx -y @ship-ui/core ship-mcp
+
+# Or commit it with the project in .mcp.json:
 {
   "mcpServers": {
     "ship-ui": {
@@ -93,11 +96,13 @@ Command: npx @ship-ui/core ship-mcp`;
   }
 }`;
 
-  WEBSTORM_CONFIG = `Settings | Tools | MCP Servers:
-1. Click + and select 'Command'
-2. Name: ShipUI
-3. Command: npx
-4. Arguments: -y @ship-ui/core ship-mcp`;
+  CODEX_CONFIG = `# One-off, for the current user:
+codex mcp add ship-ui -- npx -y @ship-ui/core ship-mcp
+
+# Or add it to ~/.codex/config.toml:
+[mcp_servers.ship-ui]
+command = "npx"
+args = ["-y", "@ship-ui/core", "ship-mcp"]`;
 
   ANTIGRAVITY_CONFIG = `Add to your MCP settings:
 {

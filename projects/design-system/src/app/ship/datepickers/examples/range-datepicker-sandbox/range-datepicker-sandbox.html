@@ -1,27 +1,10 @@
-<div class="controls">
-  <sh-toggle [(checked)]="disabled">Disabled</sh-toggle>
-
-  <sh-button-group [(value)]="colors">
-    <button value="">Default</button>
-    <button value="primary">Primary</button>
-    <button value="accent">Accent</button>
-    <button value="warn">Warn</button>
-    <button value="error">Error</button>
-    <button value="success">Success</button>
-  </sh-button-group>
-
-  <sh-range-slider min="1" max="3">
-    <label>Months to show</label>
-    <input type="range" [(ngModel)]="monthsToShow" min="1" max="12" />
-  </sh-range-slider>
-</div>
-
 <div class="content">
   <sh-datepicker
-    [class]="colors()"
+    [class]="color()"
     [(date)]="startDate"
     [(endDate)]="endDate"
     [asRange]="true"
+    [disabled]="disabled()"
     [monthsToShow]="monthsToShow()"></sh-datepicker>
   <p>Start: {{ startDate() | date: 'mediumDate' }}</p>
   <p>End: {{ endDate() | date: 'mediumDate' }}</p>

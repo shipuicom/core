@@ -1,6 +1,20 @@
 <div class="sandbox-example">
   <app-previewer path="/sidenavs/examples/sandbox-sidenav/sandbox-sidenav" title="Sandbox" class="no-space">
-    <app-sandbox-sidenav />
+    <ng-container controls>
+      <sh-toggle [(checked)]="isNavOpen" class="primary raised">Open/Close</sh-toggle>
+
+      <sh-button-group class="small" [(value)]="sidenavType">
+        <button value="">Default</button>
+        <button value="overlay">Overlay</button>
+        <button value="simple">Simple</button>
+      </sh-button-group>
+
+      @if (sidenavType() === 'overlay') {
+        <sh-toggle [(checked)]="disableDrag" class="primary raised">Disable Drag</sh-toggle>
+      }
+    </ng-container>
+
+    <app-sandbox-sidenav [sidenavType]="sidenavType()" [(isNavOpen)]="isNavOpen" [disableDrag]="disableDrag()" />
   </app-previewer>
 </div>
 

@@ -1,0 +1,29 @@
+<sh-list
+  listRole="listbox"
+  label="Workspace"
+  [(value)]="active"
+  [class]="[variant(), color()]"
+  [class.collapsed]="collapsed()"
+>
+  <h3 title>Workspace</h3>
+  <button value="dashboard">
+    <sh-icon>squares-four</sh-icon>
+    Dashboard
+    <span suffix>⌘1</span>
+  </button>
+  <button value="projects">
+    <sh-icon>folder</sh-icon>
+    Projects
+    <span suffix>⌘2</span>
+  </button>
+  <button value="reports">
+    <sh-icon>chart-bar</sh-icon>
+    Reports
+    <span suffix>⌘3</span>
+  </button>
+  <button value="settings">
+    <sh-icon>gear</sh-icon>
+    Settings
+    <span suffix>⌘4</span>
+  </button>
+</sh-list>

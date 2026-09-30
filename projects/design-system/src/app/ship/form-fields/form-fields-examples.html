@@ -1,6 +1,59 @@
 <div class="sandbox-example">
   <app-previewer path="/form-fields/examples/form-field-sandbox/form-field-sandbox" title="Sandbox" class="no-space">
-    <app-form-field-sandbox />
+    <ng-container controls>
+      <sh-checkbox color="primary" variant="raised" [(checked)]="showLabel">Label</sh-checkbox>
+      <sh-checkbox color="primary" variant="raised" [(checked)]="showPrefix">Prefix</sh-checkbox>
+      <sh-checkbox color="primary" variant="raised" [(checked)]="showSuffix">Suffix</sh-checkbox>
+      <sh-checkbox color="primary" variant="raised" [(checked)]="showHint">Hint</sh-checkbox>
+      <sh-checkbox color="primary" variant="raised" [(checked)]="showError">Error</sh-checkbox>
+      <sh-checkbox color="primary" variant="raised" [(checked)]="disabled">Disabled</sh-checkbox>
+
+      <sh-button-group class="small" [(value)]="inputType">
+        <button type="button" value="text">Text</button>
+        <button type="button" value="number">Number</button>
+        <button type="button" value="textarea">Textarea</button>
+      </sh-button-group>
+
+      <sh-button-group class="small" [(value)]="variant">
+        <button type="button" value="">Default</button>
+        <button type="button" value="small">Small</button>
+        <button type="button" value="autosize">Autosize</button>
+        <button type="button" value="center">Center</button>
+      </sh-button-group>
+
+      @if (showLabel()) {
+        <sh-form-field><input [(ngModel)]="label" placeholder="Label text" /></sh-form-field>
+      }
+      @if (showPrefix()) {
+        <sh-form-field><input [(ngModel)]="prefix" placeholder="Prefix content" /></sh-form-field>
+      }
+      @if (showSuffix()) {
+        <sh-form-field><input [(ngModel)]="suffix" placeholder="Suffix content" /></sh-form-field>
+      }
+      @if (showHint()) {
+        <sh-form-field><input [(ngModel)]="hint" placeholder="Hint text" /></sh-form-field>
+      }
+      @if (showError()) {
+        <sh-form-field><input [(ngModel)]="error" placeholder="Error text" /></sh-form-field>
+      }
+      <sh-form-field><input [(ngModel)]="placeholder" placeholder="Placeholder" /></sh-form-field>
+    </ng-container>
+
+    <app-form-field-sandbox
+      [label]="label()"
+      [showLabel]="showLabel()"
+      [prefix]="prefix()"
+      [showPrefix]="showPrefix()"
+      [suffix]="suffix()"
+      [showSuffix]="showSuffix()"
+      [placeholder]="placeholder()"
+      [hint]="hint()"
+      [showHint]="showHint()"
+      [error]="error()"
+      [showError]="showError()"
+      [disabled]="disabled()"
+      [inputType]="inputType()"
+      [variant]="variant()" />
   </app-previewer>
 </div>
 

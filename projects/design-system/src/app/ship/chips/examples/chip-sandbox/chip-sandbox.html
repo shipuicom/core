@@ -1,125 +1,80 @@
-<div class="controls">
-  <p>Controls</p>
-  <header>
-    <div class="row">
-      <sh-toggle [(checked)]="isSmall" color="primary" variant="raised">Small</sh-toggle>
-      <sh-toggle [(checked)]="isSharp" color="primary" variant="raised">Sharp</sh-toggle>
-      <sh-toggle [(checked)]="isDynamic" color="primary" variant="raised">Dynamic coloring</sh-toggle>
-      <sh-toggle [(checked)]="isNoBg" color="primary" variant="raised">No BG</sh-toggle>
-    </div>
+<sh-chip
+  [color]="color()"
+  [variant]="variant()"
+  [size]="size()"
+  [sharp]="sharp()"
+  [dynamic]="dynamic()"
+  [style.--chip-c]="dynamic() ? dynamicColor() : undefined"
+  [noBg]="noBg()">
+  <sh-icon>circle</sh-icon>
+</sh-chip>
 
-    <div class="row">
-      @if (isDynamic()) {
-        <div>
-          <p>It's not great at colors to light, we're working on a better css based color algorithm.</p>
-          <br />
-          <sh-color-picker
-            [renderingType]="'hsl'"
-            [showDarkColors]="true"
-            [selectedColor]="selectedColor()"
-            (currentColor)="currentColor.set($event)" />
-        </div>
-      } @else {
-        <sh-button-group class="small" [(value)]="colorClass">
-          <button value="">Default</button>
-          <button value="primary">Primary</button>
-          <button value="accent">Accent</button>
-          <button value="warn">Warn</button>
-          <button value="error">Error</button>
-          <button value="success">Success</button>
-        </sh-button-group>
+<sh-chip
+  [color]="color()"
+  [variant]="variant()"
+  [size]="size()"
+  [sharp]="sharp()"
+  [dynamic]="dynamic()"
+  [style.--chip-c]="dynamic() ? dynamicColor() : undefined"
+  [noBg]="noBg()">
+  <span>Chip</span>
+  <sh-icon>circle</sh-icon>
+</sh-chip>
 
-        <sh-button-group class="small" [(value)]="variationClass">
-          <button value="">Default</button>
-          <button value="simple">Simple</button>
-          <button value="outlined">Outlined</button>
-          <button value="flat" [disabled]="isNoBg()">Flat</button>
-          <button value="raised" [disabled]="isNoBg()">Raised</button>
-        </sh-button-group>
-      }
-    </div>
-  </header>
-</div>
+<sh-chip
+  [color]="color()"
+  [variant]="variant()"
+  [size]="size()"
+  [sharp]="sharp()"
+  [dynamic]="dynamic()"
+  [style.--chip-c]="dynamic() ? dynamicColor() : undefined"
+  [noBg]="noBg()">
+  <sh-icon>circle</sh-icon>
+  <span>Chip</span>
+</sh-chip>
 
-<div class="sandbox">
-  <sh-chip
-    [color]="colorClass()"
-    [variant]="variationClass()"
-    [size]="sizeClass()"
-    [sharp]="isSharp()"
-    [dynamic]="isDynamic()"
-    [style.--chip-c]="isDynamic() ? currentColor()?.hsl : undefined"
-    [noBg]="isNoBg()">
-    <sh-icon>circle</sh-icon>
-  </sh-chip>
+<sh-chip
+  [color]="color()"
+  [variant]="variant()"
+  [size]="size()"
+  [sharp]="sharp()"
+  [dynamic]="dynamic()"
+  [style.--chip-c]="dynamic() ? dynamicColor() : undefined"
+  [noBg]="noBg()">
+  <sh-icon>circle</sh-icon>
+  <span>Chip</span>
+  <sh-icon>circle</sh-icon>
+</sh-chip>
 
-  <sh-chip
-    [color]="colorClass()"
-    [variant]="variationClass()"
-    [size]="sizeClass()"
-    [sharp]="isSharp()"
-    [dynamic]="isDynamic()"
-    [style.--chip-c]="isDynamic() ? currentColor()?.hsl : undefined"
-    [noBg]="isNoBg()">
-    <span>Chip</span>
-    <sh-icon>circle</sh-icon>
-  </sh-chip>
+<sh-chip
+  [color]="color()"
+  [variant]="variant()"
+  [size]="size()"
+  [sharp]="sharp()"
+  [dynamic]="dynamic()"
+  [style.--chip-c]="dynamic() ? dynamicColor() : undefined"
+  [noBg]="noBg()">
+  <sh-icon>circle</sh-icon>
+</sh-chip>
 
-  <sh-chip
-    [color]="colorClass()"
-    [variant]="variationClass()"
-    [size]="sizeClass()"
-    [sharp]="isSharp()"
-    [dynamic]="isDynamic()"
-    [style.--chip-c]="isDynamic() ? currentColor()?.hsl : undefined"
-    [noBg]="isNoBg()">
-    <sh-icon>circle</sh-icon>
-    <span>Chip</span>
-  </sh-chip>
+<sh-chip
+  [color]="color()"
+  [variant]="variant()"
+  [size]="size()"
+  [sharp]="sharp()"
+  [dynamic]="dynamic()"
+  [style.--chip-c]="dynamic() ? dynamicColor() : undefined"
+  [noBg]="noBg()">
+  <sh-icon>circle</sh-icon>
+</sh-chip>
 
-  <sh-chip
-    [color]="colorClass()"
-    [variant]="variationClass()"
-    [size]="sizeClass()"
-    [sharp]="isSharp()"
-    [dynamic]="isDynamic()"
-    [style.--chip-c]="isDynamic() ? currentColor()?.hsl : undefined"
-    [noBg]="isNoBg()">
-    <sh-icon>circle</sh-icon>
-    <span>Chip</span>
-    <sh-icon>circle</sh-icon>
-  </sh-chip>
-
-  <sh-chip
-    [color]="colorClass()"
-    [variant]="variationClass()"
-    [size]="sizeClass()"
-    [sharp]="isSharp()"
-    [dynamic]="isDynamic()"
-    [style.--chip-c]="isDynamic() ? currentColor()?.hsl : undefined"
-    [noBg]="isNoBg()">
-    <sh-icon>circle</sh-icon>
-  </sh-chip>
-
-  <sh-chip
-    [color]="colorClass()"
-    [variant]="variationClass()"
-    [size]="sizeClass()"
-    [sharp]="isSharp()"
-    [dynamic]="isDynamic()"
-    [style.--chip-c]="isDynamic() ? currentColor()?.hsl : undefined"
-    [noBg]="isNoBg()">
-    <sh-icon>circle</sh-icon>
-  </sh-chip>
-
-  <sh-chip
-    [color]="colorClass()"
-    [variant]="variationClass()"
-    [size]="sizeClass()"
-    [sharp]="isSharp()"
-    [dynamic]="isDynamic()"
-    [style.--chip-c]="isDynamic() ? currentColor()?.hsl : undefined"
-    [noBg]="isNoBg()">
-    <span>Chip</span>
-  </sh-chip>
-</div>
+<sh-chip
+  [color]="color()"
+  [variant]="variant()"
+  [size]="size()"
+  [sharp]="sharp()"
+  [dynamic]="dynamic()"
+  [style.--chip-c]="dynamic() ? dynamicColor() : undefined"
+  [noBg]="noBg()">
+  <span>Chip</span>
+</sh-chip>

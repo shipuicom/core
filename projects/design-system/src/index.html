@@ -6,6 +6,13 @@
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <link rel="icon" type="image/svg" href="icon.svg" />
+    <!-- Apply the stored theme before first paint so a saved dark/light choice never flashes the system theme. -->
+    <script>
+      try {
+        var t = localStorage.getItem('shipTheme');
+        if (t === 'dark' || t === 'light') document.documentElement.classList.add(t);
+      } catch (e) {}
+    </script>
     <link rel="stylesheet" href="/ship.css" />
   </head>
   <body>

@@ -1,0 +1,332 @@
+@use 'helpers' as *;
+
+$shipInbox: true !default;
+
+@if $shipInbox == true {
+  sh-lo-inbox {
+    --inbox-folders-w: #{p2r(220)};
+    --inbox-reader-w: minmax(0, 1.3fr);
+    --inbox-gap: var(--space-4);
+    --inbox-row-h: #{p2r(44)};
+    --inbox-c: var(--primary-8);
+
+    display: grid;
+    grid-template-columns: var(--inbox-folders-w) minmax(0, 1fr);
+    gap: var(--inbox-gap);
+    height: 100%;
+    min-height: 0;
+
+    &:has(> .reader > *) {
+      grid-template-columns: var(--inbox-folders-w) minmax(0, 1fr) var(--inbox-reader-w);
+    }
+
+    &:has(> .folders:empty) {
+      grid-template-columns: minmax(0, 1fr);
+
+      &:has(> .reader > *) {
+        grid-template-columns: minmax(0, 1fr) var(--inbox-reader-w);
+      }
+    }
+
+    > .folders {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      min-height: 0;
+      overflow: auto;
+
+      &:empty {
+        display: none;
+      }
+
+      // Folder links: full-width rows with an icon, a label and an optional
+      // [count] at the end. Mark the current folder with class "active".
+      > [folders] {
+        display: flex;
+        flex-direction: column;
+        gap: #{p2r(2)};
+
+        > a,
+        > button:not([shButton]) {
+          display: flex;
+          align-items: center;
+          gap: var(--space-3);
+          width: 100%;
+          padding: var(--space-2) var(--space-3);
+          border: 0;
+          border-radius: #{p2r(999)};
+          background: none;
+          font: var(--paragraph-30);
+          color: var(--base-10);
+          text-align: left;
+          text-decoration: none;
+          cursor: pointer;
+
+          &:hover {
+            background-color: var(--base-3);
+          }
+
+          &.active {
+            background-color: rgb(from var(--inbox-c) r g b / 0.16);
+            color: var(--base-12);
+            font-weight: 600;
+          }
+
+          > [count] {
+            margin-left: auto;
+            font: var(--paragraph-40B);
+          }
+        }
+
+        > [shButton] {
+          margin-bottom: var(--space-3);
+        }
+      }
+    }
+
+    > .list {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+
+      > sh-lo-toolbar,
+      > [toolbar] {
+        flex: 0 0 auto;
+      }
+
+      > .items {
+        flex: 1 1 0;
+        min-height: 0;
+        overflow: auto;
+      }
+    }
+
+    > .reader {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      overflow: auto;
+
+      &:empty {
+        display: none;
+      }
+    }
+
+    sh-lo-inbox-item {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto auto auto minmax(0, #{p2r(180)}) minmax(0, 1fr) auto auto;
+      grid-template-areas: 'select star avatar from message labels time';
+      align-items: center;
+      column-gap: var(--space-3);
+      min-height: var(--inbox-row-h);
+      padding: var(--space-1) var(--space-3);
+      border-bottom: var(--border-10);
+      font: var(--paragraph-30);
+      color: var(--base-10);
+      cursor: pointer;
+
+      &:hover {
+        background-color: var(--base-2);
+      }
+
+      &.selected {
+        background-color: rgb(from var(--inbox-c) r g b / 0.1);
+      }
+
+      &.unread {
+        color: var(--base-12);
+
+        > .from,
+        > .message > h4,
+        > .message > [subject],
+        > .time {
+          font-weight: 600;
+          color: var(--base-12);
+        }
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: var(--space-2);
+          bottom: var(--space-2);
+          width: #{p2r(3)};
+          border-radius: 0 #{p2r(3)} #{p2r(3)} 0;
+          background-color: var(--inbox-c);
+        }
+      }
+
+      > .select {
+        grid-area: select;
+      }
+
+      > .star {
+        grid-area: star;
+        color: var(--warn-8);
+      }
+
+      > .avatar {
+        grid-area: avatar;
+        display: flex;
+      }
+
+      > .from {
+        grid-area: from;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      // Subject and snippet share one ellipsised line.
+      > .message {
+        grid-area: message;
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-2);
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+
+        > h4,
+        > [subject] {
+          flex: 0 1 auto;
+          font: inherit;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        > p,
+        > [snippet] {
+          flex: 1 1 0;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          color: var(--base-8);
+
+          &::before {
+            content: '— ';
+          }
+        }
+      }
+
+      > .labels {
+        grid-area: labels;
+        display: flex;
+        gap: var(--space-1);
+      }
+
+      > .time {
+        grid-area: time;
+        font: var(--paragraph-40);
+        color: var(--base-8);
+        white-space: nowrap;
+        text-align: right;
+      }
+
+      > div:empty {
+        display: none;
+      }
+    }
+
+    // With a reader open the list is narrow: stack into two-line rows.
+    &:has(> .reader > *) sh-lo-inbox-item,
+    &.type-b sh-lo-inbox-item {
+      grid-template-columns: auto auto minmax(0, 1fr) auto;
+      grid-template-areas:
+        'select avatar from time'
+        'select avatar message message'
+        'select avatar labels labels';
+      row-gap: #{p2r(2)};
+      align-items: start;
+      padding-block: var(--space-3);
+
+      > .star {
+        display: none;
+      }
+
+      > .select,
+      > .avatar {
+        align-self: center;
+      }
+
+      > .message {
+        flex-direction: column;
+        align-items: stretch;
+        gap: #{p2r(2)};
+
+        > p,
+        > [snippet] {
+          flex: none;
+          white-space: nowrap;
+
+          &::before {
+            content: none;
+          }
+        }
+      }
+
+      > .labels:not(:empty) {
+        margin-top: var(--space-1);
+      }
+    }
+
+    // List and reader as separate cards.
+    &.type-b {
+      > .list,
+      > .reader {
+        background-color: var(--base-1);
+        border: var(--border-10);
+        border-radius: var(--shape-3);
+        overflow: hidden;
+      }
+
+      > .reader {
+        overflow: auto;
+      }
+
+      sh-lo-inbox-item:last-child {
+        border-bottom: 0;
+      }
+    }
+
+    // Compact: single line, no avatars, tighter rows.
+    &.type-c {
+      --inbox-row-h: #{p2r(36)};
+
+      sh-lo-inbox-item {
+        > .avatar {
+          display: none;
+        }
+      }
+
+      // Two-line rows without the avatar column.
+      &:has(> .reader > *) sh-lo-inbox-item {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-areas:
+          'select from time'
+          'select message message'
+          'select labels labels';
+        padding-block: var(--space-2);
+      }
+    }
+
+    @include breakpoint(-centi) {
+      grid-template-columns: minmax(0, 1fr);
+
+      &:has(> .reader > *) {
+        grid-template-columns: minmax(0, 1fr);
+
+        > .list {
+          display: none;
+        }
+      }
+
+      > .folders {
+        display: none;
+      }
+    }
+  }
+}

@@ -1,26 +1,22 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
+import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { ShipDatepicker } from '@ship-ui/core/ship-datepicker';
-import { ShipToggle } from '@ship-ui/core/ship-toggle';
 
 @Component({
   selector: 'app-datepicker-sandbox',
   standalone: true,
-  imports: [FormsModule, ShipDatepicker, ShipToggle, ShipButtonGroup, DatePipe],
+  imports: [ShipDatepicker, DatePipe],
   templateUrl: './datepicker-sandbox.html',
   styleUrl: './datepicker-sandbox.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DatepickerSandbox {
   date = signal<Date | null>(new Date());
-  disabled = signal(false);
-  sharp = signal(false);
-  startOfWeek = signal('1');
-  colors = signal<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
+  disabled = input(false);
+  sharp = input(false);
+  /** 0 = Sunday ... 6 = Saturday */
+  startOfWeek = input(1);
+  color = input<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
 
-  exampleClass = computed(() => this.colors() + ' ' + (this.sharp() ? 'sharp' : ''));
-
-  startOfWeekComputed = computed(() => parseInt(this.startOfWeek()));
+  exampleClass = computed(() => this.color() + ' ' + (this.sharp() ? 'sharp' : ''));
 }

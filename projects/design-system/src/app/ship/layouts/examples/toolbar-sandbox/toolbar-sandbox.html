@@ -1,0 +1,60 @@
+<sh-lo-toolbar [variant]="variant()">
+  <sh-checkbox />
+  <sh-menu>
+    <button shButton>
+      <sh-icon>caret-down</sh-icon>
+    </button>
+    <ng-container menu>
+      <button>All</button>
+      <button>None</button>
+      <button>Read</button>
+      <button>Unread</button>
+    </ng-container>
+  </sh-menu>
+
+  <sh-divider />
+
+  <button shButton shTooltip="Archive">
+    <sh-icon>archive</sh-icon>
+  </button>
+  <button shButton shTooltip="Report spam">
+    <sh-icon>warning-circle</sh-icon>
+  </button>
+  <button shButton shTooltip="Delete">
+    <sh-icon>trash</sh-icon>
+  </button>
+
+  <sh-divider />
+
+  <button shButton shTooltip="Mark as unread">
+    <sh-icon>envelope-simple</sh-icon>
+  </button>
+  <button shButton shTooltip="Snooze">
+    <sh-icon>clock</sh-icon>
+  </button>
+  <button shButton shTooltip="Add to tasks">
+    <sh-icon>check-circle</sh-icon>
+  </button>
+
+  <sh-divider />
+
+  <button shButton shTooltip="Move to">
+    <sh-icon>folder-simple</sh-icon>
+  </button>
+  <button shButton shTooltip="Labels">
+    <sh-icon>tag</sh-icon>
+  </button>
+  <button shButton shTooltip="More">
+    <sh-icon>dots-three-vertical</sh-icon>
+  </button>
+
+  <ng-container end>
+    <span>1–50 of 15,953</span>
+    <button shButton shTooltip="Newer">
+      <sh-icon>caret-left</sh-icon>
+    </button>
+    <button shButton shTooltip="Older">
+      <sh-icon>caret-right</sh-icon>
+    </button>
+  </ng-container>
+</sh-lo-toolbar>
