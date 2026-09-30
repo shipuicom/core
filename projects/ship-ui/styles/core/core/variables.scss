@@ -10,6 +10,8 @@
   // Base vertical / horizontal padding: the density of every component.
   --pad-y: #{p2r(8)};
   --pad-x: #{p2r(12)};
+  // The family every text token reads; override it (or set it through the docs theme editor) to swap fonts.
+  --font-family: 'Inter Tight', sans-serif;
 }
 
 html {
@@ -31,29 +33,29 @@ html body {
   // --base-1..12, --<palette>-1..12, -g2/-g3 and -c8 for every palette (see styles/palettes.scss).
   @include pal.emit-all();
 
-  --display-10: 600 #{p2r(80)} / normal Inter Tight, sans-serif;
-  --display-20: 600 #{p2r(72)} / normal Inter Tight, sans-serif;
-  --display-30: 600 #{p2r(64)} / normal Inter Tight, sans-serif;
-  --display-40: 600 #{p2r(56)} / normal Inter Tight, sans-serif;
-  --display-50: 600 #{p2r(48)} / normal Inter Tight, sans-serif;
+  --display-10: 600 #{p2r(80)} / normal var(--font-family);
+  --display-20: 600 #{p2r(72)} / normal var(--font-family);
+  --display-30: 600 #{p2r(64)} / normal var(--font-family);
+  --display-40: 600 #{p2r(56)} / normal var(--font-family);
+  --display-50: 600 #{p2r(48)} / normal var(--font-family);
 
-  --title-10: 500 #{p2r(40)} / normal Inter Tight, sans-serif;
-  --title-20: 500 #{p2r(32)} / normal Inter Tight, sans-serif;
-  --title-30: 500 #{p2r(24)} / normal Inter Tight, sans-serif;
+  --title-10: 500 #{p2r(40)} / normal var(--font-family);
+  --title-20: 500 #{p2r(32)} / normal var(--font-family);
+  --title-30: 500 #{p2r(24)} / normal var(--font-family);
 
-  --title-10B: 600 #{p2r(40)} / normal Inter Tight, sans-serif;
-  --title-20B: 600 #{p2r(32)} / normal Inter Tight, sans-serif;
-  --title-30B: 600 #{p2r(24)} / normal Inter Tight, sans-serif;
+  --title-10B: 600 #{p2r(40)} / normal var(--font-family);
+  --title-20B: 600 #{p2r(32)} / normal var(--font-family);
+  --title-30B: 600 #{p2r(24)} / normal var(--font-family);
 
-  --paragraph-10: 500 #{p2r(18)} / normal Inter Tight, sans-serif;
-  --paragraph-20: 500 #{p2r(16)} / normal Inter Tight, sans-serif;
-  --paragraph-30: 500 #{p2r(14)} / normal Inter Tight, sans-serif;
-  --paragraph-40: 500 #{p2r(12)} / normal Inter Tight, sans-serif;
+  --paragraph-10: 500 #{p2r(18)} / normal var(--font-family);
+  --paragraph-20: 500 #{p2r(16)} / normal var(--font-family);
+  --paragraph-30: 500 #{p2r(14)} / normal var(--font-family);
+  --paragraph-40: 500 #{p2r(12)} / normal var(--font-family);
 
-  --paragraph-10B: 600 #{p2r(18)} / normal Inter Tight, sans-serif;
-  --paragraph-20B: 600 #{p2r(16)} / normal Inter Tight, sans-serif;
-  --paragraph-30B: 600 #{p2r(14)} / #{p2r(18)} Inter Tight, sans-serif;
-  --paragraph-40B: 600 #{p2r(12)} / normal Inter Tight, sans-serif;
+  --paragraph-10B: 600 #{p2r(18)} / normal var(--font-family);
+  --paragraph-20B: 600 #{p2r(16)} / normal var(--font-family);
+  --paragraph-30B: 600 #{p2r(14)} / #{p2r(18)} var(--font-family);
+  --paragraph-40B: 600 #{p2r(12)} / normal var(--font-family);
 
   --code-10: 500 #{p2r(16)} / normal monospace;
   --code-20: 500 #{p2r(14)} / normal monospace;

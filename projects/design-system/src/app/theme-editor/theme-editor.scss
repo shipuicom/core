@@ -76,3 +76,19 @@
     min-width: p2r(200);
   }
 }
+
+.font-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+
+  app-font-picker {
+    width: p2r(320);
+  }
+}
+
+.font-sample {
+  margin: 0 0 var(--space-2);
+  font: var(--title-30);
+}

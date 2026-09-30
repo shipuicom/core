@@ -65,6 +65,8 @@ export interface ShipConfig {
   paddingY?: number;
   /** Base horizontal padding in px (`--pad-x`, default 12). */
   paddingX?: number;
+  /** Google Fonts family for `--font-family` (loaded on demand by the host app); unset keeps Inter Tight. */
+  fontFamily?: string;
   button?: ShipComponentConfig;
   chip?: ShipChipConfig;
   alert?: ShipComponentConfig;

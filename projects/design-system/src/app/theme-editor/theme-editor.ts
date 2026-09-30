@@ -10,6 +10,7 @@ import { ShipChip } from '@ship-ui/core/ship-chip';
 import { ShipCard } from '@ship-ui/core/ship-card';
 import { ShipList } from '@ship-ui/core/ship-list';
 import { AppConfigService } from '../core/services/app-config.service';
+import { FontPicker, googleFontUrl } from '../core/font-picker/font-picker';
 
 const DEFAULT_PADDING = { y: 8, x: 12 };
 
@@ -26,7 +27,7 @@ const STARTING_COLOR = 'mono';
 
 @Component({
   selector: 'app-theme-editor',
-  imports: [FormsModule, ShipColorPicker, ShipMenu, ShipRadio, ShipButton, ShipRangeSlider, ShipChip, ShipCard, ShipList],
+  imports: [FormsModule, ShipColorPicker, ShipMenu, ShipRadio, ShipButton, ShipRangeSlider, ShipChip, ShipCard, ShipList, FontPicker],
   templateUrl: './theme-editor.html',
   styleUrl: './theme-editor.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,6 +49,9 @@ export default class ThemeEditor {
   setPaddingX(px: number) {
     this.#config.updateConfig({ paddingX: px === DEFAULT_PADDING.x ? undefined : px });
   }
+
+  /** The chosen Google family, or '' for the built-in Inter Tight. */
+  fontFamily = computed(() => this.#config.config.fontFamily ?? '');
 
   resetPadding() {
     this.#config.updateConfig({ paddingY: undefined, paddingX: undefined });
@@ -173,8 +177,12 @@ export default class ThemeEditor {
       ...(this.paddingX() !== DEFAULT_PADDING.x ? [`\n  --pad-x: ${this.paddingX()}px;`] : []),
     ].join('');
 
-    return Object.entries(mixedScale).reduce((acc, [key, value]) => {
+    const family = this.fontFamily();
+    const font = family ? `\n  --font-family: '${family}', sans-serif;` : '';
+    const importLine = family ? `@import url('${googleFontUrl(family)}');\n` : '';
+
+    return importLine + Object.entries(mixedScale).reduce((acc, [key, value]) => {
       return `${acc}\n  ${key}: ${value};`;
-    }, '') + padding;
+    }, '') + padding + font;
   });
 }

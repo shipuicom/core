@@ -39,6 +39,10 @@ checks it). A migration script (`ship-migrate`) that rewrites the renames below 
   `$shipLayoutPage` … `$shipLayoutToolbar`
 - `$shipSortable` now controls a global include (the `[shSortable]` directive styles no longer ride along with `sh-tree` / `sh-list`)
 
+**Font token (additive)**
+- The type scale (`--display-*`, `--title-*`, `--paragraph-*`) now reads `--font-family` (`'Inter Tight', sans-serif` on `:root`).
+  Override it to change the app font; the docs theme editor offers a Google Fonts picker that sets it.
+
 **Padding tokens**
 - Global density: `--pad-y` / `--pad-x` (8px / 12px) with tiers `--pad-{y,x}-{xs,s,m,l,xl,2xl,3xl,4xl}` derived by multiplier.
   Every padded component reads a tier through its own `--<abbr>-py` / `--<abbr>-px`; override the base pair for a denser

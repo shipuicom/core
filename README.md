@@ -36,7 +36,7 @@ emitted by the global stylesheet, so you can keep only what you use, switch a co
 );
 ```
 
-Density is two custom properties: `--pad-y` and `--pad-x` (defaults 8px / 12px). Every component's padding is a tier of
+The font is one custom property, `--font-family` (`'Inter Tight', sans-serif`), read by every text token. Density is two custom properties: `--pad-y` and `--pad-x` (defaults 8px / 12px). Every component's padding is a tier of
 that pair (`--pad-y-s`, `--pad-x-xl`, …) read through its own `--<component>-py` / `--<component>-px` tokens, so
 `:root { --pad-y: 6px; --pad-x: 10px; }` tightens the whole app and `sh-card { --card-px: var(--pad-x-l); }` one component.
 

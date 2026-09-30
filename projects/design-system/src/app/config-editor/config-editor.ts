@@ -14,6 +14,7 @@ import { ShipToggle } from '@ship-ui/core/ship-toggle';
 import { ShipColorPickerInput } from '@ship-ui/core/ship-color-picker';
 import { ShipCard } from '@ship-ui/core/ship-card';
 import { defaultThemeColors } from '@ship-ui/core';
+import { FontPicker } from '../core/font-picker/font-picker';
 import { AppConfigService } from '../core/services/app-config.service';
 
 export interface EditorComponentControl {
@@ -90,8 +91,7 @@ const colorOptions = [
 @Component({
   selector: 'app-config-editor',
   standalone: true,
-  imports: [
-    FormsModule,
+  imports: [FormsModule,
     ShipFormField,
     ShipSelect,
     ShipToggle,
@@ -101,8 +101,7 @@ const colorOptions = [
     ShipAccordion,
     ShipRangeSlider,
     ShipColorPickerInput,
-    ShipCard,
-  ],
+    ShipCard, FontPicker],
   templateUrl: './config-editor.html',
   styleUrl: './config-editor.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -477,7 +476,7 @@ export class ConfigEditor {
   }
 
   isGlobalSettingsAltered = computed(() => {
-    const { fontSize, borderRadius, borderWidth, paddingY, paddingX, distribution, colors } = this.config;
+    const { fontSize, borderRadius, borderWidth, paddingY, paddingX, fontFamily, distribution, colors } = this.config;
     
     const hasCustomDistribution = distribution !== undefined && 
       Object.keys(distribution).length > 0 && 
@@ -494,6 +493,7 @@ export class ConfigEditor {
            (borderWidth !== undefined && Number(borderWidth) !== 1) || 
            (paddingY !== undefined && Number(paddingY) !== 8) || 
            (paddingX !== undefined && Number(paddingX) !== 12) || 
+           !!fontFamily || 
            hasCustomDistribution || 
            hasCustomColors;
   });
@@ -507,7 +507,7 @@ export class ConfigEditor {
   });
 
   resetGlobalSettings() {
-    this.configService.updateConfig({ fontSize: undefined, borderRadius: undefined, borderWidth: undefined, paddingY: undefined, paddingX: undefined, distribution: undefined, colors: undefined });
+    this.configService.updateConfig({ fontSize: undefined, borderRadius: undefined, borderWidth: undefined, paddingY: undefined, paddingX: undefined, fontFamily: undefined, distribution: undefined, colors: undefined });
   }
 
   resetComponentsConfig() {

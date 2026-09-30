@@ -33,6 +33,8 @@ export class AppConfigService {
       this.#document.documentElement.style.removeProperty('--border-width');
     }
 
+    this.applyFontFamily(config.fontFamily);
+
     for (const [key, prop] of [['paddingY', '--pad-y'], ['paddingX', '--pad-x']] as const) {
       const value = config[key];
       if (value !== undefined) {
@@ -58,6 +60,27 @@ export class AppConfigService {
       }
     });
   });
+
+  /** Loads the Google family (weights 500/600, the ones the type scale uses) and points --font-family at it. */
+  private applyFontFamily(family: string | undefined) {
+    const root = this.#document.documentElement;
+    const existing = this.#document.head.querySelector<HTMLLinkElement>('link[data-ship-font]');
+    if (!family) {
+      root.style.removeProperty('--font-family');
+      existing?.remove();
+      return;
+    }
+    const href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family).replace(/%20/g, '+')}:wght@500;600&display=swap`;
+    if (existing?.href !== href) {
+      existing?.remove();
+      const link = this.#document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      link.dataset['shipFont'] = family;
+      this.#document.head.appendChild(link);
+    }
+    root.style.setProperty('--font-family', `'${family}', sans-serif`);
+  }
 
   private clearThemeScale(colorName: string) {
     for (let i = 1; i <= 12; i++) {

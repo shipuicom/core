@@ -1,0 +1,19 @@
+@use 'helpers' as *;
+
+:host {
+  display: block;
+}
+
+.font-option {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: p2r(15);
+}
+
+.font-category {
+  font: var(--paragraph-40);
+  color: var(--base-8);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}

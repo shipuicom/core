@@ -93,6 +93,8 @@
             (ngModelChange)="updateGlobalPaddingX($event)" />
         </sh-range-slider>
 
+        <app-font-picker />
+
         <div class="theme-colors-section">
           <label class="section-label">Theme Colors</label>
           @for (color of ['primary', 'accent', 'warn', 'error', 'success', 'base']; track color) {
