@@ -94,23 +94,9 @@ $shipChip: true !default;
     }
 
     // Selected state. The tokens default per variant and colour; override --chip-sel-* to restyle.
+    // Selected colours come from the chip skin (styles/skins/_chip.scss); only the dynamic and no-bg
+    // treatments, which do not depend on a variant, stay here.
     &.selected {
-      --chip-sel-bg: var(--base-12);
-      --chip-sel-c: var(--base-1);
-      --chip-sel-bc: var(--chip-sel-bg);
-      --chip-sel-ring: var(--base-8);
-
-      --sheet-bg: var(--chip-sel-bg);
-      --sheet-c: var(--chip-sel-c);
-      --sheet-bc: var(--chip-sel-bc);
-      --sheet-ic: var(--chip-sel-c);
-      --chip-ic: var(--chip-sel-c);
-
-      div {
-        color: var(--chip-sel-c);
-      }
-
-
       // Dynamic chips carry an arbitrary --chip-c: deepen the tint and draw the colour as an inset ring.
       &.dynamic {
         --chip-sel-bg: rgb(from var(--chip-c) r g b / 0.3);

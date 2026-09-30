@@ -1,5 +1,58 @@
 @use './util' as *;
 
+// Selection tokens. The sheet skin sets --sheet-* under `.sh-sheet.<variant>[.<colour>]`, so the selected state is
+// emitted once per variant with the variant class in the selector: that is what lets the selection win the cascade.
+@mixin selected($colors) {
+  --chip-sel-bg: var(--base-12);
+  --chip-sel-c: var(--base-1);
+  --chip-sel-bc: var(--chip-sel-bg);
+  --chip-sel-ring: var(--base-8);
+
+  --sheet-bg: var(--chip-sel-bg);
+  --sheet-c: var(--chip-sel-c);
+  --sheet-bc: var(--chip-sel-bc);
+  --sheet-ic: var(--chip-sel-c);
+  --chip-ic: var(--chip-sel-c);
+
+  div {
+    color: var(--chip-sel-c);
+  }
+
+  // Repeated per colour so `sh-chip.<variant>.selected.<colour>` outranks the sheet's `.sh-sheet.<variant>.<colour>`.
+  @each $c in $colors {
+    &.#{$c} {
+      --chip-sel-bg: var(--#{$c}-8);
+      --chip-sel-c: var(--#{$c}-c8);
+      --chip-sel-ring: var(--#{$c}-8);
+
+      --sheet-bg: var(--chip-sel-bg);
+      --sheet-c: var(--chip-sel-c);
+      --sheet-bc: var(--chip-sel-bc);
+      --sheet-ic: var(--chip-sel-c);
+      --chip-ic: var(--chip-sel-c);
+    }
+  }
+}
+
+// Filled variants are already solid: a ring marks the selection instead of a fill change.
+@mixin selected-ring() {
+  --chip-sel-bg: var(--sheet-bg);
+  --chip-sel-c: var(--sheet-c);
+  --chip-sel-bc: var(--sheet-bc);
+
+  --sheet-bg: initial;
+  --sheet-c: initial;
+  --sheet-bc: initial;
+  --sheet-ic: initial;
+  --chip-ic: initial;
+
+  div {
+    color: var(--chip-c);
+  }
+
+  box-shadow: 0 0 0 2px var(--base-1), 0 0 0 4px var(--chip-sel-ring);
+}
+
 @mixin skin($colors, $variants) {
   sh-chip {
     // Without a background the simple variant also drops its hairline.
@@ -18,34 +71,22 @@
     }
 
     &.selected {
-      @each $c in $colors {
-        &.#{$c} {
-          --chip-sel-bg: var(--#{$c}-8);
-          --chip-sel-c: var(--#{$c}-c8);
-          --chip-sel-ring: var(--#{$c}-8);
+      @include selected($colors);
+    }
+
+    @each $v in (simple, outlined) {
+      @if has($variants, $v) {
+        &.#{$v}.selected {
+          @include selected($colors);
         }
       }
+    }
 
-      // Filled variants are already solid: a ring marks the selection instead of a fill change.
-      @each $v in (flat, raised) {
-        @if has($variants, $v) {
-          &.#{$v} {
-            --chip-sel-bg: var(--sheet-bg);
-            --chip-sel-c: var(--sheet-c);
-            --chip-sel-bc: var(--sheet-bc);
-
-            --sheet-bg: initial;
-            --sheet-c: initial;
-            --sheet-bc: initial;
-            --sheet-ic: initial;
-            --chip-ic: initial;
-
-            div {
-              color: var(--chip-c);
-            }
-
-            box-shadow: 0 0 0 2px var(--base-1), 0 0 0 4px var(--chip-sel-ring);
-          }
+    @each $v in (flat, raised) {
+      @if has($variants, $v) {
+        &.#{$v}.selected {
+          @include selected($colors);
+          @include selected-ring();
         }
       }
     }
