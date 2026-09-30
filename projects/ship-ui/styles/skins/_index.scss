@@ -30,6 +30,8 @@
 @use './button';
 @use './list-item-swipe' as listitemswipe;
 @use './list' as listskin;
+@use './chat';
+@use './layout';
 
 /** Colour classes every skin emits by default. */
 $colors: (primary, accent, warn, error, success) !default;
@@ -138,4 +140,32 @@ $overrides: () !default;
 
 @if enabled(list) {
   @include listskin.skin(colors-for(list), variants-for(list));
+}
+
+@if enabled(chat) {
+  @include chat.skin(colors-for(chat), variants-for(chat));
+}
+
+@if enabled(layoutStat) {
+  @include layout.stat(colors-for(layoutStat), variants-for(layoutStat));
+}
+
+@if enabled(layoutStatTrend) {
+  @include layout.stat-trend(colors-for(layoutStatTrend), variants-for(layoutStatTrend));
+}
+
+@if enabled(layoutStatGoal) {
+  @include layout.stat-goal(colors-for(layoutStatGoal), variants-for(layoutStatGoal));
+}
+
+@if enabled(layoutStatRing) {
+  @include layout.stat-ring(colors-for(layoutStatRing), variants-for(layoutStatRing));
+}
+
+@if enabled(layoutRanking) {
+  @include layout.ranking(colors-for(layoutRanking), variants-for(layoutRanking));
+}
+
+@if enabled(layoutAchievement) {
+  @include layout.achievement(colors-for(layoutAchievement), variants-for(layoutAchievement));
 }

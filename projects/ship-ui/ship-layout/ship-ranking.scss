@@ -15,12 +15,6 @@ $shipLayoutRanking: true !default;
     gap: var(--ranking-gap);
     min-width: 0;
 
-    @each $c in primary, accent, warn, error, success {
-      &.#{$c} {
-        --ranking-c: var(--#{$c}-8);
-      }
-    }
-
     > .head {
       display: flex;
       align-items: center;

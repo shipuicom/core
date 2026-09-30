@@ -149,13 +149,6 @@ $shipChat: true !default;
       }
     }
 
-    @each $c in primary, accent, warn, error, success {
-      &.#{$c} {
-        --chat-bg: var(--#{$c}-8);
-        --chat-c: var(--#{$c}-c8);
-      }
-    }
-
     // Typing indicator.
     &.typing > .body > .bubble {
       padding-block: p2r(12);
@@ -198,14 +191,6 @@ $shipChat: true !default;
       &.outgoing {
         --chat-bg: var(--base-3);
         --chat-c: var(--base-12);
-      }
-
-      @each $c in primary, accent, warn, error, success {
-        &.#{$c} {
-          --chat-bg: var(--#{$c}-2);
-          --chat-bc: var(--#{$c}-6);
-          --chat-c: var(--base-12);
-        }
       }
     }
 
@@ -252,18 +237,6 @@ $shipChat: true !default;
       &.continued > .avatar {
         display: block;
         width: var(--chat-avatar-si);
-      }
-
-      @each $c in primary, accent, warn, error, success {
-        &.#{$c} {
-          --chat-bg: transparent;
-          --chat-c: var(--base-12);
-
-          > .body > .meta > b,
-          > .body > .meta > [name] {
-            color: var(--#{$c}-8);
-          }
-        }
       }
     }
   }

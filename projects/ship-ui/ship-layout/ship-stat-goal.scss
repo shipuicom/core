@@ -21,12 +21,6 @@ $shipLayoutStatGoal: true !default;
     border-radius: var(--goal-s);
     min-width: 0;
 
-    @each $c in primary, accent, warn, error, success {
-      &.#{$c} {
-        --goal-c: var(--#{$c}-8);
-      }
-    }
-
     > .head {
       display: flex;
       align-items: center;

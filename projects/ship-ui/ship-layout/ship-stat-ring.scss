@@ -24,12 +24,6 @@ $shipLayoutStatRing: true !default;
     border-radius: var(--ring-s);
     min-width: 0;
 
-    @each $c in primary, accent, warn, error, success {
-      &.#{$c} {
-        --ring-c: var(--#{$c}-8);
-      }
-    }
-
     > .ring {
       flex: 0 0 auto;
       position: relative;

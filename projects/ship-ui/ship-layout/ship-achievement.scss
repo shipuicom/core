@@ -25,12 +25,6 @@ $shipLayoutAchievement: true !default;
     border-radius: var(--ach-s);
     min-width: 0;
 
-    @each $c in primary, accent, warn, error, success {
-      &.#{$c} {
-        --ach-c: var(--#{$c}-8);
-      }
-    }
-
     // Any color: the consumer sets --achievement-c (e.g. from a color picker).
     &.dynamic {
       --ach-c: var(--achievement-c, var(--primary-8));

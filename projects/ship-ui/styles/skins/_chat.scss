@@ -1,0 +1,37 @@
+@mixin skin($colors, $variants) {
+  sh-chat {
+    // Filled bubble.
+    @each $c in $colors {
+      &.#{$c} {
+        --chat-bg: var(--#{$c}-8);
+        --chat-c: var(--#{$c}-c8);
+      }
+    }
+
+    // Outlined bubble.
+    &.type-b {
+      @each $c in $colors {
+        &.#{$c} {
+          --chat-bg: var(--#{$c}-2);
+          --chat-bc: var(--#{$c}-6);
+          --chat-c: var(--base-12);
+        }
+      }
+    }
+
+    // Flat rows: only the sender name carries the colour.
+    &.type-c {
+      @each $c in $colors {
+        &.#{$c} {
+          --chat-bg: transparent;
+          --chat-c: var(--base-12);
+
+          > .body > .meta > b,
+          > .body > .meta > [name] {
+            color: var(--#{$c}-8);
+          }
+        }
+      }
+    }
+  }
+}

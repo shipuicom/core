@@ -10,6 +10,7 @@
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join, relative } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import ts from 'typescript';
 
 const ROOT = join(import.meta.dir, '..');
@@ -253,6 +254,17 @@ for (const pkg of packages) {
   for (const f of files) {
     if (f.endsWith('.scss')) lintScss(pkg, f, flagName);
     else if (f.endsWith('.ts')) lintTs(pkg, f);
+  }
+}
+
+// ---------------------------------------------------------------------------------------------
+// the global stylesheet must compile: catches a skin registered without its @use, a bad flag map, etc.
+{
+  const entry = join(STYLES, 'index.scss');
+  const r = spawnSync(join(ROOT, 'node_modules/.bin/sass'), ['--load-path=' + STYLES, '--no-source-map', '--quiet', entry], { encoding: 'utf8' });
+  if (r.status !== 0) {
+    const msg = (r.stderr || r.stdout || '').split('\n').find((l) => l.trim()) ?? 'sass failed';
+    report('styles', 'stylesheet-compile', 'error', entry, msg.trim());
   }
 }
 

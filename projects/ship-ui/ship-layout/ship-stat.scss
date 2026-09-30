@@ -133,12 +133,6 @@ $shipLayoutStat: true !default;
       padding-bottom: 0;
       background-image: radial-gradient(130% 100% at 0% 0%, rgb(from var(--stat-c) r g b / 0.2), transparent 65%);
 
-      @each $c in primary, accent, warn, error, success {
-        &.#{$c} {
-          --stat-c: var(--#{$c}-8);
-        }
-      }
-
       > .text > .value > h2,
       > .text > .value > h3,
       > .text > .value > [value] {

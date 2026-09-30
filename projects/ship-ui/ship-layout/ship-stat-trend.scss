@@ -27,12 +27,6 @@ $shipLayoutStatTrend: true !default;
     overflow: hidden;
     min-width: 0;
 
-    @each $c in primary, accent, warn, error, success {
-      &.#{$c} {
-        --trend-c: var(--#{$c}-8);
-      }
-    }
-
     > .head {
       grid-area: head;
       display: flex;
