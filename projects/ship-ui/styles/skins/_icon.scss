@@ -1,0 +1,9 @@
+@mixin skin($colors, $variants) {
+  sh-icon {
+    @each $c in $colors {
+      &.#{$c} {
+        --icon-c: var(--#{$c}-8);
+      }
+    }
+  }
+}

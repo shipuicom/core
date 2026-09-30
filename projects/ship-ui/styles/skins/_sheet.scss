@@ -1,12 +1,10 @@
 @use 'sass:list';
 @use '../helpers.scss' as *;
+@use './util' as *;
 
 // The sheet is the shared surface skin. Variants (simple / outlined / flat / raised) x colours set the
 // --sheet-* tokens that button, chip, alert, checkbox, radio, event-card and stepper consume through the
 // sh-sheet (static) or sh-sheet-h (hoverable) host class.
-@function has($list, $item) {
-  @return list.index($list, $item) != null;
-}
 
 @mixin skin($colors, $variants) {
   .sh-sheet-h,

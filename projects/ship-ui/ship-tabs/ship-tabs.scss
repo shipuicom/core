@@ -105,30 +105,5 @@ $shipTabs: true !default;
         transition: all 0.175s ease-out;
       }
     }
-
-    &.primary {
-      --tabs-sel-bg: var(--primary-8);
-      --tabs-c-active: var(--primary-8);
-    }
-
-    &.accent {
-      --tabs-sel-bg: var(--accent-8);
-      --tabs-c-active: var(--accent-8);
-    }
-
-    &.warn {
-      --tabs-sel-bg: var(--warn-8);
-      --tabs-c-active: var(--warn-8);
-    }
-
-    &.error {
-      --tabs-sel-bg: var(--error-8);
-      --tabs-c-active: var(--error-8);
-    }
-
-    &.success {
-      --tabs-sel-bg: var(--success-8);
-      --tabs-c-active: var(--success-8);
-    }
   }
 }

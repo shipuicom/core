@@ -24,31 +24,6 @@ $shipTooltip: true !default;
       pointer-events: none;
     }
 
-    &.primary + ship-tooltip-wrapper {
-      --tt-bg: var(--primary-2);
-      --tt-c: var(--primary-8);
-    }
-
-    &.accent + ship-tooltip-wrapper {
-      --tt-bg: var(--accent-2);
-      --tt-c: var(--accent-8);
-    }
-
-    &.warn + ship-tooltip-wrapper {
-      --tt-bg: var(--warn-2);
-      --tt-c: var(--warn-8);
-    }
-
-    &.error + ship-tooltip-wrapper {
-      --tt-bg: var(--error-2);
-      --tt-c: var(--error-8);
-    }
-
-    &.success + ship-tooltip-wrapper {
-      --tt-bg: var(--success-2);
-      --tt-c: var(--success-8);
-    }
-
     &.active {
       z-index: 1;
 

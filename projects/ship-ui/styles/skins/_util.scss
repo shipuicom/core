@@ -1,0 +1,6 @@
+@use 'sass:list';
+
+/// `true` when `$item` is in `$list`. Skins use it to emit a variant block only when the variant is requested.
+@function has($list, $item) {
+  @return list.index($list, $item) != null;
+}

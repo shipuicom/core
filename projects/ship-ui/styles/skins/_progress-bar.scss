@@ -1,0 +1,50 @@
+@use './util' as *;
+
+@mixin skin($colors, $variants) {
+  sh-progress-bar {
+    @each $c in $colors {
+      &.#{$c} {
+        --pbt-bg: var(--#{$c}-8);
+      }
+    }
+
+    @if has($variants, outlined) {
+      &.outlined {
+        --pb-b: var(--border-10);
+        --pb-bg: var(--base-1);
+
+        &:after {
+          background-color: inherit;
+        }
+      }
+    }
+
+    @if has($variants, flat) {
+      &.flat {
+        --pbt-bg: var(--base-8);
+
+        &:after {
+          background-color: inherit;
+        }
+
+        @each $c in $colors {
+          &.#{$c} {
+            --pbt-bg: var(--#{$c}-8);
+          }
+        }
+      }
+    }
+
+    @if has($variants, raised) {
+      &.raised {
+        --pbt-bg: var(--base-g3);
+
+        @each $c in $colors {
+          &.#{$c} {
+            --pbt-bg: var(--#{$c}-g3);
+          }
+        }
+      }
+    }
+  }
+}

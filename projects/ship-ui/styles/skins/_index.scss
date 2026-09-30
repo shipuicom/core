@@ -11,6 +11,12 @@
 @use 'sass:map';
 @use 'sass:list';
 @use './sheet';
+@use './spinner';
+@use './icon';
+@use './progress-bar' as progressbar;
+@use './tabs';
+@use './tooltip';
+@use './toggle';
 
 /** Colour classes every skin emits by default. */
 $colors: (primary, accent, warn, error, success) !default;
@@ -43,4 +49,28 @@ $overrides: () !default;
 
 @if enabled(sheet) {
   @include sheet.skin(colors-for(sheet), variants-for(sheet));
+}
+
+@if enabled(spinner) {
+  @include spinner.skin(colors-for(spinner), variants-for(spinner));
+}
+
+@if enabled(icon) {
+  @include icon.skin(colors-for(icon), variants-for(icon));
+}
+
+@if enabled(progress-bar) {
+  @include progressbar.skin(colors-for(progress-bar), variants-for(progress-bar));
+}
+
+@if enabled(tabs) {
+  @include tabs.skin(colors-for(tabs), variants-for(tabs));
+}
+
+@if enabled(tooltip) {
+  @include tooltip.skin(colors-for(tooltip), variants-for(tooltip));
+}
+
+@if enabled(toggle) {
+  @include toggle.skin(colors-for(toggle), variants-for(toggle));
 }

@@ -20,26 +20,6 @@ $shipIcon: true !default;
     color: var(--icon-c);
     transition: color 150ms ease-out;
 
-    &.primary {
-      --icon-c: var(--primary-8);
-    }
-
-    &.accent {
-      --icon-c: var(--accent-8);
-    }
-
-    &.warn {
-      --icon-c: var(--warn-8);
-    }
-
-    &.error {
-      --icon-c: var(--error-8);
-    }
-
-    &.success {
-      --icon-c: var(--success-8);
-    }
-
     &.unfocused {
       --icon-c: var(--base-8);
     }
