@@ -3,14 +3,13 @@ import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ShipButtonGroup } from './ship-button-group';
-import { SHIP_CONFIG, ShipColor, ShipButtonGroupVariant, ShipSize } from '@ship-ui/core';
+import { SHIP_CONFIG, ShipButtonGroupVariant, ShipSize } from '@ship-ui/core';
 
 @Component({
   template: `
     <sh-button-group
       [value]="value()"
       (valueChange)="value.set($event)"
-      [color]="color()"
       [variant]="variant()"
       [size]="size()">
       <button value="btn1" id="btn1">Button 1</button>
@@ -23,7 +22,6 @@ import { SHIP_CONFIG, ShipColor, ShipButtonGroupVariant, ShipSize } from '@ship-
 })
 class TestHostComponent {
   value = signal<string | null>('btn1');
-  color = signal<ShipColor | null>(null);
   variant = signal<ShipButtonGroupVariant | null>(null);
   size = signal<ShipSize | null>(null);
 }

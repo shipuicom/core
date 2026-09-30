@@ -122,7 +122,7 @@ function lintScss(pkg: string, file: string, flagName: string) {
   // `// structure-lint: allow <rule>` in the file header disables one rule for the whole file (say why next to it).
   const fileAllow = new Set([...raw.matchAll(/structure-lint:\s*allow\s+([a-z-]+)/g)].map((m) => m[1]!));
   const allowed = (line: number) => ALLOW.test(lines[line - 1] ?? '');
-  // Mixin-only partials (`_name.scss`) carry no rules of their own.
+  // Mixin-only partials (`_name.scss`) need no flag of their own.
   const isPartial = basename(file).startsWith('_');
 
   const stmts = topLevel(scss);
@@ -144,12 +144,13 @@ function lintScss(pkg: string, file: string, flagName: string) {
     }
     if (/^\$[A-Za-z0-9-]+\s*:/.test(s.text)) continue;
     if (/^@if\s+\$ship/.test(s.text)) continue;
-    if (isPartial && /^@(mixin|function)\b/.test(s.text)) continue;
+    // Mixins, functions and placeholders emit nothing until used, so they may sit outside the guard.
+    if (/^(@mixin|@function|%)/.test(s.text)) continue;
     if (allowed(lineOf(scss, s.index))) continue;
     report(pkg, 'guard-leak', 'error', file, `outside the flag guard: ${s.text.split('\n')[0].slice(0, 60)}`, lineOf(scss, s.index));
   }
 
-  for (const m of scss.matchAll(/#[0-9a-fA-F]{3,8}\b|hsla?\(|rgba?\((?!\s*from\b)/g)) {
+  for (const m of scss.matchAll(/#[0-9a-fA-F]{3,8}\b|(?:hsla?|rgba?|oklch|lab|lch)\((?!\s*from\b)/g)) {
     if (fileAllow.has('color-literal')) break;
     const line = lineOf(scss, m.index!);
     if (allowed(line)) continue;

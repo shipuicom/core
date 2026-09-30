@@ -1,5 +1,40 @@
 # Migration Guide
 
+## v0.26.0 — component structure normalisation
+
+Every component's scss now follows [COMPONENT-STRUCTURE.md](./COMPONENT-STRUCTURE.md) (`bun run lint:structure`
+checks it). A migration script (`ship-migrate`) that rewrites the renames below is shipped alongside this release.
+
+**Removed inputs** (they never rendered anything):
+- `color` on `sh-card`, `sh-button-group`, `sh-table`, `sh-toggle-card`
+- `variant` on `sh-tabs`; `sh-accordion`'s `variant` is narrowed to `ShipAccordionVariant` (`'type-b' | ''`)
+
+**Renamed CSS variables** (override sites in your scss):
+| old | new |
+|---|---|
+| `--breadcrumbs-*` | `--crumb-*` |
+| `--box-bc`, `--box-bw` (sh-checkbox) | `--cb-bc`, `--cb-bw` |
+| `--miw` (sh-select) | `--select-miw` |
+| `--caret-color`, `--caret-size` (sh-table) | `--table-caret-c`, `--table-caret-si` |
+| `--stepper-progress` | `--step-progress` |
+| `--overlay` (sh-popover sheet backdrop) | `--po-overlay` |
+
+**Renamed classes** (old names keep working until v0.27):
+- `.warning` → `.warn` on `sh-form-field`, `sh-tree` badges, `sh-list-item-swipe` actions
+- `.danger` → `.error` on `sh-list-item-swipe` actions and `sh-editor` toolbar actions
+
+**Sass flags** (only matter if you `@use '@ship-ui/core/styles' with (...)`):
+- `$shipPage`, `$shipSection`, `$shipSetting`, `$shipEmptyState`, `$shipStat`, `$shipStatTrend`, `$shipStatGoal`, `$shipStatRing`,
+  `$shipRanking`, `$shipAchievement`, `$shipInbox`, `$shipTableView`, `$shipDetails`, `$shipTimeline`, `$shipToolbar` are now
+  `$shipLayoutPage` … `$shipLayoutToolbar`
+- `$shipSortable` now controls a global include (the `[shSortable]` directive styles no longer ride along with `sh-tree` / `sh-list`)
+
+**Other**
+- `sh-avatar` name hues are derived from the primary palette (rotated in 45° steps) instead of fixed oklch pairs.
+- The `.status-badge` / `.delete-btn` demo styles left `sh-tree`; copy them from the docs' template-tree example if you relied on them.
+- Contrast text on coloured surfaces (toggle knob, radio dot, range-slider thumb value, datepicker selection) now reads `--<color>-c8`
+  instead of `#fff`, so custom palettes with light `-8` steps get dark text automatically.
+
 > [!IMPORTANT]
 > **v0.25.0**: the spreadsheet moved — `@ship-ui/core/ship-sheet` is now `@ship-ui/core/ship-spreadsheet`, `ShipSheetView` is `ShipSpreadsheet` (`<sh-spreadsheet>`), and `ShipSheetBlockBehavior` is `ShipSpreadsheetBlockBehavior`. Angular `>= 20` remains the supported floor.
 

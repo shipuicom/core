@@ -20,7 +20,7 @@ import {
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { observeChildren, ShipColor, shipComponentClasses, ShipTableVariant } from '@ship-ui/core';
+import { observeChildren, shipComponentClasses, ShipTableVariant } from '@ship-ui/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { ShipChip } from '@ship-ui/core/ship-chip';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
@@ -742,8 +742,6 @@ export class ShipTable {
   /** The active sort as `{ key, direction }`, derived from `sortByColumn`. */
   sortState = computed(() => parseSortByColumn(this.sortByColumn()));
 
-  /** Color theme applied to the table. */
-  color = input<ShipColor | null>(null);
   /** Visual variant of the table. */
   variant = input<ShipTableVariant | null>(null);
 
@@ -753,7 +751,6 @@ export class ShipTable {
   ariaLabelledby = input<string | null>(null, { alias: 'aria-labelledby' });
 
   hostClasses = shipComponentClasses('table', {
-    color: this.color,
     variant: this.variant,
   });
 

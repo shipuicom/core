@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
 import { shipComponentClasses } from '@ship-ui/core';
-import { ShipButtonGroupVariant, ShipColor, ShipSize } from '@ship-ui/core';
+import { ShipButtonGroupVariant, ShipSize } from '@ship-ui/core';
 import { ShipSelectionGroup } from '@ship-ui/core';
 
 @Component({
@@ -20,8 +20,6 @@ import { ShipSelectionGroup } from '@ship-ui/core';
 export class ShipButtonGroup extends ShipSelectionGroup<string> {
   id = '--' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 12);
 
-  /** Semantic color scale (`primary`, `accent`, `warn`, `error`, `success`). */
-  color = input<ShipColor | null>(null);
   /** Visual variant of the button group. */
   variant = input<ShipButtonGroupVariant | null>(null);
   /** Size preset. */
@@ -32,7 +30,6 @@ export class ShipButtonGroup extends ShipSelectionGroup<string> {
   }
 
   hostClasses = shipComponentClasses('buttonGroup', {
-    color: this.color,
     variant: this.variant,
     size: this.size,
   });

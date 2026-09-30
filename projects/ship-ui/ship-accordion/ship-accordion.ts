@@ -8,7 +8,7 @@ import {
   model,
   ViewEncapsulation,
 } from '@angular/core';
-import { contentProjectionSignal, shipComponentClasses, ShipVariant } from '@ship-ui/core';
+import { contentProjectionSignal, ShipAccordionVariant, shipComponentClasses } from '@ship-ui/core';
 
 @Component({
   selector: 'sh-accordion',
@@ -32,8 +32,8 @@ export class ShipAccordion {
   value = model<string | null>(null);
   /** Allow multiple items to be open at once instead of exclusive open. */
   allowMultiple = input<boolean>(false);
-  /** Visual variant (`simple`, `outlined`, `flat`, `raised`, `type-a`–`type-d`). */
-  variant = input<ShipVariant | null>(null);
+  /** Visual variant (`type-b`). */
+  variant = input<ShipAccordionVariant | null>(null);
   /** Size preset. */
   size = input<string | null>(null);
 

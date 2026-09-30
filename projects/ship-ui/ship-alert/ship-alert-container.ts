@@ -4,7 +4,8 @@ import { ShipAlert } from './ship-alert';
 import { ShipAlertService } from './ship-alert.service';
 
 @Component({
-  selector: 'ship-alert-container',
+  // `ship-alert-container` stays as an alias until v0.27.
+  selector: 'sh-alert-container, ship-alert-container',
   styleUrl: './ship-alert-container.scss',
   encapsulation: ViewEncapsulation.None,
   imports: [ShipAlert, ShipIcon],

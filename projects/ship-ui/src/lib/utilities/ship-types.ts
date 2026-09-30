@@ -16,6 +16,9 @@ export type ShipSheetVariant = (typeof __SHIP_SHEET_VARIANTS)[number];
 export const __SHIP_TYPE_VARIANTS = ['type-a', 'type-b', 'type-c', 'type-d', ''] as const;
 export type ShipTypeVariant = (typeof __SHIP_TYPE_VARIANTS)[number];
 
+export const __SHIP_ACCORDION_VARIANTS = ['type-b', ''] as const;
+export type ShipAccordionVariant = (typeof __SHIP_ACCORDION_VARIANTS)[number];
+
 export const __SHIP_TABLE_VARIANTS = ['type-a', 'type-b', ''] as const;
 export type ShipTableVariant = (typeof __SHIP_TABLE_VARIANTS)[number];
 
