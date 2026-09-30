@@ -6,26 +6,18 @@
  *   ship-migrate --src ./src --dry-run  # print only
  *   ship-migrate --src ./src --to 0.26  # a specific release (default: all known, in order)
  *
- * Rules live in ./migrations/<version>.json so later releases append a file instead of forking this script.
+ * Rules live in ./migrations/<version>.ts so later releases append a file instead of forking this script.
  * Anything the script cannot decide (an ambiguous class name, a removed input inside a bound expression)
  * is reported as a warning with file:line rather than rewritten.
  */
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { extname, join, relative, resolve } from 'node:path';
-import rules026 from './migrations/0.26.json' with { type: 'json' };
+import rules026 from './migrations/0.26';
+import type { MigrationRules } from './migrations/types';
 
-export interface MigrationRules {
-  version: string;
-  notes?: string;
-  cssVarPrefixes?: Array<{ from: string; to: string }>;
-  cssVars?: Array<{ from: string; to: string; requires?: string }>;
-  classes?: Array<{ from: string; to: string; on: string[] }>;
-  selectors?: Array<{ from: string; to: string }>;
-  removedInputs?: Array<{ tag: string; input: string }>;
-  sassFlags?: Array<{ from: string; to: string }>;
-}
-
-export const MIGRATIONS: MigrationRules[] = [rules026 as MigrationRules];
+export type { MigrationRules };
+/** One entry per release, oldest first; a new release adds ./migrations/<version>.ts here. */
+export const MIGRATIONS: MigrationRules[] = [rules026];
 
 export interface Change {
   line: number;
