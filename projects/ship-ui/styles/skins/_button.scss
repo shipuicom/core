@@ -1,0 +1,14 @@
+@use './util' as *;
+
+// The button surface comes from the sheet; filled variants get a stronger press overlay.
+@mixin skin($colors, $variants) {
+  [shButton] {
+    @each $v in (raised, flat) {
+      @if has($variants, $v) {
+        &.#{$v} {
+          --btn-a-opacity: 0.1;
+        }
+      }
+    }
+  }
+}

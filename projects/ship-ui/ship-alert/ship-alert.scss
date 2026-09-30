@@ -26,21 +26,6 @@ $shipAlert: true !default;
     transform: translateY(0);
     box-shadow: var(--alert-bs);
 
-    &.simple {
-      .content > * {
-        color: var(--sheet-c);
-        opacity: 0.7;
-      }
-    }
-
-    &.flat,
-    &.raised {
-      .content > * {
-        color: var(--sheet-c);
-        opacity: 0.8;
-      }
-    }
-
     .alert {
       display: grid;
       grid-template-columns: auto 1fr 1fr;

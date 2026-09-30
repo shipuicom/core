@@ -41,23 +41,6 @@ $shipVideo: true !default;
       --vid-br: 0;
     }
 
-    &.accent {
-      --vid-accent: var(--accent-8);
-      --vid-focus: var(--accent-8);
-    }
-    &.warn {
-      --vid-accent: var(--warn-8);
-      --vid-focus: var(--warn-8);
-    }
-    &.error {
-      --vid-accent: var(--error-8);
-      --vid-focus: var(--error-8);
-    }
-    &.success {
-      --vid-accent: var(--success-8);
-      --vid-focus: var(--success-8);
-    }
-
     &:focus-visible {
       box-shadow: 0 0 0 p2r(2) var(--vid-focus);
     }

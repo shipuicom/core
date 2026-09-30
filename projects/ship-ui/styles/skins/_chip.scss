@@ -1,0 +1,53 @@
+@use './util' as *;
+
+@mixin skin($colors, $variants) {
+  sh-chip {
+    // Without a background the simple variant also drops its hairline.
+    @if has($variants, simple) {
+      &.no-bg.simple {
+        --sheet-bc: transparent;
+        border-color: transparent;
+
+        @each $c in $colors {
+          &.#{$c} {
+            --sheet-bc: transparent;
+            border-color: transparent;
+          }
+        }
+      }
+    }
+
+    &.selected {
+      @each $c in $colors {
+        &.#{$c} {
+          --chip-sel-bg: var(--#{$c}-8);
+          --chip-sel-c: var(--#{$c}-c8);
+          --chip-sel-ring: var(--#{$c}-8);
+        }
+      }
+
+      // Filled variants are already solid: a ring marks the selection instead of a fill change.
+      @each $v in (flat, raised) {
+        @if has($variants, $v) {
+          &.#{$v} {
+            --chip-sel-bg: var(--sheet-bg);
+            --chip-sel-c: var(--sheet-c);
+            --chip-sel-bc: var(--sheet-bc);
+
+            --sheet-bg: initial;
+            --sheet-c: initial;
+            --sheet-bc: initial;
+            --sheet-ic: initial;
+            --chip-ic: initial;
+
+            div {
+              color: var(--chip-c);
+            }
+
+            box-shadow: 0 0 0 2px var(--base-1), 0 0 0 4px var(--chip-sel-ring);
+          }
+        }
+      }
+    }
+  }
+}

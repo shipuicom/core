@@ -41,13 +41,6 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
       --list-active-bs: var(--box-shadow-20);
     }
 
-    &.outlined {
-      --list-active-bg: transparent;
-      --list-active-bs: none;
-      --list-item-b: 1px solid transparent;
-      --list-item-active-b: 1px solid var(--list-accent);
-    }
-
     &.type-b {
       --list-p: #{p2r(0)};
       --list-accent: var(--primary-8);
@@ -290,42 +283,6 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
         background-color: var(--list-active-bg);
         box-shadow: var(--list-active-bs);
         border: var(--list-item-active-b);
-      }
-    }
-
-    &.primary {
-      --list-accent: var(--primary-8);
-    }
-
-    &.accent {
-      --list-accent: var(--accent-8);
-    }
-
-    &.warn {
-      --list-accent: var(--warn-8);
-    }
-
-    &.error {
-      --list-accent: var(--error-8);
-    }
-
-    &.success {
-      --list-accent: var(--success-8);
-    }
-
-    &.primary,
-    &.accent,
-    &.warn,
-    &.error,
-    &.success {
-      #{$item} {
-        &:has(input:checked),
-        &.active,
-        &.selected {
-          sh-icon:first-child {
-            color: var(--list-accent);
-          }
-        }
       }
     }
   }

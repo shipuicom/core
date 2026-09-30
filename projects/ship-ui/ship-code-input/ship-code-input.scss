@@ -32,15 +32,6 @@ $shipCodeInput: true !default;
       --ci-f: var(--paragraph-30B);
     }
 
-    &.error,
-    &.invalid {
-      --ci-bc: var(--error-8);
-    }
-
-    &.success {
-      --ci-bc: var(--success-8);
-    }
-
     > label {
       display: flex;
       align-items: center;

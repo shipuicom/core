@@ -50,11 +50,6 @@ $shipButton: true !default;
       }
     }
 
-    &.raised,
-    &.flat {
-      --btn-a-opacity: 0.1;
-    }
-
     sh-icon {
       rotate: var(--btn-ir);
       transition: rotate 125ms ease-in-out;

@@ -210,26 +210,6 @@ $shipDatepicker: true !default;
       sh-icon {
         color: var(--ff-ic);
         transition: color 125ms linear;
-
-        &.primary {
-          --ff-ic: var(--primary-8);
-        }
-
-        &.accent {
-          --ff-ic: var(--accent-8);
-        }
-
-        &.warn {
-          --ff-ic: var(--warn-8);
-        }
-
-        &.error {
-          --ff-ic: var(--error-8);
-        }
-
-        &.success {
-          --ff-ic: var(--success-8);
-        }
       }
 
       sh-chip sh-icon {
@@ -353,20 +333,6 @@ $shipDatepicker: true !default;
       &:empty {
         opacity: 0;
       }
-    }
-
-    &.error {
-      --ff-ic: var(--error-8);
-    }
-
-    &.warn,
-
-    &.warning { // structure-lint: allow — alias for one minor, use .warn
-      --ff-ic: var(--warn-8);
-    }
-
-    &.success {
-      --ff-ic: var(--success-8);
     }
 
     &.horizontal {

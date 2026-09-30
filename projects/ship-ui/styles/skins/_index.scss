@@ -17,6 +17,19 @@
 @use './tabs';
 @use './tooltip';
 @use './toggle';
+@use './range-slider' as rangeslider;
+@use './radio';
+@use './chip';
+@use './datepicker';
+@use './stepper';
+@use './avatar';
+@use './code-input' as codeinput;
+@use './video';
+@use './form-field' as formfield;
+@use './alert';
+@use './button';
+@use './list-item-swipe' as listitemswipe;
+@use './list' as listskin;
 
 /** Colour classes every skin emits by default. */
 $colors: (primary, accent, warn, error, success) !default;
@@ -73,4 +86,56 @@ $overrides: () !default;
 
 @if enabled(toggle) {
   @include toggle.skin(colors-for(toggle), variants-for(toggle));
+}
+
+@if enabled(range-slider) {
+  @include rangeslider.skin(colors-for(range-slider), variants-for(range-slider));
+}
+
+@if enabled(radio) {
+  @include radio.skin(colors-for(radio), variants-for(radio));
+}
+
+@if enabled(chip) {
+  @include chip.skin(colors-for(chip), variants-for(chip));
+}
+
+@if enabled(datepicker) {
+  @include datepicker.skin(colors-for(datepicker), variants-for(datepicker));
+}
+
+@if enabled(stepper) {
+  @include stepper.skin(colors-for(stepper), variants-for(stepper));
+}
+
+@if enabled(avatar) {
+  @include avatar.skin(colors-for(avatar), variants-for(avatar));
+}
+
+@if enabled(code-input) {
+  @include codeinput.skin(colors-for(code-input), variants-for(code-input));
+}
+
+@if enabled(video) {
+  @include video.skin(colors-for(video), variants-for(video));
+}
+
+@if enabled(form-field) {
+  @include formfield.skin(colors-for(form-field), variants-for(form-field));
+}
+
+@if enabled(alert) {
+  @include alert.skin(colors-for(alert), variants-for(alert));
+}
+
+@if enabled(button) {
+  @include button.skin(colors-for(button), variants-for(button));
+}
+
+@if enabled(list-item-swipe) {
+  @include listitemswipe.skin(colors-for(list-item-swipe), variants-for(list-item-swipe));
+}
+
+@if enabled(list) {
+  @include listskin.skin(colors-for(list), variants-for(list));
 }

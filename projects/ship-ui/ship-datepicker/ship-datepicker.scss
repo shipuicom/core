@@ -267,59 +267,5 @@ $shipDatepicker: true !default;
         }
       }
     }
-
-    &.primary {
-      --dp-sel-bg: var(--primary-8);
-      --dp-sel-c: var(--primary-c8);
-    }
-
-    &.accent {
-      --dp-sel-bg: var(--accent-8);
-      --dp-sel-c: var(--accent-c8);
-    }
-
-    &.warn {
-      --dp-sel-bg: var(--warn-8);
-      --dp-sel-c: var(--warn-c8);
-    }
-
-    &.error {
-      --dp-sel-bg: var(--error-8);
-      --dp-sel-c: var(--error-c8);
-    }
-
-    &.success {
-      --dp-sel-bg: var(--success-8);
-      --dp-sel-c: var(--success-c8);
-    }
-
-    &.raised {
-      --dp-sel-bg: var(--base-g2);
-
-      &.primary {
-        --dp-sel-bg: var(--primary-g2);
-        --dp-sel-c: var(--primary-c8);
-      }
-
-      &.accent {
-        --dp-sel-bg: var(--accent-g2);
-        --dp-sel-c: var(--accent-c8);
-      }
-
-      &.warn {
-        --dp-sel-bg: var(--warn-g2);
-        --dp-sel-c: var(--warn-c8);
-      }
-
-      &.error {
-        --dp-sel-bg: var(--error-g2);
-        --dp-sel-c: var(--error-c8);
-      }
-
-      &.success {
-        --dp-sel-bg: var(--success-g2);
-        --dp-sel-c: var(--success-c8);
-      }
-    }
   }
 }

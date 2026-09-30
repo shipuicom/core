@@ -18,41 +18,6 @@ $shipStepper: true !default;
     width: 100%;
     position: relative;
 
-    &.primary {
-      --step-c: var(--primary-6);
-      --step-radio-cbg: var(--primary-1);
-      --step-radio-c: var(--primary-g2);
-      --step-active-c: var(--primary-8);
-    }
-
-    &.accent {
-      --step-c: var(--accent-6);
-      --step-radio-cbg: var(--accent-1);
-      --step-radio-c: var(--accent-g2);
-      --step-active-c: var(--accent-8);
-    }
-
-    &.warn {
-      --step-c: var(--warn-6);
-      --step-radio-cbg: var(--warn-1);
-      --step-radio-c: var(--warn-g2);
-      --step-active-c: var(--warn-8);
-    }
-
-    &.error {
-      --step-c: var(--error-6);
-      --step-radio-cbg: var(--error-1);
-      --step-radio-c: var(--error-g2);
-      --step-active-c: var(--error-8);
-    }
-
-    &.success {
-      --step-c: var(--success-6);
-      --step-radio-cbg: var(--success-1);
-      --step-radio-c: var(--success-g2);
-      --step-active-c: var(--success-8);
-    }
-
     button {
       background: transparent;
       border: 0;

@@ -89,16 +89,6 @@ $shipChip: true !default;
     &.no-bg {
       --sheet-bg: transparent;
       background: transparent;
-
-      &.simple,
-      &.simple.primary,
-      &.simple.accent,
-      &.simple.warn,
-      &.simple.error,
-      &.simple.success {
-        --sheet-bc: transparent;
-        border-color: transparent;
-      }
     }
 
     // Selected state. The tokens default per variant and colour; override --chip-sel-* to restyle.
@@ -118,55 +108,6 @@ $shipChip: true !default;
         color: var(--chip-sel-c);
       }
 
-      &.primary {
-        --chip-sel-bg: var(--primary-8);
-        --chip-sel-c: var(--primary-c8);
-        --chip-sel-ring: var(--primary-8);
-      }
-
-      &.accent {
-        --chip-sel-bg: var(--accent-8);
-        --chip-sel-c: var(--accent-c8);
-        --chip-sel-ring: var(--accent-8);
-      }
-
-      &.warn {
-        --chip-sel-bg: var(--warn-8);
-        --chip-sel-c: var(--warn-c8);
-        --chip-sel-ring: var(--warn-8);
-      }
-
-      &.error {
-        --chip-sel-bg: var(--error-8);
-        --chip-sel-c: var(--error-c8);
-        --chip-sel-ring: var(--error-8);
-      }
-
-      &.success {
-        --chip-sel-bg: var(--success-8);
-        --chip-sel-c: var(--success-c8);
-        --chip-sel-ring: var(--success-8);
-      }
-
-      // Filled variants are already solid: a ring marks the selection instead of a fill change.
-      &.flat,
-      &.raised {
-        --chip-sel-bg: var(--sheet-bg);
-        --chip-sel-c: var(--sheet-c);
-        --chip-sel-bc: var(--sheet-bc);
-
-        --sheet-bg: initial;
-        --sheet-c: initial;
-        --sheet-bc: initial;
-        --sheet-ic: initial;
-        --chip-ic: initial;
-
-        div {
-          color: var(--chip-c);
-        }
-
-        box-shadow: 0 0 0 2px var(--base-1), 0 0 0 4px var(--chip-sel-ring);
-      }
 
       // Dynamic chips carry an arbitrary --chip-c: deepen the tint and draw the colour as an inset ring.
       &.dynamic {

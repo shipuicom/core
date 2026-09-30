@@ -101,44 +101,6 @@ $shipListItemSwipe: true !default;
         &:hover {
           background-color: var(--base-4);
         }
-
-        &.action-danger,
-        &.error,
-        &.danger { // structure-lint: allow — alias for one minor, use .error
-          background-color: var(--error-8);
-          color: var(--base-1);
-          &:hover {
-            background-color: var(--error-9);
-          }
-        }
-
-        &.action-success,
-        &.success {
-          background-color: var(--success-8);
-          color: var(--base-1);
-          &:hover {
-            background-color: var(--success-9);
-          }
-        }
-
-        &.action-warning,
-        &.warn,
-        &.warning { // structure-lint: allow — alias for one minor, use .warn
-          background-color: var(--warn-8);
-          color: var(--base-1);
-          &:hover {
-            background-color: var(--warn-9);
-          }
-        }
-
-        &.action-primary,
-        &.primary {
-          background-color: var(--primary-8);
-          color: var(--base-1);
-          &:hover {
-            background-color: var(--primary-9);
-          }
-        }
       }
     }
   }

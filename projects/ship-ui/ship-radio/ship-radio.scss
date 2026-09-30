@@ -76,51 +76,6 @@ $shipRadio: true !default;
       }
     }
 
-    &.primary {
-      --radiod-c: var(--primary-8);
-    }
-
-    &.accent {
-      --radiod-c: var(--accent-8);
-    }
-
-    &.warn {
-      --radiod-c: var(--warn-8);
-    }
-
-    &.error {
-      --radiod-c: var(--error-8);
-    }
-
-    &.success {
-      --radiod-c: var(--success-8);
-    }
-
-    &.flat,
-    &.raised {
-      --radiod-c: var(--light-text);
-
-      &.primary {
-        --radiod-c: var(--primary-c8);
-      }
-
-      &.accent {
-        --radiod-c: var(--accent-c8);
-      }
-
-      &.warn {
-        --radiod-c: var(--warn-c8);
-      }
-
-      &.error {
-        --radiod-c: var(--error-c8);
-      }
-
-      &.success {
-        --radiod-c: var(--success-c8);
-      }
-    }
-
     &.raised,
     &.flat {
       &:not(:has(input:checked)):not(.active) .radio {

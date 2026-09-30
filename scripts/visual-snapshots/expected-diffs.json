@@ -10,5 +10,7 @@
   "toggles_parts": "sh-toggle-card API table: dead `color` input removed",
   "accordions_api": "API table: `variant` narrowed to ShipAccordionVariant",
   "steppers_api": "API table: `--stepper-progress` renamed to `--step-progress`",
-  "alerts_service": "sh-alert-container styles apply for the first time (selector fixed)"
+  "alerts_service": "sh-alert-container styles apply for the first time (selector fixed)",
+  "range-sliders_examples": "outlined/raised colours unified: accent/warn/error/success now get the same track, border and thumb tokens primary already had",
+  "range-sliders": "outlined/raised colours unified: accent/warn/error/success now get the same track, border and thumb tokens primary already had"
 }
