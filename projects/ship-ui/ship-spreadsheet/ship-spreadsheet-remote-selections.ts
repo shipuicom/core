@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, ViewEncapsulation } from '@angular/core';
 import { ShipSheetCollab } from './sheet-collab';
-import { ShipSpreadsheet } from './sh-spreadsheet';
+import { ShipSpreadsheet } from './ship-spreadsheet';
 
 /** How high the name tag is, to decide whether it fits above a range or has to sit inside it. */
 const LABEL_PX = 18;
@@ -49,7 +49,7 @@ export interface PeerRangePaint {
   styleUrl: './ship-spreadsheet-remote-selections.scss',
   encapsulation: ViewEncapsulation.None,
 })
-export class ShSpreadsheetRemoteSelections {
+export class ShipSpreadsheetRemoteSelections {
   // Projected content resolves DI at its declaration site, so when this
   // component sits inside <sh-spreadsheet> the grid is injectable.
   #parentGrid = inject(ShipSpreadsheet, { optional: true });

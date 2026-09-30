@@ -18,7 +18,7 @@ import { EditorEngineService } from './editor-engine.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ShipIcon],
-  templateUrl: './sh-editor-slash-menu.html',
+  templateUrl: './ship-editor-slash-menu.html',
 })
 export class ShipEditorSlashMenu {
 

@@ -7,7 +7,7 @@ import { logicalToPos } from './editor-flat-positions';
 import { htmlToAst } from './editor-serializers';
 import { ASTBlockNode, LogicalPosition } from './editor.types';
 import { EditorSelectionService } from './selection.service';
-import { BaseComponentBlockBehavior } from './sh-editor-component-block';
+import { BaseComponentBlockBehavior } from './ship-editor-component-block';
 import * as B from './standard-behaviors';
 
 @Component({ standalone: true, template: '' })

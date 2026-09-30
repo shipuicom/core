@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { BaseBlockBehavior, BaseInlineBehavior, SHIP_EDITOR_BLOCK_CONTEXT, ShipEditorBlockContext } from '@ship-ui/core/ship-editor';
 import { htmlToAst } from '../ship-editor/editor-serializers';
 import { SheetOp, createSheet, sheetFromJSON, sheetToJSON } from './core/sheet-model';
-import { SHEET_INNER_ALGEBRA, ShipSpreadsheetBlock, ShipSpreadsheetBlockBehavior } from './spreadsheet-block';
+import { SHEET_INNER_ALGEBRA, ShipSpreadsheetBlock, ShipSpreadsheetBlockBehavior } from './ship-spreadsheet-block';
 
 const behavior = new ShipSpreadsheetBlockBehavior();
 const blocks = new Map<string, BaseBlockBehavior>([['sheet', behavior]]);

@@ -51,7 +51,7 @@ interface PeerPaint {
   styleUrl: './ship-editor-remote-cursors.scss',
   encapsulation: ViewEncapsulation.None,
 })
-export class ShEditorRemoteCursors {
+export class ShipEditorRemoteCursors {
   #selfRef = inject(ElementRef<HTMLElement>);
   #injector = inject(Injector);
 

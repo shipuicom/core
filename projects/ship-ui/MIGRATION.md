@@ -29,6 +29,10 @@ checks it). A migration script (`ship-migrate`) that rewrites the renames below 
 - `ShipAlertModule` is removed (every component is standalone; import `ShipAlert` / `ShipAlertContainer` directly).
 - The unpublished `sh-form-field-experimental` entry point is deleted.
 
+**Renamed classes (TypeScript)**
+- `ShEditorRemoteCursors` → `ShipEditorRemoteCursors`, `ShEditorCollabDirective` → `ShipEditorCollabDirective`,
+  `ShSpreadsheetRemoteSelections` → `ShipSpreadsheetRemoteSelections`. Entry points and selectors are unchanged.
+
 **Sass flags** (only matter if you `@use '@ship-ui/core/styles' with (...)`):
 - `$shipPage`, `$shipSection`, `$shipSetting`, `$shipEmptyState`, `$shipStat`, `$shipStatTrend`, `$shipStatGoal`, `$shipStatRing`,
   `$shipRanking`, `$shipAchievement`, `$shipInbox`, `$shipTableView`, `$shipDetails`, `$shipTimeline`, `$shipToolbar` are now

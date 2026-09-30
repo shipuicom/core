@@ -5,8 +5,8 @@ import { ShipEditor } from './ship-editor';
   selector: 'sh-editor-floating-toolbar',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  templateUrl: './sh-editor-floating-toolbar.html',
-  styleUrl: './sh-editor-floating-toolbar.scss',
+  templateUrl: './ship-editor-floating-toolbar.html',
+  styleUrl: './ship-editor-floating-toolbar.scss',
 })
 export class ShipEditorFloatingToolbar {
   /** The editor the floating toolbar controls; defaults to the enclosing `<sh-editor>` when omitted. */

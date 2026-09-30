@@ -14,7 +14,7 @@ import {
   createSheet,
   sheetCellSelection,
 } from './core/sheet-model';
-import { SheetRowKind, ShipSpreadsheet } from './sh-spreadsheet';
+import { SheetRowKind, ShipSpreadsheet } from './ship-spreadsheet';
 
 /** A component editor under test: echoes its inputs, commits through the API. */
 @Component({

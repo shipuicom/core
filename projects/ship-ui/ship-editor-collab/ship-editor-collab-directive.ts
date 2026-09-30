@@ -14,7 +14,7 @@ import {
 import { ShipEditor } from '@ship-ui/core/ship-editor';
 import { BroadcastChannelTransport } from './broadcast-channel-transport';
 import { CollabTransport } from './collab-protocol';
-import { ShEditorRemoteCursors } from './sh-editor-remote-cursors';
+import { ShipEditorRemoteCursors } from './ship-editor-remote-cursors';
 import { ShipEditorCollab } from './ship-editor-collab';
 import { WebSocketTransport } from './websocket-transport';
 
@@ -29,7 +29,7 @@ import { WebSocketTransport } from './websocket-transport';
  *
  * The directive provides the {@link ShipEditorCollab} session, attaches it to
  * the host editor's engine once the editor exists, mounts the
- * {@link ShEditorRemoteCursors} overlay inside the editor body, and tears
+ * {@link ShipEditorRemoteCursors} overlay inside the editor body, and tears
  * everything down with the editor. A string value becomes a
  * {@link WebSocketTransport} when it starts with `ws://`/`wss://`, otherwise
  * a {@link BroadcastChannelTransport} channel name; transports created here
@@ -43,7 +43,7 @@ import { WebSocketTransport } from './websocket-transport';
   exportAs: 'shCollab',
   providers: [ShipEditorCollab],
 })
-export class ShEditorCollabDirective implements OnDestroy {
+export class ShipEditorCollabDirective implements OnDestroy {
   readonly collab = inject(ShipEditorCollab);
   #editor = inject(ShipEditor, { host: true });
   #elementRef = inject(ElementRef<HTMLElement>);
@@ -61,7 +61,7 @@ export class ShEditorCollabDirective implements OnDestroy {
   remoteCursors = input(true);
 
   #ownedTransport: CollabTransport | null = null;
-  #overlay: ComponentRef<ShEditorRemoteCursors> | null = null;
+  #overlay: ComponentRef<ShipEditorRemoteCursors> | null = null;
 
   constructor() {
     afterNextRender(() => {
@@ -83,7 +83,7 @@ export class ShEditorCollabDirective implements OnDestroy {
     const body = host.querySelector('.sh-editor-body');
     if (!body) return;
 
-    const overlay = createComponent(ShEditorRemoteCursors, {
+    const overlay = createComponent(ShipEditorRemoteCursors, {
       environmentInjector: this.#environmentInjector,
       elementInjector: this.#injector,
     });

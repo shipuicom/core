@@ -1,1 +1,1 @@
-export * from './ship-spinner.component';
+export * from './ship-spinner';

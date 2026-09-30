@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  DestroyRef,
   ElementRef,
   ViewEncapsulation,
   effect,
@@ -21,15 +20,16 @@ import { LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 
 @Component({
-  selector: 'sh-editor-link-popover',
+  selector: 'sh-editor-image-popover',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ShipPopover, ShipFormField, ShipButton, ShipIcon],
-  templateUrl: './sh-editor-link-popover.html',
+  templateUrl: './ship-editor-image-popover.html',
 })
-export class ShipEditorLinkPopover {
-
+export class ShipEditorImagePopover {
   surface = input.required<HTMLElement>();
+
+  upload = input<((file: File) => Promise<string>) | null>(null);
 
   engine = inject(EditorEngineService);
   selection = inject(EditorSelectionService);
@@ -40,8 +40,7 @@ export class ShipEditorLinkPopover {
   isOpen = signal(false);
   url = signal('');
   error = signal<string | null>(null);
-  hasExistingLink = signal(false);
-
+  uploading = signal(false);
   top = signal(0);
   left = signal(0);
 
@@ -50,50 +49,22 @@ export class ShipEditorLinkPopover {
   constructor() {
     effect(() => {
       const request = this.engine.uiRequest();
-      if (request?.action !== 'link') return;
-
+      if (request?.action !== 'image') return;
       untracked(() => {
         this.engine.uiRequest.set(null);
         this.#open();
       });
     });
-
     effect(() => {
-      // The retry loop is token-guarded: closing (or fast close/reopen) must
-      // cancel the timers in flight, or a stale loop steals the caret after
-      // the popover is gone — and two live loops fight over focus().
-      if (!this.isOpen()) {
-        this.#focusAttempt++;
-        return;
-      }
-      const attempt = ++this.#focusAttempt;
-      let tries = 0;
-      const tryFocus = () => {
-        if (attempt !== this.#focusAttempt) return;
-        const el = this.urlInput()?.nativeElement;
-        if (el && el.isConnected) {
-          el.focus();
-          el.select();
-          if (document.activeElement === el) return;
-        }
-        if (++tries < 20) setTimeout(tryFocus, 25);
-      };
-      queueMicrotask(tryFocus);
+      if (this.isOpen()) queueMicrotask(() => this.urlInput()?.nativeElement.focus());
     });
-    inject(DestroyRef).onDestroy(() => this.#focusAttempt++);
   }
-
-  /** Monotonic token; bumping it invalidates any focus-retry loop in flight. */
-  #focusAttempt = 0;
 
   #open() {
     const sel = this.selection.active();
     if (!sel) return;
     this.#savedSelection = structuredClone(sel);
-
-    const existing = this.engine.markAtSelection('link');
-    this.hasExistingLink.set(!!existing);
-    this.url.set((existing?.attrs?.['href'] as string) ?? '');
+    this.url.set('');
     this.error.set(null);
 
     const container = this.#selfRef.nativeElement.closest('.sh-editor-container') as HTMLElement | null;
@@ -111,7 +82,6 @@ export class ShipEditorLinkPopover {
   }
 
   onFormKeydown(event: KeyboardEvent) {
-
     if (event.key === 'Enter') {
       event.preventDefault();
       event.stopPropagation();
@@ -119,39 +89,56 @@ export class ShipEditorLinkPopover {
     }
   }
 
+  async onFile(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    const upload = this.upload();
+    if (upload) {
+      this.uploading.set(true);
+      this.error.set(null);
+      try {
+        this.#insert(await upload(file), file.name);
+      } catch {
+        this.error.set('Upload failed — try again or paste a URL.');
+      } finally {
+        this.uploading.set(false);
+      }
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => this.#insert(String(reader.result), file.name);
+    reader.readAsDataURL(file);
+  }
+
   apply() {
     const raw = this.url().trim();
     if (!raw) {
-      if (this.hasExistingLink()) this.remove();
-      else this.isOpen.set(false);
+      this.error.set('Enter a URL or upload a file.');
       return;
     }
-
     const hasScheme = /^[a-z][a-z0-9+.-]*:/i.test(raw);
     const isRelative = raw.startsWith('/') || raw.startsWith('#') || raw.startsWith('?');
     const normalized = hasScheme || isRelative ? raw : `https://${raw}`;
-    if (!isSafeUrl(normalized)) {
+    if (!isSafeUrl(normalized, { allowDataImage: true })) {
       this.error.set('That URL scheme is not allowed.');
       return;
     }
-
-    if (this.#savedSelection) this.selection.live.set(structuredClone(this.#savedSelection));
-    const applied = this.engine.setMark('link', { href: normalized });
-    if (!applied) {
-
-      this.engine.insertTextWithMarks(normalized, [{ type: 'link', attrs: { href: normalized } }]);
-    }
-    this.isOpen.set(false);
+    this.#insert(normalized, '');
   }
 
-  remove() {
+  #insert(src: string, alt: string) {
     if (this.#savedSelection) this.selection.live.set(structuredClone(this.#savedSelection));
-    this.engine.removeMark('link');
+    this.engine.insertImage({ src, alt, mode: 'content', size: 'auto' });
     this.isOpen.set(false);
   }
 
   onClosed() {
     this.#savedSelection = null;
-    this.surface().focus();
+
+    if (this.engine.selectedBlock() === null) this.surface().focus();
   }
 }

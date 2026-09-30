@@ -114,6 +114,9 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
   }
 
   if (ext === '.ts') {
+    for (const { from, to } of rules.identifiers ?? []) {
+      replaceAll(new RegExp(`\\b${esc(from)}\\b`, 'g'), to, 'identifier', () => `${from} → ${to}`);
+    }
     for (const { pattern, message } of rules.tsWarnings ?? []) {
       for (const m of out.matchAll(new RegExp(pattern, 'g'))) warnings.push({ line: lineOf(out, m.index!), rule: 'config', detail: message });
     }

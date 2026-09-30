@@ -154,6 +154,11 @@ const rules: MigrationRules = {
       to: '$shipLayoutToolbar'
     }
   ],
+  identifiers: [
+    { from: 'ShEditorRemoteCursors', to: 'ShipEditorRemoteCursors' },
+    { from: 'ShEditorCollabDirective', to: 'ShipEditorCollabDirective' },
+    { from: 'ShSpreadsheetRemoteSelections', to: 'ShipSpreadsheetRemoteSelections' },
+  ],
   tsWarnings: [
     { pattern: '\\balertVariant\\b', message: 'SHIP_CONFIG.alertVariant is gone: use alert: { variant }' },
     { pattern: '\\bcardType\\b', message: 'SHIP_CONFIG.cardType is gone: use card: { variant }' },

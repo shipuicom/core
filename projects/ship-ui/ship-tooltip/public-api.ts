@@ -1,1 +1,1 @@
-export * from './ship-tooltip.directive';
+export * from './ship-tooltip';

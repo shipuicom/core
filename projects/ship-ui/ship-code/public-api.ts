@@ -18,4 +18,4 @@ export * from './grammars/registry';
 export * from './keymaps/keymap';
 export * from './keymaps/sublime.keymap';
 export * from './keymaps/vscode.keymap';
-export * from './sh-code';
+export * from './ship-code';

@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { ShipChip } from '@ship-ui/core/ship-chip';
 import { ShipEditor } from '@ship-ui/core/ship-editor';
-import { ShEditorCollabDirective } from '@ship-ui/core/ship-editor-collab';
+import { ShipEditorCollabDirective } from '@ship-ui/core/ship-editor-collab';
 import { ShipToggle } from '@ship-ui/core/ship-toggle';
 import { Fuzzer, hash } from './fuzzer';
 
@@ -20,7 +20,7 @@ import { Fuzzer, hash } from './fuzzer';
  */
 @Component({
   selector: 'fuzz-demo-example',
-  imports: [ShipEditor, ShEditorCollabDirective, ShipChip, ShipToggle],
+  imports: [ShipEditor, ShipEditorCollabDirective, ShipChip, ShipToggle],
   templateUrl: './fuzz-demo.html',
   styleUrl: './fuzz-demo.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

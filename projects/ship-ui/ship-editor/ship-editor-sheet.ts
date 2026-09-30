@@ -13,8 +13,8 @@ import {
 import { ShipDialogService } from '@ship-ui/core/ship-dialog';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipEditor } from './ship-editor';
-import { ShipEditorToolbar } from './sh-editor-toolbar';
-import { ShipEditorActionDirective } from './sh-editor-action.directive';
+import { ShipEditorToolbar } from './ship-editor-toolbar';
+import { ShipEditorActionDirective } from './ship-editor-action';
 import { BaseBlockBehavior, BaseInlineBehavior } from './editor-behaviors';
 import { ASTDocument } from './editor.types';
 

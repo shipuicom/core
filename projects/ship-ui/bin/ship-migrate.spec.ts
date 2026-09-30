@@ -62,6 +62,12 @@ describe('ship-migrate 0.26', () => {
     expect(r.warnings.map((w) => w.rule)).toEqual(['config', 'config']);
   });
 
+  it('renames the Sh*-prefixed classes', () => {
+    const r = migrateSource("import { ShEditorRemoteCursors } from '@ship-ui/core/ship-editor-collab'; class X extends ShEditorRemoteCursors {}", '.ts', v026);
+    expect(r.text).toBe("import { ShipEditorRemoteCursors } from '@ship-ui/core/ship-editor-collab'; class X extends ShipEditorRemoteCursors {}");
+    expect(r.changes).toHaveLength(2);
+  });
+
   it('is idempotent', () => {
     const once = migrateSource('<sh-card color="a" class="warning"></sh-card> --breadcrumbs-c', '.html', v026).text;
     const twice = migrateSource(once, '.html', v026);

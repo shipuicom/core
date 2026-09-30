@@ -191,8 +191,8 @@ interface ResizeDrag {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ShipMenu, NgComponentOutlet, NgTemplateOutlet],
-  templateUrl: './sh-spreadsheet.html',
-  styleUrl: './sh-spreadsheet.scss',
+  templateUrl: './ship-spreadsheet.html',
+  styleUrl: './ship-spreadsheet.scss',
   host: {
     '[attr.data-shs]': 'uid',
     '[class.editable]': 'editable()',

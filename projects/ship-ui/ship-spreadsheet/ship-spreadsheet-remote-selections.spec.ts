@@ -4,12 +4,12 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { CollabPresence } from '@ship-ui/core/ship-editor-collab';
 import { SheetModel, SheetSelection, createSheet } from './core/sheet-model';
 import { ShipSheetCollab } from './sheet-collab';
-import { ShipSpreadsheet } from './sh-spreadsheet';
-import { ShSpreadsheetRemoteSelections } from './sh-spreadsheet-remote-selections';
+import { ShipSpreadsheet } from './ship-spreadsheet';
+import { ShipSpreadsheetRemoteSelections } from './ship-spreadsheet-remote-selections';
 
 @Component({
   standalone: true,
-  imports: [ShipSpreadsheet, ShSpreadsheetRemoteSelections],
+  imports: [ShipSpreadsheet, ShipSpreadsheetRemoteSelections],
   providers: [ShipSheetCollab],
   template: `
     <sh-spreadsheet style="height: 300px" [(sheet)]="sheet" [editable]="true">
@@ -20,13 +20,13 @@ import { ShSpreadsheetRemoteSelections } from './sh-spreadsheet-remote-selection
 class Host {
   collab = inject(ShipSheetCollab);
   grid = viewChild.required(ShipSpreadsheet);
-  overlay = viewChild.required(ShSpreadsheetRemoteSelections);
+  overlay = viewChild.required(ShipSpreadsheetRemoteSelections);
   sheet = signal<SheetModel>(createSheet(4, 3));
 }
 
 const peer = (clientId: string, selection: SheetSelection | null, name = 'Ada'): CollabPresence<SheetSelection> => ({ clientId, name, color: 'rgb(10, 20, 30)', selection, version: 0 });
 
-describe('ShSpreadsheetRemoteSelections', () => {
+describe('ShipSpreadsheetRemoteSelections', () => {
   let fixture: ComponentFixture<Host>;
   let host: Host;
 

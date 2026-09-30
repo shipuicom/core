@@ -5,9 +5,9 @@ import { ShipEditor } from './ship-editor';
   selector: 'sh-editor-toolbar',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  templateUrl: './sh-editor-toolbar.html',
+  templateUrl: './ship-editor-toolbar.html',
   host: { '[attr.data-position]': 'position()' },
-  styleUrl: './sh-editor-toolbar.scss',
+  styleUrl: './ship-editor-toolbar.scss',
 })
 export class ShipEditorToolbar {
   /** The editor the toolbar controls; defaults to the enclosing `<sh-editor>` when omitted. */

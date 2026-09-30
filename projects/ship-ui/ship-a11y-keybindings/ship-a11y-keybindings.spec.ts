@@ -1,7 +1,7 @@
 import { Component, ElementRef, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ShipA11yKeybindingsDirective } from './ship-a11y-keybindings.directive';
+import { ShipA11yKeybindingsDirective } from './ship-a11y-keybindings';
 import { ShipA11yKeybindingsService } from './ship-a11y-keybindings.service';
 
 @Component({

@@ -10,7 +10,7 @@ type Handle = Corner | Edge;
   selector: 'sh-editor-image-resize',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  templateUrl: './sh-editor-image-resize.html',
+  templateUrl: './ship-editor-image-resize.html',
 })
 export class ShipEditorImageResize {
 

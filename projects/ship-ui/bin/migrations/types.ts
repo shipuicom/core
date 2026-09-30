@@ -13,6 +13,8 @@ export interface MigrationRules {
   removedInputs?: Array<{ tag: string; input: string }>;
   /** Sass `with(...)` flag renames. */
   sassFlags?: Array<{ from: string; to: string }>;
+  /** Exported identifiers renamed in .ts files. */
+  identifiers?: Array<{ from: string; to: string }>;
   /** Patterns in .ts files the script only points at (a config object needs a hand edit). */
   tsWarnings?: Array<{ pattern: string; message: string }>;
 }

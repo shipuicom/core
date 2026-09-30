@@ -10,7 +10,7 @@ import {
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipChip } from '@ship-ui/core/ship-chip';
 import { ShipEditor } from '@ship-ui/core/ship-editor';
-import { ShEditorCollabDirective } from '@ship-ui/core/ship-editor-collab';
+import { ShipEditorCollabDirective } from '@ship-ui/core/ship-editor-collab';
 import { ShipToggle } from '@ship-ui/core/ship-toggle';
 import { Fuzzer, hash } from '../fuzz-demo/fuzzer';
 
@@ -20,14 +20,14 @@ import { Fuzzer, hash } from '../fuzz-demo/fuzzer';
  */
 @Component({
   selector: 'window-demo-example',
-  imports: [ShipEditor, ShEditorCollabDirective, ShipButton, ShipChip, ShipToggle],
+  imports: [ShipEditor, ShipEditorCollabDirective, ShipButton, ShipChip, ShipToggle],
   templateUrl: './window-demo.html',
   styleUrl: './window-demo.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WindowDemo implements OnDestroy {
   editor = viewChild(ShipEditor);
-  collab = viewChild(ShEditorCollabDirective);
+  collab = viewChild(ShipEditorCollabDirective);
   me = {
     name: NAMES[Math.floor(Math.random() * NAMES.length)],
     color: COLORS[Math.floor(Math.random() * COLORS.length)],

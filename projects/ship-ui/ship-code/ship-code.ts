@@ -113,8 +113,8 @@ interface HistoryEntry {
   exportAs: 'shCode',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  templateUrl: './sh-code.html',
-  styleUrl: './sh-code.scss',
+  templateUrl: './ship-code.html',
+  styleUrl: './ship-code.scss',
   host: {
     '[style.--code-fg]': 'themeForeground()',
     '[style.--code-bg]': 'themeBackground()',

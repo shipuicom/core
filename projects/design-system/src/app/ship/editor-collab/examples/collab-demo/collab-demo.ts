@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { ShipChip } from '@ship-ui/core/ship-chip';
 import { ShipEditor } from '@ship-ui/core/ship-editor';
-import { ShEditorCollabDirective } from '@ship-ui/core/ship-editor-collab';
+import { ShipEditorCollabDirective } from '@ship-ui/core/ship-editor-collab';
 
 /**
  * Two editors, one channel. `shCollab` on each editor is the integration;
@@ -18,7 +18,7 @@ import { ShEditorCollabDirective } from '@ship-ui/core/ship-editor-collab';
  */
 @Component({
   selector: 'collab-demo-example',
-  imports: [ShipEditor, ShEditorCollabDirective, ShipChip],
+  imports: [ShipEditor, ShipEditorCollabDirective, ShipChip],
   templateUrl: './collab-demo.html',
   styleUrl: './collab-demo.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,7 +29,7 @@ export class CollabDemo implements OnDestroy {
     { name: 'Grace', color: '#2f6fed' },
   ];
   editors = viewChildren(ShipEditor);
-  collabs = viewChildren(ShEditorCollabDirective);
+  collabs = viewChildren(ShipEditorCollabDirective);
 
   initialHtml = `<h2>Collaborative editing</h2><p>Both editors share one document — edits, carets and undo stay in sync.</p><p>Type in either one.</p>`;
 

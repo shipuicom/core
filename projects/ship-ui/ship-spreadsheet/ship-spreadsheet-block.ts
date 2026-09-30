@@ -12,7 +12,7 @@ import { SheetCellExtension } from './core/sheet-extensions';
 import { SheetModel, SheetOp, applySheetOps, createSheet, sheetFromJSON, sheetToJSON } from './core/sheet-model';
 import { sheetFromTable, sheetToTableHtml } from './core/sheet-table';
 import { transformSheetOps } from './core/sheet-transform';
-import { ShipSpreadsheet } from './sh-spreadsheet';
+import { ShipSpreadsheet } from './ship-spreadsheet';
 
 /** Cell extensions made available to every embedded sheet block (provide it on the editor's injector). */
 export const SHEET_BLOCK_EXTENSIONS = new InjectionToken<readonly SheetCellExtension[]>('SHEET_BLOCK_EXTENSIONS');

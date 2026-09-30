@@ -22,7 +22,7 @@ export type ContextualActionExtras = Record<string, (ctx: ContextualActionCtx) =
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ShipIcon, ShipTooltip, ShipPopover],
-  templateUrl: './sh-editor-contextual-toolbar.html',
+  templateUrl: './ship-editor-contextual-toolbar.html',
 })
 export class ShipEditorContextualToolbar {
 
