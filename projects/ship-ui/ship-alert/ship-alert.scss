@@ -3,6 +3,8 @@ $shipAlert: true !default;
 
 @if $shipAlert == true {
   sh-alert {
+    --alert-state-ic: currentColor;
+    --alert-close-ic: currentColor;
     --alert-ad: 400ms;
     --alert-bs: var(--box-shadow-10);
     --alert-p: #{p2r(8)};
@@ -33,8 +35,6 @@ $shipAlert: true !default;
 
     &.flat,
     &.raised {
-      --sheet-c: #fff;
-
       .content > * {
         color: var(--sheet-c);
         opacity: 0.8;

@@ -4,6 +4,7 @@ $shipPopover: true !default;
 
 @if $shipPopover == true {
   sh-popover {
+    --po-overlay: rgb(from var(--dark-text) r g b / 50%);
     --po-d: block;
 
     display: var(--po-d);
@@ -117,7 +118,7 @@ $shipPopover: true !default;
           z-index: 9999;
 
           .overlay {
-            background-color: var(--overlay, rgba(0, 0, 0, 0.5));
+            background-color: var(--po-overlay);
           }
         }
 

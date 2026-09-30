@@ -170,8 +170,8 @@ $shipEditor: true !default;
         font-style: italic;
 
         &.sh-editor-callout-info {
-          border-left-color: var(--info-8);
-          background: var(--info-2);
+          border-left-color: var(--primary-8);
+          background: var(--primary-2);
           padding-left: #{p2r(40)};
           position: relative;
 
@@ -563,7 +563,8 @@ $shipEditor: true !default;
       &.active {
         background: rgb(from var(--base-1) r g b / 28%);
       }
-      &.danger:hover {
+      &.error:hover,
+      &.danger:hover { // structure-lint: allow — alias for one minor, use .error
         background: var(--error-9);
       }
     }

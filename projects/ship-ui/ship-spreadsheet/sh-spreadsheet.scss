@@ -11,7 +11,10 @@ $shipSpreadsheet: true !default;
     --shs-head-fg: var(--base-9);
     --shs-selection: rgb(from var(--primary-9) r g b / 18%);
     --shs-selection-border: var(--primary-9);
-    --shs-font: var(--body-10, 13px/1.5 system-ui, sans-serif);
+    --shs-selection-bg: var(--shs-head-bg);
+    --shs-invalid: var(--error-8);
+    --shs-shadow: 0 #{p2r(4)} #{p2r(12)} rgb(from var(--dark-text) r g b / 12%);
+    --shs-font: var(--paragraph-30);
 
     display: block;
     position: relative;
@@ -91,7 +94,7 @@ $shipSpreadsheet: true !default;
       border: 1px solid var(--shs-grid);
       border-radius: var(--shape-2);
       background: var(--shs-bg);
-      box-shadow: var(--shadow-2, 0 4px 12px rgba(0, 0, 0, 0.12));
+      box-shadow: var(--shs-shadow);
       font-size: 0.9em;
     }
 
@@ -105,12 +108,12 @@ $shipSpreadsheet: true !default;
       cursor: pointer;
 
       &.active {
-        background: var(--shs-selection-bg, var(--shs-head-bg));
+        background: var(--shs-selection-bg);
       }
     }
 
     .shs-bar-hint-name {
-      font-family: var(--font-mono, ui-monospace, monospace);
+      font-family: ui-monospace, monospace;
       white-space: nowrap;
     }
 
@@ -268,12 +271,12 @@ $shipSpreadsheet: true !default;
 
     // A stored string its column type rejects (`validate`).
     .shs-c.shs-invalid {
-      box-shadow: inset 0 -2px 0 var(--shs-invalid, #d33);
+      box-shadow: inset 0 -2px 0 var(--shs-invalid);
     }
 
     // A formula cell shows its value; one that failed shows its error token.
     .shs-c.shs-error {
-      color: var(--shs-invalid, #d33);
+      color: var(--shs-invalid);
       font-variant-numeric: tabular-nums;
     }
 

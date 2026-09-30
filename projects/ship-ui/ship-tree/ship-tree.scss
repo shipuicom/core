@@ -25,9 +25,8 @@ $shipTree: true !default;
     width: 100%;
     background: var(--tree-bg);
     border: 1px solid var(--tree-bc);
-    border-radius: var(--shape-2, #{p2r(8)});
+    border-radius: var(--shape-2);
     overflow: hidden;
-    font-family: var(--font-family, sans-serif);
     box-shadow: var(--box-shadow-10);
 
     .sh-tree-container {
@@ -45,7 +44,7 @@ $shipTree: true !default;
       cursor: pointer;
       user-select: none;
       color: var(--tree-color);
-      font: var(--paragraph-20, 14px sans-serif);
+      font: var(--paragraph-20);
       gap: p2r(6);
       transition: background 120ms ease;
       padding-left: calc(var(--tree-padding-left) + var(--tree-depth, 0) * var(--tree-indent-step));
@@ -116,7 +115,7 @@ $shipTree: true !default;
           align-items: center;
           justify-content: center;
           color: var(--tree-caret-color);
-          border-radius: var(--shape-1, 4px);
+          border-radius: var(--shape-1);
           width: 100%;
           height: 100%;
           position: relative;
@@ -235,21 +234,22 @@ $shipTree: true !default;
       .status-badge {
         font-size: p2r(10);
         padding: p2r(2 6);
-        border-radius: var(--shape-1, 4px);
+        border-radius: var(--shape-1);
         text-transform: uppercase;
         font-weight: 600;
 
         &.success {
-          background: var(--success-3, #e6f4ea);
-          color: var(--success-8, #137333);
+          background: var(--success-3);
+          color: var(--success-8);
         }
-        &.warning {
-          background: var(--warn-3, #fef7e0);
-          color: var(--warn-8, #b06000);
+        &.warn,
+        &.warning { // structure-lint: allow — alias for one minor, use .warn
+          background: var(--warn-3);
+          color: var(--warn-8);
         }
         &.error {
-          background: var(--error-3, #fce8e6);
-          color: var(--error-8, #c5221f);
+          background: var(--error-3);
+          color: var(--error-8);
         }
       }
 
@@ -259,7 +259,7 @@ $shipTree: true !default;
         padding: p2r(2);
         cursor: pointer;
         color: var(--base-9);
-        border-radius: var(--shape-1, 4px);
+        border-radius: var(--shape-1);
         display: flex;
         opacity: 0;
         transition: opacity 150ms ease;
@@ -268,7 +268,7 @@ $shipTree: true !default;
 
         &:hover {
           background: var(--base-4);
-          color: var(--error-8, #c5221f);
+          color: var(--error-8);
         }
       }
     }
@@ -281,7 +281,7 @@ $shipTree: true !default;
       padding: p2r(32);
       text-align: center;
       color: var(--tree-caret-color);
-      font: var(--paragraph-20, 14px sans-serif);
+      font: var(--paragraph-20);
     }
   }
 }

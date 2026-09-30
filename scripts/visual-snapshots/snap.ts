@@ -188,7 +188,8 @@ async function main() {
   }
 
   const results: Result[] = [];
-  const baselineFiles = new Set(readdirSync(BASELINE).filter((f) => f.endsWith('.png')));
+  // With a filter only the matching baseline pages take part, so the rest are not reported as missing.
+  const baselineFiles = new Set(readdirSync(BASELINE).filter((f) => f.endsWith('.png') && f.includes(FILTER)));
   for (const { pathname, theme, file } of captured) {
     const slug = slugOf(pathname);
     const name = `${slug}--${theme}.png`;

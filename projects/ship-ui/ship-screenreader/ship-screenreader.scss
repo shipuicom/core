@@ -30,7 +30,7 @@ $shipScreenreader: true !default;
       background: var(--base-1);
       border: 1px solid var(--base-4);
       border-radius: var(--shape-2);
-      box-shadow: 0 p2r(8) p2r(24) rgb(0 0 0 / 20%);
+      box-shadow: 0 p2r(8) p2r(24) rgb(from var(--dark-text) r g b / 20%);
       overflow: hidden;
     }
 

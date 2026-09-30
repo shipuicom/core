@@ -104,7 +104,8 @@ $shipListItemSwipe: true !default;
         }
 
         &.action-danger,
-        &.danger {
+        &.error,
+        &.danger { // structure-lint: allow — alias for one minor, use .error
           background-color: var(--error-8);
           color: var(--base-1);
           &:hover {
@@ -122,7 +123,8 @@ $shipListItemSwipe: true !default;
         }
 
         &.action-warning,
-        &.warning {
+        &.warn,
+        &.warning { // structure-lint: allow — alias for one minor, use .warn
           background-color: var(--warn-8);
           color: var(--base-1);
           &:hover {

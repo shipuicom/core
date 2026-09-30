@@ -60,13 +60,13 @@ $shipAvatar: true !default;
     &.error { --avatar-bg: var(--error-3); --avatar-c: var(--error-11); }
     &.success { --avatar-bg: var(--success-3); --avatar-c: var(--success-11); }
 
-    // Name-derived hues: eight evenly spaced oklch hues, a tint behind a dark ink in light mode and
-    // the reverse in dark mode.
+    // Name-derived hues: the primary palette rotated in 45° steps, so every hue keeps the palette's
+    // lightness (a tint behind a dark ink in light mode, the reverse in dark mode) and follows the theme.
     @for $i from 0 through 7 {
       &.hue-#{$i} {
-        --avatar-h: #{$i * 45 + 20};
-        --avatar-bg: light-dark(oklch(0.9 0.07 var(--avatar-h)), oklch(0.35 0.08 var(--avatar-h)));
-        --avatar-c: light-dark(oklch(0.4 0.12 var(--avatar-h)), oklch(0.9 0.07 var(--avatar-h)));
+        --avatar-hr: #{$i * 45};
+        --avatar-bg: hsl(from var(--primary-3) calc(h + var(--avatar-hr)) s l);
+        --avatar-c: hsl(from var(--primary-11) calc(h + var(--avatar-hr)) s l);
       }
     }
 

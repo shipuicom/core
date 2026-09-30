@@ -98,7 +98,27 @@ $shipRadio: true !default;
 
     &.flat,
     &.raised {
-      --radiod-c: #fff;
+      --radiod-c: var(--light-text);
+
+      &.primary {
+        --radiod-c: var(--primary-c8);
+      }
+
+      &.accent {
+        --radiod-c: var(--accent-c8);
+      }
+
+      &.warn {
+        --radiod-c: var(--warn-c8);
+      }
+
+      &.error {
+        --radiod-c: var(--error-c8);
+      }
+
+      &.success {
+        --radiod-c: var(--success-c8);
+      }
     }
 
     &.raised,

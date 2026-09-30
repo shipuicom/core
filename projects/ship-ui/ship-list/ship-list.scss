@@ -15,6 +15,8 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
 
 @if $shipList == true {
   sh-list {
+    --list-collapsed-w: #{p2r(68)};
+    --list-collapsed-item: #{p2r(44)};
     --list-s: var(--shape-2);
     --list-active-bg: var(--base-1);
     --list-color: var(--base-9);
@@ -109,7 +111,7 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
             padding: p2r(2) p2r(6);
             font-size: p2r(11);
             line-height: 1;
-            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 0 rgb(from var(--dark-text) r g b / 10%);
           }
         }
       }
@@ -191,7 +193,7 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
     &.collapsed {
       --list-item-p: 0;
 
-      width: var(--list-collapsed-w, #{p2r(68)});
+      width: var(--list-collapsed-w);
       // Tiles center themselves with auto margins, so the rail's own side
       // padding would only push them off-center.
       padding-inline: 0;
@@ -204,8 +206,8 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
       // rail, whatever its expanded padding, borders or min-height were.
       #{$item} {
         box-sizing: border-box;
-        width: var(--list-collapsed-item, #{p2r(44)});
-        height: var(--list-collapsed-item, #{p2r(44)});
+        width: var(--list-collapsed-item);
+        height: var(--list-collapsed-item);
         min-height: 0;
         margin-inline: auto;
         color: transparent;

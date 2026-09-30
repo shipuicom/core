@@ -46,8 +46,8 @@ export type ShipChartSparklineColor = 'primary' | 'accent' | 'warn' | 'error' | 
   `,
   styles: `
     :host {
-      --chart-stroke: var(--primary-8, #3b82f6);
-      --chart-fill: var(--primary-3, #bfdbfe);
+      --chart-stroke: var(--primary-8);
+      --chart-fill: var(--primary-3);
       --chart-fill-opacity: 0.6;
       --chart-stroke-width: 2;
       --chart-dot-size: 6px;
@@ -65,20 +65,20 @@ export type ShipChartSparklineColor = 'primary' | 'accent' | 'warn' | 'error' | 
     }
 
     :host(.accent) {
-      --chart-stroke: var(--accent-8, #8b5cf6);
-      --chart-fill: var(--accent-3, #ddd6fe);
+      --chart-stroke: var(--accent-8);
+      --chart-fill: var(--accent-3);
     }
     :host(.success) {
-      --chart-stroke: var(--success-8, #10b981);
-      --chart-fill: var(--success-3, #a7f3d0);
+      --chart-stroke: var(--success-8);
+      --chart-fill: var(--success-3);
     }
     :host(.warn) {
-      --chart-stroke: var(--warn-8, #f59e0b);
-      --chart-fill: var(--warn-3, #fde68a);
+      --chart-stroke: var(--warn-8);
+      --chart-fill: var(--warn-3);
     }
     :host(.error) {
-      --chart-stroke: var(--error-8, #ef4444);
-      --chart-fill: var(--error-3, #fecaca);
+      --chart-stroke: var(--error-8);
+      --chart-fill: var(--error-3);
     }
 
     svg {

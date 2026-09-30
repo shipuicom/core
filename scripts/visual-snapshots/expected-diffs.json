@@ -1,1 +1,6 @@
-{}
+{
+  "avatars": "name hues now rotate the primary palette instead of fixed oklch pairs",
+  "avatars_examples": "name hues now rotate the primary palette instead of fixed oklch pairs",
+  "chats": "embeds sh-avatar (see avatars)",
+  "chats_examples": "embeds sh-avatar (see avatars)"
+}

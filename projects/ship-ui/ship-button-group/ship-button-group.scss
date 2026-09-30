@@ -31,8 +31,8 @@ $shipButtonGroup: true !default;
 
     background-color: var(--btng-bg);
     background-image:
-      linear-gradient(90deg, var(--btng-bg) 30%, rgba(255, 255, 255, 0)),
-      linear-gradient(-90deg, var(--btng-bg) 30%, rgba(255, 255, 255, 0)),
+      linear-gradient(90deg, var(--btng-bg) 30%, transparent),
+      linear-gradient(-90deg, var(--btng-bg) 30%, transparent),
       radial-gradient(farthest-side at 0% 50%, rgb(from var(--base-12) r g b / 8%), rgb(from var(--base-12) r g b / 0%)),
       radial-gradient(farthest-side at 100% 50%, rgb(from var(--base-12) r g b / 8%), rgb(from var(--base-12) r g b / 0%));
     background-repeat: no-repeat;

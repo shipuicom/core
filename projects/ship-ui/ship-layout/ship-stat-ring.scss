@@ -48,7 +48,7 @@ $shipLayoutStatRing: true !default;
         mask: radial-gradient(
           farthest-side,
           transparent calc(100% - var(--ring-w) - 0.5px),
-          #000 calc(100% - var(--ring-w) + 0.5px)
+          var(--dark-text) calc(100% - var(--ring-w) + 0.5px)
         );
       }
 

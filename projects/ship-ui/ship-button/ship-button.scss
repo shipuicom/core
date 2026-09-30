@@ -37,7 +37,7 @@ $shipButton: true !default;
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(#000 30%, rgba(0, 0, 0, 0));
+      background: radial-gradient(var(--dark-text) 30%, transparent);
       opacity: 0;
       transition: opacity 175ms linear;
     }

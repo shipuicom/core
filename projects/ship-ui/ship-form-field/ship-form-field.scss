@@ -359,7 +359,9 @@ $shipDatepicker: true !default;
       --ff-ic: var(--error-8);
     }
 
-    &.warning {
+    &.warn,
+
+    &.warning { // structure-lint: allow — alias for one minor, use .warn
       --ff-ic: var(--warn-8);
     }
 

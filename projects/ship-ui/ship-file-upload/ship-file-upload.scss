@@ -4,7 +4,7 @@ $shipFileUpload: true !default;
 
 @if $shipFileUpload == true {
   sh-file-upload {
-    --fu-bg-active: rgba(0, 0, 0, 0.1);
+    --fu-bg-active: rgb(from var(--dark-text) r g b / 10%);
     display: flex;
     flex-direction: column;
     gap: p2r(12);

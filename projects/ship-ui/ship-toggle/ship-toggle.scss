@@ -159,7 +159,7 @@ $shipToggle: true !default;
     }
 
     &.simple {
-      --togglek-bg: #fff;
+      --togglek-bg: var(--light-text);
 
       &:has(input[type='checkbox']:checked),
       &.active {
@@ -193,61 +193,71 @@ $shipToggle: true !default;
     }
 
     &.flat {
-      --togglek-bg: #fff;
+      --togglek-bg: var(--light-text);
 
       &:has(input[type='checkbox']:checked),
       &.active {
-        --togglek-bg: #fff;
+        --togglek-bg: var(--light-text);
         --toggle-bg: var(--base-8);
 
         &.primary {
           --toggle-bg: var(--primary-8);
+          --togglek-bg: var(--primary-c8);
         }
 
         &.accent {
           --toggle-bg: var(--accent-8);
+          --togglek-bg: var(--accent-c8);
         }
 
         &.warn {
           --toggle-bg: var(--warn-8);
+          --togglek-bg: var(--warn-c8);
         }
 
         &.error {
           --toggle-bg: var(--error-8);
+          --togglek-bg: var(--error-c8);
         }
 
         &.success {
           --toggle-bg: var(--success-8);
+          --togglek-bg: var(--success-c8);
         }
       }
     }
 
     &.raised {
-      --togglek-bg: #fff;
+      --togglek-bg: var(--light-text);
 
       &:has(input[type='checkbox']:checked),
       &.active {
         --toggle-bg: var(--base-g2);
-        --togglek-bg: #fff;
+        --togglek-bg: var(--light-text);
 
         &.primary {
           --toggle-bg: var(--primary-g2);
+          --togglek-bg: var(--primary-c8);
         }
 
         &.accent {
           --toggle-bg: var(--accent-g2);
+          --togglek-bg: var(--accent-c8);
         }
 
         &.warn {
           --toggle-bg: var(--warn-g2);
+          --togglek-bg: var(--warn-c8);
         }
 
         &.error {
           --toggle-bg: var(--error-g2);
+          --togglek-bg: var(--error-c8);
         }
 
         &.success {
           --toggle-bg: var(--success-g2);
+          --togglek-bg: var(--success-c8);
         }
       }
     }

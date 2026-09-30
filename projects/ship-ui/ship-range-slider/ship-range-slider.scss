@@ -46,7 +46,6 @@ $shipRangeSlider: true !default;
       }
 
       sh-icon {
-        color: var(--grey-500);
         font-size: p2r(16);
       }
 
@@ -180,35 +179,35 @@ $shipRangeSlider: true !default;
       --rst-bg: var(--primary-8);
       --rs-thumb-arrow: var(--primary-8);
       --rs-thumb-value-bg: var(--primary-8);
-      --rs-thumb-value-c: #fff;
+      --rs-thumb-value-c: var(--primary-c8);
     }
 
     &.accent {
       --rst-bg: var(--accent-8);
       --rs-thumb-arrow: var(--accent-8);
       --rs-thumb-value-bg: var(--accent-8);
-      --rs-thumb-value-c: #fff;
+      --rs-thumb-value-c: var(--accent-c8);
     }
 
     &.warn {
       --rst-bg: var(--warn-8);
       --rs-thumb-arrow: var(--warn-8);
       --rs-thumb-value-bg: var(--warn-8);
-      --rs-thumb-value-c: #fff;
+      --rs-thumb-value-c: var(--warn-c8);
     }
 
     &.error {
       --rst-bg: var(--error-8);
       --rs-thumb-arrow: var(--error-8);
       --rs-thumb-value-bg: var(--error-8);
-      --rs-thumb-value-c: #fff;
+      --rs-thumb-value-c: var(--error-c8);
     }
 
     &.success {
       --rst-bg: var(--success-8);
       --rs-thumb-arrow: var(--success-8);
       --rs-thumb-value-bg: var(--success-8);
-      --rs-thumb-value-c: #fff;
+      --rs-thumb-value-c: var(--success-c8);
     }
 
     &.simple {
@@ -329,7 +328,7 @@ $shipRangeSlider: true !default;
     }
 
     &.flat {
-      --rs-thumb-c: #fff;
+      --rs-thumb-c: var(--light-text);
       --rs-thumb-bc: var(--base-4);
 
       &.primary,
@@ -338,41 +337,46 @@ $shipRangeSlider: true !default;
       &.error,
       &.success {
         --rst: var(--base-3);
-        --rs-thumb-c: #fff;
+        --rs-thumb-c: var(--light-text);
         --rs-thumb-bc: var(--base-4);
         --rs-thumb-value-bg: var(--base-8);
-        --rs-thumb-value-c: #fff;
+        --rs-thumb-value-c: var(--light-text);
       }
 
       &.primary {
         --rst-bg: var(--primary-8);
         --rs-thumb-value-bg: var(--primary-8);
+        --rs-thumb-value-c: var(--primary-c8);
       }
 
       &.accent {
         --rst-bg: var(--accent-8);
         --rs-thumb-value-bg: var(--accent-8);
+        --rs-thumb-value-c: var(--accent-c8);
       }
 
       &.warn {
         --rst-bg: var(--warn-8);
         --rs-thumb-value-bg: var(--warn-8);
+        --rs-thumb-value-c: var(--warn-c8);
       }
 
       &.error {
         --rst-bg: var(--error-8);
         --rs-thumb-value-bg: var(--error-8);
+        --rs-thumb-value-c: var(--error-c8);
       }
 
       &.success {
         --rst-bg: var(--success-8);
         --rs-thumb-value-bg: var(--success-8);
+        --rs-thumb-value-c: var(--success-c8);
       }
     }
 
     &.raised {
       --rst-bg: var(--base-g2);
-      --rs-thumb-c: #fff;
+      --rs-thumb-c: var(--light-text);
       --rs-thumb-bc: var(--base-4);
 
       &.primary,
@@ -381,40 +385,45 @@ $shipRangeSlider: true !default;
       &.error,
       &.success {
         --rst: var(--base-3);
-        --rs-thumb-c: #fff;
+        --rs-thumb-c: var(--light-text);
         --rs-thumb-bc: var(--base-4);
         --rs-thumb-value-bg: var(--base-g6);
-        --rs-thumb-value-c: #fff;
+        --rs-thumb-value-c: var(--light-text);
       }
 
       &.primary {
         --rst-bg: var(--primary-g2);
         --rs-thumb-arrow: var(--primary-8);
         --rs-thumb-value-bg: var(--primary-g3);
+        --rs-thumb-value-c: var(--primary-c8);
       }
 
       &.accent {
         --rst-bg: var(--accent-g2);
         --rs-thumb-arrow: var(--accent-8);
         --rs-thumb-value-bg: var(--accent-8);
+        --rs-thumb-value-c: var(--accent-c8);
       }
 
       &.warn {
         --rst-bg: var(--warn-g2);
         --rs-thumb-arrow: var(--warn-8);
         --rs-thumb-value-bg: var(--warn-8);
+        --rs-thumb-value-c: var(--warn-c8);
       }
 
       &.error {
         --rst-bg: var(--error-g2);
         --rs-thumb-arrow: var(--error-8);
         --rs-thumb-value-bg: var(--error-8);
+        --rs-thumb-value-c: var(--error-c8);
       }
 
       &.success {
         --rst-bg: var(--success-g2);
         --rs-thumb-arrow: var(--success-8);
         --rs-thumb-value-bg: var(--success-8);
+        --rs-thumb-value-c: var(--success-c8);
       }
     }
   }
