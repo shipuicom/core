@@ -35,6 +35,8 @@ export interface ShipIconConfig extends ShipComponentConfig {
 }
 
 export interface ShipConfigColors {
+  /** Palettes added with `$shipPalettes` are keyed by name too. */
+  [palette: string]: string | undefined;
   primary?: string;
   accent?: string;
   warn?: string;
@@ -44,6 +46,7 @@ export interface ShipConfigColors {
 }
 
 export interface ShipConfigDistributions {
+  [palette: string]: number | undefined;
   primary?: number;
   accent?: number;
   warn?: number;

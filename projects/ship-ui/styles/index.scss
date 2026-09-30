@@ -6,12 +6,14 @@ $shipFormFieldShadow: false !default;
 $shipButtonShadow: false !default;
 $shipChipShadow: false !default;
 
-/// Colour classes every skin emits (`primary accent warn error success`).
-$shipColors: (primary, accent, warn, error, success) !default;
 /// Sheet variants every skin emits (`simple outlined flat raised`).
 $shipVariants: (simple, outlined, flat, raised) !default;
 /// Per skin overrides, e.g. `(toggle: (colors: (primary), variants: (flat)))`.
 $shipSkins: () !default;
+/// Palettes added to the built-in five: `(brand: (200, 80%, 45%))` or a full step map (see ./palettes.scss).
+$shipPalettes: () !default;
+/// Numbered palette steps to emit; the skins read 1-4 and 6-11.
+$shipPaletteSteps: (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12) !default;
 
 $shipSheet: true !default;
 $shipSortable: true !default;
@@ -77,6 +79,15 @@ $shipLayoutTableView: true !default;
 $shipLayoutDetails: true !default;
 $shipLayoutTimeline: true !default;
 $shipLayoutToolbar: true !default;
+
+@use 'sass:map';
+@use './palettes' with (
+  $extra: $shipPalettes,
+  $steps: $shipPaletteSteps
+);
+
+/// Colour classes every skin emits: one per palette, built-in and added.
+$shipColors: map.keys(palettes.$all) !default;
 
 @use './core.scss' with (
   $useInterTight: $useInterTight,

@@ -80,8 +80,25 @@ $shipName: true !default;
   host block, or a documented public token of the component it wraps.
 - Demo-only styling lives in the docs app (`projects/design-system`), not in the library scss.
 
-## Flags
+## Skins
 
-`styles/index.scss` declares one `$ship<Name>` flag per component. Today a component's scss ships with the component
-through `styleUrl`, so the flag only documents intent; once skins move to `styles/skins/` (phase 3) the flag and the
-`$ship<Name>Variants` / `$ship<Name>Colors` lists control what the skin emits.
+A component's variant × colour blocks live in `styles/skins/_<name>.scss` as `@mixin skin($colors, $variants)` and are
+emitted from `styles/skins/_index.scss` behind the component's `$ship<Name>` flag. The structure file keeps neutral
+token defaults and everything keyed by state or geometry; the skin only sets tokens under `.<colour>`, `.simple`,
+`.outlined`, `.flat`, `.raised` (and `.type-*` where a type is purely a skin). Layout-only `type-*` blocks stay in
+the structure file.
+
+```scss
+@use '@ship-ui/core/styles' with (
+  $shipColors: (primary, error),                   // every skin: only these colour classes
+  $shipVariants: (simple, flat),                   // every skin: only these sheet variants
+  $shipSkins: (toggle: (colors: (primary))),       // per skin overrides
+  $shipToggle: false,                              // a skin switched off entirely
+  $shipPalettes: (brand: (200, 80%, 45%)),         // an extra palette: --brand-1..12, -g2, -g3, -c8 and .brand classes
+  $shipPaletteSteps: (1, 2, 3, 4, 8, 9)            // emit only these steps (the skins read 1-4 and 6-11)
+);
+```
+
+Adding a skin: create `styles/skins/_<name>.scss`, loop `@each $c in $colors` / guard variants with `has($variants, …)`
+from `./util`, then register it in `_index.scss` (`@use` + `@if enabled(<name>) { @include … }`). The flag key is
+the camel-cased flag name without `ship` (`$shipLayoutStat` → `layoutStat`).

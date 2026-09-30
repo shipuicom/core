@@ -1,5 +1,6 @@
 export const __SHIP_COLORS = ['primary', 'accent', 'warn', 'error', 'success', ''] as const;
-export type ShipColor = (typeof __SHIP_COLORS)[number];
+/** A built-in palette, or any palette added with `$shipPalettes` (the class is the palette's name). */
+export type ShipColor = (typeof __SHIP_COLORS)[number] | (string & {});
 
 export const __SHIP_SIZES = ['small', 'xsmall', ''] as const;
 export type ShipSize = (typeof __SHIP_SIZES)[number];

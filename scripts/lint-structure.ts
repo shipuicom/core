@@ -97,6 +97,18 @@ const packages = readdirSync(LIB)
 
 const globalDefined = new Set<string>();
 for (const f of CORE_STYLE_FILES) if (existsSync(f)) for (const v of declaredVars(readFileSync(f, 'utf8'))) globalDefined.add(v);
+// The global stylesheet must compile (a skin registered without its @use, a bad flag map …), and what it emits —
+// palettes included — is what consumers can rely on.
+{
+  const entry = join(STYLES, 'index.scss');
+  const r = spawnSync(join(ROOT, 'node_modules/.bin/sass'), ['--load-path=' + STYLES, '--no-source-map', '--quiet', entry], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  if (r.status !== 0) {
+    const msg = (r.stderr || r.stdout || '').split('\n').find((l) => l.trim()) ?? 'sass failed';
+    report('styles', 'stylesheet-compile', 'error', entry, msg.trim());
+  } else {
+    for (const v of declaredVars(r.stdout)) globalDefined.add(v);
+  }
+}
 const allPkgDirs = readdirSync(LIB).filter((d) => /^(ship|sh)-/.test(d) && statSync(join(LIB, d)).isDirectory());
 for (const d of allPkgDirs) {
   for (const f of walk(join(LIB, d))) {
@@ -254,17 +266,6 @@ for (const pkg of packages) {
   for (const f of files) {
     if (f.endsWith('.scss')) lintScss(pkg, f, flagName);
     else if (f.endsWith('.ts')) lintTs(pkg, f);
-  }
-}
-
-// ---------------------------------------------------------------------------------------------
-// the global stylesheet must compile: catches a skin registered without its @use, a bad flag map, etc.
-{
-  const entry = join(STYLES, 'index.scss');
-  const r = spawnSync(join(ROOT, 'node_modules/.bin/sass'), ['--load-path=' + STYLES, '--no-source-map', '--quiet', entry], { encoding: 'utf8' });
-  if (r.status !== 0) {
-    const msg = (r.stderr || r.stdout || '').split('\n').find((l) => l.trim()) ?? 'sass failed';
-    report('styles', 'stylesheet-compile', 'error', entry, msg.trim());
   }
 }
 

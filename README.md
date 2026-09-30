@@ -20,6 +20,26 @@ npm i -S @ship-ui/core
 @use '@ship-ui/core/styles';
 ```
 
+#### Skins and palettes
+
+Every component ships its structure (layout, sizing, states) with the component. The variant × colour "skins" are
+emitted by the global stylesheet, so you can keep only what you use, switch a component's skin off, or add palettes:
+
+```scss
+@use '@ship-ui/core/styles' with (
+  $shipColors: (primary, error),                // colour classes every skin emits (default: all palettes)
+  $shipVariants: (simple, flat),                // sheet variants every skin emits (default: simple outlined flat raised)
+  $shipSkins: (toggle: (colors: (primary))),    // per component overrides
+  $shipChip: false,                             // drop one component's skin entirely
+  $shipPalettes: (brand: (200, 80%, 45%)),      // --brand-1..12, --brand-g2/g3/c8 and .brand on every skin
+  $shipPaletteSteps: (1, 2, 3, 4, 8, 9)         // emit only these palette steps
+);
+```
+
+A palette is either the `(hue, saturation, lightness)` of its step 8 (optionally a fourth distribution exponent) or a
+full map of `step: (light, dark)` pairs; the built-in `primary accent warn error success` are hand-tuned maps you
+can override by name.
+
 ### Inside your angular.json file
 
 you need to add the ship assets to your assets array this is to add the ship default font

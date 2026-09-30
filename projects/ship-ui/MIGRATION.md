@@ -39,6 +39,14 @@ checks it). A migration script (`ship-migrate`) that rewrites the renames below 
   `$shipLayoutPage` … `$shipLayoutToolbar`
 - `$shipSortable` now controls a global include (the `[shSortable]` directive styles no longer ride along with `sh-tree` / `sh-list`)
 
+**Skins and palettes (additive)**
+- Variant × colour styling moved from each component's stylesheet into the global stylesheet as list-driven skins. Nothing
+  changes by default; `@use '@ship-ui/core/styles' with ($shipColors, $shipVariants, $shipSkins, $ship<Name>: false)` now
+  really strips what you do not use (see README → Skins and palettes). If you never imported `@ship-ui/core/styles`, you must:
+  the components' variant and colour classes no longer style themselves.
+- `$shipPalettes: (brand: (200, 80%, 45%))` adds a palette (`--brand-1..12`, `-g2`, `-g3`, `-c8`) and a `.brand` class on every skin;
+  `ShipColor` accepts any palette name. `$shipPaletteSteps` limits the emitted steps.
+
 **Other**
 - `sh-avatar` name hues are derived from the primary palette (rotated in 45° steps) instead of fixed oklch pairs.
 - The `.status-badge` / `.delete-btn` demo styles left `sh-tree`; copy them from the docs' template-tree example if you relied on them.
