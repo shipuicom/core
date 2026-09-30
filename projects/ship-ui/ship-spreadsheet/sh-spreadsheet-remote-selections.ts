@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, ViewEncapsulation } from '@angular/core';
 import { ShipSheetCollab } from './sheet-collab';
 import { ShipSpreadsheet } from './sh-spreadsheet';
 
@@ -46,42 +46,8 @@ export interface PeerRangePaint {
       }
     }
   `,
-  styles: `
-    :host {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      /* Level with the grid's own selection boxes, below the sticky rails and the cell editor. */
-      z-index: 1;
-    }
-
-    .remote-range {
-      position: absolute;
-      box-sizing: border-box;
-      border: 2px solid var(--peer-c);
-      background: color-mix(in srgb, var(--peer-c) 12%, transparent);
-      border-radius: 2px;
-    }
-
-    .remote-label {
-      position: absolute;
-      bottom: 100%;
-      left: -2px;
-      padding: 0 5px;
-      border-radius: 4px 4px 4px 0;
-      background: var(--peer-c);
-      color: #fff;
-      font-size: 11px;
-      line-height: 1.5;
-      white-space: nowrap;
-
-      &.inside {
-        bottom: auto;
-        top: -2px;
-        border-radius: 0 0 4px 0;
-      }
-    }
-  `,
+  styleUrl: './ship-spreadsheet-remote-selections.scss',
+  encapsulation: ViewEncapsulation.None,
 })
 export class ShSpreadsheetRemoteSelections {
   // Projected content resolves DI at its declaration site, so when this

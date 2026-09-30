@@ -1254,6 +1254,8 @@ export class ShipTable {
 
 @Component({
   selector: 'sh-table-content',
+  encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgTemplateOutlet, ShipSort, ShipResize, ShipRowResize, ShipIcon, ShipChip],
   host: {
     style: 'display: contents',

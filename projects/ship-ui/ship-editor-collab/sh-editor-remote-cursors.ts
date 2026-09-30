@@ -1,15 +1,4 @@
-import {
-  afterNextRender,
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  ElementRef,
-  inject,
-  Injector,
-  input,
-  signal,
-} from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, Injector, input, signal, ViewEncapsulation } from '@angular/core';
 import { ASTDocument, EditorEngineService, nodeSize } from '@ship-ui/core/ship-editor';
 import { ShipEditorCollab } from './ship-editor-collab';
 
@@ -59,41 +48,8 @@ interface PeerPaint {
       }
     }
   `,
-  styles: `
-    :host {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      overflow: hidden;
-      /* Sit above the editor's own stacking contexts (blocks, images,
-         selection paint) — the overlay is visual-only and click-through. */
-      z-index: 30;
-    }
-
-    .remote-selection {
-      position: absolute;
-      opacity: 0.22;
-      border-radius: 2px;
-    }
-
-    .remote-caret {
-      position: absolute;
-      width: 2px;
-      z-index: 2;
-
-      .remote-label {
-        position: absolute;
-        bottom: 100%;
-        left: -2px;
-        padding: 1px 6px;
-        border-radius: 4px 4px 4px 0;
-        font-size: 11px;
-        line-height: 1.5;
-        color: #fff;
-        white-space: nowrap;
-      }
-    }
-  `,
+  styleUrl: './ship-editor-remote-cursors.scss',
+  encapsulation: ViewEncapsulation.None,
 })
 export class ShEditorRemoteCursors {
   #selfRef = inject(ElementRef<HTMLElement>);

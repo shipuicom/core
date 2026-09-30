@@ -3,7 +3,7 @@
 $shipScreenreader: true !default;
 
 @if $shipScreenreader == true {
-  :host {
+  sh-screenreader {
     position: fixed;
     z-index: 9999;
     inset: auto p2r(16) p2r(16) auto;

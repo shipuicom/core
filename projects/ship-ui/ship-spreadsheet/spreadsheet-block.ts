@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, InjectionToken, effect, inject, signal, untracked, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, InjectionToken, signal, untracked, viewChild, ViewEncapsulation } from '@angular/core';
 import {
   BaseComponentBlockBehavior,
   BlockInnerAlgebra,
@@ -58,15 +58,8 @@ export const SHEET_INNER_ALGEBRA: BlockInnerAlgebra<SheetOp[]> = {
   selector: 'sh-spreadsheet-block',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ShipSpreadsheet],
-  styles: `
-    :host {
-      display: block;
-      margin: 12px 0;
-    }
-    sh-spreadsheet {
-      max-height: 420px;
-    }
-  `,
+  styleUrl: './ship-spreadsheet-block.scss',
+  encapsulation: ViewEncapsulation.None,
   template: `<sh-spreadsheet
     [(sheet)]="model"
     [editable]="!ctx.readonly()"

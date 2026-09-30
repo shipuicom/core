@@ -442,6 +442,8 @@ export class ShipTree {
 
 @Component({
   selector: 'sh-tree-node',
+  encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="sh-tree-node-left">
       <ng-content select="sh-icon" />
@@ -461,6 +463,8 @@ export class ShipTreeNode {}
 
 @Component({
   selector: 'sh-tree-node-actions',
+  encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-content />
   `,

@@ -153,7 +153,7 @@ const rules: MigrationRules = {
       from: '$shipToolbar',
       to: '$shipLayoutToolbar'
     }
-  ]
+  ],
   tsWarnings: [
     { pattern: '\\balertVariant\\b', message: 'SHIP_CONFIG.alertVariant is gone: use alert: { variant }' },
     { pattern: '\\bcardType\\b', message: 'SHIP_CONFIG.cardType is gone: use card: { variant }' },

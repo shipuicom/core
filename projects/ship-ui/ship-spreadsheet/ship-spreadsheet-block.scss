@@ -1,0 +1,14 @@
+@use 'helpers' as *;
+
+$shipSpreadsheet: true !default;
+
+@if $shipSpreadsheet == true {
+  sh-spreadsheet-block {
+    display: block;
+    margin: #{p2r(12 0)};
+
+    sh-spreadsheet {
+      max-height: #{p2r(420)};
+    }
+  }
+}

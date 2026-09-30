@@ -1,23 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import {
-  Component,
-  ComponentRef,
-  computed,
-  Directive,
-  DOCUMENT,
-  effect,
-  ElementRef,
-  EnvironmentInjector,
-  inject,
-  input,
-  OnDestroy,
-  Renderer2,
-  signal,
-  TemplateRef,
-  untracked,
-  ViewContainerRef,
-  ViewEncapsulation,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ComponentRef, computed, Directive, DOCUMENT, effect, ElementRef, EnvironmentInjector, inject, input, OnDestroy, Renderer2, signal, TemplateRef, untracked, ViewContainerRef, ViewEncapsulation } from '@angular/core';
 import { generateUniqueId } from '@ship-ui/core';
 
 type Timeout = ReturnType<typeof setTimeout>;
@@ -26,6 +8,7 @@ type Timeout = ReturnType<typeof setTimeout>;
   selector: 'ship-tooltip-wrapper',
   styleUrl: './ship-tooltip.scss',
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgTemplateOutlet],
   template: `
     <div class="tooltip-content">

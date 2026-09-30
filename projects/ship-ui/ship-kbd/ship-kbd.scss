@@ -3,7 +3,8 @@
 $shipKbd: true !default;
 
 @if $shipKbd == true {
-  :host {
+  sh-kbd,
+  [sh-kbd] {
     display: inline-flex;
     align-items: center;
     font-family: inherit;

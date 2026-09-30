@@ -1,4 +1,4 @@
-import { booleanAttribute, Component, computed, inject, input, PLATFORM_ID } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, inject, input, PLATFORM_ID, ViewEncapsulation } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 @Component({
@@ -20,6 +20,8 @@ import { isPlatformBrowser } from '@angular/common';
     }
   `,
   styleUrl: './ship-kbd.scss',
+  encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShipKbd {
   #platformId = inject(PLATFORM_ID);
