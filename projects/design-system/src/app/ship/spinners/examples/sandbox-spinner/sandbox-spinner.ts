@@ -1,19 +1,17 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { ShipRangeSlider } from '@ship-ui/core/ship-range-slider';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { ShipSpinner } from '@ship-ui/core/ship-spinner';
 
 @Component({
   selector: 'app-sandbox-spinner',
-  imports: [FormsModule, ShipSpinner, ShipRangeSlider],
+  imports: [ShipSpinner],
   templateUrl: './sandbox-spinner.html',
   styleUrl: './sandbox-spinner.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SandboxSpinner {
-  value = signal(40);
-  valueAsPixels = computed(() => `${this.value()}px`);
+  size = input(40);
+  sizeAsPixels = computed(() => `${this.size()}px`);
 
-  thickness = signal(5);
+  thickness = input(5);
   thicknessAsPixels = computed(() => `${this.thickness()}px`);
 }

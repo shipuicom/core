@@ -1,0 +1,22 @@
+<sh-chat [variant]="variant()">
+  <sh-avatar name="Grace Hopper" />
+  <b>Grace</b>
+  <time>14:02</time>
+  Found the bug. It was a moth in relay 70.
+</sh-chat>
+<sh-chat [variant]="variant()" continued>
+  <p>Taping it into the logbook now.</p>
+  <sh-chip size="small" variant="simple">🐛 2</sh-chip>
+</sh-chat>
+
+<sh-chat [variant]="variant()" [color]="color()" outgoing>
+  <sh-avatar name="You" color="primary" />
+  <b>You</b>
+  <time>14:03</time>
+  First actual case of a bug being found.
+  <span footer>Seen</span>
+</sh-chat>
+
+<sh-chat [variant]="variant()" typing>
+  <sh-avatar name="Grace Hopper" />
+</sh-chat>

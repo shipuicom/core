@@ -1,0 +1,52 @@
+<sh-lo-page size="small">
+  <h1>Settings</h1>
+  <p>Manage your workspace profile and notifications.</p>
+
+  <sh-lo-section>
+    <h2>Workspace</h2>
+    <p>Shown to everyone who joins your workspace.</p>
+
+    <sh-card>
+      <sh-lo-setting>
+        <label for="ws-name">Name</label>
+        <p>Used in emails and the sidebar.</p>
+        <sh-form-field>
+          <input id="ws-name" value="Acme Inc." />
+        </sh-form-field>
+      </sh-lo-setting>
+
+      <sh-lo-setting>
+        <label for="ws-url">URL</label>
+        <p>Changing this breaks existing links.</p>
+        <sh-form-field>
+          <span prefix>acme.app/</span>
+          <input id="ws-url" value="acme" />
+        </sh-form-field>
+      </sh-lo-setting>
+    </sh-card>
+  </sh-lo-section>
+
+  <sh-lo-section>
+    <h2>Notifications</h2>
+    <p>Choose what we email you about.</p>
+
+    <sh-card>
+      <sh-lo-setting>
+        <label>Weekly digest</label>
+        <p>A summary of activity every Monday.</p>
+        <sh-toggle color="primary" [checked]="true" />
+      </sh-lo-setting>
+
+      <sh-lo-setting>
+        <label>Product updates</label>
+        <p>New features and improvements.</p>
+        <sh-toggle color="primary" />
+      </sh-lo-setting>
+    </sh-card>
+  </sh-lo-section>
+
+  <div class="footer">
+    <button shButton variant="outlined">Cancel</button>
+    <button shButton variant="raised" color="primary">Save changes</button>
+  </div>
+</sh-lo-page>

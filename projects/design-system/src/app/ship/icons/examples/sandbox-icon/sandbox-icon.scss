@@ -2,40 +2,12 @@
 
 :host {
   display: flex;
-  flex-direction: column;
-  gap: p2r(20);
-  padding: 0;
-  background-color: var(--base-3);
-}
-
-.controls {
-  display: flex;
-  flex-direction: column;
-  gap: p2r(8);
-  border-bottom: var(--border-10);
-  padding: p2r(20);
-  background-color: var(--base-2);
-}
-
-header {
-  display: flex;
-  flex-direction: column;
-  gap: p2r(12);
-
-  .row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: p2r(8);
-  }
-}
-
-.sandbox {
-  display: flex;
   gap: p2r(8);
   flex-wrap: wrap;
   width: p2r(900);
   height: p2r(500);
   padding: p2r(20);
+  background-color: var(--base-3);
 
   sh-sidenav {
     border: var(--border-10);

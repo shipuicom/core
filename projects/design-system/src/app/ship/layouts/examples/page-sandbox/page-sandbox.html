@@ -1,0 +1,86 @@
+<sh-lo-page [variant]="variant()" [size]="size()">
+  <nav>
+    <a href="#">Projects</a>
+    <sh-icon size="small">caret-right</sh-icon>
+    <span>Website redesign</span>
+  </nav>
+  <h1>Website redesign</h1>
+  <p>Kicked off March 3rd. Ships when it ships.</p>
+  <button actions shButton variant="outlined">Share</button>
+  <button actions shButton variant="raised" color="primary">Edit</button>
+
+  <sh-tabs color="primary" [(value)]="tab">
+    <button value="overview">Overview</button>
+    <button value="tasks">Tasks</button>
+    <button value="files">Files</button>
+  </sh-tabs>
+
+  <div class="stats">
+    <sh-lo-stat>
+      <sh-icon>check-circle</sh-icon>
+      <p>Tasks done</p>
+      <h3>42</h3>
+      <sh-chip size="small" variant="raised" color="success">+8 this week</sh-chip>
+    </sh-lo-stat>
+    <sh-lo-stat>
+      <sh-icon>clock</sh-icon>
+      <p>Hours logged</p>
+      <h3>318</h3>
+      <sh-chip size="small" variant="raised" color="primary">on track</sh-chip>
+    </sh-lo-stat>
+    <sh-lo-stat>
+      <sh-icon>calendar</sh-icon>
+      <p>Days left</p>
+      <h3>19</h3>
+    </sh-lo-stat>
+  </div>
+
+  <sh-lo-section>
+    <h2>Recent activity</h2>
+    <p>What the team shipped over the last few days.</p>
+    <button actions shButton size="small" variant="outlined">View all</button>
+
+    <sh-card>
+      <sh-lo-timeline>
+        <sh-lo-timeline-item>
+          <sh-icon>git-merge</sh-icon>
+          <b>Header redesign merged</b>
+          <time>2 hours ago</time>
+        </sh-lo-timeline-item>
+        <sh-lo-timeline-item>
+          <sh-icon>check</sh-icon>
+          <b>Pricing page copy approved</b>
+          <time>Yesterday</time>
+          <p>Signed off by marketing, ready for build.</p>
+        </sh-lo-timeline-item>
+        <sh-lo-timeline-item>
+          <sh-icon>arrows-clockwise</sh-icon>
+          <b>Design tokens synced from Figma</b>
+          <time>3 days ago</time>
+        </sh-lo-timeline-item>
+      </sh-lo-timeline>
+    </sh-card>
+  </sh-lo-section>
+
+  <sh-card aside>
+    <sh-lo-details>
+      <h3>Details</h3>
+      <sh-lo-detail>
+        <dt>Status</dt>
+        <sh-chip size="small" variant="raised" color="primary">In progress</sh-chip>
+      </sh-lo-detail>
+      <sh-lo-detail>
+        <dt>Owner</dt>
+        Sofia Lund
+      </sh-lo-detail>
+      <sh-lo-detail>
+        <dt>Due</dt>
+        Oct 17, 2026
+      </sh-lo-detail>
+      <sh-lo-detail>
+        <dt>Team</dt>
+        Web platform
+      </sh-lo-detail>
+    </sh-lo-details>
+  </sh-card>
+</sh-lo-page>

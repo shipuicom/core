@@ -1,70 +1,30 @@
-<div class="controls">
-  <p>Controls</p>
-  <header>
-    <div class="row">
-      <sh-toggle [(checked)]="useDynamicColor" color="primary" variant="raised">Use dynamic color</sh-toggle>
+<sh-event-card [class]="exampleClass()" [style.--sheet-c]="useDynamicColor() ? dynamicColor() : null">
+  Just text in the card
+</sh-event-card>
 
-      @if (useDynamicColor()) {
-        <input
-          type="color"
-          [disabled]="!useDynamicColor()"
-          [ngModel]="dynamicColor()"
-          (ngModelChange)="dynamicColor.set($event)" />
-      }
-    </div>
+<sh-event-card [class]="exampleClass()" [style.--sheet-c]="useDynamicColor() ? dynamicColor() : null">
+  <h3>Card with title</h3>
+  <p>and description</p>
+</sh-event-card>
 
-    @if (!useDynamicColor()) {
-      <div class="row">
-        <sh-button-group class="small" [(value)]="colorClass">
-          <button value="">Default</button>
-          <button value="primary">Primary</button>
-          <button value="accent">Accent</button>
-          <button value="warn">Warn</button>
-          <button value="error">Error</button>
-          <button value="success">Success</button>
-        </sh-button-group>
+<sh-event-card [class]="exampleClass()" [style.--sheet-c]="useDynamicColor() ? dynamicColor() : null">
+  <h3>Card with title</h3>
+  <p>and description</p>
 
-        <sh-button-group class="small" [(value)]="variationClass">
-          <button value="">Default</button>
-          <button value="simple">Simple</button>
-          <button value="outlined">Outlined</button>
-          <button value="flat">Flat</button>
-          <button value="raised">Raised</button>
-        </sh-button-group>
-      </div>
-    }
-  </header>
-</div>
+  <button shButton>Action 1</button>
+</sh-event-card>
 
-<div class="sandbox">
-  <sh-event-card [class]="exampleClass()" [style.--sheet-c]="useDynamicColor() ? dynamicColor() : null">
-    Just text in the card
-  </sh-event-card>
+<sh-event-card [class]="exampleClass()" [style.--sheet-c]="useDynamicColor() ? dynamicColor() : null">
+  Event card with just buttons projected as actions Event card with just buttons projected as actionsEvent card with
+  just buttons projected as actionsEvent card with just buttons projected as actionsEvent card with just buttons
+  projected as actionsEvent card with just buttons projected as actions
 
-  <sh-event-card [class]="exampleClass()" [style.--sheet-c]="useDynamicColor() ? dynamicColor() : null">
-    <h3>Card with title</h3>
-    <p>and description</p>
-  </sh-event-card>
+  <button shButton>Action 1</button>
+  <button shButton>Action 2</button>
+</sh-event-card>
 
-  <sh-event-card [class]="exampleClass()" [style.--sheet-c]="useDynamicColor() ? dynamicColor() : null">
-    <h3>Card with title</h3>
-    <p>and description</p>
-
-    <button shButton>Action 1</button>
-  </sh-event-card>
-
-  <sh-event-card [class]="exampleClass()" [style.--sheet-c]="useDynamicColor() ? dynamicColor() : null">
-    Event card with just buttons projected as actions Event card with just buttons projected as actionsEvent card with
-    just buttons projected as actionsEvent card with just buttons projected as actionsEvent card with just buttons
-    projected as actionsEvent card with just buttons projected as actions
-
-    <button shButton>Action 1</button>
-    <button shButton>Action 2</button>
-  </sh-event-card>
-
-  <sh-event-card [class]="exampleClass()" [style.--sheet-c]="useDynamicColor() ? dynamicColor() : null">
-    <h3>Card with title</h3>
-    <p>and description</p>
-    <button shButton>And a action button</button>
-  </sh-event-card>
-</div>
+<sh-event-card [class]="exampleClass()" [style.--sheet-c]="useDynamicColor() ? dynamicColor() : null">
+  <h3>Card with title</h3>
+  <p>and description</p>
+  <button shButton>And a action button</button>
+</sh-event-card>

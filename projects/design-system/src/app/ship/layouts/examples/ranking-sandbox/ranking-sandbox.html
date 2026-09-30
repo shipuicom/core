@@ -1,0 +1,14 @@
+<sh-card>
+  <sh-lo-ranking [variant]="variant()" [max]="1240" color="primary">
+    <h3>Top pages</h3>
+    <button actions shButton size="small" variant="outlined">Last 7 days</button>
+
+    @for (page of pages; track page.path) {
+      <sh-lo-ranking-item [value]="page.views">
+        <sh-icon>file</sh-icon>
+        {{ page.path }}
+        <span detail>{{ page.views }}</span>
+      </sh-lo-ranking-item>
+    }
+  </sh-lo-ranking>
+</sh-card>

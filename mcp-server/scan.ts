@@ -443,6 +443,7 @@ function extractClass(
     package: `@ship-ui/core/${path.basename(entryDir)}`,
     kind,
     path: path.relative(rootPath, filePath),
+    description: jsdoc(cls) || undefined,
     inputs: dedupe(inputs),
     outputs: dedupe(outputs),
     methods: dedupe(methods),
@@ -453,6 +454,15 @@ function extractClass(
 
 // --- Docs (description / keywords / examples) -----------------------------
 
+function entryHasPrimary(entryDir: string, base: string): boolean {
+  return publicFiles(entryDir).some((file) => {
+    const src = fs.readFileSync(file, 'utf-8');
+    return [...src.matchAll(/selector:\s*['"]\[?sh-?([\w-]+)/gi)].some(
+      (m) => m[1]!.toLowerCase() === base || m[1]!.toLowerCase() === base + 's'
+    );
+  });
+}
+
 function attachDocs(comp: ComponentData, entryDir: string) {
   const base = path.basename(entryDir).replace(/^ship-/, '');
   const normalized = comp.selector
@@ -460,10 +470,6 @@ function attachDocs(comp: ComponentData, entryDir: string) {
     .replace(/^sh-?/i, '')
     .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
     .toLowerCase();
-  // Only the entry's primary element gets the docs page (avoids duplicating
-  // examples onto sibling directives / sub-components in the same file).
-  if (normalized !== base && normalized !== base + 's') return;
-
   const terms = [base + 's', base];
   let docsDir = '';
   for (const t of terms) {
@@ -474,6 +480,28 @@ function attachDocs(comp: ComponentData, entryDir: string) {
     }
   }
   if (!docsDir) return;
+
+  // Only the entry's primary element gets the docs page. Entries without one
+  // (a family like ship-layout) give each member the examples that use it.
+  if (normalized !== base && normalized !== base + 's') {
+    if (!comp.selector.startsWith('sh-') || entryHasPrimary(entryDir, base)) return;
+    const uses = new RegExp(`<${comp.selector}[\\s>]`);
+    const exDir = path.join(docsDir, 'examples');
+    if (!fs.existsSync(exDir)) return;
+    for (const eDir of fs.readdirSync(exDir)) {
+      const eDirPath = path.join(exDir, eDir);
+      if (!fs.statSync(eDirPath).isDirectory()) continue;
+      const eFiles = fs.readdirSync(eDirPath);
+      const html = eFiles.find((f) => f.endsWith('.html'));
+      const tsf = eFiles.find((f) => f.endsWith('.ts'));
+      if (!html || !tsf) continue;
+      const htmlText = fs.readFileSync(path.join(eDirPath, html), 'utf-8');
+      if (uses.test(htmlText)) {
+        comp.examples.push({ name: eDir, html: htmlText, ts: fs.readFileSync(path.join(eDirPath, tsf), 'utf-8') });
+      }
+    }
+    return;
+  }
 
   const docFiles = fs.readdirSync(docsDir);
   const mainHtml = docFiles.find((f) => f.endsWith('.html') && !f.includes('example'));

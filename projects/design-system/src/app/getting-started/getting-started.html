@@ -173,13 +173,13 @@
         <sh-icon>terminal</sh-icon>
         VS Code
       </button>
-      <button value="windsurf">
-        <sh-icon>wave-triangle</sh-icon>
-        Windsurf
+      <button value="claude-code">
+        <sh-icon>sparkle</sh-icon>
+        Claude Code
       </button>
-      <button value="webstorm">
-        <sh-icon>code</sh-icon>
-        WebStorm
+      <button value="codex">
+        <sh-icon>open-ai-logo</sh-icon>
+        Codex
       </button>
       <button value="antigravity">
         <sh-icon>waveform</sh-icon>
@@ -200,21 +200,25 @@
           <p>Use an MCP-compatible extension like Cline, Roo Code, or Continue.</p>
           <app-highlight lang="ts" [content]="VSCODE_CONFIG" />
         </div>
-      } @else if (activeMcpTab() === 'windsurf') {
+      } @else if (activeMcpTab() === 'claude-code') {
         <div class="setup-item">
-          <h4>Windsurf Configuration</h4>
-          <p>Add the configuration to your Codeium user settings.</p>
-          <app-highlight lang="ts" [content]="WINDSURF_CONFIG" />
-        </div>
-      } @else if (activeMcpTab() === 'webstorm') {
-        <div class="setup-item">
-          <h4>WebStorm Configuration</h4>
+          <h4>Claude Code Configuration</h4>
           <p>
-            Available in version 2024.3+. Go to
-            <b>Settings | Tools | MCP Servers</b>
+            Run the command once from your terminal, or add the server to
+            <code>.mcp.json</code>
+            in the project root to share it with your team.
+          </p>
+          <app-highlight lang="shell" [content]="CLAUDE_CODE_CONFIG" />
+        </div>
+      } @else if (activeMcpTab() === 'codex') {
+        <div class="setup-item">
+          <h4>Codex Configuration</h4>
+          <p>
+            Run the command once from your terminal, or add the server to
+            <code>~/.codex/config.toml</code>
             .
           </p>
-          <app-highlight lang="ts" [content]="WEBSTORM_CONFIG" />
+          <app-highlight lang="shell" [content]="CODEX_CONFIG" />
         </div>
       } @else if (activeMcpTab() === 'antigravity') {
         <div class="setup-item">

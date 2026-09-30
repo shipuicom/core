@@ -1,0 +1,23 @@
+<sh-lo-stat [variant]="variant()" color="primary">
+  <sh-icon>currency-dollar</sh-icon>
+  <p>Revenue this month</p>
+  <h3>$32.9k</h3>
+  <sh-chip size="small" variant="raised" color="success">+12%</sh-chip>
+  <sh-chart-sparkline [data]="revenue" color="primary" area />
+</sh-lo-stat>
+
+<sh-lo-stat [variant]="variant()" color="error">
+  <sh-icon>users</sh-icon>
+  <p>Visitors this month</p>
+  <h3>48.2k</h3>
+  <sh-chip size="small" variant="raised" color="error">-2%</sh-chip>
+  <sh-chart-sparkline [data]="visitors" color="error" area />
+</sh-lo-stat>
+
+<sh-lo-stat [variant]="variant()" color="success">
+  <sh-icon>shopping-cart</sh-icon>
+  <p>Orders this month</p>
+  <h3>1,284</h3>
+  <sh-chip size="small" variant="raised" color="success">+6%</sh-chip>
+  <sh-chart-sparkline [data]="orders" color="success" area />
+</sh-lo-stat>

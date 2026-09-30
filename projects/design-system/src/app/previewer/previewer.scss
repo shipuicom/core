@@ -72,3 +72,17 @@ sh-tabs {
     display: none;
   }
 }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: p2r(8);
+  padding: p2r(12 20);
+  background-color: var(--base-2);
+  border-bottom: var(--border-10);
+
+  &:empty {
+    display: none;
+  }
+}

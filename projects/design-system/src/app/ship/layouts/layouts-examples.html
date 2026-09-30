@@ -1,0 +1,229 @@
+<div class="content">
+  <app-previewer path="/layouts/examples/page-sandbox/page-sandbox" title="Page" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-lo-page</p>
+      <sh-button-group class="small" [(value)]="pageVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+      <sh-button-group class="small" [(value)]="pageSize">
+        <button value="small">Small</button>
+        <button value="">Default</button>
+        <button value="large">Large</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-page-sandbox [variant]="pageVariant()" [size]="pageSize()" />
+  </app-previewer>
+
+  <app-previewer path="/layouts/examples/section-sandbox/section-sandbox" title="Section" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-lo-section</p>
+      <sh-button-group class="small" [(value)]="sectionVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-section-sandbox [variant]="sectionVariant()" />
+  </app-previewer>
+
+  <app-previewer path="/layouts/examples/setting-sandbox/setting-sandbox" title="Setting" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-lo-setting</p>
+      <sh-button-group class="small" [(value)]="settingVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-setting-sandbox [variant]="settingVariant()" />
+  </app-previewer>
+
+  <app-previewer path="/layouts/examples/empty-state-sandbox/empty-state-sandbox" title="Empty state" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-lo-empty-state</p>
+      <sh-button-group class="small" [(value)]="emptyStateVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-empty-state-sandbox [variant]="emptyStateVariant()" />
+  </app-previewer>
+
+  <app-previewer path="/layouts/examples/toolbar-sandbox/toolbar-sandbox" title="Toolbar" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-lo-toolbar</p>
+      <sh-button-group class="small" [(value)]="toolbarVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-toolbar-sandbox [variant]="toolbarVariant()" />
+  </app-previewer>
+
+  <app-previewer path="/layouts/examples/stat-sandbox/stat-sandbox" title="Stat" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-lo-stat</p>
+      <sh-button-group class="small" [(value)]="statVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+        <button value="type-d">Type D</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-stat-sandbox [variant]="statVariant()" />
+  </app-previewer>
+
+  <app-previewer path="/layouts/examples/stat-trend-sandbox/stat-trend-sandbox" title="Stat trend" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-lo-stat-trend</p>
+      <sh-button-group class="small" [(value)]="statTrendVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-stat-trend-sandbox [variant]="statTrendVariant()" />
+  </app-previewer>
+
+  <app-previewer path="/layouts/examples/stat-goal-sandbox/stat-goal-sandbox" title="Stat goal" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-lo-stat-goal</p>
+      <sh-button-group class="small" [(value)]="statGoalVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-stat-goal-sandbox [variant]="statGoalVariant()" />
+  </app-previewer>
+
+  <app-previewer path="/layouts/examples/stat-ring-sandbox/stat-ring-sandbox" title="Stat ring" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-lo-stat-ring</p>
+      <sh-button-group class="small" [(value)]="statRingVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-stat-ring-sandbox [variant]="statRingVariant()" />
+  </app-previewer>
+
+  <app-previewer path="/layouts/examples/ranking-sandbox/ranking-sandbox" title="Ranking" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-lo-ranking</p>
+      <sh-button-group class="small" [(value)]="rankingVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-ranking-sandbox [variant]="rankingVariant()" />
+  </app-previewer>
+
+  <app-previewer path="/layouts/examples/achievement-sandbox/achievement-sandbox" title="Achievement" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-lo-achievement</p>
+      <sh-button-group class="small" [(value)]="achievementVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+      <sh-toggle [(checked)]="achievementDynamic" color="primary" variant="raised">Dynamic color</sh-toggle>
+      @if (achievementDynamic()) {
+        <sh-color-picker
+          class="controls-hue"
+          [renderingType]="'hue'"
+          [selectedColor]="achievementPickedColor()"
+          (currentColor)="achievementCurrentColor.set($event)" />
+      } @else {
+        <sh-button-group class="small" [(value)]="achievementColor">
+          <button value="primary">Primary</button>
+          <button value="accent">Accent</button>
+          <button value="warn">Warn</button>
+          <button value="error">Error</button>
+          <button value="success">Success</button>
+        </sh-button-group>
+      }
+      <sh-button-group class="small" [(value)]="achievementMedia">
+        <button value="icon">Icon</button>
+        <button value="image">Image</button>
+      </sh-button-group>
+      <sh-toggle [(checked)]="achievementLocked" color="primary" variant="raised">Last locked</sh-toggle>
+    </ng-container>
+
+    <app-achievement-sandbox
+      [variant]="achievementVariant()"
+      [color]="achievementColor()"
+      [media]="achievementMedia()"
+      [locked]="achievementLocked()"
+      [dynamicColor]="achievementDynamic() ? achievementCurrentColor()?.hsl : null" />
+  </app-previewer>
+
+  <app-previewer path="/layouts/examples/inbox-sandbox/inbox-sandbox" title="Inbox" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-lo-inbox</p>
+      <sh-button-group class="small" [(value)]="inboxVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+      <sh-toggle [(checked)]="inboxReadingPane" color="primary" variant="raised">Reading pane</sh-toggle>
+    </ng-container>
+
+    <app-inbox-sandbox [variant]="inboxVariant()" [readingPane]="inboxReadingPane()" />
+  </app-previewer>
+
+  <app-previewer path="/layouts/examples/table-view-sandbox/table-view-sandbox" title="Table view" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-lo-table-view</p>
+      <sh-button-group class="small" [(value)]="tableViewVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-table-view-sandbox [variant]="tableViewVariant()" />
+  </app-previewer>
+
+  <app-previewer path="/layouts/examples/details-sandbox/details-sandbox" title="Details" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-lo-details</p>
+      <sh-button-group class="small" [(value)]="detailsVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-details-sandbox [variant]="detailsVariant()" />
+  </app-previewer>
+
+  <app-previewer path="/layouts/examples/timeline-sandbox/timeline-sandbox" title="Timeline" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-lo-timeline</p>
+      <sh-button-group class="small" [(value)]="timelineVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-timeline-sandbox [variant]="timelineVariant()" />
+  </app-previewer>
+</div>

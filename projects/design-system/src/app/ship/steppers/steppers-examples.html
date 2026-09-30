@@ -1,6 +1,17 @@
 <div class="sandbox-example">
   <app-previewer path="/steppers/examples/stepper-sandbox/stepper-sandbox" title="Sandbox" class="no-space">
-    <app-stepper-sandbox />
+    <ng-container controls>
+      <sh-button-group class="small" [(value)]="color">
+        <button value="">Default</button>
+        <button value="primary">Primary</button>
+        <button value="accent">Accent</button>
+        <button value="warn">Warn</button>
+        <button value="error">Error</button>
+        <button value="success">Success</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-stepper-sandbox [color]="color()" />
   </app-previewer>
 </div>
 

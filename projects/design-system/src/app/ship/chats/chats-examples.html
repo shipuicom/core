@@ -1,0 +1,25 @@
+<app-previewer path="/chats/examples/chat-sandbox/chat-sandbox" title="Sandbox" class="no-space">
+  <ng-container controls>
+    <sh-button-group class="small" [(value)]="variant">
+      <button value="">Default</button>
+      <button value="type-b">Type B</button>
+      <button value="type-c">Type C</button>
+    </sh-button-group>
+    <sh-button-group class="small" [(value)]="color">
+      <button value="">Default</button>
+      <button value="primary">Primary</button>
+      <button value="accent">Accent</button>
+      <button value="success">Success</button>
+    </sh-button-group>
+  </ng-container>
+
+  <app-chat-sandbox [variant]="variant()" [color]="color()" />
+</app-previewer>
+
+<app-previewer path="/chats/examples/chat-interface/chat-interface" title="Chat interface" class="no-space">
+  <app-chat-interface-example />
+</app-previewer>
+
+<app-previewer path="/chats/examples/chat-page/chat-page" title="Messages page" class="no-space">
+  <app-chat-page-example />
+</app-previewer>

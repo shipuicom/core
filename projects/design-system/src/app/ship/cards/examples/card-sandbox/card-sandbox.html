@@ -1,36 +1,16 @@
-<div class="controls">
-  <header>
-    <div class="column">
-      <p>Controls (sh-card)</p>
-      <sh-button-group class="small" [(value)]="cardType">
-        <button value="type-a">Type A</button>
-        <button value="type-b">Type B</button>
-        <button value="type-c">Type C</button>
-      </sh-button-group>
-    </div>
+<sh-card [variant]="variant()">Hello world (sh-card)</sh-card>
 
-    <div class="column">
-      <p>Controls (sh-toggle-card)</p>
-      <sh-toggle [(checked)]="disableToggle" color="primary" variant="raised">Disable Toggle</sh-toggle>
-    </div>
-  </header>
-</div>
+<sh-toggle-card [variant]="variant()" [disableToggle]="disableToggle()">
+  <ng-container title>Advanced options</ng-container>
+  <p>Hello world (sh-toggle-card)</p>
 
-<div class="sandbox">
-  <sh-card [variant]="cardType()">Hello world (sh-card)</sh-card>
+  <p>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore
+    magna aliqua.
+  </p>
 
-  <sh-toggle-card [variant]="cardType()" [disableToggle]="disableToggle()">
-    <ng-container title>Advanced options</ng-container>
-    <p>Hello world (sh-toggle-card)</p>
-
-    <p>
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore
-      magna aliqua.
-    </p>
-
-    <p>
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore
-      magna aliqua.
-    </p>
-  </sh-toggle-card>
-</div>
+  <p>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore
+    magna aliqua.
+  </p>
+</sh-toggle-card>

@@ -1,6 +1,27 @@
 <div class="sandbox-example">
   <app-previewer path="/radio-buttons/examples/radio-sandbox/radio-sandbox" title="Sandbox" class="no-space">
-    <app-radio-sandbox />
+    <ng-container controls>
+      <sh-toggle [(checked)]="disabled" color="primary" variant="raised">Disabled</sh-toggle>
+
+      <sh-button-group class="small" [(value)]="color">
+        <button value="">Default</button>
+        <button value="primary">Primary</button>
+        <button value="accent">Accent</button>
+        <button value="warn">Warn</button>
+        <button value="error">Error</button>
+        <button value="success">Success</button>
+      </sh-button-group>
+
+      <sh-button-group class="small" [(value)]="variant">
+        <button value="">Default</button>
+        <button value="simple">Simple</button>
+        <button value="outlined">Outlined</button>
+        <button value="flat">Flat</button>
+        <button value="raised">Raised</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-radio-sandbox [disabled]="disabled()" [color]="color()" [variant]="variant()" />
   </app-previewer>
 </div>
 

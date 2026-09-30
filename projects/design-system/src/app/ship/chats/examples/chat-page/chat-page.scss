@@ -1,0 +1,156 @@
+@use 'helpers' as *;
+
+:host {
+  display: block;
+}
+
+.messages {
+  display: grid;
+  grid-template-columns: p2r(300) 1fr;
+  height: p2r(640);
+  background-color: var(--base-1);
+  border-top: var(--border-10);
+  border-color: var(--base-4);
+}
+
+aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 0;
+  padding: var(--space-4) var(--space-3);
+  border-inline-end: var(--border-10);
+  border-color: var(--base-4);
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: var(--space-1);
+
+    h2 {
+      margin: 0;
+      font: var(--paragraph-10);
+      font-weight: 600;
+    }
+  }
+
+  sh-list {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+
+    > button {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      text-align: start;
+    }
+  }
+
+  .preview {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-width: 0;
+
+    small {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font: var(--paragraph-40);
+      color: var(--base-8);
+    }
+  }
+
+  .none {
+    padding: var(--space-3);
+    font: var(--paragraph-30);
+    color: var(--base-8);
+  }
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: var(--border-10);
+    border-color: var(--base-4);
+
+    .title {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 0;
+      min-width: 0;
+      margin-inline-start: var(--space-1);
+      font: var(--paragraph-30);
+
+      small {
+        font: var(--paragraph-40);
+        color: var(--base-8);
+      }
+    }
+
+    .back {
+      display: none;
+    }
+  }
+}
+
+.thread {
+  flex: 1 1 0;
+  overflow-y: auto;
+  padding: var(--space-4);
+
+  sh-divider {
+    margin-block-end: var(--space-4);
+    font: var(--paragraph-40);
+    color: var(--base-8);
+  }
+}
+
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-top: var(--border-10);
+  border-color: var(--base-4);
+
+  sh-form-field {
+    flex: 1 1 0;
+  }
+
+  textarea {
+    resize: none;
+    field-sizing: content;
+    max-height: p2r(120);
+  }
+}
+
+// One pane at a time on narrow screens: the list, or the open conversation.
+@include breakpoint(-milli) {
+  .messages {
+    grid-template-columns: 1fr;
+
+    main,
+    &.open aside {
+      display: none;
+    }
+
+    &.open main {
+      display: flex;
+    }
+  }
+
+  main header .back {
+    display: inline-flex;
+  }
+}

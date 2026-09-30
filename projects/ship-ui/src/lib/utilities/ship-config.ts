@@ -79,10 +79,27 @@ export interface ShipConfig {
   'event-card'?: ShipComponentConfig;
   datepicker?: ShipComponentConfig;
   rangeSlider?: ShipRangeSliderConfig;
+  layoutPage?: ShipComponentConfig;
+  layoutSection?: ShipComponentConfig;
+  layoutSetting?: ShipComponentConfig;
+  layoutEmptyState?: ShipComponentConfig;
+  layoutStat?: ShipComponentConfig;
+  layoutStatTrend?: ShipComponentConfig;
+  layoutStatGoal?: ShipComponentConfig;
+  layoutStatRing?: ShipComponentConfig;
+  layoutRanking?: ShipComponentConfig;
+  layoutAchievement?: ShipComponentConfig;
+  layoutInbox?: ShipComponentConfig;
+  layoutTableView?: ShipComponentConfig;
+  layoutDetails?: ShipComponentConfig;
+  layoutTimeline?: ShipComponentConfig;
+  layoutToolbar?: ShipComponentConfig;
+  breadcrumbs?: ShipComponentConfig;
+  chat?: ShipComponentConfig;
 
   
   alertVariant?: '' | 'simple' | 'outlined' | 'flat' | 'raised';
-  cardType?: '' | 'type-b' | 'type-c';
+  cardType?: '' | 'type-b' | 'type-c' | 'type-d';
   dialogType?: 'type-b';
   tableType?: 'type-b';
   sidenavType?: 'overlay' | 'simple';

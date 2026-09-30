@@ -1,0 +1,28 @@
+<app-previewer defaultView="markup" path="/breadcrumbs/examples/basic-breadcrumbs/basic-breadcrumbs" title="Basic">
+  <app-basic-breadcrumbs-example class="example" />
+</app-previewer>
+
+<p>
+  <code>sh-breadcrumbs</code>
+  shows where the current page sits in the app. Put the crumbs in as direct children — links, buttons or a plain
+  <code>span</code>
+  , optionally with an
+  <code>sh-icon</code>
+  — and separators are drawn between them. The last crumb is styled as the current page; mark it
+  <code>aria-current="page"</code>
+  .
+</p>
+
+<p>
+  The base style is headless: just type, color and separators, so it fits anywhere. Use
+  <code>variant="type-b"</code>
+  for a boxed surface or
+  <code>variant="type-c"</code>
+  for pill crumbs, and set a project default with
+  <code>{{ '{' }} breadcrumbs: {{ '{' }} variant: 'type-b' {{ '}' }} {{ '}' }}</code>
+  in
+  <code>ShipConfig</code>
+  . Inside an
+  <code>sh-lo-page</code>
+  it lands in the page's nav area automatically.
+</p>

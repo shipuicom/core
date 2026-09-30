@@ -1,0 +1,160 @@
+<app-previewer path="/layouts/examples/dashboard-page/dashboard-page" title="Dashboard page" class="no-space">
+  <app-dashboard-page-example />
+</app-previewer>
+
+<app-previewer path="/layouts/examples/settings-page/settings-page" title="Settings page" class="no-space">
+  <app-settings-page-example />
+</app-previewer>
+
+<app-property-viewer>
+  <section>
+    <h4>Slot it in</h4>
+    <p>
+      Layout components arrange what you put in them. A
+      <code>&lt;sh-lo-page&gt;</code>
+      takes a
+      <code>nav</code>
+      , an
+      <code>h1</code>
+      , a
+      <code>p</code>
+      , buttons marked
+      <code>actions</code>
+      , an
+      <code>sh-tabs</code>
+      , the content, and an element marked
+      <code>aside</code>
+      — in any order — and lays them out as a page. The same goes for
+      <code>&lt;sh-lo-section&gt;</code>
+      ,
+      <code>&lt;sh-lo-setting&gt;</code>
+      ,
+      <code>&lt;sh-lo-empty-state&gt;</code>
+      ,
+      <code>&lt;sh-lo-toolbar&gt;</code>
+      (a Gmail-style line of icon buttons grouped by
+      <code>sh-divider</code>
+      s, count/pagination marked
+      <code>end</code>
+      ),
+      <code>&lt;sh-lo-stat&gt;</code>
+      (label, value, delta, progress bar, sparkline, footer; give it a
+      <code>color</code>
+      for a tinted headline tile),
+      <code>&lt;sh-lo-stat-ring&gt;</code>
+      (a
+      <code>value</code>
+      /
+      <code>max</code>
+      drawn as a progress ring),
+      <code>&lt;sh-lo-ranking&gt;</code>
+      (
+      <code>sh-lo-ranking-item</code>
+      s with a
+      <code>value</code>
+      drawn as proportional bars),
+      <code>&lt;sh-lo-achievement&gt;</code>
+      (a badge: icon or image medallion, title, tag, description and meta, in any
+      <code>color</code>
+      , optionally
+      <code>locked</code>
+      ),
+      <code>&lt;sh-lo-inbox&gt;</code>
+      (a full-page mail client: folders,
+      <code>sh-lo-toolbar</code>
+      ,
+      <code>sh-lo-inbox-item</code>
+      rows and a reading pane),
+      <code>&lt;sh-lo-table-view&gt;</code>
+      (a full-page data view: header, filters, bulk-action toolbar, a table that scrolls under its sticky header and a
+      footer),
+      <code>&lt;sh-lo-details&gt;</code>
+      (
+      <code>sh-lo-detail</code>
+      rows of
+      <code>dt</code>
+      + value) and
+      <code>&lt;sh-lo-timeline&gt;</code>
+      (
+      <code>sh-lo-timeline-item</code>
+      s with a marker, title,
+      <code>time</code>
+      ).
+    </p>
+  </section>
+  <section>
+    <h4>Spacing</h4>
+    <p>
+      The outer rhythm (page padding, gaps between sections, header spacing) is owned by the layout, so content never
+      needs margins. Inside your own content use the spacing scale:
+      <code>--space-1</code>
+      (4px) …
+      <code>--space-8</code>
+      (64px), and override a layout's rhythm through its variables (
+      <code>--page-gap</code>
+      ,
+      <code>--section-gap</code>
+      , …).
+    </p>
+  </section>
+  <section>
+    <h4>Variants</h4>
+    <p>
+      Every layout takes a
+      <code>variant</code>
+      and a project-wide default can be set in
+      <code>ShipConfig</code>
+      (
+      <code>{{ "{ layoutSection: { variant: 'type-b' } }" }}</code>
+      ).
+      <b>sh-lo-page</b>
+      : type-b divides the header, type-c is flush (no padding).
+      <b>sh-lo-section</b>
+      : type-b is boxed (own surface, divided header), type-c puts title and description in a left column.
+      <b>sh-lo-setting</b>
+      : type-b stacks the control under the label, type-c is compact without dividers.
+      <b>sh-lo-empty-state</b>
+      : type-b has a dashed outline, type-c is a compact inline row.
+      <b>sh-lo-toolbar</b>
+      : type-b boxed, type-c divided.
+      <b>sh-lo-stat</b>
+      : type-b icon tile beside the text, type-c flush (no padding, chart bleeds to the edges), type-d highlighted in
+      its
+      <code>color</code>
+      for the headline metric.
+      <b>sh-lo-stat-trend</b>
+      : type-b chart beside the text, type-c plain surface without the wash.
+      <b>sh-lo-stat-goal</b>
+      : type-b ten-segment bar, type-c compact without a card.
+      <b>sh-lo-stat-ring</b>
+      : type-b large ring with the label underneath, type-c compact inline row without a card.
+      <b>sh-lo-ranking</b>
+      : type-b bar as a tinted background behind the row, type-c dense divided rows without bars.
+      <b>sh-lo-achievement</b>
+      : type-b horizontal row, type-c compact pill for rows of earned badges.
+      <b>sh-lo-inbox</b>
+      : type-b list and reader as separate cards with two-line rows, type-c compact rows without avatars.
+      <b>sh-lo-table-view</b>
+      : type-b toolbar, table and footer inside one card, type-c flush (no page padding).
+      <b>sh-lo-details</b>
+      : type-b stacked pairs in a grid, type-c compact.
+      <b>sh-lo-timeline</b>
+      : type-b no connecting line, type-c compact.
+    </p>
+  </section>
+  <section>
+    <h4>Sizes</h4>
+    <p>
+      <code>&lt;sh-lo-page size="small"&gt;</code>
+      (720px) for forms and settings, default (1200px) for most pages,
+      <code>large</code>
+      (1440px) for dense dashboards, or class
+      <code>full</code>
+      for no limit. The
+      <code>aside</code>
+      column drops below the content under 1024px; add class
+      <code>sticky</code>
+      to pin it.
+    </p>
+  </section>
+</app-property-viewer>

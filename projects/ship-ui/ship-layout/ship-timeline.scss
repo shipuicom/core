@@ -1,0 +1,113 @@
+@use 'helpers' as *;
+
+$shipTimeline: true !default;
+
+@if $shipTimeline == true {
+  sh-lo-timeline {
+    --timeline-gap: var(--space-5);
+    --timeline-marker-si: #{p2r(32)};
+    --timeline-line-c: var(--base-4);
+    --timeline-line-w: #{p2r(2)};
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--timeline-gap);
+    min-width: 0;
+
+    sh-lo-timeline-item {
+      position: relative;
+      display: flex;
+      gap: var(--space-3);
+      min-width: 0;
+
+      // The connecting line runs from this marker to the next item's.
+      &:not(:last-child)::before {
+        content: '';
+        position: absolute;
+        top: var(--timeline-marker-si);
+        bottom: calc(-1 * var(--timeline-gap));
+        left: calc(var(--timeline-marker-si) / 2);
+        width: var(--timeline-line-w);
+        transform: translateX(-50%);
+        background-color: var(--timeline-line-c);
+      }
+
+      > .marker {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 var(--timeline-marker-si);
+        width: var(--timeline-marker-si);
+        height: var(--timeline-marker-si);
+        border-radius: 50%;
+        background-color: var(--base-3);
+        color: var(--base-9);
+
+        > sh-avatar {
+          --avatar-size: var(--timeline-marker-si);
+        }
+
+        // No marker slotted: a plain dot.
+        &:empty {
+          width: #{p2r(10)};
+          height: #{p2r(10)};
+          flex-basis: #{p2r(10)};
+          margin: calc((var(--timeline-marker-si) - #{p2r(10)}) / 2);
+          background-color: var(--base-6);
+        }
+      }
+
+      > .content {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+        flex: 1 1 0;
+        min-width: 0;
+        padding-top: calc((var(--timeline-marker-si) - 1.25em) / 2);
+
+        > .head {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: baseline;
+          justify-content: space-between;
+          gap: var(--space-2);
+
+          > b,
+          > strong,
+          > [title] {
+            font: var(--paragraph-30B);
+            color: var(--base-12);
+          }
+
+          > time,
+          > [time] {
+            font: var(--paragraph-40);
+            color: var(--base-8);
+            white-space: nowrap;
+          }
+        }
+
+        > p {
+          font: var(--paragraph-30);
+        }
+      }
+    }
+
+    // Plain list: no connecting line.
+    &.type-b sh-lo-timeline-item::before {
+      display: none;
+    }
+
+    // Compact: small markers, tighter rhythm.
+    &.type-c {
+      --timeline-gap: var(--space-3);
+      --timeline-marker-si: #{p2r(24)};
+
+      sh-lo-timeline-item > .marker {
+        font-size: #{p2r(14)};
+      }
+    }
+  }
+}

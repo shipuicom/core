@@ -2,6 +2,30 @@
   <h3>Variations</h3>
 
   <app-previewer path="/icons/examples/sandbox-icon/sandbox-icon" title="Default" configName="icon">
-    <app-sandbox-icon class="example" />
+    <ng-container controls>
+      <sh-button-group class="small" [(value)]="size">
+        <button value="">Default</button>
+        <button value="large">Large</button>
+        <button value="small">Small</button>
+        <button value="inherit">Inherit</button>
+      </sh-button-group>
+
+      <sh-button-group class="small" [(value)]="color">
+        <button value="">Default</button>
+        <button value="primary">Primary</button>
+        <button value="accent">Accent</button>
+        <button value="warn">Warn</button>
+        <button value="error">Error</button>
+        <button value="success">Success</button>
+      </sh-button-group>
+
+      @if (size() === '') {
+        <sh-range-slider>
+          <input type="range" aria-label="Icon size" [min]="10" [max]="64" [step]="2" [(ngModel)]="sizeValue" />
+        </sh-range-slider>
+      }
+    </ng-container>
+
+    <app-sandbox-icon [size]="size()" [sizeValue]="sizeValue()" [color]="color()" />
   </app-previewer>
 </div>

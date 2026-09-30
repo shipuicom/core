@@ -1,0 +1,79 @@
+@use 'helpers' as *;
+
+$shipSetting: true !default;
+
+@if $shipSetting == true {
+  sh-lo-setting {
+    --setting-p: var(--space-5);
+    --setting-gap: var(--space-3) var(--space-6);
+    --setting-text-w: #{p2r(224)};
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--setting-gap);
+    padding-block: var(--setting-p);
+    min-width: 0;
+
+    & + sh-lo-setting {
+      border-top: var(--border-10);
+    }
+
+    &:first-child {
+      padding-top: 0;
+    }
+
+    &:last-child {
+      padding-bottom: 0;
+    }
+
+    // Stacked: label and description above a full-width control.
+    &.type-b {
+      flex-direction: column;
+      align-items: stretch;
+
+      > .text,
+      > .control {
+        flex-basis: auto;
+      }
+    }
+
+    // Compact: tighter rows, no dividers.
+    &.type-c {
+      --setting-p: var(--space-3);
+
+      & + sh-lo-setting {
+        border-top: 0;
+      }
+    }
+
+    > .text {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      flex: 1 1 var(--setting-text-w);
+      min-width: 0;
+
+      > label,
+      > h3,
+      > h4 {
+        font: var(--paragraph-30B);
+        color: var(--base-12);
+      }
+
+      > p,
+      > [description] {
+        font: var(--paragraph-30);
+      }
+    }
+
+    > .control {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-3);
+      flex: 2 1 #{p2r(320)};
+      min-width: 0;
+    }
+  }
+}

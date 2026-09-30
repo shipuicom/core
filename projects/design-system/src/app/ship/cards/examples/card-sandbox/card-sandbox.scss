@@ -3,40 +3,6 @@
 :host {
   display: flex;
   flex-direction: column;
-  gap: p2r(20);
-  padding: 0;
-}
-
-.controls {
-  display: flex;
-  flex-direction: column;
-  gap: p2r(8);
-  border-bottom: var(--border-10);
-  padding: p2r(20);
-  background-color: var(--base-2);
-}
-
-header {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: p2r(12);
-
-  .row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: p2r(8);
-  }
-
-  .column {
-    display: flex;
-    flex-direction: column;
-    gap: p2r(8);
-  }
-}
-
-.sandbox {
-  display: flex;
-  flex-direction: column;
   gap: p2r(32);
   padding: p2r(60 20);
   width: 100%;

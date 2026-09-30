@@ -1,0 +1,55 @@
+@use 'helpers' as *;
+
+// A fixed-height frame so the inbox behaves like a full page.
+:host {
+  display: block;
+  height: p2r(620);
+  padding: var(--space-4);
+}
+
+.reader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  font: var(--paragraph-30);
+  color: var(--base-10);
+
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+
+    h2 {
+      font: var(--paragraph-10B);
+      color: var(--base-12);
+    }
+  }
+
+  .sender {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+
+    div {
+      display: flex;
+      flex-direction: column;
+    }
+
+    small {
+      font: var(--paragraph-40);
+      color: var(--base-8);
+    }
+  }
+
+  .reply {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+  }
+}
+
+.not-starred {
+  color: var(--base-6);
+}

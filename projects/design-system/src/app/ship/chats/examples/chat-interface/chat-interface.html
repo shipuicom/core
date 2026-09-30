@@ -1,0 +1,58 @@
+<sh-card class="chat">
+  <header>
+    <sh-avatar-group size="small">
+      <sh-avatar name="Ada Lovelace" />
+      <sh-avatar name="Grace Hopper" />
+    </sh-avatar-group>
+    <div class="title">
+      <b>Launch crew</b>
+      <small>Ada, Grace and you</small>
+    </div>
+    <button shButton noBg aria-label="Conversation options">
+      <sh-icon>dots-three</sh-icon>
+    </button>
+  </header>
+
+  <div class="thread" #scroller role="log" aria-label="Messages">
+    <sh-divider>Today</sh-divider>
+
+    @for (message of thread(); track message.id) {
+      <sh-chat [outgoing]="message.from === 'me'" [continued]="message.continued">
+        @if (!message.continued && message.from !== 'me') {
+          <sh-avatar [name]="people[message.from]" />
+        }
+        @if (!message.continued && message.from !== 'me') {
+          <b>{{ people[message.from] }}</b>
+        }
+        @if (!message.continued) {
+          <time>{{ message.time }}</time>
+        }
+        {{ message.text }}
+        @for (reaction of message.reactions; track reaction) {
+          <sh-chip size="small" variant="simple">{{ reaction }}</sh-chip>
+        }
+      </sh-chat>
+    }
+
+    @if (typing()) {
+      <sh-chat typing>
+        <sh-avatar name="Ada Lovelace" />
+      </sh-chat>
+    }
+  </div>
+
+  <form class="composer" (submit)="send($event)">
+    <sh-form-field>
+      <textarea
+        rows="1"
+        placeholder="Message Launch crew"
+        aria-label="Message"
+        [value]="draft()"
+        (input)="draft.set($any($event.target).value)"
+        (keydown.enter)="send($event)"></textarea>
+    </sh-form-field>
+    <button shButton type="submit" color="primary" variant="raised" aria-label="Send" [disabled]="!draft().trim()">
+      <sh-icon>paper-plane-right</sh-icon>
+    </button>
+  </form>
+</sh-card>

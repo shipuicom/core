@@ -1,59 +1,26 @@
-<div class="controls">
-  <p>Controls</p>
-  <header>
-    <div class="row">
-      <sh-button-group class="small" [(value)]="size">
-        <button value="">Default</button>
-        <button value="large">Large</button>
-        <button value="small">Small</button>
-        <button value="inherit">Inherit</button>
-      </sh-button-group>
+<section>
+  <h4>Cloud-warning</h4>
+  <sh-icon [size]="size()" [color]="color()">cloud-warning</sh-icon>
+  <sh-icon [size]="size()" [color]="color()">cloud-warning-thin</sh-icon>
+  <sh-icon [size]="size()" [color]="color()">cloud-warning-light</sh-icon>
+  <sh-icon [size]="size()" [color]="color()">cloud-warning-fill</sh-icon>
+  <sh-icon [size]="size()" [color]="color()">cloud-warning-bold</sh-icon>
+</section>
 
-      <sh-button-group class="small" [(value)]="colorClass">
-        <button value="">Default</button>
-        <button value="primary">Primary</button>
-        <button value="accent">Accent</button>
-        <button value="warn">Warn</button>
-        <button value="error">Error</button>
-        <button value="success">Success</button>
-      </sh-button-group>
-    </div>
+<section>
+  <h4>Warning</h4>
+  <sh-icon [size]="size()" [color]="color()">warning</sh-icon>
+  <sh-icon [size]="size()" [color]="color()">warning-thin</sh-icon>
+  <sh-icon [size]="size()" [color]="color()">warning-light</sh-icon>
+  <sh-icon [size]="size()" [color]="color()">warning-fill</sh-icon>
+  <sh-icon [size]="size()" [color]="color()">warning-bold</sh-icon>
+</section>
 
-    @if (size() === '') {
-      <div class="row">
-        <sh-range-slider>
-          <input type="range" aria-label="Icon size" [min]="10" [max]="64" [step]="2" [(ngModel)]="sizeValue" />
-        </sh-range-slider>
-      </div>
-    }
-  </header>
-</div>
-
-<div class="sandbox" [style.font-size]="sizeValue() + 'px'">
-  <section>
-    <h4>Cloud-warning</h4>
-    <sh-icon [size]="size()" [color]="colorClass()">cloud-warning</sh-icon>
-    <sh-icon [size]="size()" [color]="colorClass()">cloud-warning-thin</sh-icon>
-    <sh-icon [size]="size()" [color]="colorClass()">cloud-warning-light</sh-icon>
-    <sh-icon [size]="size()" [color]="colorClass()">cloud-warning-fill</sh-icon>
-    <sh-icon [size]="size()" [color]="colorClass()">cloud-warning-bold</sh-icon>
-  </section>
-
-  <section>
-    <h4>Warning</h4>
-    <sh-icon [size]="size()" [color]="colorClass()">warning</sh-icon>
-    <sh-icon [size]="size()" [color]="colorClass()">warning-thin</sh-icon>
-    <sh-icon [size]="size()" [color]="colorClass()">warning-light</sh-icon>
-    <sh-icon [size]="size()" [color]="colorClass()">warning-fill</sh-icon>
-    <sh-icon [size]="size()" [color]="colorClass()">warning-bold</sh-icon>
-  </section>
-
-  <section>
-    <h4>Warning warning-octagon</h4>
-    <sh-icon [size]="size()" [color]="colorClass()">warning-octagon</sh-icon>
-    <sh-icon [size]="size()" [color]="colorClass()">warning-octagon-thin</sh-icon>
-    <sh-icon [size]="size()" [color]="colorClass()">warning-octagon-light</sh-icon>
-    <sh-icon [size]="size()" [color]="colorClass()">warning-octagon-fill</sh-icon>
-    <sh-icon [size]="size()" [color]="colorClass()">warning-octagon-bold</sh-icon>
-  </section>
-</div>
+<section>
+  <h4>Warning warning-octagon</h4>
+  <sh-icon [size]="size()" [color]="color()">warning-octagon</sh-icon>
+  <sh-icon [size]="size()" [color]="color()">warning-octagon-thin</sh-icon>
+  <sh-icon [size]="size()" [color]="color()">warning-octagon-light</sh-icon>
+  <sh-icon [size]="size()" [color]="color()">warning-octagon-fill</sh-icon>
+  <sh-icon [size]="size()" [color]="color()">warning-octagon-bold</sh-icon>
+</section>

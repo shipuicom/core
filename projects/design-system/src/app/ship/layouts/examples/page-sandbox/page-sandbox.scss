@@ -1,0 +1,11 @@
+@use 'helpers' as *;
+
+:host {
+  display: block;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(p2r(180), 1fr));
+  gap: var(--space-4);
+}

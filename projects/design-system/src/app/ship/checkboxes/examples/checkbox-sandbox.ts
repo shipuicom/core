@@ -1,33 +1,31 @@
-import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, input, model, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { disabled, form, FormField } from '@angular/forms/signals';
-import { ShipButtonGroup } from '@ship-ui/core/ship-button-group';
 import { ShipCheckbox } from '@ship-ui/core/ship-checkbox';
-import { ShipToggle } from '@ship-ui/core/ship-toggle';
 
 @Component({
   selector: 'app-checkbox-sandbox',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, FormField, ShipCheckbox, ShipButtonGroup, ShipToggle],
+  imports: [ReactiveFormsModule, FormsModule, FormField, ShipCheckbox],
   templateUrl: './checkbox-sandbox.html',
   styleUrl: './checkbox-sandbox.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CheckboxSandbox {
-  isIndeterminate = signal<boolean>(false);
-  isDisabled = signal<boolean>(false);
-  colorClass = signal<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
-  variationClass = signal<'' | 'simple' | 'outlined' | 'flat' | 'raised'>('raised');
+  checked = model<boolean>(true);
+  indeterminate = input(false);
+  disabled = input(false);
+  color = input<'' | 'primary' | 'accent' | 'warn' | 'error' | 'success'>('primary');
+  variant = input<'' | 'simple' | 'outlined' | 'flat' | 'raised'>('raised');
 
-  isChecked = signal<boolean>(true);
   formCtrl = new FormControl<boolean | null>(true);
   formFieldSignal = signal(true);
   formFieldAsForm = form(this.formFieldSignal, (schemaPath) => {
-    disabled(schemaPath, () => this.isDisabled());
+    disabled(schemaPath, () => this.disabled());
   });
 
   disabledEffect = effect(() => {
-    const isDisabled = this.isDisabled();
+    const isDisabled = this.disabled();
 
     if (isDisabled) {
       this.formCtrl.disable();

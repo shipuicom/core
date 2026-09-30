@@ -1,0 +1,21 @@
+<sh-card>
+  <sh-lo-setting [variant]="variant()">
+    <label for="display-name">Display name</label>
+    <p>Shown on your profile and in mentions.</p>
+    <sh-form-field>
+      <input id="display-name" value="Simon" />
+    </sh-form-field>
+  </sh-lo-setting>
+
+  <sh-lo-setting [variant]="variant()">
+    <label>Public profile</label>
+    <p>Anyone with the link can see your profile.</p>
+    <sh-toggle color="primary" [checked]="true" />
+  </sh-lo-setting>
+
+  <sh-lo-setting [variant]="variant()">
+    <label>Sounds</label>
+    <p>Play a sound for new messages.</p>
+    <sh-toggle color="primary" />
+  </sh-lo-setting>
+</sh-card>

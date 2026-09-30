@@ -36,6 +36,21 @@ themeState.setTheme('light');
 // null clears the stored preference and falls back to the system theme
 themeState.setTheme(null);`;
 
+  codeInit = `<!-- index.html -->
+<head>
+  ...
+  <script>
+    try {
+      var t = localStorage.getItem('shipTheme');
+      if (t === 'dark' || t === 'light') document.documentElement.classList.add(t);
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="/ship.css" />
+</head>`;
+
+  codeInitConst = `// The same snippet is exported if you'd rather generate it
+import { SHIP_THEME_INIT_SCRIPT } from '@ship-ui/core/ship-theme-toggle';`;
+
   codeReact = `import { effect } from '@angular/core';
 
 // theme is a read-only signal — react to changes anywhere

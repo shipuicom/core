@@ -1,21 +1,18 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { ShipCheckbox } from '@ship-ui/core/ship-checkbox';
+import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
 import { ShipFileUpload } from '@ship-ui/core/ship-file-upload';
-import { ShipFormField } from '@ship-ui/core/ship-form-field';
 
 @Component({
   selector: 'app-file-upload-sandbox',
   standalone: true,
-  imports: [FormsModule, ShipFileUpload, ShipCheckbox, ShipFormField],
+  imports: [ShipFileUpload],
   templateUrl: './file-upload-sandbox.html',
   styleUrl: './file-upload-sandbox.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FileUploadSandbox {
   files = signal<File[]>([]);
-  multiple = signal<boolean>(true);
-  accept = signal<string>('.json,.png');
-  placeholder = signal<string>('Click or drag files here');
-  overlayText = signal<string>('Drop files here');
+  multiple = input(true);
+  accept = input('.json,.png');
+  placeholder = input('Click or drag files here');
+  overlayText = input('Drop files here');
 }

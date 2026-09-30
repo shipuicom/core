@@ -1,0 +1,69 @@
+@use 'helpers' as *;
+
+:host {
+  display: block;
+  padding: p2r(24);
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  max-width: p2r(560);
+  height: p2r(520);
+  margin: 0 auto;
+  padding: 0;
+  overflow: hidden;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: var(--border-10);
+  border-color: var(--base-4);
+
+  .title {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-width: 0;
+    font: var(--paragraph-30);
+
+    small {
+      font: var(--paragraph-40);
+      color: var(--base-8);
+    }
+  }
+}
+
+.thread {
+  flex: 1 1 0;
+  overflow-y: auto;
+  padding: var(--space-4);
+
+  sh-divider {
+    margin-block-end: var(--space-4);
+    font: var(--paragraph-40);
+    color: var(--base-8);
+  }
+}
+
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-top: var(--border-10);
+  border-color: var(--base-4);
+
+  sh-form-field {
+    flex: 1 1 0;
+  }
+
+  textarea {
+    resize: none;
+    field-sizing: content;
+    max-height: p2r(120);
+  }
+}

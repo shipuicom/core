@@ -1,6 +1,17 @@
 <div class="sandbox-example">
   <app-previewer path="/tabs/examples/tabs-sandbox/tabs-sandbox" title="Sandbox" class="no-space">
-    <app-tabs-sandbox />
+    <ng-container controls>
+      <sh-button-group class="small" [(value)]="color">
+        <button value="">Default</button>
+        <button value="primary">Primary</button>
+        <button value="accent">Accent</button>
+        <button value="warn">Warn</button>
+        <button value="error">Error</button>
+        <button value="success">Success</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-tabs-sandbox [color]="color()" />
   </app-previewer>
 </div>
 

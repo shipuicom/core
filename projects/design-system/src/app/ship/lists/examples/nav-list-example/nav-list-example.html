@@ -1,0 +1,17 @@
+<sh-list class="type-c">
+  @for (page of pages; track page.id) {
+    <button type="button" (click)="opened.set(page.id)">
+      <sh-icon>{{ page.icon }}</sh-icon>
+      <span class="text-group">
+        <span class="label">{{ page.title }}</span>
+        <span class="description">{{ page.description }}</span>
+      </span>
+      <sh-icon suffix>caret-right</sh-icon>
+    </button>
+  }
+</sh-list>
+
+<p class="selected-value">
+  Opened:
+  <code>{{ opened() ?? 'none' }}</code>
+</p>

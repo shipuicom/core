@@ -1,42 +1,22 @@
-<div class="controls">
-  <p>Controls</p>
-  <header>
-    <div class="row">
-      <sh-toggle [(checked)]="allowMultiple" class="primary raised">Allow Multiple Open</sh-toggle>
-      <sh-select color="primary" [selectMultiple]="allowMultiple()" [options]="availablePanels">
-        <label>Open Panels</label>
-        <input type="text" [(ngModel)]="selectedPanelsArray" style="display: none" />
-      </sh-select>
+<sh-accordion [(value)]="value" [allowMultiple]="allowMultiple()" [variant]="variant()">
+  <details value="panel1">
+    <summary>Personal Information</summary>
+    <p>
+      This is standard content projected inside native HTML tags! The entire accordion is configured seamlessly with
+      DOM structure.
+    </p>
+  </details>
 
-      <sh-select color="primary" [options]="availableVariants" label="label" value="value" [isClearable]="false">
-        <label>Variant</label>
-        <input type="text" [(ngModel)]="variantType" style="display: none" />
-      </sh-select>
-    </div>
-  </header>
-</div>
+  <details value="panel2">
+    <summary>Advanced Settings</summary>
+    <sh-form-field>
+      <label>Settings A</label>
+      <input type="text" value="Configuration" />
+    </sh-form-field>
+  </details>
 
-<div class="sandbox">
-  <sh-accordion [(value)]="openPanels" [allowMultiple]="allowMultiple()" [variant]="variantType()">
-    <details value="panel1">
-      <summary>Personal Information</summary>
-      <p>
-        This is standard content projected inside native HTML tags! The entire accordion is configured seamlessly with
-        DOM structure.
-      </p>
-    </details>
-
-    <details value="panel2">
-      <summary>Advanced Settings</summary>
-      <sh-form-field>
-        <label>Settings A</label>
-        <input type="text" value="Configuration" />
-      </sh-form-field>
-    </details>
-
-    <details value="panel3">
-      <summary>Danger Zone</summary>
-      <button shButton color="error" variant="flat" size="small">Delete Account</button>
-    </details>
-  </sh-accordion>
-</div>
+  <details value="panel3">
+    <summary>Danger Zone</summary>
+    <button shButton color="error" variant="flat" size="small">Delete Account</button>
+  </details>
+</sh-accordion>
