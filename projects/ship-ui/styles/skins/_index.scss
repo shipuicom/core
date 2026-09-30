@@ -1,0 +1,46 @@
+// Skins: the variant x colour blocks of every component, emitted from lists so a consumer can drop what it
+// does not use. A component's structure (layout, sizing, motion, states) ships with the component itself;
+// only the skin lives here.
+//
+//   @use '@ship-ui/core/styles' with (
+//     $shipColors: (primary, error),                 // every skin: only these colour classes
+//     $shipVariants: (simple, flat),                 // every skin: only these sheet variants
+//     $shipSkins: (toggle: (colors: (primary))),     // per skin overrides
+//     $shipToggle: false                             // a skin switched off entirely
+//   );
+@use 'sass:map';
+@use 'sass:list';
+@use './sheet';
+
+/** Colour classes every skin emits by default. */
+$colors: (primary, accent, warn, error, success) !default;
+/** Sheet variants every skin emits by default. */
+$variants: (simple, outlined, flat, raised) !default;
+/** (name: bool) - a skin whose entry is false is not emitted. Fed from the $ship<Name> flags. */
+$enabled: () !default;
+/** (name: (colors: (...), variants: (...))) - per skin lists that win over $colors / $variants. */
+$overrides: () !default;
+
+@function enabled($name) {
+  @return map.get($enabled, $name) != false;
+}
+
+@function colors-for($name) {
+  $o: map.get($overrides, $name);
+  @if $o != null and map.has-key($o, colors) {
+    @return map.get($o, colors);
+  }
+  @return $colors;
+}
+
+@function variants-for($name) {
+  $o: map.get($overrides, $name);
+  @if $o != null and map.has-key($o, variants) {
+    @return map.get($o, variants);
+  }
+  @return $variants;
+}
+
+@if enabled(sheet) {
+  @include sheet.skin(colors-for(sheet), variants-for(sheet));
+}

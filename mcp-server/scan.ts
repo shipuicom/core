@@ -9,7 +9,7 @@ const STYLES_PATH = path.join(SHIP_UI, 'styles/components');
 const EXAMPLES_PATH = path.join(rootPath, 'projects/design-system/src/app/ship');
 const TYPES_FILE = path.join(SHIP_UI, 'src/lib/utilities/ship-types.ts');
 const VARIABLES_FILE = path.join(SHIP_UI, 'styles/core/core/variables.scss');
-const SHEET_FILE = path.join(STYLES_PATH, 'ship-sheet.utility.scss');
+const SHEET_FILE = path.join(SHIP_UI, 'styles/skins/_sheet.scss');
 
 const DEFAULT_OUTPUT = path.join(SHIP_UI, 'assets/mcp/components.json');
 const LOCAL_OUTPUT = path.join(__dirname, 'components.json');

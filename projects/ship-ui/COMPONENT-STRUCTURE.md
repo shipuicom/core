@@ -29,7 +29,7 @@ ship-<name>/
 - Styling classes come from `shipComponentClasses('<camelName>', { color, variant, size, … })` bound with
   `'[class]': 'hostClasses()'`. `<camelName>` is also the key in `ShipConfig` (`eventCard`, `rangeSlider`).
 - A component whose surface is a sheet (button, chip, alert, …) adds the static host class `sh-sheet` (or `sh-sheet-h`
-  when it has a hover state) and lets `styles/components/ship-sheet.utility.scss` provide the variant × colour skin.
+  when it has a hover state) and lets `styles/skins/_sheet.scss` provide the variant × colour skin.
 - Inputs that have no styling or behaviour are not declared. If `color` or `variant` is accepted, the scss must style it.
 - Ids come from `generateUniqueId()` (`src/lib/utilities/random-id.ts`), never `Math.random()`.
 

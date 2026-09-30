@@ -23,7 +23,7 @@ const CORE_STYLE_FILES = [
   'core/core/layout.scss',
   'core/core/typography.scss',
   'core/core.scss',
-  'components/ship-sheet.utility.scss',
+  'skins/_sheet.scss',
 ].map((f) => join(STYLES, f));
 
 const args = process.argv.slice(2);
