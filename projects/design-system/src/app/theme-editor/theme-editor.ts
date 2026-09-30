@@ -1,10 +1,17 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { hslToOklch } from '@ship-ui/core';
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipColorPicker } from '@ship-ui/core/ship-color-picker';
 import { ShipMenu } from '@ship-ui/core/ship-menu';
 import { ShipRadio } from '@ship-ui/core/ship-radio';
+import { ShipRangeSlider } from '@ship-ui/core/ship-range-slider';
+import { ShipChip } from '@ship-ui/core/ship-chip';
+import { ShipCard } from '@ship-ui/core/ship-card';
+import { ShipList } from '@ship-ui/core/ship-list';
+import { AppConfigService } from '../core/services/app-config.service';
+
+const DEFAULT_PADDING = { y: 8, x: 12 };
 
 const DEFAULT_COLORS: { [key: string]: [number, number, number] } = {
   primary: [59, 130, 246],
@@ -19,7 +26,7 @@ const STARTING_COLOR = 'mono';
 
 @Component({
   selector: 'app-theme-editor',
-  imports: [FormsModule, ShipColorPicker, ShipMenu, ShipRadio, ShipButton],
+  imports: [FormsModule, ShipColorPicker, ShipMenu, ShipRadio, ShipButton, ShipRangeSlider, ShipChip, ShipCard, ShipList],
   templateUrl: './theme-editor.html',
   styleUrl: './theme-editor.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,6 +35,24 @@ const STARTING_COLOR = 'mono';
   },
 })
 export default class ThemeEditor {
+  #config = inject(AppConfigService);
+
+  /** Base vertical / horizontal padding (`--pad-y` / `--pad-x`); shared with the config panel, so it applies app-wide. */
+  paddingY = computed(() => this.#config.config.paddingY ?? DEFAULT_PADDING.y);
+  paddingX = computed(() => this.#config.config.paddingX ?? DEFAULT_PADDING.x);
+
+  setPaddingY(px: number) {
+    this.#config.updateConfig({ paddingY: px === DEFAULT_PADDING.y ? undefined : px });
+  }
+
+  setPaddingX(px: number) {
+    this.#config.updateConfig({ paddingX: px === DEFAULT_PADDING.x ? undefined : px });
+  }
+
+  resetPadding() {
+    this.#config.updateConfig({ paddingY: undefined, paddingX: undefined });
+  }
+
   countLight = signal(8);
   countDark = signal(4);
   selectedHue = signal(0);
@@ -143,9 +168,13 @@ export default class ThemeEditor {
 
   outputString = computed(() => {
     const mixedScale = this.mixedScale();
+    const padding = [
+      ...(this.paddingY() !== DEFAULT_PADDING.y ? [`\n  --pad-y: ${this.paddingY()}px;`] : []),
+      ...(this.paddingX() !== DEFAULT_PADDING.x ? [`\n  --pad-x: ${this.paddingX()}px;`] : []),
+    ].join('');
 
     return Object.entries(mixedScale).reduce((acc, [key, value]) => {
       return `${acc}\n  ${key}: ${value};`;
-    }, '');
+    }, '') + padding;
   });
 }

@@ -7,6 +7,9 @@
   font-size: var(--font-size);
   --border-width: 1px;
   --shape-scale: 1;
+  // Base vertical / horizontal padding: the density of every component.
+  --pad-y: #{p2r(8)};
+  --pad-x: #{p2r(12)};
 }
 
 html {
@@ -71,10 +74,8 @@ html body {
   --space-7: #{p2r(48)};
   --space-8: #{p2r(64)};
 
-  // Padding: one base pair sets the density, the tiers follow by multiplier. Components read a tier
-  // through their own --<abbr>-py / --<abbr>-px tokens.
-  --pad-y: #{p2r(8)};
-  --pad-x: #{p2r(12)};
+  // Padding tiers follow the --pad-y / --pad-x base pair (set on :root with the other global knobs).
+  // Components read a tier through their own --<abbr>-py / --<abbr>-px tokens.
   --pad-y-xs: calc(var(--pad-y) * 0.25);
   --pad-x-xs: calc(var(--pad-x) / 3);
   --pad-y-s: calc(var(--pad-y) * 0.5);
