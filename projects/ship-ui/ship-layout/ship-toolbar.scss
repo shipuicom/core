@@ -6,7 +6,8 @@ $shipLayoutToolbar: true !default;
   sh-lo-toolbar {
     --toolbar-h: #{p2r(44)};
     --toolbar-gap: var(--space-1);
-    --toolbar-p: 0;
+    --toolbar-py: 0;
+    --toolbar-px: 0;
     --toolbar-bg: var(--base-1);
     --toolbar-bc: var(--base-4);
     --toolbar-s: var(--shape-2);
@@ -18,7 +19,7 @@ $shipLayoutToolbar: true !default;
     align-items: center;
     gap: var(--toolbar-gap);
     height: var(--toolbar-h);
-    padding: var(--toolbar-p);
+    padding: var(--toolbar-py) var(--toolbar-px);
     min-width: 0;
     overflow-x: auto;
     scrollbar-width: none;
@@ -92,7 +93,7 @@ $shipLayoutToolbar: true !default;
 
     // Boxed surface.
     &.type-b {
-      --toolbar-p: 0 var(--space-2);
+      --toolbar-px: var(--pad-x-s);
 
       background-color: var(--toolbar-bg);
       border: var(--border-10);

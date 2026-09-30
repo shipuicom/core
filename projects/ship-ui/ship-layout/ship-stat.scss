@@ -6,7 +6,8 @@ $shipLayoutStat: true !default;
   sh-lo-stat {
     --stat-bg: var(--base-1);
     --stat-bc: var(--base-4);
-    --stat-p: var(--space-5);
+    --stat-py: var(--pad-y-2xl);
+    --stat-px: var(--pad-x-2xl);
     --stat-s: var(--shape-3);
     --stat-gap: var(--space-4);
     --stat-ic: var(--base-8);
@@ -19,7 +20,7 @@ $shipLayoutStat: true !default;
       'chart chart';
     align-items: start;
     gap: var(--stat-gap);
-    padding: var(--stat-p);
+    padding: var(--stat-py) var(--stat-px);
     background-color: var(--stat-bg);
     border: var(--border-10);
     border-color: var(--stat-bc);
@@ -103,7 +104,8 @@ $shipLayoutStat: true !default;
     // Flush: same hairline card, no padding — the text sits in its own inset
     // and the chart bleeds to the edges.
     &.type-c {
-      --stat-p: 0;
+      --stat-py: 0;
+      --stat-px: 0;
       --stat-gap: 0;
 
       > .icon {
@@ -140,7 +142,7 @@ $shipLayoutStat: true !default;
       }
 
       > .chart {
-        margin: 0 calc(var(--stat-p) * -1);
+        margin: 0 calc(var(--stat-px) * -1);
         height: calc(var(--stat-chart-h) + var(--space-4));
 
         > * {
@@ -149,7 +151,7 @@ $shipLayoutStat: true !default;
       }
 
       &:has(> .chart:empty) {
-        padding-bottom: var(--stat-p);
+        padding-bottom: var(--stat-py);
       }
     }
   }

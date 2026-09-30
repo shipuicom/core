@@ -69,6 +69,8 @@ If they are not overwritten we have them as direct styles and can be overwritten
 ### Here is a list of style specific abbreviations
 
 - box-shadow = bs
+- padding-y (top/bottom) = py
+- padding-x (left/right) = px
 - background-color = bg
 - color = c
 - border-radius = br

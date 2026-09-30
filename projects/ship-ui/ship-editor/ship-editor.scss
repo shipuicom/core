@@ -13,7 +13,8 @@ $shipEditor: true !default;
     --editor-btn-active-bg: var(--primary-3);
     --editor-btn-active-c: var(--primary-11);
     --editor-footer-bg: var(--base-2);
-    --editor-p: #{p2r(16)} #{p2r(20)};
+    --editor-py: var(--pad-y-xl);
+    --editor-px: var(--pad-x-xl);
     --editor-min-h: #{p2r(150)};
 
     --editor-border-focus: var(--base-8);
@@ -42,7 +43,8 @@ $shipEditor: true !default;
 
     &.document {
       --editor-min-h: #{p2r(720)};
-      --editor-p: #{p2r(64)} #{p2r(72)};
+      --editor-py: #{p2r(64)};
+      --editor-px: #{p2r(72)};
       background: var(--base-3);
       border-radius: 0;
       padding: #{p2r(32)} #{p2r(20)};
@@ -121,7 +123,7 @@ $shipEditor: true !default;
     }
 
     .sh-editor-content {
-      padding: var(--editor-p);
+      padding: var(--editor-py) var(--editor-px);
       outline: none;
       flex: 1;
       z-index: 2;
@@ -312,7 +314,7 @@ $shipEditor: true !default;
       flex: 1;
       min-height: var(--editor-min-h);
       box-sizing: border-box;
-      padding: var(--editor-p);
+      padding: var(--editor-py) var(--editor-px);
       border: none;
       outline: none;
       resize: vertical;
@@ -325,7 +327,7 @@ $shipEditor: true !default;
     }
 
     .sh-editor-source-error {
-      padding: calc(var(--editor-p) / 2) var(--editor-p);
+      padding: calc(var(--editor-py) / 2) var(--editor-px);
       background: var(--editor-code-bg);
       color: var(--error-8);
       font: var(--code-20);

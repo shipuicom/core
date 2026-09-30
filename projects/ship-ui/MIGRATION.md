@@ -39,6 +39,16 @@ checks it). A migration script (`ship-migrate`) that rewrites the renames below 
   `$shipLayoutPage` … `$shipLayoutToolbar`
 - `$shipSortable` now controls a global include (the `[shSortable]` directive styles no longer ride along with `sh-tree` / `sh-list`)
 
+**Padding tokens**
+- Global density: `--pad-y` / `--pad-x` (8px / 12px) with tiers `--pad-{y,x}-{xs,s,m,l,xl,2xl,3xl,4xl}` derived by multiplier.
+  Every padded component reads a tier through its own `--<abbr>-py` / `--<abbr>-px`; override the base pair for a denser
+  or airier app, a tier for one size class, or a component's pair for that component.
+- The one-value tokens are gone: `--card-p`, `--alert-p`, `--chat-p`, `--list-p`, `--list-item-p`, `--dialog-p`, `--editor-p`,
+  `--crumb-p`, `--crumb-item-p`, `--btng-p`, `--acc-pad`, `--table-th-p`, `--table-td-p`, `--ff-space`, `--ff-input-space` and the
+  layout `--<abbr>-p` tokens each became a `-py` / `-px` pair (`ship-migrate` points at every use).
+- Values snapped to the tiers; the shifts are 1–4px: chip xsmall 6→4px, list padding 20→16px, list type-b rows 10→8px,
+  form-field 9→8px (small 7/10→8/8px), dialog/popover/event-card/toggle-card 16→20px horizontally, kbd 1→2px vertically.
+
 **Skins and palettes (additive)**
 - Variant × colour styling moved from each component's stylesheet into the global stylesheet as list-driven skins. Nothing
   changes by default; `@use '@ship-ui/core/styles' with ($shipColors, $shipVariants, $shipSkins, $ship<Name>: false)` now

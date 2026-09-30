@@ -5,7 +5,7 @@
 // row, so a swipe item renders pixel-identical to a plain list item.
 @mixin ship-list-item-layout {
   border-radius: var(--list-s, var(--shape-2));
-  padding: var(--list-item-p, #{p2r(8 12)});
+  padding: var(--list-item-py, var(--pad-y-m)) var(--list-item-px, var(--pad-x-m));
   font: var(--paragraph-30B);
   color: var(--list-color, var(--base-9));
   display: flex;

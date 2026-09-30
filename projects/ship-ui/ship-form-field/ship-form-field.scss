@@ -4,8 +4,10 @@ $shipFormField: true !default;
 $shipDatepicker: true !default;
 
 %smallFormField {
-  --ff-space: #{p2r(7 10)};
-  --ff-input-space: #{p2r(6 10)};
+  --ff-py: var(--pad-y-m);
+  --ff-px: var(--pad-x-s);
+  --ff-input-py: var(--pad-y-m);
+  --ff-input-px: var(--pad-x-s);
   --ff-f: var(--paragraph-40B);
 
   line-height: p2r(16);
@@ -32,8 +34,10 @@ $shipDatepicker: true !default;
     --ff-f: var(--paragraph-30B);
     --ff-spinner-size: #{p2r(20)};
     --ff-spinner-thickness: #{p2r(2)};
-    --ff-space: #{p2r(9 12)};
-    --ff-input-space: #{p2r(10 12)};
+    --ff-py: var(--pad-y-m);
+    --ff-px: var(--pad-x-m);
+    --ff-input-py: var(--pad-y-m);
+    --ff-input-px: var(--pad-x-m);
     --ff-mw: auto;
 
     --ff-bs: var(--ship-form-field-shadow, none);
@@ -48,7 +52,8 @@ $shipDatepicker: true !default;
     transform: scale(1);
 
     &:has(input[type='time']) {
-      --ff-input-space: #{p2r(9 12)};
+      --ff-input-py: var(--pad-y-m);
+      --ff-input-px: var(--pad-x-m);
     }
 
     &:active {
@@ -108,19 +113,19 @@ $shipDatepicker: true !default;
       display: none;
       align-items: center;
       gap: p2r(4);
-      padding: var(--ff-space);
+      padding: var(--ff-py) var(--ff-px);
       padding-right: 0;
       transition: background-color 125ms linear;
       background-color: inherit;
       line-height: p2r(20);
 
       &:has([boxPrefix]) {
-        padding: var(--ff-space);
+        padding: var(--ff-py) var(--ff-px);
         background-color: var(--ff-boxfix-bg);
       }
 
       &:has([boxSuffix]) {
-        padding: var(--ff-space);
+        padding: var(--ff-py) var(--ff-px);
         background-color: var(--ff-boxfix-bg);
       }
 
@@ -139,7 +144,7 @@ $shipDatepicker: true !default;
     }
 
     .suffix {
-      padding: var(--ff-space);
+      padding: var(--ff-py) var(--ff-px);
       background-color: var(--ff-suffix-bg);
 
       &:has([textsuffix]) {
@@ -191,7 +196,7 @@ $shipDatepicker: true !default;
       sh-popover,
       .input {
         flex: 1 0;
-        margin: var(--ff-space);
+        margin: var(--ff-py) var(--ff-px);
       }
 
       textarea {
@@ -230,7 +235,7 @@ $shipDatepicker: true !default;
         font: var(--paragraph-30B);
         flex: 1 0;
         color: var(--base-8);
-        margin: var(--ff-input-space);
+        margin: var(--ff-input-py) var(--ff-input-px);
         width: 100%;
 
         &::placeholder {

@@ -6,7 +6,8 @@ $shipLayoutStatTrend: true !default;
   sh-lo-stat-trend {
     --trend-c: var(--primary-8);
     --trend-bg: var(--base-1);
-    --trend-p: var(--space-5);
+    --trend-py: var(--pad-y-2xl);
+    --trend-px: var(--pad-x-2xl);
     --trend-s: var(--shape-3);
     --trend-chart-h: #{p2r(72)};
 
@@ -18,7 +19,7 @@ $shipLayoutStatTrend: true !default;
       'footer'
       'chart';
     row-gap: var(--space-2);
-    padding: var(--trend-p) var(--trend-p) 0;
+    padding: var(--trend-py) var(--trend-px) 0;
     background-color: var(--trend-bg);
     background-image: radial-gradient(130% 100% at 0% 0%, rgb(from var(--trend-c) r g b / 0.2), transparent 65%);
     border: var(--border-10);
@@ -71,7 +72,7 @@ $shipLayoutStatTrend: true !default;
     > .chart {
       grid-area: chart;
       height: var(--trend-chart-h);
-      margin: var(--space-2) calc(var(--trend-p) * -1) 0;
+      margin: var(--space-2) calc(var(--trend-px) * -1) 0;
 
       > * {
         display: block;
@@ -85,7 +86,7 @@ $shipLayoutStatTrend: true !default;
     }
 
     &:has(> .chart:empty) {
-      padding-bottom: var(--trend-p);
+      padding-bottom: var(--trend-py);
     }
 
     // Chart beside the text.
@@ -99,7 +100,7 @@ $shipLayoutStatTrend: true !default;
       // gets a fixed height so it doesn't pull the rows apart.
       grid-template-rows: auto auto 1fr;
       column-gap: var(--space-5);
-      padding-bottom: var(--trend-p);
+      padding-bottom: var(--trend-py);
 
       > .footer {
         align-self: start;

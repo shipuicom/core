@@ -6,6 +6,8 @@ $shipButton: true !default;
     --btn-h: #{p2r(40)};
     --btn-mw: #{p2r(40)};
     --btn-f: var(--paragraph-20);
+    --btn-py: 0;
+    --btn-px: var(--pad-x-m);
     --btn-a-opacity: 0.05;
 
     --btn-bs: var(--ship-button-shadow, none);
@@ -15,7 +17,7 @@ $shipButton: true !default;
     justify-content: center;
     gap: p2r(11);
     position: relative;
-    padding: p2r(0 12);
+    padding: var(--btn-py) var(--btn-px);
     transition: color 80ms linear;
     min-width: var(--btn-mw);
     cursor: pointer;
@@ -72,7 +74,7 @@ $shipButton: true !default;
       --btn-mw: #{p2r(32)};
       --btn-f: var(--paragraph-30);
 
-      padding: p2r(0 8);
+      --btn-px: var(--pad-x-s);
       gap: p2r(5);
 
       sh-icon {
@@ -93,7 +95,7 @@ $shipButton: true !default;
       --btn-mw: #{p2r(24)};
       --btn-f: var(--paragraph-40);
 
-      padding: p2r(0 8);
+      --btn-px: var(--pad-x-s);
       gap: p2r(4);
 
       sh-icon {

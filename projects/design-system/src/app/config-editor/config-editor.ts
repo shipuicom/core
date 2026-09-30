@@ -206,6 +206,22 @@ export class ConfigEditor {
     this.configService.updateConfig({ borderRadius: radius });
   }
 
+  get globalPaddingY() {
+    return this.config.paddingY ?? 8;
+  }
+
+  updateGlobalPaddingY(px: number) {
+    this.configService.updateConfig({ paddingY: px });
+  }
+
+  get globalPaddingX() {
+    return this.config.paddingX ?? 12;
+  }
+
+  updateGlobalPaddingX(px: number) {
+    this.configService.updateConfig({ paddingX: px });
+  }
+
   get globalBorderWidth() {
     return this.config.borderWidth ?? 1;
   }
@@ -461,7 +477,7 @@ export class ConfigEditor {
   }
 
   isGlobalSettingsAltered = computed(() => {
-    const { fontSize, borderRadius, borderWidth, distribution, colors } = this.config;
+    const { fontSize, borderRadius, borderWidth, paddingY, paddingX, distribution, colors } = this.config;
     
     const hasCustomDistribution = distribution !== undefined && 
       Object.keys(distribution).length > 0 && 
@@ -476,6 +492,8 @@ export class ConfigEditor {
     return (fontSize !== undefined && Number(fontSize) !== 16) || 
            (borderRadius !== undefined && Number(borderRadius) !== 1) || 
            (borderWidth !== undefined && Number(borderWidth) !== 1) || 
+           (paddingY !== undefined && Number(paddingY) !== 8) || 
+           (paddingX !== undefined && Number(paddingX) !== 12) || 
            hasCustomDistribution || 
            hasCustomColors;
   });
@@ -489,7 +507,7 @@ export class ConfigEditor {
   });
 
   resetGlobalSettings() {
-    this.configService.updateConfig({ fontSize: undefined, borderRadius: undefined, borderWidth: undefined, distribution: undefined, colors: undefined });
+    this.configService.updateConfig({ fontSize: undefined, borderRadius: undefined, borderWidth: undefined, paddingY: undefined, paddingX: undefined, distribution: undefined, colors: undefined });
   }
 
   resetComponentsConfig() {

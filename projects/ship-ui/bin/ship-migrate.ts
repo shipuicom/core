@@ -74,6 +74,9 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
   }
 
   if (isStyle) {
+    for (const { pattern, message } of rules.styleWarnings ?? []) {
+      for (const m of out.matchAll(new RegExp(pattern, 'g'))) warnings.push({ line: lineOf(out, m.index!), rule: 'css-var', detail: message });
+    }
     for (const { from, to } of rules.sassFlags ?? []) {
       replaceAll(new RegExp(esc(from) + '(?![A-Za-z0-9_-])', 'g'), to, 'sass-flag', () => `${from} → ${to}`);
     }

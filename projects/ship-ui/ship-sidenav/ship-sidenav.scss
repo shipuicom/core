@@ -9,6 +9,8 @@ $shipSidenav: true !default;
   }
 
   sh-sidenav {
+    --sidenav-py: var(--pad-y-xl);
+    --sidenav-px: var(--pad-x-l);
     --sidenav-width: var(--sidenav-open-width, #{p2r(280)});
     // Deliberately viewport-relative: the host is often laid out inside a
     // narrower grid column and is expected to span the full width regardless.
@@ -36,7 +38,7 @@ $shipSidenav: true !default;
       display: block;
       height: 100%;
       overflow: auto;
-      padding: p2r(16 16 16 0);
+      padding: var(--sidenav-py) var(--sidenav-px) var(--sidenav-py) 0;
 
       &::before {
         content: '';
@@ -70,7 +72,7 @@ $shipSidenav: true !default;
       background-color: var(--base-1);
       align-items: center;
       justify-content: space-between;
-      padding: p2r(0 16);
+      padding: 0 var(--sidenav-px);
       border-bottom: var(--border-10);
       z-index: 10000;
       position: relative;

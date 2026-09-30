@@ -4,10 +4,13 @@ $shipEventCard: true !default;
 
 @if $shipEventCard == true {
   sh-event-card {
+    --ec-py: var(--pad-y-xl);
+    --ec-px: var(--pad-x-xl);
+
     display: flex;
     gap: p2r(8);
     width: 100%;
-    padding: p2r(16);
+    padding: var(--ec-py) var(--ec-px);
 
     .content {
       display: flex;

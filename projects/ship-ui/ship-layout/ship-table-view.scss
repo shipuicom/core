@@ -4,7 +4,8 @@ $shipLayoutTableView: true !default;
 
 @if $shipLayoutTableView == true {
   sh-lo-table-view {
-    --tv-p: var(--space-6);
+    --tv-py: var(--pad-y-3xl);
+    --tv-px: var(--pad-x-3xl);
     --tv-gap: var(--space-4);
 
     display: flex;
@@ -12,7 +13,7 @@ $shipLayoutTableView: true !default;
     gap: var(--tv-gap);
     height: 100%;
     min-height: 0;
-    padding: var(--tv-p);
+    padding: var(--tv-py) var(--tv-px);
 
     > .head {
       display: flex;
@@ -143,12 +144,14 @@ $shipLayoutTableView: true !default;
 
     // Flush: the parent already pads.
     &.type-c {
-      --tv-p: 0;
+      --tv-py: 0;
+      --tv-px: 0;
     }
 
     @include breakpoint(-milli) {
       &:not(.type-c) {
-        --tv-p: var(--space-4);
+        --tv-py: var(--pad-y-xl);
+        --tv-px: var(--pad-x-l);
       }
     }
   }

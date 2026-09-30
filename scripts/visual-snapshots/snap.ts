@@ -5,7 +5,8 @@
  *   bun run snap:compare    # writes .current/, .diff/ and REPORT.md; exits 1 on unexpected diffs
  *
  * Env: SNAP_URL (default http://localhost:4205), SNAP_FILTER (substring of the route, e.g. "toggle"),
- *      SNAP_THEMES (default "light,dark"), SNAP_WORKERS (default 4).
+ *      SNAP_THEMES (default "light,dark"), SNAP_WORKERS (default 4),
+ *      SNAP_CSS (extra CSS injected into every page, e.g. "html{--pad-y:12px}" to preview a density).
  * expected-diffs.json lists pages that are allowed to differ: { "<page>" | "<page>--<theme>": "reason" }.
  */
 import { chromium, type BrowserContext, type Page } from 'playwright';
@@ -24,6 +25,7 @@ const BASE_URL = process.env['SNAP_URL'] ?? 'http://localhost:4205';
 const FILTER = process.env['SNAP_FILTER'] ?? '';
 const THEMES = (process.env['SNAP_THEMES'] ?? 'light,dark').split(',') as Array<'light' | 'dark'>;
 const WORKERS = Number(process.env['SNAP_WORKERS'] ?? 4);
+const EXTRA_CSS = process.env['SNAP_CSS'] ?? '';
 const TABS = ['', 'api', 'examples', 'service', 'parts', 'styling'];
 const MAX_DIFF_RATIO = 0.001;
 const VIEWPORT = { width: 1280, height: 900 };
@@ -66,7 +68,7 @@ async function capture(page: Page, pathname: string, theme: string, outDir: stri
   // Unknown tabs fall through the page's `**` route back to the overview: skip those.
   const landed = new URL(page.url()).pathname.replace(/\/$/, '') || '/';
   if (landed !== pathname) return null;
-  await page.addStyleTag({ content: FREEZE_CSS });
+  await page.addStyleTag({ content: FREEZE_CSS + EXTRA_CSS });
   // The docs app scrolls inside <main>, not the body, so `fullPage` alone captures one viewport.
   // Scroll the container to trigger viewport-deferred demos, then grow the viewport to its full height.
   const scrollPass = () =>
@@ -115,12 +117,15 @@ type Result = { slug: string; theme: string; ratio: number; expected: string | n
 function comparePng(baselineFile: string, currentFile: string, diffFile: string): { ratio: number; note?: string } {
   const a = PNG.sync.read(readFileSync(baselineFile));
   const b = PNG.sync.read(readFileSync(currentFile));
-  if (a.width !== b.width || a.height !== b.height) {
+  if (a.width !== b.width) {
     return { ratio: 1, note: `size ${a.width}x${a.height} → ${b.width}x${b.height}` };
   }
-  const out = new PNG({ width: a.width, height: a.height });
+  // A height change (content re-flowed) still gets a diff of the overlapping area, so the shift is visible.
+  const note = a.height !== b.height ? `height ${a.height} → ${b.height}` : undefined;
+  const height = Math.min(a.height, b.height);
+  const out = new PNG({ width: a.width, height });
   let diff = 0;
-  for (let i = 0; i < a.data.length; i += 4) {
+  for (let i = 0; i < a.width * height * 4; i += 4) {
     const changed =
       Math.abs(a.data[i] - b.data[i]) > CHANNEL_TOLERANCE ||
       Math.abs(a.data[i + 1] - b.data[i + 1]) > CHANNEL_TOLERANCE ||
@@ -135,9 +140,9 @@ function comparePng(baselineFile: string, currentFile: string, diffFile: string)
       out.data[i + 3] = 255;
     }
   }
-  const ratio = diff / (a.width * a.height);
+  const ratio = Math.max(diff / (a.width * height), note ? MAX_DIFF_RATIO + 0.001 : 0);
   if (ratio > 0) writeFileSync(diffFile, PNG.sync.write(out));
-  return { ratio };
+  return { ratio, note };
 }
 
 async function main() {

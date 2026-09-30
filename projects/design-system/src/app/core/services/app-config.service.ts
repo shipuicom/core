@@ -33,6 +33,15 @@ export class AppConfigService {
       this.#document.documentElement.style.removeProperty('--border-width');
     }
 
+    for (const [key, prop] of [['paddingY', '--pad-y'], ['paddingX', '--pad-x']] as const) {
+      const value = config[key];
+      if (value !== undefined) {
+        this.#document.documentElement.style.setProperty(prop, `${value}px`);
+      } else {
+        this.#document.documentElement.style.removeProperty(prop);
+      }
+    }
+
     const ALL_COLORS = ['primary', 'accent', 'warn', 'error', 'success', 'base'];
     ALL_COLORS.forEach(colorName => {
       const hslValue = config.colors?.[colorName as keyof typeof config.colors];

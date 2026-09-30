@@ -36,6 +36,10 @@ emitted by the global stylesheet, so you can keep only what you use, switch a co
 );
 ```
 
+Density is two custom properties: `--pad-y` and `--pad-x` (defaults 8px / 12px). Every component's padding is a tier of
+that pair (`--pad-y-s`, `--pad-x-xl`, …) read through its own `--<component>-py` / `--<component>-px` tokens, so
+`html { --pad-y: 6px; --pad-x: 10px; }` tightens the whole app and `sh-card { --card-px: var(--pad-x-l); }` one component.
+
 A palette is either the `(hue, saturation, lightness)` of its step 8 (optionally a fourth distribution exponent) or a
 full map of `step: (light, dark)` pairs; the built-in `primary accent warn error success` are hand-tuned maps you
 can override by name.

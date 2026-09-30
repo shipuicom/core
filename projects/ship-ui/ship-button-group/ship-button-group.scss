@@ -10,7 +10,8 @@ $shipButtonGroup: true !default;
     --btng-ic: var(--base-12);
     --btng-bc: var(--base-4);
     --btng-h: #{p2r(40)};
-    --btng-p: #{p2r(0 12)};
+    --btng-py: 0;
+    --btng-px: var(--pad-x-m);
     --btng-s: var(--shape-2);
     --btng-s-a: var(--shape-2);
     --btng-f: var(--paragraph-30);
@@ -46,7 +47,7 @@ $shipButtonGroup: true !default;
 
     &.small {
       --btng-h: #{p2r(32)};
-      --btng-p: #{p2r(0 8)};
+      --btng-px: var(--pad-x-s);
     }
 
     button {
@@ -58,7 +59,7 @@ $shipButtonGroup: true !default;
       justify-content: center;
       gap: p2r(8);
       position: relative;
-      padding: var(--btng-p);
+      padding: var(--btng-py) var(--btng-px);
       min-width: auto;
       cursor: pointer;
       outline: none;

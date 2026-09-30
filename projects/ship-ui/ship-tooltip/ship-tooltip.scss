@@ -43,6 +43,8 @@ $shipTooltip: true !default;
     --tt-bg: var(--base-3);
     --tt-c: var(--base-12);
     --tt-mh: #{p2r(136)};
+    --tt-py: var(--pad-y-m);
+    --tt-px: var(--pad-x-m);
     --tt-mw: #{p2r(280)};
     --tt-translate-y: 50%;
 
@@ -105,7 +107,7 @@ $shipTooltip: true !default;
     }
 
     .tooltip-content {
-      padding: p2r(8 12);
+      padding: var(--tt-py) var(--tt-px);
       position: relative;
       hyphens: auto;
       text-wrap: pretty;

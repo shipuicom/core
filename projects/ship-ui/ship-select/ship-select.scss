@@ -45,7 +45,8 @@ $shipSelect: true !default;
       display: flex;
       flex-wrap: wrap;
 
-      --ff-space: #{p2r(7 10)};
+      --ff-py: var(--pad-y-m);
+      --ff-px: var(--pad-x-s);
 
       textarea,
       input {
@@ -106,7 +107,8 @@ $shipSelect: true !default;
     }
 
     sh-form-field.small .input-wrap .input {
-      --ff-space: #{p2r(5 8)};
+      --ff-py: var(--pad-y-s);
+      --ff-px: var(--pad-x-s);
 
       sh-chip {
         --chip-h: #{p2r(20)};
@@ -116,6 +118,9 @@ $shipSelect: true !default;
   }
 
   .ship-options {
+    --select-py: var(--pad-y-s);
+    --select-px: var(--pad-x-l);
+
     padding: p2r(8 0);
     display: flex;
     flex-direction: column;
@@ -124,7 +129,7 @@ $shipSelect: true !default;
     overflow-x: hidden;
 
     p[title] {
-      padding: p2r(4 16);
+      padding: var(--select-py) var(--select-px);
     }
 
     sh-divider {

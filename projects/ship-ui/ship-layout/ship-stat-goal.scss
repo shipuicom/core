@@ -7,14 +7,15 @@ $shipLayoutStatGoal: true !default;
     --goal-c: var(--primary-8);
     --goal-track: var(--base-3);
     --goal-bg: var(--base-1);
-    --goal-p: var(--space-5);
+    --goal-py: var(--pad-y-2xl);
+    --goal-px: var(--pad-x-2xl);
     --goal-s: var(--shape-3);
     --goal-bar-h: #{p2r(10)};
 
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
-    padding: var(--goal-p);
+    padding: var(--goal-py) var(--goal-px);
     background-color: var(--goal-bg);
     border: var(--border-10);
     border-color: var(--base-4);
@@ -113,7 +114,8 @@ $shipLayoutStatGoal: true !default;
 
     // Compact, no card.
     &.type-c {
-      --goal-p: 0;
+      --goal-py: 0;
+      --goal-px: 0;
       --goal-bar-h: #{p2r(6)};
 
       gap: var(--space-2);

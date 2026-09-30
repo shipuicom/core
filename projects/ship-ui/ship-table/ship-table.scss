@@ -12,8 +12,10 @@ $shipTable: true !default;
     --table-th-f: var(--paragraph-30);
     --table-td-c: var(--base-8);
     --table-td-f: var(--paragraph-30);
-    --table-th-p: #{p2r(0 20)};
-    --table-td-p: #{p2r(0 20)};
+    --table-th-py: 0;
+    --table-th-px: var(--pad-x-xl);
+    --table-td-py: 0;
+    --table-td-px: var(--pad-x-xl);
     --table-th-mh: #{p2r(48)};
     --table-td-mh: #{p2r(78)};
     --table-th-g: #{p2r(4)};
@@ -39,8 +41,8 @@ $shipTable: true !default;
     }
 
     &.type-b {
-      --table-th-p: #{p2r(0 12)};
-      --table-td-p: #{p2r(0 12)};
+      --table-th-px: var(--pad-x-m);
+      --table-td-px: var(--pad-x-m);
       --table-th-mh: #{p2r(36)};
       --table-td-mh: #{p2r(56)};
       --table-th-bw: #{p2r(1 0 1 1)};
@@ -50,7 +52,7 @@ $shipTable: true !default;
       th {
         &:first-child {
           border-left-width: 0;
-          padding: var(--table-th-p);
+          padding: var(--table-th-py) var(--table-th-px);
         }
       }
 
@@ -58,7 +60,7 @@ $shipTable: true !default;
       tbody th.row-header {
         &:first-child {
           border-left-width: 0;
-          padding: var(--table-td-p);
+          padding: var(--table-td-py) var(--table-td-px);
         }
       }
 
@@ -296,13 +298,13 @@ $shipTable: true !default;
 
       &:has(th.sticky-end) {
         th:nth-last-child(2) {
-          padding: var(--table-th-p);
+          padding: var(--table-th-py) var(--table-th-px);
         }
       }
 
       &:has(td.sticky-end) {
         td:nth-last-child(2) {
-          padding: var(--table-td-p);
+          padding: var(--table-td-py) var(--table-td-px);
         }
       }
     }
@@ -310,7 +312,7 @@ $shipTable: true !default;
     th {
       display: flex;
       align-items: center;
-      padding: var(--table-th-p);
+      padding: var(--table-th-py) var(--table-th-px);
       min-height: var(--table-th-mh);
       font: var(--table-th-f);
       line-height: 1em;
@@ -433,7 +435,7 @@ $shipTable: true !default;
       align-items: center;
       overflow: hidden;
       text-align: left;
-      padding: var(--table-td-p);
+      padding: var(--table-td-py) var(--table-td-px);
       min-height: var(--table-td-mh);
       gap: var(--table-td-g);
       color: var(--table-td-c);
@@ -445,7 +447,7 @@ $shipTable: true !default;
       background: var(--table-td-bg);
 
       + td.sticky-end:last-child {
-        padding: var(--table-td-p);
+        padding: var(--table-td-py) var(--table-td-px);
       }
     }
 
@@ -458,10 +460,10 @@ $shipTable: true !default;
         right: auto;
         left: 0;
         z-index: 1;
-        padding: var(--table-td-p);
+        padding: var(--table-td-py) var(--table-td-px);
 
         &:first-child {
-          padding: var(--table-th-p);
+          padding: var(--table-th-py) var(--table-th-px);
         }
       }
 
@@ -475,11 +477,11 @@ $shipTable: true !default;
       &.sticky,
       &.sticky-end {
         background: var(--base-1);
-        padding: var(--table-th-p);
+        padding: var(--table-th-py) var(--table-th-px);
         z-index: 101;
 
         &:first-child {
-          padding: var(--table-th-p);
+          padding: var(--table-th-py) var(--table-th-px);
         }
       }
     }

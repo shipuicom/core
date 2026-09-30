@@ -7,7 +7,8 @@ $shipAlert: true !default;
     --alert-close-ic: currentColor;
     --alert-ad: 400ms;
     --alert-bs: var(--box-shadow-10);
-    --alert-p: #{p2r(8)};
+    --alert-py: var(--pad-y-m);
+    --alert-px: var(--pad-x-s);
 
     max-height: #{p2r(300)};
     padding-top: 0;
@@ -33,7 +34,7 @@ $shipAlert: true !default;
       grid-template-areas:
         'stateIcon title closeIcon'
         '. content .';
-      padding: var(--alert-p);
+      padding: var(--alert-py) var(--alert-px);
       align-items: flex-start;
       gap: p2r(4 8);
 
@@ -156,7 +157,8 @@ $shipAlert: true !default;
     }
 
     &:has([content]) .alert {
-      --alert-p: #{p2r(12)};
+      --alert-py: var(--pad-y-l);
+      --alert-px: var(--pad-x-m);
     }
   }
 }

@@ -4,6 +4,9 @@ $shipToggleCard: true !default;
 
 @if $shipToggleCard == true {
   sh-toggle-card {
+    --tc-py: var(--pad-y-xl);
+    --tc-px: var(--pad-x-xl);
+
     display: flex;
     flex-direction: column;
     border-radius: var(--shape-3);
@@ -20,10 +23,10 @@ $shipToggleCard: true !default;
       }
 
       .content {
-        padding: p2r(0 16 16);
+        padding: 0 var(--tc-px) var(--tc-py);
 
         &:empty {
-          padding: p2r(0 16);
+          padding: 0 var(--tc-px);
         }
       }
 
@@ -37,7 +40,7 @@ $shipToggleCard: true !default;
       align-items: center;
       justify-content: space-between;
       font: var(--paragraph-10);
-      padding: p2r(16);
+      padding: var(--tc-py) var(--tc-px);
       cursor: pointer;
       user-select: none;
     }
@@ -61,7 +64,7 @@ $shipToggleCard: true !default;
       flex-direction: column;
       gap: p2r(16);
 
-      padding: p2r(0 16);
+      padding: 0 var(--tc-px);
       min-height: 0;
       overflow: hidden;
     }

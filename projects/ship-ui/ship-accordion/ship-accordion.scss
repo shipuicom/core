@@ -4,7 +4,8 @@ $shipAccordion: true !default;
 
 @if $shipAccordion == true {
   sh-accordion {
-    --acc-pad: #{p2r(16)};
+    --acc-py: var(--pad-y-xl);
+    --acc-px: var(--pad-x-l);
     --acc-f: var(--paragraph-30);
     --acc-bc: var(--base-4);
     --acc-s: var(--shape-2);
@@ -22,7 +23,8 @@ $shipAccordion: true !default;
     }
 
     &.small {
-      --acc-pad: #{p2r(12)};
+      --acc-py: var(--pad-y-l);
+      --acc-px: var(--pad-x-m);
       --acc-f: var(--paragraph-40);
     }
 
@@ -62,7 +64,7 @@ $shipAccordion: true !default;
       > summary {
         display: flex;
         align-items: center;
-        padding: var(--acc-pad);
+        padding: var(--acc-py) var(--acc-px);
         cursor: pointer;
         user-select: none;
         transition: background-color 0.2s;
@@ -105,7 +107,7 @@ $shipAccordion: true !default;
       }
 
       > .content {
-        padding: var(--acc-pad);
+        padding: var(--acc-py) var(--acc-px);
         background: var(--base-2);
       }
     }

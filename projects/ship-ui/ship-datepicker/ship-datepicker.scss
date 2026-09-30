@@ -84,6 +84,8 @@ $shipDatepicker: true !default;
   }
 
   sh-datepicker {
+    --dp-py: var(--pad-y-m);
+    --dp-px: var(--pad-x-s);
     --dp-sel-bg: var(--base-8);
     --dp-sel-bw: 0;
     --dp-sel-bc: transparent;
@@ -96,7 +98,7 @@ $shipDatepicker: true !default;
     --dp-ar: 1/1;
 
     width: 100%;
-    padding: p2r(8);
+    padding: var(--dp-py) var(--dp-px);
     max-width: var(--dp-width);
     display: flex;
     flex-direction: column;

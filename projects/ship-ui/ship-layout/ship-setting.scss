@@ -4,7 +4,8 @@ $shipLayoutSetting: true !default;
 
 @if $shipLayoutSetting == true {
   sh-lo-setting {
-    --setting-p: var(--space-5);
+    --setting-py: var(--pad-y-2xl);
+    --setting-px: var(--pad-x-2xl);
     --setting-gap: var(--space-3) var(--space-6);
     --setting-text-w: #{p2r(224)};
 
@@ -12,7 +13,7 @@ $shipLayoutSetting: true !default;
     flex-wrap: wrap;
     align-items: flex-start;
     gap: var(--setting-gap);
-    padding-block: var(--setting-p);
+    padding-block: var(--setting-py);
     min-width: 0;
 
     & + sh-lo-setting {
@@ -40,7 +41,8 @@ $shipLayoutSetting: true !default;
 
     // Compact: tighter rows, no dividers.
     &.type-c {
-      --setting-p: var(--space-3);
+      --setting-py: var(--pad-y-l);
+      --setting-px: var(--pad-x-m);
 
       & + sh-lo-setting {
         border-top: 0;

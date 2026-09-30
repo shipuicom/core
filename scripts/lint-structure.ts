@@ -190,6 +190,12 @@ function lintScss(pkg: string, file: string, flagName: string) {
     }
   }
 
+  for (const m of scss.matchAll(/^\s*padding(?:-(?:block|inline))?: [^;]*(?:p2r\(|\d+px)[^;]*;/gm)) {
+    const line = lineOf(scss, m.index!);
+    if (allowed(line) || fileAllow.has('padding-literal')) continue;
+    report(pkg, 'padding-literal', 'warn', file, 'padding should read a --<abbr>-py / --<abbr>-px pair or a --pad-* tier', line);
+  }
+
   for (const m of scss.matchAll(/(?<![\w.-])(\d+(?:\.\d+)?)px\b/g)) {
     const n = Number(m[1]);
     if (n <= 2) continue;

@@ -71,6 +71,28 @@
             (ngModelChange)="updateGlobalBorderWidth($event)" />
         </sh-range-slider>
 
+        <sh-range-slider>
+          <label>Vertical Padding (px)</label>
+          <input
+            type="range"
+            min="2"
+            max="16"
+            step="1"
+            [ngModel]="globalPaddingY"
+            (ngModelChange)="updateGlobalPaddingY($event)" />
+        </sh-range-slider>
+
+        <sh-range-slider>
+          <label>Horizontal Padding (px)</label>
+          <input
+            type="range"
+            min="4"
+            max="24"
+            step="1"
+            [ngModel]="globalPaddingX"
+            (ngModelChange)="updateGlobalPaddingX($event)" />
+        </sh-range-slider>
+
         <div class="theme-colors-section">
           <label class="section-label">Theme Colors</label>
           @for (color of ['primary', 'accent', 'warn', 'error', 'success', 'base']; track color) {

@@ -6,13 +6,15 @@ $shipBreadcrumbs: true !default;
   sh-breadcrumbs {
     --crumb-f: var(--paragraph-30);
     --crumb-gap: var(--space-2);
-    --crumb-p: 0;
+    --crumb-py: 0;
+    --crumb-px: 0;
     --crumb-c: var(--base-8);
     --crumb-c-h: var(--base-12);
     --crumb-c-current: var(--base-12);
     --crumb-sep-c: var(--base-6);
     --crumb-sep-w: 1ch;
-    --crumb-item-p: 0;
+    --crumb-item-py: 0;
+    --crumb-item-px: 0;
     --crumb-item-bg: transparent;
     --crumb-item-bg-h: transparent;
     --crumb-item-bg-current: transparent;
@@ -25,7 +27,7 @@ $shipBreadcrumbs: true !default;
     flex-wrap: wrap;
     align-items: center;
     gap: var(--crumb-gap);
-    padding: var(--crumb-p);
+    padding: var(--crumb-py) var(--crumb-px);
     min-width: 0;
     font: var(--crumb-f);
     color: var(--crumb-c);
@@ -35,7 +37,7 @@ $shipBreadcrumbs: true !default;
       display: inline-flex;
       align-items: center;
       gap: var(--space-1);
-      padding: var(--crumb-item-p);
+      padding: var(--crumb-item-py) var(--crumb-item-px);
       margin: 0;
       font: inherit;
       color: inherit;
@@ -101,7 +103,8 @@ $shipBreadcrumbs: true !default;
 
     // Boxed surface.
     &.type-b {
-      --crumb-p: var(--space-2) var(--space-3);
+      --crumb-py: var(--pad-y-m);
+      --crumb-px: var(--pad-x-m);
 
       background-color: var(--crumb-bg);
       border: var(--border-10);
@@ -109,20 +112,23 @@ $shipBreadcrumbs: true !default;
       border-radius: var(--crumb-s);
 
       &.small {
-        --crumb-p: var(--space-1) var(--space-2);
+        --crumb-py: var(--pad-y-s);
+        --crumb-px: var(--pad-x-s);
       }
     }
 
     // Pill crumbs: each crumb is a hit area, the current one filled.
     &.type-c {
       --crumb-gap: var(--space-1);
-      --crumb-item-p: var(--space-1) var(--space-2);
+      --crumb-item-py: var(--pad-y-s);
+      --crumb-item-px: var(--pad-x-s);
       --crumb-item-bg-h: var(--base-3);
       --crumb-item-bg-current: var(--base-3);
       --crumb-item-s: var(--shape-2);
 
       &.small {
-        --crumb-item-p: #{p2r(2)} var(--space-1);
+        --crumb-item-py: var(--pad-y-xs);
+        --crumb-item-px: var(--pad-x-xs);
       }
     }
   }

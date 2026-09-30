@@ -6,6 +6,8 @@ $shipChip: true !default;
   sh-chip {
     --chip-h: #{p2r(32)};
     --chip-s: calc(var(--chip-h) / 2);
+    --chip-py: 0;
+    --chip-px: var(--pad-x-m);
 
     &.sh-sheet {
       --sheet-c: var(--chip-c);
@@ -17,7 +19,7 @@ $shipChip: true !default;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: p2r(0 12);
+    padding: var(--chip-py) var(--chip-px);
 
     font: var(--paragraph-30B);
     height: var(--chip-h);
@@ -33,14 +35,14 @@ $shipChip: true !default;
 
     &.sharp {
       --chip-s: calc(var(--chip-h) / 4);
-      padding: p2r(0 8);
+      --chip-px: var(--pad-x-s);
 
       &.small {
-        padding: p2r(0 6);
+        --chip-px: var(--pad-x-xs);
       }
 
       &.xsmall {
-        padding: p2r(0 4);
+        --chip-px: var(--pad-x-xs);
       }
     }
 
@@ -60,7 +62,7 @@ $shipChip: true !default;
       --chip-h: #{p2r(24)};
 
       font: var(--paragraph-40B);
-      padding: p2r(0 8);
+      --chip-px: var(--pad-x-s);
 
       div {
         gap: p2r(4);
@@ -75,7 +77,7 @@ $shipChip: true !default;
       --chip-h: #{p2r(20)};
 
       font: var(--paragraph-40B);
-      padding: p2r(0 6);
+      --chip-px: var(--pad-x-xs);
 
       div {
         gap: p2r(2);

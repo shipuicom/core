@@ -5,7 +5,8 @@ $shipLayoutPage: true !default;
 @if $shipLayoutPage == true {
   sh-lo-page {
     --page-mw: #{p2r(1200)};
-    --page-p: var(--space-6);
+    --page-py: var(--pad-y-3xl);
+    --page-px: var(--pad-x-3xl);
     --page-gap: var(--space-6);
     --page-head-gap: var(--space-4);
     --page-aside-w: #{p2r(320)};
@@ -16,7 +17,7 @@ $shipLayoutPage: true !default;
     width: 100%;
     max-width: var(--page-mw);
     margin-inline: auto;
-    padding: var(--page-p);
+    padding: var(--page-py) var(--page-px);
 
     &.small {
       --page-mw: #{p2r(720)};
@@ -38,7 +39,8 @@ $shipLayoutPage: true !default;
 
     // Flush: the parent (e.g. sh-sidenav's main) already pads.
     &.type-c {
-      --page-p: 0;
+      --page-py: 0;
+      --page-px: 0;
     }
 
     > .head {
@@ -133,7 +135,7 @@ $shipLayoutPage: true !default;
 
     &.sticky > .body > .aside {
       position: sticky;
-      top: var(--page-p);
+      top: var(--page-py);
     }
 
     @include breakpoint(-centi) {
@@ -153,7 +155,8 @@ $shipLayoutPage: true !default;
       --page-gap: var(--space-5);
 
       &:not(.type-c) {
-        --page-p: var(--space-4);
+        --page-py: var(--pad-y-xl);
+        --page-px: var(--pad-x-l);
       }
     }
   }
