@@ -74,8 +74,8 @@ $overrides: () !default;
   @include icon.skin(colors-for(icon), variants-for(icon));
 }
 
-@if enabled(progress-bar) {
-  @include progressbar.skin(colors-for(progress-bar), variants-for(progress-bar));
+@if enabled(progressBar) {
+  @include progressbar.skin(colors-for(progressBar), variants-for(progressBar));
 }
 
 @if enabled(tabs) {
@@ -90,8 +90,8 @@ $overrides: () !default;
   @include toggle.skin(colors-for(toggle), variants-for(toggle));
 }
 
-@if enabled(range-slider) {
-  @include rangeslider.skin(colors-for(range-slider), variants-for(range-slider));
+@if enabled(rangeSlider) {
+  @include rangeslider.skin(colors-for(rangeSlider), variants-for(rangeSlider));
 }
 
 @if enabled(radio) {
@@ -114,16 +114,16 @@ $overrides: () !default;
   @include avatar.skin(colors-for(avatar), variants-for(avatar));
 }
 
-@if enabled(code-input) {
-  @include codeinput.skin(colors-for(code-input), variants-for(code-input));
+@if enabled(codeInput) {
+  @include codeinput.skin(colors-for(codeInput), variants-for(codeInput));
 }
 
 @if enabled(video) {
   @include video.skin(colors-for(video), variants-for(video));
 }
 
-@if enabled(form-field) {
-  @include formfield.skin(colors-for(form-field), variants-for(form-field));
+@if enabled(formField) {
+  @include formfield.skin(colors-for(formField), variants-for(formField));
 }
 
 @if enabled(alert) {
@@ -134,8 +134,8 @@ $overrides: () !default;
   @include button.skin(colors-for(button), variants-for(button));
 }
 
-@if enabled(list-item-swipe) {
-  @include listitemswipe.skin(colors-for(list-item-swipe), variants-for(list-item-swipe));
+@if enabled(listItemSwipe) {
+  @include listitemswipe.skin(colors-for(listItemSwipe), variants-for(listItemSwipe));
 }
 
 @if enabled(list) {
