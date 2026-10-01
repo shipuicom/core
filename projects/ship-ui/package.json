@@ -31,6 +31,7 @@
     "ship-fg": "./bin/ship-fg.mjs",
     "ship-fg-ts": "./bin/ship-fg.ts",
     "ship-migrate": "./bin/ship-migrate.mjs",
+    "ship-styles": "./bin/ship-styles.mjs",
     "ship-mcp": "./bin/mcp/index.js"
   },
   "libraryIcons": [

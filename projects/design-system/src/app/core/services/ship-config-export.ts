@@ -1,4 +1,4 @@
-import { ShipConfig, defaultThemeColors } from '@ship-ui/core';
+import { ShipConfig, ShipStylesManifest, defaultThemeColors, shipStylesUse, shipStylesWith } from '@ship-ui/core';
 import { googleFontUrl } from '../font-picker/font-picker';
 
 /** What the docs editor knobs map to outside the docs: the defaults baked into `@ship-ui/core/styles`. */
@@ -29,8 +29,10 @@ const GLOBAL_KEYS: (keyof ShipConfig)[] = [
 export interface ShipConfigExport {
   /** `app.config.ts`: the component defaults, provided through `SHIP_CONFIG`. */
   ts: string;
-  /** `styles.scss`: palettes through `$shipPalettes`, the rest as custom properties on `html`. */
+  /** `styles.scss`: palettes through `$shipPalettes`, trimmed skins, the rest as custom properties on `html`. */
   scss: string;
+  /** `ship-styles.json`: the colours, variants and skins kept; null when nothing is trimmed. */
+  manifest: string | null;
 }
 
 export function parseHsl(hsl: string): [number, number, number] | null {
@@ -74,7 +76,7 @@ function num(n: number) {
   return String(Math.round(n * 100) / 100);
 }
 
-export function exportShipScss(config: ShipConfig): string {
+export function exportShipScss(config: ShipConfig, styles: ShipStylesManifest = {}): string {
   const palettes: string[] = [];
   for (const name of SCSS_PALETTES) {
     if (isDefaultColor(name, config) && isDefaultDistribution(name, config)) continue;
@@ -112,11 +114,7 @@ export function exportShipScss(config: ShipConfig): string {
   }
 
   const parts: string[] = [];
-  parts.push(
-    palettes.length
-      ? `@use '@ship-ui/core/styles' with (\n  $shipPalettes: (\n${palettes.join('\n')}\n  ),\n);`
-      : `@use '@ship-ui/core/styles';`
-  );
+  parts.push(shipStylesUse(styles, palettes.length ? [`$shipPalettes: (\n${palettes.join('\n')}\n  )`] : []));
   // Sass wants `@use` first; it hoists this plain CSS import to the top of the output.
   if (fontFamily) parts.push(`\n@import url('${googleFontUrl(fontFamily)}');`);
   if (tokens.length) parts.push(`\nhtml {\n${tokens.join('\n')}\n}`);
@@ -158,6 +156,10 @@ export const appConfig: ApplicationConfig = {
 `;
 }
 
-export function exportShipConfig(config: ShipConfig): ShipConfigExport {
-  return { ts: exportShipTs(config), scss: exportShipScss(config) };
+export function exportShipConfig(config: ShipConfig, styles: ShipStylesManifest = {}): ShipConfigExport {
+  return {
+    ts: exportShipTs(config),
+    scss: exportShipScss(config, styles),
+    manifest: shipStylesWith(styles).length ? JSON.stringify(styles, null, 2) + '\n' : null,
+  };
 }

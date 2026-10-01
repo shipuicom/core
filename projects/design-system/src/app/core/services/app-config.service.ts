@@ -1,5 +1,5 @@
 import { DOCUMENT, Injectable, effect, inject, signal } from '@angular/core';
-import { ShipConfig, defaultThemeColors } from '@ship-ui/core';
+import { ShipConfig, ShipStylesManifest, defaultThemeColors, shipStylesWith } from '@ship-ui/core';
 import { LOCALSTORAGE } from './localstorage.token';
 
 @Injectable({ providedIn: 'root' })
@@ -9,6 +9,14 @@ export class AppConfigService {
 
   private _configSignal = signal<ShipConfig>(this.loadConfig());
   isEditorOpen = signal<boolean>(this.#ls.getItemParsed<boolean>('ship-editor-open') || false);
+  /** What the exported `styles.scss` keeps (colours, variants, skins). Export only: the docs always load every skin. */
+  styles = signal<ShipStylesManifest>(this.#ls.getItemParsed<ShipStylesManifest>('ship-styles') || {});
+
+  stylesEffect = effect(() => {
+    const styles = this.styles();
+    if (shipStylesWith(styles).length) this.#ls.setItemParsed('ship-styles', styles);
+    else this.#ls.removeItem('ship-styles');
+  });
 
   fontSizeEffect = effect(() => {
     this.#ls.setItemParsed('ship-editor-open', this.isEditorOpen());
@@ -193,6 +201,7 @@ export class AppConfigService {
     const initialConfig: ShipConfig = { sidenavType: 'overlay' };
     this._configSignal.set(initialConfig);
     this.#ls.removeItem('ship-config');
+    this.styles.set({});
   }
 
   get reactiveConfig(): ShipConfig {

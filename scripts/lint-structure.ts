@@ -275,6 +275,27 @@ for (const pkg of packages) {
   }
 }
 
+// The skin list the editor and `ship-styles` offer must match what skins/_index.scss emits,
+// and every skin key must be a key of index.scss's $enabled map (otherwise its $ship* flag is a no-op).
+{
+  const skinsIndex = join(STYLES, 'skins/_index.scss');
+  const emitted = [...readFileSync(skinsIndex, 'utf8').matchAll(/enabled\(([a-zA-Z]+)\)/g)].map((m) => m[1]!);
+  const indexScss = readFileSync(join(STYLES, 'index.scss'), 'utf8');
+  const listed = readFileSync(join(LIB, 'src/lib/utilities/ship-styles.ts'), 'utf8')
+    .match(/SHIP_STYLE_SKINS = \[([\s\S]*?)\]/)?.[1]
+    ?.match(/'([a-zA-Z]+)'/g)
+    ?.map((s) => s.slice(1, -1)) ?? [];
+  for (const skin of emitted) {
+    if (!new RegExp(`^\\s+${skin}: \\$ship`, 'm').test(indexScss))
+      report('styles', 'skin-flag', 'error', skinsIndex, `skin "${skin}" has no $enabled entry in index.scss`);
+    if (!listed.includes(skin))
+      report('styles', 'skin-list', 'error', skinsIndex, `skin "${skin}" missing from SHIP_STYLE_SKINS`);
+  }
+  for (const skin of listed)
+    if (!emitted.includes(skin))
+      report('styles', 'skin-list', 'error', skinsIndex, `SHIP_STYLE_SKINS has "${skin}" but no skin emits it`);
+}
+
 // ---------------------------------------------------------------------------------------------
 // output
 
@@ -287,6 +308,7 @@ if (JSON_OUT) {
   const byPkg = new Map<string, { e: number; w: number }>();
   for (const p of packages) byPkg.set(p, { e: 0, w: 0 });
   for (const f of findings) {
+    if (!byPkg.has(f.pkg)) byPkg.set(f.pkg, { e: 0, w: 0 });
     const c = byPkg.get(f.pkg)!;
     if (f.level === 'error') c.e++;
     else c.w++;

@@ -13,7 +13,14 @@ import { ShipThemeToggle } from '@ship-ui/core/ship-theme-toggle';
 import { ShipToggle } from '@ship-ui/core/ship-toggle';
 import { ShipColorPickerInput } from '@ship-ui/core/ship-color-picker';
 import { ShipCard } from '@ship-ui/core/ship-card';
-import { defaultThemeColors } from '@ship-ui/core';
+import {
+  SHIP_STYLE_COLORS,
+  SHIP_STYLE_SKINS,
+  SHIP_STYLE_VARIANTS,
+  ShipStyleSkin,
+  defaultThemeColors,
+  shipStylesWith,
+} from '@ship-ui/core';
 import { FontPicker } from '../core/font-picker/font-picker';
 import { AppConfigService } from '../core/services/app-config.service';
 import { exportShipConfig } from '../core/services/ship-config-export';
@@ -261,7 +268,7 @@ export class ConfigEditor {
   /** Opens the two files (`app.config.ts` + `styles.scss`) that reproduce the current config in another app. */
   exportConfig() {
     this.#dialog.open(ConfigExportDialog, {
-      data: exportShipConfig(this.config),
+      data: exportShipConfig(this.config, this.configService.styles()),
       width: '760px',
       maxWidth: '95vw',
     });
@@ -513,6 +520,59 @@ export class ConfigEditor {
   isFormFieldsAltered = computed(() => {
     return this.editorFormFields.some((comp) => this.isAltered(comp));
   });
+
+  readonly styleColors = SHIP_STYLE_COLORS;
+  readonly styleVariants = SHIP_STYLE_VARIANTS;
+  readonly styleSkins = SHIP_STYLE_SKINS;
+
+  isStylesAltered = computed(() => shipStylesWith(this.configService.styles()).length > 0);
+
+  skinLabel(skin: string) {
+    const words = skin.replace(/([A-Z])/g, ' $1').toLowerCase();
+    return words[0].toUpperCase() + words.slice(1);
+  }
+
+  hasStyleColor(color: string) {
+    return (this.configService.styles().colors ?? (SHIP_STYLE_COLORS as readonly string[])).includes(color);
+  }
+
+  hasStyleVariant(variant: string) {
+    return (this.configService.styles().variants ?? (SHIP_STYLE_VARIANTS as readonly string[])).includes(variant);
+  }
+
+  hasSkin(skin: ShipStyleSkin) {
+    return this.configService.styles().skins?.[skin] !== false;
+  }
+
+  /** Keeps the list in canonical order and drops it once it is back to everything. */
+  #toggleIn(all: readonly string[], current: readonly string[] | undefined, item: string, on: boolean) {
+    const next = all.filter(x => (x === item ? on : (current ?? all).includes(x)));
+    return next.length === all.length ? undefined : next;
+  }
+
+  setStyleColor(color: string, on: boolean) {
+    this.configService.styles.update(s => ({ ...s, colors: this.#toggleIn(SHIP_STYLE_COLORS, s.colors, color, on) }));
+  }
+
+  setStyleVariant(variant: string, on: boolean) {
+    this.configService.styles.update(s => ({
+      ...s,
+      variants: this.#toggleIn(SHIP_STYLE_VARIANTS, s.variants, variant, on),
+    }));
+  }
+
+  setSkin(skin: ShipStyleSkin, on: boolean) {
+    this.configService.styles.update(s => {
+      const skins = { ...s.skins };
+      if (on) delete skins[skin];
+      else skins[skin] = false;
+      return { ...s, skins: Object.keys(skins).length ? skins : undefined };
+    });
+  }
+
+  resetStyles() {
+    this.configService.styles.set({});
+  }
 
   resetGlobalSettings() {
     this.configService.updateConfig({ fontSize: undefined, borderRadius: undefined, borderWidth: undefined, paddingY: undefined, paddingX: undefined, fontFamily: undefined, distribution: undefined, colors: undefined });

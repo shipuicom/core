@@ -1,6 +1,6 @@
 <div header>
   <h2>Export config</h2>
-  <p>Two files reproduce what you see here in your own app.</p>
+  <p>These files reproduce what you see here in your own app.</p>
 </div>
 
 <div content>
@@ -19,10 +19,24 @@
     <p>
       Palettes through
       <code>$shipPalettes</code>
-      ; font, density, radius and border width as custom properties.
+      , the colours, variants and skins you kept; font, density, radius and border width as custom properties.
     </p>
     <app-highlight lang="scss" [content]="data().scss" />
   </section>
+
+  @if (data().manifest; as manifest) {
+    <section>
+      <h4>ship-styles.json</h4>
+      <p>
+        The same selection as data:
+        <code>npx ship-styles</code>
+        turns it into the
+        <code>&#64;use</code>
+        block above, so it can be kept in the repo and edited by hand.
+      </p>
+      <app-highlight lang="json" [content]="manifest" />
+    </section>
+  }
 </div>
 
 <div footer>

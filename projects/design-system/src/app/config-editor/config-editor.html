@@ -128,6 +128,57 @@
         </div>
       </details>
 
+      <details value="styles">
+        <summary>
+          Included styles
+          @if (isStylesAltered()) {
+            <button
+              shButton
+              class="reset-btn"
+              size="xsmall"
+              variant="outlined"
+              (click)="resetStyles(); $event.stopPropagation()">
+              <span class="changed-indicator"></span>
+              <span class="text-default">Changed</span>
+              <span class="text-hover">Reset All</span>
+            </button>
+          }
+        </summary>
+        <p class="styles-hint">
+          What your exported <code>styles.scss</code> keeps. Everything left out is not compiled into your CSS. The docs
+          themselves always load every style.
+        </p>
+
+        <h5 class="styles-group">Colours</h5>
+        @for (color of styleColors; track color) {
+          <sh-toggle
+            color="primary"
+            variant="raised"
+            [checked]="hasStyleColor(color)"
+            (checkedChange)="setStyleColor(color, $event)">
+            {{ color }}
+          </sh-toggle>
+        }
+
+        <h5 class="styles-group">Variants</h5>
+        @for (variant of styleVariants; track variant) {
+          <sh-toggle
+            color="primary"
+            variant="raised"
+            [checked]="hasStyleVariant(variant)"
+            (checkedChange)="setStyleVariant(variant, $event)">
+            {{ variant }}
+          </sh-toggle>
+        }
+
+        <h5 class="styles-group">Component skins</h5>
+        @for (skin of styleSkins; track skin) {
+          <sh-toggle color="primary" variant="raised" [checked]="hasSkin(skin)" (checkedChange)="setSkin(skin, $event)">
+            {{ skinLabel(skin) }}
+          </sh-toggle>
+        }
+      </details>
+
       <details value="components" [class.disabled]="filteredEditorComponents().length === 0">
         <summary>
           Components
