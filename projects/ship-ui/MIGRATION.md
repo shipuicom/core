@@ -70,7 +70,8 @@ checks it). A migration script (`ship-migrate`) that rewrites the renames below 
 **Other**
 - Selected `sh-chip`s in the `simple` and `outlined` variants (with or without a colour) now fill with the selection colour; before, the
   variant background won and the text was unreadable.
-- `sh-avatar` name hues are derived from the primary palette (rotated in 45° steps) instead of fixed oklch pairs.
+- `sh-avatar` name hues are derived from the primary palette (rotated in 45° steps) instead of fixed oklch pairs; the internal
+  `--avatar-h` token is gone.
 - The `.status-badge` / `.delete-btn` demo styles left `sh-tree`; copy them from the docs' template-tree example if you relied on them.
 - Contrast text on coloured surfaces (toggle knob, radio dot, range-slider thumb value, datepicker selection) now reads `--<color>-c8`
   instead of `#fff`, so custom palettes with light `-8` steps get dark text automatically.

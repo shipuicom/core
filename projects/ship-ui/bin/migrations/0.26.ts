@@ -128,7 +128,7 @@ const rules: MigrationRules = {
     { pattern: '\\btableType\\b', message: 'SHIP_CONFIG.tableType is gone: use table: { variant }' },
     { pattern: "'event-card'", message: "SHIP_CONFIG['event-card'] is now eventCard" },
     { pattern: '\\bShipAlertModule\\b', message: 'ShipAlertModule is removed: import ShipAlert / ShipAlertContainer directly' },
-    { pattern: 'sh-form-field-experimental', message: 'the sh-form-field-experimental entry point is deleted: use sh-form-field' },
+    { pattern: 'sh-form-field-experimental|\\bShipFormFieldExperimental\\b', message: 'the sh-form-field-experimental entry point is deleted: use sh-form-field' },
   ],
 };
 

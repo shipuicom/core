@@ -10,8 +10,9 @@
  * Anything the script cannot decide (an ambiguous class name, a removed input inside a bound expression)
  * is reported as a warning with file:line rather than rewritten.
  */
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { extname, join, relative, resolve } from 'node:path';
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { dirname, extname, join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import rules026 from './migrations/0.26';
 import type { MigrationRules } from './migrations/types';
 
@@ -42,12 +43,13 @@ const lineOf = (text: string, index: number) => text.slice(0, index).split('\n')
  * The same text with comments and string contents replaced by spaces (length preserved), so that braces, `>` and
  * tag names inside them cannot confuse the scope checks below. `//` after `:` (a URL) is not a comment.
  */
-function blank(text: string): string {
+function blank(text: string, { singleQuotes = true } = {}): string {
   const pad = (m: string) => m.replace(/[^\n]/g, ' ');
+  const strings = singleQuotes ? /'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"/g : /"(?:[^"\\\n]|\\.)*"/g;
   return text
     .replace(/\/\*[\s\S]*?\*\//g, pad)
     .replace(/(?<!:)\/\/[^\n]*/g, pad)
-    .replace(/'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"/g, (m) => m[0] + pad(m.slice(1, -1)) + m[0]);
+    .replace(strings, (m) => m[0] + pad(m.slice(1, -1)) + m[0]);
 }
 
 /** Selectors of every block enclosing `index` in a (blanked) stylesheet, outermost last, joined with spaces. */
@@ -167,11 +169,25 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
       replaceAll(new RegExp(`(</?)${esc(from)}(?![a-z0-9-])`, 'g'), (_m, bracket) => bracket + to, 'selector', () => `<${from}> → <${to}>`);
     }
 
+    // Open tags are located on the blanked text so a `>` inside an attribute value cannot end them early; the
+    // rewrite itself runs on the raw tag. In .ts the (often single-quoted) template literal must stay visible.
+    const replaceOpenTags = (re: RegExp, fn: (tag: string, offset: number) => string) => {
+      const src = out;
+      const blanked = blank(src, { singleQuotes: ext !== '.ts' });
+      let result = '';
+      let last = 0;
+      for (const m of blanked.matchAll(re)) {
+        const end = m.index! + m[0].length;
+        result += src.slice(last, m.index!) + fn(src.slice(m.index!, end), m.index!);
+        last = end;
+      }
+      out = result + src.slice(last);
+    };
+
     // Class renames only on the listed tags: `class="a warning b"` and `[class.warning]="…"`.
     for (const { from, to, on } of rules.classes ?? []) {
       const tags = on.map(esc).join('|');
-      const openTag = new RegExp(`<(?:${tags})(?![a-z0-9-])[^>]*>`, 'g');
-      out = out.replace(openTag, (tag, offset: number) => {
+      replaceOpenTags(new RegExp(`<(?:${tags})(?![a-z0-9-])[^>]*>`, 'g'), (tag, offset) => {
         let next = tag;
         next = next.replace(new RegExp(`(class="[^"]*?)(?<![\\w-])${esc(from)}(?![\\w-])`, 'g'), `$1${to}`);
         next = next.replace(new RegExp(`\\[class\\.${esc(from)}\\]`, 'g'), `[class.${to}]`);
@@ -186,8 +202,7 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
 
     // Removed inputs: drop the static or bound attribute from the tag, report the rest.
     for (const { tag, input } of rules.removedInputs ?? []) {
-      const openTag = new RegExp(`<${esc(tag)}(?![a-z0-9-])[^>]*>`, 'g');
-      out = out.replace(openTag, (t, offset: number) => {
+      replaceOpenTags(new RegExp(`<${esc(tag)}(?![a-z0-9-])[^>]*>`, 'g'), (t, offset) => {
         const attr = new RegExp(`\\s+\\[?${esc(input)}\\]?="[^"]*"`, 'g');
         const next = t.replace(attr, '');
         if (next !== t) changes.push({ line: lineOf(out, offset), rule: 'removed-input', detail: `<${tag} ${input}> removed (it had no effect)` });
@@ -209,6 +224,56 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
 }
 
 // ---------------------------------------------------------------------------------------------
+
+/** The package this script ships in (projects/ship-ui in the repo, the package root once published). */
+const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+/** Flags `@use '@ship-ui/core/styles' with (...)` accepts, and the ones it accepts but does not act on yet. */
+export function styleFlags(pkgRoot = PKG_ROOT): { known: Set<string>; reserved: Set<string> } | null {
+  // Bundled or test runners may relocate this file: fall back to the package installed in the project being migrated.
+  const roots = [pkgRoot, resolve(process.cwd(), 'node_modules/@ship-ui/core'), resolve(process.cwd(), 'projects/ship-ui')];
+  const root = roots.find((r) => existsSync(join(r, 'styles/index.scss')) && existsSync(join(r, 'styles/skins/_index.scss')));
+  if (!root) return null;
+  const index = join(root, 'styles/index.scss');
+  const skins = join(root, 'styles/skins/_index.scss');
+  const indexSrc = readFileSync(index, 'utf8');
+  const known = new Set([...indexSrc.matchAll(/^\$([A-Za-z0-9_]+)\s*:[^;]*!default/gm)].map((m) => '$' + m[1]));
+  const emitted = new Set([...readFileSync(skins, 'utf8').matchAll(/enabled\(([a-zA-Z]+)\)/g)].map((m) => m[1]));
+  const reserved = new Set<string>();
+  for (const m of indexSrc.matchAll(/^\s+([a-zA-Z]+):\s*(\$ship[A-Za-z]+)/gm)) {
+    if (!emitted.has(m[1]!) && m[1] !== 'sortable') reserved.add(m[2]!);
+  }
+  return { known, reserved };
+}
+
+/**
+ * Things the per-file rules cannot see: the project must load the global stylesheet (components no longer style
+ * their own variants and colours), and the flags it passes must exist and do something.
+ */
+// The package entry (`@ship-ui/core/styles`) or a path into the library's styles folder (a workspace / the docs app).
+const STYLES_USE = /@use\s+['"](?:@ship-ui\/core\/styles(?:\/core)?|[^'"]*ship-ui\/styles(?:\/(?:index|core)(?:\.scss)?)?)['"]/;
+const STYLES_WITH = new RegExp(STYLES_USE.source + '\\s+with\\s*\\(([\\s\\S]*?)\\)\\s*;');
+
+export function projectChecks(styleSources: Array<{ file: string; text: string }>, flags = styleFlags()): string[] {
+  const notes: string[] = [];
+  const entries = styleSources.filter(({ text }) => STYLES_USE.test(text));
+  if (styleSources.length && entries.length === 0) {
+    notes.push(
+      `no stylesheet does \`@use '@ship-ui/core/styles'\` — since 0.26 the components' variant and colour classes are only styled by that global sheet; add it (or \`@use '@ship-ui/core/styles' with (...)\`) to your root styles`,
+    );
+  }
+  if (!flags) return notes;
+  for (const { file, text } of entries) {
+    const block = text.match(STYLES_WITH)?.[1];
+    if (!block) continue;
+    for (const m of block.matchAll(/(\$[A-Za-z0-9_]+)\s*:/g)) {
+      const flag = m[1]!;
+      if (!flags.known.has(flag)) notes.push(`${file}: \`${flag}\` is not a flag of @ship-ui/core/styles (Sass will reject it)`);
+      else if (flags.reserved.has(flag)) notes.push(`${file}: \`${flag}\` is accepted but not honoured yet (that component's styles still live in its own stylesheet)`);
+    }
+  }
+  return notes;
+}
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
@@ -235,11 +300,22 @@ export function main(argv: string[]) {
     process.exit(2);
   }
 
+  const allFiles = walk(src);
+  const styleSources = allFiles
+    .filter((f) => STYLE_EXT.has(extname(f)))
+    .map((f) => ({ file: relative(process.cwd(), f), text: readFileSync(f, 'utf8') }));
+  const projectNotes = projectChecks(styleSources);
+  if (projectNotes.length) {
+    console.log('Project');
+    for (const n of projectNotes) console.log(`    ⚠ ${n}`);
+    console.log();
+  }
+
   let files = 0;
   let changed = 0;
   let totalChanges = 0;
-  let totalWarnings = 0;
-  for (const file of walk(src)) {
+  let totalWarnings = projectNotes.length;
+  for (const file of allFiles) {
     files++;
     const original = readFileSync(file, 'utf8');
     let text = original;

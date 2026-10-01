@@ -1,6 +1,7 @@
 // @vitest-environment node
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { MIGRATIONS, migrateSource } from './ship-migrate';
+import { MIGRATIONS, migrateSource, projectChecks, styleFlags } from './ship-migrate';
 
 const v026 = MIGRATIONS.find((m) => m.version === '0.26.0')!;
 
@@ -112,10 +113,52 @@ describe('ship-migrate 0.26', () => {
     expect(r.warnings).toHaveLength(1);
   });
 
+  it('ends an open tag only at a real `>`, not one inside an attribute value', () => {
+    const r = migrateSource('<sh-card [x]="a > b" color="warn" class="c">x</sh-card>\n<sh-form-field [y]="n > 0" class="warning"></sh-form-field>', '.html', v026);
+    expect(r.text).toBe('<sh-card [x]="a > b" class="c">x</sh-card>\n<sh-form-field [y]="n > 0" class="warn"></sh-form-field>');
+    expect(r.changes).toHaveLength(2);
+  });
+
+  it('still sees single-quoted inline templates in .ts files', () => {
+    const r = migrateSource("template: '<sh-card color=\"x\" [a]=\"b > c\"></sh-card>'", '.ts', v026);
+    expect(r.text).toBe("template: '<sh-card [a]=\"b > c\"></sh-card>'");
+  });
+
   it('is idempotent', () => {
     const once = migrateSource('<sh-card color="a" class="warning"></sh-card> --breadcrumbs-c', '.html', v026).text;
     const twice = migrateSource(once, '.html', v026);
     expect(twice.text).toBe(once);
     expect(twice.changes).toHaveLength(0);
+  });
+});
+
+describe('ship-migrate project checks', () => {
+  // Explicit root: test runners relocate the module, so the import.meta-based default may not point at the package.
+  const flags = styleFlags(resolve(process.cwd(), 'projects/ship-ui'))!;
+
+  it('reads the flag inventory from the package styles', () => {
+    expect(flags.known.has('$shipColors')).toBe(true);
+    expect(flags.known.has('$useInterTight')).toBe(true);
+    expect(flags.reserved.has('$shipTable')).toBe(true);
+    expect(flags.reserved.has('$shipToggle')).toBe(false);
+  });
+
+  it('warns when no stylesheet loads @ship-ui/core/styles', () => {
+    const notes = projectChecks([{ file: 'styles.scss', text: 'body { margin: 0 }' }], flags);
+    expect(notes).toHaveLength(1);
+    expect(notes[0]).toContain("@use '@ship-ui/core/styles'");
+    expect(projectChecks([{ file: 'styles.scss', text: "@use '@ship-ui/core/styles';" }], flags)).toEqual([]);
+    // A workspace that points into the library's styles folder counts too.
+    expect(projectChecks([{ file: 'styles.scss', text: "@use '../../ship-ui/styles/index.scss' with ($useInterTight: true);" }], flags)).toEqual([]);
+  });
+
+  it('points at unknown and not-yet-honoured flags in the with() block', () => {
+    const notes = projectChecks(
+      [{ file: 'styles.scss', text: "@use '@ship-ui/core/styles' with ($useInterTight: false, $shipTable: false, $shipTabel: false);" }],
+      flags,
+    );
+    expect(notes.map((n) => n.split('`')[1])).toEqual(['$shipTable', '$shipTabel']);
+    expect(notes[0]).toContain('not honoured');
+    expect(notes[1]).toContain('not a flag');
   });
 });

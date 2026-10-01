@@ -46,6 +46,7 @@
     "test:e2e:editor": "playwright test -c scripts/editor-e2e/playwright.config.ts",
     "bench:video": "bun projects/ship-ui/ship-video/benchmarks/run.ts",
     "lint:structure": "bun scripts/lint-structure.ts",
+    "lint:migration": "bun scripts/check-migration-rules.ts",
     "snap:baseline": "bun scripts/visual-snapshots/snap.ts baseline",
     "snap:compare": "bun scripts/visual-snapshots/snap.ts compare",
     "size": "bun scripts/component-sizes.ts",
