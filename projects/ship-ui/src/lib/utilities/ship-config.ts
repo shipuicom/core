@@ -61,7 +61,7 @@ export interface ShipConfig {
   distribution?: ShipConfigDistributions;
   borderRadius?: number;
   borderWidth?: number;
-  /** Base vertical padding in px (`--pad-y`, default 8); every component's padding tier derives from it. */
+  /** Base vertical padding in px (`--pad-y`, default 8); every component's padding tier derives from it, rounded to a 2px grid. */
   paddingY?: number;
   /** Base horizontal padding in px (`--pad-x`, default 12). */
   paddingX?: number;

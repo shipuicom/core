@@ -56,18 +56,18 @@
 <h4>Spacing</h4>
 <p class="spacing-hint">
   Every component pads from one base pair: <code>--pad-y</code> and <code>--pad-x</code>. The tiers (1 … 8) follow by
-  multiplier, so these two sliders change the density of the whole app.
+  multiplier, rounded to a 2px grid, so these two sliders change the density of the whole app.
 </p>
 
 <div class="spacing-row">
   <sh-range-slider>
     <label>Vertical padding (px)</label>
-    <input type="range" min="2" max="16" step="1" [ngModel]="paddingY()" (ngModelChange)="setPaddingY($event)" />
+    <input type="range" min="2" max="16" step="2" [ngModel]="paddingY()" (ngModelChange)="setPaddingY($event)" />
   </sh-range-slider>
 
   <sh-range-slider>
     <label>Horizontal padding (px)</label>
-    <input type="range" min="4" max="24" step="1" [ngModel]="paddingX()" (ngModelChange)="setPaddingX($event)" />
+    <input type="range" min="4" max="24" step="2" [ngModel]="paddingX()" (ngModelChange)="setPaddingX($event)" />
   </sh-range-slider>
 
   <button shButton class="small" (click)="resetPadding()">Reset</button>
