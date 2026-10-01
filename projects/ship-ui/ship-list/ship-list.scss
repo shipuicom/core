@@ -20,7 +20,7 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
     --list-color: var(--base-9);
     --list-active-bs: none;
     --list-item-b: 1px solid transparent;
-    --list-item-active-b: 1px solid --list-active-bg;
+    --list-item-active-b: 1px solid var(--list-active-bg);
     --list-py: var(--pad-y-5);
     --list-px: var(--pad-x-4);
     --list-item-py: var(--pad-y-3);

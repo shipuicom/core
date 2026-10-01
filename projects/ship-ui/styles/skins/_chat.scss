@@ -1,8 +1,10 @@
 @mixin skin($colors, $variants) {
   sh-chat {
-    // Filled bubble.
+    // Filled bubble. `.outgoing` is listed too so the colour beats the structure sheet's `sh-chat.outgoing`
+    // (same specificity, but component styles are injected after this sheet).
     @each $c in $colors {
-      &.#{$c} {
+      &.#{$c},
+      &.outgoing.#{$c} {
         --chat-bg: var(--#{$c}-8);
         --chat-c: var(--#{$c}-c8);
       }
@@ -11,7 +13,8 @@
     // Outlined bubble.
     &.type-b {
       @each $c in $colors {
-        &.#{$c} {
+        &.#{$c},
+        &.outgoing.#{$c} {
           --chat-bg: var(--#{$c}-2);
           --chat-bc: var(--#{$c}-6);
           --chat-c: var(--base-12);

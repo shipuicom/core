@@ -47,20 +47,13 @@ const rules: MigrationRules = {
     }
   ],
   classes: [
+    // sh-list-item-swipe action buttons keep `.danger` / `.warning` as aliases of `.error` / `.warn` for one minor.
     {
       from: 'warning',
       to: 'warn',
       on: [
         'sh-form-field',
-        'sh-form-field-popover',
-        'sh-list-item-swipe'
-      ]
-    },
-    {
-      from: 'danger',
-      to: 'error',
-      on: [
-        'sh-list-item-swipe'
+        'sh-form-field-popover'
       ]
     }
   ],
@@ -94,68 +87,8 @@ const rules: MigrationRules = {
       input: 'variant'
     }
   ],
-  sassFlags: [
-    {
-      from: '$shipPage',
-      to: '$shipLayoutPage'
-    },
-    {
-      from: '$shipSection',
-      to: '$shipLayoutSection'
-    },
-    {
-      from: '$shipSetting',
-      to: '$shipLayoutSetting'
-    },
-    {
-      from: '$shipEmptyState',
-      to: '$shipLayoutEmptyState'
-    },
-    {
-      from: '$shipStat',
-      to: '$shipLayoutStat'
-    },
-    {
-      from: '$shipStatTrend',
-      to: '$shipLayoutStatTrend'
-    },
-    {
-      from: '$shipStatGoal',
-      to: '$shipLayoutStatGoal'
-    },
-    {
-      from: '$shipStatRing',
-      to: '$shipLayoutStatRing'
-    },
-    {
-      from: '$shipRanking',
-      to: '$shipLayoutRanking'
-    },
-    {
-      from: '$shipAchievement',
-      to: '$shipLayoutAchievement'
-    },
-    {
-      from: '$shipInbox',
-      to: '$shipLayoutInbox'
-    },
-    {
-      from: '$shipTableView',
-      to: '$shipLayoutTableView'
-    },
-    {
-      from: '$shipDetails',
-      to: '$shipLayoutDetails'
-    },
-    {
-      from: '$shipTimeline',
-      to: '$shipLayoutTimeline'
-    },
-    {
-      from: '$shipToolbar',
-      to: '$shipLayoutToolbar'
-    }
-  ],
+  // The 0.25.12 layout flags (`$shipPage` …) lived in component stylesheets only and were never configurable,
+  // so there is nothing to rename: `$shipLayoutPage` … `$shipLayoutToolbar` are new flags on the styles entry.
   styleWarnings: [
     { pattern: '--card-p(?![a-z0-9-])', message: '--card-p is now --card-py / --card-px' },
     { pattern: '--alert-p(?![a-z0-9-])', message: '--alert-p is now --alert-py / --alert-px' },
@@ -194,6 +127,8 @@ const rules: MigrationRules = {
     { pattern: '\\bcardType\\b', message: 'SHIP_CONFIG.cardType is gone: use card: { variant }' },
     { pattern: '\\btableType\\b', message: 'SHIP_CONFIG.tableType is gone: use table: { variant }' },
     { pattern: "'event-card'", message: "SHIP_CONFIG['event-card'] is now eventCard" },
+    { pattern: '\\bShipAlertModule\\b', message: 'ShipAlertModule is removed: import ShipAlert / ShipAlertContainer directly' },
+    { pattern: 'sh-form-field-experimental', message: 'the sh-form-field-experimental entry point is deleted: use sh-form-field' },
   ],
 };
 

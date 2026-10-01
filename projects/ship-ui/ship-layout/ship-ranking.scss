@@ -43,7 +43,14 @@ $shipLayoutRanking: true !default;
       }
     }
 
-    > sh-lo-ranking-item {
+    > .items {
+      display: flex;
+      flex-direction: column;
+      gap: var(--ranking-gap);
+      min-width: 0;
+    }
+
+    > .items > sh-lo-ranking-item {
       display: flex;
       flex-direction: column;
       gap: var(--space-1);
@@ -108,7 +115,7 @@ $shipLayoutRanking: true !default;
     &.type-b {
       --ranking-gap: var(--space-2);
 
-      > sh-lo-ranking-item {
+      > .items > sh-lo-ranking-item {
         padding: var(--pad-y-3) var(--pad-x-3);
         border-radius: var(--shape-2);
         background-color: var(--ranking-track);
@@ -138,7 +145,7 @@ $shipLayoutRanking: true !default;
     &.type-c {
       --ranking-gap: 0;
 
-      > sh-lo-ranking-item {
+      > .items > sh-lo-ranking-item {
         padding: var(--pad-y-3) 0;
         border-bottom: var(--border-10);
 

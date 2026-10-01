@@ -160,7 +160,7 @@ export class ShipColorPickerInput {
 
   /**
    * The last string parsed into `internalColorTuple`, kept while that tuple is still the one it produced.
-   * 8-bit RGB cannot represent every colour (hsl(30, 10%, 46%) re-derives as hsl(28, 10%, 46%)), so a seeded or
+   * 8-bit RGB cannot represent every colour (hsl(30, 10%, 46%) re-derives as hsl(29, 10%, 46%)), so a seeded or
    * typed string that is already in the output format is echoed verbatim instead of re-rounded; the moment the
    * picker, hue slider or eyedropper produce a new tuple the derived string takes over again.
    */
@@ -299,26 +299,8 @@ export class ShipColorPickerInput {
         this.internalColorTuple.set(tuple);
         this.internalAlpha.set(a);
 
-        // Also update hue so the hue slider matches the typed color!
-        const max = Math.max(r, g, b) / 255;
-        const min = Math.min(r, g, b) / 255;
-        if (max !== min) {
-          const d = max - min;
-          let h = 0;
-          switch (max) {
-            case r / 255:
-              h = (g / 255 - b / 255) / d + (g / 255 < b / 255 ? 6 : 0);
-              break;
-            case g / 255:
-              h = (b / 255 - r / 255) / d + 2;
-              break;
-            case b / 255:
-              h = (r / 255 - g / 255) / d + 4;
-              break;
-          }
-          h /= 6;
-          this.internalHue.set(Math.floor(h * 360));
-        }
+        // Also update hue so the hue slider matches the typed color (greys keep the current hue).
+        if (r !== g || g !== b) this.internalHue.set(rgbToHsl(r, g, b).h);
       }
     }
   }

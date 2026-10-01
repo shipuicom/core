@@ -10,7 +10,8 @@ import { ShipChip } from '@ship-ui/core/ship-chip';
 import { ShipCard } from '@ship-ui/core/ship-card';
 import { ShipList } from '@ship-ui/core/ship-list';
 import { AppConfigService } from '../core/services/app-config.service';
-import { FontPicker, googleFontUrl } from '../core/font-picker/font-picker';
+import { FontPicker } from '../core/font-picker/font-picker';
+import { googleFontUrl } from '../core/services/google-fonts';
 
 const DEFAULT_PADDING = { y: 8, x: 12 };
 

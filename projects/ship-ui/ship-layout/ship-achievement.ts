@@ -42,7 +42,7 @@ export class ShipLayoutAchievement {
   /** Medallion and glow color (`ShipColor`); defaults to primary. */
   color = input<ShipColor | null>(null);
   /** Use an arbitrary color from the `--achievement-c` CSS variable instead of a `ShipColor`. */
-  dynamic = input<boolean | undefined>(undefined);
+  dynamic = input<boolean | undefined, unknown>(undefined, { transform: (v) => (v == null ? undefined : booleanAttribute(v)) });
   /** Not earned yet: greys the medallion out and shows a lock. */
   locked = input(false, { transform: booleanAttribute });
   /** Visual variant: `type-b` horizontal row (medallion beside the text), `type-c` compact pill. Project default via `ShipConfig.layoutAchievement.variant`. */

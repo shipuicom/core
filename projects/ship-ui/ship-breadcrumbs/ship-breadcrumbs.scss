@@ -77,6 +77,9 @@ $shipBreadcrumbs: true !default;
       margin-inline-start: calc(var(--crumb-sep-w) + var(--crumb-gap));
 
       &::before {
+        // Plain `content` first: engines without the `/ alt` syntax (Firefox < 128, Safari < 17.4) drop the second
+        // declaration and still draw the separator; the others hide it from assistive tech with the empty alt text.
+        content: var(--crumb-sep);
         content: var(--crumb-sep) / '';
         position: absolute;
         inset-inline-end: calc(100% + var(--crumb-gap));
@@ -93,6 +96,10 @@ $shipBreadcrumbs: true !default;
       color: var(--crumb-c-current);
       background: var(--crumb-item-bg-current);
       font-weight: 600;
+    }
+
+    // Only the crumb marked as the current page is inert; a trailing link stays clickable.
+    > [aria-current='page'] {
       pointer-events: none;
     }
 

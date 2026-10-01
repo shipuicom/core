@@ -27,12 +27,11 @@ import { ShipColor, ShipLayoutRankingVariant } from '@ship-ui/core';
       <ng-content select="h2, h3, h4, [title]" />
       <div class="actions"><ng-content select="[actions]" /></div>
     </div>
-    <ng-content />
+    <div class="items" role="list"><ng-content /></div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': 'hostClasses()',
-    role: 'list',
   },
 })
 export class ShipLayoutRanking {
@@ -68,7 +67,7 @@ export class ShipLayoutRankingItem {
   #ranking = inject(ShipLayoutRanking, { optional: true });
 
   /** The item's value; the bar is `value / max` of the parent list. */
-  value = input(0, { transform: numberAttribute });
+  value = input(0, { transform: (v: unknown) => numberAttribute(v, 0) });
 
   percent = computed(() => {
     const max = this.#ranking?.max() || 1;

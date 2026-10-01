@@ -37,6 +37,67 @@ export interface FileResult {
 
 const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const lineOf = (text: string, index: number) => text.slice(0, index).split('\n').length;
+
+/**
+ * The same text with comments and string contents replaced by spaces (length preserved), so that braces, `>` and
+ * tag names inside them cannot confuse the scope checks below. `//` after `:` (a URL) is not a comment.
+ */
+function blank(text: string): string {
+  const pad = (m: string) => m.replace(/[^\n]/g, ' ');
+  return text
+    .replace(/\/\*[\s\S]*?\*\//g, pad)
+    .replace(/(?<!:)\/\/[^\n]*/g, pad)
+    .replace(/'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"/g, (m) => m[0] + pad(m.slice(1, -1)) + m[0]);
+}
+
+/** Selectors of every block enclosing `index` in a (blanked) stylesheet, outermost last, joined with spaces. */
+function enclosingSelectors(text: string, index: number): string {
+  const selectors: string[] = [];
+  let depth = 0;
+  for (let i = index; i >= 0; i--) {
+    const c = text[i];
+    if (c === '}') depth++;
+    else if (c === '{') {
+      if (depth === 0) {
+        let s = i - 1;
+        while (s >= 0 && !'{};'.includes(text[s])) s--;
+        selectors.push(text.slice(s + 1, i));
+      } else depth--;
+    }
+  }
+  return selectors.join(' ');
+}
+
+/** Name of the open tag `index` sits inside (between `<tag` and its `>`), or null when it is in text content. */
+function enclosingTag(text: string, index: number): string | null {
+  const lt = text.lastIndexOf('<', index);
+  if (lt < 0) return null;
+  const between = text.slice(lt, index);
+  // A `>` inside a quoted attribute value (`[x]="a > b"`) does not close the tag; the text is already blanked.
+  if (between.includes('>')) return null;
+  return between.match(/^<([a-zA-Z][\w-]*)/)?.[1] ?? null;
+}
+
+/** Whether the match at `index` is inside a rule for `tag` (styles) or on a `<tag …>` element (templates). */
+function targets(blanked: string, raw: string, index: number, tag: string, isStyle: boolean, ext: string): boolean {
+  const inRule = (text: string) => new RegExp(`(?<![\\w-])${esc(tag)}(?![\\w-])`).test(enclosingSelectors(text, index));
+  if (isStyle) return inRule(blanked);
+  if (enclosingTag(blanked, index) === tag) return true;
+  // In a `.ts` file the template and `styles:` are string literals, which blanking hides: look at the raw text too.
+  return ext === '.ts' && (enclosingTag(raw, index) === tag || inRule(raw));
+}
+
+/** Whether `index` (start of a token of `length`) is in selector position: inside a rule prelude that ends in `{`. */
+function inSelector(blanked: string, index: number, length: number): boolean {
+  const before = blanked[index - 1];
+  if (before === '$' || before === '@') return false;
+  for (let i = index + length; i < blanked.length; i++) {
+    const c = blanked[i];
+    if (c === '{') return true;
+    if (c === ';' || c === '}') return false;
+  }
+  return false;
+}
 const STYLE_EXT = new Set(['.scss', '.sass', '.css', '.less']);
 const TEMPLATE_EXT = new Set(['.html', '.ts']);
 
@@ -61,16 +122,22 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
   for (const { from, to } of rules.cssVarPrefixes ?? []) {
     replaceAll(new RegExp(esc(from) + '(?=[a-z0-9-])', 'g'), to, 'css-var', (m) => `${m}… → ${to}…`);
   }
+  // Generic names (`--miw`, `--overlay`) are only renamed where they target the component: inside a rule whose
+  // selector names the tag, or on that tag in a template. Anywhere else may be the consumer's own variable.
   for (const { from, to, requires } of rules.cssVars ?? []) {
-    const re = () => new RegExp(esc(from) + '(?![a-z0-9-])', 'g');
-    if (!re().test(out)) continue;
-    if (requires && !out.includes(requires)) {
-      for (const m of out.matchAll(re())) {
-        warnings.push({ line: lineOf(out, m.index!), rule: 'css-var', detail: `${from} → ${to} only if it targets ${requires}; file does not mention ${requires}, left as is` });
+    const re = new RegExp(esc(from) + '(?![a-z0-9-])', 'g');
+    if (!re.test(out)) continue;
+    re.lastIndex = 0;
+    const src = out;
+    const blanked = blank(src);
+    out = src.replace(re, (match, offset: number) => {
+      if (requires && !targets(blanked, src, offset, requires, isStyle, ext)) {
+        warnings.push({ line: lineOf(src, offset), rule: 'css-var', detail: `${from} → ${to} only where it targets ${requires}; this one is not inside a ${requires} rule or tag, left as is` });
+        return match;
       }
-      continue;
-    }
-    replaceAll(re(), to, 'css-var', () => `${from} → ${to}`);
+      changes.push({ line: lineOf(src, offset), rule: 'css-var', detail: `${from} → ${to}` });
+      return to;
+    });
   }
 
   if (isStyle) {
@@ -79,6 +146,19 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
     }
     for (const { from, to } of rules.sassFlags ?? []) {
       replaceAll(new RegExp(esc(from) + '(?![A-Za-z0-9_-])', 'g'), to, 'sass-flag', () => `${from} → ${to}`);
+    }
+    // Renamed elements used as selectors (`ship-theme-toggle { … }`); not in strings, urls, comments or variables.
+    for (const { from, to } of rules.selectors ?? []) {
+      const re = new RegExp(`(?<![\\w$@-])${esc(from)}(?![\\w-])`, 'g');
+      if (!re.test(out)) continue;
+      re.lastIndex = 0;
+      const src = out;
+      const blanked = blank(src);
+      out = src.replace(re, (match, offset: number) => {
+        if (blanked.slice(offset, offset + match.length) !== match || !inSelector(blanked, offset, match.length)) return match;
+        changes.push({ line: lineOf(src, offset), rule: 'selector', detail: `${from} → ${to}` });
+        return to;
+      });
     }
   }
 

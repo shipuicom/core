@@ -1,6 +1,7 @@
 import { DOCUMENT, Injectable, effect, inject, signal } from '@angular/core';
 import { ShipConfig, ShipStylesManifest, defaultThemeColors, shipStylesWith } from '@ship-ui/core';
 import { LOCALSTORAGE } from './localstorage.token';
+import { googleFontUrl } from './google-fonts';
 
 @Injectable({ providedIn: 'root' })
 export class AppConfigService {
@@ -78,7 +79,7 @@ export class AppConfigService {
       existing?.remove();
       return;
     }
-    const href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family).replace(/%20/g, '+')}:wght@500;600&display=swap`;
+    const href = googleFontUrl(family);
     if (existing?.href !== href) {
       existing?.remove();
       const link = this.#document.createElement('link');

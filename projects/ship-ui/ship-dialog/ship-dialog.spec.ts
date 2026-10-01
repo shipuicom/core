@@ -206,6 +206,41 @@ describe('ShipDialogService', () => {
     expect(closedSpy).toHaveBeenCalledWith('done');
   });
 
+  it('replaces an open dialog with the next one inside a live host element', () => {
+    service.open(TestDialogContent, { data: 'First' });
+    service.compRef?.changeDetectorRef.detectChanges();
+    service.insertedCompRef?.changeDetectorRef.detectChanges();
+    const firstRef = service.compRef!;
+
+    service.open(TestDialogContent, { data: 'Second' });
+    service.compRef?.changeDetectorRef.detectChanges();
+    service.insertedCompRef?.changeDetectorRef.detectChanges();
+
+    const host = document.getElementById('sh-dialog-ref');
+    expect(host?.isConnected).toBe(true);
+    expect(host!.textContent).toContain('Second');
+    expect(host!.textContent).not.toContain('First');
+    expect(firstRef.hostView.destroyed).toBe(true);
+    expect(service.compRef).not.toBe(firstRef);
+    expect(service.compRef!.location.nativeElement.isConnected).toBe(true);
+  });
+
+  it('does not tear down a dialog opened right after the previous one was closed', async () => {
+    const first = service.open(TestDialogContent, { data: 'First' });
+    first.close();
+    service.open(TestDialogContent, { data: 'Second' });
+    const second = service.compRef!;
+    // The first dialog's deferred cleanup runs now; it must only touch the first dialog.
+    await Promise.resolve();
+    await Promise.resolve();
+    service.compRef?.changeDetectorRef.detectChanges();
+    service.insertedCompRef?.changeDetectorRef.detectChanges();
+
+    expect(service.compRef).toBe(second);
+    expect(second.hostView.destroyed).toBe(false);
+    expect(document.getElementById('sh-dialog-ref')?.textContent).toContain('Second');
+  });
+
   it('should open a template dynamically', async () => {
     const templateHostFixture = TestBed.createComponent(TestTemplateHostComponent);
     templateHostFixture.detectChanges();

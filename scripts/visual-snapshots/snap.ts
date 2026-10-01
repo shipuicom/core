@@ -23,6 +23,8 @@ if (MODE !== 'baseline' && MODE !== 'compare') {
 const ROOT = import.meta.dir;
 const BASE_URL = process.env['SNAP_URL'] ?? 'http://localhost:4205';
 const FILTER = process.env['SNAP_FILTER'] ?? '';
+// Baseline files are named by slug (`/a/b` → `a_b`), so a route filter has to be matched in that form.
+const FILE_FILTER = FILTER.replace(/^\//, '').replace(/\//g, '_');
 const THEMES = (process.env['SNAP_THEMES'] ?? 'light,dark').split(',') as Array<'light' | 'dark'>;
 const WORKERS = Number(process.env['SNAP_WORKERS'] ?? 4);
 const EXTRA_CSS = process.env['SNAP_CSS'] ?? '';
@@ -195,7 +197,7 @@ async function main() {
   const results: Result[] = [];
   // With a filter only the matching baseline pages take part, so the rest are not reported as missing.
   const baselineFiles = new Set(
-    readdirSync(BASELINE).filter((f) => f.endsWith('.png') && f.includes(FILTER) && THEMES.some((t) => f.endsWith(`--${t}.png`))),
+    readdirSync(BASELINE).filter((f) => f.endsWith('.png') && f.includes(FILE_FILTER) && THEMES.some((t) => f.endsWith(`--${t}.png`))),
   );
   for (const { pathname, theme, file } of captured) {
     const slug = slugOf(pathname);

@@ -454,7 +454,13 @@ function extractClass(
 
 // --- Docs (description / keywords / examples) -----------------------------
 
+const primaryByEntry = new Map<string, boolean>();
 function entryHasPrimary(entryDir: string, base: string): boolean {
+  const key = `${entryDir}\0${base}`;
+  if (!primaryByEntry.has(key)) primaryByEntry.set(key, computeEntryHasPrimary(entryDir, base));
+  return primaryByEntry.get(key)!;
+}
+function computeEntryHasPrimary(entryDir: string, base: string): boolean {
   return publicFiles(entryDir).some((file) => {
     const src = fs.readFileSync(file, 'utf-8');
     return [...src.matchAll(/selector:\s*['"]\[?sh-?([\w-]+)/gi)].some(

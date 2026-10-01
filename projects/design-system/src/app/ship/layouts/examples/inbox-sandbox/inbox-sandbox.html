@@ -29,7 +29,7 @@
   </nav>
 
   <sh-lo-toolbar variant="type-c">
-    <sh-checkbox />
+    <sh-checkbox label="Select all" />
     <button shButton shTooltip="Archive">
       <sh-icon>archive</sh-icon>
     </button>
@@ -49,7 +49,7 @@
       [unread]="mail.unread"
       [selected]="readingPane() && openId() === mail.id"
       (click)="openId.set(mail.id)">
-      <sh-checkbox (click)="$event.stopPropagation()" />
+      <sh-checkbox [label]="'Select ' + mail.subject" (click)="$event.stopPropagation()" />
       @if (mail.starred) {
         <sh-icon star>star-fill</sh-icon>
       } @else {

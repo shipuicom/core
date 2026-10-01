@@ -371,15 +371,6 @@ export const COMPONENT_A11Y_MAP: Record<string, { url: string; rules: AriaRules[
       }
     ]
   },
-  'form-fields-experimental': {
-    url: 'http://localhost:4205/form-fields-experimental',
-    rules: [
-      {
-        selector: 'sh-form-field-experimental',
-        type: 'form-field',
-      }
-    ]
-  },
   'sortables': {
     url: 'http://localhost:4205/sortables',
     rules: [

@@ -6,14 +6,16 @@ import { ShipColor, ShipLayoutStatRingVariant } from '@ship-ui/core';
  * Progress KPI: a value drawn as a ring. Give it `value` (and `max`, default
  * 100); the ring fills to the fraction. Slots: `p` (label), an optional
  * `h3`/`[value]` shown inside the ring (defaults to the percentage), an
- * optional `sh-icon` and a `[footer]`/`small` line.
+ * optional `sh-icon` and a `[footer]`/`small` line. The slotted value and
+ * label read as ordinary content; set `label` to announce the ring as one
+ * image with that name instead.
  */
 @Component({
   selector: 'sh-lo-stat-ring',
   styleUrl: './ship-stat-ring.scss',
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div class="ring" [style.--ring-pct]="percent()" role="img" [attr.aria-label]="label() || percentLabel()">
+    <div class="ring" [style.--ring-pct]="percent()" [attr.role]="label() ? 'img' : null" [attr.aria-label]="label() || null">
       <div class="center">
         <ng-content select="sh-icon, [icon]" />
         <ng-content select="h2, h3, [value]" />
@@ -34,10 +36,10 @@ import { ShipColor, ShipLayoutStatRingVariant } from '@ship-ui/core';
 })
 export class ShipLayoutStatRing {
   /** Current value. */
-  value = input(0, { transform: numberAttribute });
+  value = input(0, { transform: (v: unknown) => numberAttribute(v, 0) });
   /** Value that fills the ring completely. */
   max = input(100, { transform: numberAttribute });
-  /** Accessible name for the ring (defaults to the percentage). */
+  /** Names the ring as a single image (hiding its slotted content from assistive tech); leave unset to let the slotted value/label read as content. */
   label = input<string>('');
   /** Ring color (`ShipColor`), defaults to primary. */
   color = input<ShipColor | null>(null);

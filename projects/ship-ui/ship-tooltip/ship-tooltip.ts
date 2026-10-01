@@ -305,7 +305,7 @@ export class ShipTooltip implements OnDestroy {
 
     openRef.wrapperComponentRef.setInput('positionAnchorName', this.anchorName);
     openRef.wrapperComponentRef.setInput('anchorEl', this.#elementRef);
-    openRef.wrapperComponentRef.setInput('isOpen', this.isOpen);
+    openRef.wrapperComponentRef.setInput('isOpen', true);
     openRef.wrapperComponentRef.setInput('content', this.shTooltip());
     openRef.wrapperComponentRef.setInput('close', () => this.#cleanupTooltip(true));
     openRef.wrapperComponentRef.changeDetectorRef.detectChanges();

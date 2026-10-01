@@ -14,8 +14,10 @@ $item: '> *:not([title]):not([raw]):not(hr):not(sh-list-item-swipe)';
       }
     }
 
+    // `.type-b` is listed too so the colour beats the structure sheet's `sh-list.type-b` primary default.
     @each $c in $colors {
-      &.#{$c} {
+      &.#{$c},
+      &.type-b.#{$c} {
         --list-accent: var(--#{$c}-8);
 
         #{$item} {

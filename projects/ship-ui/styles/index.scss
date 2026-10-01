@@ -1,5 +1,7 @@
-// Entry point: `@use '@ship-ui/core/styles' with (...)`. Every `$ship<Name>` flag switches one component's
+// Entry point: `@use '@ship-ui/core/styles' with (...)`. A `$ship<Name>` flag switches one component's
 // skin (see ./skins/_index.scss); `$shipColors`, `$shipVariants` and `$shipSkins` decide how much of each skin is emitted.
+// Flags for components whose styles still live in their own styleUrl (table, card, dialog, menu, select, sidenav,
+// the layout containers, …) are accepted but not yet honoured: they are reserved for when those skins move here.
 $useInterTight: true !default;
 $useApexcharts: false !default;
 $shipFormFieldShadow: false !default;
@@ -12,7 +14,7 @@ $shipVariants: (simple, outlined, flat, raised) !default;
 $shipSkins: () !default;
 /// Palettes added to the built-in five: `(brand: (200, 80%, 45%))` or a full step map (see ./palettes.scss).
 $shipPalettes: () !default;
-/// Numbered palette steps to emit; the skins read 1-4 and 6-11.
+/// Numbered palette steps to emit for the colour palettes; the skins read 1-4 and 6-11. The `base` scale is always full.
 $shipPaletteSteps: (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12) !default;
 
 $shipSheet: true !default;

@@ -20,8 +20,10 @@ checks it). A migration script (`ship-migrate`) that rewrites the renames below 
 | `--overlay` (sh-popover sheet backdrop) | `--po-overlay` |
 
 **Renamed classes** (old names keep working until v0.27):
-- `.warning` → `.warn` on `sh-form-field`, `sh-tree` badges, `sh-list-item-swipe` actions
-- `.danger` → `.error` on `sh-list-item-swipe` actions and `sh-editor` toolbar actions
+- `.warning` → `.warn` on `sh-form-field` / `sh-form-field-popover` (`ship-migrate` rewrites these)
+- `sh-list-item-swipe` action buttons: `.action-danger` / `.danger` → `.error`, `.action-warning` / `.warning` → `.warn`
+  (aliases kept; rename by hand — the script does not touch swipe buttons). `sh-editor` toolbar actions are unchanged
+  (`danger: true` on the action object still works).
 
 **SHIP_CONFIG**
 - `alertVariant`, `cardType`, `tableType` are gone: set `alert: { variant }`, `card: { variant }`, `table: { variant }` instead.
@@ -31,6 +33,7 @@ checks it). A migration script (`ship-migrate`) that rewrites the renames below 
 
 **Renamed element selectors** (every component tag is now `sh-*`):
 - `<ship-theme-toggle>` → `<sh-theme-toggle>`
+- `<ship-alert-container>` → `<sh-alert-container>` (the old tag keeps working until v0.27)
 - `ship-tooltip-wrapper` → `sh-tooltip-wrapper` (internal; only matters if your scss targets it)
 
 **Renamed classes (TypeScript)**
@@ -38,9 +41,8 @@ checks it). A migration script (`ship-migrate`) that rewrites the renames below 
   `ShSpreadsheetRemoteSelections` → `ShipSpreadsheetRemoteSelections`. Entry points and selectors are unchanged.
 
 **Sass flags** (only matter if you `@use '@ship-ui/core/styles' with (...)`):
-- `$shipPage`, `$shipSection`, `$shipSetting`, `$shipEmptyState`, `$shipStat`, `$shipStatTrend`, `$shipStatGoal`, `$shipStatRing`,
-  `$shipRanking`, `$shipAchievement`, `$shipInbox`, `$shipTableView`, `$shipDetails`, `$shipTimeline`, `$shipToolbar` are now
-  `$shipLayoutPage` … `$shipLayoutToolbar`
+- The layout components get `$shipLayoutPage` … `$shipLayoutToolbar` flags (additive; the per-file `$shipPage` … names in
+  0.25.12 were not configurable)
 - `$shipSortable` now controls a global include (the `[shSortable]` directive styles no longer ride along with `sh-tree` / `sh-list`)
 
 **Font token (additive)**

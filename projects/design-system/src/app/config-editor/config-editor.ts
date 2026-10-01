@@ -555,10 +555,11 @@ export class ConfigEditor {
     return this.configService.styles().skins?.[skin] !== false;
   }
 
-  /** Keeps the list in canonical order and drops it once it is back to everything. */
+  /** Keeps the list in canonical order (names outside `all`, e.g. `$shipPalettes` additions, kept at the end) and drops it once it is back to everything. */
   #toggleIn(all: readonly string[], current: readonly string[] | undefined, item: string, on: boolean) {
-    const next = all.filter(x => (x === item ? on : (current ?? all).includes(x)));
-    return next.length === all.length ? undefined : next;
+    const extra = (current ?? []).filter(x => !all.includes(x));
+    const next = [...all.filter(x => (x === item ? on : (current ?? all).includes(x))), ...extra];
+    return next.length === all.length && !extra.length ? undefined : next;
   }
 
   setStyleColor(color: string, on: boolean) {

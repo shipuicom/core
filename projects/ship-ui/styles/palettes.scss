@@ -6,8 +6,10 @@
 //
 //   @use '@ship-ui/core/styles' with (
 //     $shipPalettes: (brand: (200, 80%, 45%), info: (210, 90%, 55%, 1.2)),
-//     $shipPaletteSteps: (1, 2, 3, 4, 8, 9)   // emit only the steps your app and its skins read
+//     $shipPaletteSteps: (1, 2, 3, 4, 6, 7, 8, 9, 10, 11)   // emit only the steps your app and its skins read
 //   );
+//
+// The grey `base` scale is always emitted in full: the global stylesheet and every skin read its steps 1-12.
 @use 'sass:list';
 @use 'sass:map';
 @use 'sass:math';
@@ -177,9 +179,9 @@ $all: map.merge($builtin, $extra);
 }
 
 /// Emits one palette's custom properties on the current selector.
-@mixin emit($name, $def, $contrast: true) {
+@mixin emit($name, $def, $contrast: true, $only: $steps) {
   $p: resolve($def);
-  @each $i in $steps {
+  @each $i in $only {
     $pair: map.get($p, $i);
     @if $pair != null {
       --#{$name}-#{$i}: light-dark(#{list.nth($pair, 1)}, #{list.nth($pair, 2)});
@@ -202,5 +204,6 @@ $all: map.merge($builtin, $extra);
   @each $name, $def in $all {
     @include emit($name, $def);
   }
-  @include emit(base, $base, $contrast: false);
+  // Every step: the global CSS and the skins read --base-5/7/12 regardless of what the palettes are trimmed to.
+  @include emit(base, $base, $contrast: false, $only: (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12));
 }

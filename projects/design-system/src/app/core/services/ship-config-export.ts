@@ -6,7 +6,7 @@ import {
   shipStylesUse,
   shipStylesWith,
 } from '@ship-ui/core';
-import { googleFontUrl } from '../font-picker/font-picker';
+import { googleFontUrl } from './google-fonts';
 
 /** What the docs editor knobs map to outside the docs: the defaults baked into `@ship-ui/core/styles`. */
 export const SHIP_TOKEN_DEFAULTS = {
@@ -188,6 +188,14 @@ export interface ShipConfigImport {
 const STYLE_KEYS = ['colors', 'variants', 'skins'];
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
+const TS_ESCAPES: Record<string, string> = { n: '\n', t: '\t', r: '\r', b: '\b', f: '\f', v: '\v', '0': '\0' };
+/** Decodes the escapes a TS string literal can hold (`\'`, `\"`, `\\`, `\n`, `\xHH`, `\uHHHH`, …) into the actual characters. */
+function unescapeTs(raw: string): string {
+  return raw.replace(/\\(x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|[\s\S])/g, (_, e: string) =>
+    e[0] === 'x' || e[0] === 'u' ? String.fromCharCode(parseInt(e.slice(1), 16)) : (TS_ESCAPES[e] ?? e)
+  );
+}
+
 /** The object literal after `shipConfig: ShipConfig =` in an exported app.config.ts, as JSON (no eval). */
 function tsLiteralToJson(text: string): string | null {
   const start = text.match(/shipConfig\s*(?::\s*ShipConfig)?\s*=\s*\{/);
@@ -205,12 +213,19 @@ function tsLiteralToJson(text: string): string | null {
     else if (c === '{') depth++;
     else if (c === '}' && --depth === 0) break;
   }
+  // Strings are set aside first so that `//` or `, key:` inside a value cannot be mistaken for a comment or a key.
+  const strings: string[] = [];
   return text
     .slice(from, i + 1)
+    .replace(/'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g, (_, single: string | undefined, double: string | undefined) => {
+      strings.push(JSON.stringify(unescapeTs(single ?? double ?? '')));
+      return `\u0000${strings.length - 1}\u0000`;
+    })
+    .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/\/\/[^\n]*/g, '')
-    .replace(/'((?:[^'\\]|\\.)*)'/g, (_, s: string) => JSON.stringify(s.replace(/\\'/g, "'")))
     .replace(/([{,]\s*)([A-Za-z_$][\w$]*)\s*:/g, '$1"$2":')
-    .replace(/,(\s*[}\]])/g, '$1');
+    .replace(/,(\s*[}\]])/g, '$1')
+    .replace(/\u0000(\d+)\u0000/g, (_, n: string) => strings[Number(n)]);
 }
 
 /**
@@ -240,7 +255,12 @@ export function parseShipConfigImport(text: string): ShipConfigImport | { error:
   if ('config' in data || 'styles' in data) {
     config = data['config'] ?? {};
     styles = data['styles'] ?? {};
-  } else if (Object.keys(data).length && Object.keys(data).every(k => STYLE_KEYS.includes(k))) {
+  } else if (
+    Object.keys(data).length &&
+    Object.keys(data).every(k => STYLE_KEYS.includes(k)) &&
+    // `colors` is also a ShipConfig key (the theme colour map): only lists mean a styles manifest.
+    (Array.isArray(data['colors']) || Array.isArray(data['variants']) || 'skins' in data)
+  ) {
     styles = data;
   } else {
     config = data;
