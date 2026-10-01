@@ -1,10 +1,12 @@
-import { Directive, ElementRef, HostListener, inject, input, Renderer2 } from '@angular/core';
+import { Directive, ElementRef, inject, input, Renderer2 } from '@angular/core';
 
 type MaskingFunction = (cleanValue: string) => string | null;
 
 @Directive({
   selector: '[shInputMask]',
-  standalone: true,
+  host: {
+    '(input)': 'onInput($event)',
+  },
 })
 export class ShipInputMask {
   #selfRef: ElementRef<HTMLInputElement> = inject(ElementRef);
@@ -13,7 +15,6 @@ export class ShipInputMask {
   /** Mask pattern (`9` marks a digit slot) or a custom masking function applied to the input value. */
   shInputMask = input<string | MaskingFunction>('(999) 999-9999');
 
-  @HostListener('input', ['$event'])
   onInput(event: Event) {
     const inputElement = this.#selfRef.nativeElement;
     const oldRawValue = inputElement.value;

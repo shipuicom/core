@@ -107,7 +107,7 @@ which also fixes the `page_op` bloat noted in SHEETS.md §3.6. The relay stores 
 1. `BlockInnerOp` + registry + `transformOp` table + `applyOp`/`invertOp` + fuzz: ~1.5 days
    (`editor-transactions.ts`, `editor-rebase-fuzz.spec.ts`).
 2. Engine: `applyInner` on the block context, columnar apply, transaction inverse capture: ~1 day
-   (`editor-engine.service.ts`, `editor-columnar-ops.ts`, `ship-editor.ts`, `sh-editor-component-block.ts`).
+   (`editor-engine.service.ts`, `editor-columnar-ops.ts`, `ship-editor.ts`, `ship-editor-component-block.ts`).
 3. `ShipSpreadsheetBlock.onOps` → `applyInner`; behavior provides the algebra; block spec: ~half a day.
 
 All of 1–2 is editor code, which is why it is a note and not a commit from the spreadsheet side.

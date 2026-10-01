@@ -111,10 +111,18 @@ export class ShipVideoScrubber {
     const span = this.rangeEnd() - this.rangeStart();
     if (span <= 0) return [];
 
-    return this.state.bufferedRanges().map((range) => ({
-      left: this.#toPercent(range.start),
-      width: Math.max(0, this.#toPercent(range.end) - this.#toPercent(range.start)),
-    }));
+    // Only the range holding the playhead: other ranges can come from the
+    // browser's per-URL media cache shared with other players on the page.
+    const time = this.state.currentTime();
+    const range = this.state.bufferedRanges().find((r) => time >= r.start - 0.5 && time <= r.end + 0.5);
+    if (!range) return [];
+
+    return [
+      {
+        left: this.#toPercent(range.start),
+        width: Math.max(0, this.#toPercent(range.end) - this.#toPercent(range.start)),
+      },
+    ];
   });
 
   markerPositions = computed(() => {

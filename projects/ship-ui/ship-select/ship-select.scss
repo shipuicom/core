@@ -4,7 +4,7 @@ $shipSelect: true !default;
 
 @if $shipSelect == true {
   sh-select {
-    --miw: #{p2r(210)};
+    --select-miw: #{p2r(210)};
     --select-option-mih: min-content;
     --select-options-mh: #{p2r(180)};
 
@@ -12,7 +12,7 @@ $shipSelect: true !default;
 
     sh-form-field {
       display: flex;
-      --ff-mw: var(--miw);
+      --ff-mw: var(--select-miw);
     }
 
     sh-popover {
@@ -45,7 +45,8 @@ $shipSelect: true !default;
       display: flex;
       flex-wrap: wrap;
 
-      --ff-space: #{p2r(7 10)};
+      --ff-py: var(--pad-y-3);
+      --ff-px: var(--pad-x-2);
 
       textarea,
       input {
@@ -106,7 +107,8 @@ $shipSelect: true !default;
     }
 
     sh-form-field.small .input-wrap .input {
-      --ff-space: #{p2r(5 8)};
+      --ff-py: var(--pad-y-2);
+      --ff-px: var(--pad-x-2);
 
       sh-chip {
         --chip-h: #{p2r(20)};
@@ -116,6 +118,9 @@ $shipSelect: true !default;
   }
 
   .ship-options {
+    --select-py: var(--pad-y-2);
+    --select-px: var(--pad-x-4);
+
     padding: p2r(8 0);
     display: flex;
     flex-direction: column;
@@ -124,7 +129,7 @@ $shipSelect: true !default;
     overflow-x: hidden;
 
     p[title] {
-      padding: p2r(4 16);
+      padding: var(--select-py) var(--select-px);
     }
 
     sh-divider {

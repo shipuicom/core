@@ -3,7 +3,7 @@ import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ShipAccordion } from './ship-accordion';
-import { SHIP_CONFIG, ShipVariant } from '@ship-ui/core';
+import { SHIP_CONFIG, ShipAccordionVariant } from '@ship-ui/core';
 
 @Component({
   template: `
@@ -29,7 +29,7 @@ import { SHIP_CONFIG, ShipVariant } from '@ship-ui/core';
 class TestHostComponent {
   value = signal<string | null>(null);
   allowMultiple = signal(false);
-  variant = signal<ShipVariant | null>(null);
+  variant = signal<ShipAccordionVariant | null>(null);
   size = signal<string | null>(null);
 }
 
@@ -181,13 +181,13 @@ describe('ShipAccordion', () => {
   });
 
   it('should apply variant and size classes', async () => {
-    hostComponent.variant.set('outlined');
+    hostComponent.variant.set('type-b');
     hostComponent.size.set('small');
     fixture.detectChanges();
     await fixture.whenStable();
 
     const hostEl = accordionDebugEl.nativeElement;
-    expect(hostEl.classList.contains('outlined')).toBe(true);
+    expect(hostEl.classList.contains('type-b')).toBe(true);
     expect(hostEl.classList.contains('small')).toBe(true);
   });
 });

@@ -32,10 +32,45 @@ If they are not overwritten we have them as direct styles and can be overwritten
 - datepicker = dp
 - chip = chip
 - btn = button
+- accordion = acc
+- alert = alert
+- avatar = avatar
+- blueprint = bp
+- breadcrumbs = crumb
+- card = card
+- chat = chat
+- checkbox = cb
+- code = code
+- code-input = ci
+- color-picker = cp
+- dialog = dialog
+- editor = editor
+- file-upload = fu
+- form-field = ff
+- icon = icon
+- list = list
+- menu = menu
+- select = select
+- sidenav = sidenav
+- spinner = spinner
+- spreadsheet = shs
+- stepper = step
+- toggle-card = tc
+- tooltip = tt
+- tree = tree
+- video = vid
+- video-playlist = vpl
+- layout page/section/setting = page / section / setting
+- layout empty-state = empty
+- layout stat / stat-trend / stat-goal / stat-ring = stat / trend / goal / ring
+- layout ranking / achievement / inbox = ranking / ach / inbox
+- layout table-view / details / timeline / toolbar = tv / details / timeline / toolbar
 
 ### Here is a list of style specific abbreviations
 
 - box-shadow = bs
+- padding-y (top/bottom) = py
+- padding-x (left/right) = px
 - background-color = bg
 - color = c
 - border-radius = br

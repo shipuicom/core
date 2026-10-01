@@ -1,8 +1,8 @@
 @use 'helpers' as *;
 
-$shipRanking: true !default;
+$shipLayoutRanking: true !default;
 
-@if $shipRanking == true {
+@if $shipLayoutRanking == true {
   sh-lo-ranking {
     --ranking-gap: var(--space-3);
     --ranking-bar-h: #{p2r(6)};
@@ -14,12 +14,6 @@ $shipRanking: true !default;
     flex-direction: column;
     gap: var(--ranking-gap);
     min-width: 0;
-
-    @each $c in primary, accent, warn, error, success {
-      &.#{$c} {
-        --ranking-c: var(--#{$c}-8);
-      }
-    }
 
     > .head {
       display: flex;
@@ -49,7 +43,14 @@ $shipRanking: true !default;
       }
     }
 
-    > sh-lo-ranking-item {
+    > .items {
+      display: flex;
+      flex-direction: column;
+      gap: var(--ranking-gap);
+      min-width: 0;
+    }
+
+    > .items > sh-lo-ranking-item {
       display: flex;
       flex-direction: column;
       gap: var(--space-1);
@@ -114,8 +115,8 @@ $shipRanking: true !default;
     &.type-b {
       --ranking-gap: var(--space-2);
 
-      > sh-lo-ranking-item {
-        padding: var(--space-2) var(--space-3);
+      > .items > sh-lo-ranking-item {
+        padding: var(--pad-y-3) var(--pad-x-3);
         border-radius: var(--shape-2);
         background-color: var(--ranking-track);
         overflow: hidden;
@@ -144,8 +145,8 @@ $shipRanking: true !default;
     &.type-c {
       --ranking-gap: 0;
 
-      > sh-lo-ranking-item {
-        padding: var(--space-2) 0;
+      > .items > sh-lo-ranking-item {
+        padding: var(--pad-y-3) 0;
         border-bottom: var(--border-10);
 
         &:last-child {

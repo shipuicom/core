@@ -112,7 +112,7 @@ export function rgbToHsl(r: number, g: number, b: number): { h: number; s: numbe
     h /= 6;
   }
 
-  const hDeg = Math.floor(h * 360);
+  const hDeg = Math.round(h * 360) % 360;
   const sPct = Math.round(s * 100);
   const lPct = Math.round(l * 100);
 

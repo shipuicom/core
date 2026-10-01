@@ -12,7 +12,7 @@ export default class EditorCollabApi {
   EXPORT_AS = `<sh-editor shCollab="my-doc" #c="shCollab" />
 <p>{{ c.collab.peers().size }} peers · {{ c.collab.connected() ? 'online' : 'offline' }}</p>`;
 
-  MANUAL = `@Component({ providers: [ShipEditorCollab], imports: [ShipEditor, ShEditorRemoteCursors] })
+  MANUAL = `@Component({ providers: [ShipEditorCollab], imports: [ShipEditor, ShipEditorRemoteCursors] })
 export class DocPage {
   collab = inject(ShipEditorCollab);
   editor = viewChild.required<ShipEditor>('editor');

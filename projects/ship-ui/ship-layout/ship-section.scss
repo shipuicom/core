@@ -1,13 +1,14 @@
 @use 'helpers' as *;
 
-$shipSection: true !default;
+$shipLayoutSection: true !default;
 
-@if $shipSection == true {
+@if $shipLayoutSection == true {
   sh-lo-section {
     --section-gap: var(--space-4);
     --section-bg: var(--base-1);
     --section-bc: var(--base-4);
-    --section-p: var(--space-5);
+    --section-py: var(--pad-y-6);
+    --section-px: var(--pad-x-6);
     --section-s: var(--shape-3);
     --section-text-w: #{p2r(280)};
 
@@ -25,13 +26,13 @@ $shipSection: true !default;
       border-radius: var(--section-s);
 
       > .head {
-        padding: var(--section-p);
+        padding: var(--section-py) var(--section-px);
         border-bottom: var(--border-10);
         border-color: var(--section-bc);
       }
 
       > .body {
-        padding: var(--section-p);
+        padding: var(--section-py) var(--section-px);
       }
     }
 

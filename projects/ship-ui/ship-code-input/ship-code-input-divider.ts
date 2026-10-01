@@ -12,7 +12,6 @@ import { Directive, TemplateRef, inject } from '@angular/core';
  */
 @Directive({
   selector: 'ng-template[shCodeInputDivider]',
-  standalone: true,
 })
 export class ShipCodeInputDivider {
   templateRef = inject(TemplateRef<unknown>);

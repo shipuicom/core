@@ -1,6 +1,4 @@
 @use 'helpers' as *;
-@use './ship-list-item' as *;
-@use '../ship-sortable/ship-sortable.scss';
 
 $shipList: true !default;
 
@@ -15,14 +13,18 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
 
 @if $shipList == true {
   sh-list {
+    --list-collapsed-w: #{p2r(68)};
+    --list-collapsed-item: #{p2r(44)};
     --list-s: var(--shape-2);
     --list-active-bg: var(--base-1);
     --list-color: var(--base-9);
     --list-active-bs: none;
     --list-item-b: 1px solid transparent;
-    --list-item-active-b: 1px solid --list-active-bg;
-    --list-p: #{p2r(20 16)};
-    --list-item-p: #{p2r(8 12)};
+    --list-item-active-b: 1px solid var(--list-active-bg);
+    --list-py: var(--pad-y-5);
+    --list-px: var(--pad-x-4);
+    --list-item-py: var(--pad-y-3);
+    --list-item-px: var(--pad-x-3);
     --list-item-gap: #{p2r(8)};
     // Color of the active item's leading icon and, for .outlined, its border.
     // Follows the color class (.primary, .accent, ...); the plain list keeps
@@ -30,7 +32,7 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
     --list-accent: var(--base-12);
 
     width: 100%;
-    padding: var(--list-p);
+    padding: var(--list-py) var(--list-px);
     gap: p2r(8);
     display: flex;
     flex-direction: column;
@@ -41,17 +43,12 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
       --list-active-bs: var(--box-shadow-20);
     }
 
-    &.outlined {
-      --list-active-bg: transparent;
-      --list-active-bs: none;
-      --list-item-b: 1px solid transparent;
-      --list-item-active-b: 1px solid var(--list-accent);
-    }
-
     &.type-b {
-      --list-p: #{p2r(0)};
+      --list-py: 0;
+      --list-px: 0;
       --list-accent: var(--primary-8);
-      --list-item-p: #{p2r(10 12)};
+      --list-item-py: var(--pad-y-3);
+      --list-item-px: var(--pad-x-3);
       --list-item-gap: #{p2r(12)};
       --list-s: var(--shape-2);
 
@@ -109,7 +106,7 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
             padding: p2r(2) p2r(6);
             font-size: p2r(11);
             line-height: 1;
-            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 0 rgb(from var(--dark-text) r g b / 10%);
           }
         }
       }
@@ -119,8 +116,10 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
     // icon, a .label/.description text column and a trailing [suffix] (for
     // example a caret). Used for "pick a page" lists and drill-down menus.
     &.type-c {
-      --list-p: #{p2r(0)};
-      --list-item-p: #{p2r(12 16)};
+      --list-py: 0;
+      --list-px: 0;
+      --list-item-py: var(--pad-y-4);
+      --list-item-px: var(--pad-x-4);
       --list-item-gap: #{p2r(12)};
       --list-s: var(--shape-3);
       --list-color: var(--base-12);
@@ -189,9 +188,10 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
     // fade out. Text nodes can't be wrapped, so labels hide by turning the
     // item's text color transparent while the leading icon keeps its color.
     &.collapsed {
-      --list-item-p: 0;
+      --list-item-py: 0;
+      --list-item-px: 0;
 
-      width: var(--list-collapsed-w, #{p2r(68)});
+      width: var(--list-collapsed-w);
       // Tiles center themselves with auto margins, so the rail's own side
       // padding would only push them off-center.
       padding-inline: 0;
@@ -204,8 +204,8 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
       // rail, whatever its expanded padding, borders or min-height were.
       #{$item} {
         box-sizing: border-box;
-        width: var(--list-collapsed-item, #{p2r(44)});
-        height: var(--list-collapsed-item, #{p2r(44)});
+        width: var(--list-collapsed-item);
+        height: var(--list-collapsed-item);
         min-height: 0;
         margin-inline: auto;
         color: transparent;
@@ -290,42 +290,6 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
         background-color: var(--list-active-bg);
         box-shadow: var(--list-active-bs);
         border: var(--list-item-active-b);
-      }
-    }
-
-    &.primary {
-      --list-accent: var(--primary-8);
-    }
-
-    &.accent {
-      --list-accent: var(--accent-8);
-    }
-
-    &.warn {
-      --list-accent: var(--warn-8);
-    }
-
-    &.error {
-      --list-accent: var(--error-8);
-    }
-
-    &.success {
-      --list-accent: var(--success-8);
-    }
-
-    &.primary,
-    &.accent,
-    &.warn,
-    &.error,
-    &.success {
-      #{$item} {
-        &:has(input:checked),
-        &.active,
-        &.selected {
-          sh-icon:first-child {
-            color: var(--list-accent);
-          }
-        }
       }
     }
   }

@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  HostListener,
   inject,
   Injectable,
   input,
@@ -23,7 +22,6 @@ export class ShipListItemSwipeService {
 
 @Component({
   selector: 'sh-list-item-swipe',
-  standalone: true,
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './ship-list-item-swipe.scss',
@@ -42,6 +40,7 @@ export class ShipListItemSwipeService {
   `,
   host: {
     class: 'sh-list-item-swipe',
+    '(touchstart)': 'onTouchStart($event)',
   },
 })
 export class ShipListItemSwipe implements OnDestroy {
@@ -77,7 +76,6 @@ export class ShipListItemSwipe implements OnDestroy {
   #boundTouchMove = this.#onTouchMove.bind(this);
   #boundTouchEnd = this.#onTouchEnd.bind(this);
 
-  @HostListener('touchstart', ['$event'])
   onTouchStart(e: TouchEvent) {
     const touch = e.touches[0];
     this.#startX = touch.clientX;

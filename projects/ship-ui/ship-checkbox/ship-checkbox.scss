@@ -5,8 +5,8 @@ $shipCheckbox: true !default;
 @if $shipCheckbox == true {
   sh-checkbox {
     .sh-sheet {
-      --box-bw: #{p2r(1)};
-      --box-bc: var(--sheet-bc);
+      --cb-bw: #{p2r(1)};
+      --cb-bc: var(--sheet-bc);
       --sheet-s: var(--shape-1);
     }
 
@@ -65,7 +65,7 @@ $shipCheckbox: true !default;
       height: p2r(20);
       cursor: pointer;
       position: relative;
-      border: var(--box-bw) solid var(--box-bc);
+      border: var(--cb-bw) solid var(--cb-bc);
 
       sh-icon {
         opacity: 0;
@@ -83,7 +83,7 @@ $shipCheckbox: true !default;
       &:not(:has(input:checked)):not(.active) .box {
         background: transparent;
         border: var(--border-10);
-        border-color: var(--box-bc);
+        border-color: var(--cb-bc);
       }
     }
 

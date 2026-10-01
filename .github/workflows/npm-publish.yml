@@ -58,6 +58,11 @@ jobs:
           # Write the output to the environment file
           echo "changed=$changed" >> $GITHUB_ENV
 
+      # The release must not ship rules that rewrite names consumers never had, nor miss a rename they do have.
+      - name: Check structure and migration rules
+        if: env.changed == 'true' && github.ref == 'refs/heads/main'
+        run: bun run lint:structure && bun run lint:migration
+
       - name: Build Library
         if: env.changed == 'true' && github.ref == 'refs/heads/main'
         run: bun run build:prod

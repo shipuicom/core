@@ -94,8 +94,8 @@ $shipVideoPlaylist: true !default;
         bottom: p2r(4);
         padding: p2r(1) p2r(5);
         border-radius: p2r(3);
-        background: rgba(0, 0, 0, 0.8);
-        color: #fff;
+        background: rgb(from var(--dark-text) r g b / 80%);
+        color: var(--light-text);
         font-size: p2r(11);
         font-variant-numeric: tabular-nums;
       }
@@ -106,8 +106,8 @@ $shipVideoPlaylist: true !default;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(0, 0, 0, 0.55);
-        color: #fff;
+        background: rgb(from var(--dark-text) r g b / 55%);
+        color: var(--light-text);
       }
     }
 

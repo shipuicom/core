@@ -4,46 +4,48 @@ $shipBreadcrumbs: true !default;
 
 @if $shipBreadcrumbs == true {
   sh-breadcrumbs {
-    --breadcrumbs-f: var(--paragraph-30);
-    --breadcrumbs-gap: var(--space-2);
-    --breadcrumbs-p: 0;
-    --breadcrumbs-c: var(--base-8);
-    --breadcrumbs-c-h: var(--base-12);
-    --breadcrumbs-c-current: var(--base-12);
-    --breadcrumbs-sep-c: var(--base-6);
-    --breadcrumbs-sep-w: 1ch;
-    --breadcrumbs-item-p: 0;
-    --breadcrumbs-item-bg: transparent;
-    --breadcrumbs-item-bg-h: transparent;
-    --breadcrumbs-item-bg-current: transparent;
-    --breadcrumbs-item-s: var(--shape-1);
-    --breadcrumbs-bg: var(--base-1);
-    --breadcrumbs-bc: var(--base-4);
-    --breadcrumbs-s: var(--shape-2);
+    --crumb-f: var(--paragraph-30);
+    --crumb-gap: var(--space-2);
+    --crumb-py: 0;
+    --crumb-px: 0;
+    --crumb-c: var(--base-8);
+    --crumb-c-h: var(--base-12);
+    --crumb-c-current: var(--base-12);
+    --crumb-sep-c: var(--base-6);
+    --crumb-sep-w: 1ch;
+    --crumb-item-py: 0;
+    --crumb-item-px: 0;
+    --crumb-item-bg: transparent;
+    --crumb-item-bg-h: transparent;
+    --crumb-item-bg-current: transparent;
+    --crumb-item-s: var(--shape-1);
+    --crumb-bg: var(--base-1);
+    --crumb-bc: var(--base-4);
+    --crumb-s: var(--shape-2);
 
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--breadcrumbs-gap);
-    padding: var(--breadcrumbs-p);
+    gap: var(--crumb-gap);
+    padding: var(--crumb-py) var(--crumb-px);
     min-width: 0;
-    font: var(--breadcrumbs-f);
-    color: var(--breadcrumbs-c);
+    font: var(--crumb-f);
+    color: var(--crumb-c);
 
     > * {
       position: relative;
       display: inline-flex;
       align-items: center;
       gap: var(--space-1);
-      padding: var(--breadcrumbs-item-p);
+      padding: var(--crumb-item-py) var(--crumb-item-px);
       margin: 0;
       font: inherit;
       color: inherit;
       text-decoration: none;
       white-space: nowrap;
-      background: var(--breadcrumbs-item-bg);
+      background: var(--crumb-item-bg);
       border: 0;
-      border-radius: var(--breadcrumbs-item-s);
+      border-radius: var(--crumb-item-s);
       transition:
         color 125ms ease-out,
         background-color 125ms ease-out;
@@ -59,8 +61,8 @@ $shipBreadcrumbs: true !default;
       cursor: pointer;
 
       &:hover {
-        color: var(--breadcrumbs-c-h);
-        background: var(--breadcrumbs-item-bg-h);
+        color: var(--crumb-c-h);
+        background: var(--crumb-item-bg-h);
       }
 
       &:focus-visible {
@@ -72,57 +74,68 @@ $shipBreadcrumbs: true !default;
     // Separator sits in the gap before each crumb (outside its hit area); the
     // empty alt text keeps it out of the accessible name.
     > * + * {
-      margin-inline-start: calc(var(--breadcrumbs-sep-w) + var(--breadcrumbs-gap));
+      margin-inline-start: calc(var(--crumb-sep-w) + var(--crumb-gap));
 
       &::before {
-        content: var(--breadcrumbs-sep) / '';
+        // Plain `content` first: engines without the `/ alt` syntax (Firefox < 128, Safari < 17.4) drop the second
+        // declaration and still draw the separator; the others hide it from assistive tech with the empty alt text.
+        content: var(--crumb-sep);
+        content: var(--crumb-sep) / '';
         position: absolute;
-        inset-inline-end: calc(100% + var(--breadcrumbs-gap));
-        min-width: var(--breadcrumbs-sep-w);
+        inset-inline-end: calc(100% + var(--crumb-gap));
+        min-width: var(--crumb-sep-w);
         text-align: center;
         font-weight: 500;
-        color: var(--breadcrumbs-sep-c);
+        color: var(--crumb-sep-c);
         pointer-events: none;
       }
     }
 
     > :last-child,
     > [aria-current='page'] {
-      color: var(--breadcrumbs-c-current);
-      background: var(--breadcrumbs-item-bg-current);
+      color: var(--crumb-c-current);
+      background: var(--crumb-item-bg-current);
       font-weight: 600;
+    }
+
+    // Only the crumb marked as the current page is inert; a trailing link stays clickable.
+    > [aria-current='page'] {
       pointer-events: none;
     }
 
     &.small {
-      --breadcrumbs-f: var(--paragraph-40);
-      --breadcrumbs-gap: var(--space-1);
+      --crumb-f: var(--paragraph-40);
+      --crumb-gap: var(--space-1);
     }
 
     // Boxed surface.
     &.type-b {
-      --breadcrumbs-p: var(--space-2) var(--space-3);
+      --crumb-py: var(--pad-y-3);
+      --crumb-px: var(--pad-x-3);
 
-      background-color: var(--breadcrumbs-bg);
+      background-color: var(--crumb-bg);
       border: var(--border-10);
-      border-color: var(--breadcrumbs-bc);
-      border-radius: var(--breadcrumbs-s);
+      border-color: var(--crumb-bc);
+      border-radius: var(--crumb-s);
 
       &.small {
-        --breadcrumbs-p: var(--space-1) var(--space-2);
+        --crumb-py: var(--pad-y-2);
+        --crumb-px: var(--pad-x-2);
       }
     }
 
     // Pill crumbs: each crumb is a hit area, the current one filled.
     &.type-c {
-      --breadcrumbs-gap: var(--space-1);
-      --breadcrumbs-item-p: var(--space-1) var(--space-2);
-      --breadcrumbs-item-bg-h: var(--base-3);
-      --breadcrumbs-item-bg-current: var(--base-3);
-      --breadcrumbs-item-s: var(--shape-2);
+      --crumb-gap: var(--space-1);
+      --crumb-item-py: var(--pad-y-2);
+      --crumb-item-px: var(--pad-x-2);
+      --crumb-item-bg-h: var(--base-3);
+      --crumb-item-bg-current: var(--base-3);
+      --crumb-item-s: var(--shape-2);
 
       &.small {
-        --breadcrumbs-item-p: #{p2r(2)} var(--space-1);
+        --crumb-item-py: var(--pad-y-1);
+        --crumb-item-px: var(--pad-x-1);
       }
     }
   }

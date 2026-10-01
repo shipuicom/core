@@ -8,7 +8,8 @@ $shipChat: true !default;
     --chat-gap-continued: var(--space-1);
     --chat-avatar-si: #{p2r(32)};
     --chat-max-w: 75%;
-    --chat-p: var(--space-2) var(--space-3);
+    --chat-py: var(--pad-y-3);
+    --chat-px: var(--pad-x-3);
     --chat-s: var(--shape-4);
     --chat-tail-s: var(--shape-1);
     --chat-bg: var(--base-3);
@@ -78,7 +79,7 @@ $shipChat: true !default;
       gap: var(--space-2);
       min-width: 0;
       max-width: 100%;
-      padding: var(--chat-p);
+      padding: var(--chat-py) var(--chat-px);
       font: var(--chat-f);
       line-height: 1.45;
       color: var(--chat-c);
@@ -149,13 +150,6 @@ $shipChat: true !default;
       }
     }
 
-    @each $c in primary, accent, warn, error, success {
-      &.#{$c} {
-        --chat-bg: var(--#{$c}-8);
-        --chat-c: var(--#{$c}-c8);
-      }
-    }
-
     // Typing indicator.
     &.typing > .body > .bubble {
       padding-block: p2r(12);
@@ -199,27 +193,20 @@ $shipChat: true !default;
         --chat-bg: var(--base-3);
         --chat-c: var(--base-12);
       }
-
-      @each $c in primary, accent, warn, error, success {
-        &.#{$c} {
-          --chat-bg: var(--#{$c}-2);
-          --chat-bc: var(--#{$c}-6);
-          --chat-c: var(--base-12);
-        }
-      }
     }
 
     // Flat rows (team chat): no bubbles, every message start-aligned, full width.
     &.type-c {
       --chat-gap: var(--space-2);
       --chat-gap-continued: 0;
-      --chat-p: 0;
+      --chat-py: 0;
+      --chat-px: 0;
       --chat-bg: transparent;
       --chat-c: var(--base-12);
       --chat-max-w: none;
 
       gap: var(--space-3);
-      padding: var(--space-1) var(--space-2);
+      padding: var(--pad-y-2) var(--pad-x-2);
       border-radius: var(--shape-2);
 
       &:hover {
@@ -252,18 +239,6 @@ $shipChat: true !default;
       &.continued > .avatar {
         display: block;
         width: var(--chat-avatar-si);
-      }
-
-      @each $c in primary, accent, warn, error, success {
-        &.#{$c} {
-          --chat-bg: transparent;
-          --chat-c: var(--base-12);
-
-          > .body > .meta > b,
-          > .body > .meta > [name] {
-            color: var(--#{$c}-8);
-          }
-        }
       }
     }
   }

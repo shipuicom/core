@@ -1,0 +1,164 @@
+// @vitest-environment node
+import { resolve } from 'node:path';
+import { describe, expect, it } from 'vitest';
+import { MIGRATIONS, migrateSource, projectChecks, styleFlags } from './ship-migrate';
+
+const v026 = MIGRATIONS.find((m) => m.version === '0.26.0')!;
+
+describe('ship-migrate 0.26', () => {
+  it('renames breadcrumb variables by prefix everywhere', () => {
+    const r = migrateSource('sh-breadcrumbs { --breadcrumbs-c-h: red; --breadcrumbs-sep: "/"; }', '.scss', v026);
+    expect(r.text).toBe('sh-breadcrumbs { --crumb-c-h: red; --crumb-sep: "/"; }');
+    expect(r.changes).toHaveLength(2);
+  });
+
+  it('renames scoped variables only when the file targets that component', () => {
+    const scoped = migrateSource('sh-checkbox { --box-bc: red; --box-shadow: none; }', '.scss', v026);
+    expect(scoped.text).toBe('sh-checkbox { --cb-bc: red; --box-shadow: none; }');
+
+    const foreign = migrateSource('.mine { --box-bc: red; --caret-size: 4px; }', '.scss', v026);
+    expect(foreign.text).toBe('.mine { --box-bc: red; --caret-size: 4px; }');
+    expect(foreign.warnings.map((w) => w.rule)).toEqual(['css-var', 'css-var']);
+  });
+
+  it('does not touch variables that only share a suffix', () => {
+    const r = migrateSource('sh-select { --ff-miw: 1px; --miw: 2px; }', '.scss', v026);
+    expect(r.text).toBe('sh-select { --ff-miw: 1px; --select-miw: 2px; }');
+  });
+
+  it('renames sass flags in styles only', () => {
+    const rules = { version: '9.9.9', sassFlags: [{ from: '$shipStat', to: '$shipLayoutStat' }, { from: '$shipStatRing', to: '$shipLayoutStatRing' }] };
+    const scss = "@use '@ship-ui/core/styles' with ($shipStat: false, $shipStatRing: true);";
+    expect(migrateSource(scss, '.scss', rules).text).toBe("@use '@ship-ui/core/styles' with ($shipLayoutStat: false, $shipLayoutStatRing: true);");
+    expect(migrateSource(scss, '.ts', rules).text).toBe(scss);
+  });
+
+  it('renames colour classes on the listed tags and warns elsewhere', () => {
+    // Swipe action buttons keep `.danger` as an alias, so they are not rewritten.
+    const html = '<sh-form-field class="warning big"></sh-form-field>\n<div class="warning">x</div>\n<sh-list-item-swipe><button actionLeft class="danger"></button></sh-list-item-swipe>';
+    const r = migrateSource(html, '.html', v026);
+    expect(r.text).toBe('<sh-form-field class="warn big"></sh-form-field>\n<div class="warning">x</div>\n<sh-list-item-swipe><button actionLeft class="danger"></button></sh-list-item-swipe>');
+    expect(r.changes.map((c) => c.detail)).toEqual(['.warning → .warn']);
+    expect(r.warnings).toHaveLength(1);
+    expect(r.warnings[0].line).toBe(2);
+  });
+
+  it('renames the alert container selector', () => {
+    const r = migrateSource('<ship-alert-container></ship-alert-container>', '.html', v026);
+    expect(r.text).toBe('<sh-alert-container></sh-alert-container>');
+  });
+
+  it('drops removed inputs from the tag and leaves live ones alone', () => {
+    const r = migrateSource('<sh-card color="primary" variant="type-b">a</sh-card><sh-tabs [variant]="v" color="accent"></sh-tabs><sh-chip color="warn"></sh-chip>', '.html', v026);
+    expect(r.text).toBe('<sh-card variant="type-b">a</sh-card><sh-tabs color="accent"></sh-tabs><sh-chip color="warn"></sh-chip>');
+    expect(r.changes).toHaveLength(2);
+  });
+
+  it('works on inline templates and style bindings in .ts files', () => {
+    const ts = "template: `<sh-card color=\"x\"></sh-card>`, host: { '[style.--breadcrumbs-sep]': 'sep()' }";
+    const r = migrateSource(ts, '.ts', v026);
+    expect(r.text).toBe("template: `<sh-card></sh-card>`, host: { '[style.--crumb-sep]': 'sep()' }");
+  });
+
+  it('points at removed SHIP_CONFIG keys without rewriting them', () => {
+    const r = migrateSource("import { ShipAlertModule } from '@ship-ui/core/ship-alert';\nprovide: SHIP_CONFIG, useValue: { alertVariant: 'flat', 'event-card': { color: 'primary' } }", '.ts', v026);
+    expect(r.changes).toHaveLength(0);
+    expect(r.warnings.map((w) => w.rule)).toEqual(['config', 'config', 'config']);
+  });
+
+  it('renames the Sh*-prefixed classes', () => {
+    const r = migrateSource("import { ShEditorRemoteCursors } from '@ship-ui/core/ship-editor-collab'; class X extends ShEditorRemoteCursors {}", '.ts', v026);
+    expect(r.text).toBe("import { ShipEditorRemoteCursors } from '@ship-ui/core/ship-editor-collab'; class X extends ShipEditorRemoteCursors {}");
+    expect(r.changes).toHaveLength(2);
+  });
+
+  it('renames scoped variables only inside rules for that component, not elsewhere in the same file', () => {
+    const r = migrateSource('sh-select { color: red }\n.sidebar { --miw: 200px; }\nsh-select .x { --miw: 1px; }\n// sh-popover notes\n.y { --overlay: 1; }', '.scss', v026);
+    expect(r.text).toBe('sh-select { color: red }\n.sidebar { --miw: 200px; }\nsh-select .x { --select-miw: 1px; }\n// sh-popover notes\n.y { --overlay: 1; }');
+    expect(r.changes).toHaveLength(1);
+    expect(r.warnings.map((w) => w.line)).toEqual([2, 5]);
+  });
+
+  it('renames scoped variables in templates only on that tag', () => {
+    const r = migrateSource('<sh-select [style.--miw]="w"></sh-select><div style="--miw: 1px"></div>', '.html', v026);
+    expect(r.text).toBe('<sh-select [style.--select-miw]="w"></sh-select><div style="--miw: 1px"></div>');
+    expect(r.changes).toHaveLength(1);
+    expect(r.warnings).toHaveLength(1);
+  });
+
+  it('renames element selectors in stylesheets too', () => {
+    const r = migrateSource('ship-theme-toggle { margin: 0 }\n.ship-theme-toggle-x { }\nship-alert-container sh-alert { }', '.scss', v026);
+    expect(r.text).toBe('sh-theme-toggle { margin: 0 }\n.ship-theme-toggle-x { }\nsh-alert-container sh-alert { }');
+    expect(r.changes).toHaveLength(2);
+  });
+
+  it('leaves renamed element names alone outside selector position', () => {
+    const scss = "x { background: url(ship-theme-toggle.svg); content: 'ship-theme-toggle' }\n$ship-theme-toggle: 1;\n// ship-theme-toggle is old\nship-theme-toggle, .a { }";
+    const r = migrateSource(scss, '.scss', v026);
+    expect(r.text).toBe("x { background: url(ship-theme-toggle.svg); content: 'ship-theme-toggle' }\n$ship-theme-toggle: 1;\n// ship-theme-toggle is old\nsh-theme-toggle, .a { }");
+    expect(r.changes).toHaveLength(1);
+  });
+
+  it('ignores braces and tag names inside comments and strings when scoping', () => {
+    expect(migrateSource('/* sh-select { */\n.y { --miw: 1 }', '.scss', v026).text).toBe('/* sh-select { */\n.y { --miw: 1 }');
+    expect(migrateSource('sh-select { // a } comment\n  --miw: 1 }', '.scss', v026).text).toBe('sh-select { // a } comment\n  --select-miw: 1 }');
+    expect(migrateSource('sh-select { content: "}"; --miw: 1 }', '.scss', v026).text).toBe('sh-select { content: "}"; --select-miw: 1 }');
+    expect(migrateSource('<sh-select [x]="a > b" [style.--miw]="x">', '.html', v026).text).toBe('<sh-select [x]="a > b" [style.--select-miw]="x">');
+  });
+
+  it('reaches inline styles strings in .ts files', () => {
+    const ts = "@Component({ template: '<sh-select [style.--miw]=\"x\">', styles: 'sh-select { --miw: 1 } .z { --miw: 2 }' })";
+    const r = migrateSource(ts, '.ts', v026);
+    expect(r.text).toBe("@Component({ template: '<sh-select [style.--select-miw]=\"x\">', styles: 'sh-select { --select-miw: 1 } .z { --miw: 2 }' })");
+    expect(r.warnings).toHaveLength(1);
+  });
+
+  it('ends an open tag only at a real `>`, not one inside an attribute value', () => {
+    const r = migrateSource('<sh-card [x]="a > b" color="warn" class="c">x</sh-card>\n<sh-form-field [y]="n > 0" class="warning"></sh-form-field>', '.html', v026);
+    expect(r.text).toBe('<sh-card [x]="a > b" class="c">x</sh-card>\n<sh-form-field [y]="n > 0" class="warn"></sh-form-field>');
+    expect(r.changes).toHaveLength(2);
+  });
+
+  it('still sees single-quoted inline templates in .ts files', () => {
+    const r = migrateSource("template: '<sh-card color=\"x\" [a]=\"b > c\"></sh-card>'", '.ts', v026);
+    expect(r.text).toBe("template: '<sh-card [a]=\"b > c\"></sh-card>'");
+  });
+
+  it('is idempotent', () => {
+    const once = migrateSource('<sh-card color="a" class="warning"></sh-card> --breadcrumbs-c', '.html', v026).text;
+    const twice = migrateSource(once, '.html', v026);
+    expect(twice.text).toBe(once);
+    expect(twice.changes).toHaveLength(0);
+  });
+});
+
+describe('ship-migrate project checks', () => {
+  // Explicit root: test runners relocate the module, so the import.meta-based default may not point at the package.
+  const flags = styleFlags(resolve(process.cwd(), 'projects/ship-ui'))!;
+
+  it('reads the flag inventory from the package styles', () => {
+    expect(flags.known.has('$shipColors')).toBe(true);
+    expect(flags.known.has('$useInterTight')).toBe(true);
+    expect(flags.reserved.has('$shipTable')).toBe(true);
+    expect(flags.reserved.has('$shipToggle')).toBe(false);
+  });
+
+  it('warns when no stylesheet loads @ship-ui/core/styles', () => {
+    const notes = projectChecks([{ file: 'styles.scss', text: 'body { margin: 0 }' }], flags);
+    expect(notes).toHaveLength(1);
+    expect(notes[0]).toContain("@use '@ship-ui/core/styles'");
+    expect(projectChecks([{ file: 'styles.scss', text: "@use '@ship-ui/core/styles';" }], flags)).toEqual([]);
+    // A workspace that points into the library's styles folder counts too.
+    expect(projectChecks([{ file: 'styles.scss', text: "@use '../../ship-ui/styles/index.scss' with ($useInterTight: true);" }], flags)).toEqual([]);
+  });
+
+  it('points at unknown and not-yet-honoured flags in the with() block', () => {
+    const notes = projectChecks(
+      [{ file: 'styles.scss', text: "@use '@ship-ui/core/styles' with ($useInterTight: false, $shipTable: false, $shipTabel: false);" }],
+      flags,
+    );
+    expect(notes.map((n) => n.split('`')[1])).toEqual(['$shipTable', '$shipTabel']);
+    expect(notes[0]).toContain('not honoured');
+    expect(notes[1]).toContain('not a flag');
+  });
+});

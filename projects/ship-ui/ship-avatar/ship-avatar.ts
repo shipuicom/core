@@ -45,7 +45,6 @@ export function shipAvatarHue(name: string | null | undefined): number {
  */
 @Component({
   selector: 'sh-avatar-group',
-  standalone: true,
   styleUrl: './ship-avatar.scss',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -83,7 +82,6 @@ export class ShipAvatarGroup {
  */
 @Component({
   selector: 'sh-avatar',
-  standalone: true,
   styleUrl: './ship-avatar.scss',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,

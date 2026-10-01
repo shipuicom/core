@@ -1,17 +1,4 @@
-import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  DestroyRef,
-  DOCUMENT,
-  effect,
-  inject,
-  input,
-  numberAttribute,
-  signal,
-  untracked,
-} from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, DestroyRef, DOCUMENT, effect, inject, input, numberAttribute, signal, untracked, ViewEncapsulation } from '@angular/core';
 import { areaPath, extent, linearScale, linePath, ShipCurve, ShipPoint } from '@ship-ui/core/ship-chart-scales';
 
 /** Palette the sparkline can inherit. Matches Ship's `ShipColor` without importing core. */
@@ -44,85 +31,8 @@ export type ShipChartSparklineColor = 'primary' | 'accent' | 'warn' | 'error' | 
       <span class="dot" [style.--x]="point.x" [style.--y]="point.y"></span>
     }
   `,
-  styles: `
-    :host {
-      --chart-stroke: var(--primary-8, #3b82f6);
-      --chart-fill: var(--primary-3, #bfdbfe);
-      --chart-fill-opacity: 0.6;
-      --chart-stroke-width: 2;
-      --chart-dot-size: 6px;
-      --chart-h: 2rem;
-      /* Vertical inset so a stroke on the highest or lowest value is not cut in half. */
-      --chart-pad: calc(var(--chart-stroke-width) * 0.5px + 1px);
-
-      display: inline-block;
-      position: relative;
-      box-sizing: border-box;
-      width: 100%;
-      height: var(--chart-h);
-      padding: var(--chart-pad) 0;
-      line-height: 0;
-    }
-
-    :host(.accent) {
-      --chart-stroke: var(--accent-8, #8b5cf6);
-      --chart-fill: var(--accent-3, #ddd6fe);
-    }
-    :host(.success) {
-      --chart-stroke: var(--success-8, #10b981);
-      --chart-fill: var(--success-3, #a7f3d0);
-    }
-    :host(.warn) {
-      --chart-stroke: var(--warn-8, #f59e0b);
-      --chart-fill: var(--warn-3, #fde68a);
-    }
-    :host(.error) {
-      --chart-stroke: var(--error-8, #ef4444);
-      --chart-fill: var(--error-3, #fecaca);
-    }
-
-    svg {
-      display: block;
-      width: 100%;
-      height: 100%;
-      overflow: visible;
-    }
-
-    :host(.animate) svg {
-      overflow: hidden;
-    }
-
-    :host(.animate) .dot {
-      transition: none;
-    }
-
-    .line {
-      fill: none;
-      stroke: var(--chart-stroke);
-      stroke-width: var(--chart-stroke-width);
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      vector-effect: non-scaling-stroke;
-    }
-
-    .area {
-      fill: var(--chart-fill);
-      fill-opacity: var(--chart-fill-opacity);
-      stroke: none;
-    }
-
-    .dot {
-      position: absolute;
-      left: calc(var(--x) * 1%);
-      top: calc(var(--chart-pad) + (100% - 2 * var(--chart-pad)) * var(--y) / 100);
-      width: var(--chart-dot-size);
-      height: var(--chart-dot-size);
-      border-radius: 50%;
-      background: var(--chart-stroke);
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-    }
-  `,
+  styleUrl: './ship-chart-sparkline.scss',
+  encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     role: 'img',

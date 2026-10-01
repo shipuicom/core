@@ -1,11 +1,4 @@
-import {
-  afterNextRender,
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-} from '@angular/core';
+import { afterNextRender, booleanAttribute, ChangeDetectionStrategy, Component, inject, input, ViewEncapsulation } from '@angular/core';
 import { ShipScreenreaderService } from './ship-screenreader.service';
 
 /**
@@ -17,7 +10,6 @@ import { ShipScreenreaderService } from './ship-screenreader.service';
  */
 @Component({
   selector: 'sh-screenreader',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     'aria-hidden': 'true',
@@ -56,6 +48,7 @@ import { ShipScreenreaderService } from './ship-screenreader.service';
     </div>
   `,
   styleUrl: './ship-screenreader.scss',
+  encapsulation: ViewEncapsulation.None,
 })
 export class ShipScreenreader {
   readonly service = inject(ShipScreenreaderService);

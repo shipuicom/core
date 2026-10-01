@@ -5,7 +5,6 @@ import {
   DOCUMENT,
   effect,
   ElementRef,
-  HostListener,
   inject,
   input,
   model,
@@ -97,6 +96,7 @@ export const MENU_OPTION_SELECTOR = 'button:not(sh-datepicker *, sh-form-field-p
     '[class.disabled]': 'disabled()',
     '[class.has-search]': 'searchable()',
     '[class.multi-layer]': 'asMultiLayer()',
+    '(ship-menu-open)': 'onShipMenuOpen($event)',
   },
 })
 export class ShipMenu {
@@ -417,7 +417,6 @@ export class ShipMenu {
     }
   }
 
-  @HostListener('ship-menu-open', ['$event'])
   onShipMenuOpen(event: Event) {
     event.preventDefault();
     event.stopPropagation();

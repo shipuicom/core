@@ -1,5 +1,5 @@
 import { isPlatformBrowser, JsonPipe } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, ElementRef, HostListener, inject, input, model, OnDestroy, PLATFORM_ID, signal, viewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, ElementRef, inject, input, model, OnDestroy, PLATFORM_ID, signal, viewChild, ViewEncapsulation } from '@angular/core';
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipCard } from '@ship-ui/core/ship-card';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
@@ -163,6 +163,12 @@ type ValidationErrors = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[attr.aria-keyshortcuts]': 'ariaKeyshortcuts()',
+    '(document:mouseup)': 'onMouseUp($event)',
+    '(document:click)': 'onClick($event)',
+    '(document:keydown)': 'onDocumentKeyDown($event)',
+    '(document:mousemove)': 'onMouseMove($event)',
+    '(document:touchmove)': 'onTouchMove($event)',
+    '(document:touchend)': 'onDocumentTouchEnd($event)',
   },
 })
 export class ShipBlueprint implements AfterViewInit, OnDestroy {
@@ -328,14 +334,14 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     }
   }
 
-  @HostListener('document:mouseup', ['$event']) onMouseUp(event: MouseEvent) {
+  onMouseUp(event: MouseEvent) {
     if (this.isLocked()) return;
 
     this.endPan();
     this.endNodeDrag();
   }
 
-  @HostListener('document:click', ['$event']) onClick(event: MouseEvent) {
+  onClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
 
     if (this.draggingConnection()) {
@@ -349,7 +355,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     }
   }
 
-  @HostListener('document:keydown', ['$event']) onDocumentKeyDown(event: KeyboardEvent) {
+  onDocumentKeyDown(event: KeyboardEvent) {
     if (this.#keybindings.matches(event, 'blueprint.cancel')) {
       if (this.draggingConnection()) {
         this.cancelPortDrag();
@@ -359,7 +365,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     }
   }
 
-  @HostListener('document:mousemove', ['$event']) onMouseMove(event: MouseEvent) {
+  onMouseMove(event: MouseEvent) {
     if (this.isLocked()) return;
     if (this.#isNodeDragging()) {
       this.nodeDrag(event);
@@ -375,7 +381,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     }
   }
 
-  @HostListener('document:touchmove', ['$event']) onTouchMove(event: TouchEvent) {
+  onTouchMove(event: TouchEvent) {
     event.preventDefault();
     if (this.isLocked()) return;
     if (this.#isNodeDragging()) {
@@ -387,7 +393,7 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
     }
   }
 
-  @HostListener('document:touchend', ['$event']) onDocumentTouchEnd(event: TouchEvent) {
+  onDocumentTouchEnd(event: TouchEvent) {
     if (this.isLocked()) return;
 
     this.handleTouchEnd();

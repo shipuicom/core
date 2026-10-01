@@ -11,13 +11,14 @@ $useApexcharts: false !default;
 
 @use './core/core';
 
-$shipSheet: true !default;
+$shipSortable: true !default;
 $shipFormFieldShadow: false !default;
 $shipButtonShadow: false !default;
 $shipChipShadow: false !default;
 
-@use './components/ship-sheet.utility.scss' with (
-  $shipSheet: $shipSheet
+// [shSortable] is a directive and cannot carry a styleUrl, so its styles are global.
+@use './components/ship-sortable.scss' with (
+  $shipSortable: $shipSortable
 );
 
 $form-field-shadow-val: none;

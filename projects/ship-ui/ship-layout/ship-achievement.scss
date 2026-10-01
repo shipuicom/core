@@ -1,12 +1,13 @@
 @use 'helpers' as *;
 
-$shipAchievement: true !default;
+$shipLayoutAchievement: true !default;
 
-@if $shipAchievement == true {
+@if $shipLayoutAchievement == true {
   sh-lo-achievement {
     --ach-c: var(--primary-8);
     --ach-bg: var(--base-1);
-    --ach-p: var(--space-5);
+    --ach-py: var(--pad-y-6);
+    --ach-px: var(--pad-x-6);
     --ach-s: var(--shape-3);
     --ach-size: #{p2r(72)};
     --ach-icon: #{p2r(32)};
@@ -16,7 +17,7 @@ $shipAchievement: true !default;
     flex-direction: column;
     align-items: center;
     gap: var(--space-4);
-    padding: var(--ach-p);
+    padding: var(--ach-py) var(--ach-px);
     text-align: center;
     background-color: var(--ach-bg);
     background-image: radial-gradient(90% 60% at 50% 0%, rgb(from var(--ach-c) r g b / 0.16), transparent 70%);
@@ -24,12 +25,6 @@ $shipAchievement: true !default;
     border-color: var(--base-4);
     border-radius: var(--ach-s);
     min-width: 0;
-
-    @each $c in primary, accent, warn, error, success {
-      &.#{$c} {
-        --ach-c: var(--#{$c}-8);
-      }
-    }
 
     // Any color: the consumer sets --achievement-c (e.g. from a color picker).
     &.dynamic {
@@ -178,7 +173,9 @@ $shipAchievement: true !default;
     &.type-c {
       --ach-size: #{p2r(32)};
       --ach-icon: #{p2r(16)};
-      --ach-p: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+      --ach-py: var(--pad-y-2);
+      --ach-px: var(--pad-x-1);
+      padding-inline-end: var(--pad-x-3);
 
       flex-direction: row;
       display: inline-flex;

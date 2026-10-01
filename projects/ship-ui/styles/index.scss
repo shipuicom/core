@@ -1,21 +1,24 @@
+// Entry point: `@use '@ship-ui/core/styles' with (...)`. A `$ship<Name>` flag switches one component's
+// skin (see ./skins/_index.scss); `$shipColors`, `$shipVariants` and `$shipSkins` decide how much of each skin is emitted.
+// Flags for components whose styles still live in their own styleUrl (table, card, dialog, menu, select, sidenav,
+// the layout containers, …) are accepted but not yet honoured: they are reserved for when those skins move here.
 $useInterTight: true !default;
 $useApexcharts: false !default;
-$shipSheet: true !default;
 $shipFormFieldShadow: false !default;
 $shipButtonShadow: false !default;
 $shipChipShadow: false !default;
 
-@use './core.scss' with (
-  $useInterTight: $useInterTight,
-  $useApexcharts: $useApexcharts,
-  $shipSheet: $shipSheet,
-  $shipFormFieldShadow: $shipFormFieldShadow,
-  $shipButtonShadow: $shipButtonShadow,
-  $shipChipShadow: $shipChipShadow
-);
+/// Sheet variants every skin emits (`simple outlined flat raised`).
+$shipVariants: (simple, outlined, flat, raised) !default;
+/// Per skin overrides, e.g. `(toggle: (colors: (primary), variants: (flat)))`.
+$shipSkins: () !default;
+/// Palettes added to the built-in five: `(brand: (200, 80%, 45%))` or a full step map (see ./palettes.scss).
+$shipPalettes: () !default;
+/// Numbered palette steps to emit for the colour palettes; the skins read 1-4 and 6-11. The `base` scale is always full.
+$shipPaletteSteps: (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12) !default;
 
-$shipBaseTypes: ('base', 'simple', 'raised', 'outlined', 'flat');
-
+$shipSheet: true !default;
+$shipSortable: true !default;
 $shipAlert: true !default;
 $shipBlueprint: true !default;
 $shipToggle: true !default;
@@ -40,12 +43,10 @@ $shipButtonGroup: true !default;
 $shipRangeSlider: true !default;
 $shipTooltip: true !default;
 $shipThemeToggle: true !default;
-$shipVirtualScroll: false !default;
+$shipVirtualScroll: true !default;
 $shipSelect: true !default;
 $shipCard: true !default;
-$shipSheet: true !default;
 $shipStepper: true !default;
-$shipSortable: true !default;
 $shipSpinner: true !default;
 $shipToggleCard: true !default;
 $shipTable: true !default;
@@ -55,4 +56,118 @@ $shipAccordion: true !default;
 $shipTree: true !default;
 $shipVideo: true !default;
 $shipVideoPlaylist: true !default;
+$shipAvatar: true !default;
+$shipBreadcrumbs: true !default;
+$shipChat: true !default;
+$shipCode: true !default;
+$shipEditor: true !default;
+$shipKbd: true !default;
+$shipListItemSwipe: true !default;
+$shipScreenreader: true !default;
+$shipSpotlight: true !default;
+$shipSpreadsheet: true !default;
+$shipLayoutPage: true !default;
+$shipLayoutSection: true !default;
+$shipLayoutSetting: true !default;
+$shipLayoutEmptyState: true !default;
+$shipLayoutStat: true !default;
+$shipLayoutStatTrend: true !default;
+$shipLayoutStatGoal: true !default;
+$shipLayoutStatRing: true !default;
+$shipLayoutRanking: true !default;
+$shipLayoutAchievement: true !default;
+$shipLayoutInbox: true !default;
+$shipLayoutTableView: true !default;
+$shipLayoutDetails: true !default;
+$shipLayoutTimeline: true !default;
+$shipLayoutToolbar: true !default;
 
+@use 'sass:map';
+@use './palettes' with (
+  $extra: $shipPalettes,
+  $steps: $shipPaletteSteps
+);
+
+/// Colour classes every skin emits: one per palette, built-in and added.
+$shipColors: map.keys(palettes.$all) !default;
+
+@use './core.scss' with (
+  $useInterTight: $useInterTight,
+  $useApexcharts: $useApexcharts,
+  $shipSortable: $shipSortable,
+  $shipFormFieldShadow: $shipFormFieldShadow,
+  $shipButtonShadow: $shipButtonShadow,
+  $shipChipShadow: $shipChipShadow
+);
+
+@use './skins' with (
+  $colors: $shipColors,
+  $variants: $shipVariants,
+  $overrides: $shipSkins,
+  $enabled: (
+    sheet: $shipSheet,
+    sortable: $shipSortable,
+    alert: $shipAlert,
+    blueprint: $shipBlueprint,
+    toggle: $shipToggle,
+    button: $shipButton,
+    progressBar: $shipProgressBar,
+    checkbox: $shipCheckbox,
+    datepicker: $shipDatepicker,
+    eventCard: $shipEventCard,
+    icon: $shipIcon,
+    menu: $shipMenu,
+    divider: $shipDivider,
+    dialog: $shipDialog,
+    popover: $shipPopover,
+    chip: $shipChip,
+    formField: $shipFormField,
+    codeInput: $shipCodeInput,
+    colorPicker: $shipColorPicker,
+    sidenav: $shipSidenav,
+    list: $shipList,
+    radio: $shipRadio,
+    buttonGroup: $shipButtonGroup,
+    rangeSlider: $shipRangeSlider,
+    tooltip: $shipTooltip,
+    themeToggle: $shipThemeToggle,
+    virtualScroll: $shipVirtualScroll,
+    select: $shipSelect,
+    card: $shipCard,
+    stepper: $shipStepper,
+    spinner: $shipSpinner,
+    toggleCard: $shipToggleCard,
+    table: $shipTable,
+    tabs: $shipTabs,
+    fileUpload: $shipFileUpload,
+    accordion: $shipAccordion,
+    tree: $shipTree,
+    video: $shipVideo,
+    videoPlaylist: $shipVideoPlaylist,
+    avatar: $shipAvatar,
+    breadcrumbs: $shipBreadcrumbs,
+    chat: $shipChat,
+    code: $shipCode,
+    editor: $shipEditor,
+    kbd: $shipKbd,
+    listItemSwipe: $shipListItemSwipe,
+    screenreader: $shipScreenreader,
+    spotlight: $shipSpotlight,
+    spreadsheet: $shipSpreadsheet,
+    layoutPage: $shipLayoutPage,
+    layoutSection: $shipLayoutSection,
+    layoutSetting: $shipLayoutSetting,
+    layoutEmptyState: $shipLayoutEmptyState,
+    layoutStat: $shipLayoutStat,
+    layoutStatTrend: $shipLayoutStatTrend,
+    layoutStatGoal: $shipLayoutStatGoal,
+    layoutStatRing: $shipLayoutStatRing,
+    layoutRanking: $shipLayoutRanking,
+    layoutAchievement: $shipLayoutAchievement,
+    layoutInbox: $shipLayoutInbox,
+    layoutTableView: $shipLayoutTableView,
+    layoutDetails: $shipLayoutDetails,
+    layoutTimeline: $shipLayoutTimeline,
+    layoutToolbar: $shipLayoutToolbar
+  )
+);

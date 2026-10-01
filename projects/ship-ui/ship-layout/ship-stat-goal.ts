@@ -45,7 +45,7 @@ import { ShipColor, ShipLayoutStatGoalVariant } from '@ship-ui/core';
 })
 export class ShipLayoutStatGoal {
   /** Current progress. */
-  value = input(0, { transform: numberAttribute });
+  value = input(0, { transform: (v: unknown) => numberAttribute(v, 0) });
   /** The target; the bar is full at this value. */
   max = input(100, { transform: numberAttribute });
   /** Accessible name for the progress bar (e.g. "Quarterly sales goal"). */

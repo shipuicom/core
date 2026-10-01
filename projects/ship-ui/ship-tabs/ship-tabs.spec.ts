@@ -3,7 +3,7 @@ import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ShipTabs } from './ship-tabs';
-import { SHIP_CONFIG, ShipColor, ShipSheetVariant } from '@ship-ui/core';
+import { SHIP_CONFIG, ShipColor } from '@ship-ui/core';
 
 @Component({
   template: `
@@ -13,7 +13,7 @@ import { SHIP_CONFIG, ShipColor, ShipSheetVariant } from '@ship-ui/core';
       [closable]="closable()"
       [manualActivation]="manualActivation()"
       [color]="color()"
-      [variant]="variant()">
+>
       <button value="tab1" id="btn1">Tab 1</button>
       <button value="tab2" id="btn2">Tab 2</button>
       <button value="tab3" id="btn3">Tab 3</button>
@@ -28,7 +28,6 @@ class TestHostComponent {
   closable = signal(false);
   manualActivation = signal(false);
   color = signal<ShipColor | null>(null);
-  variant = signal<ShipSheetVariant | null>(null);
 }
 
 describe('ShipTabs & ShipSelectionGroup', () => {
@@ -190,14 +189,12 @@ describe('ShipTabs & ShipSelectionGroup', () => {
     expect(hostComponent.value()).toBe('tab2');
   });
 
-  it('should apply color and variant classes to host', async () => {
+  it('should apply the color class to the host', async () => {
     hostComponent.color.set('primary');
-    hostComponent.variant.set('outlined');
     fixture.detectChanges();
     await fixture.whenStable();
 
     const hostEl = tabsDebugEl.nativeElement;
     expect(hostEl.classList.contains('primary')).toBe(true);
-    expect(hostEl.classList.contains('outlined')).toBe(true);
   });
 });

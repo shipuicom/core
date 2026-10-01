@@ -3,6 +3,7 @@ $shipBlueprint: true !default;
 
 @if $shipBlueprint == true {
   sh-blueprint {
+    --bp-grid-c: var(--base-4);
     --bp-bg: var(--base-1);
     --bp-icon-c: var(--base-6);
     --bp-stroke-c: var(--base-7);

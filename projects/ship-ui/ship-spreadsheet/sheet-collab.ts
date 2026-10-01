@@ -2,7 +2,7 @@ import { Injectable, OutputRefSubscription, Signal, signal } from '@angular/core
 import { CollabAlgebra, CollabDocument, CollabTransport, ShipCollabSession } from '@ship-ui/core/ship-editor-collab';
 import { SheetJSON, SheetOp, SheetSelection, sheetFromJSON, sheetToJSON } from './core/sheet-model';
 import { transformSheetOps } from './core/sheet-transform';
-import { ShipSpreadsheet } from './sh-spreadsheet';
+import { ShipSpreadsheet } from './ship-spreadsheet';
 
 /** A sheet's unit of collaboration: one composer transaction. */
 export type SheetCollabOp = SheetOp[];

@@ -2,7 +2,8 @@
 $shipAlert: true !default;
 
 @if $shipAlert == true {
-  sh-alert-container {
+  sh-alert-container,
+  ship-alert-container {
     width: 100%;
     position: relative;
 

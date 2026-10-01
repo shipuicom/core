@@ -1,5 +1,81 @@
 # Migration Guide
 
+## v0.26.0 — component structure normalisation
+
+Every component's scss now follows [COMPONENT-STRUCTURE.md](./COMPONENT-STRUCTURE.md) (`bun run lint:structure`
+checks it). A migration script (`ship-migrate`) that rewrites the renames below is shipped alongside this release.
+
+**Removed inputs** (they never rendered anything):
+- `color` on `sh-card`, `sh-button-group`, `sh-table`, `sh-toggle-card`
+- `variant` on `sh-tabs`; `sh-accordion`'s `variant` is narrowed to `ShipAccordionVariant` (`'type-b' | ''`)
+
+**Renamed CSS variables** (override sites in your scss):
+| old | new |
+|---|---|
+| `--breadcrumbs-*` | `--crumb-*` |
+| `--box-bc`, `--box-bw` (sh-checkbox) | `--cb-bc`, `--cb-bw` |
+| `--miw` (sh-select) | `--select-miw` |
+| `--caret-color`, `--caret-size` (sh-table) | `--table-caret-c`, `--table-caret-si` |
+| `--stepper-progress` | `--step-progress` |
+| `--overlay` (sh-popover sheet backdrop) | `--po-overlay` |
+
+**Renamed classes** (old names keep working until v0.27):
+- `.warning` → `.warn` on `sh-form-field` / `sh-form-field-popover` (`ship-migrate` rewrites these)
+- `sh-list-item-swipe` action buttons: `.action-danger` / `.danger` → `.error`, `.action-warning` / `.warning` → `.warn`
+  (aliases kept; rename by hand — the script does not touch swipe buttons). `sh-editor` toolbar actions are unchanged
+  (`danger: true` on the action object still works).
+
+**SHIP_CONFIG**
+- `alertVariant`, `cardType`, `tableType` are gone: set `alert: { variant }`, `card: { variant }`, `table: { variant }` instead.
+- The `'event-card'` key is now `eventCard`.
+- `ShipAlertModule` is removed (every component is standalone; import `ShipAlert` / `ShipAlertContainer` directly).
+- The unpublished `sh-form-field-experimental` entry point is deleted.
+
+**Renamed element selectors** (every component tag is now `sh-*`):
+- `<ship-theme-toggle>` → `<sh-theme-toggle>`
+- `<ship-alert-container>` → `<sh-alert-container>` (the old tag keeps working until v0.27)
+- `ship-tooltip-wrapper` → `sh-tooltip-wrapper` (internal; only matters if your scss targets it)
+
+**Renamed classes (TypeScript)**
+- `ShEditorRemoteCursors` → `ShipEditorRemoteCursors`, `ShEditorCollabDirective` → `ShipEditorCollabDirective`,
+  `ShSpreadsheetRemoteSelections` → `ShipSpreadsheetRemoteSelections`. Entry points and selectors are unchanged.
+
+**Sass flags** (only matter if you `@use '@ship-ui/core/styles' with (...)`):
+- The layout components get `$shipLayoutPage` … `$shipLayoutToolbar` flags (additive; the per-file `$shipPage` … names in
+  0.25.12 were not configurable)
+- `$shipSortable` now controls a global include (the `[shSortable]` directive styles no longer ride along with `sh-tree` / `sh-list`)
+
+**Font token (additive)**
+- The type scale (`--display-*`, `--title-*`, `--paragraph-*`) now reads `--font-family` (`'Inter Tight', sans-serif` on `:root`).
+  Override it to change the app font; the docs theme editor offers a Google Fonts picker that sets it.
+
+**Padding tokens**
+- Global density: `--pad-y` / `--pad-x` (8px / 12px) with tiers `--pad-{y,x}-{1…8}` derived by multiplier.
+  Every padded component reads a tier through its own `--<abbr>-py` / `--<abbr>-px`; override the base pair for a denser
+  or airier app, a tier for one size class, or a component's pair for that component.
+- The one-value tokens are gone: `--card-p`, `--alert-p`, `--chat-p`, `--list-p`, `--list-item-p`, `--dialog-p`, `--editor-p`,
+  `--crumb-p`, `--crumb-item-p`, `--btng-p`, `--acc-pad`, `--table-th-p`, `--table-td-p`, `--ff-space`, `--ff-input-space` and the
+  layout `--<abbr>-p` tokens each became a `-py` / `-px` pair (`ship-migrate` points at every use).
+- Values snapped to the tiers; the shifts are 1–4px: chip xsmall 6→4px, list padding 20→16px, list type-b rows 10→8px,
+  form-field 9→8px (small 7/10→8/8px), dialog/popover/event-card/toggle-card 16→20px horizontally, kbd 1→2px vertically.
+
+**Skins and palettes (additive)**
+- Variant × colour styling moved from each component's stylesheet into the global stylesheet as list-driven skins. Nothing
+  changes by default; `@use '@ship-ui/core/styles' with ($shipColors, $shipVariants, $shipSkins, $ship<Name>: false)` now
+  really strips what you do not use (see README → Skins and palettes). If you never imported `@ship-ui/core/styles`, you must:
+  the components' variant and colour classes no longer style themselves.
+- `$shipPalettes: (brand: (200, 80%, 45%))` adds a palette (`--brand-1..12`, `-g2`, `-g3`, `-c8`) and a `.brand` class on every skin;
+  `ShipColor` accepts any palette name. `$shipPaletteSteps` limits the emitted steps.
+
+**Other**
+- Selected `sh-chip`s in the `simple` and `outlined` variants (with or without a colour) now fill with the selection colour; before, the
+  variant background won and the text was unreadable.
+- `sh-avatar` name hues are derived from the primary palette (rotated in 45° steps) instead of fixed oklch pairs; the internal
+  `--avatar-h` token is gone.
+- The `.status-badge` / `.delete-btn` demo styles left `sh-tree`; copy them from the docs' template-tree example if you relied on them.
+- Contrast text on coloured surfaces (toggle knob, radio dot, range-slider thumb value, datepicker selection) now reads `--<color>-c8`
+  instead of `#fff`, so custom palettes with light `-8` steps get dark text automatically.
+
 > [!IMPORTANT]
 > **v0.25.0**: the spreadsheet moved — `@ship-ui/core/ship-sheet` is now `@ship-ui/core/ship-spreadsheet`, `ShipSheetView` is `ShipSpreadsheet` (`<sh-spreadsheet>`), and `ShipSheetBlockBehavior` is `ShipSpreadsheetBlockBehavior`. Angular `>= 20` remains the supported floor.
 

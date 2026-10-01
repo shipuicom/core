@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ShipVariant } from '@ship-ui/core';
+import { ShipAccordionVariant } from '@ship-ui/core';
 import { ShipSelect } from '@ship-ui/core/ship-select';
 import { ShipToggle } from '@ship-ui/core/ship-toggle';
 import { Previewer } from '../../previewer/previewer';
@@ -20,7 +20,7 @@ export default class AccordionsExamples {
   // so they never show up in the example's source view.
   openPanels = signal<string>('panel1');
   allowMultiple = signal<boolean>(false);
-  variantType = signal<ShipVariant | null>(null);
+  variantType = signal<ShipAccordionVariant | null>(null);
 
   availableVariants = [
     { value: '', label: 'Default' },

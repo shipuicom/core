@@ -1,0 +1,11 @@
+@mixin skin($colors, $variants) {
+  // The colour class sits on the anchor (`.tooltip`); the wrapper that follows it picks up the tint.
+  .tooltip {
+    @each $c in $colors {
+      &.#{$c} + sh-tooltip-wrapper {
+        --tt-bg: var(--#{$c}-2);
+        --tt-c: var(--#{$c}-8);
+      }
+    }
+  }
+}

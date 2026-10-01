@@ -1,8 +1,8 @@
 @use 'helpers' as *;
 
-$shipTimeline: true !default;
+$shipLayoutTimeline: true !default;
 
-@if $shipTimeline == true {
+@if $shipLayoutTimeline == true {
   sh-lo-timeline {
     --timeline-gap: var(--space-5);
     --timeline-marker-si: #{p2r(32)};

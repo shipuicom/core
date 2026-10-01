@@ -2,11 +2,12 @@
 
 $shipFormField: true !default;
 $shipDatepicker: true !default;
-$shipFormFieldShadow: false !default;
 
 %smallFormField {
-  --ff-space: #{p2r(7 10)};
-  --ff-input-space: #{p2r(6 10)};
+  --ff-py: var(--pad-y-3);
+  --ff-px: var(--pad-x-2);
+  --ff-input-py: var(--pad-y-3);
+  --ff-input-px: var(--pad-x-2);
   --ff-f: var(--paragraph-40B);
 
   line-height: p2r(16);
@@ -31,10 +32,13 @@ $shipFormFieldShadow: false !default;
     --ff-ic: var(--base-11);
     --ff-bg: var(--base-1);
     --ff-f: var(--paragraph-30B);
+    --ff-lh: #{p2r(22)};
     --ff-spinner-size: #{p2r(20)};
     --ff-spinner-thickness: #{p2r(2)};
-    --ff-space: #{p2r(9 12)};
-    --ff-input-space: #{p2r(10 12)};
+    --ff-py: var(--pad-y-3);
+    --ff-px: var(--pad-x-3);
+    --ff-input-py: var(--pad-y-3);
+    --ff-input-px: var(--pad-x-3);
     --ff-mw: auto;
 
     --ff-bs: var(--ship-form-field-shadow, none);
@@ -49,7 +53,8 @@ $shipFormFieldShadow: false !default;
     transform: scale(1);
 
     &:has(input[type='time']) {
-      --ff-input-space: #{p2r(9 12)};
+      --ff-input-py: var(--pad-y-3);
+      --ff-input-px: var(--pad-x-3);
     }
 
     &:active {
@@ -109,19 +114,19 @@ $shipFormFieldShadow: false !default;
       display: none;
       align-items: center;
       gap: p2r(4);
-      padding: var(--ff-space);
+      padding: var(--ff-py) var(--ff-px);
       padding-right: 0;
       transition: background-color 125ms linear;
       background-color: inherit;
       line-height: p2r(20);
 
       &:has([boxPrefix]) {
-        padding: var(--ff-space);
+        padding: var(--ff-py) var(--ff-px);
         background-color: var(--ff-boxfix-bg);
       }
 
       &:has([boxSuffix]) {
-        padding: var(--ff-space);
+        padding: var(--ff-py) var(--ff-px);
         background-color: var(--ff-boxfix-bg);
       }
 
@@ -140,7 +145,7 @@ $shipFormFieldShadow: false !default;
     }
 
     .suffix {
-      padding: var(--ff-space);
+      padding: var(--ff-py) var(--ff-px);
       background-color: var(--ff-suffix-bg);
 
       &:has([textsuffix]) {
@@ -192,7 +197,7 @@ $shipFormFieldShadow: false !default;
       sh-popover,
       .input {
         flex: 1 0;
-        margin: var(--ff-space);
+        margin: var(--ff-py) var(--ff-px);
       }
 
       textarea {
@@ -211,26 +216,6 @@ $shipFormFieldShadow: false !default;
       sh-icon {
         color: var(--ff-ic);
         transition: color 125ms linear;
-
-        &.primary {
-          --ff-ic: var(--primary-8);
-        }
-
-        &.accent {
-          --ff-ic: var(--accent-8);
-        }
-
-        &.warn {
-          --ff-ic: var(--warn-8);
-        }
-
-        &.error {
-          --ff-ic: var(--error-8);
-        }
-
-        &.success {
-          --ff-ic: var(--success-8);
-        }
       }
 
       sh-chip sh-icon {
@@ -251,7 +236,7 @@ $shipFormFieldShadow: false !default;
         font: var(--paragraph-30B);
         flex: 1 0;
         color: var(--base-8);
-        margin: var(--ff-input-space);
+        margin: var(--ff-input-py) var(--ff-input-px);
         width: 100%;
 
         &::placeholder {
@@ -286,6 +271,10 @@ $shipFormFieldShadow: false !default;
             display: none;
           }
         }
+      }
+
+      input {
+        line-height: var(--ff-lh);
       }
     }
 
@@ -354,18 +343,6 @@ $shipFormFieldShadow: false !default;
       &:empty {
         opacity: 0;
       }
-    }
-
-    &.error {
-      --ff-ic: var(--error-8);
-    }
-
-    &.warning {
-      --ff-ic: var(--warn-8);
-    }
-
-    &.success {
-      --ff-ic: var(--success-8);
     }
 
     &.horizontal {

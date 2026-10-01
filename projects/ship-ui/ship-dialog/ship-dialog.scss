@@ -4,7 +4,8 @@ $shipDialog: true !default;
 
 @if $shipDialog == true {
   dialog[shDialog] {
-    --dialog-p: #{p2r(16)};
+    --dialog-py: var(--pad-y-5);
+    --dialog-px: var(--pad-x-5);
     --dialog-g: #{p2r(8)};
     --dialog-bg: var(--base-1);
     --dialog-s: var(--shape-2);
@@ -192,7 +193,7 @@ $shipDialog: true !default;
         'title actions'
         'description actions';
       grid-template-columns: 1fr min-content;
-      padding: var(--dialog-p);
+      padding: var(--dialog-py) var(--dialog-px);
       gap: var(--dialog-g);
 
       h1,
@@ -226,10 +227,10 @@ $shipDialog: true !default;
     }
 
     [content] {
-      padding: 0 var(--dialog-p);
+      padding: 0 var(--dialog-px);
 
       &:not(:has(~ [footer])) {
-        padding-bottom: var(--dialog-p);
+        padding-bottom: var(--dialog-py);
       }
     }
 
@@ -237,7 +238,7 @@ $shipDialog: true !default;
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      padding: var(--dialog-p);
+      padding: var(--dialog-py) var(--dialog-px);
       gap: var(--dialog-g);
 
       &.sticky {

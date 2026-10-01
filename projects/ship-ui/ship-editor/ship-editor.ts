@@ -7,7 +7,6 @@ import {
   DestroyRef,
   ElementRef,
   EnvironmentInjector,
-  HostListener,
   Injector,
   ViewEncapsulation,
   WritableSignal,
@@ -32,12 +31,12 @@ import { RowKind } from './editor-columnar';
 import { BlockPoint, blockPointAt, flatPosOfBlockChar, fragmentPlainText, pointAt, sliceDocument } from './editor-columnar-mutations';
 import { BlockHeightMap } from '@ship-ui/core/ship-virtual-scroll';
 import { alignStyledCode, astToHtml, dedentPastedCode, htmlToAst, markdownToAst, parseDOMToAST, renderInlineHTML } from './editor-serializers';
-import { ShipEditorContextualToolbar, ContextualActionExtras } from './sh-editor-contextual-toolbar';
-import { ShipEditorImageResize } from './sh-editor-image-resize';
-import { ShipEditorImagePopover } from './sh-editor-image-popover';
-import { ShipEditorLinkPopover } from './sh-editor-link-popover';
-import { ShipEditorSlashMenu } from './sh-editor-slash-menu';
-import { BaseComponentBlockBehavior, SHIP_EDITOR_BLOCK_CONTEXT, ShipEditorBlockContext } from './sh-editor-component-block';
+import { ShipEditorContextualToolbar, ContextualActionExtras } from './ship-editor-contextual-toolbar';
+import { ShipEditorImageResize } from './ship-editor-image-resize';
+import { ShipEditorImagePopover } from './ship-editor-image-popover';
+import { ShipEditorLinkPopover } from './ship-editor-link-popover';
+import { ShipEditorSlashMenu } from './ship-editor-slash-menu';
+import { BaseComponentBlockBehavior, SHIP_EDITOR_BLOCK_CONTEXT, ShipEditorBlockContext } from './ship-editor-component-block';
 import { ASTDocument, LogicalSelection } from './editor.types';
 import { EditorSelectionService } from './selection.service';
 import { logicalRangesInSpan, normalizeLogical } from './editor-multi-selection';
@@ -85,12 +84,13 @@ const INTERACTIVE_ROLES = new Set([
 
 @Component({
   selector: 'sh-editor',
-  standalone: true,
   exportAs: 'shEditor',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 
-  host: { '[class.document]': "variant() === 'document'" },
+  host: { '[class.document]': "variant() === 'document'",
+    '(document:selectionchange)': 'onSelectionChange()',
+    '(document:mouseup)': 'onDocumentMouseUp()', },
   imports: [ShipEditorLinkPopover, ShipEditorImagePopover, ShipEditorContextualToolbar, ShipEditorImageResize, ShipEditorSlashMenu],
   providers: [
     EditorEngineService,
@@ -603,7 +603,6 @@ export class ShipEditor implements ControlValueAccessor {
     this.onTouched = fn;
   }
 
-  @HostListener('document:selectionchange')
   onSelectionChange() {
     if (this.selection.isSuppressed() || this.#composing || typeof window === 'undefined') return;
     this.#syncLogicalSelectionFromDOM();
@@ -769,7 +768,6 @@ export class ShipEditor implements ControlValueAccessor {
    * drag state itself is cleared by the next mousedown or keydown, so the
    * clamp keeps asserting the logical selection until the user moves on.
    */
-  @HostListener('document:mouseup')
   onDocumentMouseUp() {
     if (this.#selectionDragOverVoid !== null) this.#repaintAfterVoidDrag(this.#selectionDragOverVoid);
   }

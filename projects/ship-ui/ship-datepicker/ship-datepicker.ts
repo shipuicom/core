@@ -5,7 +5,6 @@ import {
   computed,
   effect,
   ElementRef,
-  HostListener,
   inject,
   input,
   model,
@@ -110,6 +109,7 @@ function withExistingTime(newDate: Date, existing: Date | string | number | null
     '[class.as-range]': 'asRange()',
     '[class]': '"columns-" + monthsToShow()',
     '[class.disabled]': 'disabled()',
+    '(focusout)': 'onFocusOut($event)',
   },
 })
 export class ShipDatepicker {
@@ -175,7 +175,6 @@ export class ShipDatepicker {
     this.setSelectedDateStylePosition(selectedElement as HTMLElement);
   });
 
-  @HostListener('focusout', ['$event'])
   onFocusOut(_event: FocusEvent) {
     setTimeout(() => {
       const activeElement = document.activeElement as HTMLElement | null;

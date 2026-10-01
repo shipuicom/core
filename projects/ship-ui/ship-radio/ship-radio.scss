@@ -76,31 +76,6 @@ $shipRadio: true !default;
       }
     }
 
-    &.primary {
-      --radiod-c: var(--primary-8);
-    }
-
-    &.accent {
-      --radiod-c: var(--accent-8);
-    }
-
-    &.warn {
-      --radiod-c: var(--warn-8);
-    }
-
-    &.error {
-      --radiod-c: var(--error-8);
-    }
-
-    &.success {
-      --radiod-c: var(--success-8);
-    }
-
-    &.flat,
-    &.raised {
-      --radiod-c: #fff;
-    }
-
     &.raised,
     &.flat {
       &:not(:has(input:checked)):not(.active) .radio {

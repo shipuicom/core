@@ -16,7 +16,7 @@ export default class ThemeToggleOverview {
 
 @Component({
   imports: [ShipThemeToggle],
-  template: '<ship-theme-toggle color="primary" variant="raised" />',
+  template: '<sh-theme-toggle color="primary" variant="raised" />',
 })
 export class MyToolbar {}`;
 

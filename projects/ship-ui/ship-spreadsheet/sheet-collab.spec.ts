@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { CollabDocument } from '@ship-ui/core/ship-editor-collab';
 import { SheetJSON, SheetModel, SheetOp, SheetSelection, applySheetOps, createSheet, sheetFromJSON, sheetToJSON } from './core/sheet-model';
 import { SHEET_COLLAB_ALGEBRA, SheetCollabOp, SheetCollabTransport, ShipSheetCollab } from './sheet-collab';
-import { ShipSpreadsheet } from './sh-spreadsheet';
+import { ShipSpreadsheet } from './ship-spreadsheet';
 import { CollabMessage } from '@ship-ui/core/ship-editor-collab';
 
 type Msg = CollabMessage<SheetCollabOp, SheetJSON, SheetSelection>;

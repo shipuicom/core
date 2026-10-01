@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, ElementRef, HostListener, inject, input, model, output, PLATFORM_ID, signal, untracked, viewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, ElementRef, inject, input, model, output, PLATFORM_ID, signal, untracked, viewChild, ViewEncapsulation } from '@angular/core';
 import { rgbToHsv, rgbToHex, rgbToHsl, hslToRgbExact, hsvToRgbExact, rgbaToHex8 } from '@ship-ui/core';
 
 type R = number;
@@ -29,6 +29,7 @@ type A = number;
     '[attr.aria-label]': 'ariaLabel()',
     '[attr.aria-valuenow]': 'ariaValueNow()',
     '[attr.aria-valuetext]': 'ariaValueText()',
+    '(window:resize)': 'onResize()',
   },
 })
 export class ShipColorPicker {
@@ -191,7 +192,6 @@ export class ShipColorPicker {
     }
   });
 
-  @HostListener('window:resize', [])
   onResize() {
     this.#setCanvasSize();
   }

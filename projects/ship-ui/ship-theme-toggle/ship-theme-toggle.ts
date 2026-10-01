@@ -5,7 +5,7 @@ import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipThemeOption, ShipThemeState } from './ship-theme-state';
 
 @Component({
-  selector: 'ship-theme-toggle',
+  selector: 'sh-theme-toggle',
   styleUrl: './ship-theme-toggle.scss',
   encapsulation: ViewEncapsulation.None,
   imports: [ShipIcon, ShipButton],

@@ -1,0 +1,35 @@
+@use './util' as *;
+
+// Mirrors `$item` in ship-list/ship-list.scss: every direct child that has not opted out is an item.
+$item: '> *:not([title]):not([raw]):not(hr):not(sh-list-item-swipe)';
+
+@mixin skin($colors, $variants) {
+  sh-list {
+    @if has($variants, outlined) {
+      &.outlined {
+        --list-active-bg: transparent;
+        --list-active-bs: none;
+        --list-item-b: 1px solid transparent;
+        --list-item-active-b: 1px solid var(--list-accent);
+      }
+    }
+
+    // `.type-b` is listed too so the colour beats the structure sheet's `sh-list.type-b` primary default.
+    @each $c in $colors {
+      &.#{$c},
+      &.type-b.#{$c} {
+        --list-accent: var(--#{$c}-8);
+
+        #{$item} {
+          &:has(input:checked),
+          &.active,
+          &.selected {
+            sh-icon:first-child {
+              color: var(--list-accent);
+            }
+          }
+        }
+      }
+    }
+  }
+}

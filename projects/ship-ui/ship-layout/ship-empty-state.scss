@@ -1,10 +1,11 @@
 @use 'helpers' as *;
 
-$shipEmptyState: true !default;
+$shipLayoutEmptyState: true !default;
 
-@if $shipEmptyState == true {
+@if $shipLayoutEmptyState == true {
   sh-lo-empty-state {
-    --empty-p: var(--space-7) var(--space-5);
+    --empty-py: var(--pad-y-8);
+    --empty-px: var(--pad-x-6);
     --empty-gap: var(--space-4);
     --empty-mw: #{p2r(400)};
     --empty-ic: var(--base-7);
@@ -16,7 +17,7 @@ $shipEmptyState: true !default;
     align-items: center;
     justify-content: center;
     gap: var(--empty-gap);
-    padding: var(--empty-p);
+    padding: var(--empty-py) var(--empty-px);
     text-align: center;
     min-width: 0;
 
@@ -71,7 +72,8 @@ $shipEmptyState: true !default;
 
     // Inline: a compact left-aligned row for small containers.
     &.type-c {
-      --empty-p: var(--space-4);
+      --empty-py: var(--pad-y-5);
+      --empty-px: var(--pad-x-4);
       --empty-gap: var(--space-3);
 
       flex-direction: row;
@@ -95,7 +97,8 @@ $shipEmptyState: true !default;
 
     @include breakpoint(-milli) {
       &:not(.type-c) {
-        --empty-p: var(--space-6) var(--space-4);
+        --empty-py: var(--pad-y-7);
+        --empty-px: var(--pad-x-4);
       }
     }
   }

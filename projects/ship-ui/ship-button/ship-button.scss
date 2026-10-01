@@ -1,12 +1,13 @@
 @use 'helpers' as *;
 $shipButton: true !default;
-$shipButtonShadow: false !default;
 
 @if $shipButton == true {
   [shButton] {
     --btn-h: #{p2r(40)};
     --btn-mw: #{p2r(40)};
     --btn-f: var(--paragraph-20);
+    --btn-py: 0;
+    --btn-px: var(--pad-x-3);
     --btn-a-opacity: 0.05;
 
     --btn-bs: var(--ship-button-shadow, none);
@@ -16,7 +17,7 @@ $shipButtonShadow: false !default;
     justify-content: center;
     gap: p2r(11);
     position: relative;
-    padding: p2r(0 12);
+    padding: var(--btn-py) var(--btn-px);
     transition: color 80ms linear;
     min-width: var(--btn-mw);
     cursor: pointer;
@@ -38,7 +39,7 @@ $shipButtonShadow: false !default;
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(#000 30%, rgba(0, 0, 0, 0));
+      background: radial-gradient(var(--dark-text) 30%, transparent);
       opacity: 0;
       transition: opacity 175ms linear;
     }
@@ -49,11 +50,6 @@ $shipButtonShadow: false !default;
       &:before {
         opacity: var(--btn-a-opacity);
       }
-    }
-
-    &.raised,
-    &.flat {
-      --btn-a-opacity: 0.1;
     }
 
     sh-icon {
@@ -78,7 +74,7 @@ $shipButtonShadow: false !default;
       --btn-mw: #{p2r(32)};
       --btn-f: var(--paragraph-30);
 
-      padding: p2r(0 8);
+      --btn-px: var(--pad-x-2);
       gap: p2r(5);
 
       sh-icon {
@@ -99,7 +95,7 @@ $shipButtonShadow: false !default;
       --btn-mw: #{p2r(24)};
       --btn-f: var(--paragraph-40);
 
-      padding: p2r(0 8);
+      --btn-px: var(--pad-x-2);
       gap: p2r(4);
 
       sh-icon {

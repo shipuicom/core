@@ -4,6 +4,9 @@ $shipPopover: true !default;
 
 @if $shipPopover == true {
   sh-popover {
+    --po-py: var(--pad-y-5);
+    --po-px: var(--pad-x-5);
+    --po-overlay: rgb(from var(--dark-text) r g b / 50%);
     --po-d: block;
 
     display: var(--po-d);
@@ -117,7 +120,7 @@ $shipPopover: true !default;
           z-index: 9999;
 
           .overlay {
-            background-color: var(--overlay, rgba(0, 0, 0, 0.5));
+            background-color: var(--po-overlay);
           }
         }
 
@@ -143,7 +146,7 @@ $shipPopover: true !default;
           transform: translateY(0);
           display: flex;
           align-items: center;
-          padding: p2r(16);
+          padding: var(--po-py) var(--po-px);
           justify-content: center;
         }
       }
@@ -161,74 +164,77 @@ $shipPopover: true !default;
   }
 }
 
-@position-try --bottom-span-right {
-  position-area: bottom span-right;
-  inset: auto;
-  top: p2r(4);
-}
+// Anchor-positioning fallbacks for the popover content.
+@if $shipPopover == true {
+  @position-try --bottom-span-right {
+    position-area: bottom span-right;
+    inset: auto;
+    top: p2r(4);
+  }
 
-@position-try --bottom-center {
-  position-area: bottom center;
-  inset: auto;
-  top: p2r(4);
-}
+  @position-try --bottom-center {
+    position-area: bottom center;
+    inset: auto;
+    top: p2r(4);
+  }
 
-@position-try --top-center {
-  position-area: top center;
-  inset: auto;
-  bottom: p2r(4);
-}
+  @position-try --top-center {
+    position-area: top center;
+    inset: auto;
+    bottom: p2r(4);
+  }
 
-@position-try --bottom-span-left {
-  position-area: bottom span-left;
-  inset: auto;
-  top: p2r(4);
-}
+  @position-try --bottom-span-left {
+    position-area: bottom span-left;
+    inset: auto;
+    top: p2r(4);
+  }
 
-@position-try --top-span-right {
-  position-area: top span-right;
-  inset: auto;
-  bottom: p2r(4);
-}
+  @position-try --top-span-right {
+    position-area: top span-right;
+    inset: auto;
+    bottom: p2r(4);
+  }
 
-@position-try --top-span-left {
-  position-area: top span-left;
-  inset: auto;
-  bottom: p2r(4);
-}
+  @position-try --top-span-left {
+    position-area: top span-left;
+    inset: auto;
+    bottom: p2r(4);
+  }
 
-@position-try --right-span-top {
-  position-area: right span-top;
-  inset: auto;
-  left: p2r(4);
-}
+  @position-try --right-span-top {
+    position-area: right span-top;
+    inset: auto;
+    left: p2r(4);
+  }
 
-@position-try --left-span-top {
-  position-area: left span-top;
-  inset: auto;
-  right: p2r(4);
-}
+  @position-try --left-span-top {
+    position-area: left span-top;
+    inset: auto;
+    right: p2r(4);
+  }
 
-@position-try --right-center {
-  position-area: right center;
-  inset: auto;
-  left: p2r(4);
-}
+  @position-try --right-center {
+    position-area: right center;
+    inset: auto;
+    left: p2r(4);
+  }
 
-@position-try --left-center {
-  position-area: left center;
-  inset: auto;
-  right: p2r(4);
-}
+  @position-try --left-center {
+    position-area: left center;
+    inset: auto;
+    right: p2r(4);
+  }
 
-@position-try --right-span-bottom {
-  position-area: right span-bottom;
-  inset: auto;
-  left: p2r(4);
-}
+  @position-try --right-span-bottom {
+    position-area: right span-bottom;
+    inset: auto;
+    left: p2r(4);
+  }
 
-@position-try --left-span-bottom {
-  position-area: left span-bottom;
-  inset: auto;
-  right: p2r(4);
+  @position-try --left-span-bottom {
+    position-area: left span-bottom;
+    inset: auto;
+    right: p2r(4);
+  }
 }

@@ -29,25 +29,5 @@ $shipSpinner: true !default;
       inset: 0;
       position: absolute;
     }
-
-    &.primary {
-      --spinner-c: var(--primary-8);
-    }
-
-    &.accent {
-      --spinner-c: var(--accent-8);
-    }
-
-    &.warn {
-      --spinner-c: var(--warn-8);
-    }
-
-    &.error {
-      --spinner-c: var(--error-8);
-    }
-
-    &.success {
-      --spinner-c: var(--success-8);
-    }
   }
 }

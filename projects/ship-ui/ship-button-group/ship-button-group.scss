@@ -10,7 +10,8 @@ $shipButtonGroup: true !default;
     --btng-ic: var(--base-12);
     --btng-bc: var(--base-4);
     --btng-h: #{p2r(40)};
-    --btng-p: #{p2r(0 12)};
+    --btng-py: 0;
+    --btng-px: var(--pad-x-3);
     --btng-s: var(--shape-2);
     --btng-s-a: var(--shape-2);
     --btng-f: var(--paragraph-30);
@@ -31,8 +32,8 @@ $shipButtonGroup: true !default;
 
     background-color: var(--btng-bg);
     background-image:
-      linear-gradient(90deg, var(--btng-bg) 30%, rgba(255, 255, 255, 0)),
-      linear-gradient(-90deg, var(--btng-bg) 30%, rgba(255, 255, 255, 0)),
+      linear-gradient(90deg, var(--btng-bg) 30%, transparent),
+      linear-gradient(-90deg, var(--btng-bg) 30%, transparent),
       radial-gradient(farthest-side at 0% 50%, rgb(from var(--base-12) r g b / 8%), rgb(from var(--base-12) r g b / 0%)),
       radial-gradient(farthest-side at 100% 50%, rgb(from var(--base-12) r g b / 8%), rgb(from var(--base-12) r g b / 0%));
     background-repeat: no-repeat;
@@ -46,7 +47,7 @@ $shipButtonGroup: true !default;
 
     &.small {
       --btng-h: #{p2r(32)};
-      --btng-p: #{p2r(0 8)};
+      --btng-px: var(--pad-x-2);
     }
 
     button {
@@ -58,7 +59,7 @@ $shipButtonGroup: true !default;
       justify-content: center;
       gap: p2r(8);
       position: relative;
-      padding: var(--btng-p);
+      padding: var(--btng-py) var(--btng-px);
       min-width: auto;
       cursor: pointer;
       outline: none;

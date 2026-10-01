@@ -84,11 +84,13 @@ $shipDatepicker: true !default;
   }
 
   sh-datepicker {
+    --dp-py: var(--pad-y-3);
+    --dp-px: var(--pad-x-2);
     --dp-sel-bg: var(--base-8);
     --dp-sel-bw: 0;
     --dp-sel-bc: transparent;
     --dp-sel-s: 50%;
-    --dp-sel-c: #fff;
+    --dp-sel-c: var(--light-text);
     --dp-day-c: var(--base-8);
     --dp-day-g: #{p2r(4 0)};
     --dp-day-f: var(--paragraph-20);
@@ -96,7 +98,7 @@ $shipDatepicker: true !default;
     --dp-ar: 1/1;
 
     width: 100%;
-    padding: p2r(8);
+    padding: var(--dp-py) var(--dp-px);
     max-width: var(--dp-width);
     display: flex;
     flex-direction: column;
@@ -232,7 +234,7 @@ $shipDatepicker: true !default;
           border-radius: var(--dp-sel-s);
 
           &:focus-visible {
-            outline: 2px solid var(--primary-10, #005fcc);
+            outline: 2px solid var(--primary-10);
             outline-offset: -2px;
           }
 
@@ -265,50 +267,6 @@ $shipDatepicker: true !default;
         > div {
           color: var(--base-12);
         }
-      }
-    }
-
-    &.primary {
-      --dp-sel-bg: var(--primary-8);
-    }
-
-    &.accent {
-      --dp-sel-bg: var(--accent-8);
-    }
-
-    &.warn {
-      --dp-sel-bg: var(--warn-8);
-    }
-
-    &.error {
-      --dp-sel-bg: var(--error-8);
-    }
-
-    &.success {
-      --dp-sel-bg: var(--success-8);
-    }
-
-    &.raised {
-      --dp-sel-bg: var(--base-g2);
-
-      &.primary {
-        --dp-sel-bg: var(--primary-g2);
-      }
-
-      &.accent {
-        --dp-sel-bg: var(--accent-g2);
-      }
-
-      &.warn {
-        --dp-sel-bg: var(--warn-g2);
-      }
-
-      &.error {
-        --dp-sel-bg: var(--error-g2);
-      }
-
-      &.success {
-        --dp-sel-bg: var(--success-g2);
       }
     }
   }

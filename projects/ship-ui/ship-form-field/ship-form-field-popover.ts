@@ -1,6 +1,6 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, HostListener, inject, input, model, output, ViewEncapsulation } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, inject, input, model, output, ViewEncapsulation } from '@angular/core';
 import { ShipPopover } from '@ship-ui/core/ship-popover';
-import { shipComponentClasses } from '@ship-ui/core';
+import { shipComponentClasses, generateUniqueId } from '@ship-ui/core';
 import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
 
 @Component({
@@ -51,6 +51,7 @@ import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': 'hostClasses()',
+    '(click)': 'onClick($event)',
   },
 })
 export class ShipFormFieldPopover {
@@ -84,7 +85,7 @@ export class ShipFormFieldPopover {
       if (!inputEl) return;
 
       if (!inputEl.id) {
-        inputEl.id = `sh-input-${Math.random().toString(36).substring(2, 9)}`;
+        inputEl.id = `sh-input-${generateUniqueId()}`;
       }
 
       if (labelEl && !labelEl.getAttribute('for')) {
@@ -93,11 +94,11 @@ export class ShipFormFieldPopover {
 
       const describedBy: string[] = [];
       if (errorEl) {
-        if (!errorEl.id) errorEl.id = `sh-error-${Math.random().toString(36).substring(2, 9)}`;
+        if (!errorEl.id) errorEl.id = `sh-error-${generateUniqueId()}`;
         describedBy.push(errorEl.id);
       }
       if (hintEl) {
-        if (!hintEl.id) hintEl.id = `sh-hint-${Math.random().toString(36).substring(2, 9)}`;
+        if (!hintEl.id) hintEl.id = `sh-hint-${generateUniqueId()}`;
         describedBy.push(hintEl.id);
       }
 
@@ -114,7 +115,6 @@ export class ShipFormFieldPopover {
     readonly: this.readonly,
   });
 
-  @HostListener('click', ['$event'])
   onClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
     if (target.closest('.input-wrap')) {

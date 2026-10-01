@@ -1,0 +1,27 @@
+@use './util' as *;
+
+@mixin skin($colors, $variants) {
+  .sh-radio,
+  sh-radio {
+    @each $c in $colors {
+      &.#{$c} {
+        --radiod-c: var(--#{$c}-8);
+      }
+    }
+
+    // On a filled sheet the dot is the contrast text of the fill.
+    @each $v in (flat, raised) {
+      @if has($variants, $v) {
+        &.#{$v} {
+          --radiod-c: var(--light-text);
+
+          @each $c in $colors {
+            &.#{$c} {
+              --radiod-c: var(--#{$c}-c8);
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -98,7 +98,8 @@
   }
 
   sh-list {
-    --list-item-p: #{p2r(24)};
+    --list-item-py: #{p2r(24)};
+    --list-item-px: #{p2r(24)};
     --list-item-gap: #{p2r(24)};
 
     [item] {

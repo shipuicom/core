@@ -1,0 +1,18 @@
+<sh-select
+  [options]="fonts"
+  label="label"
+  value="value"
+  [optionTemplate]="fontOption"
+  [selectedOptionTemplate]="fontOption">
+  <label>Font family</label>
+  <input type="text" [ngModel]="value()" (ngModelChange)="select($event)" />
+</sh-select>
+
+<ng-template let-font #fontOption>
+  <span class="font-option" [style.font-family]="previewFamily(font)">
+    {{ font.label }}
+    @if (font.value) {
+      <small class="font-category">{{ font.category }}</small>
+    }
+  </span>
+</ng-template>

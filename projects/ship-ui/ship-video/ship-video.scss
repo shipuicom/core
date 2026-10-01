@@ -7,19 +7,23 @@ $shipVideo: true !default;
     // themable knobs — override any of these on sh-video (or an ancestor)
     --vid-accent: var(--primary-8);
     --vid-ad-accent: var(--warn-8);
-    --vid-ad-accent-text: #000;
-    --vid-chrome-text: #fff;
-    --vid-chrome-bg: linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.28) 60%, transparent);
-    --vid-chrome-bg-edge: #121212;
-    --vid-surface-bg: #000;
-    --vid-rail-bg: rgba(255, 255, 255, 0.24);
-    --vid-rail-buffered: rgba(255, 255, 255, 0.42);
+    --vid-ad-accent-text: var(--dark-text);
+    --vid-chrome-text: var(--light-text);
+    --vid-chrome-bg: linear-gradient(to top, rgb(from var(--dark-text) r g b / 72%), rgb(from var(--dark-text) r g b / 28%) 60%, transparent);
+    --vid-chrome-bg-edge: color-mix(in srgb, var(--dark-text) 93%, var(--light-text));
+    --vid-surface-bg: var(--dark-text);
+    --vid-rail-bg: rgb(from var(--light-text) r g b / 24%);
+    --vid-rail-buffered: rgb(from var(--light-text) r g b / 42%);
     --vid-rail-height: #{p2r(3)};
     --vid-rail-height-active: #{p2r(5)};
     --vid-knob-size: #{p2r(12)};
-    --vid-marker-bg: rgba(255, 255, 255, 0.85);
-    --vid-button-hover-bg: rgba(255, 255, 255, 0.14);
-    --vid-chip-bg: rgba(0, 0, 0, 0.72);
+    --vid-marker-bg: rgb(from var(--light-text) r g b / 85%);
+    --vid-button-hover-bg: rgb(from var(--light-text) r g b / 14%);
+    --vid-chip-bg: rgb(from var(--dark-text) r g b / 72%);
+    --vid-chip-bg-h: rgb(from var(--dark-text) r g b / 90%);
+    --vid-chip-bc: rgb(from var(--light-text) r g b / 40%);
+    --vid-thumb-bc: rgb(from var(--light-text) r g b / 90%);
+    --vid-dot-bg: rgb(from var(--light-text) r g b / 50%);
     --vid-br: var(--shape-2);
     --vid-focus: var(--primary-8);
 
@@ -35,23 +39,6 @@ $shipVideo: true !default;
 
     &.sharp {
       --vid-br: 0;
-    }
-
-    &.accent {
-      --vid-accent: var(--accent-8);
-      --vid-focus: var(--accent-8);
-    }
-    &.warn {
-      --vid-accent: var(--warn-8);
-      --vid-focus: var(--warn-8);
-    }
-    &.error {
-      --vid-accent: var(--error-8);
-      --vid-focus: var(--error-8);
-    }
-    &.success {
-      --vid-accent: var(--success-8);
-      --vid-focus: var(--success-8);
     }
 
     &:focus-visible {
@@ -154,7 +141,7 @@ $shipVideo: true !default;
       align-items: center;
       gap: p2r(6);
       padding: p2r(8) p2r(14);
-      border: p2r(1) solid rgba(255, 255, 255, 0.4);
+      border: p2r(1) solid var(--vid-chip-bc);
       border-radius: var(--shape-1);
       background: var(--vid-chip-bg);
       color: var(--vid-chrome-text);
@@ -171,7 +158,7 @@ $shipVideo: true !default;
 
         &:hover,
         &:focus-visible {
-          background: rgba(0, 0, 0, 0.9);
+          background: var(--vid-chip-bg-h);
           border-color: var(--vid-chrome-text);
         }
       }
@@ -350,8 +337,8 @@ $shipVideo: true !default;
 
       .sh-video-scrubber-thumb {
         border-radius: var(--shape-1);
-        border: p2r(2) solid rgba(255, 255, 255, 0.9);
-        background-color: #000;
+        border: p2r(2) solid var(--vid-thumb-bc);
+        background-color: var(--vid-surface-bg);
         background-repeat: no-repeat;
       }
 
@@ -436,7 +423,7 @@ $shipVideo: true !default;
         width: p2r(8);
         height: p2r(8);
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.5);
+        background: var(--vid-dot-bg);
       }
 
       &.at-edge .sh-video-live-dot {

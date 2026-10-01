@@ -15,7 +15,6 @@ import { ShipColor, ShipSheetVariant, ShipSize } from '@ship-ui/core';
   styleUrl: './ship-chip.scss',
   encapsulation: ViewEncapsulation.None,
   imports: [],
-  standalone: true,
   template: '<div><ng-content /></div>',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -42,7 +41,7 @@ export class ShipChip {
   /** Use sharp (non-rounded) corners. */
   sharp = input<boolean | undefined>(undefined);
   /** Enable the dynamic styling variant. */
-  dynamic = input<boolean | undefined>(undefined);
+  dynamic = input<boolean | undefined, unknown>(undefined, { transform: (v) => (v == null ? undefined : booleanAttribute(v)) });
   /** Render in a non-interactive read-only state. */
   readonly = input<boolean>(false);
   /** Render without a background fill. */

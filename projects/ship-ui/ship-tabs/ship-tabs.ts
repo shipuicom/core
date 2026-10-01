@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
-import { shipComponentClasses } from '@ship-ui/core';
-import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
+import { shipComponentClasses, generateUniqueId } from '@ship-ui/core';
+import { ShipColor } from '@ship-ui/core';
 import { ShipSelectionGroup } from '@ship-ui/core';
 
 @Component({
@@ -18,19 +18,15 @@ import { ShipSelectionGroup } from '@ship-ui/core';
   },
 })
 export class ShipTabs extends ShipSelectionGroup<string> {
-  id = '--' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 12);
+  id = '--' + generateUniqueId();
 
   /** Color theme applied to the tabs. */
   color = input<ShipColor | null>(null);
-  /** Sheet variant styling applied to the tabs. */
-  variant = input<ShipSheetVariant | null>(null);
-  
   constructor() {
     super('[value], [tab], button, a', 'active', { hostRole: 'tablist', itemRole: 'tab' });
   }
 
   hostClasses = shipComponentClasses('tabs', {
     color: this.color,
-    variant: this.variant,
   });
 }

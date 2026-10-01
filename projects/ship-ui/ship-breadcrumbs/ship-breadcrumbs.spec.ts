@@ -70,10 +70,10 @@ describe('ShipBreadcrumbs', () => {
 
   it('exposes the separator as a quoted CSS string', () => {
     const { fixture, el } = setup();
-    expect(el.style.getPropertyValue('--breadcrumbs-sep')).toBe('"/"');
+    expect(el.style.getPropertyValue('--crumb-sep')).toBe('"/"');
     fixture.componentInstance.separator.set('›');
     fixture.detectChanges();
-    expect(el.style.getPropertyValue('--breadcrumbs-sep')).toBe('"›"');
+    expect(el.style.getPropertyValue('--crumb-sep')).toBe('"›"');
   });
 
   it("slots into sh-lo-page's nav area", () => {

@@ -9,7 +9,7 @@ const STYLES_PATH = path.join(SHIP_UI, 'styles/components');
 const EXAMPLES_PATH = path.join(rootPath, 'projects/design-system/src/app/ship');
 const TYPES_FILE = path.join(SHIP_UI, 'src/lib/utilities/ship-types.ts');
 const VARIABLES_FILE = path.join(SHIP_UI, 'styles/core/core/variables.scss');
-const SHEET_FILE = path.join(STYLES_PATH, 'ship-sheet.utility.scss');
+const SHEET_FILE = path.join(SHIP_UI, 'styles/skins/_sheet.scss');
 
 const DEFAULT_OUTPUT = path.join(SHIP_UI, 'assets/mcp/components.json');
 const LOCAL_OUTPUT = path.join(__dirname, 'components.json');
@@ -454,7 +454,13 @@ function extractClass(
 
 // --- Docs (description / keywords / examples) -----------------------------
 
+const primaryByEntry = new Map<string, boolean>();
 function entryHasPrimary(entryDir: string, base: string): boolean {
+  const key = `${entryDir}\0${base}`;
+  if (!primaryByEntry.has(key)) primaryByEntry.set(key, computeEntryHasPrimary(entryDir, base));
+  return primaryByEntry.get(key)!;
+}
+function computeEntryHasPrimary(entryDir: string, base: string): boolean {
   return publicFiles(entryDir).some((file) => {
     const src = fs.readFileSync(file, 'utf-8');
     return [...src.matchAll(/selector:\s*['"]\[?sh-?([\w-]+)/gi)].some(

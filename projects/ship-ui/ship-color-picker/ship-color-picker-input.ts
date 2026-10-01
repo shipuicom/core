@@ -29,6 +29,20 @@ import { ShipFormFieldPopover } from '@ship-ui/core/ship-form-field';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipColorPicker } from './ship-color-picker';
 
+const FORMAT_PREFIX: Record<string, RegExp> = {
+  rgb: /^rgb\(/i,
+  rgba: /^rgba\(/i,
+  hex: /^#[0-9a-f]{6}$/i,
+  hex8: /^#[0-9a-f]{8}$/i,
+  hsl: /^hsl\(/i,
+  hsla: /^hsla\(/i,
+};
+
+/** Whether `text` is already written in the requested output `format`. */
+function matchesFormat(text: string, format: string): boolean {
+  return FORMAT_PREFIX[format]?.test(text) ?? false;
+}
+
 @Component({
   selector: 'sh-color-picker-input',
   styleUrl: './ship-color-picker.scss',
@@ -144,9 +158,19 @@ export class ShipColorPickerInput {
 
   hasAlpha = computed(() => ['rgba', 'hex8', 'hsla'].includes(this.format()));
 
+  /**
+   * The last string parsed into `internalColorTuple`, kept while that tuple is still the one it produced.
+   * 8-bit RGB cannot represent every colour (hsl(30, 10%, 46%) re-derives as hsl(29, 10%, 46%)), so a seeded or
+   * typed string that is already in the output format is echoed verbatim instead of re-rounded; the moment the
+   * picker, hue slider or eyedropper produce a new tuple the derived string takes over again.
+   */
+  #exact = signal<{ text: string; tuple: [number, number, number, number?] } | null>(null);
+
   formattedColorString = computed(() => {
     const format = this.format();
     const tuple = this.internalColorTuple();
+    const exact = this.#exact();
+    if (exact && exact.tuple === tuple && matchesFormat(exact.text, format)) return exact.text;
     const [r, g, b, aRaw] = tuple;
     const a = aRaw ?? 1;
 
@@ -268,94 +292,16 @@ export class ShipColorPickerInput {
       const a = rgbaMatch[4] ? parseFloat(rgbaMatch[4]) : 1;
 
       const current = untracked(() => this.internalColorTuple());
-      if (current[0] !== r || current[1] !== g || current[2] !== b || (current[3] ?? 1) !== a) {
-        this.internalColorTuple.set([r, g, b, a]);
+      const changed = current[0] !== r || current[1] !== g || current[2] !== b || (current[3] ?? 1) !== a;
+      const tuple: [number, number, number, number?] = changed ? [r, g, b, a] : current;
+      this.#exact.set({ text: colorStr.trim(), tuple });
+      if (changed) {
+        this.internalColorTuple.set(tuple);
         this.internalAlpha.set(a);
 
-        // Also update hue so the hue slider matches the typed color!
-        const max = Math.max(r, g, b) / 255;
-        const min = Math.min(r, g, b) / 255;
-        if (max !== min) {
-          const d = max - min;
-          let h = 0;
-          switch (max) {
-            case r / 255:
-              h = (g / 255 - b / 255) / d + (g / 255 < b / 255 ? 6 : 0);
-              break;
-            case g / 255:
-              h = (b / 255 - r / 255) / d + 2;
-              break;
-            case b / 255:
-              h = (r / 255 - g / 255) / d + 4;
-              break;
-          }
-          h /= 6;
-          this.internalHue.set(Math.floor(h * 360));
-        }
+        // Also update hue so the hue slider matches the typed color (greys keep the current hue).
+        if (r !== g || g !== b) this.internalHue.set(rgbToHsl(r, g, b).h);
       }
     }
   }
-
-  #hslToRgbExact(h: number, s: number, l: number): [number, number, number] {
-    s /= 100;
-    l /= 100;
-    const k = (n: number) => (n + h / 30) % 12;
-    const a = s * Math.min(l, 1 - l);
-    const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-    return [Math.round(255 * f(0)), Math.round(255 * f(8)), Math.round(255 * f(4))];
-  }
-
-  #rgbToHex(r: number, g: number, b: number): string {
-    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-  }
-
-  #rgbaToHex8(r: number, g: number, b: number, a: number): string {
-    const alphaHex = Math.round(a * 255)
-      .toString(16)
-      .padStart(2, '0');
-    return this.#rgbToHex(r, g, b) + alphaHex;
-  }
-
-  #rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: number; string: string } {
-    r /= 255;
-    g /= 255;
-    b /= 255;
-
-    const max = Math.max(r, g, b),
-      min = Math.min(r, g, b);
-    let h = 0,
-      s = 0,
-      l = (max + min) / 2;
-
-    if (max === min) {
-      h = s = 0;
-    } else {
-      const d = max - min;
-      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-      switch (max) {
-        case r:
-          h = (g - b) / d + (g < b ? 6 : 0);
-          break;
-        case g:
-          h = (b - r) / d + 2;
-          break;
-        case b:
-          h = (r - g) / d + 4;
-          break;
-      }
-      h /= 6;
-    }
-
-    const hDeg = Math.floor(h * 360);
-    const sPct = Math.round(s * 100);
-    const lPct = Math.round(l * 100);
-
-    return {
-      h: hDeg,
-      s: sPct,
-      l: lPct,
-      string: `hsl(${hDeg}, ${sPct}%, ${lPct}%)`,
-    };
-  }
-
 }

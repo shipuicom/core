@@ -229,13 +229,17 @@ describe('ship-layout (stat-trend, stat-goal, stat-ring, ranking)', () => {
     expect(rings[0].classList).toContain('warn');
     expect(rings[0].classList).toContain('type-b');
     expect(rings[0].querySelector('.ring')?.getAttribute('style')).toContain('--ring-pct: 25');
-    expect(rings[0].querySelector('.ring')?.getAttribute('aria-label')).toBe('25%');
+    // No `label`: the ring is plain content, so the slotted h3/p stay readable.
+    expect(rings[0].querySelector('.ring')?.getAttribute('role')).toBeNull();
+    expect(rings[0].querySelector('.ring')?.getAttribute('aria-label')).toBeNull();
     expect(rings[0].querySelector('.center > .pct')?.textContent).toBe('25%');
     expect(rings[1].querySelector('.center > h3')?.textContent).toBe('5h');
 
     const ranking = q('sh-lo-ranking');
     expect(ranking.classList).toContain('type-b');
-    expect(ranking.getAttribute('role')).toBe('list');
+    // The list role sits on the items wrapper so the heading row is not a list child.
+    expect(ranking.getAttribute('role')).toBeNull();
+    expect(q('sh-lo-ranking > .items').getAttribute('role')).toBe('list');
     expect(q('sh-lo-ranking > .head > h3').textContent).toBe('Top');
     const items = qa('sh-lo-ranking-item');
     expect(items[0].getAttribute('style')).toContain('--bar-pct: 25');

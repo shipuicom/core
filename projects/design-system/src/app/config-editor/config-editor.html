@@ -2,7 +2,7 @@
   <div class="header">
     <h2>ShipUI Config Editor</h2>
     <div class="header-actions">
-      <ship-theme-toggle />
+      <sh-theme-toggle />
       <button shButton size="small" (click)="toggleEditor()">
         <sh-icon>x-bold</sh-icon>
       </button>
@@ -71,6 +71,30 @@
             (ngModelChange)="updateGlobalBorderWidth($event)" />
         </sh-range-slider>
 
+        <sh-range-slider>
+          <label>Vertical Padding (px)</label>
+          <input
+            type="range"
+            min="2"
+            max="16"
+            step="2"
+            [ngModel]="globalPaddingY"
+            (ngModelChange)="updateGlobalPaddingY($event)" />
+        </sh-range-slider>
+
+        <sh-range-slider>
+          <label>Horizontal Padding (px)</label>
+          <input
+            type="range"
+            min="4"
+            max="24"
+            step="2"
+            [ngModel]="globalPaddingX"
+            (ngModelChange)="updateGlobalPaddingX($event)" />
+        </sh-range-slider>
+
+        <app-font-picker />
+
         <div class="theme-colors-section">
           <label class="section-label">Theme Colors</label>
           @for (color of ['primary', 'accent', 'warn', 'error', 'success', 'base']; track color) {
@@ -102,6 +126,57 @@
             </sh-card>
           }
         </div>
+      </details>
+
+      <details value="styles">
+        <summary>
+          Included styles
+          @if (isStylesAltered()) {
+            <button
+              shButton
+              class="reset-btn"
+              size="xsmall"
+              variant="outlined"
+              (click)="resetStyles(); $event.stopPropagation()">
+              <span class="changed-indicator"></span>
+              <span class="text-default">Changed</span>
+              <span class="text-hover">Reset All</span>
+            </button>
+          }
+        </summary>
+        <p class="styles-hint">
+          What your exported <code>styles.scss</code> keeps. Everything left out is not compiled into your CSS. The docs
+          themselves always load every style.
+        </p>
+
+        <h5 class="styles-group">Colours</h5>
+        @for (color of styleColors; track color) {
+          <sh-toggle
+            color="primary"
+            variant="raised"
+            [checked]="hasStyleColor(color)"
+            (checkedChange)="setStyleColor(color, $event)">
+            {{ color }}
+          </sh-toggle>
+        }
+
+        <h5 class="styles-group">Variants</h5>
+        @for (variant of styleVariants; track variant) {
+          <sh-toggle
+            color="primary"
+            variant="raised"
+            [checked]="hasStyleVariant(variant)"
+            (checkedChange)="setStyleVariant(variant, $event)">
+            {{ variant }}
+          </sh-toggle>
+        }
+
+        <h5 class="styles-group">Component skins</h5>
+        @for (skin of styleSkins; track skin) {
+          <sh-toggle color="primary" variant="raised" [checked]="hasSkin(skin)" (checkedChange)="setSkin(skin, $event)">
+            {{ skinLabel(skin) }}
+          </sh-toggle>
+        }
       </details>
 
       <details value="components" [class.disabled]="filteredEditorComponents().length === 0">
@@ -258,6 +333,7 @@
 
   <div class="footer">
     <button shButton size="small" variant="outlined" (click)="resetConfig()">Reset Config</button>
+    <button shButton size="small" variant="outlined" (click)="importConfig()">Import Config</button>
     <button shButton size="small" variant="raised" color="primary" (click)="exportConfig()">Export Config</button>
   </div>
 </aside>

@@ -1,0 +1,44 @@
+<div header>
+  <h2>Export config</h2>
+  <p>These files reproduce what you see here in your own app.</p>
+</div>
+
+<div content>
+  <section>
+    <h4>src/app/app.config.ts</h4>
+    <p>
+      Component defaults, provided through
+      <code>SHIP_CONFIG</code>
+      .
+    </p>
+    <app-highlight lang="ts" [content]="data().ts" />
+  </section>
+
+  <section>
+    <h4>src/styles.scss</h4>
+    <p>
+      Palettes through
+      <code>$shipPalettes</code>
+      , the colours, variants and skins you kept; font, density, radius and border width as custom properties.
+    </p>
+    <app-highlight lang="scss" [content]="data().scss" />
+  </section>
+
+  <section>
+    <h4>ship-config.json</h4>
+    <p>
+      The same settings as data. Import it in this editor to pick up where you left off;
+      <code>npx ship-styles</code>
+      turns its
+      <code>styles</code>
+      into the
+      <code>&#64;use</code>
+      block above.
+    </p>
+    <app-highlight lang="json" [content]="data().json" />
+  </section>
+</div>
+
+<div footer>
+  <button shButton size="small" variant="raised" color="primary" (click)="closed.emit()">Done</button>
+</div>
