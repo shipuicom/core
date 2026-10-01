@@ -1,0 +1,22 @@
+@use 'helpers' as *;
+
+[content] {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(16);
+}
+
+section {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(8);
+
+  h4,
+  p {
+    margin: 0;
+  }
+
+  p {
+    font: var(--paragraph-30);
+  }
+}

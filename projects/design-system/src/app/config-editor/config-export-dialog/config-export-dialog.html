@@ -1,0 +1,30 @@
+<div header>
+  <h2>Export config</h2>
+  <p>Two files reproduce what you see here in your own app.</p>
+</div>
+
+<div content>
+  <section>
+    <h4>src/app/app.config.ts</h4>
+    <p>
+      Component defaults, provided through
+      <code>SHIP_CONFIG</code>
+      .
+    </p>
+    <app-highlight lang="ts" [content]="data().ts" />
+  </section>
+
+  <section>
+    <h4>src/styles.scss</h4>
+    <p>
+      Palettes through
+      <code>$shipPalettes</code>
+      ; font, density, radius and border width as custom properties.
+    </p>
+    <app-highlight lang="scss" [content]="data().scss" />
+  </section>
+</div>
+
+<div footer>
+  <button shButton size="small" variant="raised" color="primary" (click)="closed.emit()">Done</button>
+</div>

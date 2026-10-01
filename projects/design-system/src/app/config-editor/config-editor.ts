@@ -16,6 +16,9 @@ import { ShipCard } from '@ship-ui/core/ship-card';
 import { defaultThemeColors } from '@ship-ui/core';
 import { FontPicker } from '../core/font-picker/font-picker';
 import { AppConfigService } from '../core/services/app-config.service';
+import { exportShipConfig } from '../core/services/ship-config-export';
+import { ShipDialogService } from '@ship-ui/core/ship-dialog';
+import { ConfigExportDialog } from './config-export-dialog/config-export-dialog';
 
 export interface EditorComponentControl {
   type: 'select' | 'toggle';
@@ -109,6 +112,8 @@ const colorOptions = [
 export class ConfigEditor {
   #document = inject(DOCUMENT);
   #layoutState = inject(LayoutState);
+
+  #dialog = inject(ShipDialogService);
 
   configService = inject(AppConfigService);
   router = inject(Router);
@@ -253,10 +258,13 @@ export class ConfigEditor {
     });
   }
 
+  /** Opens the two files (`app.config.ts` + `styles.scss`) that reproduce the current config in another app. */
   exportConfig() {
-    const configJson = JSON.stringify(this.config, null, 2);
-    console.log('ShipUI Config exported:\\n', configJson);
-    alert('Config exported to console!\\n\\n' + configJson);
+    this.#dialog.open(ConfigExportDialog, {
+      data: exportShipConfig(this.config),
+      width: '760px',
+      maxWidth: '95vw',
+    });
   }
 
   resetConfig() {
