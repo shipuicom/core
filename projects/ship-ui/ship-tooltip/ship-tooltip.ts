@@ -5,7 +5,7 @@ import { generateUniqueId } from '@ship-ui/core';
 type Timeout = ReturnType<typeof setTimeout>;
 
 @Component({
-  selector: 'ship-tooltip-wrapper',
+  selector: 'sh-tooltip-wrapper',
   styleUrl: './ship-tooltip.scss',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,

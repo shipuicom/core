@@ -29,6 +29,10 @@ checks it). A migration script (`ship-migrate`) that rewrites the renames below 
 - `ShipAlertModule` is removed (every component is standalone; import `ShipAlert` / `ShipAlertContainer` directly).
 - The unpublished `sh-form-field-experimental` entry point is deleted.
 
+**Renamed element selectors** (every component tag is now `sh-*`):
+- `<ship-theme-toggle>` → `<sh-theme-toggle>`
+- `ship-tooltip-wrapper` → `sh-tooltip-wrapper` (internal; only matters if your scss targets it)
+
 **Renamed classes (TypeScript)**
 - `ShEditorRemoteCursors` → `ShipEditorRemoteCursors`, `ShEditorCollabDirective` → `ShipEditorCollabDirective`,
   `ShSpreadsheetRemoteSelections` → `ShipSpreadsheetRemoteSelections`. Entry points and selectors are unchanged.

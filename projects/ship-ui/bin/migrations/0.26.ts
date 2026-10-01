@@ -68,7 +68,9 @@ const rules: MigrationRules = {
     {
       from: 'ship-alert-container',
       to: 'sh-alert-container'
-    }
+    },
+    { from: 'ship-theme-toggle', to: 'sh-theme-toggle' },
+    { from: 'ship-tooltip-wrapper', to: 'sh-tooltip-wrapper' }
   ],
   removedInputs: [
     {

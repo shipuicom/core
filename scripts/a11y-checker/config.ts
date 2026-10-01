@@ -429,7 +429,7 @@ export const COMPONENT_A11Y_MAP: Record<string, { url: string; rules: AriaRules[
     url: 'http://localhost:4205/getting-started',
     rules: [
       {
-        selector: 'ship-theme-toggle',
+        selector: 'sh-theme-toggle',
         type: 'theme-toggle',
       }
     ]

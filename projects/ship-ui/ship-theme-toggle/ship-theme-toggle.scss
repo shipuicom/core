@@ -3,7 +3,7 @@
 $shipThemeToggle: true !default;
 
 @if $shipThemeToggle == true {
-  ship-theme-toggle {
+  sh-theme-toggle {
     display: flex;
     align-items: center;
     justify-content: center;

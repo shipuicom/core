@@ -27,7 +27,7 @@ $shipTooltip: true !default;
     &.active {
       z-index: 1;
 
-      + ship-tooltip-wrapper {
+      + sh-tooltip-wrapper {
         z-index: 1;
 
         @supports (anchor-name: --anchor) {
@@ -39,7 +39,7 @@ $shipTooltip: true !default;
     }
   }
 
-  ship-tooltip-wrapper {
+  sh-tooltip-wrapper {
     --tt-bg: var(--base-3);
     --tt-c: var(--base-12);
     --tt-mh: #{p2r(136)};
