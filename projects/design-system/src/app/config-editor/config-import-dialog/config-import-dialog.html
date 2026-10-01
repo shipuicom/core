@@ -1,0 +1,39 @@
+<div header>
+  <h2>Import config</h2>
+  <p>
+    Start from a fixed set of settings: a
+    <code>ship-config.json</code>
+    from Export, a
+    <code>ship-styles.json</code>
+    or an exported
+    <code>app.config.ts</code>
+    . It replaces the current editor settings.
+  </p>
+</div>
+
+<div content>
+  <input #file type="file" hidden accept=".json,.ts,application/json" (change)="readFile($event)" />
+  <button shButton size="small" variant="outlined" class="pick" (click)="file.click()">Choose a file…</button>
+
+  <sh-form-field>
+    <label>Or paste it here</label>
+    <textarea rows="12" [ngModel]="text()" (ngModelChange)="text.set($event)"></textarea>
+  </sh-form-field>
+
+  @if (error(); as error) {
+    <p class="error">{{ error }}</p>
+  }
+</div>
+
+<div footer>
+  <button shButton size="small" variant="outlined" (click)="closed.emit(undefined)">Cancel</button>
+  <button
+    shButton
+    size="small"
+    variant="raised"
+    color="primary"
+    [disabled]="!parsed() || !!error()"
+    (click)="import()">
+    Import
+  </button>
+</div>

@@ -1,0 +1,27 @@
+@use 'helpers' as *;
+
+[header] p {
+  margin: 0;
+  font: var(--paragraph-30);
+}
+
+[content] {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(16);
+}
+
+.pick {
+  align-self: flex-start;
+}
+
+textarea {
+  min-height: p2r(220);
+  font-family: monospace;
+  font-size: p2r(13);
+}
+
+.error {
+  margin: 0;
+  color: var(--error-9);
+}

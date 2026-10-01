@@ -24,19 +24,19 @@
     <app-highlight lang="scss" [content]="data().scss" />
   </section>
 
-  @if (data().manifest; as manifest) {
-    <section>
-      <h4>ship-styles.json</h4>
-      <p>
-        The same selection as data:
-        <code>npx ship-styles</code>
-        turns it into the
-        <code>&#64;use</code>
-        block above, so it can be kept in the repo and edited by hand.
-      </p>
-      <app-highlight lang="json" [content]="manifest" />
-    </section>
-  }
+  <section>
+    <h4>ship-config.json</h4>
+    <p>
+      The same settings as data. Import it in this editor to pick up where you left off;
+      <code>npx ship-styles</code>
+      turns its
+      <code>styles</code>
+      into the
+      <code>&#64;use</code>
+      block above.
+    </p>
+    <app-highlight lang="json" [content]="data().json" />
+  </section>
 </div>
 
 <div footer>

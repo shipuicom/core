@@ -26,6 +26,7 @@ import { AppConfigService } from '../core/services/app-config.service';
 import { exportShipConfig } from '../core/services/ship-config-export';
 import { ShipDialogService } from '@ship-ui/core/ship-dialog';
 import { ConfigExportDialog } from './config-export-dialog/config-export-dialog';
+import { ConfigImportDialog } from './config-import-dialog/config-import-dialog';
 
 export interface EditorComponentControl {
   type: 'select' | 'toggle';
@@ -271,6 +272,16 @@ export class ConfigEditor {
       data: exportShipConfig(this.config, this.configService.styles()),
       width: '760px',
       maxWidth: '95vw',
+    });
+  }
+
+  importConfig() {
+    this.#dialog.open(ConfigImportDialog, {
+      width: '640px',
+      maxWidth: '95vw',
+      closed: result => {
+        if (result) this.configService.importConfig(result.config, result.styles);
+      },
     });
   }
 

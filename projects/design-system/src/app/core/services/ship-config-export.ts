@@ -1,4 +1,11 @@
-import { ShipConfig, ShipStylesManifest, defaultThemeColors, shipStylesUse, shipStylesWith } from '@ship-ui/core';
+import {
+  SHIP_STYLE_SKINS,
+  ShipConfig,
+  ShipStylesManifest,
+  defaultThemeColors,
+  shipStylesUse,
+  shipStylesWith,
+} from '@ship-ui/core';
 import { googleFontUrl } from '../font-picker/font-picker';
 
 /** What the docs editor knobs map to outside the docs: the defaults baked into `@ship-ui/core/styles`. */
@@ -31,8 +38,8 @@ export interface ShipConfigExport {
   ts: string;
   /** `styles.scss`: palettes through `$shipPalettes`, trimmed skins, the rest as custom properties on `html`. */
   scss: string;
-  /** `ship-styles.json`: the colours, variants and skins kept; null when nothing is trimmed. */
-  manifest: string | null;
+  /** `ship-config.json`: everything above as data; re-importable here and read by `ship-styles`. */
+  json: string;
 }
 
 export function parseHsl(hsl: string): [number, number, number] | null {
@@ -160,6 +167,98 @@ export function exportShipConfig(config: ShipConfig, styles: ShipStylesManifest 
   return {
     ts: exportShipTs(config),
     scss: exportShipScss(config, styles),
-    manifest: shipStylesWith(styles).length ? JSON.stringify(styles, null, 2) + '\n' : null,
+    json: exportShipEditorJson(config, styles),
   };
+}
+
+/** `ship-config.json`: the editor state in one file, for re-importing here and for `ship-styles` (reads `styles`). */
+export function exportShipEditorJson(config: ShipConfig, styles: ShipStylesManifest): string {
+  const { sidenavType, ...rest } = config;
+  const out: { config?: ShipConfig; styles?: ShipStylesManifest } = {};
+  if (Object.keys(rest).length) out.config = rest;
+  if (shipStylesWith(styles).length) out.styles = styles;
+  return JSON.stringify(out, null, 2) + '\n';
+}
+
+export interface ShipConfigImport {
+  config: ShipConfig;
+  styles: ShipStylesManifest;
+}
+
+const STYLE_KEYS = ['colors', 'variants', 'skins'];
+const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+
+/** The object literal after `shipConfig: ShipConfig =` in an exported app.config.ts, as JSON (no eval). */
+function tsLiteralToJson(text: string): string | null {
+  const start = text.match(/shipConfig\s*(?::\s*ShipConfig)?\s*=\s*\{/);
+  if (!start) return null;
+  let i = start.index! + start[0].length - 1;
+  const from = i;
+  let depth = 0;
+  let quote: string | null = null;
+  for (; i < text.length; i++) {
+    const c = text[i];
+    if (quote) {
+      if (c === '\\') i++;
+      else if (c === quote) quote = null;
+    } else if (c === "'" || c === '"') quote = c;
+    else if (c === '{') depth++;
+    else if (c === '}' && --depth === 0) break;
+  }
+  return text
+    .slice(from, i + 1)
+    .replace(/\/\/[^\n]*/g, '')
+    .replace(/'((?:[^'\\]|\\.)*)'/g, (_, s: string) => JSON.stringify(s.replace(/\\'/g, "'")))
+    .replace(/([{,]\s*)([A-Za-z_$][\w$]*)\s*:/g, '$1"$2":')
+    .replace(/,(\s*[}\]])/g, '$1');
+}
+
+/**
+ * Reads what a user pastes or drops into the import dialog: `ship-config.json` ({ config, styles }),
+ * a `ship-styles.json`, a bare ShipConfig object, or the exported `app.config.ts`.
+ */
+export function parseShipConfigImport(text: string): ShipConfigImport | { error: string } {
+  const trimmed = text.trim();
+  if (!trimmed) return { error: 'Nothing to import.' };
+
+  let data: unknown;
+  try {
+    data = JSON.parse(trimmed);
+  } catch {
+    const json = tsLiteralToJson(trimmed);
+    if (!json) return { error: 'Expected JSON (ship-config.json / ship-styles.json) or an exported app.config.ts.' };
+    try {
+      data = { config: JSON.parse(json) };
+    } catch {
+      return { error: 'Could not read the shipConfig object in that app.config.ts.' };
+    }
+  }
+  if (!isObject(data)) return { error: 'Expected a JSON object.' };
+
+  let config: unknown = {};
+  let styles: unknown = {};
+  if ('config' in data || 'styles' in data) {
+    config = data['config'] ?? {};
+    styles = data['styles'] ?? {};
+  } else if (Object.keys(data).length && Object.keys(data).every(k => STYLE_KEYS.includes(k))) {
+    styles = data;
+  } else {
+    config = data;
+  }
+  if (!isObject(config)) return { error: '"config" must be an object.' };
+  if (!isObject(styles)) return { error: '"styles" must be an object.' };
+
+  for (const key of ['colors', 'variants'] as const) {
+    const list = styles[key];
+    if (list !== undefined && !(Array.isArray(list) && list.every(x => typeof x === 'string')))
+      return { error: `"styles.${key}" must be a list of names.` };
+  }
+  const skins = styles['skins'];
+  if (skins !== undefined) {
+    if (!isObject(skins)) return { error: '"styles.skins" must be an object.' };
+    const unknown = Object.keys(skins).filter(s => !(SHIP_STYLE_SKINS as readonly string[]).includes(s));
+    if (unknown.length) return { error: `Unknown skin(s): ${unknown.join(', ')}.` };
+  }
+
+  return { config: config as ShipConfig, styles: styles as ShipStylesManifest };
 }

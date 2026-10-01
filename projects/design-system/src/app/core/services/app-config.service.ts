@@ -196,6 +196,13 @@ export class AppConfigService {
     return cleaned;
   }
 
+  /** Replaces the editor state with an imported one (see parseShipConfigImport). */
+  importConfig(config: ShipConfig, styles: ShipStylesManifest) {
+    this.resetConfig();
+    this.updateConfig(config);
+    this.styles.set(styles);
+  }
+
   resetConfig() {
     // Rely on effect clearing to sweep the styles by omitting colors and distributions
     const initialConfig: ShipConfig = { sidenavType: 'overlay' };
