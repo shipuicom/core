@@ -4,8 +4,8 @@ $shipToggleCard: true !default;
 
 @if $shipToggleCard == true {
   sh-toggle-card {
-    --tc-py: var(--pad-y-xl);
-    --tc-px: var(--pad-x-xl);
+    --tc-py: var(--pad-y-5);
+    --tc-px: var(--pad-x-5);
 
     display: flex;
     flex-direction: column;

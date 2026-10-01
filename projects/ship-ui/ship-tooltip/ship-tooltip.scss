@@ -43,8 +43,8 @@ $shipTooltip: true !default;
     --tt-bg: var(--base-3);
     --tt-c: var(--base-12);
     --tt-mh: #{p2r(136)};
-    --tt-py: var(--pad-y-m);
-    --tt-px: var(--pad-x-m);
+    --tt-py: var(--pad-y-3);
+    --tt-px: var(--pad-x-3);
     --tt-mw: #{p2r(280)};
     --tt-translate-y: 50%;
 

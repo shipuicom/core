@@ -103,8 +103,8 @@ $shipBreadcrumbs: true !default;
 
     // Boxed surface.
     &.type-b {
-      --crumb-py: var(--pad-y-m);
-      --crumb-px: var(--pad-x-m);
+      --crumb-py: var(--pad-y-3);
+      --crumb-px: var(--pad-x-3);
 
       background-color: var(--crumb-bg);
       border: var(--border-10);
@@ -112,23 +112,23 @@ $shipBreadcrumbs: true !default;
       border-radius: var(--crumb-s);
 
       &.small {
-        --crumb-py: var(--pad-y-s);
-        --crumb-px: var(--pad-x-s);
+        --crumb-py: var(--pad-y-2);
+        --crumb-px: var(--pad-x-2);
       }
     }
 
     // Pill crumbs: each crumb is a hit area, the current one filled.
     &.type-c {
       --crumb-gap: var(--space-1);
-      --crumb-item-py: var(--pad-y-s);
-      --crumb-item-px: var(--pad-x-s);
+      --crumb-item-py: var(--pad-y-2);
+      --crumb-item-px: var(--pad-x-2);
       --crumb-item-bg-h: var(--base-3);
       --crumb-item-bg-current: var(--base-3);
       --crumb-item-s: var(--shape-2);
 
       &.small {
-        --crumb-item-py: var(--pad-y-xs);
-        --crumb-item-px: var(--pad-x-xs);
+        --crumb-item-py: var(--pad-y-1);
+        --crumb-item-px: var(--pad-x-1);
       }
     }
   }

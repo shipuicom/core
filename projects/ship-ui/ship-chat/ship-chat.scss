@@ -8,8 +8,8 @@ $shipChat: true !default;
     --chat-gap-continued: var(--space-1);
     --chat-avatar-si: #{p2r(32)};
     --chat-max-w: 75%;
-    --chat-py: var(--pad-y-m);
-    --chat-px: var(--pad-x-m);
+    --chat-py: var(--pad-y-3);
+    --chat-px: var(--pad-x-3);
     --chat-s: var(--shape-4);
     --chat-tail-s: var(--shape-1);
     --chat-bg: var(--base-3);
@@ -206,7 +206,7 @@ $shipChat: true !default;
       --chat-max-w: none;
 
       gap: var(--space-3);
-      padding: var(--pad-y-s) var(--pad-x-s);
+      padding: var(--pad-y-2) var(--pad-x-2);
       border-radius: var(--shape-2);
 
       &:hover {

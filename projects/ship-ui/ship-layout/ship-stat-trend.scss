@@ -6,8 +6,8 @@ $shipLayoutStatTrend: true !default;
   sh-lo-stat-trend {
     --trend-c: var(--primary-8);
     --trend-bg: var(--base-1);
-    --trend-py: var(--pad-y-2xl);
-    --trend-px: var(--pad-x-2xl);
+    --trend-py: var(--pad-y-6);
+    --trend-px: var(--pad-x-6);
     --trend-s: var(--shape-3);
     --trend-chart-h: #{p2r(72)};
 

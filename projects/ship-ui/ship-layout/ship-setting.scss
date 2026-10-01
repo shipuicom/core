@@ -4,8 +4,8 @@ $shipLayoutSetting: true !default;
 
 @if $shipLayoutSetting == true {
   sh-lo-setting {
-    --setting-py: var(--pad-y-2xl);
-    --setting-px: var(--pad-x-2xl);
+    --setting-py: var(--pad-y-6);
+    --setting-px: var(--pad-x-6);
     --setting-gap: var(--space-3) var(--space-6);
     --setting-text-w: #{p2r(224)};
 
@@ -41,8 +41,8 @@ $shipLayoutSetting: true !default;
 
     // Compact: tighter rows, no dividers.
     &.type-c {
-      --setting-py: var(--pad-y-l);
-      --setting-px: var(--pad-x-m);
+      --setting-py: var(--pad-y-4);
+      --setting-px: var(--pad-x-3);
 
       & + sh-lo-setting {
         border-top: 0;

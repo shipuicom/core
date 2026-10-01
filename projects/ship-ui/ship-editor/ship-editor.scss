@@ -13,8 +13,8 @@ $shipEditor: true !default;
     --editor-btn-active-bg: var(--primary-3);
     --editor-btn-active-c: var(--primary-11);
     --editor-footer-bg: var(--base-2);
-    --editor-py: var(--pad-y-xl);
-    --editor-px: var(--pad-x-xl);
+    --editor-py: var(--pad-y-5);
+    --editor-px: var(--pad-x-5);
     --editor-min-h: #{p2r(150)};
 
     --editor-border-focus: var(--base-8);

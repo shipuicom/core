@@ -9,8 +9,8 @@ $shipSidenav: true !default;
   }
 
   sh-sidenav {
-    --sidenav-py: var(--pad-y-xl);
-    --sidenav-px: var(--pad-x-l);
+    --sidenav-py: var(--pad-y-5);
+    --sidenav-px: var(--pad-x-4);
     --sidenav-width: var(--sidenav-open-width, #{p2r(280)});
     // Deliberately viewport-relative: the host is often laid out inside a
     // narrower grid column and is expected to span the full width regardless.

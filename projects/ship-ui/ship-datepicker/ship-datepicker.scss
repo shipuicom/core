@@ -84,8 +84,8 @@ $shipDatepicker: true !default;
   }
 
   sh-datepicker {
-    --dp-py: var(--pad-y-m);
-    --dp-px: var(--pad-x-s);
+    --dp-py: var(--pad-y-3);
+    --dp-px: var(--pad-x-2);
     --dp-sel-bg: var(--base-8);
     --dp-sel-bw: 0;
     --dp-sel-bc: transparent;

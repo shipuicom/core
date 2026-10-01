@@ -6,8 +6,8 @@ $shipLayoutAchievement: true !default;
   sh-lo-achievement {
     --ach-c: var(--primary-8);
     --ach-bg: var(--base-1);
-    --ach-py: var(--pad-y-2xl);
-    --ach-px: var(--pad-x-2xl);
+    --ach-py: var(--pad-y-6);
+    --ach-px: var(--pad-x-6);
     --ach-s: var(--shape-3);
     --ach-size: #{p2r(72)};
     --ach-icon: #{p2r(32)};
@@ -173,9 +173,9 @@ $shipLayoutAchievement: true !default;
     &.type-c {
       --ach-size: #{p2r(32)};
       --ach-icon: #{p2r(16)};
-      --ach-py: var(--pad-y-s);
-      --ach-px: var(--pad-x-xs);
-      padding-inline-end: var(--pad-x-m);
+      --ach-py: var(--pad-y-2);
+      --ach-px: var(--pad-x-1);
+      padding-inline-end: var(--pad-x-3);
 
       flex-direction: row;
       display: inline-flex;

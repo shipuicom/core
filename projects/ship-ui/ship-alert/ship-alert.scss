@@ -7,8 +7,8 @@ $shipAlert: true !default;
     --alert-close-ic: currentColor;
     --alert-ad: 400ms;
     --alert-bs: var(--box-shadow-10);
-    --alert-py: var(--pad-y-m);
-    --alert-px: var(--pad-x-s);
+    --alert-py: var(--pad-y-3);
+    --alert-px: var(--pad-x-2);
 
     max-height: #{p2r(300)};
     padding-top: 0;
@@ -157,8 +157,8 @@ $shipAlert: true !default;
     }
 
     &:has([content]) .alert {
-      --alert-py: var(--pad-y-l);
-      --alert-px: var(--pad-x-m);
+      --alert-py: var(--pad-y-4);
+      --alert-px: var(--pad-x-3);
     }
   }
 }

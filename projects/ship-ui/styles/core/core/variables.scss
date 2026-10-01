@@ -78,22 +78,22 @@ html body {
 
   // Padding tiers follow the --pad-y / --pad-x base pair (set on :root with the other global knobs).
   // Components read a tier through their own --<abbr>-py / --<abbr>-px tokens.
-  --pad-y-xs: calc(var(--pad-y) * 0.25);
-  --pad-x-xs: calc(var(--pad-x) / 3);
-  --pad-y-s: calc(var(--pad-y) * 0.5);
-  --pad-x-s: calc(var(--pad-x) * 2 / 3);
-  --pad-y-m: var(--pad-y);
-  --pad-x-m: var(--pad-x);
-  --pad-y-l: calc(var(--pad-y) * 1.5);
-  --pad-x-l: calc(var(--pad-x) * 4 / 3);
-  --pad-y-xl: calc(var(--pad-y) * 2);
-  --pad-x-xl: calc(var(--pad-x) * 5 / 3);
-  --pad-y-2xl: calc(var(--pad-y) * 3);
-  --pad-x-2xl: calc(var(--pad-x) * 2);
-  --pad-y-3xl: calc(var(--pad-y) * 4);
-  --pad-x-3xl: calc(var(--pad-x) * 8 / 3);
-  --pad-y-4xl: calc(var(--pad-y) * 6);
-  --pad-x-4xl: calc(var(--pad-x) * 4);
+  --pad-y-1: calc(var(--pad-y) * 0.25);
+  --pad-x-1: calc(var(--pad-x) / 3);
+  --pad-y-2: calc(var(--pad-y) * 0.5);
+  --pad-x-2: calc(var(--pad-x) * 2 / 3);
+  --pad-y-3: var(--pad-y);
+  --pad-x-3: var(--pad-x);
+  --pad-y-4: calc(var(--pad-y) * 1.5);
+  --pad-x-4: calc(var(--pad-x) * 4 / 3);
+  --pad-y-5: calc(var(--pad-y) * 2);
+  --pad-x-5: calc(var(--pad-x) * 5 / 3);
+  --pad-y-6: calc(var(--pad-y) * 3);
+  --pad-x-6: calc(var(--pad-x) * 2);
+  --pad-y-7: calc(var(--pad-y) * 4);
+  --pad-x-7: calc(var(--pad-x) * 8 / 3);
+  --pad-y-8: calc(var(--pad-y) * 6);
+  --pad-x-8: calc(var(--pad-x) * 4);
 
   --box-shadow-10: 0 1px 2px 0 rgba(18, 18, 23, 0.07);
   --box-shadow-20: 0 1px 3px 0 rgba(18, 18, 23, 0.1);

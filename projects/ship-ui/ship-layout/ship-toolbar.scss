@@ -93,7 +93,7 @@ $shipLayoutToolbar: true !default;
 
     // Boxed surface.
     &.type-b {
-      --toolbar-px: var(--pad-x-s);
+      --toolbar-px: var(--pad-x-2);
 
       background-color: var(--toolbar-bg);
       border: var(--border-10);

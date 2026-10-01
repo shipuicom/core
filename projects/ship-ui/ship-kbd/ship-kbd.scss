@@ -5,8 +5,8 @@ $shipKbd: true !default;
 @if $shipKbd == true {
   sh-kbd,
   [sh-kbd] {
-    --kbd-py: var(--pad-y-xs);
-    --kbd-px: var(--pad-x-xs);
+    --kbd-py: var(--pad-y-1);
+    --kbd-px: var(--pad-x-1);
 
     display: inline-flex;
     align-items: center;

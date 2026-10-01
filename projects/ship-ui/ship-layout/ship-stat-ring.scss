@@ -6,8 +6,8 @@ $shipLayoutStatRing: true !default;
   sh-lo-stat-ring {
     --ring-bg: var(--base-1);
     --ring-bc: var(--base-4);
-    --ring-py: var(--pad-y-2xl);
-    --ring-px: var(--pad-x-2xl);
+    --ring-py: var(--pad-y-6);
+    --ring-px: var(--pad-x-6);
     --ring-s: var(--shape-3);
     --ring-gap: var(--space-4);
     --ring-size: #{p2r(72)};

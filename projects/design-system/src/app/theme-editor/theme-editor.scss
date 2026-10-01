@@ -65,14 +65,14 @@
   align-items: center;
   flex-wrap: wrap;
   gap: var(--space-3);
-  padding: var(--pad-y-l) var(--pad-x-l);
+  padding: var(--pad-y-4) var(--pad-x-4);
   border: var(--border-10);
   border-radius: var(--shape-3);
   background: var(--base-2);
 
   sh-card {
-    --card-py: var(--pad-y-s);
-    --card-px: var(--pad-x-s);
+    --card-py: var(--pad-y-2);
+    --card-px: var(--pad-x-2);
     min-width: p2r(200);
   }
 }

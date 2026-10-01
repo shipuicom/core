@@ -4,10 +4,10 @@ $shipFormField: true !default;
 $shipDatepicker: true !default;
 
 %smallFormField {
-  --ff-py: var(--pad-y-m);
-  --ff-px: var(--pad-x-s);
-  --ff-input-py: var(--pad-y-m);
-  --ff-input-px: var(--pad-x-s);
+  --ff-py: var(--pad-y-3);
+  --ff-px: var(--pad-x-2);
+  --ff-input-py: var(--pad-y-3);
+  --ff-input-px: var(--pad-x-2);
   --ff-f: var(--paragraph-40B);
 
   line-height: p2r(16);
@@ -34,10 +34,10 @@ $shipDatepicker: true !default;
     --ff-f: var(--paragraph-30B);
     --ff-spinner-size: #{p2r(20)};
     --ff-spinner-thickness: #{p2r(2)};
-    --ff-py: var(--pad-y-m);
-    --ff-px: var(--pad-x-m);
-    --ff-input-py: var(--pad-y-m);
-    --ff-input-px: var(--pad-x-m);
+    --ff-py: var(--pad-y-3);
+    --ff-px: var(--pad-x-3);
+    --ff-input-py: var(--pad-y-3);
+    --ff-input-px: var(--pad-x-3);
     --ff-mw: auto;
 
     --ff-bs: var(--ship-form-field-shadow, none);
@@ -52,8 +52,8 @@ $shipDatepicker: true !default;
     transform: scale(1);
 
     &:has(input[type='time']) {
-      --ff-input-py: var(--pad-y-m);
-      --ff-input-px: var(--pad-x-m);
+      --ff-input-py: var(--pad-y-3);
+      --ff-input-px: var(--pad-x-3);
     }
 
     &:active {

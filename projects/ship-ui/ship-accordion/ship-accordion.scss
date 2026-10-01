@@ -4,8 +4,8 @@ $shipAccordion: true !default;
 
 @if $shipAccordion == true {
   sh-accordion {
-    --acc-py: var(--pad-y-xl);
-    --acc-px: var(--pad-x-l);
+    --acc-py: var(--pad-y-5);
+    --acc-px: var(--pad-x-4);
     --acc-f: var(--paragraph-30);
     --acc-bc: var(--base-4);
     --acc-s: var(--shape-2);
@@ -23,8 +23,8 @@ $shipAccordion: true !default;
     }
 
     &.small {
-      --acc-py: var(--pad-y-l);
-      --acc-px: var(--pad-x-m);
+      --acc-py: var(--pad-y-4);
+      --acc-px: var(--pad-x-3);
       --acc-f: var(--paragraph-40);
     }
 

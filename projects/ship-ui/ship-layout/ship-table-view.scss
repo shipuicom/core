@@ -4,8 +4,8 @@ $shipLayoutTableView: true !default;
 
 @if $shipLayoutTableView == true {
   sh-lo-table-view {
-    --tv-py: var(--pad-y-3xl);
-    --tv-px: var(--pad-x-3xl);
+    --tv-py: var(--pad-y-7);
+    --tv-px: var(--pad-x-7);
     --tv-gap: var(--space-4);
 
     display: flex;
@@ -150,8 +150,8 @@ $shipLayoutTableView: true !default;
 
     @include breakpoint(-milli) {
       &:not(.type-c) {
-        --tv-py: var(--pad-y-xl);
-        --tv-px: var(--pad-x-l);
+        --tv-py: var(--pad-y-5);
+        --tv-px: var(--pad-x-4);
       }
     }
   }

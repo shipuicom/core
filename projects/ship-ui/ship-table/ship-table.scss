@@ -13,9 +13,9 @@ $shipTable: true !default;
     --table-td-c: var(--base-8);
     --table-td-f: var(--paragraph-30);
     --table-th-py: 0;
-    --table-th-px: var(--pad-x-xl);
+    --table-th-px: var(--pad-x-5);
     --table-td-py: 0;
-    --table-td-px: var(--pad-x-xl);
+    --table-td-px: var(--pad-x-5);
     --table-th-mh: #{p2r(48)};
     --table-td-mh: #{p2r(78)};
     --table-th-g: #{p2r(4)};
@@ -41,8 +41,8 @@ $shipTable: true !default;
     }
 
     &.type-b {
-      --table-th-px: var(--pad-x-m);
-      --table-td-px: var(--pad-x-m);
+      --table-th-px: var(--pad-x-3);
+      --table-td-px: var(--pad-x-3);
       --table-th-mh: #{p2r(36)};
       --table-td-mh: #{p2r(56)};
       --table-th-bw: #{p2r(1 0 1 1)};

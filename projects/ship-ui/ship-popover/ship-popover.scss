@@ -4,8 +4,8 @@ $shipPopover: true !default;
 
 @if $shipPopover == true {
   sh-popover {
-    --po-py: var(--pad-y-xl);
-    --po-px: var(--pad-x-xl);
+    --po-py: var(--pad-y-5);
+    --po-px: var(--pad-x-5);
     --po-overlay: rgb(from var(--dark-text) r g b / 50%);
     --po-d: block;
 

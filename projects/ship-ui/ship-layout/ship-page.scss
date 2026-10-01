@@ -5,8 +5,8 @@ $shipLayoutPage: true !default;
 @if $shipLayoutPage == true {
   sh-lo-page {
     --page-mw: #{p2r(1200)};
-    --page-py: var(--pad-y-3xl);
-    --page-px: var(--pad-x-3xl);
+    --page-py: var(--pad-y-7);
+    --page-px: var(--pad-x-7);
     --page-gap: var(--space-6);
     --page-head-gap: var(--space-4);
     --page-aside-w: #{p2r(320)};
@@ -155,8 +155,8 @@ $shipLayoutPage: true !default;
       --page-gap: var(--space-5);
 
       &:not(.type-c) {
-        --page-py: var(--pad-y-xl);
-        --page-px: var(--pad-x-l);
+        --page-py: var(--pad-y-5);
+        --page-px: var(--pad-x-4);
       }
     }
   }

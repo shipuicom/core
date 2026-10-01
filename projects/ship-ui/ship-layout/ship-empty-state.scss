@@ -4,8 +4,8 @@ $shipLayoutEmptyState: true !default;
 
 @if $shipLayoutEmptyState == true {
   sh-lo-empty-state {
-    --empty-py: var(--pad-y-4xl);
-    --empty-px: var(--pad-x-2xl);
+    --empty-py: var(--pad-y-8);
+    --empty-px: var(--pad-x-6);
     --empty-gap: var(--space-4);
     --empty-mw: #{p2r(400)};
     --empty-ic: var(--base-7);
@@ -72,8 +72,8 @@ $shipLayoutEmptyState: true !default;
 
     // Inline: a compact left-aligned row for small containers.
     &.type-c {
-      --empty-py: var(--pad-y-xl);
-      --empty-px: var(--pad-x-l);
+      --empty-py: var(--pad-y-5);
+      --empty-px: var(--pad-x-4);
       --empty-gap: var(--space-3);
 
       flex-direction: row;
@@ -97,8 +97,8 @@ $shipLayoutEmptyState: true !default;
 
     @include breakpoint(-milli) {
       &:not(.type-c) {
-        --empty-py: var(--pad-y-3xl);
-        --empty-px: var(--pad-x-l);
+        --empty-py: var(--pad-y-7);
+        --empty-px: var(--pad-x-4);
       }
     }
   }

@@ -4,8 +4,8 @@ $shipMenu: true !default;
 
 @if $shipMenu == true {
   sh-menu {
-    --menu-py: var(--pad-y-m);
-    --menu-px: var(--pad-x-m);
+    --menu-py: var(--pad-y-3);
+    --menu-px: var(--pad-x-3);
     --menu-mh: #{p2r(320)};
 
     display: inline-flex;
@@ -198,7 +198,7 @@ $shipMenu: true !default;
         text-align: left;
         height: auto;
         margin: p2r(0 8);
-        padding: var(--pad-y-s) var(--pad-x-s);
+        padding: var(--pad-y-2) var(--pad-x-2);
         gap: p2r(0 8);
         width: calc(100% - #{p2r(16)});
         border-radius: var(--shape-2);

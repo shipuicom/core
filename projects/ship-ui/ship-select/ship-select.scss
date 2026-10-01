@@ -45,8 +45,8 @@ $shipSelect: true !default;
       display: flex;
       flex-wrap: wrap;
 
-      --ff-py: var(--pad-y-m);
-      --ff-px: var(--pad-x-s);
+      --ff-py: var(--pad-y-3);
+      --ff-px: var(--pad-x-2);
 
       textarea,
       input {
@@ -107,8 +107,8 @@ $shipSelect: true !default;
     }
 
     sh-form-field.small .input-wrap .input {
-      --ff-py: var(--pad-y-s);
-      --ff-px: var(--pad-x-s);
+      --ff-py: var(--pad-y-2);
+      --ff-px: var(--pad-x-2);
 
       sh-chip {
         --chip-h: #{p2r(20)};
@@ -118,8 +118,8 @@ $shipSelect: true !default;
   }
 
   .ship-options {
-    --select-py: var(--pad-y-s);
-    --select-px: var(--pad-x-l);
+    --select-py: var(--pad-y-2);
+    --select-px: var(--pad-x-4);
 
     padding: p2r(8 0);
     display: flex;

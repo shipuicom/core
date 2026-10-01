@@ -21,10 +21,10 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
     --list-active-bs: none;
     --list-item-b: 1px solid transparent;
     --list-item-active-b: 1px solid --list-active-bg;
-    --list-py: var(--pad-y-xl);
-    --list-px: var(--pad-x-l);
-    --list-item-py: var(--pad-y-m);
-    --list-item-px: var(--pad-x-m);
+    --list-py: var(--pad-y-5);
+    --list-px: var(--pad-x-4);
+    --list-item-py: var(--pad-y-3);
+    --list-item-px: var(--pad-x-3);
     --list-item-gap: #{p2r(8)};
     // Color of the active item's leading icon and, for .outlined, its border.
     // Follows the color class (.primary, .accent, ...); the plain list keeps
@@ -47,8 +47,8 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
       --list-py: 0;
       --list-px: 0;
       --list-accent: var(--primary-8);
-      --list-item-py: var(--pad-y-m);
-      --list-item-px: var(--pad-x-m);
+      --list-item-py: var(--pad-y-3);
+      --list-item-px: var(--pad-x-3);
       --list-item-gap: #{p2r(12)};
       --list-s: var(--shape-2);
 
@@ -118,8 +118,8 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
     &.type-c {
       --list-py: 0;
       --list-px: 0;
-      --list-item-py: var(--pad-y-l);
-      --list-item-px: var(--pad-x-l);
+      --list-item-py: var(--pad-y-4);
+      --list-item-px: var(--pad-x-4);
       --list-item-gap: #{p2r(12)};
       --list-s: var(--shape-3);
       --list-color: var(--base-12);

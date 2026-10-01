@@ -44,7 +44,7 @@ checks it). A migration script (`ship-migrate`) that rewrites the renames below 
   Override it to change the app font; the docs theme editor offers a Google Fonts picker that sets it.
 
 **Padding tokens**
-- Global density: `--pad-y` / `--pad-x` (8px / 12px) with tiers `--pad-{y,x}-{xs,s,m,l,xl,2xl,3xl,4xl}` derived by multiplier.
+- Global density: `--pad-y` / `--pad-x` (8px / 12px) with tiers `--pad-{y,x}-{1…8}` derived by multiplier.
   Every padded component reads a tier through its own `--<abbr>-py` / `--<abbr>-px`; override the base pair for a denser
   or airier app, a tier for one size class, or a component's pair for that component.
 - The one-value tokens are gone: `--card-p`, `--alert-p`, `--chat-p`, `--list-p`, `--list-item-p`, `--dialog-p`, `--editor-p`,

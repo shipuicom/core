@@ -7,7 +7,7 @@ $shipChip: true !default;
     --chip-h: #{p2r(32)};
     --chip-s: calc(var(--chip-h) / 2);
     --chip-py: 0;
-    --chip-px: var(--pad-x-m);
+    --chip-px: var(--pad-x-3);
 
     &.sh-sheet {
       --sheet-c: var(--chip-c);
@@ -35,14 +35,14 @@ $shipChip: true !default;
 
     &.sharp {
       --chip-s: calc(var(--chip-h) / 4);
-      --chip-px: var(--pad-x-s);
+      --chip-px: var(--pad-x-2);
 
       &.small {
-        --chip-px: var(--pad-x-xs);
+        --chip-px: var(--pad-x-1);
       }
 
       &.xsmall {
-        --chip-px: var(--pad-x-xs);
+        --chip-px: var(--pad-x-1);
       }
     }
 
@@ -62,7 +62,7 @@ $shipChip: true !default;
       --chip-h: #{p2r(24)};
 
       font: var(--paragraph-40B);
-      --chip-px: var(--pad-x-s);
+      --chip-px: var(--pad-x-2);
 
       div {
         gap: p2r(4);
@@ -77,7 +77,7 @@ $shipChip: true !default;
       --chip-h: #{p2r(20)};
 
       font: var(--paragraph-40B);
-      --chip-px: var(--pad-x-xs);
+      --chip-px: var(--pad-x-1);
 
       div {
         gap: p2r(2);
