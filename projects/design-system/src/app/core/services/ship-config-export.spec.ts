@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ShipConfig } from '@ship-ui/core';
-import { exportShipEditorJson, exportShipTs, parseShipConfigImport, sanitizeShipConfig } from './ship-config-export';
+import { exportShipEditorJson, exportShipTs, parseShipConfigImport, sanitizeShipConfig, sanitizeShipStyles } from './ship-config-export';
+import { shipStylesWith } from '@ship-ui/core';
 
 const ok = (text: string) => {
   const r = parseShipConfigImport(text);
@@ -94,5 +95,32 @@ describe('parseShipConfigImport', () => {
     const ts = exportShipTs({ ['event-card' as never]: { variant: 'x' } } as ShipConfig);
     expect(ts).toContain("'event-card': {");
     expect(ok(ts).config).toEqual({ eventCard: { variant: 'x' } });
+  });
+});
+
+describe('sanitizeShipStyles', () => {
+  it('drops malformed lists and skin entries instead of letting them reach shipStylesWith', () => {
+    const { styles, ignored } = sanitizeShipStyles({
+      colors: 'primary',
+      variants: ['flat', 3],
+      skins: { button: { colors: 'x', variants: ['simple'] }, toggle: false, nope: false, chip: 'x' },
+    });
+    expect(styles).toEqual({ variants: ['flat'], skins: { button: { variants: ['simple'] }, toggle: false } });
+    expect(ignored.length).toBe(5);
+    expect(() => shipStylesWith(styles)).not.toThrow();
+  });
+
+  it('never throws on garbage', () => {
+    for (const raw of [null, undefined, 'x', 5, [], { skins: 'x' }, { skins: { button: null } }]) {
+      expect(() => shipStylesWith(sanitizeShipStyles(raw).styles)).not.toThrow();
+    }
+  });
+
+  it('imports a manifest with a malformed skin entry without breaking the export', () => {
+    const result = parseShipConfigImport(JSON.stringify({ styles: { skins: { button: { colors: 'x' } } } }));
+    expect('error' in result).toBe(false);
+    if ('error' in result) return;
+    expect(result.ignored).toContain('styles.skins.button.colors (expected a list of names)');
+    expect(() => shipStylesWith(result.styles)).not.toThrow();
   });
 });

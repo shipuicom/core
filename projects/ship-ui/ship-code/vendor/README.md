@@ -15,7 +15,7 @@ files will be replaced by a drop-in substitute.
 
 ## vscode-oniguruma v2.0.1
 
-- **Source**: https://github.com/nicklockwood/vscode-oniguruma
+- **Source**: https://github.com/microsoft/vscode-oniguruma
 - **License**: MIT (see `vscode-oniguruma/LICENSE.txt`)
 - **Files**: `main.impl.ts` (the upstream `release/main.js` converted to ESM, `// @ts-nocheck`), `main.ts` (typed entry
   over it), `onig.wasm` (Oniguruma regex engine; published as a package asset at `ship-code/vendor/vscode-oniguruma/onig.wasm`)

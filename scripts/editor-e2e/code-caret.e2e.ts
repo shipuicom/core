@@ -260,6 +260,8 @@ test.describe('sh-code caret hit-testing', () => {
         if (writes++ === 0) comp.writeValue('normalized');
       });
       comp.sel.set({ ranges: [{ anchor: 0, head: 0 }], primary: 0 });
+      // The edit (delete one line) leaves many lines; the written-back value is a single line, so the two differ.
+      const before = comp.lineCount();
       const isMac = /Mac|iP/.test(navigator.platform);
       comp.onKeyDown(new KeyboardEvent('keydown', { key: 'k', shiftKey: true, metaKey: isMac, ctrlKey: !isMac, cancelable: true }));
       // The edit reaches onChange on flush; the subscriber writes back from inside it.
@@ -267,11 +269,15 @@ test.describe('sh-code caret hit-testing', () => {
       await new Promise((r) => setTimeout(r, 100));
       (window as any).ng.applyChanges(comp);
       comp.flushValue();
-      return { writes, lines: comp.lineCount(), value: comp.value() };
+      const firstLine = (el.querySelector('.sh-code-line') as HTMLElement | null)?.textContent ?? null;
+      return { writes, before, lines: comp.lineCount(), firstLine, value: comp.value() };
     });
     expect(result.writes).toBeGreaterThan(0);
-    // The document took the written-back value, not the edit.
+    // The document took the written-back value, not the edit: one line reading 'normalized', where the edit
+    // alone would have left `before - 1` lines.
+    expect(result.before).toBeGreaterThan(2);
     expect(result.lines).toBe(1);
+    expect(result.firstLine).toBe('normalized');
     expect(result.value).toBe('normalized');
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });

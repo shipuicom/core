@@ -2,7 +2,7 @@ import { DOCUMENT, Injectable, effect, inject, signal } from '@angular/core';
 import { ShipConfig, ShipStylesManifest, defaultThemeColors, shipStylesWith } from '@ship-ui/core';
 import { LOCALSTORAGE } from './localstorage.token';
 import { googleFontUrl } from './google-fonts';
-import { SHIP_GLOBAL_KEYS, sanitizeShipConfig } from './ship-config-export';
+import { SHIP_GLOBAL_KEYS, sanitizeShipConfig, sanitizeShipStyles } from './ship-config-export';
 
 @Injectable({ providedIn: 'root' })
 export class AppConfigService {
@@ -12,7 +12,22 @@ export class AppConfigService {
   private _configSignal = signal<ShipConfig>(this.loadConfig());
   isEditorOpen = signal<boolean>(this.#ls.getItemParsed<boolean>('ship-editor-open') || false);
   /** What the exported `styles.scss` keeps (colours, variants, skins). Export only: the docs always load every skin. */
-  styles = signal<ShipStylesManifest>(this.#ls.getItemParsed<ShipStylesManifest>('ship-styles') || {});
+  styles = signal<ShipStylesManifest>(this.loadStyles());
+
+  /** Saved styles, cleaned: invalid JSON or a malformed manifest from an older version must never break the page. */
+  private loadStyles(): ShipStylesManifest {
+    let raw: unknown;
+    try {
+      raw = this.#ls.getItemParsed<unknown>('ship-styles');
+    } catch {
+      console.warn('[ship-docs] The saved included-styles selection could not be read and was reset.');
+      this.#ls.removeItem('ship-styles');
+      return {};
+    }
+    const { styles, ignored } = sanitizeShipStyles(raw);
+    if (ignored.length) console.warn(`[ship-docs] Ignored saved style settings: ${ignored.join(', ')}`);
+    return styles;
+  }
 
   stylesEffect = effect(() => {
     const styles = this.styles();
@@ -226,7 +241,7 @@ export class AppConfigService {
     }
     this.resetConfig();
     this.updateConfig(clean);
-    this.styles.set(styles);
+    this.styles.set(sanitizeShipStyles(styles).styles);
   }
 
   resetConfig() {

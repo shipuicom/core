@@ -75,4 +75,36 @@ describe('ship-layout accessible names', () => {
     expect(input.getAttribute('aria-labelledby')).toBe((el.querySelector('label') as HTMLElement).id);
     expect(computeAccessibleName(input)).toBe('Alerts');
   });
+
+  it('leaves a control inside a nested setting to that setting', async () => {
+    @Component({
+      imports: [ShipLayoutSetting],
+      template: `<sh-lo-setting id="outer"><label>Outer</label>
+        <sh-lo-setting id="inner"><label>Inner</label><input type="checkbox" /></sh-lo-setting>
+      </sh-lo-setting>`,
+    })
+    class NestedHost {}
+    const fixture = TestBed.createComponent(NestedHost);
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve));
+    const input = (fixture.nativeElement as HTMLElement).querySelector('input') as HTMLInputElement;
+    expect(computeAccessibleName(input)).toBe('Inner');
+  });
+
+  it('hands its name back when the consumer names the control later', async () => {
+    @Component({
+      imports: [ShipLayoutSetting],
+      template: `<sh-lo-setting><label>Alerts</label><input type="checkbox" /></sh-lo-setting>`,
+    })
+    class LaterNameHost {}
+    const fixture = TestBed.createComponent(LaterNameHost);
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve));
+    const input = (fixture.nativeElement as HTMLElement).querySelector('input') as HTMLInputElement;
+    expect(input.getAttribute('aria-labelledby')).toBeTruthy();
+    input.setAttribute('aria-label', 'Email alerts');
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(input.getAttribute('aria-labelledby')).toBeNull();
+    expect(computeAccessibleName(input)).toBe('Email alerts');
+  });
 });

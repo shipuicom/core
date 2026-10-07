@@ -44,7 +44,13 @@ export class ShipLayoutSetting {
       this.#nameControl();
       if (typeof MutationObserver === 'undefined') return;
       const observer = new MutationObserver(() => this.#nameControl());
-      observer.observe(this.#host, { childList: true, subtree: true, attributes: true, attributeFilter: ['role', 'id'] });
+      // Also attributes a consumer may use to name the control themselves, so a stamp is handed back when they do.
+      observer.observe(this.#host, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['role', 'id', 'for', 'aria-label', 'aria-labelledby'],
+      });
       this.#destroyRef.onDestroy(() => observer.disconnect());
     });
   }
@@ -53,12 +59,19 @@ export class ShipLayoutSetting {
   // slots, so point the first focusable control at the label unless the consumer named it.
   #nameControl() {
     const label = this.#host.querySelector<HTMLElement>(':scope > .text > :is(label, h3, h4)') ?? undefined;
-    const control =
-      this.#host.querySelector<HTMLElement>(
-        '.control :is(input, select, textarea, [role="switch"], [role="checkbox"], [role="combobox"], [role="slider"])'
-      ) ?? undefined;
+    // This setting's own control slot only: a control inside a nested sh-lo-setting belongs to that setting.
+    const control = Array.from(
+      this.#host.querySelectorAll<HTMLElement>(
+        ':scope > .control :is(input, select, textarea, [role="switch"], [role="checkbox"], [role="combobox"], [role="slider"])'
+      )
+    ).find((el) => el.closest('sh-lo-setting') === this.#host);
     const stamped = this.#stamped;
-    if (stamped && (stamped.control !== control || stamped.id !== label?.id)) {
+    const consumerNamed =
+      !!stamped &&
+      (!!stamped.control.getAttribute('aria-label') ||
+        stamped.control.getAttribute('aria-labelledby') !== stamped.id ||
+        (label instanceof HTMLLabelElement && !!label.htmlFor));
+    if (stamped && (consumerNamed || stamped.control !== control || stamped.id !== label?.id)) {
       if (stamped.control.getAttribute('aria-labelledby') === stamped.id) stamped.control.removeAttribute('aria-labelledby');
       this.#stamped = null;
     }

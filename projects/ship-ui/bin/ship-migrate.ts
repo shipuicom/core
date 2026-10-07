@@ -92,9 +92,26 @@ function blankHtml(text: string, singleQuotes: boolean): string {
       continue;
     }
     if (c === '"' || (c === "'" && singleQuotes)) {
+      // In a tag a quote opens a string only as an attribute value (right after `=`): an apostrophe inside an
+      // unquoted value (`alt=don't`) is just a character. In an interpolation any quote is a JS string.
+      let prev = i - 1;
+      while (prev >= 0 && /\s/.test(text[prev]!)) prev--;
+      if (mode === 'tag' && text[prev] !== '=') {
+        i++;
+        continue;
+      }
       let j = i + 1;
-      while (j < text.length && text[j] !== c) j += text[j] === '\\' && mode === 'interp' ? 2 : 1;
-      padRange(i + 1, Math.min(j, text.length));
+      // A string ends at its closing quote; one that never closes (before the end of the interpolation, or the end
+      // of the file in a tag) is treated as a plain character rather than swallowing everything after it.
+      const limit = mode === 'interp' ? (text.indexOf('}}', i) < 0 ? text.length : text.indexOf('}}', i)) : text.length;
+      while (j < limit && text[j] !== c) j += text[j] === '\\' && mode === 'interp' ? 2 : 1;
+      // An attribute value that runs onto a line starting a new tag is an unclosed quote that found the next
+      // element's quote: real values do not do that, so read the quote as a plain character.
+      if (j >= limit || (mode === 'tag' && /\n\s*<[a-zA-Z\/]/.test(text.slice(i + 1, j)))) {
+        i++;
+        continue;
+      }
+      padRange(i + 1, j);
       i = j + 1;
       continue;
     }
@@ -245,20 +262,24 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
 
     // Class renames only on the listed tags: `class="a warning b"` and `[class.warning]="…"`.
     // `class=` with either quote; every token in the list is renamed, whitespace kept as written.
-    const classAttr = /(\sclass=)(["'])([^"']*)\2/g;
+    // Quoted (`class="a warning"`, `class='a'`) or unquoted (`class=warning`, one token by definition).
+    const classAttr = /(\sclass=)(?:(["'])([^"']*)\2|([^\s"'=<>`]+))/g;
+    const classList = (m: RegExpMatchArray | string[]) => (m[3] ?? m[4] ?? '') as string;
     const renameTokens = (list: string, from: string, to: string) => list.replace(/[^\s]+/g, (token) => (token === from ? to : token));
     for (const { from, to, on } of rules.classes ?? []) {
       const tags = on.map(esc).join('|');
       replaceOpenTags(new RegExp(`<(?:${tags})(?![a-z0-9-])[^>]*>`, 'g'), (tag, offset) => {
         let next = tag;
-        next = next.replace(classAttr, (_m, lead, quote, list) => lead + quote + renameTokens(list, from, to) + quote);
+        next = next.replace(classAttr, (_m, lead, quote, quoted, bare) =>
+          quote ? lead + quote + renameTokens(quoted, from, to) + quote : lead + renameTokens(bare, from, to)
+        );
         next = next.replace(new RegExp(`\\[class\\.${esc(from)}\\]`, 'g'), `[class.${to}]`);
         if (next !== tag) changes.push({ line: lineOf(out, offset), rule: 'class', detail: `.${from} → .${to}` });
         return next;
       });
       // The same token elsewhere may be the consumer's own class: point at it, do not touch it.
       for (const m of out.matchAll(classAttr)) {
-        if (!m[3]!.split(/\s+/).includes(from)) continue;
+        if (!classList(m).split(/\s+/).includes(from)) continue;
         warnings.push({ line: lineOf(out, m.index!), rule: 'class', detail: `"${from}" on an element that is not ${on.join('/')} — rename to "${to}" if it is a ShipUI colour` });
       }
       // Class lists the script cannot rewrite: interpolated (`class="{{ ok ? '' : 'warning' }}"`) or bound

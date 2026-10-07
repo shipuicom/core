@@ -3,7 +3,7 @@ import type { MigrationRules } from './types';
 // Component structure normalisation. See MIGRATION.md.
 const rules: MigrationRules = {
   version: '0.26.0',
-  notes: 'Component structure normalisation. See MIGRATION.md.',
+  notes: 'Component structure normalisation. See node_modules/@ship-ui/core/MIGRATION.md for the changes to make by hand.',
   cssVarPrefixes: [
     {
       from: '--breadcrumbs-',

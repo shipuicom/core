@@ -188,6 +188,21 @@ describe('ship-migrate 0.26', () => {
     expect(r.warnings.map((w) => w.line)).toEqual([1, 2, 3]);
   });
 
+  it('treats a quote as a string only after = and never lets an unclosed quote swallow the file', () => {
+    const apostrophe = migrateSource(`<img alt=don't src=x>\n<sh-form-field class="warning"></sh-form-field>`, '.html', v026);
+    expect(apostrophe.text).toBe(`<img alt=don't src=x>\n<sh-form-field class="warn"></sh-form-field>`);
+    const unclosed = migrateSource(`<div title="oops>\n<sh-form-field class="warning"></sh-form-field>`, '.html', v026);
+    expect(unclosed.text).toContain('<sh-form-field class="warn">');
+    const interp = migrateSource(`<p>{{ "open }}</p><sh-form-field class="warning"></sh-form-field>`, '.html', v026);
+    expect(interp.text).toContain('<sh-form-field class="warn">');
+  });
+
+  it('renames and warns on unquoted class values', () => {
+    expect(migrateSource('<sh-form-field class=warning></sh-form-field>', '.html', v026).text).toBe('<sh-form-field class=warn></sh-form-field>');
+    expect(migrateSource('<div class=warning></div>', '.html', v026).warnings).toHaveLength(1);
+    expect(migrateSource('<sh-form-field class=warnings></sh-form-field>', '.html', v026).text).toBe('<sh-form-field class=warnings></sh-form-field>');
+  });
+
   it('is idempotent', () => {
     const once = migrateSource('<sh-card color="a" class="warning"></sh-card> --breadcrumbs-c', '.html', v026).text;
     const twice = migrateSource(once, '.html', v026);

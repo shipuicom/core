@@ -5,7 +5,7 @@
     "entryFile": "src/public-api.ts",
     "styleIncludePaths": ["styles"]
   },
-  "assets": ["styles/**/*", "assets/**/*", "bin/**/*", "snippets/**/*", "ship-code/vendor/vscode-oniguruma/onig.wasm"],
+  "assets": ["styles/**/*", "assets/**/*", "bin/**/*", "snippets/**/*", "ship-code/vendor/vscode-oniguruma/onig.wasm", "MIGRATION.md"],
   "inlineStyleLanguage": "scss",
   "allowedNonPeerDependencies": ["harfbuzzjs", "wawoff2", "@phosphor-icons/web"]
 }

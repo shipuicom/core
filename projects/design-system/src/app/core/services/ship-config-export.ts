@@ -243,6 +243,56 @@ function sanitizeMap(path: string, raw: unknown, type: 'string' | 'number', igno
  * Coerces untrusted data (an import, or editor state persisted by an older version) into a valid `ShipConfig`:
  * legacy keys are migrated, unknown keys and wrongly typed values are dropped and listed in `ignored`.
  */
+/**
+ * A styles manifest cleaned to the shape `shipStylesWith` reads: string lists for colours and variants, known skins
+ * whose entry is `false` or an object of string lists. Anything else is dropped and listed in `ignored`; never throws.
+ */
+export function sanitizeShipStyles(raw: unknown): { styles: ShipStylesManifest; ignored: string[] } {
+  const ignored: string[] = [];
+  const styles: ShipStylesManifest = {};
+  if (raw === undefined || raw === null) return { styles, ignored };
+  if (!isObject(raw)) return { styles, ignored: ['styles (expected an object)'] };
+  const names = (value: unknown, path: string): string[] | undefined => {
+    if (value === undefined) return undefined;
+    if (!Array.isArray(value)) {
+      ignored.push(`${path} (expected a list of names)`);
+      return undefined;
+    }
+    const kept = value.filter((x): x is string => typeof x === 'string');
+    if (kept.length !== value.length) ignored.push(`${path} (non-text entries dropped)`);
+    return kept;
+  };
+  const colors = names(raw['colors'], 'styles.colors');
+  if (colors) styles.colors = colors;
+  const variants = names(raw['variants'], 'styles.variants');
+  if (variants) styles.variants = variants;
+  const skins = raw['skins'];
+  if (skins !== undefined) {
+    if (!isObject(skins)) ignored.push('styles.skins (expected an object)');
+    else {
+      const out: NonNullable<ShipStylesManifest['skins']> = {};
+      for (const [skin, entry] of Object.entries(skins)) {
+        if (!(SHIP_STYLE_SKINS as readonly string[]).includes(skin)) {
+          ignored.push(`styles.skins.${skin} (unknown skin)`);
+          continue;
+        }
+        const key = skin as keyof typeof out;
+        if (entry === false) out[key] = false;
+        else if (isObject(entry)) {
+          const clean: { colors?: string[]; variants?: string[] } = {};
+          const c = names(entry['colors'], `styles.skins.${skin}.colors`);
+          if (c) clean.colors = c;
+          const v = names(entry['variants'], `styles.skins.${skin}.variants`);
+          if (v) clean.variants = v;
+          out[key] = clean;
+        } else ignored.push(`styles.skins.${skin} (expected false or an object)`);
+      }
+      styles.skins = out;
+    }
+  }
+  return { styles, ignored };
+}
+
 export function sanitizeShipConfig(raw: unknown): { config: ShipConfig; ignored: string[] } {
   const ignored: string[] = [];
   if (!isObject(raw)) return { config: {}, ignored: raw === undefined || raw === null ? [] : ['config (expected an object)'] };
@@ -376,18 +426,7 @@ export function parseShipConfigImport(text: string): ShipConfigImport | { error:
   if (!isObject(config)) return { error: '"config" must be an object.' };
   if (!isObject(styles)) return { error: '"styles" must be an object.' };
 
-  for (const key of ['colors', 'variants'] as const) {
-    const list = styles[key];
-    if (list !== undefined && !(Array.isArray(list) && list.every(x => typeof x === 'string')))
-      return { error: `"styles.${key}" must be a list of names.` };
-  }
-  const skins = styles['skins'];
-  if (skins !== undefined) {
-    if (!isObject(skins)) return { error: '"styles.skins" must be an object.' };
-    const unknown = Object.keys(skins).filter(s => !(SHIP_STYLE_SKINS as readonly string[]).includes(s));
-    if (unknown.length) return { error: `Unknown skin(s): ${unknown.join(', ')}.` };
-  }
-
   const { config: clean, ignored } = sanitizeShipConfig(config);
-  return { config: clean, styles: styles as ShipStylesManifest, source, ignored };
+  const { styles: cleanStyles, ignored: ignoredStyles } = sanitizeShipStyles(styles);
+  return { config: clean, styles: cleanStyles, source, ignored: [...ignored, ...ignoredStyles] };
 }

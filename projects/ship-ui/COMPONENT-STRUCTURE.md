@@ -35,32 +35,28 @@ ship-<name>/
 
 ## Styles
 
-Structure (`ship-<name>.scss`) and skin (`styles/skins/_<name>.scss`, phase 3) are separate.
+Structure (`ship-<name>.scss`) and skin (`styles/skins/_<name>.scss`) are separate.
 
 ```scss
 @use 'helpers' as *;
 
-$shipName: true !default;
+sh-name {
+  // 1. tokens: --<abbr>-<style>[-<state>] (see variable-abbrevation-cheatsheet.md)
+  --name-h: #{p2r(40)};
+  --name-bg: var(--base-1);
+  --name-c: var(--base-12);
+  --name-bc: var(--base-4);
 
-@if $shipName == true {
-  sh-name {
-    // 1. tokens: --<abbr>-<style>[-<state>] (see variable-abbrevation-cheatsheet.md)
-    --name-h: #{p2r(40)};
-    --name-bg: var(--base-1);
-    --name-c: var(--base-12);
-    --name-bc: var(--base-4);
+  // 2. structure: layout, sizing, motion, states, a11y
+  display: inline-flex;
+  height: var(--name-h);
+  background: var(--name-bg);
+  color: var(--name-c);
+  border: var(--border-10);
+  border-color: var(--name-bc);
 
-    // 2. structure: layout, sizing, motion, states, a11y
-    display: inline-flex;
-    height: var(--name-h);
-    background: var(--name-bg);
-    color: var(--name-c);
-    border: var(--border-10);
-    border-color: var(--name-bc);
-
-    &.small { --name-h: #{p2r(32)}; }
-    &:focus-visible { outline: 2px solid var(--primary-8); outline-offset: 2px; }
-  }
+  &.small { --name-h: #{p2r(32)}; }
+  &:focus-visible { outline: 2px solid var(--primary-8); outline-offset: 2px; }
 }
 ```
 
