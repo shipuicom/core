@@ -46,16 +46,20 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: Check if package.json was modified
+      # Publish when the library's version is not on npm yet, rather than when the head commit touched package.json:
+      # that misses rebase merges, a release whose build failed and was fixed in a later commit, and manual re-runs.
+      - name: Check whether this version is published
         id: check_package_json_change
         run: |
-          if git rev-list --count HEAD > 1; then 
-            changed=$(if git diff --name-only HEAD^ HEAD | grep 'projects/ship-ui/package.json' >/dev/null; then echo 'true'; else echo 'false'; fi)
-          else
+          name=$(node -p "require('./projects/ship-ui/package.json').name")
+          version=$(node -p "require('./projects/ship-ui/package.json').version")
+          if npm view "$name@$version" version >/dev/null 2>&1; then
+            echo "$name@$version is already on npm; nothing to publish."
             changed="false"
+          else
+            echo "$name@$version is not on npm yet; building and publishing."
+            changed="true"
           fi
-
-          # Write the output to the environment file
           echo "changed=$changed" >> $GITHUB_ENV
 
       # The release must not ship rules that rewrite names consumers never had, nor miss a rename they do have.
@@ -67,7 +71,7 @@ jobs:
         if: env.changed == 'true' && github.ref == 'refs/heads/main'
         run: bun run build:prod
 
-      - name: Publish (if package.json changed)
+      - name: Publish (version not on npm yet)
         if: env.changed == 'true' && github.ref == 'refs/heads/main'
         working-directory: ./dist/ship-ui
         run: npm publish --access public
