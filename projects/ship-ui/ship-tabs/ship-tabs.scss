@@ -1,109 +1,105 @@
 @use 'helpers' as *;
 
-$shipTabs: true !default;
+sh-tabs {
+  --tabs-bc: var(--base-4);
+  --tabs-bg: var(--base-1);
+  --tabs-c: var(--base-12);
+  --tabs-c-hover: var(--base-8);
+  --tabs-c-active: var(--base-12);
+  --tabs-f: var(--paragraph-30);
+  --tabs-sel-bg: var(--base-12);
 
-@if $shipTabs == true {
-  sh-tabs {
-    --tabs-bc: var(--base-4);
-    --tabs-bg: var(--base-1);
-    --tabs-c: var(--base-12);
-    --tabs-c-hover: var(--base-8);
-    --tabs-c-active: var(--base-12);
-    --tabs-f: var(--paragraph-30);
-    --tabs-sel-bg: var(--base-12);
+  display: flex;
+  gap: p2r(16);
+  border-bottom: var(--border-10);
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  scrollbar-width: none; /* Firefox */
+  &::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+  }
 
+  button,
+  [tab],
+  [value] {
     display: flex;
-    gap: p2r(16);
-    border-bottom: var(--border-10);
+    align-items: center;
+    gap: p2r(8);
+    height: p2r(48);
+    font: var(--tabs-f);
+    background: var(--tabs-bg);
+    border-radius: 0;
+    appearance: none;
+    border: 0;
+    color: var(--tabs-c);
+    cursor: pointer;
     position: relative;
-    overflow-x: auto;
-    overflow-y: hidden;
-    max-width: 100%;
-    scrollbar-width: none; /* Firefox */
-    &::-webkit-scrollbar {
-      display: none; /* Safari and Chrome */
+    flex-shrink: 0;
+    white-space: nowrap;
+
+    transition: transform 125ms linear;
+    transform: scale(1);
+
+    &:focus-visible {
+      outline: 2px solid var(--primary-8);
+      outline-offset: -2px;
+      border-radius: var(--shape-1);
     }
 
-    button,
-    [tab],
-    [value] {
-      display: flex;
-      align-items: center;
-      gap: p2r(8);
-      height: p2r(48);
-      font: var(--tabs-f);
-      background: var(--tabs-bg);
-      border-radius: 0;
-      appearance: none;
-      border: 0;
-      color: var(--tabs-c);
-      cursor: pointer;
-      position: relative;
-      flex-shrink: 0;
-      white-space: nowrap;
+    &:active {
+      transform: scale(0.98);
+    }
 
-      transition: transform 125ms linear;
-      transform: scale(1);
+    &:hover {
+      color: var(--tabs-c-hover);
+    }
 
-      &:focus-visible {
-        outline: 2px solid var(--primary-8);
-        outline-offset: -2px;
-        border-radius: var(--shape-1);
+    &.active {
+      color: var(--tabs-c-active);
+
+      @supports (anchor-name: --anchor) {
+        position: relative;
+        anchor-name: var(--tabs-id);
       }
 
-      &:active {
-        transform: scale(0.98);
-      }
-
-      &:hover {
-        color: var(--tabs-c-hover);
-      }
-
-      &.active {
-        color: var(--tabs-c-active);
-
-        @supports (anchor-name: --anchor) {
-          position: relative;
-          anchor-name: var(--tabs-id);
-        }
-
-        @supports not (anchor-name: --anchor) {
-          &::after {
-            display: block;
-          }
+      @supports not (anchor-name: --anchor) {
+        &::after {
+          display: block;
         }
       }
+    }
 
-      &:after {
-        content: '';
+    &:after {
+      content: '';
+      display: none;
+      width: 100%;
+      height: p2r(2);
+      background: var(--tabs-sel-bg);
+      position: absolute;
+      left: 0;
+      bottom: 0;
+
+      @supports (anchor-name: --anchor) {
         display: none;
-        width: 100%;
-        height: p2r(2);
-        background: var(--tabs-sel-bg);
-        position: absolute;
-        left: 0;
-        bottom: 0;
-
-        @supports (anchor-name: --anchor) {
-          display: none;
-        }
       }
     }
+  }
 
-    @supports (anchor-name: --anchor) {
-      &:after {
-        content: '';
-        background: var(--tabs-sel-bg);
-        pointer-events: none;
-        position: absolute;
-        z-index: 10;
-        height: p2r(2);
-        bottom: anchor(bottom);
-        left: anchor(left);
-        right: anchor(right);
-        position-anchor: var(--tabs-id);
-        transition: all 0.175s ease-out;
-      }
+  @supports (anchor-name: --anchor) {
+    &:after {
+      content: '';
+      background: var(--tabs-sel-bg);
+      pointer-events: none;
+      position: absolute;
+      z-index: 10;
+      height: p2r(2);
+      bottom: anchor(bottom);
+      left: anchor(left);
+      right: anchor(right);
+      position-anchor: var(--tabs-id);
+      transition: all 0.175s ease-out;
     }
   }
 }

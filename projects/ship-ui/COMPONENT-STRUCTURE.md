@@ -64,8 +64,9 @@ $shipName: true !default;
 }
 ```
 
-- The file starts with `@use 'helpers' as *;`, declares `$ship<Name>: true !default` and wraps everything in the
-  `@if` guard. Nothing sits outside the guard (no `%placeholder`, `@keyframes`, `@position-try` leaks).
+- The file starts with `@use 'helpers' as *;`. It declares no `$ship<Name>` flag and has no `@if` guard: ng-packagr
+  compiles it into the component, so nothing a consumer writes can reach a flag in it. The `$ship<Name>` flags in
+  `styles/index.scss` switch skins only (the lint's `local-flag` rule rejects a flag or guard here).
 - Sizes go through `p2r()`. No raw `px` except `1px`/`2px` hairlines and outlines.
 - Colour only through tokens: `--base-1..12`, `--<color>-1..12`, `--<color>-g2/g3`, `--<color>-c8` (contrast text
   on `-8`), `--light-text`/`--dark-text`. No hex / hsl / rgb literals, and no hardcoded fallbacks in `var()`.

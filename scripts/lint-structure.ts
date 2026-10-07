@@ -136,32 +136,22 @@ function lintScss(pkg: string, file: string, flagName: string) {
   // `// structure-lint: allow <rule>` in the file header disables one rule for the whole file (say why next to it).
   const fileAllow = new Set([...raw.matchAll(/structure-lint:\s*allow\s+([a-z-]+)/g)].map((m) => m[1]!));
   const allowed = (line: number) => ALLOW.test(lines[line - 1] ?? '');
-  // Mixin-only partials (`_name.scss`) need no flag of their own.
-  const isPartial = basename(file).startsWith('_');
 
   const stmts = topLevel(scss);
   if (!/^@use\s+['"](\.\.\/)*helpers(\.scss)?['"]\s+as\s+\*/.test(stmts[0]?.text ?? '')) {
     report(pkg, 'helpers-use', 'error', file, `first statement must be "@use 'helpers' as *;"`, 1);
   }
 
-  const flagDecl = new RegExp(`^\\$(ship[A-Za-z]+)\\s*:\\s*(true|false)\\s*!default`);
-  const flags = stmts.map((s) => s.text.match(flagDecl)?.[1]).filter(Boolean) as string[];
-  const guards = stmts.filter((s) => /^@if\s+\$ship[A-Za-z]+\s*==\s*true\s*\{/.test(s.text));
-  if (!isPartial && flags.length === 0) report(pkg, 'flag', 'error', file, `missing "$${flagName}: true !default;"`);
-  if (!isPartial && guards.length === 0) report(pkg, 'guard', 'error', file, `missing "@if $${flagName} == true { … }" around all rules`);
-
+  // A component stylesheet is compiled into its component by ng-packagr, so a `$ship<Name>` flag in it can never be
+  // configured by a consumer: the flags live in styles/index.scss and switch skins only.
   for (const s of stmts) {
+    if (/^\$ship[A-Za-z]+\s*:/.test(s.text) || /^@if\s+\$ship[A-Za-z]+\s*==/.test(s.text)) {
+      report(pkg, 'local-flag', 'error', file, `"$${flagName}" cannot be configured here; flags live in styles/index.scss (skins only)`, lineOf(scss, s.index));
+    }
     if (/^@(use|forward|import)\b/.test(s.text)) {
       if (/@use\s+['"]\.\.\/(ship|sh)-/.test(s.text) && !fileAllow.has('cross-use'))
         report(pkg, 'cross-use', 'error', file, `imports another package's scss: ${s.text.split('\n')[0]}`, lineOf(scss, s.index));
-      continue;
     }
-    if (/^\$[A-Za-z0-9-]+\s*:/.test(s.text)) continue;
-    if (/^@if\s+\$ship/.test(s.text)) continue;
-    // Mixins, functions and placeholders emit nothing until used, so they may sit outside the guard.
-    if (/^(@mixin|@function|%)/.test(s.text)) continue;
-    if (allowed(lineOf(scss, s.index))) continue;
-    report(pkg, 'guard-leak', 'error', file, `outside the flag guard: ${s.text.split('\n')[0].slice(0, 60)}`, lineOf(scss, s.index));
   }
 
   for (const m of scss.matchAll(/#[0-9a-fA-F]{3,8}\b|(?:hsla?|rgba?|oklch|lab|lch)\((?!\s*from\b)/g)) {

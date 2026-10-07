@@ -1,135 +1,131 @@
 @use 'helpers' as *;
 
-$shipChip: true !default;
+sh-chip {
+  --chip-h: #{p2r(32)};
+  --chip-s: calc(var(--chip-h) / 2);
+  --chip-py: 0;
+  --chip-px: var(--pad-x-3);
 
-@if $shipChip == true {
-  sh-chip {
-    --chip-h: #{p2r(32)};
-    --chip-s: calc(var(--chip-h) / 2);
-    --chip-py: 0;
-    --chip-px: var(--pad-x-3);
+  &.sh-sheet {
+    --sheet-c: var(--chip-c);
+    --sheet-s: var(--chip-s);
+  }
 
-    &.sh-sheet {
-      --sheet-c: var(--chip-c);
-      --sheet-s: var(--chip-s);
-    }
+  --chip-bs: var(--ship-chip-shadow, none);
 
-    --chip-bs: var(--ship-chip-shadow, none);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--chip-py) var(--chip-px);
 
-    display: inline-flex;
+  font: var(--paragraph-30B);
+  height: var(--chip-h);
+  box-shadow: var(--chip-bs);
+  white-space: nowrap;
+
+  div {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    padding: var(--chip-py) var(--chip-px);
+    gap: p2r(8);
+    color: var(--chip-c);
+  }
 
-    font: var(--paragraph-30B);
-    height: var(--chip-h);
-    box-shadow: var(--chip-bs);
-    white-space: nowrap;
-
-    div {
-      display: flex;
-      align-items: center;
-      gap: p2r(8);
-      color: var(--chip-c);
-    }
-
-    &.sharp {
-      --chip-s: calc(var(--chip-h) / 4);
-      --chip-px: var(--pad-x-2);
-
-      &.small {
-        --chip-px: var(--pad-x-1);
-      }
-
-      &.xsmall {
-        --chip-px: var(--pad-x-1);
-      }
-    }
-
-    sh-icon {
-      color: var(--chip-ic);
-      font-size: p2r(16);
-      font-weight: inherit;
-    }
-
-    [avatar] {
-      height: calc(var(--chip-h) - #{p2r(12)});
-      width: calc(var(--chip-h) - #{p2r(12)});
-      border-radius: 50%;
-    }
+  &.sharp {
+    --chip-s: calc(var(--chip-h) / 4);
+    --chip-px: var(--pad-x-2);
 
     &.small {
-      --chip-h: #{p2r(24)};
-
-      font: var(--paragraph-40B);
-      --chip-px: var(--pad-x-2);
-
-      div {
-        gap: p2r(4);
-      }
-
-      sh-icon {
-        font-size: p2r(12);
-      }
+      --chip-px: var(--pad-x-1);
     }
 
     &.xsmall {
-      --chip-h: #{p2r(20)};
-
-      font: var(--paragraph-40B);
       --chip-px: var(--pad-x-1);
+    }
+  }
 
-      div {
-        gap: p2r(2);
-      }
+  sh-icon {
+    color: var(--chip-ic);
+    font-size: p2r(16);
+    font-weight: inherit;
+  }
 
-      sh-icon {
-        font-size: p2r(10);
-      }
+  [avatar] {
+    height: calc(var(--chip-h) - #{p2r(12)});
+    width: calc(var(--chip-h) - #{p2r(12)});
+    border-radius: 50%;
+  }
+
+  &.small {
+    --chip-h: #{p2r(24)};
+
+    font: var(--paragraph-40B);
+    --chip-px: var(--pad-x-2);
+
+    div {
+      gap: p2r(4);
+    }
+
+    sh-icon {
+      font-size: p2r(12);
+    }
+  }
+
+  &.xsmall {
+    --chip-h: #{p2r(20)};
+
+    font: var(--paragraph-40B);
+    --chip-px: var(--pad-x-1);
+
+    div {
+      gap: p2r(2);
+    }
+
+    sh-icon {
+      font-size: p2r(10);
+    }
+  }
+
+  &.no-bg {
+    --sheet-bg: transparent;
+    background: transparent;
+  }
+
+  // Selected state. The tokens default per variant and colour; override --chip-sel-* to restyle.
+  // Selected colours come from the chip skin (styles/skins/_chip.scss); only the dynamic and no-bg
+  // treatments, which do not depend on a variant, stay here.
+  &.selected {
+    // Dynamic chips carry an arbitrary --chip-c: deepen the tint and draw the colour as an inset ring.
+    &.dynamic {
+      --chip-sel-bg: rgb(from var(--chip-c) r g b / 0.3);
+      --chip-sel-c: var(--chip-c);
+      --chip-sel-ring: var(--chip-c);
+
+      box-shadow: inset 0 0 0 #{p2r(1.5)} var(--chip-sel-ring);
     }
 
     &.no-bg {
       --sheet-bg: transparent;
-      background: transparent;
+      --chip-sel-c: var(--chip-sel-ring);
+      box-shadow: inset 0 0 0 #{p2r(1.5)} var(--chip-sel-ring);
     }
+  }
 
-    // Selected state. The tokens default per variant and colour; override --chip-sel-* to restyle.
-    // Selected colours come from the chip skin (styles/skins/_chip.scss); only the dynamic and no-bg
-    // treatments, which do not depend on a variant, stay here.
-    &.selected {
-      // Dynamic chips carry an arbitrary --chip-c: deepen the tint and draw the colour as an inset ring.
-      &.dynamic {
-        --chip-sel-bg: rgb(from var(--chip-c) r g b / 0.3);
-        --chip-sel-c: var(--chip-c);
-        --chip-sel-ring: var(--chip-c);
+  &[role='button'] {
+    cursor: pointer;
 
-        box-shadow: inset 0 0 0 #{p2r(1.5)} var(--chip-sel-ring);
-      }
-
-      &.no-bg {
-        --sheet-bg: transparent;
-        --chip-sel-c: var(--chip-sel-ring);
-        box-shadow: inset 0 0 0 #{p2r(1.5)} var(--chip-sel-ring);
-      }
+    &:focus-visible {
+      outline: 2px solid var(--primary-8);
+      outline-offset: 2px;
     }
+  }
 
-    &[role='button'] {
-      cursor: pointer;
+  &[disabled] {
+    opacity: 0.5;
+  }
 
-      &:focus-visible {
-        outline: 2px solid var(--primary-8);
-        outline-offset: 2px;
-      }
-    }
-
-    &[disabled] {
-      opacity: 0.5;
-    }
-
-    &[readonly],
-    &.readonly {
-      pointer-events: none;
-      user-select: none;
-    }
+  &[readonly],
+  &.readonly {
+    pointer-events: none;
+    user-select: none;
   }
 }

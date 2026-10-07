@@ -1,39 +1,35 @@
 @use 'helpers' as *;
 
-$shipIcon: true !default;
+sh-icon {
+  --icon-c: inherit;
 
-@if $shipIcon == true {
-  sh-icon {
-    --icon-c: inherit;
+  font-size: p2r(20);
+  line-height: 1em;
+  width: 1em;
+  height: 1em;
+  min-width: 1em;
+  min-height: 1em;
+  max-width: 1em;
+  max-height: 1em;
+  text-align: left;
+  overflow: hidden;
+  display: inline-block;
+  color: var(--icon-c);
+  transition: color 150ms ease-out;
 
-    font-size: p2r(20);
-    line-height: 1em;
-    width: 1em;
-    height: 1em;
-    min-width: 1em;
-    min-height: 1em;
-    max-width: 1em;
-    max-height: 1em;
-    text-align: left;
-    overflow: hidden;
-    display: inline-block;
-    color: var(--icon-c);
-    transition: color 150ms ease-out;
+  &.unfocused {
+    --icon-c: var(--base-8);
+  }
 
-    &.unfocused {
-      --icon-c: var(--base-8);
-    }
+  &.large {
+    font-size: p2r(32);
+  }
 
-    &.large {
-      font-size: p2r(32);
-    }
+  &.small {
+    font-size: p2r(16);
+  }
 
-    &.small {
-      font-size: p2r(16);
-    }
-
-    &.inherit {
-      font-size: inherit;
-    }
+  &.inherit {
+    font-size: inherit;
   }
 }

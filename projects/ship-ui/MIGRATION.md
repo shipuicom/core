@@ -44,6 +44,9 @@ checks it). A migration script (`ship-migrate`) that rewrites the renames below 
 - The layout components get `$shipLayoutPage` … `$shipLayoutToolbar` flags (additive; the per-file `$shipPage` … names in
   0.25.12 were not configurable)
 - `$shipSortable` now controls a global include (the `[shSortable]` directive styles no longer ride along with `sh-tree` / `sh-list`)
+- The `$ship<Name>: true !default` declarations and `@if` guards inside component stylesheets are gone. They were never
+  reachable from a consumer (ng-packagr compiles each stylesheet into its component), so nothing changes in what is
+  emitted: a flag in `styles/index.scss` switches that component's skin and nothing else.
 
 **Font token (additive)**
 - The type scale (`--display-*`, `--title-*`, `--paragraph-*`) now reads `--font-family` (`'Inter Tight', sans-serif` on `:root`).

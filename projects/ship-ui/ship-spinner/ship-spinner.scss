@@ -1,33 +1,29 @@
 @use 'helpers' as *;
 
-$shipSpinner: true !default;
+sh-spinner {
+  --spinner-c: var(--base-8);
+  --spinner-size: #{p2r(40)};
+  --spinner-thickness: #{p2r(5)};
 
-@if $shipSpinner == true {
-  sh-spinner {
-    --spinner-c: var(--base-8);
-    --spinner-size: #{p2r(40)};
-    --spinner-thickness: #{p2r(5)};
+  width: var(--spinner-size);
+  height: var(--spinner-size);
+  display: grid;
+  place-content: center;
+  color: var(--spinner-c);
+  position: relative;
 
+  &:before {
+    content: '';
     width: var(--spinner-size);
     height: var(--spinner-size);
-    display: grid;
-    place-content: center;
-    color: var(--spinner-c);
-    position: relative;
-
-    &:before {
-      content: '';
-      width: var(--spinner-size);
-      height: var(--spinner-size);
-      border: var(--spinner-thickness) solid currentColor;
-      border-bottom-color: transparent;
-      border-radius: 50%;
-      display: flex;
-      box-sizing: border-box;
-      animation: rotation 1s linear infinite;
-      margin: auto;
-      inset: 0;
-      position: absolute;
-    }
+    border: var(--spinner-thickness) solid currentColor;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: flex;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+    margin: auto;
+    inset: 0;
+    position: absolute;
   }
 }

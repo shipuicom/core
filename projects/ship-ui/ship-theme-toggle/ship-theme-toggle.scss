@@ -1,12 +1,8 @@
 @use 'helpers' as *;
 
-$shipThemeToggle: true !default;
-
-@if $shipThemeToggle == true {
-  sh-theme-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
+sh-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }

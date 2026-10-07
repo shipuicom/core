@@ -1,272 +1,268 @@
 @use 'helpers' as *;
 
-$shipDialog: true !default;
+dialog[shDialog] {
+  --dialog-py: var(--pad-y-5);
+  --dialog-px: var(--pad-x-5);
+  --dialog-g: #{p2r(8)};
+  --dialog-bg: var(--base-1);
+  --dialog-s: var(--shape-2);
+  --dialog-inner-s: var(--shape-2);
 
-@if $shipDialog == true {
-  dialog[shDialog] {
-    --dialog-py: var(--pad-y-5);
-    --dialog-px: var(--pad-x-5);
-    --dialog-g: #{p2r(8)};
-    --dialog-bg: var(--base-1);
-    --dialog-s: var(--shape-2);
-    --dialog-inner-s: var(--shape-2);
+  border: var(--border-10);
+  background: transparent;
+  border-radius: var(--dialog-s);
+  box-shadow: var(--box-shadow-40);
+  color: var(--base-8);
+  font: var(--paragraph-30);
+  padding: 0;
+  margin: auto;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
 
-    border: var(--border-10);
-    background: transparent;
-    border-radius: var(--dialog-s);
-    box-shadow: var(--box-shadow-40);
-    color: var(--base-8);
-    font: var(--paragraph-30);
-    padding: 0;
-    margin: auto;
-    z-index: 0;
-    display: flex;
-    flex-direction: column;
+  &:focus-visible {
+    outline: none;
+  }
 
-    &:focus-visible {
-      outline: none;
-    }
+  &.type-b {
+    --dialog-s: #{p2r(26)};
+    --dialog-inner-s: #{p2r(20)};
 
-    &.type-b {
-      --dialog-s: #{p2r(26)};
-      --dialog-inner-s: #{p2r(20)};
+    background: var(--base-3);
+    padding: p2r(8);
+    outline: var(--border-10);
+    outline-offset: -1px;
+    overflow: hidden;
 
-      background: var(--base-3);
-      padding: p2r(8);
-      outline: var(--border-10);
-      outline-offset: -1px;
-      overflow: hidden;
-
-      &::backdrop {
-        background: rgb(from var(--base-1) r g b / 30%);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-      }
-
-      > .content {
-        border: 1px solid rgb(from var(--base-4) r g b / 70%);
-      }
-    }
-
-    &.type-c {
-      &::backdrop {
-        background: rgb(from var(--base-1) r g b / 30%);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-      }
+    &::backdrop {
+      background: rgb(from var(--base-1) r g b / 30%);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
     > .content {
-      position: relative;
-      border-radius: var(--dialog-inner-s);
-      background-color: var(--dialog-bg);
-      z-index: 2;
-      max-width: initial;
+      border: 1px solid rgb(from var(--base-4) r g b / 70%);
+    }
+  }
+
+  &.type-c {
+    &::backdrop {
+      background: rgb(from var(--base-1) r g b / 30%);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+  }
+
+  > .content {
+    position: relative;
+    border-radius: var(--dialog-inner-s);
+    background-color: var(--dialog-bg);
+    z-index: 2;
+    max-width: initial;
+    overflow: auto;
+  }
+
+  // Trailing-edge panel, full height — the desktop counterpart of the
+  // bottom sheet for detail/edit views. Same surface styling as the class
+  // variants; only placement and entrance differ.
+  &.side-sheet {
+    --dialog-side-w: min(92vw, 30rem);
+
+    margin: 0 0 0 auto;
+    width: var(--dialog-side-w);
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: var(--dialog-s) 0 0 var(--dialog-s);
+    border-right: none;
+    animation: sh-side-in 260ms cubic-bezier(0.32, 0.72, 0, 1);
+
+    > .content {
+      border-radius: var(--dialog-inner-s) 0 0 var(--dialog-inner-s);
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
       overflow: auto;
     }
+  }
 
-    // Trailing-edge panel, full height — the desktop counterpart of the
-    // bottom sheet for detail/edit views. Same surface styling as the class
-    // variants; only placement and entrance differ.
-    &.side-sheet {
-      --dialog-side-w: min(92vw, 30rem);
+  // Bottom-anchored, drag-dismissable card — native-sheet feel. The type
+  // rides on top of the class variants (default/type-b/type-c keep their
+  // surface styling).
+  &.bottom-sheet {
+    margin: auto 0 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: var(--dialog-s) var(--dialog-s) 0 0;
+    border-bottom: none;
+    max-height: 85dvh;
+    animation: sh-sheet-in 260ms cubic-bezier(0.32, 0.72, 0, 1);
+    // Drag offset is bound inline; animate the snap-back and dismiss, never
+    // the finger-following itself.
+    transition: transform 240ms cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: transform;
 
-      margin: 0 0 0 auto;
-      width: var(--dialog-side-w);
-      max-width: 100vw;
-      height: 100dvh;
-      max-height: 100dvh;
-      border-radius: var(--dialog-s) 0 0 var(--dialog-s);
-      border-right: none;
-      animation: sh-side-in 260ms cubic-bezier(0.32, 0.72, 0, 1);
-
-      > .content {
-        border-radius: var(--dialog-inner-s) 0 0 var(--dialog-inner-s);
-        display: flex;
-        flex-direction: column;
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow: auto;
-      }
+    &.sheet-dragging {
+      transition: none;
     }
 
-    // Bottom-anchored, drag-dismissable card — native-sheet feel. The type
-    // rides on top of the class variants (default/type-b/type-c keep their
-    // surface styling).
-    &.bottom-sheet {
-      margin: auto 0 0;
-      width: 100%;
-      max-width: 100%;
-      border-radius: var(--dialog-s) var(--dialog-s) 0 0;
-      border-bottom: none;
-      max-height: 85dvh;
-      animation: sh-sheet-in 260ms cubic-bezier(0.32, 0.72, 0, 1);
-      // Drag offset is bound inline; animate the snap-back and dismiss, never
-      // the finger-following itself.
-      transition: transform 240ms cubic-bezier(0.32, 0.72, 0, 1);
-      will-change: transform;
-
-      &.sheet-dragging {
-        transition: none;
-      }
-
-      &.sheet-dismissing {
-        transition: transform 220ms cubic-bezier(0.55, 0, 0.55, 0.2);
-      }
-
-      > .content {
-        border-radius: var(--dialog-inner-s) var(--dialog-inner-s) 0 0;
-        display: flex;
-        flex-direction: column;
-        // Basis auto, not 0: the dialog's height is its content's height, and
-        // a 0-basis child in an auto-height column collapses to nothing
-        // (iOS WebKit follows the spec here; grow still wins when max-height
-        // caps the card).
-        flex: 1 1 auto;
-        min-height: 0;
-        padding-bottom: env(safe-area-inset-bottom, 0);
-      }
-
-      .sheet-handle {
-        position: relative;
-        z-index: 3;
-        outline: none;
-        display: flex;
-        justify-content: center;
-        padding: p2r(10) 0 p2r(6);
-        background-color: var(--dialog-bg);
-        border-radius: var(--dialog-inner-s) var(--dialog-inner-s) 0 0;
-        cursor: grab;
-        touch-action: none;
-
-        &:active {
-          cursor: grabbing;
-        }
-
-        .sheet-handle-bar {
-          width: p2r(36);
-          height: p2r(5);
-          border-radius: p2r(3);
-          background: var(--base-6);
-        }
-      }
-
-      // The handle owns the top rounding; square the content off against it.
-      .sheet-handle + .content {
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
-      }
+    &.sheet-dismissing {
+      transition: transform 220ms cubic-bezier(0.55, 0, 0.55, 0.2);
     }
 
-    .closeable-overlay {
-      position: fixed;
-      inset: 0;
-      opacity: 0;
-      z-index: 1;
-    }
-
-    &:focus {
-      outline: none;
-    }
-
-    .dialog-content {
-      position: relative;
-      z-index: 2;
-    }
-
-    .dialog-backdrop {
-      position: fixed;
-      inset: 0;
-      opacity: 0;
-      z-index: 1;
-    }
-
-    [header],
-    [content],
-    [footer] {
-      width: 100%;
-    }
-
-    [header] {
-      display: grid;
-      grid-template-areas:
-        'title actions'
-        'description actions';
-      grid-template-columns: 1fr min-content;
-      padding: var(--dialog-py) var(--dialog-px);
-      gap: var(--dialog-g);
-
-      h1,
-      h2,
-      h3,
-      h4,
-      [title] {
-        grid-area: title;
-        font: var(--title-20);
-      }
-
-      p,
-      [description] {
-        grid-area: description;
-        font: var(--paragraph-30);
-      }
-
-      button,
-      [actions] {
-        grid-area: actions;
-      }
-
-      &.sticky {
-        background-color: var(--dialog-bg);
-        border-bottom: var(--border-10);
-        box-shadow: var(--box-shadow-35);
-        position: sticky;
-        top: 0;
-        z-index: 100;
-      }
-    }
-
-    [content] {
-      padding: 0 var(--dialog-px);
-
-      &:not(:has(~ [footer])) {
-        padding-bottom: var(--dialog-py);
-      }
-    }
-
-    [footer] {
+    > .content {
+      border-radius: var(--dialog-inner-s) var(--dialog-inner-s) 0 0;
       display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding: var(--dialog-py) var(--dialog-px);
-      gap: var(--dialog-g);
+      flex-direction: column;
+      // Basis auto, not 0: the dialog's height is its content's height, and
+      // a 0-basis child in an auto-height column collapses to nothing
+      // (iOS WebKit follows the spec here; grow still wins when max-height
+      // caps the card).
+      flex: 1 1 auto;
+      min-height: 0;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
 
-      &.sticky {
-        background-color: var(--dialog-bg);
-        border-top: var(--border-10);
-        box-shadow: var(--box-shadow-35);
-        position: sticky;
-        bottom: 0;
-        z-index: 100;
+    .sheet-handle {
+      position: relative;
+      z-index: 3;
+      outline: none;
+      display: flex;
+      justify-content: center;
+      padding: p2r(10) 0 p2r(6);
+      background-color: var(--dialog-bg);
+      border-radius: var(--dialog-inner-s) var(--dialog-inner-s) 0 0;
+      cursor: grab;
+      touch-action: none;
+
+      &:active {
+        cursor: grabbing;
+      }
+
+      .sheet-handle-bar {
+        width: p2r(36);
+        height: p2r(5);
+        border-radius: p2r(3);
+        background: var(--base-6);
       }
     }
-  }
 
-  @keyframes sh-sheet-in {
-    from {
-      transform: translateY(100%);
-    }
-    to {
-      transform: translateY(0);
+    // The handle owns the top rounding; square the content off against it.
+    .sheet-handle + .content {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
     }
   }
 
-  @keyframes sh-side-in {
-    from {
-      transform: translateX(100%);
+  .closeable-overlay {
+    position: fixed;
+    inset: 0;
+    opacity: 0;
+    z-index: 1;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  .dialog-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    opacity: 0;
+    z-index: 1;
+  }
+
+  [header],
+  [content],
+  [footer] {
+    width: 100%;
+  }
+
+  [header] {
+    display: grid;
+    grid-template-areas:
+      'title actions'
+      'description actions';
+    grid-template-columns: 1fr min-content;
+    padding: var(--dialog-py) var(--dialog-px);
+    gap: var(--dialog-g);
+
+    h1,
+    h2,
+    h3,
+    h4,
+    [title] {
+      grid-area: title;
+      font: var(--title-20);
     }
-    to {
-      transform: translateX(0);
+
+    p,
+    [description] {
+      grid-area: description;
+      font: var(--paragraph-30);
     }
+
+    button,
+    [actions] {
+      grid-area: actions;
+    }
+
+    &.sticky {
+      background-color: var(--dialog-bg);
+      border-bottom: var(--border-10);
+      box-shadow: var(--box-shadow-35);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+  }
+
+  [content] {
+    padding: 0 var(--dialog-px);
+
+    &:not(:has(~ [footer])) {
+      padding-bottom: var(--dialog-py);
+    }
+  }
+
+  [footer] {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: var(--dialog-py) var(--dialog-px);
+    gap: var(--dialog-g);
+
+    &.sticky {
+      background-color: var(--dialog-bg);
+      border-top: var(--border-10);
+      box-shadow: var(--box-shadow-35);
+      position: sticky;
+      bottom: 0;
+      z-index: 100;
+    }
+  }
+}
+
+@keyframes sh-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes sh-side-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
   }
 }
