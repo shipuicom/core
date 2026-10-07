@@ -73,7 +73,7 @@ $shipSortable: true !default;
         background: var(--primary-3) !important;
         outline: 2px solid var(--primary-8) !important;
         outline-offset: p2r(-2);
-        border-radius: var(--shape-1, 4px);
+        border-radius: var(--shape-1);
 
         .node-icon,
         sh-tree-node .sh-tree-node-left sh-icon {
@@ -88,8 +88,8 @@ $shipSortable: true !default;
           content: '';
           position: absolute;
           top: p2r(-3);
-          left: calc(var(--tree-padding-left, 12px) + var(--tree-depth, 0) * var(--tree-indent-step, 12px) + #{p2r(6)});
-          right: var(--tree-padding-right, 6px);
+          left: calc(var(--tree-pl) + var(--tree-depth, 0) * var(--tree-indent-step) + #{p2r(6)});
+          right: var(--tree-pr);
           height: p2r(6);
           background-image:
             radial-gradient(circle at 3px 3px, var(--primary-8) 3px, transparent 3px),
@@ -113,8 +113,8 @@ $shipSortable: true !default;
           content: '';
           position: absolute;
           bottom: p2r(-3);
-          left: calc(var(--tree-padding-left, 12px) + var(--tree-depth, 0) * var(--tree-indent-step, 12px) + #{p2r(6)});
-          right: var(--tree-padding-right, 6px);
+          left: calc(var(--tree-pl) + var(--tree-depth, 0) * var(--tree-indent-step) + #{p2r(6)});
+          right: var(--tree-pr);
           height: p2r(6);
           background-image:
             radial-gradient(circle at 3px 3px, var(--primary-8) 3px, transparent 3px),

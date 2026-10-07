@@ -1,8 +1,9 @@
 import { booleanAttribute, ChangeDetectionStrategy, Component, computed, DestroyRef, DOCUMENT, effect, inject, input, numberAttribute, signal, untracked, ViewEncapsulation } from '@angular/core';
+import { shipComponentClasses, ShipColor } from '@ship-ui/core';
 import { areaPath, extent, linearScale, linePath, ShipCurve, ShipPoint } from '@ship-ui/core/ship-chart-scales';
 
-/** Palette the sparkline can inherit. Matches Ship's `ShipColor` without importing core. */
-export type ShipChartSparklineColor = 'primary' | 'accent' | 'warn' | 'error' | 'success' | '';
+/** @deprecated The sparkline's `color` is a `ShipColor`; this alias stays for existing imports. */
+export type ShipChartSparklineColor = ShipColor;
 
 /**
  * A tiny standalone line chart: one series, no axes, no runtime dependencies
@@ -37,15 +38,15 @@ export type ShipChartSparklineColor = 'primary' | 'accent' | 'warn' | 'error' | 
   host: {
     role: 'img',
     '[attr.aria-label]': 'label()',
-    '[class]': 'color()',
+    '[class]': 'hostClasses()',
     '[class.animate]': 'animate()',
   },
 })
 export class ShipChartSparkline {
   /** The values to plot, left to right. Non-finite entries are skipped. */
   data = input.required<readonly number[]>();
-  /** Palette color to inherit. Any custom property set on the host still wins. */
-  color = input<ShipChartSparklineColor>('');
+  /** Palette color to inherit (project default via `ShipConfig.chartSparkline.color`). Any custom property set on the host still wins. */
+  color = input<ShipColor | null>(null);
   /** Line interpolation. */
   curve = input<ShipCurve>('linear');
   /** Fill the area under the line. */
@@ -69,6 +70,8 @@ export class ShipChartSparkline {
 
   #document = inject(DOCUMENT);
   #frame: number | null = null;
+
+  hostClasses = shipComponentClasses('chartSparkline', { color: this.color });
 
   /** Points in a 0..100 box; y grows downwards like SVG. */
   points = computed(() => {

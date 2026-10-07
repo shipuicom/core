@@ -50,7 +50,7 @@ describe('ship-layout accessible names', () => {
   it('draws no bar for a ranking item outside sh-lo-ranking and says why in dev mode', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const el = await render();
-    expect((el.querySelector('#orphan') as HTMLElement).getAttribute('style')).toContain('--bar-pct: 0');
+    expect((el.querySelector('#orphan') as HTMLElement).getAttribute('style')).toContain('--ranking-pct: 0');
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('sh-lo-ranking'));
     warn.mockRestore();
   });

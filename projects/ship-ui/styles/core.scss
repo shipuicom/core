@@ -36,9 +36,10 @@ $chip-shadow-val: none;
   $chip-shadow-val: var(--box-shadow-10);
 }
 
+// The shadow knobs are the component tokens themselves: override --ff-bs / --btn-bs / --chip-bs on :root or any ancestor.
 :root {
-  --ship-form-field-shadow: #{$form-field-shadow-val};
-  --ship-button-shadow: #{$button-shadow-val};
-  --ship-chip-shadow: #{$chip-shadow-val};
+  --ff-bs: #{$form-field-shadow-val};
+  --btn-bs: #{$button-shadow-val};
+  --chip-bs: #{$chip-shadow-val};
 }
 

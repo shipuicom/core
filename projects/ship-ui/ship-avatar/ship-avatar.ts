@@ -9,7 +9,7 @@ import {
   linkedSignal,
   ViewEncapsulation,
 } from '@angular/core';
-import { ShipColor, ShipSize } from '@ship-ui/core';
+import { SHIP_CONFIG, shipComponentClasses, ShipColor, ShipSize } from '@ship-ui/core';
 
 /** Number of deterministic hue buckets `sh-avatar` picks from when no `color` is given. */
 export const SHIP_AVATAR_HUES = 8;
@@ -103,6 +103,7 @@ export class ShipAvatarGroup {
 })
 export class ShipAvatar {
   #group = inject(ShipAvatarGroup, { optional: true });
+  #config = inject(SHIP_CONFIG, { optional: true });
 
   /** The person's name: the source of the initials, the colour and the accessible label. */
   name = input<string>('');
@@ -126,14 +127,18 @@ export class ShipAvatar {
   effectiveSize = computed(() => this.size() ?? this.#group?.size() ?? null);
   hiddenInGroup = computed(() => this.#group?.isHidden(this) ?? false);
 
+  /** `color` falls back to `ShipConfig.avatar.color`; the name-derived hue only applies when neither is set. */
+  effectiveColor = computed(() => this.color() ?? this.#config?.avatar?.color ?? null);
+
+  #configClasses = shipComponentClasses('avatar', { color: this.effectiveColor, size: this.effectiveSize });
+
   hostClasses = computed(() => {
     const classes: string[] = [];
-    const size = this.effectiveSize();
-    const color = this.color();
+    const configClasses = this.#configClasses();
     const ringColor = this.ringColor();
 
-    if (size) classes.push(size);
-    classes.push(color ? color : `hue-${this.hue()}`);
+    if (configClasses) classes.push(configClasses);
+    if (!this.effectiveColor()) classes.push(`hue-${this.hue()}`);
     if (ringColor) classes.push(`ring-${ringColor}`);
 
     return classes.join(' ');

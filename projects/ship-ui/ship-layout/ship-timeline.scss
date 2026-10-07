@@ -43,7 +43,7 @@ sh-lo-timeline {
       color: var(--base-9);
 
       > sh-avatar {
-        --avatar-size: var(--timeline-marker-si);
+        --avatar-si: var(--timeline-marker-si);
       }
 
       // No marker slotted: a plain dot.

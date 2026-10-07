@@ -1,49 +1,38 @@
 import { computed, inject, Signal } from '@angular/core';
-import { SHIP_CONFIG } from './ship-config';
+import { SHIP_CONFIG, ShipComponentConfig, ShipConfig } from './ship-config';
 
+/** `ShipConfig` keys whose value is a per component config (not a global like `fontSize` or `colors`). */
+export type ShipComponentConfigKey = {
+  [K in keyof ShipConfig]-?: NonNullable<ShipConfig[K]> extends ShipComponentConfig ? K : never;
+}[keyof ShipConfig];
+
+/**
+ * The host class list of a component: `color`, `variant`, `size` and the boolean flags, each falling back to the
+ * project default in `ShipConfig[componentName]`. No class is emitted for an input that is unset in both.
+ */
 export function shipComponentClasses(
-  componentName: string,
+  componentName: ShipComponentConfigKey,
   inputs: {
-    color?: Signal<any>;
-    variant?: Signal<any>;
-    size?: Signal<any>;
-    sharp?: Signal<any>;
-    dynamic?: Signal<any>;
-    readonly?: Signal<any>;
-    alwaysShow?: Signal<any>;
+    color?: Signal<string | null | undefined>;
+    variant?: Signal<string | null | undefined>;
+    size?: Signal<string | null | undefined>;
+    sharp?: Signal<boolean | null | undefined>;
+    dynamic?: Signal<boolean | null | undefined>;
+    readonly?: Signal<boolean | null | undefined>;
+    alwaysShow?: Signal<boolean | null | undefined>;
   }
 ) {
   const config = inject(SHIP_CONFIG, { optional: true });
 
   return computed(() => {
-    const componentConfig = (config as any)?.[componentName];
+    const componentConfig: ShipComponentConfig | undefined = config?.[componentName];
 
-    
-    let variant = inputs.variant?.();
-    if (!variant) {
-      variant = componentConfig?.variant;
-    }
-
-    
+    const variant = inputs.variant?.() || componentConfig?.variant;
     const color = inputs.color?.() || componentConfig?.color;
-
-    if (!variant) {
-      variant = 'base';
-    }
-
-    
     const size = inputs.size?.() || componentConfig?.size;
-
-    
     const sharp = (inputs.sharp?.() ?? componentConfig?.sharp) || false;
-
-    
     const dynamic = (inputs.dynamic?.() ?? componentConfig?.dynamic) || false;
-
-    
     const readonly = (inputs.readonly?.() ?? componentConfig?.readonly) || false;
-
-    
     const alwaysShow = (inputs.alwaysShow?.() ?? componentConfig?.alwaysShow) || false;
 
     const classList: string[] = [];

@@ -6,9 +6,8 @@
   --btn-f: var(--paragraph-20);
   --btn-py: 0;
   --btn-px: var(--pad-x-3);
-  --btn-a-opacity: 0.05;
+  --btn-o-a: 0.05;
 
-  --btn-bs: var(--ship-button-shadow, none);
 
   display: inline-flex;
   align-items: center;
@@ -46,7 +45,7 @@
     transform: scale(0.98);
 
     &:before {
-      opacity: var(--btn-a-opacity);
+      opacity: var(--btn-o-a);
     }
   }
 

@@ -7,11 +7,11 @@ sh-spreadsheet {
   --shs-head-bg: var(--base-2);
   --shs-head-fg: var(--base-9);
   --shs-selection: rgb(from var(--primary-9) r g b / 18%);
-  --shs-selection-border: var(--primary-9);
+  --shs-sel-bc: var(--primary-9);
   --shs-selection-bg: var(--shs-head-bg);
   --shs-invalid: var(--error-8);
-  --shs-shadow: 0 #{p2r(4)} #{p2r(12)} rgb(from var(--dark-text) r g b / 12%);
-  --shs-font: var(--paragraph-30);
+  --shs-bs: 0 #{p2r(4)} #{p2r(12)} rgb(from var(--dark-text) r g b / 12%);
+  --shs-f: var(--paragraph-30);
 
   display: block;
   position: relative;
@@ -39,7 +39,7 @@ sh-spreadsheet {
     padding: #{p2r(4)} #{p2r(8)};
     border-bottom: 1px solid var(--shs-grid);
     background: var(--shs-head-bg);
-    font: var(--shs-font);
+    font: var(--shs-f);
     color: var(--shs-fg);
   }
 
@@ -62,14 +62,14 @@ sh-spreadsheet {
     margin: 0;
     padding: #{p2r(2)} #{p2r(6)};
     border: 1px solid transparent;
-    border-radius: var(--shape-1, 4px);
+    border-radius: var(--shape-1);
     background: var(--shs-bg);
     color: inherit;
     font: inherit;
     outline: none;
 
     &:focus-visible {
-      border-color: var(--shs-selection-border);
+      border-color: var(--shs-sel-bc);
     }
 
     &:read-only {
@@ -91,7 +91,7 @@ sh-spreadsheet {
     border: 1px solid var(--shs-grid);
     border-radius: var(--shape-2);
     background: var(--shs-bg);
-    box-shadow: var(--shs-shadow);
+    box-shadow: var(--shs-bs);
     font-size: 0.9em;
   }
 
@@ -101,7 +101,7 @@ sh-spreadsheet {
     gap: 0 #{p2r(8)};
     align-items: baseline;
     padding: #{p2r(4)} #{p2r(6)};
-    border-radius: var(--shape-1, 4px);
+    border-radius: var(--shape-1);
     cursor: pointer;
 
     &.active {
@@ -124,7 +124,7 @@ sh-spreadsheet {
     outline: none;
 
     &:focus-visible .shs-selection.active {
-      box-shadow: 0 0 0 1px var(--shs-selection-border);
+      box-shadow: 0 0 0 1px var(--shs-sel-bc);
     }
 
     &.resize-x,
@@ -145,7 +145,7 @@ sh-spreadsheet {
     max-height: inherit;
     overflow: auto;
     overflow-anchor: none;
-    font: var(--shs-font);
+    font: var(--shs-f);
     color: var(--shs-fg);
   }
 
@@ -286,7 +286,7 @@ sh-spreadsheet {
     user-select: none;
 
     .shs-check.on {
-      color: var(--shs-selection-border);
+      color: var(--shs-sel-bc);
     }
   }
 
@@ -298,7 +298,7 @@ sh-spreadsheet {
 
     // The active range wears the border; added ranges are fill-only.
     &.active {
-      border: 1px solid var(--shs-selection-border);
+      border: 1px solid var(--shs-sel-bc);
     }
   }
 
@@ -306,7 +306,7 @@ sh-spreadsheet {
   // caret's home is visible inside the fill.
   .shs-anchor {
     position: absolute;
-    border: 2px solid var(--shs-selection-border);
+    border: 2px solid var(--shs-sel-bc);
     box-sizing: border-box;
     pointer-events: none;
     z-index: 1;
@@ -319,7 +319,7 @@ sh-spreadsheet {
     width: #{p2r(7)};
     height: #{p2r(7)};
     margin: #{p2r(-4)} 0 0 #{p2r(-4)};
-    background: var(--shs-selection-border);
+    background: var(--shs-sel-bc);
     border: 1px solid var(--shs-bg);
     box-sizing: border-box;
     cursor: crosshair;
@@ -328,7 +328,7 @@ sh-spreadsheet {
 
   .shs-fill-preview {
     position: absolute;
-    border: 1px dashed var(--shs-selection-border);
+    border: 1px dashed var(--shs-sel-bc);
     box-sizing: border-box;
     pointer-events: none;
     z-index: 1;
@@ -342,11 +342,11 @@ sh-spreadsheet {
     box-sizing: border-box;
     margin: 0;
     padding: 0 #{p2r(6)};
-    border: 2px solid var(--shs-selection-border);
+    border: 2px solid var(--shs-sel-bc);
     border-radius: 0;
     background: var(--shs-bg);
     color: var(--shs-fg);
-    font: var(--shs-font);
+    font: var(--shs-f);
     line-height: calc(var(--shs-row-h) - 4px);
     white-space: pre;
     resize: none;
@@ -375,7 +375,7 @@ sh-spreadsheet {
     position: absolute;
     pointer-events: none;
     z-index: 4;
-    background: var(--shs-selection-border);
+    background: var(--shs-sel-bc);
 
     &.x {
       top: 0;

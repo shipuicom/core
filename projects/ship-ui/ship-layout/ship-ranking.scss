@@ -100,7 +100,7 @@ sh-lo-ranking {
         content: '';
         display: block;
         height: 100%;
-        width: calc(var(--bar-pct, 0) * 1%);
+        width: calc(var(--ranking-pct, 0) * 1%);
         border-radius: inherit;
         background-color: var(--ranking-c);
         transition: width 0.4s ease;

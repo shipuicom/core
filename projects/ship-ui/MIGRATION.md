@@ -9,6 +9,13 @@ checks it). A migration script (`ship-migrate`) that rewrites the renames below 
 - `color` on `sh-card`, `sh-button-group`, `sh-table`, `sh-toggle-card`
 - `variant` on `sh-tabs`; `sh-accordion`'s `variant` is narrowed to `ShipAccordionVariant` (`'type-b' | ''`)
 
+**No default `base` host class**: `shipComponentClasses` no longer stamps `base` on a host whose `variant` is unset
+(it was never a `ShipVariant`). A selector such as `sh-lo-details.base` or `sh-editor.base` matches nothing now; write
+`:not(.type-b)` / `:not(.document)` style selectors against the component's real variants instead. The checkbox and
+radio `.flat/.raised` unchecked-surface rules and the sparkline / video-playlist colour classes moved into skins
+(`$shipCheckbox`, `$shipRadio`, `$shipChartSparkline`, `$shipVideoPlaylist`), so a custom `$shipPalettes` entry now
+gets those classes too.
+
 **Renamed CSS variables** (override sites in your scss):
 | old | new |
 |---|---|
@@ -18,6 +25,25 @@ checks it). A migration script (`ship-migrate`) that rewrites the renames below 
 | `--caret-color`, `--caret-size` (sh-table) | `--table-caret-c`, `--table-caret-si` |
 | `--stepper-progress` | `--step-progress` |
 | `--overlay` (sh-popover sheet backdrop) | `--po-overlay` |
+| `--tree-color`, `--tree-guide-color`, `--tree-caret-color`, `--tree-caret-hover-color` | `--tree-c`, `--tree-guide-c`, `--tree-caret-c`, `--tree-caret-c-h` |
+| `--tree-icon-color`, `--tree-icon-folder-color` | `--tree-ic`, `--tree-folder-ic` |
+| `--tree-hover-bg`, `--tree-active-bg`, `--tree-selected-bg` | `--tree-bg-h`, `--tree-bg-a`, `--tree-bg-s` |
+| `--tree-padding-left`, `--tree-padding-right`, `--guide-index` (sh-tree) | `--tree-pl`, `--tree-pr`, `--tree-guide-i` |
+| `--list-color`, `--list-active-bg`, `--list-active-bs`, `--list-item-active-b` | `--list-c`, `--list-bg-a`, `--list-bs-a`, `--list-item-b-a` |
+| `--dp-width` | `--dp-w` |
+| `--sidenav-width`, `--sidenav-open-width` | `--sidenav-w`, `--sidenav-open-w` (declared with its 280px default) |
+| `--vid-rail-height`, `--vid-rail-height-active`, `--vid-knob-size`, `--vid-button-hover-bg` | `--vid-rail-h`, `--vid-rail-h-a`, `--vid-knob-si`, `--vid-btn-bg-h` |
+| `--editor-border-color`, `--editor-toolbar-border`, `--editor-border-focus`, `--editor-shape` | `--editor-bc`, `--editor-toolbar-bc`, `--editor-bc-f`, `--editor-s` |
+| `--editor-btn-hover`, `--editor-btn-active-bg`, `--editor-btn-active-c` | `--editor-btn-bg-h`, `--editor-btn-bg-a`, `--editor-btn-c-a` |
+| `--avatar-border-c`, `--avatar-size`, `--avatar-font` | `--avatar-bc`, `--avatar-si`, `--avatar-f` |
+| `--code-border`, `--code-font` | `--code-bc`, `--code-f` (reads `--code-20`, no inline font fallback) |
+| `--shs-selection-border`, `--shs-font` | `--shs-sel-bc`, `--shs-f` (the unreleased `--shs-shadow` is `--shs-bs`) |
+| `--btn-a-opacity` | `--btn-o-a` |
+| `--bar-pct` (sh-lo-ranking-item) | `--ranking-pct` |
+| `--ship-button-shadow`, `--ship-form-field-shadow`, `--ship-chip-shadow` | `--btn-bs`, `--ff-bs`, `--chip-bs` (the `$ship*Shadow` flags now set the component token on `:root`; override it anywhere) |
+
+The `sh-popover` anchor-positioning `@position-try` names are prefixed (`--top-center` → `--po-top-center`, `--bottom-span-right` →
+`--po-bottom-span-right`, …); only matters if your own `position-try-fallbacks` referenced them.
 
 **Renamed classes** (old names keep working until v0.27):
 - `.warning` → `.warn` on `sh-form-field` / `sh-form-field-popover` (`ship-migrate` rewrites these)

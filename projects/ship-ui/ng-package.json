@@ -5,7 +5,7 @@
     "entryFile": "src/public-api.ts",
     "styleIncludePaths": ["styles"]
   },
-  "assets": ["styles/**/*", "assets/**/*", "bin/**/*", "snippets/**/*"],
+  "assets": ["styles/**/*", "assets/**/*", "bin/**/*", "snippets/**/*", "ship-code/vendor/vscode-oniguruma/onig.wasm"],
   "inlineStyleLanguage": "scss",
   "allowedNonPeerDependencies": ["harfbuzzjs", "wawoff2", "@phosphor-icons/web"]
 }

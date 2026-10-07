@@ -39,9 +39,9 @@ describe('ShipChat', () => {
     expect(first.querySelector(':scope > .body > .footer > [footer]')?.textContent).toBe('Seen');
   });
 
-  it('stamps base, flags and color next to consumer classes', () => {
+  it('stamps flags and color next to consumer classes', () => {
     const { first, second } = setup();
-    expect(first.classList).toContain('base');
+    expect(first.classList).not.toContain('base');
     expect(first.classList).toContain('custom');
     expect(first.classList).not.toContain('outgoing');
     expect(second.classList).toContain('outgoing');
@@ -54,7 +54,6 @@ describe('ShipChat', () => {
     fixture.componentInstance.variant.set('type-c');
     fixture.detectChanges();
     expect(first.classList).toContain('type-c');
-    expect(first.classList).not.toContain('base');
   });
 
   it('uses the ShipConfig default', () => {

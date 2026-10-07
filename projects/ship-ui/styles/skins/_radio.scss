@@ -12,6 +12,13 @@
     // On a filled sheet the dot is the contrast text of the fill.
     @each $v in (flat, raised) {
       @if has($variants, $v) {
+        // The unchecked radio stays an outlined circle.
+        &.#{$v}:not(:has(input:checked)):not(.active) .radio {
+          background: transparent;
+          border: var(--border-10);
+          border-color: var(--radio-bc);
+        }
+
         &.#{$v} {
           --radiod-c: var(--light-text);
 

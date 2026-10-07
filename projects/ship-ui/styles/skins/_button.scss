@@ -6,7 +6,7 @@
     @each $v in (raised, flat) {
       @if has($variants, $v) {
         &.#{$v} {
-          --btn-a-opacity: 0.1;
+          --btn-o-a: 0.1;
         }
       }
     }

@@ -18,6 +18,12 @@ export interface ShipComponentConfig {
   color?: ShipColor | string;
   /** Renders the component in a non-interactive read-only state. Read by `shipComponentClasses`. */
   readonly?: boolean;
+  /** Sharp (non-rounded) corners, for the components that accept `sharp`. */
+  sharp?: boolean;
+  /** Read by `shipComponentClasses` for the components that accept `dynamic`. */
+  dynamic?: boolean;
+  /** Read by `shipComponentClasses` for the components that accept `alwaysShow`. */
+  alwaysShow?: boolean;
 }
 
 export interface ShipChipConfig extends ShipComponentConfig {
@@ -105,6 +111,13 @@ export interface ShipConfig {
   layoutToolbar?: ShipComponentConfig;
   breadcrumbs?: ShipComponentConfig;
   chat?: ShipComponentConfig;
+  avatar?: ShipComponentConfig;
+  chartSparkline?: ShipComponentConfig;
+  colorPickerInput?: ShipComponentConfig;
+  editor?: ShipComponentConfig;
+  themeToggle?: ShipComponentConfig;
+  video?: ShipComponentConfig;
+  videoPlaylist?: ShipComponentConfig;
 
   /** Class the dialog service applies to every dialog it opens. */
   dialogType?: 'type-b';

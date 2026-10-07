@@ -13,8 +13,8 @@ sh-popover {
       @supports (anchor-name: --anchor) {
         position-area: bottom center;
         position-try-fallbacks:
-          --top-center, --bottom-span-right, --top-span-right, --bottom-span-left, --top-span-left,
-          --right-center, --left-center;
+          --po-top-center, --po-bottom-span-right, --po-top-span-right, --po-bottom-span-left, --po-top-span-left,
+          --po-right-center, --po-left-center;
       }
     }
   }
@@ -106,8 +106,8 @@ sh-popover {
       max-height: unset;
       overflow: visible;
       position-try-fallbacks:
-        --top-span-right, --bottom-span-left, --top-span-left, --right-span-bottom, --left-span-bottom,
-        --right-center, --left-center, --right-span-top, --left-span-top;
+        --po-top-span-right, --po-bottom-span-left, --po-top-span-left, --po-right-span-bottom, --po-left-span-bottom,
+        --po-right-center, --po-left-center, --po-right-span-top, --po-left-span-top;
     }
   }
 
@@ -161,73 +161,73 @@ sh-popover.full .popover-content {
 }
 
 // Anchor-positioning fallbacks for the popover content.
-@position-try --bottom-span-right {
+@position-try --po-bottom-span-right {
   position-area: bottom span-right;
   inset: auto;
   top: p2r(4);
 }
 
-@position-try --bottom-center {
+@position-try --po-bottom-center {
   position-area: bottom center;
   inset: auto;
   top: p2r(4);
 }
 
-@position-try --top-center {
+@position-try --po-top-center {
   position-area: top center;
   inset: auto;
   bottom: p2r(4);
 }
 
-@position-try --bottom-span-left {
+@position-try --po-bottom-span-left {
   position-area: bottom span-left;
   inset: auto;
   top: p2r(4);
 }
 
-@position-try --top-span-right {
+@position-try --po-top-span-right {
   position-area: top span-right;
   inset: auto;
   bottom: p2r(4);
 }
 
-@position-try --top-span-left {
+@position-try --po-top-span-left {
   position-area: top span-left;
   inset: auto;
   bottom: p2r(4);
 }
 
-@position-try --right-span-top {
+@position-try --po-right-span-top {
   position-area: right span-top;
   inset: auto;
   left: p2r(4);
 }
 
-@position-try --left-span-top {
+@position-try --po-left-span-top {
   position-area: left span-top;
   inset: auto;
   right: p2r(4);
 }
 
-@position-try --right-center {
+@position-try --po-right-center {
   position-area: right center;
   inset: auto;
   left: p2r(4);
 }
 
-@position-try --left-center {
+@position-try --po-left-center {
   position-area: left center;
   inset: auto;
   right: p2r(4);
 }
 
-@position-try --right-span-bottom {
+@position-try --po-right-span-bottom {
   position-area: right span-bottom;
   inset: auto;
   left: p2r(4);
 }
 
-@position-try --left-span-bottom {
+@position-try --po-left-span-bottom {
   position-area: left span-bottom;
   inset: auto;
   right: p2r(4);

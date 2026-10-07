@@ -72,13 +72,4 @@ sh-radio {
       transition: opacity 125ms linear;
     }
   }
-
-  &.raised,
-  &.flat {
-    &:not(:has(input:checked)):not(.active) .radio {
-      background: transparent;
-      border: var(--border-10);
-      border-color: var(--radio-bc);
-    }
-  }
 }

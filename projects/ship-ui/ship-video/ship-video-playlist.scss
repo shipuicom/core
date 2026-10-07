@@ -17,18 +17,6 @@ sh-video-playlist {
     --vpl-br: 0;
   }
 
-  &.accent {
-    --vpl-accent: var(--accent-8);
-  }
-  &.warn {
-    --vpl-accent: var(--warn-8);
-  }
-  &.error {
-    --vpl-accent: var(--error-8);
-  }
-  &.success {
-    --vpl-accent: var(--success-8);
-  }
 
   .sh-video-playlist-header {
     &:empty {

@@ -118,7 +118,7 @@ sh-lo-details {
   }
 
   @include breakpoint(-nano) {
-    &.base sh-lo-detail {
+    &:not(.type-b):not(.type-c) sh-lo-detail {
       flex-direction: column;
       gap: var(--space-1);
 

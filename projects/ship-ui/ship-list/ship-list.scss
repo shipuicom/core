@@ -13,11 +13,11 @@ sh-list {
   --list-collapsed-w: #{p2r(68)};
   --list-collapsed-item: #{p2r(44)};
   --list-s: var(--shape-2);
-  --list-active-bg: var(--base-1);
-  --list-color: var(--base-9);
-  --list-active-bs: none;
+  --list-bg-a: var(--base-1);
+  --list-c: var(--base-9);
+  --list-bs-a: none;
   --list-item-b: 1px solid transparent;
-  --list-item-active-b: 1px solid var(--list-active-bg);
+  --list-item-b-a: 1px solid var(--list-bg-a);
   --list-py: var(--pad-y-5);
   --list-px: var(--pad-x-4);
   --list-item-py: var(--pad-y-3);
@@ -36,8 +36,8 @@ sh-list {
   transition: width 200ms linear;
 
   &.base-1 {
-    --list-active-bg: var(--base-1);
-    --list-active-bs: var(--box-shadow-20);
+    --list-bg-a: var(--base-1);
+    --list-bs-a: var(--box-shadow-20);
   }
 
   &.type-b {
@@ -119,9 +119,9 @@ sh-list {
     --list-item-px: var(--pad-x-4);
     --list-item-gap: #{p2r(12)};
     --list-s: var(--shape-3);
-    --list-color: var(--base-12);
-    --list-active-bg: var(--base-3);
-    --list-item-active-b: 1px solid var(--base-4);
+    --list-c: var(--base-12);
+    --list-bg-a: var(--base-3);
+    --list-item-b-a: 1px solid var(--base-4);
 
     #{$item} {
       font: var(--paragraph-30);
@@ -215,7 +215,7 @@ sh-list {
       // parks it in the middle; the faded-out label and suffix overflow past
       // the clipped edge.
       sh-icon:first-child {
-        color: var(--list-color);
+        color: var(--list-c);
         flex-shrink: 0;
         margin-inline-start: calc(50% - 0.5em);
       }
@@ -259,7 +259,7 @@ sh-list {
     transform: scale(1);
 
     &:active {
-      --list-active-bs: var(--box-shadow-10);
+      --list-bs-a: var(--box-shadow-10);
       transform: scale(0.98);
     }
 
@@ -282,11 +282,11 @@ sh-list {
     &:has(input:checked),
     &.active,
     &.selected {
-      --list-color: var(--base-12);
+      --list-c: var(--base-12);
 
-      background-color: var(--list-active-bg);
-      box-shadow: var(--list-active-bs);
-      border: var(--list-item-active-b);
+      background-color: var(--list-bg-a);
+      box-shadow: var(--list-bs-a);
+      border: var(--list-item-b-a);
     }
   }
 }

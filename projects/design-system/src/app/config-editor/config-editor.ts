@@ -69,6 +69,11 @@ const formFieldVariantOptions = [
   { value: 'horizontal', label: 'Horizontal' },
 ];
 
+const editorVariantOptions = [
+  { value: '', label: 'Default' },
+  { value: 'document', label: 'Document' },
+];
+
 const variantOptions = [
   { value: '', label: 'Default' },
   { value: 'simple', label: 'Simple' },
@@ -309,6 +314,15 @@ export class ConfigEditor {
       ],
     },
     {
+      name: 'Avatar',
+      route: '/avatars',
+      configKey: 'avatar',
+      controls: [
+        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
+        { type: 'select', key: 'size', label: 'Size', options: sizeOptions },
+      ],
+    },
+    {
       name: 'Button',
       route: '/buttons',
       configKey: 'button',
@@ -335,6 +349,12 @@ export class ConfigEditor {
       controls: [{ type: 'select', key: 'variant', label: 'Variant', options: cardVariantOptions }],
     },
     {
+      name: 'Chart Sparkline',
+      route: '/chart-sparkline',
+      configKey: 'chartSparkline',
+      controls: [{ type: 'select', key: 'color', label: 'Color', options: colorOptions }],
+    },
+    {
       name: 'Chip',
       route: '/chips',
       configKey: 'chip',
@@ -344,6 +364,22 @@ export class ConfigEditor {
         { type: 'select', key: 'size', label: 'Size', options: buttonSizeOptions },
         { type: 'toggle', key: 'sharp', label: 'Sharp' },
       ],
+    },
+    {
+      name: 'Color Picker Input',
+      route: '/color-pickers',
+      configKey: 'colorPickerInput',
+      controls: [
+        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
+        { type: 'select', key: 'variant', label: 'Variant', options: formFieldVariantOptions },
+        { type: 'select', key: 'size', label: 'Size', options: sizeOptions },
+      ],
+    },
+    {
+      name: 'Editor',
+      route: '/editors',
+      configKey: 'editor',
+      controls: [{ type: 'select', key: 'variant', label: 'Variant', options: editorVariantOptions }],
     },
     {
       name: 'Event Card',
@@ -472,6 +508,16 @@ export class ConfigEditor {
       ],
     },
     {
+      name: 'Theme Toggle',
+      route: '/theme-toggle',
+      configKey: 'themeToggle',
+      controls: [
+        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
+        { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
+        { type: 'select', key: 'size', label: 'Size', options: buttonSizeOptions },
+      ],
+    },
+    {
       name: 'Toggle',
       route: '/toggles',
       configKey: 'toggle',
@@ -479,6 +525,18 @@ export class ConfigEditor {
         { type: 'select', key: 'color', label: 'Color', options: colorOptions },
         { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
       ],
+    },
+    {
+      name: 'Video',
+      route: '/videos',
+      configKey: 'video',
+      controls: [{ type: 'select', key: 'color', label: 'Color', options: colorOptions }],
+    },
+    {
+      name: 'Video Playlist',
+      route: '/videos',
+      configKey: 'videoPlaylist',
+      controls: [{ type: 'select', key: 'color', label: 'Color', options: colorOptions }],
     },
   ];
 

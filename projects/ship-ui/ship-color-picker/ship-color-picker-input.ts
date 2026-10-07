@@ -21,6 +21,8 @@ import {
   rgbaToHex8,
   rgbToHex,
   rgbToHsl,
+  SHIP_CONFIG,
+  shipComponentClasses,
   ShipColor,
   ShipFormFieldVariant,
   ShipSize,
@@ -54,9 +56,9 @@ function matchesFormat(text: string, format: string): boolean {
       (closed)="close()"
       [(isOpen)]="isOpen"
       [class]="currentClass()"
-      [variant]="variant()"
-      [size]="size()"
-      [color]="color()"
+      [variant]="effectiveVariant()"
+      [size]="effectiveSize()"
+      [color]="effectiveColor()"
       [readonly]="readonly()">
       <ng-content select="label" ngProjectAs="label" />
 
@@ -116,25 +118,41 @@ function matchesFormat(text: string, format: string): boolean {
     ngSkipHydration: 'true',
     // `patch` collapses the field to just the color swatch (a compact trigger);
     // the swatch opens the picker popover on click. Styled in the scss.
+    '[class]': 'hostClasses()',
     '[class.patch]': 'patch()',
   },
 })
 export class ShipColorPickerInput {
   #document = inject(DOCUMENT);
+  #config = inject(SHIP_CONFIG, { optional: true });
 
   /** Which picker surface the popover renders (`hsl`, `grid`, `hue`, `rgb`, `saturation`, `alpha`). */
   renderingType = input<'hsl' | 'grid' | 'hue' | 'rgb' | 'saturation' | 'alpha'>('hsl');
   /** Output color string format (`rgb`, `rgba`, `hex`, `hex8`, `hsl`, `hsla`). */
   format = input<'rgb' | 'rgba' | 'hex' | 'hex8' | 'hsl' | 'hsla'>('rgb');
 
-  /** Semantic color scale (`primary`, `accent`, `warn`, `error`, `success`). */
+  /** Semantic color scale (`primary`, `accent`, `warn`, `error`, `success`); project default via `ShipConfig.colorPickerInput`. */
   color = input<ShipColor | null>(null);
-  /** Visual variant of the form field. */
+  /** Visual variant of the form field; project default via `ShipConfig.colorPickerInput`. */
   variant = input<ShipFormFieldVariant | null>(null);
-  /** Size preset. */
+  /** Size preset; project default via `ShipConfig.colorPickerInput`. */
   size = input<ShipSize | null>(null);
   /** Render in a non-interactive read-only state. */
   readonly = input(false, { transform: booleanAttribute });
+
+  // The inputs with the `ShipConfig.colorPickerInput` defaults; passed to the inner field and stamped on the host.
+  effectiveColor = computed(() => this.color() ?? (this.#config?.colorPickerInput?.color as ShipColor | undefined) ?? null);
+  effectiveVariant = computed(
+    () => this.variant() ?? (this.#config?.colorPickerInput?.variant as ShipFormFieldVariant | undefined) ?? null
+  );
+  effectiveSize = computed(() => this.size() ?? (this.#config?.colorPickerInput?.size as ShipSize | undefined) ?? null);
+
+  hostClasses = shipComponentClasses('colorPickerInput', {
+    color: this.effectiveColor,
+    variant: this.effectiveVariant,
+    size: this.effectiveSize,
+    readonly: this.readonly,
+  });
   /**
    * Compact "swatch only" appearance: the field renders as a single color patch
    * that opens the picker popover when clicked. The text input is still present

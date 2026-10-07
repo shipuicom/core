@@ -7,7 +7,7 @@
   border-radius: var(--list-s, var(--shape-2));
   padding: var(--list-item-py, var(--pad-y-3)) var(--list-item-px, var(--pad-x-3));
   font: var(--paragraph-30B);
-  color: var(--list-color, var(--base-9));
+  color: var(--list-c, var(--base-9));
   display: flex;
   align-items: center;
   gap: var(--list-item-gap, #{p2r(8)});

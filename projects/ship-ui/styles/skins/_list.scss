@@ -7,10 +7,10 @@ $item: '> *:not([title]):not([raw]):not(hr):not(sh-list-item-swipe)';
   sh-list {
     @if has($variants, outlined) {
       &.outlined {
-        --list-active-bg: transparent;
-        --list-active-bs: none;
+        --list-bg-a: transparent;
+        --list-bs-a: none;
         --list-item-b: 1px solid transparent;
-        --list-item-active-b: 1px solid var(--list-accent);
+        --list-item-b-a: 1px solid var(--list-accent);
       }
     }
 

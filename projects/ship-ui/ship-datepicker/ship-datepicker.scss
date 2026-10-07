@@ -51,14 +51,14 @@ sh-datepicker-input {
   }
 
   sh-datepicker {
-    --dp-width: #{p2r(240)};
+    --dp-w: #{p2r(240)};
   }
 }
 
 sh-daterange-input {
   sh-popover .popover-content {
-    --dp-width: #{p2r(300)};
-    min-width: var(--dp-width);
+    --dp-w: #{p2r(300)};
+    min-width: var(--dp-w);
   }
 
   @for $i from 1 through 3 {
@@ -66,7 +66,7 @@ sh-daterange-input {
       $gap: 1rem;
 
       sh-popover .popover-content {
-        --dp-width: calc(#{p2r($i * 300)} + #{(($i - 1) * $gap)});
+        --dp-w: calc(#{p2r($i * 300)} + #{(($i - 1) * $gap)});
       }
     }
   }
@@ -91,12 +91,12 @@ sh-datepicker {
   --dp-day-c: var(--base-8);
   --dp-day-g: #{p2r(4 0)};
   --dp-day-f: var(--paragraph-20);
-  --dp-width: #{p2r(300)};
+  --dp-w: #{p2r(300)};
   --dp-ar: 1/1;
 
   width: 100%;
   padding: var(--dp-py) var(--dp-px);
-  max-width: var(--dp-width);
+  max-width: var(--dp-w);
   display: flex;
   flex-direction: column;
 
@@ -111,7 +111,7 @@ sh-datepicker {
     &.columns-#{$i} {
       $gap: 1rem;
 
-      --dp-width: calc(#{p2r($i * 300)} + #{(($i - 1) * $gap)});
+      --dp-w: calc(#{p2r($i * 300)} + #{(($i - 1) * $gap)});
     }
   }
 

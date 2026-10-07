@@ -47,7 +47,7 @@ let scrollLockCount = 0;
     '[class.open]': 'isOpen()',
     '[class.closed]': '!isOpen()',
     '[class.is-dragging]': 'isDragging()',
-    '[style.--sidenav-open-width.px]': 'openWidth()',
+    '[style.--sidenav-open-w.px]': 'openWidth()',
     '(document:keydown.escape)': 'onEscape()',
   },
 })

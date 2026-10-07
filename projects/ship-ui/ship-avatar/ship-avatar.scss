@@ -1,24 +1,24 @@
 @use 'helpers' as *;
 
 sh-avatar {
-  --avatar-size: #{p2r(32)};
-  --avatar-font: var(--paragraph-30B);
+  --avatar-si: #{p2r(32)};
+  --avatar-f: var(--paragraph-30B);
   --avatar-bg: var(--base-3);
   --avatar-c: var(--base-11);
   --avatar-ring-c: var(--primary-8);
-  --avatar-border-c: var(--base-1);
+  --avatar-bc: var(--base-1);
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   box-sizing: border-box;
-  width: var(--avatar-size);
-  height: var(--avatar-size);
+  width: var(--avatar-si);
+  height: var(--avatar-si);
   border-radius: 50%;
   background: var(--avatar-bg);
   color: var(--avatar-c);
-  font: var(--avatar-font);
+  font: var(--avatar-f);
   letter-spacing: 0.02em;
   overflow: hidden;
   user-select: none;
@@ -36,13 +36,13 @@ sh-avatar {
   }
 
   &.small {
-    --avatar-size: #{p2r(24)};
-    --avatar-font: var(--paragraph-40B);
+    --avatar-si: #{p2r(24)};
+    --avatar-f: var(--paragraph-40B);
     font-size: p2r(10);
   }
 
   &.ring {
-    box-shadow: 0 0 0 2px var(--avatar-border-c), 0 0 0 4px var(--avatar-ring-c);
+    box-shadow: 0 0 0 2px var(--avatar-bc), 0 0 0 4px var(--avatar-ring-c);
   }
 
   // Name-derived hues: the primary palette rotated in 45° steps, so every hue keeps the palette's
@@ -68,7 +68,7 @@ sh-avatar-group {
 
   sh-avatar,
   .sh-avatar-overflow {
-    border: 2px solid var(--avatar-border-c, var(--base-1));
+    border: 2px solid var(--avatar-bc, var(--base-1));
     box-sizing: content-box;
   }
 

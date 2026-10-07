@@ -23,6 +23,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { shipComponentClasses } from '@ship-ui/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { BaseBlockBehavior, BaseInlineBehavior, SlashCommand } from './editor-behaviors';
 import { EditorEngineService, RenderHint } from './editor-engine.service';
@@ -88,7 +89,7 @@ const INTERACTIVE_ROLES = new Set([
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 
-  host: { '[class.document]': "variant() === 'document'",
+  host: { '[class]': 'hostClasses()',
     '(document:selectionchange)': 'onSelectionChange()',
     '(document:mouseup)': 'onDocumentMouseUp()', },
   imports: [ShipEditorLinkPopover, ShipEditorImagePopover, ShipEditorContextualToolbar, ShipEditorImageResize, ShipEditorSlashMenu],
@@ -120,8 +121,13 @@ export class ShipEditor implements ControlValueAccessor {
   /** Serialization format of `value`: rich `html`, structured `json` AST, or `markdown`. */
   format = input<'html' | 'json' | 'markdown'>('html');
 
-  /** Visual variant: compact `base` or full-width `document` styling. */
-  variant = input<'base' | 'document'>('base');
+  /** Visual variant: compact `base` (the default) or full-width `document` styling; project default via `ShipConfig.editor.variant`. */
+  variant = input<'base' | 'document' | null>(null);
+
+  /** The `document` class when that variant is active; `base` is the unstyled default and stamps nothing. */
+  hostClasses = shipComponentClasses('editor', {
+    variant: computed(() => (this.variant() === 'base' ? '' : this.variant())),
+  });
 
   /** Additional block and inline behaviors to register alongside the built-in ones. */
   behaviors = input<(BaseBlockBehavior | BaseInlineBehavior)[]>([]);

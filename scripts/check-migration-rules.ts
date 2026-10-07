@@ -58,7 +58,7 @@ interface Inventory {
 }
 
 const isLibSource = (p: string) =>
-  p.startsWith(LIB + '/') && !p.includes('/bin/') && !p.includes('/node_modules/') && !/\.spec\.ts$/.test(p) && /\.(ts|scss|html)$/.test(p);
+  p.startsWith(LIB + '/') && !p.includes('/bin/') && !p.includes('/node_modules/') && !p.includes('/vendor/') && !/\.spec\.ts$/.test(p) && /\.(ts|scss|html)$/.test(p);
 
 /** Custom properties a TS/HTML file sets at runtime (`setProperty('--x'`, `[style.--x]`, `--x: ${…}`, `style="--x:"`). */
 function runtimeVars(src: string, into: Set<string>) {

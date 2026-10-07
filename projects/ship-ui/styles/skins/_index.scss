@@ -19,12 +19,15 @@
 @use './toggle';
 @use './range-slider' as rangeslider;
 @use './radio';
+@use './checkbox';
 @use './chip';
 @use './datepicker';
 @use './stepper';
 @use './avatar';
 @use './code-input' as codeinput;
 @use './video';
+@use './video-playlist' as videoplaylist;
+@use './chart-sparkline' as chartsparkline;
 @use './form-field' as formfield;
 @use './alert';
 @use './button';
@@ -98,6 +101,10 @@ $overrides: () !default;
   @include radio.skin(colors-for(radio), variants-for(radio));
 }
 
+@if enabled(checkbox) {
+  @include checkbox.skin(colors-for(checkbox), variants-for(checkbox));
+}
+
 @if enabled(chip) {
   @include chip.skin(colors-for(chip), variants-for(chip));
 }
@@ -120,6 +127,14 @@ $overrides: () !default;
 
 @if enabled(video) {
   @include video.skin(colors-for(video), variants-for(video));
+}
+
+@if enabled(videoPlaylist) {
+  @include videoplaylist.skin(colors-for(videoPlaylist), variants-for(videoPlaylist));
+}
+
+@if enabled(chartSparkline) {
+  @include chartsparkline.skin(colors-for(chartSparkline), variants-for(chartSparkline));
 }
 
 @if enabled(formField) {

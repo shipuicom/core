@@ -21,7 +21,7 @@ sh-list-item-swipe {
     width: 100%;
     box-sizing: border-box;
     background-color: var(--base-1);
-    color: var(--list-color, var(--base-9));
+    color: var(--list-c, var(--base-9));
     border-radius: inherit;
 
     transition:
@@ -57,7 +57,7 @@ sh-list-item-swipe {
   &:has(.selected),
   &:has(input:checked) {
     .sh-swipe-content {
-      background-color: var(--list-active-bg, var(--base-2));
+      background-color: var(--list-bg-a, var(--base-2));
       color: var(--base-12);
     }
   }

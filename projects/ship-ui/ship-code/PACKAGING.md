@@ -1,41 +1,14 @@
-# ship-code is not published yet
+# ship-code packaging
 
-`ng-package.json` is renamed to `ng-package.json.disabled`, which is how
-ng-packagr discovers secondary entry points — without it, `ng build ship-ui`
-skips this directory and `@ship-ui/core/ship-code` is not emitted.
+`@ship-ui/core/ship-code` is a normal secondary entry point. Its TextMate engine depends on two vendored bundles
+(`vendor/vscode-textmate`, `vendor/vscode-oniguruma`, see `vendor/README.md`), which keeps `@ship-ui/core`
+dependency-free.
 
-## Why
+ng-packagr's FESM bundler resolves relative imports only among the files ngtsc compiled, so a vendored `main.js`
+with a hand-written `main.d.ts` beside it can never be bundled (the `.d.ts` satisfies TypeScript and the `.js` is
+never emitted). Each vendored bundle is therefore stored as `main.impl.ts` (the upstream ESM output under
+`// @ts-nocheck`) with a typed `main.ts` entry that re-exports its values under the upstream declarations.
 
-The TextMate engine imports the vendored bundles directly:
-
-```ts
-import { Registry } from '../vendor/vscode-textmate/main';
-import { loadWASM }  from '../vendor/vscode-oniguruma/main';
-```
-
-Each vendor entry ships as `main.js` **plus** a hand-written `main.d.ts`.
-TypeScript resolves the declaration file and never compiles the `.js`, so
-ng-packagr's bundler is left with an import it cannot resolve:
-
-```
-Could not resolve "../vendor/vscode-textmate/main"
-  from "dist/ship-ui/tmp-esm2022/ship-code/textmate/vscode-engine.js"
-```
-
-`allowJs` alone does not fix it — the `.d.ts` still shadows the `.js`.
-
-## To re-enable
-
-Fix the vendor packaging, then rename the file back. Options, roughly in order
-of preference:
-
-1. Convert the vendor entry points to `.ts` (dropping the shadowing `.d.ts`) so
-   they compile into the output tree.
-2. Publish the vendored bundles as real dependencies and import them by package
-   name, letting ng-packagr treat them as external.
-3. Split the TextMate engine into its own entry point that is built separately
-   with a bundler that can consume plain ESM `.js`.
-
-Nothing in the library imports `@ship-ui/core/ship-code`, and the design-system
-demo resolves it from source through the `@ship-ui/core/*` tsconfig path, so
-both keep working while it is gated.
+The Oniguruma WASM binary is not bundled: the primary `ng-package.json` publishes it as an asset at
+`ship-code/vendor/vscode-oniguruma/onig.wasm`, and the application serves it (the docs app copies it to
+`/assets/ship-code/onig.wasm` through `angular.json`) and hands its URL to `createVSCodeEngine`.

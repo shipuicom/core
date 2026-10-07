@@ -138,7 +138,7 @@ describe('ShipSidenav', () => {
 
       const mainWrap = navEl.querySelector('.main-wrap') as HTMLElement;
       expect(mainWrap.style.transform).toBe('translateX(320px)');
-      expect(navEl.style.getPropertyValue('--sidenav-open-width')).toBe('320px');
+      expect(navEl.style.getPropertyValue('--sidenav-open-w')).toBe('320px');
     });
 
     it('locks document scroll while open and releases it on close', () => {

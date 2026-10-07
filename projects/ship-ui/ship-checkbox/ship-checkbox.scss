@@ -75,15 +75,6 @@ sh-checkbox {
     }
   }
 
-  &.raised,
-  &.flat {
-    &:not(:has(input:checked)):not(.active) .box {
-      background: transparent;
-      border: var(--border-10);
-      border-color: var(--cb-bc);
-    }
-  }
-
   &.indeterminate {
     .box sh-icon {
       &.indeterminate-indicator {

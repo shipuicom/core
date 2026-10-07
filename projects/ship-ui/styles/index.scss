@@ -58,6 +58,7 @@ $shipAccordion: true !default;
 $shipTree: true !default;
 $shipVideo: true !default;
 $shipVideoPlaylist: true !default;
+$shipChartSparkline: true !default;
 $shipAvatar: true !default;
 $shipBreadcrumbs: true !default;
 $shipChat: true !default;
@@ -146,6 +147,7 @@ $shipColors: map.keys(palettes.$all) !default;
     tree: $shipTree,
     video: $shipVideo,
     videoPlaylist: $shipVideoPlaylist,
+    chartSparkline: $shipChartSparkline,
     avatar: $shipAvatar,
     breadcrumbs: $shipBreadcrumbs,
     chat: $shipChat,

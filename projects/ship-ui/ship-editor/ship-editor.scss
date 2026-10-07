@@ -3,23 +3,23 @@
 sh-editor {
   --editor-bg: var(--base-1);
   --editor-code-bg: var(--base-2);
-  --editor-border-color: var(--base-4);
+  --editor-bc: var(--base-4);
   --editor-toolbar-bg: rgb(from var(--base-1) r g b / 70%);
-  --editor-toolbar-border: var(--base-4);
-  --editor-btn-hover: var(--base-3);
-  --editor-btn-active-bg: var(--primary-3);
-  --editor-btn-active-c: var(--primary-11);
+  --editor-toolbar-bc: var(--base-4);
+  --editor-btn-bg-h: var(--base-3);
+  --editor-btn-bg-a: var(--primary-3);
+  --editor-btn-c-a: var(--primary-11);
   --editor-footer-bg: var(--base-2);
   --editor-py: var(--pad-y-5);
   --editor-px: var(--pad-x-5);
   --editor-min-h: #{p2r(150)};
 
-  --editor-border-focus: var(--base-8);
-  --editor-shape: var(--shape-3);
+  --editor-bc-f: var(--base-8);
+  --editor-s: var(--shape-3);
 
   display: block;
   width: 100%;
-  border-radius: var(--editor-shape);
+  border-radius: var(--editor-s);
 
   .sh-editor-container {
     position: relative;
@@ -28,13 +28,13 @@ sh-editor {
     height: 100%;
     min-height: var(--editor-min-h);
     background-color: var(--editor-bg);
-    border: 1px solid var(--editor-border-color);
+    border: 1px solid var(--editor-bc);
     border-radius: inherit;
     overflow: hidden;
     transition: border-color 0.2s ease;
 
     &:focus-within {
-      border-color: var(--editor-border-focus);
+      border-color: var(--editor-bc-f);
     }
   }
 
@@ -229,7 +229,7 @@ sh-editor {
       border: none;
       height: #{p2r(16)};
       margin: #{p2r(16)} 0;
-      background: linear-gradient(var(--editor-border-color), var(--editor-border-color)) center / 100% 1px no-repeat;
+      background: linear-gradient(var(--editor-bc), var(--editor-bc)) center / 100% 1px no-repeat;
       cursor: pointer;
     }
 
@@ -391,7 +391,7 @@ sh-editor {
     padding: p2r(6) p2r(12);
     font: var(--paragraph-10);
     color: var(--base-8);
-    border-top: 1px solid var(--editor-border-color);
+    border-top: 1px solid var(--editor-bc);
     background: var(--editor-footer-bg);
     text-align: right;
   }

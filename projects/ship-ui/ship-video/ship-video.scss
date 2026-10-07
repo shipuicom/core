@@ -11,11 +11,11 @@ sh-video {
   --vid-surface-bg: var(--dark-text);
   --vid-rail-bg: rgb(from var(--light-text) r g b / 24%);
   --vid-rail-buffered: rgb(from var(--light-text) r g b / 42%);
-  --vid-rail-height: #{p2r(3)};
-  --vid-rail-height-active: #{p2r(5)};
-  --vid-knob-size: #{p2r(12)};
+  --vid-rail-h: #{p2r(3)};
+  --vid-rail-h-a: #{p2r(5)};
+  --vid-knob-si: #{p2r(12)};
   --vid-marker-bg: rgb(from var(--light-text) r g b / 85%);
-  --vid-button-hover-bg: rgb(from var(--light-text) r g b / 14%);
+  --vid-btn-bg-h: rgb(from var(--light-text) r g b / 14%);
   --vid-chip-bg: rgb(from var(--dark-text) r g b / 72%);
   --vid-chip-bg-h: rgb(from var(--dark-text) r g b / 90%);
   --vid-chip-bc: rgb(from var(--light-text) r g b / 40%);
@@ -238,7 +238,7 @@ sh-video {
     }
 
     &:hover {
-      background: var(--vid-button-hover-bg);
+      background: var(--vid-btn-bg-h);
     }
 
     &:focus-visible {
@@ -269,7 +269,7 @@ sh-video {
     .sh-video-scrubber-rail {
       position: relative;
       width: 100%;
-      height: var(--vid-rail-height);
+      height: var(--vid-rail-h);
       border-radius: p2r(2);
       background: var(--vid-rail-bg);
       overflow: hidden;
@@ -278,7 +278,7 @@ sh-video {
 
     &:hover .sh-video-scrubber-rail,
     &:focus-visible .sh-video-scrubber-rail {
-      height: var(--vid-rail-height-active);
+      height: var(--vid-rail-h-a);
     }
 
     .sh-video-scrubber-buffered {
@@ -307,8 +307,8 @@ sh-video {
     .sh-video-scrubber-knob {
       position: absolute;
       top: 50%;
-      width: var(--vid-knob-size);
-      height: var(--vid-knob-size);
+      width: var(--vid-knob-si);
+      height: var(--vid-knob-si);
       border-radius: 50%;
       background: var(--vid-accent);
       transform: translate(-50%, -50%) scale(0);
@@ -428,7 +428,7 @@ sh-video {
     }
 
     &:hover {
-      background: var(--vid-button-hover-bg);
+      background: var(--vid-btn-bg-h);
     }
 
     &:focus-visible {
@@ -484,13 +484,13 @@ sh-video {
 
       .sh-video-scrubber-knob {
         top: auto;
-        bottom: calc(var(--vid-rail-height) / 2);
+        bottom: calc(var(--vid-rail-h) / 2);
         transform: translate(-50%, 50%) scale(0);
       }
 
       &:hover .sh-video-scrubber-knob,
       &:focus-visible .sh-video-scrubber-knob {
-        bottom: calc(var(--vid-rail-height-active) / 2);
+        bottom: calc(var(--vid-rail-h-a) / 2);
         transform: translate(-50%, 50%) scale(1);
       }
 

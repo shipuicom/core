@@ -8,7 +8,8 @@ body.sh-sidenav-open {
 sh-sidenav {
   --sidenav-py: var(--pad-y-5);
   --sidenav-px: var(--pad-x-4);
-  --sidenav-width: var(--sidenav-open-width, #{p2r(280)});
+  --sidenav-open-w: #{p2r(280)};
+  --sidenav-w: var(--sidenav-open-w);
   // Deliberately viewport-relative: the host is often laid out inside a
   // narrower grid column and is expected to span the full width regardless.
   --sidenav-wrap-w: 100vw;
@@ -19,7 +20,7 @@ sh-sidenav {
   height: var(--sidenav-wrap-h);
 
   .sidenav {
-    width: var(--sidenav-width);
+    width: var(--sidenav-w);
     transition: width 200ms linear;
     height: 100%;
     overflow-x: hidden;
@@ -102,7 +103,7 @@ sh-sidenav {
     }
 
     &.closed {
-      --sidenav-width: #{p2r(100)};
+      --sidenav-w: #{p2r(100)};
     }
   }
 
@@ -197,7 +198,7 @@ sh-sidenav {
 
     &.open {
       .main-wrap {
-        transform: translateX(var(--sidenav-width));
+        transform: translateX(var(--sidenav-w));
         box-shadow: var(--box-shadow-10);
         border-left: var(--border-10);
       }

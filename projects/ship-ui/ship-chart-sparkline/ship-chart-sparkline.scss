@@ -18,22 +18,6 @@ sh-chart-sparkline {
   padding: var(--chart-pad) 0;
   line-height: 0;
 
-  &.accent {
-    --chart-stroke: var(--accent-8);
-    --chart-fill: var(--accent-3);
-  }
-  &.success {
-    --chart-stroke: var(--success-8);
-    --chart-fill: var(--success-3);
-  }
-  &.warn {
-    --chart-stroke: var(--warn-8);
-    --chart-fill: var(--warn-3);
-  }
-  &.error {
-    --chart-stroke: var(--error-8);
-    --chart-fill: var(--error-3);
-  }
 
   svg {
     display: block;

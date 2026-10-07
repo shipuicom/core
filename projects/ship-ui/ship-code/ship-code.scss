@@ -5,14 +5,14 @@ sh-code {
   --code-fg: var(--base-12);
   --code-gutter-bg: var(--base-2);
   --code-gutter-fg: var(--base-9);
-  --code-border: var(--base-4);
+  --code-bc: var(--base-4);
   --code-caret: var(--primary-9);
   --code-selection: rgb(from var(--primary-9) r g b / 25%);
-  --code-font: var(--code-20, 13px/1.6 ui-monospace, 'SF Mono', Menlo, Consolas, monospace);
+  --code-f: var(--code-20);
 
   display: block;
   position: relative;
-  border: 1px solid var(--code-border);
+  border: 1px solid var(--code-bc);
   border-radius: var(--shape-2);
   background: var(--code-bg);
   overflow: hidden;
@@ -33,7 +33,7 @@ sh-code {
     max-height: inherit;
     overflow: auto;
     overflow-anchor: none;
-    font: var(--code-font);
+    font: var(--code-f);
     color: var(--code-fg);
   }
 

@@ -3,18 +3,18 @@
 sh-tree {
   --tree-bg: var(--base-2);
   --tree-bc: var(--base-3);
-  --tree-color: var(--base-12);
-  --tree-hover-bg: var(--base-3);
-  --tree-active-bg: var(--base-4);
-  --tree-selected-bg: var(--base-4);
-  --tree-guide-color: var(--base-4);
-  --tree-caret-color: var(--base-9);
-  --tree-caret-hover-color: var(--base-12);
-  --tree-icon-color: var(--base-9);
-  --tree-icon-folder-color: var(--primary-8);
+  --tree-c: var(--base-12);
+  --tree-bg-h: var(--base-3);
+  --tree-bg-a: var(--base-4);
+  --tree-bg-s: var(--base-4);
+  --tree-guide-c: var(--base-4);
+  --tree-caret-c: var(--base-9);
+  --tree-caret-c-h: var(--base-12);
+  --tree-ic: var(--base-9);
+  --tree-folder-ic: var(--primary-8);
   --tree-indent-step: #{p2r(12)};
-  --tree-padding-left: #{p2r(12)};
-  --tree-padding-right: #{p2r(6)};
+  --tree-pl: #{p2r(12)};
+  --tree-pr: #{p2r(6)};
 
   display: flex;
   flex-direction: column;
@@ -39,16 +39,16 @@ sh-tree {
     position: relative;
     cursor: pointer;
     user-select: none;
-    color: var(--tree-color);
+    color: var(--tree-c);
     font: var(--paragraph-20);
     gap: p2r(6);
     transition: background 120ms ease;
-    padding-left: calc(var(--tree-padding-left) + var(--tree-depth, 0) * var(--tree-indent-step));
-    padding-right: var(--tree-padding-right);
+    padding-left: calc(var(--tree-pl) + var(--tree-depth, 0) * var(--tree-indent-step));
+    padding-right: var(--tree-pr);
     background: var(--tree-bg);
 
     &:hover {
-      background: var(--tree-hover-bg);
+      background: var(--tree-bg-h);
     }
 
     &:focus {
@@ -61,18 +61,18 @@ sh-tree {
     }
 
     &.is-selected {
-      background: var(--tree-selected-bg);
+      background: var(--tree-bg-s);
     }
 
     &.is-grabbed {
       outline: 2px dashed var(--primary-8, currentColor);
       outline-offset: -2px;
-      background: var(--tree-active-bg, var(--tree-hover-bg));
+      background: var(--tree-bg-a, var(--tree-bg-h));
     }
 
     &.sortable-ghost {
       opacity: 0.4;
-      background: var(--tree-active-bg);
+      background: var(--tree-bg-a);
     }
 
     .indent-guide {
@@ -80,10 +80,10 @@ sh-tree {
       top: 0;
       bottom: 0;
       width: 1px;
-      border-left: 1px solid var(--tree-guide-color);
+      border-left: 1px solid var(--tree-guide-c);
       opacity: 0.5;
       left: calc(
-        var(--tree-padding-left) + (var(--tree-indent-step) / 2) + var(--guide-index, 0) * var(--tree-indent-step)
+        var(--tree-pl) + (var(--tree-indent-step) / 2) + var(--tree-guide-i, 0) * var(--tree-indent-step)
       );
     }
 
@@ -110,7 +110,7 @@ sh-tree {
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--tree-caret-color);
+        color: var(--tree-caret-c);
         border-radius: var(--shape-1);
         width: 100%;
         height: 100%;
@@ -131,20 +131,20 @@ sh-tree {
         }
 
         &:hover {
-          color: var(--tree-caret-hover-color);
+          color: var(--tree-caret-c-h);
         }
       }
     }
 
     .node-icon {
-      color: var(--tree-icon-color);
+      color: var(--tree-ic);
       display: inline-flex;
       align-items: center;
       justify-content: center;
       width: var(--tree-indent-step);
 
       &.folder {
-        color: var(--tree-icon-folder-color);
+        color: var(--tree-folder-ic);
       }
 
       &:has(~ .node-content sh-tree-node sh-icon) {
@@ -154,13 +154,13 @@ sh-tree {
 
     &.is-folder {
       sh-tree-node .sh-tree-node-left sh-icon {
-        color: var(--tree-icon-folder-color);
+        color: var(--tree-folder-ic);
       }
     }
 
     &:not(.is-folder) {
       sh-tree-node .sh-tree-node-left sh-icon {
-        color: var(--tree-icon-color);
+        color: var(--tree-ic);
       }
     }
 
@@ -232,7 +232,7 @@ sh-tree {
   .empty-state {
     padding: p2r(32);
     text-align: center;
-    color: var(--tree-caret-color);
+    color: var(--tree-caret-c);
     font: var(--paragraph-20);
   }
 }

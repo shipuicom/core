@@ -45,9 +45,9 @@ describe('ShipBreadcrumbs', () => {
     expect(el.getAttribute('aria-label')).toBe('Breadcrumb');
   });
 
-  it('falls back to the base variant next to consumer classes', () => {
+  it('stamps no variant class by default next to consumer classes', () => {
     const { el } = setup();
-    expect(el.classList).toContain('base');
+    expect(el.classList).not.toContain('base');
     expect(el.classList).toContain('custom');
   });
 
@@ -56,7 +56,6 @@ describe('ShipBreadcrumbs', () => {
     fixture.componentInstance.variant.set('type-c');
     fixture.detectChanges();
     expect(el.classList).toContain('type-c');
-    expect(el.classList).not.toContain('base');
   });
 
   it('uses the ShipConfig default', () => {

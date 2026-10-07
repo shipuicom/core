@@ -61,7 +61,7 @@ export class ShipLayoutRanking {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     role: 'listitem',
-    '[style.--bar-pct]': 'percent()',
+    '[style.--ranking-pct]': 'percent()',
   },
 })
 export class ShipLayoutRankingItem {
