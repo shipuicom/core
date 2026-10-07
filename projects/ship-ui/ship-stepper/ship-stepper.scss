@@ -1,8 +1,9 @@
 @use 'helpers' as *;
 
-// structure-lint: allow cross-use — the stepper stamps `.sh-radio` dots itself, so it needs the radio
-// styles even when sh-radio is not in the bundle. Phase 3 moves the radio skin to styles/skins.
-@use '../ship-radio/ship-radio.scss';
+// The stepper stamps `.sh-radio` dots itself, so it carries the radio structure instead of importing sh-radio.
+.sh-radio {
+  @include radio-dot;
+}
 
 sh-stepper {
   --step-track-bg: var(--base-3);

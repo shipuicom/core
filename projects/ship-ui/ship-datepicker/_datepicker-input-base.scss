@@ -1,0 +1,69 @@
+@use 'helpers' as *;
+
+/// What `sh-datepicker-input` and `sh-daterange-input` share: the masked value in the field they render, the
+/// embedded calendar's width, the `.sharp` calendar and the `.small` field density.
+@mixin datepicker-input-base {
+  sh-form-field-popover {
+    .input-wrap {
+      .input {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        align-items: center;
+
+        &.active-start input:first-of-type {
+          color: var(--primary-8);
+        }
+        &.active-end input:last-of-type {
+          color: var(--primary-8);
+        }
+      }
+
+      [suffix] {
+        margin-right: p2r(12);
+      }
+    }
+
+    .masked-value {
+      font: var(--paragraph-30B);
+      color: var(--base-8);
+      display: flex;
+      gap: p2r(4);
+
+      &.active-start .start-val {
+        color: var(--primary-8);
+      }
+
+      &.active-end .end-val {
+        color: var(--primary-8);
+      }
+
+      + input + input,
+      + input {
+        opacity: 0;
+        height: 0;
+        width: 0;
+        margin: 0;
+      }
+    }
+
+    [suffix] + [suffix].default-indicator {
+      display: none;
+    }
+  }
+
+  sh-datepicker {
+    --dp-w: #{p2r(240)};
+  }
+
+  &.sharp sh-datepicker {
+    --dp-sel-s: var(--shape-1);
+    --dp-ar: 1/0.8;
+    --dp-day-g: #{p2r(8 0)};
+  }
+
+  &.small {
+    sh-form-field-popover {
+      @include form-field-small;
+    }
+  }
+}

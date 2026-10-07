@@ -48,7 +48,7 @@ function matchesFormat(text: string, format: string): boolean {
 
 @Component({
   selector: 'sh-color-picker-input',
-  styleUrl: './ship-color-picker.scss',
+  styleUrl: './ship-color-picker-input.scss',
   encapsulation: ViewEncapsulation.None,
   imports: [ShipFormFieldPopover, ShipColorPicker, ShipIcon, ShipButton],
   template: `

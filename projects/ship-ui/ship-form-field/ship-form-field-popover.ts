@@ -5,7 +5,7 @@ import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
 
 @Component({
   selector: 'sh-form-field-popover',
-  styleUrl: './ship-form-field.scss',
+  styleUrl: './ship-form-field-popover.scss',
   encapsulation: ViewEncapsulation.None,
   imports: [ShipPopover],
   template: `

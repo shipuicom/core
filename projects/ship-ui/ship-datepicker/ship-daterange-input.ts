@@ -7,7 +7,7 @@ import { ShipDatepicker } from './ship-datepicker';
 
 @Component({
   selector: 'sh-daterange-input',
-  styleUrl: './ship-datepicker.scss',
+  styleUrl: './ship-daterange-input.scss',
   encapsulation: ViewEncapsulation.None,
   imports: [ShipDatepicker, ShipFormFieldPopover, ShipIcon],
   providers: [DatePipe],

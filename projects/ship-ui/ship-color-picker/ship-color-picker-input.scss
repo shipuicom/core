@@ -1,0 +1,125 @@
+@use 'helpers' as *;
+
+sh-color-picker-input {
+  display: flex;
+
+  sh-popover {
+    width: 100%;
+  }
+
+  [popoverContent] {
+    padding: p2r(12);
+    width: p2r(280);
+    display: flex;
+    flex-direction: column;
+    gap: p2r(8);
+  }
+
+  .input-container {
+    flex: 1 0;
+    display: flex;
+    align-items: center;
+    gap: p2r(4);
+    padding-right: p2r(8);
+
+    input {
+      margin-right: 0;
+      min-width: p2r(175);
+    }
+  }
+
+  .color-indicator {
+    position: relative;
+    width: p2r(24);
+    height: p2r(24);
+    border-radius: var(--shape-2);
+    border: var(--border-10);
+    overflow: hidden;
+
+    background-color: var(--light-text);
+    background-image:
+      linear-gradient(45deg, var(--cp-checker-l) 25%, transparent 25%),
+      linear-gradient(-45deg, var(--cp-checker-l) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, var(--cp-checker-l) 75%),
+      linear-gradient(-45deg, transparent 75%, var(--cp-checker-l) 75%);
+    background-size: 8px 8px;
+    background-position:
+      0 0,
+      0 4px,
+      4px -4px,
+      -4px 0px;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--indicator-color);
+    }
+  }
+
+  sh-color-picker {
+    width: 100%;
+  }
+
+  // Patch appearance: the field collapses to a single clickable color swatch
+  // that opens the picker popover. The text input stays in the DOM (hidden)
+  // so [(ngModel)] value binding is unchanged.
+  &.patch {
+    display: inline-flex;
+    width: auto;
+
+    sh-popover {
+      width: auto;
+    }
+
+    .input-wrap {
+      border: none;
+      background: none;
+      padding: 0;
+      min-height: 0;
+      min-width: 0;
+      cursor: pointer;
+    }
+
+    .prefix,
+    .prefix-space,
+    .suffix-space,
+    .helpers {
+      display: none;
+    }
+
+    .input-container {
+      flex: none;
+      padding: 0;
+      gap: 0;
+
+      input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        min-width: 0;
+        padding: 0;
+        border: 0;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      // eyedropper button — not shown in the compact swatch
+      > button {
+        display: none;
+      }
+    }
+
+    .color-indicator {
+      width: p2r(28);
+      height: p2r(28);
+      cursor: pointer;
+      border-radius: var(--shape-2);
+      transition: box-shadow 0.15s ease;
+
+      &:hover {
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--base-8) 40%, transparent);
+      }
+    }
+  }
+}

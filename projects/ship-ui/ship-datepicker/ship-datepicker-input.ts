@@ -22,7 +22,7 @@ import { ShipDatepicker } from './ship-datepicker';
 
 @Component({
   selector: 'sh-datepicker-input',
-  styleUrl: './ship-datepicker.scss',
+  styleUrl: './ship-datepicker-input.scss',
   encapsulation: ViewEncapsulation.None,
   imports: [ShipDatepicker, ShipFormFieldPopover, ShipIcon],
   providers: [DatePipe],
