@@ -55,6 +55,8 @@ function state(page: Page) {
 
 /** Caret to the end of the last block, then Enter for a fresh paragraph. */
 async function caretOnFreshLine(page: Page) {
+  const count = () => page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.document().length);
+  const before = await count();
   await page.evaluate(() => {
     const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content') as HTMLElement;
     const el = surface.children[surface.children.length - 1] as HTMLElement;
@@ -70,7 +72,8 @@ async function caretOnFreshLine(page: Page) {
     document.dispatchEvent(new Event('selectionchange'));
   });
   await page.keyboard.press('Enter');
-  await page.waitForTimeout(150);
+  // The fresh paragraph is in the model: no fixed delay.
+  await expect.poll(count).toBe(before + 1);
 }
 
 test.describe('slash-command component insert', () => {
@@ -86,8 +89,21 @@ test.describe('slash-command component insert', () => {
         .toBe(true);
 
       if (confirm === 'Enter') await page.keyboard.press('Enter');
-      else await page.evaluate(() => (document.querySelector('.sh-editor-slash-menu button') as HTMLElement).click());
-      await page.waitForTimeout(400);
+      else {
+        // `isOpen()` flips before the options render: wait for the option itself, not the signal.
+        const option = page.locator('.sh-editor-slash-menu button').first();
+        await option.waitFor({ state: 'visible' });
+        await option.evaluate((el) => (el as HTMLElement).click());
+      }
+      // Wait for the insert to land in the model and its widget to mount (the block renders an Angular component
+      // on its own schedule) instead of sleeping a fixed time. A second widget never mounting is the bug itself,
+      // asserted below.
+      await expect
+        .poll(async () => {
+          const s = await state(page);
+          return s.counterBlocks === before.counterBlocks + 1 && s.counterWidgets >= before.counterWidgets + 1;
+        })
+        .toBe(true);
 
       const after = await state(page);
       // One block in the model...
@@ -102,16 +118,25 @@ test.describe('slash-command component insert', () => {
 
   test('the inserted component survives typing in the paragraph after it', async ({ page }) => {
     const { errors } = await openEditor(page);
+    const before = await state(page);
     await caretOnFreshLine(page);
     await page.keyboard.type('/counter');
     await expect
       .poll(() => page.evaluate(() => !!(window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).slashMenu()?.isOpen()))
       .toBe(true);
     await page.keyboard.press('Enter');
-    await page.waitForTimeout(400);
+    await expect
+      .poll(async () => {
+        const s = await state(page);
+        return s.counterBlocks === before.counterBlocks + 1 && s.counterWidgets >= before.counterWidgets + 1;
+      })
+      .toBe(true);
+    // The insert selects the new block and paints that selection on the next frame; moving the caret before the
+    // paint lands lets it re-select the block and swallow the first keystroke. Let two frames pass first.
+    await expect.poll(() => page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.selectedBlock() !== null)).toBe(true);
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 
-    // The insert selects the new block; Escape-free path: click into the
-    // trailing paragraph and type, which is what a user does next.
+    // Escape-free path: click into the trailing paragraph and type, which is what a user does next.
     await page.evaluate(() => {
       const surface = document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content') as HTMLElement;
       const el = surface.children[surface.children.length - 1] as HTMLElement;
@@ -124,8 +149,16 @@ test.describe('slash-command component insert', () => {
       sel.addRange(range);
       document.dispatchEvent(new Event('selectionchange'));
     });
+    // The caret move has released the block selection before any key is pressed.
+    await expect.poll(() => page.evaluate(() => (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.selectedBlock())).toBeNull();
     await page.keyboard.type('after');
-    await page.waitForTimeout(250);
+    // The typed text has reached the model's last block.
+    await expect
+      .poll(() => page.evaluate(() => {
+        const doc = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).engine.document();
+        return (doc[doc.length - 1]?.content ?? []).map((n: any) => n.text ?? '').join('');
+      }))
+      .toBe('after');
 
     const after = await state(page);
     expect(after.counterWidgets).toBe(after.counterBlocks);
@@ -166,7 +199,12 @@ test.describe('slash-command insert into a paragraph mid-document', () => {
         .getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!)
         .value.set('<p>Custom blocks:</p><p><br></p><p>Try changing</p>');
     });
-    await page.waitForTimeout(400);
+    // The written value is in the model and on screen.
+    await expect
+      .poll(() => page.evaluate(() =>
+        document.querySelector('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content')!.children.length
+      ))
+      .toBe(3);
 
     // Caret into the empty paragraph that has another paragraph after it.
     await page.evaluate(() => {
