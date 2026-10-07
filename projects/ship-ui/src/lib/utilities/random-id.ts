@@ -1,3 +1,3 @@
 export function generateUniqueId() {
-  return Date.now().toString(36) + Math.random().toString(36).substring(2);
+  return Date.now().toString(36) + Math.random().toString(36).substring(2); // structure-lint: allow — this is the generator
 }

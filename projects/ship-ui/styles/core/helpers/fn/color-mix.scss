@@ -1,3 +1,4 @@
+// structure-lint: allow color-literal — lighten/darken mix towards white and black by definition.
 @function lighten($color, $percentage) {
   @return color-mix(in srgb, $color, #fff $percentage);
 }

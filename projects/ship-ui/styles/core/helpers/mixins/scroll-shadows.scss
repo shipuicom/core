@@ -1,3 +1,4 @@
+// structure-lint: allow color-literal — the scroll shadows are black alpha ramps, not theme colours.
 @use 'sass:list' as list;
 @use 'sass:map' as map;
 @use '../fn/p2r.scss' as *;

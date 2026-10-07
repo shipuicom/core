@@ -38,58 +38,7 @@ type SheetEditorConfig = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ShipEditor, ShipEditorToolbar, ShipEditorActionDirective, ShipIcon],
-  styles: `
-    sh-editor-sheet-surface {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-height: 0;
-
-      // Stretch the editor's internal column so the body takes the leftover
-      // height (and becomes the scroller) while the bottom toolbar lands
-      // pinned at the card's bottom edge.
-      sh-editor,
-      sh-editor > .sh-editor-container {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        min-height: 0;
-      }
-
-      // The sheet card supplies the chrome — the editor sheds its own frame.
-      sh-editor {
-        border-radius: 0;
-      }
-
-      sh-editor > .sh-editor-container {
-        border: none;
-        border-radius: 0;
-      }
-
-      sh-editor .sh-editor-body {
-        flex: 1;
-        min-height: 0;
-        overflow: auto;
-      }
-
-      // One scrollable row instead of wrapping: on narrow screens the full
-      // action set swipes horizontally, like native keyboard accessory bars.
-      sh-editor-toolbar[data-position='bottom'] .sh-editor-toolbar-inner {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-
-        &::-webkit-scrollbar {
-          display: none;
-        }
-
-        button {
-          flex: 0 0 auto;
-        }
-      }
-    }
-  `,
+  styleUrl: './ship-editor-sheet-surface.scss',
   template: `
     <sh-editor
       [value]="data().value()"
@@ -158,31 +107,7 @@ export class ShipEditorSheetSurface {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ShipEditor, ShipEditorToolbar, ShipEditorActionDirective, ShipIcon],
-  styles: `
-    sh-editor-sheet {
-      display: block;
-
-      .sh-editor-sheet-preview {
-        position: relative;
-        cursor: pointer;
-
-        // The preview is inert — the sheet is the editing surface.
-        sh-editor {
-          pointer-events: none;
-        }
-
-        .sh-editor-sheet-preview-hit {
-          position: absolute;
-          inset: 0;
-          border: none;
-          background: transparent;
-          padding: 0;
-          cursor: pointer;
-          width: 100%;
-        }
-      }
-    }
-  `,
+  styleUrl: './ship-editor-sheet.scss',
   template: `
     @if (sheetActive()) {
       <div class="sh-editor-sheet-preview">

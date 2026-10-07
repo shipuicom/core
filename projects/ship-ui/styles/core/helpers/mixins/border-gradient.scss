@@ -1,3 +1,4 @@
+// structure-lint: allow color-literal — the gradient masks are white/black alpha ramps, not theme colours.
 @use 'sass:list';
 @use 'sass:map';
 

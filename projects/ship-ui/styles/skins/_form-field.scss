@@ -10,11 +10,11 @@
       }
     }
 
-    // Validation state on the field itself tints its icons. `.warning` stays as an alias for one minor.
+    // Validation state on the field itself tints its icons. `.warning` stays as an alias for one minor. // structure-lint: allow — `.warning` is a 0.26 alias of `.warn` for one minor
     @each $c in $colors {
       @if $c == warn {
         &.warn,
-        &.warning {
+        &.warning { // structure-lint: allow — `.warning` is a 0.26 alias of `.warn` for one minor
           --ff-ic: var(--warn-8);
         }
       } @else if $c == error or $c == success {

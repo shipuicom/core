@@ -1,9 +1,11 @@
-import { Component, computed, contentChild, ElementRef, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, contentChild, ElementRef, signal, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { nativeInputValueSignal } from './native-input-value-signal';
 
 @Component({
   selector: 'app-input-signal-demo',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   template: `
     <div class="card">
       <h3>Text input</h3>
@@ -21,19 +23,7 @@ import { nativeInputValueSignal } from './native-input-value-signal';
       <p>typeof number input value: {{ typeof numberInputValue() }}</p>
     </div>
   `,
-  styles: [
-    `
-      :host {
-        display: block;
-        padding: 4rem;
-      }
-      .card {
-        padding: 1rem;
-        border: 1px solid #ccc;
-        margin-bottom: 1rem;
-      }
-    `,
-  ],
+  styleUrl: './native-input-example-demo.scss',
 })
 export class InputSignalDemoComponent {
   myTextInput = contentChild<ElementRef<HTMLInputElement>>('myTextInput');
@@ -68,6 +58,8 @@ export class InputSignalDemoComponent {
 
 @Component({
   selector: 'app-create-input-example',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   imports: [FormsModule, InputSignalDemoComponent],
   template: `
     <app-input-signal-demo>
@@ -88,17 +80,7 @@ export class InputSignalDemoComponent {
       <button (click)="toggleTextInput()">Toggle Text Input</button>
     </app-input-signal-demo>
   `,
-  styles: [
-    `
-      [number-wrap] {
-        outline: 1px solid red;
-      }
-
-      [text-wrap] {
-        outline: 1px solid yellow;
-      }
-    `,
-  ],
+  styleUrl: './native-input-example.scss',
 })
 export default class CreateInputExampleComponent {
   someNumberModel = signal<number | undefined>(undefined);

@@ -1,3 +1,5 @@
+// structure-lint: allow color-literal — the shadow and contrast-text tokens are defined here.
+// structure-lint: allow px-literal — the base font size and shadow offsets are the root values p2r() derives from.
 @use 'sass:list';
 @use 'sass:string';
 @use '../../helpers.scss' as *;

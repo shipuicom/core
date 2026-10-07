@@ -62,7 +62,8 @@ const stripComments = (scss: string) =>
   scss.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' ')).replace(/\/\/[^\n]*/g, (m) => ' '.repeat(m.length));
 
 const declaredVars = (scss: string) => new Set([...scss.matchAll(/(--[a-z0-9-]+)\s*:/gi)].map((m) => m[1]!));
-const usedVars = (scss: string) => [...scss.matchAll(/var\(\s*(--[a-z0-9-]+)/gi)].map((m) => ({ name: m[1]!, index: m.index! }));
+// An interpolated name (`var(--pad-#{$axis})`) is not a token on its own.
+const usedVars = (scss: string) => [...scss.matchAll(/var\(\s*(--[a-z0-9-]+)(?![a-z0-9-]|#\{)/gi)].map((m) => ({ name: m[1]!, index: m.index! }));
 
 /** Top-level statements of a scss file: [kind, text, startIndex]. Brace-matched, comment-stripped. */
 function topLevel(scss: string): Array<{ text: string; index: number }> {
@@ -123,8 +124,8 @@ for (const d of allPkgDirs) {
     }
   }
 }
-// Consumer-facing tokens documented as overridable but never declared with a default.
-for (const v of ['--chip-c', '--chip-ic', '--achievement-c', '--stat-c', '--trend-c', '--goal-c', '--ring-c', '--ach-c']) globalDefined.add(v);
+// The skins and core declare the consumer-facing defaults (`--chip-c`, `--stat-c`, …) that components only read.
+for (const f of walk(STYLES)) if (f.endsWith('.scss')) for (const v of declaredVars(stripComments(readFileSync(f, 'utf8')))) globalDefined.add(v);
 
 // ---------------------------------------------------------------------------------------------
 // rules
@@ -181,7 +182,8 @@ function lintScss(pkg: string, file: string, flagName: string) {
     }
   }
 
-  for (const m of scss.matchAll(/^\s*padding(?:-(?:block|inline))?: [^;]*(?:p2r\(|\d+px)[^;]*;/gm)) {
+  // Raw px padding only: `p2r()` already follows the size rule, and a `--pad-*` tier is the documented source.
+  for (const m of scss.matchAll(/^\s*padding(?:-(?:block|inline|top|bottom|left|right))?: [^;]*(?<![\w.-])[1-9]\d*(?:\.\d+)?px\b[^;]*;/gm)) {
     const line = lineOf(scss, m.index!);
     if (allowed(line) || fileAllow.has('padding-literal')) continue;
     report(pkg, 'padding-literal', 'warn', file, 'padding should read a --<abbr>-py / --<abbr>-px pair or a --pad-* tier', line);
@@ -191,8 +193,64 @@ function lintScss(pkg: string, file: string, flagName: string) {
     const n = Number(m[1]);
     if (n <= 2) continue;
     const line = lineOf(scss, m.index!);
-    if (allowed(line)) continue;
+    if (allowed(line) || fileAllow.has('px-literal')) continue;
     report(pkg, 'px-literal', 'warn', file, `"${m[0]}"; use p2r()`, line);
+  }
+
+  // A hardcoded fallback in `var()` hides a missing token default. Another `var()`, a Sass variable, `0`, and
+  // keywords (`auto`, `none`, `currentColor`, …) are fine; a colour, length or font literal is not.
+  for (const m of scss.matchAll(/var\(\s*(--[a-z0-9-]+)\s*,\s*([^()]*(?:\([^()]*\))?[^()]*)\)/gi)) {
+    const fallback = m[2]!.trim();
+    if (/^(var\(|\$|#\{|0%?$|auto$|none$|inherit$|initial$|transparent$|currentcolor$|normal$|unset$)/i.test(fallback)) continue;
+    const line = lineOf(scss, m.index!);
+    if (allowed(line) || fileAllow.has('var-fallback')) continue;
+    report(pkg, 'var-fallback', 'error', file, `"var(${m[1]}, ${fallback})": declare the default on the component instead of a fallback`, line);
+  }
+}
+
+/** Rules for the global stylesheet (skins, core, palettes): everything but the component-only structure checks. */
+function lintStyles(file: string) {
+  const raw = readFileSync(file, 'utf8');
+  const scss = stripComments(raw);
+  const lines = raw.split('\n');
+  const fileAllow = new Set([...raw.matchAll(/structure-lint:\s*allow\s+([a-z-]+)/g)].map((m) => m[1]!));
+  const allowed = (line: number) => ALLOW.test(lines[line - 1] ?? '');
+  const pkg = 'styles';
+
+  for (const m of scss.matchAll(/#[0-9a-fA-F]{3,8}\b|(?:hsla?|rgba?|oklch|lab|lch)\((?!\s*from\b)/g)) {
+    if (fileAllow.has('color-literal')) break;
+    const line = lineOf(scss, m.index!);
+    if (allowed(line)) continue;
+    if (m[0].startsWith('#') && scss[m.index! + 1] === '{') continue;
+    if (/url\([^)]*$/.test(scss.slice(Math.max(0, m.index! - 40), m.index!))) continue;
+    report(pkg, 'color-literal', 'error', file, `colour literal "${m[0]}"; use a palette token`, line);
+  }
+  const localDefined = declaredVars(scss);
+  for (const { name, index } of usedVars(scss)) {
+    if (localDefined.has(name) || globalDefined.has(name)) continue;
+    const line = lineOf(scss, index);
+    if (allowed(line) || fileAllow.has('undefined-var')) continue;
+    report(pkg, 'undefined-var', 'error', file, `"var(${name})" is never defined`, line);
+  }
+  for (const bad of BAD_COLOR_CLASSES) {
+    for (const m of scss.matchAll(new RegExp(`\\.${bad}(?![a-zA-Z0-9_-])`, 'g'))) {
+      const line = lineOf(scss, m.index!);
+      if (allowed(line)) continue;
+      report(pkg, 'color-class', 'error', file, `".${bad}" is not a ship colour`, line);
+    }
+  }
+  for (const m of scss.matchAll(/(?<![\w.-])(\d+(?:\.\d+)?)px\b/g)) {
+    if (Number(m[1]) <= 2) continue;
+    const line = lineOf(scss, m.index!);
+    if (allowed(line) || fileAllow.has('px-literal')) continue;
+    report(pkg, 'px-literal', 'warn', file, `"${m[0]}"; use p2r()`, line);
+  }
+  for (const m of scss.matchAll(/var\(\s*(--[a-z0-9-]+)\s*,\s*([^()]*(?:\([^()]*\))?[^()]*)\)/gi)) {
+    const fallback = m[2]!.trim();
+    if (/^(var\(|\$|#\{|0%?$|auto$|none$|inherit$|initial$|transparent$|currentcolor$|normal$|unset$)/i.test(fallback)) continue;
+    const line = lineOf(scss, m.index!);
+    if (allowed(line) || fileAllow.has('var-fallback')) continue;
+    report(pkg, 'var-fallback', 'error', file, `"var(${m[1]}, ${fallback})": declare the default instead of a fallback`, line);
   }
 }
 
@@ -224,6 +282,9 @@ function lintTs(pkg: string, file: string) {
             report(pkg, 'standalone-flag', 'warn', file, `${node.name?.text}: drop "standalone: true" (default)`, lineAt(standalone));
         }
         if (kind === 'Component') {
+          // Inline `styles:` bypass helpers, the structure rules and this lint: every stylesheet is a file.
+          const styles = prop('styles');
+          if (styles) report(pkg, 'inline-styles', 'error', file, `${node.name?.text}: move "styles:" to a styleUrl .scss file`, lineAt(styles));
           const enc = prop('encapsulation');
           if (!enc || !/ViewEncapsulation\.None/.test(enc.initializer.getText(sf)))
             report(pkg, 'encapsulation', 'warn', file, `${node.name?.text}: needs "encapsulation: ViewEncapsulation.None"`, lineAt(node));
@@ -265,6 +326,9 @@ for (const pkg of packages) {
     else if (f.endsWith('.ts')) lintTs(pkg, f);
   }
 }
+// The core utilities and the global stylesheet follow the same TS and token rules.
+if (ONLY.size === 0 || ONLY.has('src')) for (const f of walk(join(LIB, 'src'))) if (f.endsWith('.ts')) lintTs('src', f);
+if (ONLY.size === 0 || ONLY.has('styles')) for (const f of walk(STYLES)) if (f.endsWith('.scss')) lintStyles(f);
 
 // The skin list the editor and `ship-styles` offer must match what skins/_index.scss emits,
 // and every skin key must be a key of index.scss's $enabled map (otherwise its $ship* flag is a no-op).
@@ -309,8 +373,9 @@ if (JSON_OUT) {
   for (const [p, c] of byPkg) if (c.e || (SHOW_WARNINGS && c.w)) console.log(`${p.padEnd(width)}  ${String(c.e).padStart(6)}  ${String(c.w).padStart(8)}`);
   console.log();
   const shown = SHOW_WARNINGS ? findings : errors;
+  // The per-rule summary always covers every finding, so the warning mix is visible without `--warnings`.
   const byRule = new Map<string, number>();
-  for (const f of shown) byRule.set(f.rule, (byRule.get(f.rule) ?? 0) + 1);
+  for (const f of findings) byRule.set(f.rule, (byRule.get(f.rule) ?? 0) + 1);
   for (const f of shown.sort((a, b) => a.pkg.localeCompare(b.pkg) || a.file.localeCompare(b.file) || (a.line ?? 0) - (b.line ?? 0))) {
     console.log(`${f.level === 'error' ? '✗' : '!'} ${f.file}${f.line ? ':' + f.line : ''}  [${f.rule}] ${f.msg}`);
   }

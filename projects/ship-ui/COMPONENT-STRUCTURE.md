@@ -67,7 +67,11 @@ $shipName: true !default;
 - The file starts with `@use 'helpers' as *;`. It declares no `$ship<Name>` flag and has no `@if` guard: ng-packagr
   compiles it into the component, so nothing a consumer writes can reach a flag in it. The `$ship<Name>` flags in
   `styles/index.scss` switch skins only (the lint's `local-flag` rule rejects a flag or guard here).
+- Styles live in the `.scss` file (`styleUrl`), never in an inline `styles:` block (`inline-styles` rule), so the
+  helpers and every rule here apply. The same rules run over `styles/skins`, `styles/core` and `src/lib`.
 - Sizes go through `p2r()`. No raw `px` except `1px`/`2px` hairlines and outlines.
+- No hardcoded fallback in `var()` (`var-fallback` rule): declare the token's default on the component instead.
+  Another `var()`, a Sass variable, `0` or a keyword (`auto`, `none`, `currentColor`) is fine.
 - Colour only through tokens: `--base-1..12`, `--<color>-1..12`, `--<color>-g2/g3`, `--<color>-c8` (contrast text
   on `-8`), `--light-text`/`--dark-text`. No hex / hsl / rgb literals, and no hardcoded fallbacks in `var()`.
   Derived colours use `rgb(from var(--x) r g b / .5)` or `color-mix()`.

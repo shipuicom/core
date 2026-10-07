@@ -1,3 +1,4 @@
+// structure-lint: allow color-literal — this file generates the palette tokens from hsl().
 // Palettes: every colour scale ShipUI emits as `--<name>-1..12`, `--<name>-g2/g3` and `--<name>-c8`.
 //
 // The built-in scales are hand-tuned per step. A palette a consumer adds through `$shipPalettes` is either the

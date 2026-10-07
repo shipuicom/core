@@ -92,14 +92,14 @@ $shipSortable: true !default;
           right: var(--tree-pr);
           height: p2r(6);
           background-image:
-            radial-gradient(circle at 3px 3px, var(--primary-8) 3px, transparent 3px),
+            radial-gradient(circle at p2r(3) p2r(3), var(--primary-8) p2r(3), transparent p2r(3)),
             linear-gradient(to right, var(--primary-8), var(--primary-8));
           background-repeat: no-repeat, no-repeat;
           background-position:
             left center,
-            6px center;
+            p2r(6) center;
           background-size:
-            6px 6px,
+            p2r(6) p2r(6),
             100% 2px;
           z-index: 10;
           pointer-events: none;
@@ -117,14 +117,14 @@ $shipSortable: true !default;
           right: var(--tree-pr);
           height: p2r(6);
           background-image:
-            radial-gradient(circle at 3px 3px, var(--primary-8) 3px, transparent 3px),
+            radial-gradient(circle at p2r(3) p2r(3), var(--primary-8) p2r(3), transparent p2r(3)),
             linear-gradient(to right, var(--primary-8), var(--primary-8));
           background-repeat: no-repeat, no-repeat;
           background-position:
             left center,
-            6px center;
+            p2r(6) center;
           background-size:
-            6px 6px,
+            p2r(6) p2r(6),
             100% 2px;
           z-index: 10;
           pointer-events: none;

@@ -101,26 +101,7 @@ export function sheetSelectExtension({ type = 'select', options }: SheetSelectEx
       </sh-chip>
     }
   `,
-  styles: `
-    sh-sheet-select-cell {
-      display: contents;
-
-      sh-chip {
-        max-width: 100%;
-        overflow: hidden;
-
-        div {
-          display: block;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        &.unknown {
-          --chip-c: var(--error-8);
-        }
-      }
-    }
-  `,
+  styleUrl: './sheet-select-cell.scss',
 })
 export class ShipSheetSelectCell {
   readonly value = input('');
@@ -152,37 +133,7 @@ export class ShipSheetSelectCell {
       </ng-container>
     </sh-menu>
   `,
-  styles: `
-    sh-sheet-select-editor {
-      display: flex;
-      min-width: 0;
-
-      .shs-select-menu {
-        flex: 1;
-        min-width: 0;
-
-        [trigger] {
-          display: flex;
-          align-items: center;
-          width: 100%;
-          height: 100%;
-        }
-      }
-
-      .shs-select-current {
-        flex: 1;
-        min-width: 0;
-        padding: 0 6px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      }
-
-      .shs-select-clear {
-        color: var(--base-10);
-      }
-    }
-  `,
+  styleUrl: './sheet-select-editor.scss',
 })
 export class ShipSheetSelectEditor implements SheetCellEditor {
   readonly value = input('');

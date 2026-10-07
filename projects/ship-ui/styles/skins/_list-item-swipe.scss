@@ -9,9 +9,9 @@
         // `.action-<colour>` is the swipe API's own spelling; `.danger` / `.warning` stay as aliases for one minor.
         $aliases: '&.action-#{$c}, &.#{$c}';
         @if $c == error {
-          $aliases: '&.action-danger, &.error, &.danger';
+          $aliases: '&.action-danger, &.error, &.danger'; // structure-lint: allow — `.danger` is a 0.26 alias of `.error` for one minor
         } @else if $c == warn {
-          $aliases: '&.action-warning, &.warn, &.warning';
+          $aliases: '&.action-warning, &.warn, &.warning'; // structure-lint: allow — `.warning` is a 0.26 alias of `.warn` for one minor
         }
 
         #{$aliases} {
