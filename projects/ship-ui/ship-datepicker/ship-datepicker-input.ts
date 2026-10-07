@@ -6,7 +6,6 @@ import {
   contentChild,
   effect,
   ElementRef,
-  HostListener,
   inject,
   input,
   model,
@@ -23,7 +22,7 @@ import { ShipDatepicker } from './ship-datepicker';
 
 @Component({
   selector: 'sh-datepicker-input',
-  styleUrl: './ship-datepicker.scss',
+  styleUrl: './ship-datepicker-input.scss',
   encapsulation: ViewEncapsulation.None,
   imports: [ShipDatepicker, ShipFormFieldPopover, ShipIcon],
   providers: [DatePipe],
@@ -66,6 +65,7 @@ import { ShipDatepicker } from './ship-datepicker';
     // branch, which the hydration serializer can't map (NG0502) — skip
     // hydration so this subtree client-renders instead.
     ngSkipHydration: 'true',
+    '(focusout)': 'onFocusOut($event)',
   },
 })
 export class ShipDatepickerInput {
@@ -161,7 +161,6 @@ export class ShipDatepickerInput {
     }
   });
 
-  @HostListener('focusout', ['$event'])
   onFocusOut(event: FocusEvent) {
     setTimeout(() => {
       const activeElement = document.activeElement as HTMLElement | null;

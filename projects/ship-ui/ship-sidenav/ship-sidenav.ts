@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, DOCUMENT, effect, ElementRef, inject, input, model, signal, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, computed, DestroyRef, DOCUMENT, effect, ElementRef, inject, input, model, signal, ViewEncapsulation } from '@angular/core';
 import { classMutationSignal } from '@ship-ui/core';
 
 export type ShipSidenavType = 'overlay' | 'simple' | '';
@@ -47,7 +47,7 @@ let scrollLockCount = 0;
     '[class.open]': 'isOpen()',
     '[class.closed]': '!isOpen()',
     '[class.is-dragging]': 'isDragging()',
-    '[style.--sidenav-open-width.px]': 'openWidth()',
+    '[style.--sidenav-open-w.px]': 'openWidth()',
     '(document:keydown.escape)': 'onEscape()',
   },
 })
@@ -57,7 +57,7 @@ export class ShipSidenav {
   #destroyRef = inject(DestroyRef);
 
   /** When `true`, disables drag/swipe gestures for opening and closing the sidenav. */
-  disableDrag = input<boolean>(false);
+  disableDrag = input(false, { transform: booleanAttribute });
   /** Width in px the sidenav opens to. Also drives the drag threshold. */
   openWidth = input<number>(280);
   /** Two-way bound open/closed state of the sidenav. */

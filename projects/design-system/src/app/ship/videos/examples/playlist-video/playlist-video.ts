@@ -16,6 +16,7 @@ export class PlaylistVideo {
       subtitle: 'Blender Foundation',
       duration: '0:52',
       sources: 'https://download.blender.org/durian/trailer/sintel_trailer-720p.mp4',
+      poster: 'https://durian.blender.org/wp-content/uploads/2010/06/05.8b_comp_000272.jpg',
     },
     {
       title: 'Big Buck Bunny',
@@ -29,6 +30,7 @@ export class PlaylistVideo {
       subtitle: 'Blender Foundation — full film',
       duration: '12:14',
       sources: 'https://download.blender.org/demo/movies/ToS/tears_of_steel_720p.mov',
+      poster: 'https://mango.blender.org/wp-content/uploads/2013/05/01_thom_celia_bridge.jpg',
     },
   ];
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, ElementRef, HostListener, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, effect, ElementRef, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
 import { contentProjectionSignal, generateUniqueId } from '@ship-ui/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { shipComponentClasses } from '@ship-ui/core';
@@ -35,6 +35,7 @@ import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
     '[attr.role]': 'noInternalInput() ? "switch" : null',
     '[attr.aria-checked]': 'noInternalInput() ? checked() : null',
     '[attr.tabindex]': 'noInternalInput() ? (disabled() ? "-1" : "0") : null',
+    '(keydown)': 'onKeyDown($event)',
   },
 })
 export class ShipToggle {
@@ -76,11 +77,11 @@ export class ShipToggle {
   /** Sheet variant styling applied to the toggle. */
   variant = input<ShipSheetVariant | null>(null);
   /** When `true`, the toggle displays its state but cannot be changed by the user. */
-  readonly = input<boolean>(false);
+  readonly = input(false, { transform: booleanAttribute });
   /** When `true`, the toggle is disabled and non-interactive. */
-  disabled = input<boolean>(false);
+  disabled = input(false, { transform: booleanAttribute });
   /** When `true`, no internal `<input>` is rendered and the host acts as an ARIA `switch`. */
-  noInternalInput = input<boolean>(false);
+  noInternalInput = input(false, { transform: booleanAttribute });
 
   onInternalInputChange(event: Event) {
     if (this.disabled()) return;
@@ -95,7 +96,6 @@ export class ShipToggle {
     readonly: this.readonly,
   });
 
-  @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
     if (this.#keybindings.matches(event, 'toggle.toggle')) {
       const inputEl = this.internalInput()?.nativeElement;

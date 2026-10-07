@@ -65,13 +65,13 @@ export class ShipPopover {
     typeof CSS !== 'undefined' && CSS.supports('position-anchor', '--abc') && CSS.supports('anchor-name', '--abc');
 
   /** Position the popover as a nested multi-layer flyout, preferring side placement. */
-  asMultiLayer = input<boolean>(false);
+  asMultiLayer = input(false, { transform: booleanAttribute });
   /** Render the popover as a bottom sheet on mobile viewports (≤768px). */
-  asSheetOnMobile = input<boolean>(false);
+  asSheetOnMobile = input(false, { transform: booleanAttribute });
   /** Prefer centering the popover horizontally under/over the trigger (`bottom center`/`top center`) instead of edge-aligning it. */
   centered = input<boolean, boolean | string>(false, { transform: booleanAttribute });
   /** Prevent the trigger click from toggling the popover (host drives `isOpen`). */
-  disableOpenByClick = input<boolean>(false);
+  disableOpenByClick = input(false, { transform: booleanAttribute });
   /** Two-way bound open/closed state of the popover. */
   isOpen = model<boolean>(false);
 

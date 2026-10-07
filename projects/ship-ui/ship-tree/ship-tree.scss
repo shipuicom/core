@@ -1,291 +1,245 @@
 @use 'helpers' as *;
-@use '../ship-sortable/ship-sortable.scss';
 
-$shipTree: true !default;
+sh-tree {
+  --tree-bg: var(--base-2);
+  --tree-bc: var(--base-3);
+  --tree-c: var(--base-12);
+  --tree-bg-h: var(--base-3);
+  --tree-bg-a: var(--base-4);
+  --tree-bg-s: var(--base-4);
+  --tree-guide-c: var(--base-4);
+  --tree-caret-c: var(--base-9);
+  --tree-caret-c-h: var(--base-12);
+  --tree-ic: var(--base-9);
+  --tree-folder-ic: var(--primary-8);
+  --tree-indent-step: #{p2r(12)};
+  --tree-pl: #{p2r(12)};
+  --tree-pr: #{p2r(6)};
 
-@if $shipTree == true {
-  sh-tree {
-    --tree-bg: var(--base-2);
-    --tree-bc: var(--base-3);
-    --tree-color: var(--base-12);
-    --tree-hover-bg: var(--base-3);
-    --tree-active-bg: var(--base-4);
-    --tree-selected-bg: var(--base-4);
-    --tree-guide-color: var(--base-4);
-    --tree-caret-color: var(--base-9);
-    --tree-caret-hover-color: var(--base-12);
-    --tree-icon-color: var(--base-9);
-    --tree-icon-folder-color: var(--primary-8);
-    --tree-indent-step: #{p2r(12)};
-    --tree-padding-left: #{p2r(12)};
-    --tree-padding-right: #{p2r(6)};
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: var(--tree-bg);
+  border: 1px solid var(--tree-bc);
+  border-radius: var(--shape-2);
+  overflow: hidden;
+  box-shadow: var(--box-shadow-10);
 
+  .sh-tree-container {
+    flex: 1;
+    padding: p2r(8) 0;
+    overflow-y: auto;
+    position: relative;
+  }
+
+  .sh-tree-node {
     display: flex;
-    flex-direction: column;
-    width: 100%;
+    align-items: center;
+    height: p2r(32);
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    color: var(--tree-c);
+    font: var(--paragraph-20);
+    gap: p2r(6);
+    transition: background 120ms ease;
+    padding-left: calc(var(--tree-pl) + var(--tree-depth, 0) * var(--tree-indent-step));
+    padding-right: var(--tree-pr);
     background: var(--tree-bg);
-    border: 1px solid var(--tree-bc);
-    border-radius: var(--shape-2, #{p2r(8)});
-    overflow: hidden;
-    font-family: var(--font-family, sans-serif);
-    box-shadow: var(--box-shadow-10);
 
-    .sh-tree-container {
-      flex: 1;
-      padding: p2r(8) 0;
-      overflow-y: auto;
-      position: relative;
+    &:hover {
+      background: var(--tree-bg-h);
     }
 
-    .sh-tree-node {
+    &:focus {
+      outline: none;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary-8, currentColor);
+      outline-offset: -2px;
+    }
+
+    &.is-selected {
+      background: var(--tree-bg-s);
+    }
+
+    &.is-grabbed {
+      outline: 2px dashed var(--primary-8, currentColor);
+      outline-offset: -2px;
+      background: var(--tree-bg-a, var(--tree-bg-h));
+    }
+
+    &.sortable-ghost {
+      opacity: 0.4;
+      background: var(--tree-bg-a);
+    }
+
+    .indent-guide {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      border-left: 1px solid var(--tree-guide-c);
+      opacity: 0.5;
+      left: calc(
+        var(--tree-pl) + (var(--tree-indent-step) / 2) + var(--tree-guide-i, 0) * var(--tree-indent-step)
+      );
+    }
+
+    .caret-container {
       display: flex;
       align-items: center;
-      height: p2r(32);
-      position: relative;
-      cursor: pointer;
-      user-select: none;
-      color: var(--tree-color);
-      font: var(--paragraph-20, 14px sans-serif);
-      gap: p2r(6);
-      transition: background 120ms ease;
-      padding-left: calc(var(--tree-padding-left) + var(--tree-depth, 0) * var(--tree-indent-step));
-      padding-right: var(--tree-padding-right);
-      background: var(--tree-bg);
+      justify-content: center;
+      width: var(--tree-indent-step);
+      height: p2r(16);
+      z-index: 2;
 
-      &:hover {
-        background: var(--tree-hover-bg);
-      }
-
-      &:focus {
-        outline: none;
-      }
-
-      &:focus-visible {
-        outline: 2px solid var(--primary-8, currentColor);
-        outline-offset: -2px;
-      }
-
-      &.is-selected {
-        background: var(--tree-selected-bg);
-      }
-
-      &.is-grabbed {
-        outline: 2px dashed var(--primary-8, currentColor);
-        outline-offset: -2px;
-        background: var(--tree-active-bg, var(--tree-hover-bg));
-      }
-
-      &.sortable-ghost {
-        opacity: 0.4;
-        background: var(--tree-active-bg);
-      }
-
-      .indent-guide {
+      &:has(+ .node-icon) {
         position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 1px;
-        border-left: 1px solid var(--tree-guide-color);
-        opacity: 0.5;
-        left: calc(
-          var(--tree-padding-left) + (var(--tree-indent-step) / 2) + var(--guide-index, 0) * var(--tree-indent-step)
-        );
-      }
-
-      .caret-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        opacity: 0;
+        z-index: 3;
         width: var(--tree-indent-step);
-        height: p2r(16);
-        z-index: 2;
-
-        &:has(+ .node-icon) {
-          position: absolute;
-          opacity: 0;
-          z-index: 3;
-          width: var(--tree-indent-step);
-        }
-
-        .caret-btn {
-          background: none;
-          border: none;
-          padding: 0;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--tree-caret-color);
-          border-radius: var(--shape-1, 4px);
-          width: 100%;
-          height: 100%;
-          position: relative;
-          transition:
-            background 150ms ease,
-            color 150ms ease;
-
-          &::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: p2r(24);
-            height: p2r(24);
-            z-index: 1;
-          }
-
-          &:hover {
-            color: var(--tree-caret-hover-color);
-          }
-        }
       }
 
-      .node-icon {
-        color: var(--tree-icon-color);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: var(--tree-indent-step);
-
-        &.folder {
-          color: var(--tree-icon-folder-color);
-        }
-
-        &:has(~ .node-content sh-tree-node sh-icon) {
-          display: none;
-        }
-      }
-
-      &.is-folder {
-        sh-tree-node .sh-tree-node-left sh-icon {
-          color: var(--tree-icon-folder-color);
-        }
-      }
-
-      &:not(.is-folder) {
-        sh-tree-node .sh-tree-node-left sh-icon {
-          color: var(--tree-icon-color);
-        }
-      }
-
-      .node-content {
-        flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        z-index: 2;
-        display: flex;
-        align-items: center;
-      }
-
-      .node-name {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-    }
-
-    sh-tree-node {
-      display: flex;
-      align-items: center;
-      width: 100%;
-      gap: p2r(8);
-      justify-content: space-between;
-      min-width: 0;
-
-      .sh-tree-node-left {
-        display: flex;
-        align-items: center;
-        gap: p2r(4);
-        padding-left: p2r(4);
-        overflow: hidden;
-        min-width: 0;
-        flex: 1;
-
-        sh-icon {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: var(--tree-indent-step);
-        }
-      }
-
-      .sh-tree-node-label {
-        display: inline-block;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        min-width: 0;
-
-        span {
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-      }
-
-      .sh-tree-node-actions,
-      sh-tree-node-actions {
-        display: flex;
-        align-items: center;
-        gap: p2r(8);
-      }
-
-      .status-badge {
-        font-size: p2r(10);
-        padding: p2r(2 6);
-        border-radius: var(--shape-1, 4px);
-        text-transform: uppercase;
-        font-weight: 600;
-
-        &.success {
-          background: var(--success-3, #e6f4ea);
-          color: var(--success-8, #137333);
-        }
-        &.warning {
-          background: var(--warn-3, #fef7e0);
-          color: var(--warn-8, #b06000);
-        }
-        &.error {
-          background: var(--error-3, #fce8e6);
-          color: var(--error-8, #c5221f);
-        }
-      }
-
-      .delete-btn {
+      .caret-btn {
         background: none;
         border: none;
-        padding: p2r(2);
+        padding: 0;
         cursor: pointer;
-        color: var(--base-9);
-        border-radius: var(--shape-1, 4px);
         display: flex;
-        opacity: 0;
-        transition: opacity 150ms ease;
         align-items: center;
         justify-content: center;
+        color: var(--tree-caret-c);
+        border-radius: var(--shape-1);
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transition:
+          background 150ms ease,
+          color 150ms ease;
+
+        &::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: p2r(24);
+          height: p2r(24);
+          z-index: 1;
+        }
 
         &:hover {
-          background: var(--base-4);
-          color: var(--error-8, #c5221f);
+          color: var(--tree-caret-c-h);
         }
       }
     }
 
-    .sh-tree-node:hover .delete-btn {
-      opacity: 1;
+    .node-icon {
+      color: var(--tree-ic);
+      // Not a flex box: Safari measures a ligature icon's text as wider than its glyph inside flex and centres it out
+      // of view (the open folder came out clipped). A block with centred text renders the glyph in place.
+      display: inline-block;
+      text-align: center;
+      vertical-align: middle;
+      width: var(--tree-indent-step);
+
+      &.folder {
+        color: var(--tree-folder-ic);
+      }
+
+      &:has(~ .node-content sh-tree-node sh-icon) {
+        display: none;
+      }
     }
 
-    .empty-state {
-      padding: p2r(32);
-      text-align: center;
-      color: var(--tree-caret-color);
-      font: var(--paragraph-20, 14px sans-serif);
+    &.is-folder {
+      sh-tree-node .sh-tree-node-left sh-icon {
+        color: var(--tree-folder-ic);
+      }
     }
+
+    &:not(.is-folder) {
+      sh-tree-node .sh-tree-node-left sh-icon {
+        color: var(--tree-ic);
+      }
+    }
+
+    .node-content {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+    }
+
+    .node-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  sh-tree-node {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: p2r(8);
+    justify-content: space-between;
+    min-width: 0;
+
+    .sh-tree-node-left {
+      display: flex;
+      align-items: center;
+      gap: p2r(4);
+      padding-left: p2r(4);
+      overflow: hidden;
+      min-width: 0;
+      flex: 1;
+
+      sh-icon {
+        display: inline-block;
+        text-align: center;
+        vertical-align: middle;
+        width: var(--tree-indent-step);
+      }
+    }
+
+    .sh-tree-node-label {
+      display: inline-block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+
+      span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    .sh-tree-node-actions,
+    sh-tree-node-actions {
+      display: flex;
+      align-items: center;
+      gap: p2r(8);
+    }
+
+  }
+
+  .empty-state {
+    padding: p2r(32);
+    text-align: center;
+    color: var(--tree-caret-c);
+    font: var(--paragraph-20);
   }
 }
 
+// Visually hidden live region announced by the tree.
 .sh-tree-live {
   position: absolute;
   width: 1px;

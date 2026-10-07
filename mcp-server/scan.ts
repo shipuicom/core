@@ -9,17 +9,20 @@ const STYLES_PATH = path.join(SHIP_UI, 'styles/components');
 const EXAMPLES_PATH = path.join(rootPath, 'projects/design-system/src/app/ship');
 const TYPES_FILE = path.join(SHIP_UI, 'src/lib/utilities/ship-types.ts');
 const VARIABLES_FILE = path.join(SHIP_UI, 'styles/core/core/variables.scss');
-const SHEET_FILE = path.join(STYLES_PATH, 'ship-sheet.utility.scss');
+const SHEET_FILE = path.join(SHIP_UI, 'styles/skins/_sheet.scss');
 
 const DEFAULT_OUTPUT = path.join(SHIP_UI, 'assets/mcp/components.json');
 const LOCAL_OUTPUT = path.join(__dirname, 'components.json');
 const DEFAULT_SNIPPETS = path.join(rootPath, '.vscode/ship-ui-components.code-snippets');
+/** The snippets the package publishes (`package.json` "snippets"); always regenerated so a release never ships a stale copy. */
+const PACKAGE_SNIPPETS = path.join(SHIP_UI, 'snippets/ship-ui.code-snippets');
 
 const OUTPUT_FILE = process.argv[2] ? path.resolve(process.argv[2]) : DEFAULT_OUTPUT;
 const SNIPPETS_FILE = process.argv[3] ? path.resolve(process.argv[3]) : DEFAULT_SNIPPETS;
 
 if (!fs.existsSync(path.dirname(OUTPUT_FILE))) fs.mkdirSync(path.dirname(OUTPUT_FILE), { recursive: true });
 if (!fs.existsSync(path.dirname(SNIPPETS_FILE))) fs.mkdirSync(path.dirname(SNIPPETS_FILE), { recursive: true });
+if (!fs.existsSync(path.dirname(PACKAGE_SNIPPETS))) fs.mkdirSync(path.dirname(PACKAGE_SNIPPETS), { recursive: true });
 
 interface Input {
   name: string;
@@ -454,7 +457,13 @@ function extractClass(
 
 // --- Docs (description / keywords / examples) -----------------------------
 
+const primaryByEntry = new Map<string, boolean>();
 function entryHasPrimary(entryDir: string, base: string): boolean {
+  const key = `${entryDir}\0${base}`;
+  if (!primaryByEntry.has(key)) primaryByEntry.set(key, computeEntryHasPrimary(entryDir, base));
+  return primaryByEntry.get(key)!;
+}
+function computeEntryHasPrimary(entryDir: string, base: string): boolean {
   return publicFiles(entryDir).some((file) => {
     const src = fs.readFileSync(file, 'utf-8');
     return [...src.matchAll(/selector:\s*['"]\[?sh-?([\w-]+)/gi)].some(
@@ -642,9 +651,10 @@ function scan() {
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(components, null, 2));
   if (OUTPUT_FILE !== LOCAL_OUTPUT) fs.writeFileSync(LOCAL_OUTPUT, JSON.stringify(components, null, 2));
   fs.writeFileSync(SNIPPETS_FILE, JSON.stringify(snippets, null, 2));
+  if (SNIPPETS_FILE !== PACKAGE_SNIPPETS) fs.writeFileSync(PACKAGE_SNIPPETS, JSON.stringify(snippets, null, 2));
   console.log(`Scanned ${components.length} components (${entryDirs.length} entry points).`);
   console.log(`Generated metadata in ${OUTPUT_FILE}`);
-  console.log(`Generated snippets in ${SNIPPETS_FILE}`);
+  console.log(`Generated snippets in ${SNIPPETS_FILE} and ${PACKAGE_SNIPPETS}`);
 }
 
 scan();

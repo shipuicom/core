@@ -1,0 +1,16 @@
+@use './util' as *;
+
+@mixin skin($colors, $variants) {
+  sh-checkbox {
+    // On a filled sheet the unchecked box stays an outlined square.
+    @each $v in (flat, raised) {
+      @if has($variants, $v) {
+        &.#{$v}:not(:has(input:checked)):not(.active) .box {
+          background: transparent;
+          border: var(--border-10);
+          border-color: var(--cb-bc);
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+@use 'helpers' as *;
+
+[number-wrap] {
+  outline: 1px solid var(--error-8);
+}
+
+[text-wrap] {
+  outline: 1px solid var(--warn-8);
+}

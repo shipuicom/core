@@ -1,0 +1,210 @@
+// structure-lint: allow color-literal — this file generates the palette tokens from hsl().
+// Palettes: every colour scale ShipUI emits as `--<name>-1..12`, `--<name>-g2/g3` and `--<name>-c8`.
+//
+// The built-in scales are hand-tuned per step. A palette a consumer adds through `$shipPalettes` is either the
+// same shape (a map of step: (light, dark)) or the shorthand `(hue, saturation, lightness)` of its step 8 (optionally
+// a fourth `distribution` exponent), which `generate()` expands with the same curve as the docs theme editor.
+//
+//   @use '@ship-ui/core/styles' with (
+//     $shipPalettes: (brand: (200, 80%, 45%), info: (210, 90%, 55%, 1.2)),
+//     $shipPaletteSteps: (1, 2, 3, 4, 6, 7, 8, 9, 10, 11)   // emit only the steps your app and its skins read
+//   );
+//
+// The grey `base` scale is always emitted in full: the global stylesheet and every skin read its steps 1-12.
+@use 'sass:list';
+@use 'sass:map';
+@use 'sass:math';
+@use 'sass:meta';
+@use 'sass:string';
+
+/// Palettes added by the consumer, merged over the built-in ones (same name overrides).
+$extra: () !default;
+/// Numbered steps to emit. The library's own skins read 1-4 and 6-11, so strip with care.
+$steps: (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12) !default;
+/// Emit the `-g2` / `-g3` gradients (the raised variant needs them).
+$gradients: true !default;
+
+$builtin: (
+  primary: (
+    1: (hsl(217, 91%, 95%), hsl(217, 91%, 9.5%)),
+    2: (hsl(217, 91%, 90%), hsl(217, 91%, 15%)),
+    3: (hsl(217, 91%, 85%), hsl(217, 91%, 22.5%)),
+    4: (hsl(217, 91%, 80%), hsl(217, 91%, 30%)),
+    5: (hsl(217, 91%, 75%), hsl(217, 91%, 37.5%)),
+    6: (hsl(217, 91%, 70%), hsl(217, 91%, 45%)),
+    7: (hsl(217, 91%, 65%), hsl(217, 91%, 52.5%)),
+    8: (hsl(217, 91%, 60%), hsl(217, 91%, 60%)),
+    9: (hsl(217, 91%, 46.5%), hsl(217, 91%, 70%)),
+    10: (hsl(217, 91%, 33%), hsl(217, 91%, 80%)),
+    11: (hsl(217, 91%, 19.5%), hsl(217, 91%, 90%)),
+    12: (hsl(217, 91%, 6%), hsl(217, 91%, 100%)),
+    g2: linear-gradient(180deg, hsl(217, 91%, 70%) 0%, hsl(217, 91%, 60%) 50%),
+    g3: linear-gradient(180deg, hsl(217, 91%, 80%) 0%, hsl(217, 91%, 60%) 50%),
+  ),
+  accent: (
+    1: (hsl(258, 90%, 95.75%), hsl(258, 90%, 9.25%)),
+    2: (hsl(258, 90%, 91.5%), hsl(258, 90%, 16.5%)),
+    3: (hsl(258, 90%, 87.25%), hsl(258, 90%, 24.75%)),
+    4: (hsl(258, 90%, 83%), hsl(258, 90%, 33%)),
+    5: (hsl(258, 89%, 78%), hsl(258, 90%, 41.25%)),
+    6: (hsl(258, 90%, 74.5%), hsl(258, 90%, 49.5%)),
+    7: (hsl(258, 90%, 70.25%), hsl(258, 90%, 57.75%)),
+    8: (hsl(258, 90%, 66%), hsl(258, 90%, 66%)),
+    9: (hsl(258, 90%, 51.15%), hsl(258, 90%, 74.5%)),
+    10: (hsl(258, 90%, 36.3%), hsl(258, 90%, 83%)),
+    11: (hsl(258, 90%, 21.45%), hsl(258, 90%, 91.5%)),
+    12: (hsl(258, 90%, 6.6%), hsl(258, 90%, 100%)),
+    g2: linear-gradient(180deg, hsl(258, 90%, 74.5%) 0%, hsl(258, 90%, 66%) 50%),
+    g3: linear-gradient(180deg, hsl(258, 90%, 83%) 0%, hsl(258, 90%, 66%) 50%),
+  ),
+  warn: (
+    1: (hsl(37, 92%, 93.75%), hsl(37, 92%, 9.25%)),
+    2: (hsl(37, 92%, 87.5%), hsl(37, 92%, 12.5%)),
+    3: (hsl(37, 92%, 81.25%), hsl(37, 92%, 18.75%)),
+    4: (hsl(37, 92%, 75%), hsl(37, 92%, 25%)),
+    5: (hsl(37, 92%, 68.75%), hsl(37, 92%, 31.25%)),
+    6: (hsl(37, 92%, 62.5%), hsl(37, 92%, 37.5%)),
+    7: (hsl(37, 92%, 56.25%), hsl(37, 92%, 43.75%)),
+    8: (hsl(37, 92%, 50%), hsl(37, 92%, 50%)),
+    9: (hsl(37, 92%, 38.75%), hsl(37, 92%, 62.5%)),
+    10: (hsl(37, 92%, 27.5%), hsl(37, 92%, 75%)),
+    11: (hsl(37, 92%, 16.25%), hsl(37, 92%, 87.5%)),
+    12: (hsl(37, 92%, 5%), hsl(37, 92%, 100%)),
+    g2: linear-gradient(180deg, hsl(37, 92%, 62.5%) 0%, hsl(37, 92%, 50%) 50%),
+    g3: linear-gradient(180deg, hsl(37, 92%, 75%) 0%, hsl(37, 92%, 50%) 50%),
+  ),
+  error: (
+    1: (hsl(0, 84%, 95%), hsl(0, 84%, 7.5%)),
+    2: (hsl(0, 84%, 90%), hsl(0, 84%, 15%)),
+    3: (hsl(0, 84%, 85%), hsl(0, 84%, 22.5%)),
+    4: (hsl(0, 84%, 80%), hsl(0, 84%, 30%)),
+    5: (hsl(0, 84%, 75%), hsl(0, 27%, 10%)),
+    6: (hsl(0, 84%, 70%), hsl(0, 84%, 45%)),
+    7: (hsl(0, 84%, 65%), hsl(0, 84%, 52.5%)),
+    8: (hsl(0, 84%, 60%), hsl(0, 84%, 60%)),
+    9: (hsl(0, 84%, 46.5%), hsl(0, 84%, 70%)),
+    10: (hsl(0, 84%, 33%), hsl(0, 84%, 80%)),
+    11: (hsl(0, 84%, 19.5%), hsl(0, 84%, 90%)),
+    12: (hsl(0, 84%, 6%), hsl(0, 84%, 100%)),
+    g2: linear-gradient(180deg, hsl(0, 84%, 70%) 0%, hsl(0, 84%, 60%) 50%),
+    g3: linear-gradient(180deg, hsl(0, 84%, 80%) 0%, hsl(0, 84%, 60%) 50%),
+  ),
+  success: (
+    1: (hsl(160, 84%, 92.38%), hsl(160, 84%, 7.88%)),
+    2: (hsl(160, 84%, 84.75%), hsl(160, 3%, 17%)),
+    3: (hsl(160, 84%, 77.13%), hsl(160, 84%, 14.63%)),
+    4: (hsl(160, 84%, 69.5%), hsl(160, 84%, 19.5%)),
+    5: (hsl(160, 84%, 61.88%), hsl(160, 84%, 24.38%)),
+    6: (hsl(160, 84%, 54.25%), hsl(160, 84%, 29.25%)),
+    7: (hsl(160, 84%, 46.63%), hsl(160, 84%, 34.13%)),
+    8: (hsl(160, 84%, 39%), hsl(160, 84%, 39%)),
+    9: (hsl(160, 84%, 30.23%), hsl(160, 84%, 54.25%)),
+    10: (hsl(160, 84%, 21.45%), hsl(160, 84%, 69.5%)),
+    11: (hsl(160, 84%, 12.67%), hsl(160, 84%, 84.75%)),
+    12: (hsl(160, 84%, 3.9%), hsl(160, 84%, 100%)),
+    g2: linear-gradient(180deg, hsl(160, 84%, 54.25%) 0%, hsl(160, 84%, 39%) 50%),
+    g3: linear-gradient(180deg, hsl(160, 84%, 69.5%) 0%, hsl(160, 84%, 39%) 50%),
+  ),
+);
+
+$base: (
+    1: (#fff, hsl(0, 0%, 5.75%)),
+    2: (hsl(0, 0%, 98.05%), hsl(0, 0%, 8.75%)),
+    3: (hsl(0, 0%, 94.5%), hsl(0, 0%, 11.5%)),
+    4: (hsl(0, 0%, 84.75%), hsl(0, 0%, 17.25%)),
+    5: (hsl(0, 0%, 79.75%), hsl(0, 0%, 21%)),
+    6: (hsl(0, 0%, 66.25%), hsl(0, 0%, 28.75%)),
+    7: (hsl(0, 0%, 54.5%), hsl(0, 0%, 34.5%)),
+    8: (hsl(0, 0%, 46%), hsl(0, 0%, 54%)),
+    9: (hsl(0, 0%, 35.65%), hsl(0, 0%, 64.5%)),
+    10: (hsl(0, 0%, 25.3%), hsl(0, 0%, 73%)),
+    11: (hsl(0, 0%, 14.95%), hsl(0, 0%, 86.5%)),
+    12: (hsl(0, 0%, 4.6%), hsl(0, 0%, 100%)),
+    g2: linear-gradient(180deg, hsl(0, 0%, 66.25%) 0%, hsl(0, 0%, 46%) 50%),
+    g3: linear-gradient(180deg, hsl(0, 0%, 73%) 0%, hsl(0, 0%, 46%) 50%),
+    g6: linear-gradient(180deg, hsl(0, 0%, 25.3%) 0%, hsl(0, 0%, 14.95%) 50%),
+    g7: linear-gradient(180deg, hsl(0, 0%, 35.65%) 0%, hsl(0, 0%, 14.95%) 50%),
+);
+
+$all: map.merge($builtin, $extra);
+
+@function curve($i, $max, $dist) {
+  @return math.pow(math.div($i, $max), $dist);
+}
+
+@function hsl-string($h, $s, $l) {
+  @return string.unquote('hsl(#{$h}, #{$s}, #{math.div(math.round($l * 100), 100)}%)');
+}
+
+/// Expands `(hue, saturation, lightness[, distribution])` into the 12 (light, dark) steps plus the gradients.
+@function generate($def) {
+  $h: list.nth($def, 1);
+  $s: list.nth($def, 2);
+  $l: math.div(list.nth($def, 3), 1%);
+  $dist: 1;
+  @if list.length($def) >= 4 {
+    $dist: list.nth($def, 4);
+  }
+  $clamped: $l * 0.9;
+  $start: $l - $clamped;
+  $out: ();
+  @for $i from 1 through 8 {
+    $light: 100 - (100 - $l) * curve($i, 8, $dist);
+    $dark: $l * curve($i, 8, $dist);
+    $out: map.set($out, $i, (hsl-string($h, $s, $light), hsl-string($h, $s, $dark)));
+  }
+  @for $i from 1 through 4 {
+    $light: $start + $clamped * (1 - curve($i, 4, $dist));
+    $dark: 100 - (100 - $l) * (1 - curve($i, 4, $dist));
+    $out: map.set($out, 8 + $i, (hsl-string($h, $s, $light), hsl-string($h, $s, $dark)));
+  }
+  $l6: list.nth(map.get($out, 6), 1);
+  $l4: list.nth(map.get($out, 4), 1);
+  $l8: list.nth(map.get($out, 8), 1);
+  $out: map.set($out, g2, string.unquote('linear-gradient(180deg, #{$l6} 0%, #{$l8} 50%)'));
+  $out: map.set($out, g3, string.unquote('linear-gradient(180deg, #{$l4} 0%, #{$l8} 50%)'));
+  // Text on the step-8 fill: dark ink once the fill is light enough.
+  $c8: var(--light-text);
+  @if $l >= 65 {
+    $c8: var(--dark-text);
+  }
+  $out: map.set($out, c8, $c8);
+  @return $out;
+}
+
+@function resolve($def) {
+  @if meta.type-of($def) == map {
+    @return $def;
+  }
+  @return generate($def);
+}
+
+/// Emits one palette's custom properties on the current selector.
+@mixin emit($name, $def, $contrast: true, $only: $steps) {
+  $p: resolve($def);
+  @each $i in $only {
+    $pair: map.get($p, $i);
+    @if $pair != null {
+      --#{$name}-#{$i}: light-dark(#{list.nth($pair, 1)}, #{list.nth($pair, 2)});
+    }
+  }
+  @if $gradients {
+    @each $g in (g2, g3, g6, g7) {
+      @if map.has-key($p, $g) {
+        --#{$name}-#{$g}: #{map.get($p, $g)};
+      }
+    }
+  }
+  @if $contrast {
+    --#{$name}-c8: #{map.get($p, c8) or var(--light-text)};
+  }
+}
+
+/// Emits the base scale and every palette in `$all`.
+@mixin emit-all() {
+  @each $name, $def in $all {
+    @include emit($name, $def);
+  }
+  // Every step: the global CSS and the skins read --base-5/7/12 regardless of what the palettes are trimmed to.
+  @include emit(base, $base, $contrast: false, $only: (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12));
+}

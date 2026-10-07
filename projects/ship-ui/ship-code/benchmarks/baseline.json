@@ -1,294 +1,517 @@
 {
-  "timestamp": "2026-07-03T09:41:24.214Z",
+  "timestamp": "2026-10-07T18:24:06.098Z",
   "runtime": "Node v26.3.0",
+  "seed": 432616,
   "results": [
     {
-      "name": "createDocument (100 lines)",
-      "category": "document.create",
-      "docLines": 100,
-      "iterations": 500,
-      "totalMs": 2.159,
-      "avgMs": 0.0043,
-      "opsPerSec": 231589
-    },
-    {
-      "name": "createDocument (1000 lines)",
-      "category": "document.create",
-      "docLines": 1000,
-      "iterations": 500,
-      "totalMs": 27.405,
-      "avgMs": 0.0548,
-      "opsPerSec": 18245
-    },
-    {
-      "name": "createDocument (10000 lines)",
-      "category": "document.create",
-      "docLines": 10000,
-      "iterations": 50,
-      "totalMs": 27.814,
-      "avgMs": 0.5563,
-      "opsPerSec": 1798
-    },
-    {
-      "name": "createDocument (50000 lines)",
-      "category": "document.create",
+      "name": "sequential insert char (50000 lines)",
+      "category": "document.seqInsert",
       "docLines": 50000,
-      "iterations": 10,
-      "totalMs": 30.343,
-      "avgMs": 3.0343,
-      "opsPerSec": 330
+      "samples": 15,
+      "opsPerSample": 20700,
+      "medianMs": 0.000917,
+      "p95Ms": 0.000931,
+      "opsPerSec": 1089935
     },
     {
-      "name": "insertText char (100 lines)",
-      "category": "document.insertChar",
-      "docLines": 100,
-      "iterations": 5000,
-      "totalMs": 9.731,
-      "avgMs": 0.0019,
-      "opsPerSec": 513839
-    },
-    {
-      "name": "insertText char (1000 lines)",
-      "category": "document.insertChar",
+      "name": "getText uncached (1000 lines)",
+      "category": "document.getText",
       "docLines": 1000,
-      "iterations": 5000,
-      "totalMs": 11.036,
-      "avgMs": 0.0022,
-      "opsPerSec": 453054
+      "samples": 15,
+      "opsPerSample": 1202,
+      "medianMs": 0.016527,
+      "p95Ms": 0.016816,
+      "opsPerSec": 60506
     },
     {
-      "name": "insertText char (10000 lines)",
-      "category": "document.insertChar",
+      "name": "typing keystroke (10000 lines)",
+      "category": "typing.keystroke",
       "docLines": 10000,
-      "iterations": 500,
-      "totalMs": 9.651,
-      "avgMs": 0.0193,
-      "opsPerSec": 51805
+      "samples": 15,
+      "opsPerSample": 9650,
+      "medianMs": 0.002539,
+      "p95Ms": 0.002882,
+      "opsPerSec": 393817
+    },
+    {
+      "name": "moveCaretDown 100x (10000 lines)",
+      "category": "caret.moveDown",
+      "docLines": 10000,
+      "samples": 15,
+      "opsPerSample": 2571400,
+      "medianMs": 0.000007,
+      "p95Ms": 0.000007,
+      "opsPerSec": 135486590
     },
     {
       "name": "insertText char (50000 lines)",
       "category": "document.insertChar",
       "docLines": 50000,
-      "iterations": 50,
-      "totalMs": 7.621,
-      "avgMs": 0.1524,
-      "opsPerSec": 6561
+      "samples": 15,
+      "opsPerSample": 23078,
+      "medianMs": 0.000833,
+      "p95Ms": 0.000856,
+      "opsPerSec": 1200916
     },
     {
-      "name": "insertText newline (1000 lines)",
-      "category": "document.insertNewline",
+      "name": "line index build (1000 lines)",
+      "category": "flat.indexBuild",
       "docLines": 1000,
-      "iterations": 2000,
-      "totalMs": 10.024,
-      "avgMs": 0.005,
-      "opsPerSec": 199524
+      "samples": 15,
+      "opsPerSample": 613342,
+      "medianMs": 0.000011,
+      "p95Ms": 0.000013,
+      "opsPerSec": 93206582
     },
     {
       "name": "insertText newline (10000 lines)",
       "category": "document.insertNewline",
       "docLines": 10000,
-      "iterations": 200,
-      "totalMs": 7.875,
-      "avgMs": 0.0394,
-      "opsPerSec": 25395
+      "samples": 15,
+      "opsPerSample": 26683,
+      "medianMs": 0.00071,
+      "p95Ms": 0.000728,
+      "opsPerSec": 1409087
     },
     {
-      "name": "insertText newline (50000 lines)",
-      "category": "document.insertNewline",
-      "docLines": 50000,
-      "iterations": 20,
-      "totalMs": 2.754,
-      "avgMs": 0.1377,
-      "opsPerSec": 7261
-    },
-    {
-      "name": "deleteRange single line (1000 lines)",
-      "category": "document.deleteSingle",
+      "name": "flat insert char (1000 lines)",
+      "category": "flat.insertChar",
       "docLines": 1000,
-      "iterations": 2000,
-      "totalMs": 6.054,
-      "avgMs": 0.003,
-      "opsPerSec": 330333
+      "samples": 15,
+      "opsPerSample": 31750,
+      "medianMs": 0.000601,
+      "p95Ms": 0.000666,
+      "opsPerSec": 1665082
     },
     {
-      "name": "deleteRange single line (10000 lines)",
-      "category": "document.deleteSingle",
+      "name": "idle value flush (10000 lines)",
+      "category": "typing.flush",
       "docLines": 10000,
-      "iterations": 200,
-      "totalMs": 3.662,
-      "avgMs": 0.0183,
-      "opsPerSec": 54617
+      "samples": 15,
+      "opsPerSample": 104,
+      "medianMs": 0.178072,
+      "p95Ms": 0.220636,
+      "opsPerSec": 5616
+    },
+    {
+      "name": "moveCaretDown 100x (1000 lines)",
+      "category": "caret.moveDown",
+      "docLines": 1000,
+      "samples": 15,
+      "opsPerSample": 2639100,
+      "medianMs": 0.000007,
+      "p95Ms": 0.000007,
+      "opsPerSec": 137915833
     },
     {
       "name": "deleteRange single line (50000 lines)",
       "category": "document.deleteSingle",
       "docLines": 50000,
-      "iterations": 20,
-      "totalMs": 2.085,
-      "avgMs": 0.1043,
-      "opsPerSec": 9590
+      "samples": 15,
+      "opsPerSample": 23639,
+      "medianMs": 0.000825,
+      "p95Ms": 0.000834,
+      "opsPerSec": 1211568
     },
     {
       "name": "deleteRange multi-line (1000 lines)",
       "category": "document.deleteMulti",
       "docLines": 1000,
-      "iterations": 2000,
-      "totalMs": 6.635,
-      "avgMs": 0.0033,
-      "opsPerSec": 301424
-    },
-    {
-      "name": "deleteRange multi-line (10000 lines)",
-      "category": "document.deleteMulti",
-      "docLines": 10000,
-      "iterations": 200,
-      "totalMs": 4.018,
-      "avgMs": 0.0201,
-      "opsPerSec": 49780
-    },
-    {
-      "name": "deleteRange multi-line (50000 lines)",
-      "category": "document.deleteMulti",
-      "docLines": 50000,
-      "iterations": 20,
-      "totalMs": 2.729,
-      "avgMs": 0.1364,
-      "opsPerSec": 7329
-    },
-    {
-      "name": "getText (1000 lines)",
-      "category": "document.getText",
-      "docLines": 1000,
-      "iterations": 500,
-      "totalMs": 13.933,
-      "avgMs": 0.0279,
-      "opsPerSec": 35886
-    },
-    {
-      "name": "getText (10000 lines)",
-      "category": "document.getText",
-      "docLines": 10000,
-      "iterations": 50,
-      "totalMs": 13.346,
-      "avgMs": 0.2669,
-      "opsPerSec": 3746
-    },
-    {
-      "name": "getText (50000 lines)",
-      "category": "document.getText",
-      "docLines": 50000,
-      "iterations": 10,
-      "totalMs": 15.536,
-      "avgMs": 1.5536,
-      "opsPerSec": 644
-    },
-    {
-      "name": "100 sequential inserts (1000 lines)",
-      "category": "document.seqInsert100",
-      "docLines": 1000,
-      "iterations": 1,
-      "totalMs": 1.197,
-      "avgMs": 1.1966,
-      "opsPerSec": 836
-    },
-    {
-      "name": "100 sequential inserts (10000 lines)",
-      "category": "document.seqInsert100",
-      "docLines": 10000,
-      "iterations": 1,
-      "totalMs": 4.21,
-      "avgMs": 4.2103,
-      "opsPerSec": 238
-    },
-    {
-      "name": "moveCaretRight 1000x (1000 lines)",
-      "category": "caret.moveRight",
-      "docLines": 1000,
-      "iterations": 1,
-      "totalMs": 0.388,
-      "avgMs": 0.3875,
-      "opsPerSec": 2580
-    },
-    {
-      "name": "moveCaretRight 1000x (10000 lines)",
-      "category": "caret.moveRight",
-      "docLines": 10000,
-      "iterations": 1,
-      "totalMs": 0.173,
-      "avgMs": 0.1735,
-      "opsPerSec": 5764
-    },
-    {
-      "name": "moveCaretDown 1000x (1000 lines)",
-      "category": "caret.moveDown",
-      "docLines": 1000,
-      "iterations": 1,
-      "totalMs": 0.429,
-      "avgMs": 0.4287,
-      "opsPerSec": 2333
-    },
-    {
-      "name": "moveCaretDown 1000x (10000 lines)",
-      "category": "caret.moveDown",
-      "docLines": 10000,
-      "iterations": 1,
-      "totalMs": 0.183,
-      "avgMs": 0.1827,
-      "opsPerSec": 5472
-    },
-    {
-      "name": "moveWordRight 500x (1000 lines)",
-      "category": "caret.moveWordRight",
-      "docLines": 1000,
-      "iterations": 1,
-      "totalMs": 0.483,
-      "avgMs": 0.4827,
-      "opsPerSec": 2072
-    },
-    {
-      "name": "moveWordRight 500x (10000 lines)",
-      "category": "caret.moveWordRight",
-      "docLines": 10000,
-      "iterations": 1,
-      "totalMs": 0.28,
-      "avgMs": 0.2796,
-      "opsPerSec": 3577
+      "samples": 15,
+      "opsPerSample": 40688,
+      "medianMs": 0.000464,
+      "p95Ms": 0.000474,
+      "opsPerSec": 2154386
     },
     {
       "name": "applyTransaction 10 changes (1000 lines)",
       "category": "document.transaction",
       "docLines": 1000,
-      "iterations": 200,
-      "totalMs": 6.567,
-      "avgMs": 0.0328,
-      "opsPerSec": 30457
+      "samples": 15,
+      "opsPerSample": 3245,
+      "medianMs": 0.006136,
+      "p95Ms": 0.006205,
+      "opsPerSec": 162985
+    },
+    {
+      "name": "moveCaretRight 100x (50000 lines)",
+      "category": "caret.moveRight",
+      "docLines": 50000,
+      "samples": 15,
+      "opsPerSample": 2987600,
+      "medianMs": 0.000006,
+      "p95Ms": 0.000007,
+      "opsPerSec": 157207635
+    },
+    {
+      "name": "flat caret right 100x (1000 lines)",
+      "category": "flat.moveRight",
+      "docLines": 1000,
+      "samples": 15,
+      "opsPerSample": 520100,
+      "medianMs": 0.000038,
+      "p95Ms": 0.000038,
+      "opsPerSec": 26600123
+    },
+    {
+      "name": "deleteRange single line (10000 lines)",
+      "category": "document.deleteSingle",
+      "docLines": 10000,
+      "samples": 15,
+      "opsPerSample": 29313,
+      "medianMs": 0.000652,
+      "p95Ms": 0.000659,
+      "opsPerSec": 1533952
+    },
+    {
+      "name": "createDocument (10000 lines)",
+      "category": "document.create",
+      "docLines": 10000,
+      "samples": 15,
+      "opsPerSample": 98,
+      "medianMs": 0.203656,
+      "p95Ms": 0.206584,
+      "opsPerSec": 4910
+    },
+    {
+      "name": "moveCaretRight 100x (1000 lines)",
+      "category": "caret.moveRight",
+      "docLines": 1000,
+      "samples": 15,
+      "opsPerSample": 2951400,
+      "medianMs": 0.000007,
+      "p95Ms": 0.000007,
+      "opsPerSec": 153466968
+    },
+    {
+      "name": "moveCaretRight 100x (10000 lines)",
+      "category": "caret.moveRight",
+      "docLines": 10000,
+      "samples": 15,
+      "opsPerSample": 2963100,
+      "medianMs": 0.000006,
+      "p95Ms": 0.000007,
+      "opsPerSec": 155208245
+    },
+    {
+      "name": "deleteRange multi-line (10000 lines)",
+      "category": "document.deleteMulti",
+      "docLines": 10000,
+      "samples": 15,
+      "opsPerSample": 30718,
+      "medianMs": 0.000619,
+      "p95Ms": 0.000633,
+      "opsPerSec": 1615865
+    },
+    {
+      "name": "moveWordRight 100x (10000 lines)",
+      "category": "caret.moveWordRight",
+      "docLines": 10000,
+      "samples": 15,
+      "opsPerSample": 161000,
+      "medianMs": 0.000123,
+      "p95Ms": 0.000239,
+      "opsPerSec": 8127362
+    },
+    {
+      "name": "moveCaretDown 100x (50000 lines)",
+      "category": "caret.moveDown",
+      "docLines": 50000,
+      "samples": 15,
+      "opsPerSample": 2567200,
+      "medianMs": 0.000007,
+      "p95Ms": 0.000008,
+      "opsPerSec": 133507550
+    },
+    {
+      "name": "insertText newline (1000 lines)",
+      "category": "document.insertNewline",
+      "docLines": 1000,
+      "samples": 15,
+      "opsPerSample": 34733,
+      "medianMs": 0.000548,
+      "p95Ms": 0.000554,
+      "opsPerSec": 1826246
+    },
+    {
+      "name": "typing keystroke (50000 lines)",
+      "category": "typing.keystroke",
+      "docLines": 50000,
+      "samples": 15,
+      "opsPerSample": 9950,
+      "medianMs": 0.002739,
+      "p95Ms": 0.003116,
+      "opsPerSec": 365085
+    },
+    {
+      "name": "createDocument (50000 lines)",
+      "category": "document.create",
+      "docLines": 50000,
+      "samples": 15,
+      "opsPerSample": 20,
+      "medianMs": 1.036446,
+      "p95Ms": 1.086229,
+      "opsPerSec": 965
+    },
+    {
+      "name": "insertText char (1000 lines)",
+      "category": "document.insertChar",
+      "docLines": 1000,
+      "samples": 15,
+      "opsPerSample": 36823,
+      "medianMs": 0.000513,
+      "p95Ms": 0.000527,
+      "opsPerSec": 1949282
+    },
+    {
+      "name": "deleteRange multi-line (50000 lines)",
+      "category": "document.deleteMulti",
+      "docLines": 50000,
+      "samples": 15,
+      "opsPerSample": 24674,
+      "medianMs": 0.000775,
+      "p95Ms": 0.000793,
+      "opsPerSec": 1289607
+    },
+    {
+      "name": "insertText newline (50000 lines)",
+      "category": "document.insertNewline",
+      "docLines": 50000,
+      "samples": 15,
+      "opsPerSample": 22561,
+      "medianMs": 0.000853,
+      "p95Ms": 0.000861,
+      "opsPerSec": 1172452
+    },
+    {
+      "name": "getText uncached (50000 lines)",
+      "category": "document.getText",
+      "docLines": 50000,
+      "samples": 15,
+      "opsPerSample": 26,
+      "medianMs": 0.77176,
+      "p95Ms": 0.94096,
+      "opsPerSec": 1296
+    },
+    {
+      "name": "flat insert char (10000 lines)",
+      "category": "flat.insertChar",
+      "docLines": 10000,
+      "samples": 15,
+      "opsPerSample": 24654,
+      "medianMs": 0.000782,
+      "p95Ms": 0.000796,
+      "opsPerSec": 1278939
+    },
+    {
+      "name": "flat caret right 100x (50000 lines)",
+      "category": "flat.moveRight",
+      "docLines": 50000,
+      "samples": 15,
+      "opsPerSample": 320700,
+      "medianMs": 0.000062,
+      "p95Ms": 0.000064,
+      "opsPerSec": 16114599
+    },
+    {
+      "name": "applyTransaction 10 changes (50000 lines)",
+      "category": "document.transaction",
+      "docLines": 50000,
+      "samples": 15,
+      "opsPerSample": 2018,
+      "medianMs": 0.009705,
+      "p95Ms": 0.009946,
+      "opsPerSec": 103044
+    },
+    {
+      "name": "insertText char (10000 lines)",
+      "category": "document.insertChar",
+      "docLines": 10000,
+      "samples": 15,
+      "opsPerSample": 29049,
+      "medianMs": 0.000655,
+      "p95Ms": 0.00067,
+      "opsPerSec": 1526327
+    },
+    {
+      "name": "sequential insert char (1000 lines)",
+      "category": "document.seqInsert",
+      "docLines": 1000,
+      "samples": 15,
+      "opsPerSample": 34600,
+      "medianMs": 0.000567,
+      "p95Ms": 0.000623,
+      "opsPerSec": 1764818
+    },
+    {
+      "name": "moveWordRight 100x (50000 lines)",
+      "category": "caret.moveWordRight",
+      "docLines": 50000,
+      "samples": 15,
+      "opsPerSample": 158800,
+      "medianMs": 0.000124,
+      "p95Ms": 0.000127,
+      "opsPerSec": 8096688
+    },
+    {
+      "name": "line index build (50000 lines)",
+      "category": "flat.indexBuild",
+      "docLines": 50000,
+      "samples": 15,
+      "opsPerSample": 619339,
+      "medianMs": 0.00001,
+      "p95Ms": 0.00001,
+      "opsPerSec": 100175462
+    },
+    {
+      "name": "idle value flush (1000 lines)",
+      "category": "typing.flush",
+      "docLines": 1000,
+      "samples": 15,
+      "opsPerSample": 1052,
+      "medianMs": 0.018519,
+      "p95Ms": 0.01889,
+      "opsPerSec": 53999
+    },
+    {
+      "name": "flat caret right 100x (10000 lines)",
+      "category": "flat.moveRight",
+      "docLines": 10000,
+      "samples": 15,
+      "opsPerSample": 321500,
+      "medianMs": 0.000062,
+      "p95Ms": 0.000063,
+      "opsPerSec": 16010724
+    },
+    {
+      "name": "typing keystroke (1000 lines)",
+      "category": "typing.keystroke",
+      "docLines": 1000,
+      "samples": 15,
+      "opsPerSample": 12900,
+      "medianMs": 0.00251,
+      "p95Ms": 0.003276,
+      "opsPerSec": 398470
+    },
+    {
+      "name": "moveWordRight 100x (1000 lines)",
+      "category": "caret.moveWordRight",
+      "docLines": 1000,
+      "samples": 15,
+      "opsPerSample": 164900,
+      "medianMs": 0.000117,
+      "p95Ms": 0.000121,
+      "opsPerSec": 8540944
+    },
+    {
+      "name": "line index build (10000 lines)",
+      "category": "flat.indexBuild",
+      "docLines": 10000,
+      "samples": 15,
+      "opsPerSample": 614803,
+      "medianMs": 0.00001,
+      "p95Ms": 0.000011,
+      "opsPerSec": 98679645
+    },
+    {
+      "name": "getText uncached (10000 lines)",
+      "category": "document.getText",
+      "docLines": 10000,
+      "samples": 15,
+      "opsPerSample": 119,
+      "medianMs": 0.163906,
+      "p95Ms": 0.169313,
+      "opsPerSec": 6101
+    },
+    {
+      "name": "deleteRange single line (1000 lines)",
+      "category": "document.deleteSingle",
+      "docLines": 1000,
+      "samples": 15,
+      "opsPerSample": 37352,
+      "medianMs": 0.00051,
+      "p95Ms": 0.000523,
+      "opsPerSec": 1958893
+    },
+    {
+      "name": "createDocument (1000 lines)",
+      "category": "document.create",
+      "docLines": 1000,
+      "samples": 15,
+      "opsPerSample": 991,
+      "medianMs": 0.020105,
+      "p95Ms": 0.020497,
+      "opsPerSec": 49738
+    },
+    {
+      "name": "flat caret down 100x (1000 lines)",
+      "category": "flat.moveDown",
+      "docLines": 1000,
+      "samples": 15,
+      "opsPerSample": 303500,
+      "medianMs": 0.000065,
+      "p95Ms": 0.000067,
+      "opsPerSec": 15423740
+    },
+    {
+      "name": "flat insert char (50000 lines)",
+      "category": "flat.insertChar",
+      "docLines": 50000,
+      "samples": 15,
+      "opsPerSample": 21086,
+      "medianMs": 0.00093,
+      "p95Ms": 0.000958,
+      "opsPerSec": 1074946
     },
     {
       "name": "applyTransaction 10 changes (10000 lines)",
       "category": "document.transaction",
       "docLines": 10000,
-      "iterations": 20,
-      "totalMs": 5.443,
-      "avgMs": 0.2722,
-      "opsPerSec": 3674
+      "samples": 15,
+      "opsPerSample": 2581,
+      "medianMs": 0.007675,
+      "p95Ms": 0.007792,
+      "opsPerSec": 130296
     },
     {
-      "name": "structural sharing after insert (1000 lines)",
-      "category": "sharing",
-      "docLines": 1000,
-      "iterations": 1,
-      "totalMs": 0,
-      "avgMs": 0,
-      "opsPerSec": 999
-    },
-    {
-      "name": "structural sharing after insert (10000 lines)",
-      "category": "sharing",
+      "name": "sequential insert char (10000 lines)",
+      "category": "document.seqInsert",
       "docLines": 10000,
-      "iterations": 1,
-      "totalMs": 0,
-      "avgMs": 0,
-      "opsPerSec": 9999
+      "samples": 15,
+      "opsPerSample": 28200,
+      "medianMs": 0.00071,
+      "p95Ms": 0.000721,
+      "opsPerSec": 1407721
+    },
+    {
+      "name": "flat caret down 100x (10000 lines)",
+      "category": "flat.moveDown",
+      "docLines": 10000,
+      "samples": 15,
+      "opsPerSample": 276500,
+      "medianMs": 0.00007,
+      "p95Ms": 0.000071,
+      "opsPerSec": 14354812
+    },
+    {
+      "name": "flat caret down 100x (50000 lines)",
+      "category": "flat.moveDown",
+      "docLines": 50000,
+      "samples": 15,
+      "opsPerSample": 281900,
+      "medianMs": 0.00007,
+      "p95Ms": 0.000071,
+      "opsPerSec": 14303655
+    },
+    {
+      "name": "idle value flush (50000 lines)",
+      "category": "typing.flush",
+      "docLines": 50000,
+      "samples": 15,
+      "opsPerSample": 22,
+      "medianMs": 0.868758,
+      "p95Ms": 1.165932,
+      "opsPerSec": 1151
     }
   ]
 }

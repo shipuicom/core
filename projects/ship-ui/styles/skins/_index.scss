@@ -1,0 +1,186 @@
+// Skins: the variant x colour blocks of every component, emitted from lists so a consumer can drop what it
+// does not use. A component's structure (layout, sizing, motion, states) ships with the component itself;
+// only the skin lives here.
+//
+//   @use '@ship-ui/core/styles' with (
+//     $shipColors: (primary, error),                 // every skin: only these colour classes
+//     $shipVariants: (simple, flat),                 // every skin: only these sheet variants
+//     $shipSkins: (toggle: (colors: (primary))),     // per skin overrides
+//     $shipToggle: false                             // a skin switched off entirely
+//   );
+@use 'sass:map';
+@use 'sass:list';
+@use './sheet';
+@use './spinner';
+@use './icon';
+@use './progress-bar' as progressbar;
+@use './tabs';
+@use './tooltip';
+@use './toggle';
+@use './range-slider' as rangeslider;
+@use './radio';
+@use './checkbox';
+@use './chip';
+@use './datepicker';
+@use './stepper';
+@use './avatar';
+@use './code-input' as codeinput;
+@use './video';
+@use './video-playlist' as videoplaylist;
+@use './chart-sparkline' as chartsparkline;
+@use './form-field' as formfield;
+@use './alert';
+@use './button';
+@use './list-item-swipe' as listitemswipe;
+@use './list' as listskin;
+@use './chat';
+@use './layout';
+
+/** Colour classes every skin emits by default. */
+$colors: (primary, accent, warn, error, success) !default;
+/** Sheet variants every skin emits by default. */
+$variants: (simple, outlined, flat, raised) !default;
+/** (name: bool) - a skin whose entry is false is not emitted. Fed from the $ship<Name> flags. */
+$enabled: () !default;
+/** (name: (colors: (...), variants: (...))) - per skin lists that win over $colors / $variants. */
+$overrides: () !default;
+
+@function enabled($name) {
+  @return map.get($enabled, $name) != false;
+}
+
+@function colors-for($name) {
+  $o: map.get($overrides, $name);
+  @if $o != null and map.has-key($o, colors) {
+    @return map.get($o, colors);
+  }
+  @return $colors;
+}
+
+@function variants-for($name) {
+  $o: map.get($overrides, $name);
+  @if $o != null and map.has-key($o, variants) {
+    @return map.get($o, variants);
+  }
+  @return $variants;
+}
+
+@if enabled(sheet) {
+  @include sheet.skin(colors-for(sheet), variants-for(sheet));
+}
+
+@if enabled(spinner) {
+  @include spinner.skin(colors-for(spinner), variants-for(spinner));
+}
+
+@if enabled(icon) {
+  @include icon.skin(colors-for(icon), variants-for(icon));
+}
+
+@if enabled(progressBar) {
+  @include progressbar.skin(colors-for(progressBar), variants-for(progressBar));
+}
+
+@if enabled(tabs) {
+  @include tabs.skin(colors-for(tabs), variants-for(tabs));
+}
+
+@if enabled(tooltip) {
+  @include tooltip.skin(colors-for(tooltip), variants-for(tooltip));
+}
+
+@if enabled(toggle) {
+  @include toggle.skin(colors-for(toggle), variants-for(toggle));
+}
+
+@if enabled(rangeSlider) {
+  @include rangeslider.skin(colors-for(rangeSlider), variants-for(rangeSlider));
+}
+
+@if enabled(radio) {
+  @include radio.skin(colors-for(radio), variants-for(radio));
+}
+
+@if enabled(checkbox) {
+  @include checkbox.skin(colors-for(checkbox), variants-for(checkbox));
+}
+
+@if enabled(chip) {
+  @include chip.skin(colors-for(chip), variants-for(chip));
+}
+
+@if enabled(datepicker) {
+  @include datepicker.skin(colors-for(datepicker), variants-for(datepicker));
+}
+
+@if enabled(stepper) {
+  @include stepper.skin(colors-for(stepper), variants-for(stepper));
+}
+
+@if enabled(avatar) {
+  @include avatar.skin(colors-for(avatar), variants-for(avatar));
+}
+
+@if enabled(codeInput) {
+  @include codeinput.skin(colors-for(codeInput), variants-for(codeInput));
+}
+
+@if enabled(video) {
+  @include video.skin(colors-for(video), variants-for(video));
+}
+
+@if enabled(videoPlaylist) {
+  @include videoplaylist.skin(colors-for(videoPlaylist), variants-for(videoPlaylist));
+}
+
+@if enabled(chartSparkline) {
+  @include chartsparkline.skin(colors-for(chartSparkline), variants-for(chartSparkline));
+}
+
+@if enabled(formField) {
+  @include formfield.skin(colors-for(formField), variants-for(formField));
+}
+
+@if enabled(alert) {
+  @include alert.skin(colors-for(alert), variants-for(alert));
+}
+
+@if enabled(button) {
+  @include button.skin(colors-for(button), variants-for(button));
+}
+
+@if enabled(listItemSwipe) {
+  @include listitemswipe.skin(colors-for(listItemSwipe), variants-for(listItemSwipe));
+}
+
+@if enabled(list) {
+  @include listskin.skin(colors-for(list), variants-for(list));
+}
+
+@if enabled(chat) {
+  @include chat.skin(colors-for(chat), variants-for(chat));
+}
+
+@if enabled(layoutStat) {
+  @include layout.stat(colors-for(layoutStat), variants-for(layoutStat));
+}
+
+@if enabled(layoutStatTrend) {
+  @include layout.stat-trend(colors-for(layoutStatTrend), variants-for(layoutStatTrend));
+}
+
+@if enabled(layoutStatGoal) {
+  @include layout.stat-goal(colors-for(layoutStatGoal), variants-for(layoutStatGoal));
+}
+
+@if enabled(layoutStatRing) {
+  @include layout.stat-ring(colors-for(layoutStatRing), variants-for(layoutStatRing));
+}
+
+@if enabled(layoutRanking) {
+  @include layout.ranking(colors-for(layoutRanking), variants-for(layoutRanking));
+}
+
+@if enabled(layoutAchievement) {
+  @include layout.achievement(colors-for(layoutAchievement), variants-for(layoutAchievement));
+}

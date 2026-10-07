@@ -1,1 +1,1 @@
-export * from './ship-prevent-wheel.directive';
+export * from './ship-prevent-wheel';

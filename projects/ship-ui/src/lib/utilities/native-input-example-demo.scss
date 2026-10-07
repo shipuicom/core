@@ -1,0 +1,11 @@
+@use 'helpers' as *;
+
+app-input-signal-demo {
+  display: block;
+  padding: var(--pad-y-8) var(--pad-x-8);
+}
+.card {
+  padding: var(--pad-y-4) var(--pad-x-4);
+  border: var(--border-10);
+  margin-bottom: var(--space-4);
+}

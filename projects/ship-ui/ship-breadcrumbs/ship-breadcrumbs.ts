@@ -18,7 +18,7 @@ import { ShipBreadcrumbsSize, ShipBreadcrumbsVariant } from '@ship-ui/core';
     role: 'navigation',
     '[attr.aria-label]': 'label()',
     '[class]': 'hostClasses()',
-    '[style.--breadcrumbs-sep]': 'separatorContent()',
+    '[style.--crumb-sep]': 'separatorContent()',
   },
 })
 export class ShipBreadcrumbs {

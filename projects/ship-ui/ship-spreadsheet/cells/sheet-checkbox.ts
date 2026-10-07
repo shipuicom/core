@@ -15,28 +15,11 @@ import { ShipCheckbox } from '@ship-ui/core/ship-checkbox';
  */
 @Component({
   selector: 'sh-sheet-checkbox-cell',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [ShipCheckbox],
   template: `<sh-checkbox class="primary raised small" [class.active]="checked()" [checked]="checked()" [readonly]="true" [noInternalInput]="true" [label]="checked() ? 'Checked' : 'Unchecked'" />`,
-  styles: `
-    sh-sheet-checkbox-cell {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-
-      sh-checkbox .box {
-        width: 14px;
-        height: 14px;
-      }
-
-      sh-checkbox .box sh-icon {
-        font-size: 11px;
-      }
-    }
-  `,
+  styleUrl: './sheet-checkbox-cell.scss',
 })
 export class ShipSheetCheckboxCell {
   readonly value = input('');

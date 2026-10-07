@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input, numberAttribute, ViewEncapsulation } from '@angular/core';
-import { shipComponentClasses } from '@ship-ui/core';
+import { ChangeDetectionStrategy, Component, computed, effect, input, numberAttribute, signal, ViewEncapsulation } from '@angular/core';
+import { shipComponentClasses, contentProjectionSignal, generateUniqueId } from '@ship-ui/core';
 import { ShipColor, ShipLayoutStatGoalVariant } from '@ship-ui/core';
 
 /**
@@ -28,6 +28,7 @@ import { ShipColor, ShipLayoutStatGoalVariant } from '@ship-ui/core';
       aria-valuemax="100"
       [attr.aria-valuenow]="percent()"
       [attr.aria-label]="label() || null"
+      [attr.aria-labelledby]="labelledBy()"
       [style.--goal-pct]="percent()">
       @if (variant() === 'type-b') {
         @for (segment of segments; track segment) {
@@ -45,10 +46,23 @@ import { ShipColor, ShipLayoutStatGoalVariant } from '@ship-ui/core';
 })
 export class ShipLayoutStatGoal {
   /** Current progress. */
-  value = input(0, { transform: numberAttribute });
+  value = input(0, { transform: (v: unknown) => numberAttribute(v, 0) });
   /** The target; the bar is full at this value. */
   max = input(100, { transform: numberAttribute });
-  /** Accessible name for the progress bar (e.g. "Quarterly sales goal"). */
+  // Without `label`, the slotted `p`/`[label]` names the bar.
+  slottedLabel = contentProjectionSignal<HTMLElement>('p, [label]', { childList: true }, 0);
+  labelledBy = signal<string | null>(null);
+  #labelEffect = effect(() => {
+    const el = this.slottedLabel();
+    if (!el || this.label()) {
+      this.labelledBy.set(null);
+      return;
+    }
+    if (!el.id) el.id = `sh-lo-stat-goal-label-${generateUniqueId()}`;
+    this.labelledBy.set(el.id);
+  });
+
+  /** Accessible name for the progress bar (e.g. "Quarterly sales goal"); the slotted `p` is used when unset. */
   label = input<string>('');
   /** Bar color (`ShipColor`); defaults to primary. */
   color = input<ShipColor | null>(null);

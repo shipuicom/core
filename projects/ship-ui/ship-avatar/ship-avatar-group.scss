@@ -1,0 +1,41 @@
+@use 'helpers' as *;
+
+sh-avatar-group {
+  --avatar-overlap: #{p2r(-8)};
+
+  display: inline-flex;
+  align-items: center;
+
+  sh-avatar,
+  .sh-avatar-overflow {
+    border: 2px solid var(--avatar-bc, var(--base-1));
+    box-sizing: content-box;
+  }
+
+  > * + * {
+    margin-left: var(--avatar-overlap);
+  }
+
+  .sh-avatar-overflow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: p2r(32);
+    height: p2r(32);
+    border-radius: 50%;
+    background: var(--base-3);
+    color: var(--base-11);
+    font: var(--paragraph-40B);
+  }
+
+  &.small {
+    --avatar-overlap: #{p2r(-6)};
+
+    .sh-avatar-overflow {
+      width: p2r(24);
+      height: p2r(24);
+      font-size: p2r(10);
+    }
+  }
+}

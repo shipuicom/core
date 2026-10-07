@@ -7,7 +7,7 @@ import {
   output,
   ViewEncapsulation,
 } from '@angular/core';
-import { shipComponentClasses } from '@ship-ui/core';
+import { shipComponentClasses, optionalBooleanAttribute } from '@ship-ui/core';
 import { ShipColor, ShipSheetVariant, ShipSize } from '@ship-ui/core';
 
 @Component({
@@ -15,7 +15,6 @@ import { ShipColor, ShipSheetVariant, ShipSize } from '@ship-ui/core';
   styleUrl: './ship-chip.scss',
   encapsulation: ViewEncapsulation.None,
   imports: [],
-  standalone: true,
   template: '<div><ng-content /></div>',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -40,11 +39,11 @@ export class ShipChip {
   size = input<ShipSize | null>(null);
 
   /** Use sharp (non-rounded) corners. */
-  sharp = input<boolean | undefined>(undefined);
+  sharp = input<boolean | undefined, unknown>(undefined, { transform: optionalBooleanAttribute });
   /** Enable the dynamic styling variant. */
-  dynamic = input<boolean | undefined>(undefined);
+  dynamic = input<boolean | undefined, unknown>(undefined, { transform: optionalBooleanAttribute });
   /** Render in a non-interactive read-only state. */
-  readonly = input<boolean>(false);
+  readonly = input(false, { transform: booleanAttribute });
   /** Render without a background fill. */
   noBg = input<boolean, boolean | string>(false, { transform: booleanAttribute });
   /** Highlights the chip with the variant's selected colours (`class="selected"` does the same). */

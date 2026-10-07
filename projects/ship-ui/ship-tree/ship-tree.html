@@ -31,7 +31,7 @@
       >
         <!-- Indent guides -->
         @for (i of getDepthArray(getNodeDepth(node)); track i) {
-          <div class="indent-guide" [style.--guide-index]="i"></div>
+          <div class="indent-guide" [style.--tree-guide-i]="i"></div>
         }
 
         <!-- Folder Caret -->
@@ -97,7 +97,7 @@
       >
         <!-- Indent guides -->
         @for (i of getDepthArray(getNodeDepth(node)); track i) {
-          <div class="indent-guide" [style.--guide-index]="i"></div>
+          <div class="indent-guide" [style.--tree-guide-i]="i"></div>
         }
 
         <!-- Folder Caret -->

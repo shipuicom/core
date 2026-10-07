@@ -1,0 +1,20 @@
+@use 'helpers' as *;
+
+sh-sheet-select-cell {
+  display: contents;
+
+  sh-chip {
+    max-width: 100%;
+    overflow: hidden;
+
+    div {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &.unknown {
+      --chip-c: var(--error-8);
+    }
+  }
+}

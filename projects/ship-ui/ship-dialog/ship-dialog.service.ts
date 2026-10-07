@@ -80,15 +80,15 @@ export class ShipDialogService {
     options?: any
   ): ShipDialogInstance<any> {
     const environmentInjector = this.#appRef.injector;
+    // Tear an open dialog down first: detaching its view removes the shared host element, which #createEl re-creates.
+    if (this.compRef) {
+      this.#cleanupRefs(true);
+    }
     const hostElement = this.#createEl();
     let closingCalled = false;
     let closedField: OutputEmitterRef<U | undefined> | undefined;
 
     const { data, closed, ...rest } = options || {};
-
-    if (this.compRef) {
-      this.#cleanupRefs(true);
-    }
 
     const _self = this;
 
@@ -189,31 +189,41 @@ export class ShipDialogService {
     return this.#document.getElementById('sh-dialog-ref')!;
   }
 
+  // The refs are captured now and destroyed later (next microtask, or at once with `instant`), so a dialog opened
+  // in between is never torn down by the previous dialog's deferred cleanup. Fields are only cleared while they
+  // still point at the captured refs.
   #cleanupRefs(instant = false) {
-    const _self = this;
+    const { compRef, insertedCompRef, insertedTemplateRef, closedFieldSub, compClosedSub } = this;
 
-    instant ? cleanup : queueMicrotask(() => cleanup());
-
-    function cleanup() {
-      if (_self.insertedCompRef) {
-        _self.#appRef.detachView(_self.insertedCompRef.hostView);
-        _self.closedFieldSub?.unsubscribe();
-        _self.insertedCompRef.destroy();
-        _self.insertedCompRef = null;
+    const cleanup = () => {
+      if (insertedCompRef) {
+        closedFieldSub?.unsubscribe();
+        if (!insertedCompRef.hostView.destroyed) {
+          this.#appRef.detachView(insertedCompRef.hostView);
+          insertedCompRef.destroy();
+        }
+        if (this.insertedCompRef === insertedCompRef) this.insertedCompRef = null;
       }
 
-      if (_self.insertedTemplateRef) {
-        _self.#appRef.detachView(_self.insertedTemplateRef);
-        _self.insertedTemplateRef.destroy();
-        _self.insertedTemplateRef = null;
+      if (insertedTemplateRef) {
+        if (!insertedTemplateRef.destroyed) {
+          this.#appRef.detachView(insertedTemplateRef);
+          insertedTemplateRef.destroy();
+        }
+        if (this.insertedTemplateRef === insertedTemplateRef) this.insertedTemplateRef = null;
       }
 
-      if (!_self.compRef) return;
+      if (!compRef) return;
 
-      _self.#appRef.detachView(_self.compRef.hostView);
-      _self.compClosedSub?.unsubscribe();
-      _self.compRef.destroy();
-    }
+      compClosedSub?.unsubscribe();
+      if (!compRef.hostView.destroyed) {
+        this.#appRef.detachView(compRef.hostView);
+        compRef.destroy();
+      }
+      if (this.compRef === compRef) this.compRef = null;
+    };
+
+    instant ? cleanup() : queueMicrotask(cleanup);
   }
 
   ngOnDestroy() {

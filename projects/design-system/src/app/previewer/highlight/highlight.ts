@@ -11,6 +11,7 @@ import {
   viewChild,
 } from '@angular/core';
 import hljs from 'highlight.js';
+import json from 'highlight.js/lib/languages/json';
 import scss from 'highlight.js/lib/languages/scss';
 import shell from 'highlight.js/lib/languages/shell';
 import typescript from 'highlight.js/lib/languages/typescript';
@@ -23,6 +24,7 @@ const langMap = {
   html: 'xml',
   scss: 'scss',
   shell: 'shell',
+  json: 'json',
 };
 
 @Component({
@@ -35,7 +37,7 @@ const langMap = {
 export class Highlight {
   #platformId = inject(PLATFORM_ID);
 
-  lang = input.required<'ts' | 'html' | 'scss' | 'shell'>();
+  lang = input.required<'ts' | 'html' | 'scss' | 'shell' | 'json'>();
   content = input.required<string>();
   langClass = computed(() => `language-${langMap[this.lang()]}`);
 
@@ -45,6 +47,7 @@ export class Highlight {
     hljs.registerLanguage('typescript', typescript);
     hljs.registerLanguage('xml', xml);
     hljs.registerLanguage('scss', scss);
+    hljs.registerLanguage('json', json);
     hljs.registerLanguage('shell', shell);
   }
 

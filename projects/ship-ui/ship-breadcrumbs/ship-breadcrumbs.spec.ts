@@ -45,9 +45,9 @@ describe('ShipBreadcrumbs', () => {
     expect(el.getAttribute('aria-label')).toBe('Breadcrumb');
   });
 
-  it('falls back to the base variant next to consumer classes', () => {
+  it('stamps no variant class by default next to consumer classes', () => {
     const { el } = setup();
-    expect(el.classList).toContain('base');
+    expect(el.classList).not.toContain('base');
     expect(el.classList).toContain('custom');
   });
 
@@ -56,7 +56,6 @@ describe('ShipBreadcrumbs', () => {
     fixture.componentInstance.variant.set('type-c');
     fixture.detectChanges();
     expect(el.classList).toContain('type-c');
-    expect(el.classList).not.toContain('base');
   });
 
   it('uses the ShipConfig default', () => {
@@ -70,10 +69,10 @@ describe('ShipBreadcrumbs', () => {
 
   it('exposes the separator as a quoted CSS string', () => {
     const { fixture, el } = setup();
-    expect(el.style.getPropertyValue('--breadcrumbs-sep')).toBe('"/"');
+    expect(el.style.getPropertyValue('--crumb-sep')).toBe('"/"');
     fixture.componentInstance.separator.set('›');
     fixture.detectChanges();
-    expect(el.style.getPropertyValue('--breadcrumbs-sep')).toBe('"›"');
+    expect(el.style.getPropertyValue('--crumb-sep')).toBe('"›"');
   });
 
   it("slots into sh-lo-page's nav area", () => {

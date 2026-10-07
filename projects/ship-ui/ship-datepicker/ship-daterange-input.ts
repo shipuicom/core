@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, contentChildren, effect, ElementRef, HostListener, inject, input, model, output, signal, viewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, contentChildren, effect, ElementRef, inject, input, model, output, signal, viewChild, ViewEncapsulation } from '@angular/core';
 import { contentProjectionSignal } from '@ship-ui/core';
 import { ShipFormFieldPopover } from '@ship-ui/core/ship-form-field';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
@@ -7,7 +7,7 @@ import { ShipDatepicker } from './ship-datepicker';
 
 @Component({
   selector: 'sh-daterange-input',
-  styleUrl: './ship-datepicker.scss',
+  styleUrl: './ship-daterange-input.scss',
   encapsulation: ViewEncapsulation.None,
   imports: [ShipDatepicker, ShipFormFieldPopover, ShipIcon],
   providers: [DatePipe],
@@ -55,6 +55,7 @@ import { ShipDatepicker } from './ship-datepicker';
     // branch, which the hydration serializer can't map (NG0502) — skip
     // hydration so this subtree client-renders instead.
     ngSkipHydration: 'true',
+    '(focusout)': 'onFocusOut($event)',
   },
 })
 export class ShipDaterangeInput {
@@ -172,7 +173,6 @@ export class ShipDaterangeInput {
     }
   }
 
-  @HostListener('focusout', ['$event'])
   onFocusOut(event: FocusEvent) {
     setTimeout(() => {
       const activeElement = document.activeElement as HTMLElement | null;

@@ -18,6 +18,12 @@ export interface ShipComponentConfig {
   color?: ShipColor | string;
   /** Renders the component in a non-interactive read-only state. Read by `shipComponentClasses`. */
   readonly?: boolean;
+  /** Sharp (non-rounded) corners, for the components that accept `sharp`. */
+  sharp?: boolean;
+  /** Read by `shipComponentClasses` for the components that accept `dynamic`. */
+  dynamic?: boolean;
+  /** Read by `shipComponentClasses` for the components that accept `alwaysShow`. */
+  alwaysShow?: boolean;
 }
 
 export interface ShipChipConfig extends ShipComponentConfig {
@@ -35,6 +41,8 @@ export interface ShipIconConfig extends ShipComponentConfig {
 }
 
 export interface ShipConfigColors {
+  /** Palettes added with `$shipPalettes` are keyed by name too. */
+  [palette: string]: string | undefined;
   primary?: string;
   accent?: string;
   warn?: string;
@@ -44,6 +52,7 @@ export interface ShipConfigColors {
 }
 
 export interface ShipConfigDistributions {
+  [palette: string]: number | undefined;
   primary?: number;
   accent?: number;
   warn?: number;
@@ -58,6 +67,12 @@ export interface ShipConfig {
   distribution?: ShipConfigDistributions;
   borderRadius?: number;
   borderWidth?: number;
+  /** Base vertical padding in px (`--pad-y`, default 8); every component's padding tier derives from it, rounded to a 2px grid. */
+  paddingY?: number;
+  /** Base horizontal padding in px (`--pad-x`, default 12). */
+  paddingX?: number;
+  /** Google Fonts family for `--font-family` (loaded on demand by the host app); unset keeps Inter Tight. */
+  fontFamily?: string;
   button?: ShipComponentConfig;
   chip?: ShipChipConfig;
   alert?: ShipComponentConfig;
@@ -76,7 +91,7 @@ export interface ShipConfig {
   select?: ShipComponentConfig;
   accordion?: ShipComponentConfig;
   tabs?: ShipComponentConfig;
-  'event-card'?: ShipComponentConfig;
+  eventCard?: ShipComponentConfig;
   datepicker?: ShipComponentConfig;
   rangeSlider?: ShipRangeSliderConfig;
   layoutPage?: ShipComponentConfig;
@@ -96,11 +111,16 @@ export interface ShipConfig {
   layoutToolbar?: ShipComponentConfig;
   breadcrumbs?: ShipComponentConfig;
   chat?: ShipComponentConfig;
+  avatar?: ShipComponentConfig;
+  chartSparkline?: ShipComponentConfig;
+  colorPickerInput?: ShipComponentConfig;
+  editor?: ShipComponentConfig;
+  themeToggle?: ShipComponentConfig;
+  video?: ShipComponentConfig;
+  videoPlaylist?: ShipComponentConfig;
 
-  
-  alertVariant?: '' | 'simple' | 'outlined' | 'flat' | 'raised';
-  cardType?: '' | 'type-b' | 'type-c' | 'type-d';
+  /** Class the dialog service applies to every dialog it opens. */
   dialogType?: 'type-b';
-  tableType?: 'type-b';
+  /** Sidenav mode used by the docs shell. */
   sidenavType?: 'overlay' | 'simple';
 }

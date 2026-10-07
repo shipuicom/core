@@ -4,7 +4,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ShipColorPicker } from './ship-color-picker';
 import { ShipColorPickerInput } from './ship-color-picker-input';
 
-
 const mockCtx = {
   clearRect: vi.fn(),
   createLinearGradient: vi.fn().mockReturnValue({
@@ -15,7 +14,9 @@ const mockCtx = {
     data: new Uint8ClampedArray((w || 200) * (h || 200) * 4),
   })),
   set fillStyle(val: any) {},
-  get fillStyle() { return ''; }
+  get fillStyle() {
+    return '';
+  },
 };
 
 if (typeof HTMLCanvasElement !== 'undefined') {
@@ -77,7 +78,7 @@ describe('ShipColorPicker & ShipColorPickerInput', () => {
     it('should calculate selectedColorRgb and selectedColorHex correctly', () => {
       const fixture = TestBed.createComponent(ShipColorPicker);
       const comp = fixture.componentInstance;
-      
+
       comp.selectedColor.set([255, 0, 0, 1]);
       fixture.detectChanges();
 
@@ -91,7 +92,6 @@ describe('ShipColorPicker & ShipColorPickerInput', () => {
       let emitted: any = null;
       comp.currentColor.subscribe((val) => (emitted = val));
 
-      
       comp.alpha.set(0.5);
       comp.selectedColor.set([0, 255, 0, 0.5]);
       fixture.detectChanges();
@@ -118,17 +118,17 @@ describe('ShipColorPicker & ShipColorPickerInput', () => {
       fixture.detectChanges();
       await fixture.whenStable();
       fixture.detectChanges();
-      
+
       const host = fixture.componentInstance;
       const textInput = fixture.nativeElement.querySelector('input');
-      
+
       expect(host.isOpen()).toBe(false);
-      
+
       textInput.dispatchEvent(new Event('focus'));
       fixture.detectChanges();
       await fixture.whenStable();
       fixture.detectChanges();
-      
+
       expect(host.isOpen()).toBe(true);
     });
 
@@ -140,7 +140,6 @@ describe('ShipColorPicker & ShipColorPickerInput', () => {
 
       const textInput = fixture.nativeElement.querySelector('input');
 
-      
       textInput.value = '#0000ff';
       textInput.dispatchEvent(new Event('input'));
       fixture.detectChanges();
@@ -152,6 +151,65 @@ describe('ShipColorPicker & ShipColorPickerInput', () => {
       expect(inputComp.formattedColorString()).toBe('rgb(0, 0, 255)');
     });
 
+    it('echoes an hsl string verbatim instead of re-rounding it through 8-bit rgb', async () => {
+      const fixture = TestBed.createComponent(TestHostComponent);
+      fixture.componentInstance.format.set('hsl');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const textInput = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+      textInput.value = 'hsl(30, 10%, 46%)';
+      textInput.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const inputComp = fixture.debugElement.children[0].componentInstance as ShipColorPickerInput;
+      expect(inputComp.internalColorTuple()).toEqual([129, 117, 106, 1]);
+      expect(inputComp.formattedColorString()).toBe('hsl(30, 10%, 46%)');
+      expect(textInput.value).toBe('hsl(30, 10%, 46%)');
+    });
+
+    it('still normalizes a string written in another format', async () => {
+      const fixture = TestBed.createComponent(TestHostComponent);
+      fixture.componentInstance.format.set('hsl');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const textInput = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+      textInput.value = '#0000ff';
+      textInput.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const inputComp = fixture.debugElement.children[0].componentInstance as ShipColorPickerInput;
+      expect(inputComp.formattedColorString()).toBe('hsl(240, 100%, 50%)');
+    });
+
+    it('drops the exact string once the picker produces a new tuple', async () => {
+      const fixture = TestBed.createComponent(TestHostComponent);
+      fixture.componentInstance.format.set('hsl');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const textInput = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+      textInput.value = 'hsl(30, 10%, 46%)';
+      textInput.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const inputComp = fixture.debugElement.children[0].componentInstance as ShipColorPickerInput;
+      inputComp.internalColorTuple.set([129, 117, 106, 1]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(inputComp.formattedColorString()).toBe('hsl(29, 10%, 46%)');
+    });
+
     it('should update input text string on format changes', async () => {
       const fixture = TestBed.createComponent(TestHostComponent);
       fixture.detectChanges();
@@ -161,14 +219,12 @@ describe('ShipColorPicker & ShipColorPickerInput', () => {
       const host = fixture.componentInstance;
       const textInput = fixture.nativeElement.querySelector('input');
 
-      
       textInput.value = '#ff0000';
       textInput.dispatchEvent(new Event('input'));
       fixture.detectChanges();
       await fixture.whenStable();
       fixture.detectChanges();
 
-      
       host.format.set('hex');
       fixture.detectChanges();
       await fixture.whenStable();
@@ -176,7 +232,6 @@ describe('ShipColorPicker & ShipColorPickerInput', () => {
 
       expect(textInput.value).toBe('#ff0000');
 
-      
       host.format.set('hsl');
       fixture.detectChanges();
       await fixture.whenStable();

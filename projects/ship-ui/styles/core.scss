@@ -11,13 +11,14 @@ $useApexcharts: false !default;
 
 @use './core/core';
 
-$shipSheet: true !default;
+$shipSortable: true !default;
 $shipFormFieldShadow: false !default;
 $shipButtonShadow: false !default;
 $shipChipShadow: false !default;
 
-@use './components/ship-sheet.utility.scss' with (
-  $shipSheet: $shipSheet
+// [shSortable] is a directive and cannot carry a styleUrl, so its styles are global.
+@use './components/ship-sortable.scss' with (
+  $shipSortable: $shipSortable
 );
 
 $form-field-shadow-val: none;
@@ -35,9 +36,10 @@ $chip-shadow-val: none;
   $chip-shadow-val: var(--box-shadow-10);
 }
 
+// The shadow knobs are the component tokens themselves: override --ff-bs / --btn-bs / --chip-bs on :root or any ancestor.
 :root {
-  --ship-form-field-shadow: #{$form-field-shadow-val};
-  --ship-button-shadow: #{$button-shadow-val};
-  --ship-chip-shadow: #{$chip-shadow-val};
+  --ff-bs: #{$form-field-shadow-val};
+  --btn-bs: #{$button-shadow-val};
+  --chip-bs: #{$chip-shadow-val};
 }
 

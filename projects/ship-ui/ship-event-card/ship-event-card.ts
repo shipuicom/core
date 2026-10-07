@@ -29,7 +29,7 @@ export class ShipEventCard {
   /** Sheet visual variant of the card. */
   variant = input<ShipSheetVariant | null>(null);
 
-  hostClasses = shipComponentClasses('event-card', {
+  hostClasses = shipComponentClasses('eventCard', {
     color: this.color,
     variant: this.variant,
   });

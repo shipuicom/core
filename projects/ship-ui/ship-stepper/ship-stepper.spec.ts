@@ -73,25 +73,25 @@ describe('ShipStepper', () => {
     expect(radio2.querySelector('.radio.sh-sheet')).toBeTruthy();
   });
 
-  it('should calculate and update --stepper-progress variable', async () => {
+  it('should calculate and update --step-progress variable', async () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
     const hostEl = stepperDebugEl.nativeElement;
     
-    expect(hostEl.style.getPropertyValue('--stepper-progress')).toBe('0%');
+    expect(hostEl.style.getPropertyValue('--step-progress')).toBe('0%');
 
     
     hostComponent.value.set('step2');
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(hostEl.style.getPropertyValue('--stepper-progress')).toBe('33.33333333333333%');
+    expect(hostEl.style.getPropertyValue('--step-progress')).toBe('33.33333333333333%');
 
     
     hostComponent.value.set('step3');
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(hostEl.style.getPropertyValue('--stepper-progress')).toBe('66.66666666666666%');
+    expect(hostEl.style.getPropertyValue('--step-progress')).toBe('66.66666666666666%');
   });
 
   it('should react to mutation events on children classes', async () => {

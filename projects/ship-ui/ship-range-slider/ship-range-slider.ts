@@ -1,5 +1,5 @@
 import { afterNextRender, ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, model, signal, untracked, ViewEncapsulation } from '@angular/core';
-import { contentProjectionSignal, nativeInputValueSignal, shipComponentClasses } from '@ship-ui/core';
+import { contentProjectionSignal, nativeInputValueSignal, shipComponentClasses, generateUniqueId, optionalBooleanAttribute } from '@ship-ui/core';
 import { ShipColor, ShipSize, ShipRangeSliderVariant } from '@ship-ui/core';
 
 @Component({
@@ -48,7 +48,7 @@ export class ShipRangeSlider {
       const inputEl = el.querySelector('input[type=range]');
       const labelEl = el.querySelector('label');
       if (!inputEl || !labelEl) return;
-      if (!inputEl.id) inputEl.id = `sh-input-${Math.random().toString(36).substring(2, 9)}`;
+      if (!inputEl.id) inputEl.id = `sh-input-${generateUniqueId()}`;
       if (!labelEl.getAttribute('for')) labelEl.setAttribute('for', inputEl.id);
     });
   }
@@ -77,9 +77,9 @@ export class ShipRangeSlider {
   /** Size of the slider (`ShipSize`). */
   size = input<ShipSize | null>(null);
   /** When `true`, renders the slider with sharp (non-rounded) corners. */
-  sharp = input<boolean | undefined>(undefined);
+  sharp = input<boolean | undefined, unknown>(undefined, { transform: optionalBooleanAttribute });
   /** When `true`, always shows the value indicator instead of only while interacting. */
-  alwaysShow = input<boolean | undefined>(undefined);
+  alwaysShow = input<boolean | undefined, unknown>(undefined, { transform: optionalBooleanAttribute });
 
   hostClasses = shipComponentClasses('rangeSlider', {
     color: this.color,

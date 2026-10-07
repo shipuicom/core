@@ -49,10 +49,11 @@ async function clickAt(page: Page, editor: number, line: number, columnFraction:
       (window as any).ng.applyChanges(comp);
 
       const head = comp.sel().ranges[0].head;
-      const doc = comp.doc();
+      comp.flushValue();
+      const lines: string[] = (comp.value() ?? '').split('\n');
       let at = 0;
-      for (let i = 0; i < doc.lines.length; i++) {
-        const len = doc.lines[i].text.length;
+      for (let i = 0; i < lines.length; i++) {
+        const len = lines[i].length;
         if (head <= at + len) return { line: i, column: head - at };
         at += len + 1;
       }
@@ -173,11 +174,12 @@ test.describe('sh-code caret hit-testing', () => {
         );
         (window as any).ng.applyChanges(comp);
         const head = comp.sel().ranges[0].head;
-        const doc = comp.doc();
+        comp.flushValue();
+        const texts: string[] = (comp.value() ?? '').split('\n');
         let at = 0;
         let got = -1;
-        for (let i = 0; i < doc.lines.length; i++) {
-          const len = doc.lines[i].text.length;
+        for (let i = 0; i < texts.length; i++) {
+          const len = texts[i].length;
           if (head <= at + len) {
             got = i;
             break;
@@ -200,7 +202,7 @@ test.describe('sh-code caret hit-testing', () => {
     const result = await page.evaluate(() => {
       const el = document.querySelector('sh-code') as HTMLElement;
       const comp = (window as any).ng.getComponent(el);
-      const texts = () => comp.doc().lines.map((l: any) => l.text);
+      const texts = () => (comp.flushValue(), (comp.value() ?? '').split('\n'));
       const before: string[] = texts();
       const n = before.length;
       let start = 0;
@@ -235,6 +237,8 @@ test.describe('sh-code caret hit-testing', () => {
       // A real edit still reports.
       comp.sel.set({ ranges: [{ anchor: 0, head: 0 }], primary: 0 });
       comp.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }));
+      // Edits reach the control once typing pauses (valueSync 'idle'); flush instead of waiting for idle.
+      comp.flushValue();
       await new Promise((r) => setTimeout(r, 100));
       (window as any).ng.applyChanges(comp);
       return { afterWrite, afterEdit: calls };
@@ -256,18 +260,24 @@ test.describe('sh-code caret hit-testing', () => {
         if (writes++ === 0) comp.writeValue('normalized');
       });
       comp.sel.set({ ranges: [{ anchor: 0, head: 0 }], primary: 0 });
+      // The edit (delete one line) leaves many lines; the written-back value is a single line, so the two differ.
+      const before = comp.lineCount();
       const isMac = /Mac|iP/.test(navigator.platform);
       comp.onKeyDown(new KeyboardEvent('keydown', { key: 'k', shiftKey: true, metaKey: isMac, ctrlKey: !isMac, cancelable: true }));
+      // The edit reaches onChange on flush; the subscriber writes back from inside it.
+      comp.flushValue();
       await new Promise((r) => setTimeout(r, 100));
       (window as any).ng.applyChanges(comp);
-      return {
-        writes,
-        text: comp.doc().lines.map((l: any) => l.text).join('\n'),
-        value: comp.value(),
-      };
+      comp.flushValue();
+      const firstLine = (el.querySelector('.sh-code-line') as HTMLElement | null)?.textContent ?? null;
+      return { writes, before, lines: comp.lineCount(), firstLine, value: comp.value() };
     });
     expect(result.writes).toBeGreaterThan(0);
-    expect(result.text).toBe('normalized');
+    // The document took the written-back value, not the edit: one line reading 'normalized', where the edit
+    // alone would have left `before - 1` lines.
+    expect(result.before).toBeGreaterThan(2);
+    expect(result.lines).toBe(1);
+    expect(result.firstLine).toBe('normalized');
     expect(result.value).toBe('normalized');
     expect(errors, `console/page errors: ${errors.join(' | ')}`).toEqual([]);
   });

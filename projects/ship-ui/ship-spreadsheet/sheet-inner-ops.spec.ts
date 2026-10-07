@@ -11,7 +11,7 @@ import { CollabMessage, CollabTransport } from '../ship-editor-collab/collab-pro
 import { ShipEditorCollab } from '../ship-editor-collab/ship-editor-collab';
 import { SheetModel, SheetOp, applySheetOps, createSheet, sheetFromJSON, sheetToJSON } from './core/sheet-model';
 import { transformSheetOps } from './core/sheet-transform';
-import { SHEET_INNER_ALGEBRA, ShipSpreadsheetBlockBehavior } from './spreadsheet-block';
+import { SHEET_INNER_ALGEBRA, ShipSpreadsheetBlockBehavior } from './ship-spreadsheet-block';
 
 function mulberry32(seed: number) {
   return () => {

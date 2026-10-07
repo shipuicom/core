@@ -2,44 +2,30 @@
 // ShipCode — Columnar Line Index
 // ---------------------------------------------------------------------------
 //
-// The flat-position machinery, mirroring ship-editor's columnar model: the
-// document's lines are the storage column, and this index is the lazily built
-// prefix-sum array over them. A flat position counts characters with one slot
-// per newline, so `moveRight` is `pos + 1` even across line boundaries and a
-// selection is just `{anchor, head}` numbers — the same properties that
-// motivated the editor's flat-selection migration.
+// The flat-position machinery, mirroring ship-editor's columnar model. A flat
+// position counts characters with one slot per newline, so `moveRight` is
+// `pos + 1` even across line boundaries and a selection is just
+// `{anchor, head}` numbers.
 //
-// The index is immutable, built once per document value and cached in a
-// WeakMap: documents share structure across edits, but the prefix sums are
-// global, so an edit invalidates the whole index. A rebuild is one pass over
-// the line lengths into a Float64Array (~µs at 10k lines), which is cheaper
-// than keeping an incremental structure correct — the same trade
-// BlockHeightMap makes for viewport heights.
+// The document's line tree caches line and character counts per node, so every
+// lookup here is one O(log n) descent: nothing is rebuilt when the document
+// changes, and an index is a thin view kept per document value.
 
-import { CodeDocument } from './document';
+import { CodeDocument, docSize, getLine, getLines, lineAtOffset, lineCount, lineStart } from './document';
 import { CaretPosition } from './selection';
 
 /** A flat character offset in [0, size]. Newlines occupy one slot each. */
 export type FlatPos = number;
 
 export class LineIndex {
-  /** starts[i] = flat offset of line i's first character; starts[lineCount] = size + 1 sentinel. */
-  #starts: Float64Array;
-  #size: number;
   #doc: CodeDocument;
+  #size: number;
+  #lineCount: number;
 
   constructor(doc: CodeDocument) {
     this.#doc = doc;
-    const lines = doc.lines;
-    const starts = new Float64Array(lines.length + 1);
-    let at = 0;
-    for (let i = 0; i < lines.length; i++) {
-      starts[i] = at;
-      at += lines[i].text.length + 1; // +1 for the newline slot
-    }
-    starts[lines.length] = at;
-    this.#starts = starts;
-    this.#size = at - 1; // the last line has no trailing newline
+    this.#size = docSize(doc);
+    this.#lineCount = lineCount(doc);
   }
 
   /** Total flat length of the document. Valid positions are [0, size]. */
@@ -48,50 +34,43 @@ export class LineIndex {
   }
 
   get lineCount(): number {
-    return this.#doc.lines.length;
+    return this.#lineCount;
+  }
+
+  #clampLine(line: number): number {
+    return Math.max(0, Math.min(line, this.#lineCount - 1));
   }
 
   /** Flat offset of `line`'s first character. */
   startOf(line: number): FlatPos {
-    return this.#starts[Math.max(0, Math.min(line, this.lineCount - 1))];
+    return lineStart(this.#doc, this.#clampLine(line));
   }
 
   /** Flat offset just past `line`'s last character (before its newline slot). */
   endOf(line: number): FlatPos {
-    const clamped = Math.max(0, Math.min(line, this.lineCount - 1));
-    return this.#starts[clamped] + this.#doc.lines[clamped].text.length;
+    const clamped = this.#clampLine(line);
+    return lineStart(this.#doc, clamped) + getLine(this.#doc, clamped).length;
   }
 
   /** The line whose span contains flat position `pos`. */
   lineAt(pos: FlatPos): number {
-    const starts = this.#starts;
-    const count = this.lineCount;
     if (pos <= 0) return 0;
-    if (pos >= this.#size) return count - 1;
-    // Largest i with starts[i] <= pos.
-    let lo = 0;
-    let hi = count - 1;
-    while (lo < hi) {
-      const mid = (lo + hi + 1) >> 1;
-      if (starts[mid] <= pos) lo = mid;
-      else hi = mid - 1;
-    }
-    return lo;
+    if (pos >= this.#size) return this.#lineCount - 1;
+    return lineAtOffset(this.#doc, pos).line;
   }
 
   /** Flat position of a line/column point, clamping the column to the line. */
   posOf(point: CaretPosition): FlatPos {
-    const line = Math.max(0, Math.min(point.line, this.lineCount - 1));
-    const len = this.#doc.lines[line].text.length;
-    return this.#starts[line] + Math.max(0, Math.min(point.column, len));
+    const line = this.#clampLine(point.line);
+    const len = getLine(this.#doc, line).length;
+    return lineStart(this.#doc, line) + Math.max(0, Math.min(point.column, len));
   }
 
   /** Line/column point of a flat position, clamped to [0, size]. */
   pointAt(pos: FlatPos): CaretPosition {
     const clamped = Math.max(0, Math.min(pos, this.#size));
-    const line = this.lineAt(clamped);
-    const column = Math.min(clamped - this.#starts[line], this.#doc.lines[line].text.length);
-    return { line, column };
+    const { line, start } = lineAtOffset(this.#doc, clamped);
+    return { line, column: Math.min(clamped - start, getLine(this.#doc, line).length) };
   }
 
   /** Document text in [from, to), newlines included. */
@@ -101,17 +80,17 @@ export class LineIndex {
     if (a === b) return '';
     const start = this.pointAt(a);
     const end = this.pointAt(b);
-    if (start.line === end.line) return this.#doc.lines[start.line].text.slice(start.column, end.column);
-    const parts: string[] = [this.#doc.lines[start.line].text.slice(start.column)];
-    for (let l = start.line + 1; l < end.line; l++) parts.push(this.#doc.lines[l].text);
-    parts.push(this.#doc.lines[end.line].text.slice(0, end.column));
-    return parts.join('\n');
+    const lines = getLines(this.#doc, start.line, end.line + 1);
+    if (lines.length === 1) return lines[0]!.slice(start.column, end.column);
+    lines[0] = lines[0]!.slice(start.column);
+    lines[lines.length - 1] = lines[lines.length - 1]!.slice(0, end.column);
+    return lines.join('\n');
   }
 }
 
 const CACHE = new WeakMap<CodeDocument, LineIndex>();
 
-/** The (cached) index for a document value. One build per document identity. */
+/** The (cached) index view for a document value. */
 export function indexFor(doc: CodeDocument): LineIndex {
   let index = CACHE.get(doc);
   if (!index) {

@@ -2,7 +2,7 @@
 
 import { Injector, runInInjectionContext } from '@angular/core';
 import { describe, expect, it } from 'vitest';
-import { BaseComponentBlockBehavior } from './sh-editor-component-block';
+import { BaseComponentBlockBehavior } from './ship-editor-component-block';
 import { EditorEngineService } from './editor-engine.service';
 import { BlockInnerAlgebra, BlockInnerOp, BlockSplice, EditorOp, applyOp, invertOp, registerBlockInnerAlgebra, transformOp } from './editor-transactions';
 import { ASTBlockNode, ASTDocument } from './editor.types';

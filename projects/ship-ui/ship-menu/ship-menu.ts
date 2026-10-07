@@ -5,7 +5,6 @@ import {
   DOCUMENT,
   effect,
   ElementRef,
-  HostListener,
   inject,
   input,
   model,
@@ -14,6 +13,7 @@ import {
   signal,
   viewChild,
   ViewEncapsulation,
+  booleanAttribute,
 } from '@angular/core';
 import { nativeInputValueSignal, generateUniqueId, observeChildren } from '@ship-ui/core';
 import { ShipA11yAnnouncerService } from '@ship-ui/core/ship-a11y-announcer';
@@ -97,6 +97,7 @@ export const MENU_OPTION_SELECTOR = 'button:not(sh-datepicker *, sh-form-field-p
     '[class.disabled]': 'disabled()',
     '[class.has-search]': 'searchable()',
     '[class.multi-layer]': 'asMultiLayer()',
+    '(ship-menu-open)': 'onShipMenuOpen($event)',
   },
 })
 export class ShipMenu {
@@ -108,11 +109,11 @@ export class ShipMenu {
   parentMenu = inject(ShipMenu, { optional: true, skipSelf: true });
   isSubmenu = computed(() => this.parentMenu !== null);
   /** Position the menu as a nested multi-layer flyout (used for submenus). */
-  asMultiLayer = input<boolean>(false);
+  asMultiLayer = input(false, { transform: booleanAttribute });
   /** Show a caret-down indicator on the trigger to signal an openable menu. */
   openIndicator = input(false);
   /** Disable the menu so it cannot be opened or interacted with. */
-  disabled = input<boolean>(false);
+  disabled = input(false, { transform: booleanAttribute });
   /**
    * CSS selectors used to collect the menu's option elements. The default
    * takes every `button` in the projected `[menu]` content except those that
@@ -121,9 +122,9 @@ export class ShipMenu {
    */
   customOptionElementSelectors = input<string[]>([MENU_OPTION_SELECTOR]);
   /** Keep the clicked option marked active after selection instead of resetting. */
-  keepClickedOptionActive = input<boolean>(false);
+  keepClickedOptionActive = input(false, { transform: booleanAttribute });
   /** Close the menu automatically when an option is clicked. */
-  closeOnClick = input<boolean>(true);
+  closeOnClick = input(true, { transform: booleanAttribute });
   /** Two-way bound open/closed state of the menu. */
   isOpen = model<boolean>(false);
   /** Emits when the menu closes; `true` when closing via an active selection. */
@@ -136,7 +137,7 @@ export class ShipMenu {
    */
   label = input<string>('');
   /** Enable the search input for filtering and fuzzy-matching options. */
-  searchable = input<boolean>(false);
+  searchable = input(false, { transform: booleanAttribute });
   activeOptionIndex = signal<number>(-1);
   inputRef = viewChild<ElementRef<HTMLInputElement>>('inputRef');
   optionsRef = viewChild<ElementRef<HTMLDivElement>>('optionsRef');
@@ -417,7 +418,6 @@ export class ShipMenu {
     }
   }
 
-  @HostListener('ship-menu-open', ['$event'])
   onShipMenuOpen(event: Event) {
     event.preventDefault();
     event.stopPropagation();

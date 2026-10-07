@@ -1,0 +1,35 @@
+@use 'helpers' as *;
+
+sh-editor-remote-cursors {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  // Sit above the editor's own stacking contexts (blocks, images, selection paint):
+  // the overlay is visual-only and click-through.
+  z-index: 30;
+
+  .remote-selection {
+    position: absolute;
+    opacity: 0.22;
+    border-radius: #{p2r(2)};
+  }
+
+  .remote-caret {
+    position: absolute;
+    width: #{p2r(2)};
+    z-index: 2;
+
+    .remote-label {
+      position: absolute;
+      bottom: 100%;
+      left: #{p2r(-2)};
+      padding: #{p2r(1 6)};
+      border-radius: #{p2r(4 4 4 0)};
+      font-size: #{p2r(11)};
+      line-height: 1.5;
+      color: var(--light-text);
+      white-space: nowrap;
+    }
+  }
+}

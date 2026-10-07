@@ -229,17 +229,18 @@ describe('caret motion edge cases', () => {
 // ---------------------------------------------------------------------------
 
 describe('immutability', () => {
-  it('insertText does not share line objects with original', () => {
+  it('insertText leaves the original document unchanged', () => {
     const doc = createDocument('hello');
     const result = insertText(doc, caret(0, 5), ' world');
-    // Modify nothing — just verify they're different objects
-    expect(result.lines[0]).not.toBe(doc.lines[0]);
+    expect(getLine(doc, 0)).toBe('hello');
+    expect(getLine(result, 0)).toBe('hello world');
   });
 
-  it('deleteRange does not share line objects with original', () => {
+  it('deleteRange leaves the original document unchanged', () => {
     const doc = createDocument('hello world');
     const result = deleteRange(doc, caret(0, 5), caret(0, 11));
-    expect(result.lines[0]).not.toBe(doc.lines[0]);
+    expect(getLine(doc, 0)).toBe('hello world');
+    expect(getLine(result, 0)).toBe('hello');
   });
 
   it('multiple operations produce independent documents', () => {

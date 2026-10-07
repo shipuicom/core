@@ -1,0 +1,157 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  ViewEncapsulation,
+  effect,
+  inject,
+  input,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
+import { ShipButton } from '@ship-ui/core/ship-button';
+import { ShipFormField } from '@ship-ui/core/ship-form-field';
+import { ShipIcon } from '@ship-ui/core/ship-icon';
+import { ShipPopover } from '@ship-ui/core/ship-popover';
+import { EditorEngineService } from './editor-engine.service';
+import { isSafeUrl } from './editor-sanitize';
+import { LogicalSelection } from './editor.types';
+import { EditorSelectionService } from './selection.service';
+
+@Component({
+  selector: 'sh-editor-link-popover',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  imports: [ShipPopover, ShipFormField, ShipButton, ShipIcon],
+  templateUrl: './ship-editor-link-popover.html',
+})
+export class ShipEditorLinkPopover {
+
+  surface = input.required<HTMLElement>();
+
+  engine = inject(EditorEngineService);
+  selection = inject(EditorSelectionService);
+  #selfRef = inject(ElementRef<HTMLElement>);
+
+  urlInput = viewChild<ElementRef<HTMLInputElement>>('urlInput');
+
+  isOpen = signal(false);
+  url = signal('');
+  error = signal<string | null>(null);
+  hasExistingLink = signal(false);
+
+  top = signal(0);
+  left = signal(0);
+
+  #savedSelection: LogicalSelection | null = null;
+
+  constructor() {
+    effect(() => {
+      const request = this.engine.uiRequest();
+      if (request?.action !== 'link') return;
+
+      untracked(() => {
+        this.engine.uiRequest.set(null);
+        this.#open();
+      });
+    });
+
+    effect(() => {
+      // The retry loop is token-guarded: closing (or fast close/reopen) must
+      // cancel the timers in flight, or a stale loop steals the caret after
+      // the popover is gone — and two live loops fight over focus().
+      if (!this.isOpen()) {
+        this.#focusAttempt++;
+        return;
+      }
+      const attempt = ++this.#focusAttempt;
+      let tries = 0;
+      const tryFocus = () => {
+        if (attempt !== this.#focusAttempt) return;
+        const el = this.urlInput()?.nativeElement;
+        if (el && el.isConnected) {
+          el.focus();
+          el.select();
+          if (document.activeElement === el) return;
+        }
+        if (++tries < 20) setTimeout(tryFocus, 25);
+      };
+      queueMicrotask(tryFocus);
+    });
+    inject(DestroyRef).onDestroy(() => this.#focusAttempt++);
+  }
+
+  /** Monotonic token; bumping it invalidates any focus-retry loop in flight. */
+  #focusAttempt = 0;
+
+  #open() {
+    const sel = this.selection.active();
+    if (!sel) return;
+    this.#savedSelection = structuredClone(sel);
+
+    const existing = this.engine.markAtSelection('link');
+    this.hasExistingLink.set(!!existing);
+    this.url.set((existing?.attrs?.['href'] as string) ?? '');
+    this.error.set(null);
+
+    const container = this.#selfRef.nativeElement.closest('.sh-editor-container') as HTMLElement | null;
+    const containerRect = container?.getBoundingClientRect();
+    const domSel = typeof window !== 'undefined' ? window.getSelection() : null;
+    const rect = domSel && domSel.rangeCount > 0 ? domSel.getRangeAt(0).getBoundingClientRect() : null;
+    if (rect && containerRect && (rect.width > 0 || rect.height > 0)) {
+      this.top.set(rect.bottom - containerRect.top);
+      this.left.set(rect.left + rect.width / 2 - containerRect.left);
+    } else if (containerRect) {
+      this.top.set(48);
+      this.left.set(containerRect.width / 2);
+    }
+    this.isOpen.set(true);
+  }
+
+  onFormKeydown(event: KeyboardEvent) {
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.apply();
+    }
+  }
+
+  apply() {
+    const raw = this.url().trim();
+    if (!raw) {
+      if (this.hasExistingLink()) this.remove();
+      else this.isOpen.set(false);
+      return;
+    }
+
+    const hasScheme = /^[a-z][a-z0-9+.-]*:/i.test(raw);
+    const isRelative = raw.startsWith('/') || raw.startsWith('#') || raw.startsWith('?');
+    const normalized = hasScheme || isRelative ? raw : `https://${raw}`;
+    if (!isSafeUrl(normalized)) {
+      this.error.set('That URL scheme is not allowed.');
+      return;
+    }
+
+    if (this.#savedSelection) this.selection.live.set(structuredClone(this.#savedSelection));
+    const applied = this.engine.setMark('link', { href: normalized });
+    if (!applied) {
+
+      this.engine.insertTextWithMarks(normalized, [{ type: 'link', attrs: { href: normalized } }]);
+    }
+    this.isOpen.set(false);
+  }
+
+  remove() {
+    if (this.#savedSelection) this.selection.live.set(structuredClone(this.#savedSelection));
+    this.engine.removeMark('link');
+    this.isOpen.set(false);
+  }
+
+  onClosed() {
+    this.#savedSelection = null;
+    this.surface().focus();
+  }
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createDocument, getText } from './document';
+import { createDocument, getLine, getText } from './document';
 import { applyFlatChanges } from './flat-edit';
 import { FlatSelection, flatCaret, flatRange } from './flat-motion';
 import { indexFor } from './line-index';
@@ -178,7 +178,7 @@ describe('moveLines with several cursors', () => {
     const index = indexFor(next);
     // 'b' moved to line 0 and 'e' to line 3; both carets came with them.
     expect(move.selection.ranges.map((r) => index.pointAt(r.head).line)).toEqual([0, 3]);
-    expect(move.selection.ranges.map((r) => index.pointAt(r.head).line).map((l) => next.lines[l].text)).toEqual(['b', 'e']);
+    expect(move.selection.ranges.map((r) => index.pointAt(r.head).line).map((l) => getLine(next, l))).toEqual(['b', 'e']);
   });
 
   it('lets the lower groups move when the top one is pinned at the edge', () => {

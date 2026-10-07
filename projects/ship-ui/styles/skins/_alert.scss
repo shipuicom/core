@@ -1,0 +1,26 @@
+@use './util' as *;
+
+// The alert surface comes from the sheet; this only tunes the body text against each variant's fill.
+@mixin skin($colors, $variants) {
+  sh-alert {
+    @if has($variants, simple) {
+      &.simple {
+        .content > * {
+          color: var(--sheet-c);
+          opacity: 0.7;
+        }
+      }
+    }
+
+    @each $v in (flat, raised) {
+      @if has($variants, $v) {
+        &.#{$v} {
+          .content > * {
+            color: var(--sheet-c);
+            opacity: 0.8;
+          }
+        }
+      }
+    }
+  }
+}

@@ -43,3 +43,52 @@
     border-radius: var(--shape-2);
   }
 }
+
+.spacing-hint {
+  margin: 0 0 var(--space-3);
+  max-width: 60ch;
+}
+
+.spacing-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+
+  sh-range-slider {
+    width: p2r(240);
+  }
+}
+
+.spacing-preview {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--pad-y-4) var(--pad-x-4);
+  border: var(--border-10);
+  border-radius: var(--shape-3);
+  background: var(--base-2);
+
+  sh-card {
+    --card-py: var(--pad-y-2);
+    --card-px: var(--pad-x-2);
+    min-width: p2r(200);
+  }
+}
+
+.font-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+
+  app-font-picker {
+    width: p2r(320);
+  }
+}
+
+.font-sample {
+  margin: 0 0 var(--space-2);
+  font: var(--title-30);
+}

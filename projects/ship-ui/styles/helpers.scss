@@ -11,6 +11,9 @@
 @forward './core/helpers/mixins/ellipsis';
 @forward './core/helpers/mixins/overflow-scrolling';
 @forward './core/helpers/mixins/scroll-shadows';
+@forward './core/helpers/mixins/list-item';
+@forward './core/helpers/mixins/radio-dot';
+@forward './core/helpers/mixins/form-field-small';
 // @forward './core/helpers/mixins/border-gradient';
 
 @use './core/helpers/fn/p2r' as *;

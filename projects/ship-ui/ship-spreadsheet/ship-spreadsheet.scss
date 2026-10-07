@@ -1,0 +1,407 @@
+@use 'helpers' as *;
+
+sh-spreadsheet {
+  --shs-bg: var(--base-1);
+  --shs-fg: var(--base-12);
+  --shs-grid: var(--base-4);
+  --shs-head-bg: var(--base-2);
+  --shs-head-fg: var(--base-9);
+  --shs-selection: rgb(from var(--primary-9) r g b / 18%);
+  --shs-sel-bc: var(--primary-9);
+  --shs-selection-bg: var(--shs-head-bg);
+  --shs-invalid: var(--error-8);
+  --shs-bs: 0 #{p2r(4)} #{p2r(12)} rgb(from var(--dark-text) r g b / 12%);
+  --shs-f: var(--paragraph-30);
+
+  display: block;
+  position: relative;
+  border: 1px solid var(--shs-grid);
+  border-radius: var(--shape-2);
+  background: var(--shs-bg);
+  overflow: hidden;
+
+  // With the formula bar the host stacks bar over grid; the grid takes the rest.
+  &.has-bar {
+    display: flex;
+    flex-direction: column;
+
+    .shs-frame {
+      flex: 1;
+      min-height: 0;
+    }
+  }
+
+  .shs-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: #{p2r(6)};
+    padding: #{p2r(4)} #{p2r(8)};
+    border-bottom: 1px solid var(--shs-grid);
+    background: var(--shs-head-bg);
+    font: var(--shs-f);
+    color: var(--shs-fg);
+  }
+
+  .shs-bar-label {
+    min-width: #{p2r(44)};
+    color: var(--shs-head-fg);
+    font-size: 0.85em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .shs-bar-fx {
+    color: var(--shs-head-fg);
+    font-style: italic;
+    user-select: none;
+  }
+
+  .shs-bar-input {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    padding: #{p2r(2)} #{p2r(6)};
+    border: 1px solid transparent;
+    border-radius: var(--shape-1);
+    background: var(--shs-bg);
+    color: inherit;
+    font: inherit;
+    outline: none;
+
+    &:focus-visible {
+      border-color: var(--shs-sel-bc);
+    }
+
+    &:read-only {
+      background: transparent;
+    }
+  }
+
+  // Function autocomplete under the bar: name and signature, one line of help.
+  .shs-bar-hints {
+    position: absolute;
+    z-index: 3;
+    top: 100%;
+    left: #{p2r(8)};
+    right: #{p2r(8)};
+    max-width: #{p2r(420)};
+    margin: #{p2r(2)} 0 0;
+    padding: #{p2r(4)};
+    list-style: none;
+    border: 1px solid var(--shs-grid);
+    border-radius: var(--shape-2);
+    background: var(--shs-bg);
+    box-shadow: var(--shs-bs);
+    font-size: 0.9em;
+  }
+
+  .shs-bar-hint {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 #{p2r(8)};
+    align-items: baseline;
+    padding: #{p2r(4)} #{p2r(6)};
+    border-radius: var(--shape-1);
+    cursor: pointer;
+
+    &.active {
+      background: var(--shs-selection-bg);
+    }
+  }
+
+  .shs-bar-hint-name {
+    font-family: ui-monospace, monospace;
+    white-space: nowrap;
+  }
+
+  .shs-bar-hint-desc {
+    color: var(--shs-head-fg);
+  }
+
+  .shs-frame {
+    position: relative;
+    height: 100%;
+    outline: none;
+
+    &:focus-visible .shs-selection.active {
+      box-shadow: 0 0 0 1px var(--shs-sel-bc);
+    }
+
+    &.resize-x,
+    &.resize-x .shs-body,
+    &.resize-x .shs-colhead {
+      cursor: col-resize;
+    }
+
+    &.resize-y,
+    &.resize-y .shs-body,
+    &.resize-y .shs-rh {
+      cursor: row-resize;
+    }
+  }
+
+  .shs-scroller {
+    height: 100%;
+    max-height: inherit;
+    overflow: auto;
+    overflow-anchor: none;
+    font: var(--shs-f);
+    color: var(--shs-fg);
+  }
+
+  .shs-colhead {
+    position: sticky;
+    top: 0;
+    height: #{p2r(26)};
+    background: var(--shs-head-bg);
+    border-bottom: 1px solid var(--shs-grid);
+    z-index: 3;
+  }
+
+  .shs-corner {
+    position: sticky;
+    left: 0;
+    display: inline-block;
+    width: var(--shs-head-w);
+    height: 100%;
+    background: var(--shs-head-bg);
+    border-right: 1px solid var(--shs-grid);
+    z-index: 1;
+  }
+
+  .shs-ch {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--shs-head-fg);
+    font-size: 0.85em;
+    user-select: none;
+  }
+
+  // A labelled column header reads like a field name: left-aligned, clipped.
+  .shs-ch.shs-ch-label {
+    justify-content: flex-start;
+    padding: 0 #{p2r(6)};
+    box-sizing: border-box;
+    color: var(--shs-fg);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .shs-body {
+    position: relative;
+    cursor: cell;
+  }
+
+  // A group heading row (`rowKind` → 'group'): one band across the columns.
+  .shs-row.shs-row-group .shs-group {
+    background: var(--shs-head-bg);
+    color: var(--shs-fg);
+    font-weight: 600;
+    box-sizing: border-box;
+  }
+
+  .shs-row.shs-row-readonly .shs-c {
+    color: var(--shs-head-fg);
+  }
+
+  .shs-row {
+    position: relative;
+    width: 100%;
+  }
+
+  .shs-rh {
+    position: sticky;
+    left: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--shs-head-w);
+    height: 100%;
+    background: var(--shs-head-bg);
+    border-right: 1px solid var(--shs-grid);
+    border-bottom: 1px solid var(--shs-grid);
+    color: var(--shs-head-fg);
+    font-size: 0.85em;
+    user-select: none;
+    z-index: 2;
+  }
+
+  .shs-c {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 #{p2r(6)};
+    border-right: 1px solid var(--shs-grid);
+    border-bottom: 1px solid var(--shs-grid);
+    white-space: pre;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // A cell drawn by a component or template: inert (the grid owns the
+  // pointer and the keyboard), its content clipped like text.
+  .shs-c.shs-hosted {
+    pointer-events: none;
+    white-space: nowrap;
+
+    > * {
+      max-width: 100%;
+    }
+  }
+
+  // Numbers, amounts, percentages and dates read right-aligned.
+  .shs-c.t-number,
+  .shs-c.t-currency,
+  .shs-c.t-percent,
+  .shs-c.t-date {
+    justify-content: flex-end;
+    font-variant-numeric: tabular-nums;
+  }
+
+  // A stored string its column type rejects (`validate`).
+  .shs-c.shs-invalid {
+    box-shadow: inset 0 -2px 0 var(--shs-invalid);
+  }
+
+  // A formula cell shows its value; one that failed shows its error token.
+  .shs-c.shs-error {
+    color: var(--shs-invalid);
+    font-variant-numeric: tabular-nums;
+  }
+
+  // Built-in checkbox type: the sh-checkbox (or the glyph fallback) centered in the cell.
+  .shs-c.t-checkbox {
+    justify-content: center;
+    padding: 0;
+    color: var(--shs-head-fg);
+    font-size: 1.1em;
+    user-select: none;
+
+    .shs-check.on {
+      color: var(--shs-sel-bc);
+    }
+  }
+
+  .shs-selection {
+    position: absolute;
+    background: var(--shs-selection);
+    pointer-events: none;
+    z-index: 1;
+
+    // The active range wears the border; added ranges are fill-only.
+    &.active {
+      border: 1px solid var(--shs-sel-bc);
+    }
+  }
+
+  // The anchor cell of a multi-cell range wears its own outline, so the
+  // caret's home is visible inside the fill.
+  .shs-anchor {
+    position: absolute;
+    border: 2px solid var(--shs-sel-bc);
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  // The fill handle sits on the active range's bottom-right corner; the
+  // preview outlines what a drag will write.
+  .shs-fill-handle {
+    position: absolute;
+    width: #{p2r(7)};
+    height: #{p2r(7)};
+    margin: #{p2r(-4)} 0 0 #{p2r(-4)};
+    background: var(--shs-sel-bc);
+    border: 1px solid var(--shs-bg);
+    box-sizing: border-box;
+    cursor: crosshair;
+    z-index: 2;
+  }
+
+  .shs-fill-preview {
+    position: absolute;
+    border: 1px dashed var(--shs-sel-bc);
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  // The in-cell editor floats over its cell from the same geometry as the
+  // selection boxes; it grows with the text instead of clipping it.
+  .shs-editor {
+    position: absolute;
+    z-index: 4;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0 #{p2r(6)};
+    border: 2px solid var(--shs-sel-bc);
+    border-radius: 0;
+    background: var(--shs-bg);
+    color: var(--shs-fg);
+    font: var(--shs-f);
+    line-height: calc(var(--shs-row-h) - 4px);
+    white-space: pre;
+    resize: none;
+    outline: none;
+    overflow: hidden;
+    field-sizing: content;
+    max-width: #{p2r(480)};
+  }
+
+  // A component editor's box: the same outline as the text editor, the
+  // component filling it; a popover it opens (a select's list) hangs off it.
+  .shs-editor-host {
+    display: flex;
+    align-items: stretch;
+    padding: 0;
+    overflow: visible;
+    white-space: normal;
+
+    > * {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  .shs-guide {
+    position: absolute;
+    pointer-events: none;
+    z-index: 4;
+    background: var(--shs-sel-bc);
+
+    &.x {
+      top: 0;
+      bottom: 0;
+      width: 1px;
+    }
+
+    &.y {
+      left: 0;
+      right: 0;
+      height: 1px;
+    }
+  }
+
+  // The context menu anchors an empty trigger at the pointer; the popover
+  // positions itself off that point.
+  .shs-menu {
+    position: absolute;
+    z-index: 5;
+    width: 0;
+    height: 0;
+
+    .shs-menu-anchor {
+      display: block;
+      width: 0;
+      height: 0;
+    }
+  }
+}

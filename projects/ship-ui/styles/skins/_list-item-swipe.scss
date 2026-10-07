@@ -1,0 +1,28 @@
+@use './util' as *;
+
+@mixin skin($colors, $variants) {
+  sh-list-item-swipe .sh-swipe-actions {
+    button[actionLeft],
+    button[actionRight],
+    .sh-swipe-action-btn {
+      @each $c in $colors {
+        // `.action-<colour>` is the swipe API's own spelling; `.danger` / `.warning` stay as aliases for one minor.
+        $aliases: '&.action-#{$c}, &.#{$c}';
+        @if $c == error {
+          $aliases: '&.action-danger, &.error, &.danger'; // structure-lint: allow — `.danger` is a 0.26 alias of `.error` for one minor
+        } @else if $c == warn {
+          $aliases: '&.action-warning, &.warn, &.warning'; // structure-lint: allow — `.warning` is a 0.26 alias of `.warn` for one minor
+        }
+
+        #{$aliases} {
+          background-color: var(--#{$c}-8);
+          color: var(--base-1);
+
+          &:hover {
+            background-color: var(--#{$c}-9);
+          }
+        }
+      }
+    }
+  }
+}

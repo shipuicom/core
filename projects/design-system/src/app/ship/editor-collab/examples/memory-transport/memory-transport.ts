@@ -1,6 +1,6 @@
 import { Component, inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { ShipEditor } from '@ship-ui/core/ship-editor';
-import { CollabMessage, CollabTransport, ShEditorCollabDirective } from '@ship-ui/core/ship-editor-collab';
+import { CollabMessage, CollabTransport, ShipEditorCollabDirective } from '@ship-ui/core/ship-editor-collab';
 
 /**
  * In-memory hub as a service. Every transport it hands out reaches the
@@ -50,7 +50,7 @@ export class MemoryHub implements OnDestroy {
 /** Two editors on one page, one hub. */
 @Component({
   selector: 'memory-transport-example',
-  imports: [ShipEditor, ShEditorCollabDirective],
+  imports: [ShipEditor, ShipEditorCollabDirective],
   providers: [MemoryHub],
   templateUrl: './memory-transport.html',
   styleUrl: './memory-transport.scss',

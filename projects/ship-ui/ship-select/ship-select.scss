@@ -1,184 +1,185 @@
 @use 'helpers' as *;
 
-$shipSelect: true !default;
+sh-select {
+  --select-miw: #{p2r(210)};
+  --select-option-mih: min-content;
+  --select-options-mh: #{p2r(180)};
 
-@if $shipSelect == true {
-  sh-select {
-    --miw: #{p2r(210)};
-    --select-option-mih: min-content;
-    --select-options-mh: #{p2r(180)};
+  display: flex;
 
+  sh-form-field {
     display: flex;
+    --ff-mw: var(--select-miw);
+  }
 
-    sh-form-field {
-      display: flex;
-      --ff-mw: var(--miw);
+  sh-popover {
+    flex: 1 0;
+
+    &:has(.ship-options:empty) .popover {
+      opacity: 0;
+    }
+  }
+
+  .selected-value {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: p2r(4);
+    color: var(--base-8);
+
+    input {
+      margin: 0;
     }
 
-    sh-popover {
-      flex: 1 0;
+    &.is-selected {
+      color: var(--base-12);
+    }
+  }
 
-      &:has(.ship-options:empty) .popover {
-        opacity: 0;
-      }
+  sh-form-field .input-wrap .input {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+
+    --ff-py: var(--pad-y-3);
+    --ff-px: var(--pad-x-2);
+
+    textarea,
+    input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
     }
 
-    .selected-value {
-      width: 100%;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: p2r(4);
-      color: var(--base-8);
-
+    &.show-search-text {
       input {
-        margin: 0;
+        opacity: 1;
+        height: initial;
+        min-width: min-content;
+        field-sizing: content;
+        font: var(--paragraph-30);
+        position: relative;
       }
 
-      &.is-selected {
-        color: var(--base-12);
-      }
-    }
-
-    sh-form-field .input-wrap .input {
-      position: relative;
-      display: flex;
-      flex-wrap: wrap;
-
-      --ff-space: #{p2r(7 10)};
-
-      textarea,
-      input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-        position: absolute;
-      }
-
-      &.show-search-text {
-        input {
-          opacity: 1;
-          height: initial;
-          min-width: min-content;
-          field-sizing: content;
-          font: var(--paragraph-30);
-          position: relative;
-        }
-
-        textarea {
-          opacity: 1;
-          height: initial;
-          margin: p2r(4 0 0);
-        }
-      }
-    }
-
-    // `ellipsis` host class: keep the selected text (typically `asText`
-    // multi-select) on a single line and truncate with an ellipsis instead
-    // of wrapping.
-    &.ellipsis {
-      min-width: 0;
-
-      sh-popover,
-      sh-form-field,
-      sh-form-field .input-wrap {
-        min-width: 0;
-        max-width: 100%;
-      }
-
-      sh-form-field .input-wrap .input {
-        min-width: 0;
-        display: block;
-      }
-
-      .selected-value {
-        display: block;
-        min-width: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      sh-form-field .input-wrap .input.show-search-text .selected-value {
-        display: flex;
-        flex-wrap: nowrap;
-      }
-    }
-
-    sh-form-field.small .input-wrap .input {
-      --ff-space: #{p2r(5 8)};
-
-      sh-chip {
-        --chip-h: #{p2r(20)};
-        font-size: 80%;
+      textarea {
+        opacity: 1;
+        height: initial;
+        margin: p2r(4 0 0);
       }
     }
   }
 
-  .ship-options {
-    padding: p2r(8 0);
-    display: flex;
-    flex-direction: column;
-    max-height: var(--select-options-mh);
-    overflow-y: auto;
-    overflow-x: hidden;
+  // `ellipsis` host class: keep the selected text (typically `asText`
+  // multi-select) on a single line and truncate with an ellipsis instead
+  // of wrapping.
+  &.ellipsis {
+    min-width: 0;
 
-    p[title] {
-      padding: p2r(4 16);
+    sh-popover,
+    sh-form-field,
+    sh-form-field .input-wrap {
+      min-width: 0;
+      max-width: 100%;
     }
 
-    sh-divider {
-      margin: p2r(8 0);
+    sh-form-field .input-wrap .input {
+      min-width: 0;
+      display: block;
     }
 
-    .option {
+    .selected-value {
+      display: block;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    sh-form-field .input-wrap .input.show-search-text .selected-value {
       display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      min-height: var(--select-option-mih);
-      margin: p2r(0 8);
-      padding: p2r(8);
-      gap: p2r(8);
-      width: calc(100% - #{p2r(16)});
-      border-radius: var(--shape-2);
-      appearance: none;
-      background-color: transparent;
-      border: 0;
-      cursor: pointer;
-      color: var(--base-12);
-      user-select: none;
+      flex-wrap: nowrap;
+    }
+  }
 
-      &[disabled] {
-        opacity: 0.3;
-        cursor: initial;
+  sh-form-field.small .input-wrap .input {
+    --ff-py: var(--pad-y-2);
+    --ff-px: var(--pad-x-2);
 
-        &:hover {
-          background-color: transparent;
-        }
-      }
+    sh-chip {
+      --chip-h: #{p2r(20)};
+      font-size: 80%;
+    }
+  }
+}
 
-      sh-icon {
-        font-size: p2r(16);
-      }
+.ship-options {
+  --select-py: var(--pad-y-2);
+  --select-px: var(--pad-x-4);
 
-      span.placeholder {
-        color: var(--base-7);
-      }
+  padding: p2r(8 0);
+  display: flex;
+  flex-direction: column;
+  max-height: var(--select-options-mh);
+  overflow-y: auto;
+  overflow-x: hidden;
 
-      &.active,
-      &:checked,
+  p[title] {
+    padding: var(--select-py) var(--select-px);
+  }
+
+  sh-divider {
+    margin: p2r(8 0);
+  }
+
+  .option {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    min-height: var(--select-option-mih);
+    margin: p2r(0 8);
+    padding: p2r(8);
+    gap: p2r(8);
+    width: calc(100% - #{p2r(16)});
+    border-radius: var(--shape-2);
+    appearance: none;
+    background-color: transparent;
+    border: 0;
+    cursor: pointer;
+    color: var(--base-12);
+    user-select: none;
+
+    &[disabled] {
+      opacity: 0.3;
+      cursor: initial;
+
       &:hover {
-        background-color: var(--base-2);
-        color: var(--base-12);
+        background-color: transparent;
       }
+    }
 
-      &.focused {
-        background-color: var(--primary-1);
-        color: var(--base-12);
+    sh-icon {
+      font-size: p2r(16);
+    }
 
-        &:hover {
-          background-color: var(--primary-2);
-        }
+    span.placeholder {
+      color: var(--base-7);
+    }
+
+    &.active,
+    &:checked,
+    &:hover {
+      background-color: var(--base-2);
+      color: var(--base-12);
+    }
+
+    &.focused {
+      background-color: var(--primary-1);
+      color: var(--base-12);
+
+      &:hover {
+        background-color: var(--primary-2);
       }
     }
   }

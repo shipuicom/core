@@ -207,7 +207,9 @@
         Tree
       </button>
 
-      <!-- Videos (sh-video) is unreleased: route stays live at /videos, hidden from nav -->
+      <button action routerLink="/videos" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Videos
+      </button>
 
       <h3 title>Form fields</h3>
 

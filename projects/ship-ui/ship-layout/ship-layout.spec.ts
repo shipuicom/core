@@ -84,7 +84,7 @@ describe('ship-layout', () => {
       ],
     });
     const q = setup();
-    expect(q('sh-lo-page').classList).toContain('base');
+    expect(q('sh-lo-page').classList).not.toContain('base');
     expect(q('sh-lo-section').classList).toContain('type-c');
     expect(q('sh-lo-setting').classList).toContain('type-b');
     expect(q('sh-lo-empty-state').classList).toContain('type-b');
@@ -151,7 +151,7 @@ describe('ship-layout (stat, details, timeline, toolbar)', () => {
     expect(q('sh-lo-stat .value > [delta]').textContent).toBe('+1%');
     expect(q('sh-lo-stat > .chart > [chart]')).toBeTruthy();
 
-    expect(q('sh-lo-details').classList).toContain('base');
+    expect(q('sh-lo-details').classList).not.toContain('base');
     expect(q('sh-lo-details > .head > h3').textContent).toBe('Details');
     expect(q('sh-lo-detail > .term > dt').textContent).toBe('Owner');
     expect(q('sh-lo-detail > .value').textContent?.trim()).toBe('Alex');
@@ -229,19 +229,23 @@ describe('ship-layout (stat-trend, stat-goal, stat-ring, ranking)', () => {
     expect(rings[0].classList).toContain('warn');
     expect(rings[0].classList).toContain('type-b');
     expect(rings[0].querySelector('.ring')?.getAttribute('style')).toContain('--ring-pct: 25');
-    expect(rings[0].querySelector('.ring')?.getAttribute('aria-label')).toBe('25%');
+    // No `label`: the ring is plain content, so the slotted h3/p stay readable.
+    expect(rings[0].querySelector('.ring')?.getAttribute('role')).toBeNull();
+    expect(rings[0].querySelector('.ring')?.getAttribute('aria-label')).toBeNull();
     expect(rings[0].querySelector('.center > .pct')?.textContent).toBe('25%');
     expect(rings[1].querySelector('.center > h3')?.textContent).toBe('5h');
 
     const ranking = q('sh-lo-ranking');
     expect(ranking.classList).toContain('type-b');
-    expect(ranking.getAttribute('role')).toBe('list');
+    // The list role sits on the items wrapper so the heading row is not a list child.
+    expect(ranking.getAttribute('role')).toBeNull();
+    expect(q('sh-lo-ranking > .items').getAttribute('role')).toBe('list');
     expect(q('sh-lo-ranking > .head > h3').textContent).toBe('Top');
     const items = qa('sh-lo-ranking-item');
-    expect(items[0].getAttribute('style')).toContain('--bar-pct: 25');
+    expect(items[0].getAttribute('style')).toContain('--ranking-pct: 25');
     expect(items[0].querySelector('.row > .detail > [detail]')?.textContent).toBe('50');
     // Values above max clamp to a full bar.
-    expect(items[1].getAttribute('style')).toContain('--bar-pct: 100');
+    expect(items[1].getAttribute('style')).toContain('--ranking-pct: 100');
   });
 });
 

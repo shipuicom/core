@@ -1,102 +1,101 @@
 @use 'helpers' as *;
 
-$shipEmptyState: true !default;
+sh-lo-empty-state {
+  --empty-py: var(--pad-y-8);
+  --empty-px: var(--pad-x-6);
+  --empty-gap: var(--space-4);
+  --empty-mw: #{p2r(400)};
+  --empty-ic: var(--base-7);
+  --empty-bc: var(--base-4);
+  --empty-s: var(--shape-3);
 
-@if $shipEmptyState == true {
-  sh-lo-empty-state {
-    --empty-p: var(--space-7) var(--space-5);
-    --empty-gap: var(--space-4);
-    --empty-mw: #{p2r(400)};
-    --empty-ic: var(--base-7);
-    --empty-bc: var(--base-4);
-    --empty-s: var(--shape-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--empty-gap);
+  padding: var(--empty-py) var(--empty-px);
+  text-align: center;
+  min-width: 0;
 
+  > sh-icon,
+  > [icon] {
+    font-size: #{p2r(40)};
+    color: var(--empty-ic);
+  }
+
+  > img {
+    max-width: #{p2r(160)};
+  }
+
+  > .text {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    gap: var(--space-1);
+    max-width: var(--empty-mw);
+
+    > h2,
+    > h3,
+    > [title] {
+      font: var(--paragraph-10B);
+    }
+
+    > p,
+    > [description] {
+      font: var(--paragraph-30);
+    }
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  > .actions {
+    display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    gap: var(--empty-gap);
-    padding: var(--empty-p);
-    text-align: center;
-    min-width: 0;
+    gap: var(--space-2);
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  // Dropzone-style dashed outline.
+  &.type-b {
+    border: var(--border-width) dashed var(--empty-bc);
+    border-radius: var(--empty-s);
+  }
+
+  // Inline: a compact left-aligned row for small containers.
+  &.type-c {
+    --empty-py: var(--pad-y-5);
+    --empty-px: var(--pad-x-4);
+    --empty-gap: var(--space-3);
+
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    text-align: start;
 
     > sh-icon,
     > [icon] {
-      font-size: #{p2r(40)};
-      color: var(--empty-ic);
-    }
-
-    > img {
-      max-width: #{p2r(160)};
+      font-size: #{p2r(24)};
     }
 
     > .text {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-1);
-      max-width: var(--empty-mw);
-
-      > h2,
-      > h3,
-      > [title] {
-        font: var(--paragraph-10B);
-      }
-
-      > p,
-      > [description] {
-        font: var(--paragraph-30);
-      }
-
-      &:empty {
-        display: none;
-      }
+      flex: 1 1 #{p2r(200)};
     }
 
     > .actions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: var(--space-2);
-
-      &:empty {
-        display: none;
-      }
-    }
-
-    // Dropzone-style dashed outline.
-    &.type-b {
-      border: var(--border-width) dashed var(--empty-bc);
-      border-radius: var(--empty-s);
-    }
-
-    // Inline: a compact left-aligned row for small containers.
-    &.type-c {
-      --empty-p: var(--space-4);
-      --empty-gap: var(--space-3);
-
-      flex-direction: row;
-      flex-wrap: wrap;
       justify-content: flex-start;
-      text-align: start;
-
-      > sh-icon,
-      > [icon] {
-        font-size: #{p2r(24)};
-      }
-
-      > .text {
-        flex: 1 1 #{p2r(200)};
-      }
-
-      > .actions {
-        justify-content: flex-start;
-      }
     }
+  }
 
-    @include breakpoint(-milli) {
-      &:not(.type-c) {
-        --empty-p: var(--space-6) var(--space-4);
-      }
+  @include breakpoint(-milli) {
+    &:not(.type-c) {
+      --empty-py: var(--pad-y-7);
+      --empty-px: var(--pad-x-4);
     }
   }
 }

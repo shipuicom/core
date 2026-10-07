@@ -12,8 +12,7 @@ export const SHIP_THEME_STORAGE_KEY = 'shipTheme';
  * Angular bootstraps, so the page briefly renders in the system theme. Apps that only follow
  * the system preference don't need it.
  */
-export const SHIP_THEME_INIT_SCRIPT =
-  "try{var t=localStorage.getItem('shipTheme');if(t==='dark'||t==='light')document.documentElement.classList.add(t)}catch(e){}";
+export const SHIP_THEME_INIT_SCRIPT = `try{var t=localStorage.getItem('${SHIP_THEME_STORAGE_KEY}');if(t==='dark'||t==='light')document.documentElement.classList.add(t)}catch(e){}`;
 export const THEME_ORDER: ShipThemeOption[] = ['light', 'dark', null];
 
 import { InjectionToken } from '@angular/core';

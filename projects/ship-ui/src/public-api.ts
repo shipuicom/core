@@ -1,3 +1,4 @@
+export * from './lib/utilities/boolean-attribute';
 export * from './lib/utilities/class-mutation-signal';
 export * from './lib/utilities/color-conversions';
 export * from './lib/utilities/content-projection-signal';
@@ -7,5 +8,6 @@ export * from './lib/utilities/random-id';
 export * from './lib/utilities/ship-calendar.service';
 export * from './lib/utilities/ship-component';
 export * from './lib/utilities/ship-config';
+export * from './lib/utilities/ship-styles';
 export * from './lib/utilities/ship-selection-group';
 export * from './lib/utilities/ship-types';

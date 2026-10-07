@@ -7,8 +7,9 @@ import {
   input,
   model,
   ViewEncapsulation,
+  booleanAttribute,
 } from '@angular/core';
-import { contentProjectionSignal, shipComponentClasses, ShipVariant } from '@ship-ui/core';
+import { contentProjectionSignal, ShipAccordionVariant, shipComponentClasses, generateUniqueId } from '@ship-ui/core';
 
 @Component({
   selector: 'sh-accordion',
@@ -27,13 +28,13 @@ export class ShipAccordion {
   #selfElement = inject(ElementRef<HTMLElement>).nativeElement;
 
   /** Shared group name applied to child `details` so only one stays open (defaults to a random unique name). */
-  name = input<string>(`sh-accordion-${Math.random().toString(36).substring(2, 9)}`);
+  name = input<string>(`sh-accordion-${generateUniqueId()}`);
   /** Two-way bound open item(s); a comma-separated list of item `value`s. */
   value = model<string | null>(null);
   /** Allow multiple items to be open at once instead of exclusive open. */
-  allowMultiple = input<boolean>(false);
-  /** Visual variant (`simple`, `outlined`, `flat`, `raised`, `type-a`–`type-d`). */
-  variant = input<ShipVariant | null>(null);
+  allowMultiple = input(false, { transform: booleanAttribute });
+  /** Visual variant (`type-b`). */
+  variant = input<ShipAccordionVariant | null>(null);
   /** Size preset. */
   size = input<string | null>(null);
 

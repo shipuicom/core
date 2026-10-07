@@ -16,14 +16,14 @@ export default class TreeStyling {
 sh-tree {
   --tree-bg: var(--base-2);
   --tree-bc: var(--base-3);
-  --tree-color: var(--base-12);
-  --tree-hover-bg: var(--base-3);
-  --tree-active-bg: var(--base-4);
-  --tree-selected-bg: var(--base-4);
-  --tree-guide-color: var(--base-4);
-  --tree-caret-color: var(--base-9);
-  --tree-caret-hover-color: var(--base-12);
-  --tree-icon-color: var(--base-9);
-  --tree-icon-folder-color: var(--primary-8);
+  --tree-c: var(--base-12);
+  --tree-bg-h: var(--base-3);
+  --tree-bg-a: var(--base-4);
+  --tree-bg-s: var(--base-4);
+  --tree-guide-c: var(--base-4);
+  --tree-caret-c: var(--base-9);
+  --tree-caret-c-h: var(--base-12);
+  --tree-ic: var(--base-9);
+  --tree-folder-ic: var(--primary-8);
 }`;
 }

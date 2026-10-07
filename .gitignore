@@ -50,10 +50,12 @@ Thumbs.db
 /projects/design-system/public/sh-*.woff2
 /projects/ship-ui/bin/ship-fg-scanner
 /projects/ship-ui/bin/ship-fg.mjs
+/projects/ship-ui/bin/ship-migrate.mjs
+/projects/ship-ui/bin/ship-styles.mjs
+/projects/ship-ui/bin/mcp/index.js
 /projects/ship-ui/assets/mcp/components.json
 /projects/ship-ui/snippets/ship-ui.code-snippets
 /mcp-server/components.json
-/mcp-server/ship-ui.code-snippets
 /projects/ship-ui/README.md
 
 # E2E test results
@@ -62,3 +64,10 @@ Thumbs.db
 
 # Claude Code local tooling
 .claude/
+
+# Visual snapshots (generated)
+/scripts/visual-snapshots/.baseline/
+/scripts/visual-snapshots/.current/
+/scripts/visual-snapshots/.diff/
+/scripts/visual-snapshots/REPORT.md
+/scripts/visual-snapshots/.size-baseline.txt

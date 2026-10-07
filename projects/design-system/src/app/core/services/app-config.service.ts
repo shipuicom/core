@@ -1,6 +1,8 @@
 import { DOCUMENT, Injectable, effect, inject, signal } from '@angular/core';
-import { ShipConfig, defaultThemeColors } from '@ship-ui/core';
+import { ShipConfig, ShipStylesManifest, defaultThemeColors, shipStylesWith } from '@ship-ui/core';
 import { LOCALSTORAGE } from './localstorage.token';
+import { googleFontUrl } from './google-fonts';
+import { SHIP_GLOBAL_KEYS, sanitizeShipConfig, sanitizeShipStyles } from './ship-config-export';
 
 @Injectable({ providedIn: 'root' })
 export class AppConfigService {
@@ -9,6 +11,29 @@ export class AppConfigService {
 
   private _configSignal = signal<ShipConfig>(this.loadConfig());
   isEditorOpen = signal<boolean>(this.#ls.getItemParsed<boolean>('ship-editor-open') || false);
+  /** What the exported `styles.scss` keeps (colours, variants, skins). Export only: the docs always load every skin. */
+  styles = signal<ShipStylesManifest>(this.loadStyles());
+
+  /** Saved styles, cleaned: invalid JSON or a malformed manifest from an older version must never break the page. */
+  private loadStyles(): ShipStylesManifest {
+    let raw: unknown;
+    try {
+      raw = this.#ls.getItemParsed<unknown>('ship-styles');
+    } catch {
+      console.warn('[ship-docs] The saved included-styles selection could not be read and was reset.');
+      this.#ls.removeItem('ship-styles');
+      return {};
+    }
+    const { styles, ignored } = sanitizeShipStyles(raw);
+    if (ignored.length) console.warn(`[ship-docs] Ignored saved style settings: ${ignored.join(', ')}`);
+    return styles;
+  }
+
+  stylesEffect = effect(() => {
+    const styles = this.styles();
+    if (shipStylesWith(styles).length) this.#ls.setItemParsed('ship-styles', styles);
+    else this.#ls.removeItem('ship-styles');
+  });
 
   fontSizeEffect = effect(() => {
     this.#ls.setItemParsed('ship-editor-open', this.isEditorOpen());
@@ -33,6 +58,17 @@ export class AppConfigService {
       this.#document.documentElement.style.removeProperty('--border-width');
     }
 
+    this.applyFontFamily(config.fontFamily);
+
+    for (const [key, prop] of [['paddingY', '--pad-y'], ['paddingX', '--pad-x']] as const) {
+      const value = config[key];
+      if (value !== undefined) {
+        this.#document.documentElement.style.setProperty(prop, `${value}px`);
+      } else {
+        this.#document.documentElement.style.removeProperty(prop);
+      }
+    }
+
     const ALL_COLORS = ['primary', 'accent', 'warn', 'error', 'success', 'base'];
     ALL_COLORS.forEach(colorName => {
       const hslValue = config.colors?.[colorName as keyof typeof config.colors];
@@ -49,6 +85,27 @@ export class AppConfigService {
       }
     });
   });
+
+  /** Loads the Google family (weights 500/600, the ones the type scale uses) and points --font-family at it. */
+  private applyFontFamily(family: string | undefined) {
+    const root = this.#document.documentElement;
+    const existing = this.#document.head.querySelector<HTMLLinkElement>('link[data-ship-font]');
+    if (!family) {
+      root.style.removeProperty('--font-family');
+      existing?.remove();
+      return;
+    }
+    const href = googleFontUrl(family);
+    if (existing?.href !== href) {
+      existing?.remove();
+      const link = this.#document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      link.dataset['shipFont'] = family;
+      this.#document.head.appendChild(link);
+    }
+    root.style.setProperty('--font-family', `'${family}', sans-serif`);
+  }
 
   private clearThemeScale(colorName: string) {
     for (let i = 1; i <= 12; i++) {
@@ -115,8 +172,20 @@ export class AppConfigService {
   }
 
   private loadConfig(): ShipConfig {
-    const saved = this.#ls.getItemParsed<ShipConfig>('ship-config');
-    return saved || { sidenavType: 'overlay' };
+    let saved: unknown;
+    try {
+      saved = this.#ls.getItemParsed<unknown>('ship-config');
+    } catch {
+      saved = null;
+    }
+    if (!saved) return { sidenavType: 'overlay' };
+    // State persisted by an older version may hold legacy keys or bad values: never let it break the page.
+    const { config, ignored } = sanitizeShipConfig(saved);
+    if (ignored.length) {
+      console.warn(`ship-config: ignored from saved editor state: ${ignored.join(', ')}`);
+      this.#ls.setItemParsed('ship-config', config);
+    }
+    return Object.keys(config).length ? config : { sidenavType: 'overlay' };
   }
 
   get config(): ShipConfig {
@@ -156,11 +225,31 @@ export class AppConfigService {
     return cleaned;
   }
 
+  /** Replaces the editor state with an imported one (see parseShipConfigImport). */
+  importConfig(config: ShipConfig, styles: ShipStylesManifest, source: 'json' | 'ts' = 'json') {
+    const clean = sanitizeShipConfig(config).config;
+    if (source === 'ts') {
+      // app.config.ts only carries component defaults: keep the global theme settings and the styles manifest.
+      const current = this._configSignal();
+      const globals: Partial<ShipConfig> = {};
+      for (const key of SHIP_GLOBAL_KEYS) if (current[key] !== undefined) (globals as any)[key] = current[key];
+      const keptStyles = this.styles();
+      this.resetConfig();
+      this.updateConfig({ ...clean, ...globals });
+      this.styles.set(keptStyles);
+      return;
+    }
+    this.resetConfig();
+    this.updateConfig(clean);
+    this.styles.set(sanitizeShipStyles(styles).styles);
+  }
+
   resetConfig() {
     // Rely on effect clearing to sweep the styles by omitting colors and distributions
     const initialConfig: ShipConfig = { sidenavType: 'overlay' };
     this._configSignal.set(initialConfig);
     this.#ls.removeItem('ship-config');
+    this.styles.set({});
   }
 
   get reactiveConfig(): ShipConfig {

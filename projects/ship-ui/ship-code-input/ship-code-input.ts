@@ -13,8 +13,10 @@ import {
   model,
   output,
   viewChild,
+  booleanAttribute,
+  signal,
 } from '@angular/core';
-import { contentProjectionSignal, nativeInputValueSignal } from '@ship-ui/core';
+import { contentProjectionSignal, nativeInputValueSignal, generateUniqueId } from '@ship-ui/core';
 import { ShipCodeInputDivider } from './ship-code-input-divider';
 import { ShipCodeInputGroup } from './ship-code-input-group';
 
@@ -36,6 +38,8 @@ import { ShipCodeInputGroup } from './ship-code-input-group';
 
     <div
       class="cells"
+      role="group"
+      [attr.aria-labelledby]="labelId()"
       #group="shCodeInputGroup"
       [shCodeInputGroup]="type()"
       (valueChange)="onGroupChange($event)"
@@ -94,11 +98,11 @@ export class ShipCodeInput {
   /** Two-way bound code. Only accepted characters are kept; never longer than `length`. */
   value = model<string>('');
   /** Focus the first box when the component renders. */
-  autofocus = input<boolean>(false);
+  autofocus = input(false, { transform: booleanAttribute });
   /** Disables every box. */
-  disabled = input<boolean>(false);
+  disabled = input(false, { transform: booleanAttribute });
   /** Boxes show the code but cannot be edited. */
-  readonly = input<boolean>(false);
+  readonly = input(false, { transform: booleanAttribute });
   /** Emits the code once every box is filled — the moment to submit or verify. */
   completed = output<string>();
 
@@ -111,6 +115,32 @@ export class ShipCodeInput {
   // Optional projected input (ngModel / reactive / signal forms). It lives
   // outside `.cells`, so the group never treats it as a box.
   projectedInput = contentProjectionSignal<HTMLInputElement>('input:not(.cell)', { childList: true, subtree: true }, 0);
+
+  // The slotted `<label>` names the group of cells and the projected (form) input; a `<label>` on its own only names
+  // a control through `for` or nesting, and here the input is a sibling.
+  projectedLabel = contentProjectionSignal<HTMLLabelElement>('label', { childList: true }, 0);
+  labelId = signal<string | null>(null);
+  /** The aria-labelledby this component stamped, so it can take it back when the label goes or changes. */
+  #stamped: { input: HTMLInputElement; id: string } | null = null;
+  #labelEffect = effect(() => {
+    const label = this.projectedLabel();
+    const input = this.projectedInput();
+    const stamped = this.#stamped;
+    if (stamped && (stamped.input !== input || stamped.id !== label?.id)) {
+      if (stamped.input.getAttribute('aria-labelledby') === stamped.id) stamped.input.removeAttribute('aria-labelledby');
+      this.#stamped = null;
+    }
+    if (!label) {
+      this.labelId.set(null);
+      return;
+    }
+    if (!label.id) label.id = `sh-code-input-label-${generateUniqueId()}`;
+    this.labelId.set(label.id);
+    if (input && !this.#stamped && !label.htmlFor && !input.getAttribute('aria-label') && !input.getAttribute('aria-labelledby') && !input.labels?.length) {
+      input.setAttribute('aria-labelledby', label.id);
+      this.#stamped = { input, id: label.id };
+    }
+  });
   #valueSync = nativeInputValueSignal<string>(this.projectedInput, {
     signal: this.value as never,
     transform: (raw) => raw ?? '',

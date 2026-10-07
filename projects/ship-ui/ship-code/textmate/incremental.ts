@@ -14,7 +14,7 @@
 // the tokenizer. That is what keeps an edit at line 3 of a 20k-line file
 // O(changed region), not O(document).
 
-import { CodeDocument } from '../core/document';
+import { CodeDocument, getLine, lineCount } from '../core/document';
 import { CodeToken, LanguageTokenizer, TokenizerState } from './types';
 
 interface CacheLine {
@@ -66,14 +66,14 @@ export class IncrementalTokenizer {
    * its cached end state.
    */
   ensureUpTo(doc: CodeDocument, targetLine: number, budget = Infinity): boolean {
-    const lines = doc.lines;
-    if (this.#cache.length !== lines.length) this.#cache.length = lines.length;
+    const total = lineCount(doc);
+    if (this.#cache.length !== total) this.#cache.length = total;
     let processed = 0;
 
-    while (this.#dirty < lines.length && this.#dirty <= targetLine) {
+    while (this.#dirty < total && this.#dirty <= targetLine) {
       if (processed >= budget) return false;
       const line = this.#dirty;
-      const text = lines[line].text;
+      const text = getLine(doc, line);
       const old = this.#cache[line];
       const prevState = line > 0 ? (this.#cache[line - 1]?.endState ?? null) : null;
 
@@ -85,11 +85,11 @@ export class IncrementalTokenizer {
       // Same text reproducing the same end state: the suffix was tokenized
       // from exactly these entry conditions — fast-forward over it.
       if (old && old.text === text && old.endState.equals(result.endState)) {
-        while (this.#dirty < lines.length && this.#cache[this.#dirty] && this.#cache[this.#dirty]!.text === lines[this.#dirty].text) {
+        while (this.#dirty < total && this.#cache[this.#dirty] && this.#cache[this.#dirty]!.text === getLine(doc, this.#dirty)) {
           this.#dirty++;
         }
       }
     }
-    return this.#dirty > targetLine || this.#dirty >= lines.length;
+    return this.#dirty > targetLine || this.#dirty >= total;
   }
 }

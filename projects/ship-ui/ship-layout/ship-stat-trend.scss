@@ -1,127 +1,118 @@
 @use 'helpers' as *;
 
-$shipStatTrend: true !default;
+sh-lo-stat-trend {
+  --trend-c: var(--primary-8);
+  --trend-bg: var(--base-1);
+  --trend-py: var(--pad-y-6);
+  --trend-px: var(--pad-x-6);
+  --trend-s: var(--shape-3);
+  --trend-chart-h: #{p2r(72)};
 
-@if $shipStatTrend == true {
-  sh-lo-stat-trend {
-    --trend-c: var(--primary-8);
-    --trend-bg: var(--base-1);
-    --trend-p: var(--space-5);
-    --trend-s: var(--shape-3);
-    --trend-chart-h: #{p2r(72)};
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    'head'
+    'value'
+    'footer'
+    'chart';
+  row-gap: var(--space-2);
+  padding: var(--trend-py) var(--trend-px) 0;
+  background-color: var(--trend-bg);
+  background-image: radial-gradient(130% 100% at 0% 0%, rgb(from var(--trend-c) r g b / 0.2), transparent 65%);
+  border: var(--border-10);
+  border-color: rgb(from var(--trend-c) r g b / 0.4);
+  border-radius: var(--trend-s);
+  overflow: hidden;
+  min-width: 0;
 
-    display: grid;
-    grid-template-columns: 1fr;
+  > .head {
+    grid-area: head;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font: var(--paragraph-30);
+    color: var(--base-8);
+
+    > sh-icon,
+    > [icon] {
+      color: var(--trend-c);
+    }
+  }
+
+  > .value {
+    grid-area: value;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+
+    > h2,
+    > h3,
+    > [value] {
+      font: var(--title-20B);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+  }
+
+  > .footer {
+    grid-area: footer;
+    font: var(--paragraph-40);
+    color: var(--base-8);
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  // Full-bleed: cancels the side padding so the area touches the card edges.
+  > .chart {
+    grid-area: chart;
+    height: var(--trend-chart-h);
+    margin: var(--space-2) calc(var(--trend-px) * -1) 0;
+
+    > * {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  &:has(> .chart:empty) {
+    padding-bottom: var(--trend-py);
+  }
+
+  // Chart beside the text.
+  &.type-b {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
-      'head'
-      'value'
-      'footer'
-      'chart';
-    row-gap: var(--space-2);
-    padding: var(--trend-p) var(--trend-p) 0;
-    background-color: var(--trend-bg);
-    background-image: radial-gradient(130% 100% at 0% 0%, rgb(from var(--trend-c) r g b / 0.2), transparent 65%);
-    border: var(--border-10);
-    border-color: rgb(from var(--trend-c) r g b / 0.4);
-    border-radius: var(--trend-s);
-    overflow: hidden;
-    min-width: 0;
-
-    @each $c in primary, accent, warn, error, success {
-      &.#{$c} {
-        --trend-c: var(--#{$c}-8);
-      }
-    }
-
-    > .head {
-      grid-area: head;
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      font: var(--paragraph-30);
-      color: var(--base-8);
-
-      > sh-icon,
-      > [icon] {
-        color: var(--trend-c);
-      }
-    }
-
-    > .value {
-      grid-area: value;
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: var(--space-3);
-
-      > h2,
-      > h3,
-      > [value] {
-        font: var(--title-20B);
-        font-variant-numeric: tabular-nums;
-        white-space: nowrap;
-      }
-    }
+      'head chart'
+      'value chart'
+      'footer chart';
+    // Text rows size to content and sit together; the chart spans them and
+    // gets a fixed height so it doesn't pull the rows apart.
+    grid-template-rows: auto auto 1fr;
+    column-gap: var(--space-5);
+    padding-bottom: var(--trend-py);
 
     > .footer {
-      grid-area: footer;
-      font: var(--paragraph-40);
-      color: var(--base-8);
-
-      &:empty {
-        display: none;
-      }
+      align-self: start;
     }
 
-    // Full-bleed: cancels the side padding so the area touches the card edges.
     > .chart {
-      grid-area: chart;
-      height: var(--trend-chart-h);
-      margin: var(--space-2) calc(var(--trend-p) * -1) 0;
-
-      > * {
-        display: block;
-        width: 100%;
-        height: 100%;
-      }
-
-      &:empty {
-        display: none;
-      }
+      margin: 0;
+      align-self: center;
+      height: calc(var(--trend-chart-h) + var(--space-5));
     }
+  }
 
-    &:has(> .chart:empty) {
-      padding-bottom: var(--trend-p);
-    }
-
-    // Chart beside the text.
-    &.type-b {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      grid-template-areas:
-        'head chart'
-        'value chart'
-        'footer chart';
-      // Text rows size to content and sit together; the chart spans them and
-      // gets a fixed height so it doesn't pull the rows apart.
-      grid-template-rows: auto auto 1fr;
-      column-gap: var(--space-5);
-      padding-bottom: var(--trend-p);
-
-      > .footer {
-        align-self: start;
-      }
-
-      > .chart {
-        margin: 0;
-        align-self: center;
-        height: calc(var(--trend-chart-h) + var(--space-5));
-      }
-    }
-
-    // Plain surface: no wash, neutral border, color stays on the icon and chart.
-    &.type-c {
-      background-image: none;
-      border-color: var(--base-4);
-    }
+  // Plain surface: no wash, neutral border, color stays on the icon and chart.
+  &.type-c {
+    background-image: none;
+    border-color: var(--base-4);
   }
 }

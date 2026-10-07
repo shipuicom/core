@@ -371,15 +371,6 @@ export const COMPONENT_A11Y_MAP: Record<string, { url: string; rules: AriaRules[
       }
     ]
   },
-  'form-fields-experimental': {
-    url: 'http://localhost:4205/form-fields-experimental',
-    rules: [
-      {
-        selector: 'sh-form-field-experimental',
-        type: 'form-field',
-      }
-    ]
-  },
   'sortables': {
     url: 'http://localhost:4205/sortables',
     rules: [
@@ -429,8 +420,51 @@ export const COMPONENT_A11Y_MAP: Record<string, { url: string; rules: AriaRules[
     url: 'http://localhost:4205/getting-started',
     rules: [
       {
-        selector: 'ship-theme-toggle',
+        selector: 'sh-theme-toggle',
         type: 'theme-toggle',
+      }
+    ]
+  },
+  'breadcrumbs': {
+    url: 'http://localhost:4205/breadcrumbs',
+    rules: [
+      {
+        selector: 'sh-breadcrumbs',
+        type: 'navigation',
+      }
+    ]
+  },
+  'chats': {
+    // The typing indicator is the chat's live region; the examples tab renders a chat with `typing` set.
+    url: 'http://localhost:4205/chats/examples',
+    rules: [
+      {
+        selector: 'sh-chat .typing',
+        type: 'alert',
+      }
+    ]
+  },
+  'layouts': {
+    // The ranking and inbox sandboxes live on the examples tab.
+    url: 'http://localhost:4205/layouts/examples',
+    rules: [
+      {
+        selector: 'sh-lo-ranking .items',
+        type: 'list',
+      },
+      {
+        selector: 'sh-lo-inbox .items',
+        type: 'list',
+      }
+    ]
+  },
+  'videos': {
+    // The playlist example lives on the examples tab.
+    url: 'http://localhost:4205/videos/examples',
+    rules: [
+      {
+        selector: 'sh-video-playlist',
+        type: 'list',
       }
     ]
   }

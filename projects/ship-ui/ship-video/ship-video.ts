@@ -17,7 +17,7 @@ import {
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { shipComponentClasses, ShipColor } from '@ship-ui/core';
+import { shipComponentClasses, ShipColor, optionalBooleanAttribute } from '@ship-ui/core';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import type { ShipVideoEngine, ShipVideoEngineError, ShipVideoQualityLevel } from './engine/types';
 import { ShipVideoControls } from './ship-video-controls';
@@ -273,7 +273,7 @@ export class ShipVideo {
   /** Chrome variant: `base` (scrubber above buttons) or `edge` (scrubber flush with the bottom edge). */
   variant = input<ShipVideoVariant | null>(null);
   /** When `true`, renders the player with sharp (non-rounded) corners. */
-  sharp = input<boolean | undefined>(undefined);
+  sharp = input<boolean | undefined, unknown>(undefined, { transform: optionalBooleanAttribute });
 
   /** Two-way bound volume from `0` to `1`. */
   volume = model(1);

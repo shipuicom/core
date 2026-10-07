@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, ElementRef, HostListener, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, effect, ElementRef, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
 import { classMutationSignal, generateUniqueId } from '@ship-ui/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { contentProjectionSignal } from '@ship-ui/core';
@@ -34,6 +34,7 @@ import { ShipColor, ShipSheetVariant } from '@ship-ui/core';
     '[attr.role]': 'noInternalInput() ? "radio" : null',
     '[attr.aria-checked]': 'noInternalInput() ? checked() : null',
     '[attr.tabindex]': 'noInternalInput() ? (disabled() ? "-1" : "0") : null',
+    '(keydown)': 'onKeyDown($event)',
   },
 })
 export class ShipRadio {
@@ -76,11 +77,11 @@ export class ShipRadio {
   /** Visual sheet variant of the radio (`ShipSheetVariant`). */
   variant = input<ShipSheetVariant | null>(null);
   /** When `true`, the radio is displayed but cannot be changed by the user. */
-  readonly = input<boolean>(false);
+  readonly = input(false, { transform: booleanAttribute });
   /** When `true`, the radio is disabled and non-interactive. */
-  disabled = input<boolean>(false);
+  disabled = input(false, { transform: booleanAttribute });
   /** When `true`, suppresses the built-in `<input type="radio">` and drives ARIA roles on the host instead. */
-  noInternalInput = input<boolean>(false);
+  noInternalInput = input(false, { transform: booleanAttribute });
 
   onInternalInputChange(event: Event) {
     if (this.disabled()) return;
@@ -95,7 +96,6 @@ export class ShipRadio {
     readonly: this.readonly,
   });
 
-  @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
     if (this.#keybindings.matches(event, 'radio.select')) {
       const inputEl = this.internalInput()?.nativeElement;

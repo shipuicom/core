@@ -1,0 +1,90 @@
+@use './util' as *;
+
+@mixin skin($colors, $variants) {
+  sh-range-slider {
+    @each $c in $colors {
+      &.#{$c} {
+        --rst-bg: var(--#{$c}-8);
+        --rs-thumb-arrow: var(--#{$c}-8);
+        --rs-thumb-value-bg: var(--#{$c}-8);
+        --rs-thumb-value-c: var(--#{$c}-c8);
+      }
+    }
+
+    @if has($variants, simple) {
+      &.simple {
+        @each $c in $colors {
+          &.#{$c} {
+            --rst-bg: var(--#{$c}-8);
+            --rst: var(--#{$c}-2);
+            --rs-thumb-c: var(--#{$c}-8);
+            --rs-thumb-bc: var(--base-1);
+            --rs-thumb-value-bg: var(--#{$c}-8);
+            --rs-thumb-value-c: var(--#{$c}-2);
+          }
+        }
+      }
+    }
+
+    @if has($variants, outlined) {
+      &.outlined {
+        --rst: var(--base-1);
+        --rst-bc: var(--base-4);
+        --rs-thumb-c: var(--base-6);
+        --rs-thumb-bc: var(--base-1);
+        --rs-thumb-arrow: var(--base-4);
+
+        @each $c in $colors {
+          &.#{$c} {
+            --rst: var(--base-2);
+            --rst-bg: var(--#{$c}-4);
+            --rst-bc: var(--#{$c}-8);
+            --rs-thumb-c: var(--#{$c}-8);
+            --rs-thumb-bc: var(--base-1);
+            --rs-thumb-value-bg: var(--#{$c}-4);
+            --rs-thumb-value-c: var(--#{$c}-8);
+            --rs-thumb-arrow: var(--#{$c}-4);
+          }
+        }
+      }
+    }
+
+    @if has($variants, flat) {
+      &.flat {
+        --rs-thumb-c: var(--light-text);
+        --rs-thumb-bc: var(--base-4);
+
+        @each $c in $colors {
+          &.#{$c} {
+            --rst: var(--base-3);
+            --rst-bg: var(--#{$c}-8);
+            --rs-thumb-c: var(--light-text);
+            --rs-thumb-bc: var(--base-4);
+            --rs-thumb-value-bg: var(--#{$c}-8);
+            --rs-thumb-value-c: var(--#{$c}-c8);
+          }
+        }
+      }
+    }
+
+    @if has($variants, raised) {
+      &.raised {
+        --rst-bg: var(--base-g2);
+        --rs-thumb-c: var(--light-text);
+        --rs-thumb-bc: var(--base-4);
+
+        @each $c in $colors {
+          &.#{$c} {
+            --rst: var(--base-3);
+            --rst-bg: var(--#{$c}-g2);
+            --rs-thumb-c: var(--light-text);
+            --rs-thumb-bc: var(--base-4);
+            --rs-thumb-arrow: var(--#{$c}-8);
+            --rs-thumb-value-bg: var(--#{$c}-g3);
+            --rs-thumb-value-c: var(--#{$c}-c8);
+          }
+        }
+      }
+    }
+  }
+}

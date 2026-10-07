@@ -1296,6 +1296,16 @@ test.describe('DOM ≡ AST invariant', () => {
     const { errors } = await openEditor(page);
     await page.locator('sh-editor:not(sh-editor-sheet sh-editor) .sh-editor-content > p').first().click();
     await page.keyboard.press('ControlOrMeta+a');
+    // The editor learns the new range from `selectionchange`, which the browser fires asynchronously. Focusing the
+    // toolbar before it lands toggles bold on a collapsed caret, so wait for the editor's own selection to span text.
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const sel = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!).selection.active();
+          return !!sel && sel.to > sel.from;
+        })
+      )
+      .toBe(true);
     const isBold = () =>
       page.evaluate(() => {
         const comp = (window as any).ng.getComponent(document.querySelector('sh-editor:not(sh-editor-sheet sh-editor)')!);

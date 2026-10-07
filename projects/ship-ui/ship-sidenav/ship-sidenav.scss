@@ -1,229 +1,228 @@
 @use 'helpers' as *;
 
-$shipSidenav: true !default;
+html.sh-sidenav-open,
+body.sh-sidenav-open {
+  overflow: hidden;
+}
 
-@if $shipSidenav == true {
-  html.sh-sidenav-open,
-  body.sh-sidenav-open {
-    overflow: hidden;
+sh-sidenav {
+  --sidenav-py: var(--pad-y-5);
+  --sidenav-px: var(--pad-x-4);
+  --sidenav-open-w: #{p2r(280)};
+  --sidenav-w: var(--sidenav-open-w);
+  // Deliberately viewport-relative: the host is often laid out inside a
+  // narrower grid column and is expected to span the full width regardless.
+  --sidenav-wrap-w: 100vw;
+  --sidenav-wrap-h: 100dvh;
+
+  display: flex;
+  width: var(--sidenav-wrap-w);
+  height: var(--sidenav-wrap-h);
+
+  .sidenav {
+    width: var(--sidenav-w);
+    transition: width 200ms linear;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: auto;
+    overscroll-behavior: contain;
   }
 
-  sh-sidenav {
-    --sidenav-width: var(--sidenav-open-width, #{p2r(280)});
-    // Deliberately viewport-relative: the host is often laid out inside a
-    // narrower grid column and is expected to span the full width regardless.
-    --sidenav-wrap-w: 100vw;
-    --sidenav-wrap-h: 100dvh;
+  .main-wrap {
+    position: relative;
+    z-index: 1;
+    flex: 1 0;
+    display: block;
+    height: 100%;
+    overflow: auto;
+    padding: var(--sidenav-py) var(--sidenav-px) var(--sidenav-py) 0;
 
-    display: flex;
-    width: var(--sidenav-wrap-w);
-    height: var(--sidenav-wrap-h);
+    &::before {
+      content: '';
+      position: absolute;
+      top: p2r(16);
+      right: p2r(16);
+      bottom: p2r(16);
+      left: 0;
+      background-color: var(--base-1);
+      border-radius: var(--shape-3);
+      pointer-events: none;
+    }
+  }
 
-    .sidenav {
-      width: var(--sidenav-width);
-      transition: width 200ms linear;
-      height: 100%;
-      overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: auto;
-      overscroll-behavior: contain;
+  main {
+    position: relative;
+    z-index: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: auto;
+    border: var(--border-10);
+    background-color: var(--base-1);
+    border-radius: var(--shape-3);
+    height: calc(var(--sidenav-wrap-h) - 2rem);
+    box-shadow: var(--box-shadow-35);
+  }
+
+  .closed-topbar {
+    display: none;
+    min-height: p2r(60);
+    background-color: var(--base-1);
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--sidenav-px);
+    border-bottom: var(--border-10);
+    z-index: 10000;
+    position: relative;
+    touch-action: none;
+    overscroll-behavior: none;
+  }
+
+  .dragable {
+    display: none;
+  }
+
+  &.simple {
+    border-radius: 0;
+
+    // A column: the closed-state top bar takes its own height and main
+    // fills the rest, so the wrapper never has anything to scroll.
+    .main-wrap {
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+
+      main {
+        flex: 1 1 auto;
+        min-height: 0;
+        height: auto;
+        border-radius: 0;
+        border-width: 0 0 0 1px;
+      }
     }
 
-    .main-wrap {
-      position: relative;
-      z-index: 1;
-      flex: 1 0;
-      display: block;
-      height: 100%;
-      overflow: auto;
-      padding: p2r(16 16 16 0);
+    &.closed {
+      --sidenav-w: #{p2r(100)};
+    }
+  }
 
-      &::before {
-        content: '';
-        position: absolute;
-        top: p2r(16);
-        right: p2r(16);
-        bottom: p2r(16);
-        left: 0;
-        background-color: var(--base-1);
-        border-radius: var(--shape-3);
+  &.overlay {
+    overflow: hidden;
+
+    .sidenav {
+      position: fixed;
+      z-index: 0;
+    }
+
+    // Closed, the sidenav is parked behind main-wrap where it and anything
+    // projected into it stay live scroll containers, competing with main for
+    // the same wheel and touch gestures. Taking the panel out of the pointer
+    // path leaves main as the only thing that scrolls, without disturbing the
+    // panel's own scroll position or how it paints while it is covered.
+    // Skipped mid-drag, when the panel is partly exposed and interactive.
+    &.closed:not(.is-dragging) {
+      .sidenav {
         pointer-events: none;
       }
     }
 
-    main {
-      position: relative;
-      z-index: 1;
-      overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: auto;
-      border: var(--border-10);
-      background-color: var(--base-1);
-      border-radius: var(--shape-3);
-      height: calc(var(--sidenav-wrap-h) - 2rem);
-      box-shadow: var(--box-shadow-35);
+    .dragable {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 9999;
+      width: 50px;
+      padding-right: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      touch-action: none;
+
+      &:active {
+        cursor: grabbing;
+      }
+
+      &:after {
+        content: '';
+        display: block;
+        width: p2r(4);
+        height: 40%;
+        background-color: var(--base-2);
+        border-radius: p2r(2);
+      }
+
+      &:hover,
+      &:focus-visible {
+        &:after {
+          background-color: var(--base-4);
+        }
+      }
+
+      &:focus-visible {
+        outline: none;
+      }
     }
 
-    .closed-topbar {
-      display: none;
-      min-height: p2r(60);
-      background-color: var(--base-1);
-      align-items: center;
-      justify-content: space-between;
-      padding: p2r(0 16);
-      border-bottom: var(--border-10);
-      z-index: 10000;
+    .main-wrap {
+      z-index: 1;
+      padding: 0;
+      display: flex;
+      height: var(--sidenav-wrap-h);
       position: relative;
-      touch-action: none;
+      flex-direction: column;
+      transform: translateX(0);
+      transition: transform 200ms linear;
+      overflow: hidden;
       overscroll-behavior: none;
     }
 
-    .dragable {
-      display: none;
-    }
+    &.is-dragging {
+      user-select: none;
+      cursor: grabbing;
 
-    &.simple {
-      border-radius: 0;
-
-      // A column: the closed-state top bar takes its own height and main
-      // fills the rest, so the wrapper never has anything to scroll.
       .main-wrap {
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-
-        main {
-          flex: 1 1 auto;
-          min-height: 0;
-          height: auto;
-          border-radius: 0;
-          border-width: 0 0 0 1px;
-        }
+        transition: none;
       }
 
-      &.closed {
-        --sidenav-width: #{p2r(100)};
-      }
-    }
-
-    &.overlay {
-      overflow: hidden;
-
-      .sidenav {
-        position: fixed;
-        z-index: 0;
-      }
-
-      // Closed, the sidenav is parked behind main-wrap where it and anything
-      // projected into it stay live scroll containers, competing with main for
-      // the same wheel and touch gestures. Taking the panel out of the pointer
-      // path leaves main as the only thing that scrolls, without disturbing the
-      // panel's own scroll position or how it paints while it is covered.
-      // Skipped mid-drag, when the panel is partly exposed and interactive.
-      &.closed:not(.is-dragging) {
-        .sidenav {
-          pointer-events: none;
-        }
+      > * {
+        cursor: grabbing;
       }
 
       .dragable {
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        z-index: 9999;
-        width: 50px;
-        padding-right: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: grab;
-        touch-action: none;
-
-        &:active {
-          cursor: grabbing;
-        }
-
-        &:after {
-          content: '';
-          display: block;
-          width: p2r(4);
-          height: 40%;
-          background-color: var(--base-2);
-          border-radius: p2r(2);
-        }
-
-        &:hover,
-        &:focus-visible {
-          &:after {
-            background-color: var(--base-4);
-          }
-        }
-
-        &:focus-visible {
-          outline: none;
-        }
-      }
-
-      .main-wrap {
-        z-index: 1;
-        padding: 0;
-        display: flex;
-        height: var(--sidenav-wrap-h);
-        position: relative;
-        flex-direction: column;
-        transform: translateX(0);
-        transition: transform 200ms linear;
-        overflow: hidden;
-        overscroll-behavior: none;
-      }
-
-      &.is-dragging {
-        user-select: none;
         cursor: grabbing;
-
-        .main-wrap {
-          transition: none;
-        }
-
-        > * {
-          cursor: grabbing;
-        }
-
-        .dragable {
-          cursor: grabbing;
-        }
       }
+    }
 
-      &.open {
-        .main-wrap {
-          transform: translateX(var(--sidenav-width));
-          box-shadow: var(--box-shadow-10);
-          border-left: var(--border-10);
-        }
-
-        main {
-          overflow-y: hidden;
-        }
-      }
-
-      .closed-topbar {
-        display: flex;
-
-        &:empty {
-          display: none;
-        }
+    &.open {
+      .main-wrap {
+        transform: translateX(var(--sidenav-w));
+        box-shadow: var(--box-shadow-10);
+        border-left: var(--border-10);
       }
 
       main {
-        border: 0;
-        box-shadow: none;
-        flex: 1;
-        height: auto;
-        min-height: 0;
-        border-radius: 0;
+        overflow-y: hidden;
       }
+    }
+
+    .closed-topbar {
+      display: flex;
+
+      &:empty {
+        display: none;
+      }
+    }
+
+    main {
+      border: 0;
+      box-shadow: none;
+      flex: 1;
+      height: auto;
+      min-height: 0;
+      border-radius: 0;
     }
   }
 }

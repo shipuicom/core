@@ -1,0 +1,9 @@
+@mixin skin($colors, $variants) {
+  sh-spinner {
+    @each $c in $colors {
+      &.#{$c} {
+        --spinner-c: var(--#{$c}-8);
+      }
+    }
+  }
+}

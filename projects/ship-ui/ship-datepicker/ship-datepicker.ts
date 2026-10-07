@@ -5,7 +5,6 @@ import {
   computed,
   effect,
   ElementRef,
-  HostListener,
   inject,
   input,
   model,
@@ -13,6 +12,7 @@ import {
   signal,
   viewChild,
   ViewEncapsulation,
+  booleanAttribute,
 } from '@angular/core';
 import { classMutationSignal, ShipCalendarService } from '@ship-ui/core';
 import { ShipA11yAnnouncerService } from '@ship-ui/core/ship-a11y-announcer';
@@ -110,6 +110,7 @@ function withExistingTime(newDate: Date, existing: Date | string | number | null
     '[class.as-range]': 'asRange()',
     '[class]': '"columns-" + monthsToShow()',
     '[class.disabled]': 'disabled()',
+    '(focusout)': 'onFocusOut($event)',
   },
 })
 export class ShipDatepicker {
@@ -123,10 +124,10 @@ export class ShipDatepicker {
 
   date = model<Date | null>(null);
   endDate = model<Date | null>(null);
-  asRange = input<boolean>(false);
+  asRange = input(false, { transform: booleanAttribute });
   activeRangeSelection = input<'start' | 'end' | null>(null);
   monthsToShow = input<number>(1);
-  disabled = input<boolean>(false);
+  disabled = input(false, { transform: booleanAttribute });
   startOfWeek = input<number>(1); //(`0` = Sunday, `1` = Monday).
   weekdayLabels = input<string[] | null>(null); // Defaults to locale-derived labels.
   locale = input<string | undefined>(undefined);
@@ -175,7 +176,6 @@ export class ShipDatepicker {
     this.setSelectedDateStylePosition(selectedElement as HTMLElement);
   });
 
-  @HostListener('focusout', ['$event'])
   onFocusOut(_event: FocusEvent) {
     setTimeout(() => {
       const activeElement = document.activeElement as HTMLElement | null;

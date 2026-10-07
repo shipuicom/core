@@ -1,0 +1,22 @@
+@use '../fn/p2r' as *;
+
+/// The `small` form-field density. `sh-form-field` / `sh-form-field-popover` apply it for `.small`, and the
+/// datepicker inputs apply it to the field they render when they are `.small` themselves.
+@mixin form-field-small {
+  --ff-py: var(--pad-y-3);
+  --ff-px: var(--pad-x-2);
+  --ff-input-py: var(--pad-y-3);
+  --ff-input-px: var(--pad-x-2);
+  --ff-f: var(--paragraph-40B);
+
+  line-height: p2r(16);
+
+  .prefix,
+  .suffix {
+    line-height: p2r(16);
+
+    > sh-icon {
+      font-size: p2r(16);
+    }
+  }
+}

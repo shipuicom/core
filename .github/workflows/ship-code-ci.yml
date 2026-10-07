@@ -30,8 +30,10 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
+      # Through the Angular unit-test builder: the component spec needs its TestBed environment, which the plain
+      # vitest config deliberately leaves out.
       - name: Run ship-code tests
-        run: npx vitest run --config projects/ship-ui/vitest-base.config.ts projects/ship-ui/ship-code/ --reporter=verbose
+        run: npx ng test ship-ui --watch=false --include='**/ship-code/**/*.spec.ts'
 
   # ──────────────────────────────────────────────────────────────────────────
   # Fuzz tests — property-based random testing
@@ -76,8 +78,13 @@ jobs:
       - name: Run perf tests (vitest budgets)
         run: npx vitest run --config projects/ship-ui/vitest-base.config.ts projects/ship-ui/ship-code/core/general-tests/perf.spec.ts --reporter=verbose
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+
+      # Informational: runner timings differ from the machine the baseline was saved on, so no --strict here.
       - name: Run benchmark suite
-        run: npx tsx projects/ship-ui/ship-code/benchmarks/run.ts
+        run: bun run bench:code
 
       - name: Upload benchmark results
         if: always()
@@ -99,30 +106,34 @@ jobs:
               fs.readFileSync('projects/ship-ui/ship-code/benchmarks/latest.json', 'utf-8')
             );
 
-            const rows = results.results
-              .filter(r => r.category !== 'sharing')
-              .map(r => `| ${r.name} | ${r.avgMs.toFixed(4)} | ${r.opsPerSec.toLocaleString()} |`)
+            const fmt = (ms) => (ms >= 1 ? `${ms.toFixed(2)} ms` : ms >= 0.001 ? `${(ms * 1000).toFixed(2)} µs` : `${(ms * 1e6).toFixed(0)} ns`);
+            const rows = [...results.results]
+              .sort((a, b) => a.category.localeCompare(b.category) || a.docLines - b.docLines)
+              .map(r => `| ${r.name} | ${fmt(r.medianMs)} | ${fmt(r.p95Ms)} | ${r.opsPerSec.toLocaleString()} |`)
               .join('\n');
 
-            const sharing = results.results
-              .filter(r => r.category === 'sharing')
-              .map(r => `- **${r.name}**: ${r.opsPerSec} lines shared`)
-              .join('\n');
+            // One comment per PR, updated in place on every push; the hidden marker finds it again.
+            const marker = '<!-- ship-code-benchmarks -->';
+            const sha = (context.payload.pull_request?.head?.sha ?? context.sha).slice(0, 7);
+            const body = `${marker}
+            ## ⚡ ship-code Benchmark Results
 
-            const body = `## ⚡ ship-code Benchmark Results
-
-            | Benchmark | Avg (ms) | Ops/sec |
-            |-----------|----------|---------|
+            | Benchmark | Median | p95 | Ops/sec |
+            |-----------|--------|-----|---------|
             ${rows}
 
-            ### Structural Sharing
-            ${sharing}
+            <sub>Commit ${sha} · ${results.timestamp} · ${results.runtime} · seed ${results.seed} · CI runner, not comparable to the committed baseline</sub>`;
 
-            <sub>Run: ${results.timestamp} · ${results.runtime}</sub>`;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 });
+            const ours = comments.filter((c) => c.user?.type === 'Bot');
+            // Comments from before the marker existed are adopted by their heading, newest first.
+            const existing =
+              ours.find((c) => c.body?.includes(marker)) ??
+              ours.reverse().find((c) => c.body?.includes('ship-code Benchmark Results'));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }

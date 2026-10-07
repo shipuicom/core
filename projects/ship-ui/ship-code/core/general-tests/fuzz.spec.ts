@@ -235,7 +235,7 @@ describe('fuzz: document model', () => {
       // All other lines should be shared
       let sharedCount = 0;
       for (let i = 0; i < Math.min(lineCount(doc), lineCount(result)); i++) {
-        if (result.lines[i] === doc.lines[i]) sharedCount++;
+        if (getLine(result, i) === getLine(doc, i)) sharedCount++;
       }
 
       // At most 1 line should differ (the edited one)

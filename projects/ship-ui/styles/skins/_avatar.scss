@@ -1,0 +1,14 @@
+@mixin skin($colors, $variants) {
+  sh-avatar {
+    @each $c in $colors {
+      &.ring-#{$c} {
+        --avatar-ring-c: var(--#{$c}-8);
+      }
+
+      &.#{$c} {
+        --avatar-bg: var(--#{$c}-3);
+        --avatar-c: var(--#{$c}-11);
+      }
+    }
+  }
+}

@@ -6,6 +6,7 @@ import {
   input,
   numberAttribute,
   ViewEncapsulation,
+  isDevMode,
 } from '@angular/core';
 import { shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipLayoutRankingVariant } from '@ship-ui/core';
@@ -27,12 +28,11 @@ import { ShipColor, ShipLayoutRankingVariant } from '@ship-ui/core';
       <ng-content select="h2, h3, h4, [title]" />
       <div class="actions"><ng-content select="[actions]" /></div>
     </div>
-    <ng-content />
+    <div class="items" role="list"><ng-content /></div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': 'hostClasses()',
-    role: 'list',
   },
 })
 export class ShipLayoutRanking {
@@ -56,22 +56,29 @@ export class ShipLayoutRanking {
       <div class="label"><ng-content /></div>
       <div class="detail"><ng-content select="[detail]" /></div>
     </div>
-    <div class="bar" [style.--bar-pct]="percent()"></div>
+    <div class="bar"></div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     role: 'listitem',
-    '[style.--bar-pct]': 'percent()',
+    '[style.--ranking-pct]': 'percent()',
   },
 })
 export class ShipLayoutRankingItem {
   #ranking = inject(ShipLayoutRanking, { optional: true });
 
   /** The item's value; the bar is `value / max` of the parent list. */
-  value = input(0, { transform: numberAttribute });
+  value = input(0, { transform: (v: unknown) => numberAttribute(v, 0) });
+
+  constructor() {
+    if (isDevMode() && !this.#ranking) {
+      console.warn('<sh-lo-ranking-item> belongs inside <sh-lo-ranking>: without the list there is no max, so the bar stays empty.');
+    }
+  }
 
   percent = computed(() => {
-    const max = this.#ranking?.max() || 1;
+    if (!this.#ranking) return 0;
+    const max = this.#ranking.max() || 1;
     return Math.max(0, Math.min(100, (this.value() / max) * 100));
   });
 }
