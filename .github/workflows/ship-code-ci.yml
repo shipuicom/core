@@ -112,17 +112,28 @@ jobs:
               .map(r => `| ${r.name} | ${fmt(r.medianMs)} | ${fmt(r.p95Ms)} | ${r.opsPerSec.toLocaleString()} |`)
               .join('\n');
 
-            const body = `## ⚡ ship-code Benchmark Results
+            // One comment per PR, updated in place on every push; the hidden marker finds it again.
+            const marker = '<!-- ship-code-benchmarks -->';
+            const sha = (context.payload.pull_request?.head?.sha ?? context.sha).slice(0, 7);
+            const body = `${marker}
+            ## ⚡ ship-code Benchmark Results
 
             | Benchmark | Median | p95 | Ops/sec |
             |-----------|--------|-----|---------|
             ${rows}
 
-            <sub>Run: ${results.timestamp} · ${results.runtime} · seed ${results.seed} · CI runner, not comparable to the committed baseline</sub>`;
+            <sub>Commit ${sha} · ${results.timestamp} · ${results.runtime} · seed ${results.seed} · CI runner, not comparable to the committed baseline</sub>`;
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 });
+            const ours = comments.filter((c) => c.user?.type === 'Bot');
+            // Comments from before the marker existed are adopted by their heading, newest first.
+            const existing =
+              ours.find((c) => c.body?.includes(marker)) ??
+              ours.reverse().find((c) => c.body?.includes('ship-code Benchmark Results'));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
