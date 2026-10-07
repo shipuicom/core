@@ -10,6 +10,8 @@ import {
   CodeDocument,
 } from '../document';
 import { caret } from '../selection';
+import { leafOf } from '../line-tree';
+import { treeOf } from '../document-internal';
 import {
   moveCaretRight,
   moveCaretDown,
@@ -248,81 +250,39 @@ describe('perf: caret motion', () => {
 // ---------------------------------------------------------------------------
 
 describe('perf: structural sharing', () => {
-  it('unchanged lines should share identity after single-line insert', () => {
+  // Lines live in leaves of a persistent tree: an edit copies the path to one leaf and shares every other leaf.
+  const leaf = (d: ReturnType<typeof createDocument>, line: number) => leafOf(treeOf(d), line);
+
+  it('shares every leaf but the edited one after a single-line insert', () => {
     const doc = createDocument(generateCodeDoc(DOC_MEDIUM));
     const result = insertText(doc, caret(500, 5), 'x');
-
-    // Lines before the edit should be the same object references
-    expect(result.lines[0]).toBe(doc.lines[0]);
-    expect(result.lines[100]).toBe(doc.lines[100]);
-    expect(result.lines[499]).toBe(doc.lines[499]);
-
-    // The edited line should be a NEW object
-    expect(result.lines[500]).not.toBe(doc.lines[500]);
     expect(getLine(result, 500)).toContain('x');
-
-    // Lines after the edit should be the same object references
-    expect(result.lines[501]).toBe(doc.lines[501]);
-    expect(result.lines[999]).toBe(doc.lines[999]);
+    expect(leaf(result, 500)).not.toBe(leaf(doc, 500));
+    expect(leaf(result, 0)).toBe(leaf(doc, 0));
+    expect(leaf(result, 999)).toBe(leaf(doc, 999));
   });
 
-  it('unchanged lines should share identity after single-line delete', () => {
+  it('shares untouched leaves after a delete and a newline insert, shifted lines included', () => {
     const doc = createDocument(generateCodeDoc(DOC_MEDIUM));
-    const result = deleteRange(doc, caret(500, 2), caret(500, 8));
-
-    expect(result.lines[0]).toBe(doc.lines[0]);
-    expect(result.lines[499]).toBe(doc.lines[499]);
-    expect(result.lines[500]).not.toBe(doc.lines[500]);
-    expect(result.lines[501]).toBe(doc.lines[501]);
+    const deleted = deleteRange(doc, caret(500, 0), caret(510, 0));
+    expect(leaf(deleted, 0)).toBe(leaf(doc, 0));
+    expect(getLine(deleted, 501)).toBe(getLine(doc, 511));
+    const split = insertText(doc, caret(500, 5), '\n');
+    expect(leaf(split, 0)).toBe(leaf(doc, 0));
+    expect(getLine(split, 1000)).toBe(getLine(doc, 999));
   });
 
-  it('unchanged lines should share identity after newline insert', () => {
-    const doc = createDocument(generateCodeDoc(DOC_MEDIUM));
-    const result = insertText(doc, caret(500, 5), '\n');
-
-    // Lines before the split should be unchanged
-    expect(result.lines[0]).toBe(doc.lines[0]);
-    expect(result.lines[499]).toBe(doc.lines[499]);
-
-    // The split line is new (both halves)
-    expect(result.lines[500]).not.toBe(doc.lines[500]);
-    expect(result.lines[501]).not.toBe(doc.lines[500]);
-
-    // Lines after the split are shifted by 1 but same objects
-    expect(result.lines[502]).toBe(doc.lines[501]);
-    expect(result.lines[1000]).toBe(doc.lines[999]);
-  });
-
-  it('unchanged lines should share identity after multi-line delete', () => {
-    const doc = createDocument(generateCodeDoc(DOC_MEDIUM));
-    // Delete lines 500-510 (merge them)
-    const result = deleteRange(doc, caret(500, 0), caret(510, 0));
-
-    expect(result.lines[0]).toBe(doc.lines[0]);
-    expect(result.lines[499]).toBe(doc.lines[499]);
-    // Line 500 is new (merged from 500 prefix + 510 suffix)
-    expect(result.lines[500]).not.toBe(doc.lines[500]);
-    // Lines after the deleted range are shifted but same objects
-    expect(result.lines[501]).toBe(doc.lines[511]);
-  });
-
-  it('should count unchanged line references after edit', () => {
+  it('copies a constant number of leaves for a one-line edit in a large document', () => {
     const doc = createDocument(generateCodeDoc(DOC_LARGE));
     const result = insertText(doc, caret(5000, 5), 'x');
-
-    let sharedCount = 0;
-    let newCount = 0;
-    for (let i = 0; i < lineCount(result); i++) {
-      if (i < lineCount(doc) && result.lines[i] === doc.lines[i]) {
-        sharedCount++;
-      } else {
-        newCount++;
-      }
-    }
-
-    // Only 1 line should be new, rest should be shared
-    expect(newCount).toBe(1);
-    expect(sharedCount).toBe(lineCount(doc) - 1);
+    const leaves = (d: typeof doc) => {
+      const out = new Set<object>();
+      for (let i = 0; i < lineCount(d); i += 16) out.add(leaf(d, i));
+      return out;
+    };
+    const before = leaves(doc);
+    const fresh = [...leaves(result)].filter((l) => !before.has(l));
+    expect(fresh).toHaveLength(1);
   });
 });
 

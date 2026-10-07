@@ -21,7 +21,10 @@ import { ShipVirtualWindow } from '@ship-ui/core/ship-virtual-scroll';
 import {
   CodeDocument,
   createDocument,
+  getLine,
+  getLines,
   getText,
+  lineCount,
 } from './core/document';
 import { FlatChange, FlatPos, indexFor } from './core/line-index';
 import { applyFlatChangesBatched } from './core/flat-edit';
@@ -217,7 +220,7 @@ export class ShipCode implements ControlValueAccessor {
   onChange: (value: string) => void = () => {};
   onTouched: () => void = () => {};
 
-  readonly lineCount = computed(() => this.doc().lines.length);
+  readonly lineCount = computed(() => lineCount(this.doc()));
 
   readonly #virtualOn = computed(() => {
     const mode = this.virtualization();
@@ -241,12 +244,13 @@ export class ShipCode implements ControlValueAccessor {
   readonly visibleLines = computed(() => {
     this.#tokensVersion();
     const theme = this.resolvedTheme();
-    const lines = this.doc().lines;
     const from = this.winStart();
-    const to = this.winEnd();
+    // Only the mounted window is read: one tree walk for the visible lines, never the whole document.
+    const lines = getLines(this.doc(), from, this.winEnd());
     const out: { index: number; html: SafeHtml }[] = [];
-    for (let i = from; i < to && i < lines.length; i++) {
-      out.push({ index: i, html: this.#sanitizer.bypassSecurityTrustHtml(this.#lineHtml(i, lines[i].text, theme)) });
+    for (let k = 0; k < lines.length; k++) {
+      const i = from + k;
+      out.push({ index: i, html: this.#sanitizer.bypassSecurityTrustHtml(this.#lineHtml(i, lines[k]!, theme)) });
     }
     return out;
   });
@@ -381,7 +385,7 @@ export class ShipCode implements ControlValueAccessor {
   /** Per-line selection rectangles for every mounted cursor, window-clipped. */
   readonly selectionRects = computed(() => {
     const index = indexFor(this.doc());
-    const lines = this.doc().lines;
+    const doc = this.doc();
     const charW = this.charWidth();
     const lineH = this.lineHeight();
     const winStart = this.winStart();
@@ -399,7 +403,7 @@ export class ShipCode implements ControlValueAccessor {
         // that line — skip it, or the newline stub paints a phantom sliver.
         if (line === end.line && line !== start.line && end.column === 0) continue;
         const colFrom = line === start.line ? start.column : 0;
-        const colTo = line === end.line ? end.column : lines[line].text.length;
+        const colTo = line === end.line ? end.column : getLine(doc, line).length;
         // A fully swept line paints a newline stub so empty lines stay visible.
         const width = Math.max((colTo - colFrom) * charW, colTo === colFrom ? charW * 0.5 : 0);
         rects.push({ top: this.#win.heights.prefixHeight(line), left: colFrom * charW, width, height: lineH });
@@ -578,7 +582,7 @@ export class ShipCode implements ControlValueAccessor {
     this.doc.set(doc);
     this.#history = [];
     this.#redoStack = [];
-    this.#win.reset(doc.lines.length, this.lineHeight());
+    this.#win.reset(lineCount(doc), this.lineHeight());
     const size = indexFor(doc).size;
     const range = primaryFlat(this.sel());
     this.sel.set(flatCaret(Math.min(range.head, size)));
@@ -970,7 +974,7 @@ export class ShipCode implements ControlValueAccessor {
       const start = index.startOf(line);
       if (direction === 1) changes.push({ from: start, to: start, insert: '  ' });
       else {
-        const text = this.doc().lines[line].text;
+        const text = getLine(this.doc(), line);
         const strip = Math.min(2, text.length - text.trimStart().length);
         if (strip > 0) changes.push({ from: start, to: start + strip, insert: '' });
       }
@@ -1009,7 +1013,7 @@ export class ShipCode implements ControlValueAccessor {
     const changes: FlatChange[] = [];
     for (const line of this.#touchedLines()) {
       const at = index.endOf(line);
-      changes.push({ from: at, to: at, insert: '\n' + this.doc().lines[line].text });
+      changes.push({ from: at, to: at, insert: '\n' + getLine(this.doc(), line) });
     }
     if (!changes.length) return;
     changes.sort((a, b) => b.from - a.from);

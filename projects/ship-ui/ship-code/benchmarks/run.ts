@@ -22,7 +22,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { createDocument, getText, insertText, deleteRange, applyTransaction, type CodeDocument } from '../core/document';
+import { createDocument, getLines, getText, insertText, deleteRange, applyTransaction, type CodeDocument } from '../core/document';
 import { caret } from '../core/selection';
 import { moveCaretRight, moveCaretDown, moveWordRight } from '../core/caret-motion';
 import { applyFlatChangesBatched } from '../core/flat-edit';
@@ -311,8 +311,8 @@ function cases(): Case[] {
   per((n, doc) => ({
     name: `getText uncached (${n} lines)`,
     category: 'document.getText',
-    // getText caches per document; a fresh document object with the same lines measures the join itself.
-    setup: () => () => getText({ lines: doc.lines }),
+    // getText caches per document; reading and joining the lines measures the serialization itself.
+    setup: () => () => getLines(doc).join('\n'),
   }));
   per((n, doc) => {
     const changes = Array.from({ length: 10 }, (_, i) => ({

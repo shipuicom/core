@@ -96,6 +96,13 @@ The `sh-popover` anchor-positioning `@position-try` names are prefixed (`--top-c
 - `$shipPalettes: (brand: (200, 80%, 45%))` adds a palette (`--brand-1..12`, `-g2`, `-g3`, `-c8`) and a `.brand` class on every skin;
   `ShipColor` accepts any palette name. `$shipPaletteSteps` limits the emitted steps.
 
+**sh-code (`@ship-ui/core/ship-code`, first published entry point)**
+- `CodeDocument` is opaque, backed by a persistent line tree. Read it with `getLine`, `getLines`, `lineCount`,
+  `lineStart`, `lineAtOffset` and `docSize`, and edit it with `spliceLines`, `replaceRange`, `insertText` or the flat
+  change helpers. `doc.lines` and the `CodeLine` type are gone.
+- `value` / the form control now update once typing pauses, on blur, and on `flushValue()`, not on every keystroke.
+  Use `valueSync="immediate"` for the old behaviour, or `"blur"` to update only on blur.
+
 **Other**
 - Selected `sh-chip`s in the `simple` and `outlined` variants (with or without a colour) now fill with the selection colour; before, the
   variant background won and the text was unreadable.

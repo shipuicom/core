@@ -17,7 +17,7 @@ import {
   selectLine,
   selectWord,
 } from './caret-motion';
-import { CodeDocument } from './document';
+import { CodeDocument, getLine } from './document';
 import { FlatPos, indexFor } from './line-index';
 
 /**
@@ -67,13 +67,13 @@ const isLowSurrogate = (code: number) => code >= 0xdc00 && code <= 0xdfff;
  */
 export function flatStepRight(doc: CodeDocument, pos: FlatPos): number {
   const point = indexFor(doc).pointAt(pos);
-  const text = doc.lines[point.line].text;
+  const text = getLine(doc, point.line);
   return isHighSurrogate(text.charCodeAt(point.column)) && isLowSurrogate(text.charCodeAt(point.column + 1)) ? 2 : 1;
 }
 
 export function flatStepLeft(doc: CodeDocument, pos: FlatPos): number {
   const point = indexFor(doc).pointAt(pos);
-  const text = doc.lines[point.line].text;
+  const text = getLine(doc, point.line);
   return point.column >= 2 && isLowSurrogate(text.charCodeAt(point.column - 1)) && isHighSurrogate(text.charCodeAt(point.column - 2))
     ? 2
     : 1;

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createDocument, getText } from './document';
+import { createDocument, getLine, getText, lineCount as countLines } from './document';
+import { leafOf } from './line-tree';
+import { treeOf } from './document-internal';
 import { applyFlatChanges, applyFlatChangesBatched } from './flat-edit';
 import { FlatChange, indexFor } from './line-index';
 
@@ -69,18 +71,18 @@ describe('applyFlatChangesBatched', () => {
     expect(result.inverse).toEqual([]);
   });
 
-  it('keeps untouched lines by identity, so downstream skip checks still work', () => {
-    const d = doc('l0\nl1\nl2\nl3\nl4\nl5');
+  it('shares the untouched part of the document with the previous version', () => {
+    const d = doc(Array.from({ length: 500 }, (_, i) => `l${i}`).join('\n'));
     const index = indexFor(d);
     const changes = descending([
       { from: index.startOf(1), to: index.startOf(1), insert: 'x' },
-      { from: index.startOf(4), to: index.startOf(4), insert: 'x' },
+      { from: index.startOf(400), to: index.startOf(400), insert: 'x' },
     ]);
     const next = applyFlatChangesBatched(d, changes).doc;
-    expect(next.lines[0]).toBe(d.lines[0]);
-    expect(next.lines[2]).toBe(d.lines[2]);
-    expect(next.lines[3]).toBe(d.lines[3]);
-    expect(next.lines[1]).not.toBe(d.lines[1]);
+    expect(getLine(next, 1)).toBe('xl1');
+    expect(getLine(next, 400)).toBe('xl400');
+    expect(leafOf(treeOf(next), 200)).toBe(leafOf(treeOf(d), 200));
+    expect(leafOf(treeOf(next), 1)).not.toBe(leafOf(treeOf(d), 1));
   });
 });
 
@@ -154,9 +156,9 @@ describe('applyFlatChangesBatched at scale', () => {
       }))
     );
     const next = applyFlatChangesBatched(d, changes).doc;
-    expect(next.lines).toHaveLength(lineCount);
-    expect(next.lines[0].text).toBe('# line 0');
-    expect(next.lines[lineCount - 1].text).toBe(`# line ${lineCount - 1}`);
+    expect(countLines(next)).toBe(lineCount);
+    expect(getLine(next, 0)).toBe('# line 0');
+    expect(getLine(next, lineCount - 1)).toBe(`# line ${lineCount - 1}`);
   });
 
   it('round-trips a large batch through its inverse', () => {
@@ -172,7 +174,7 @@ describe('applyFlatChangesBatched at scale', () => {
       }))
     );
     const { doc: next, inverse } = applyFlatChangesBatched(d, changes);
-    expect(next.lines[7].text).toBe('ROW 7');
+    expect(getLine(next, 7)).toBe('ROW 7');
     // Undone through the batched path too — which is what the component does,
     // and the only path that stays linear at this size.
     expect(getText(applyFlatChangesBatched(next, inverse).doc)).toBe(text);

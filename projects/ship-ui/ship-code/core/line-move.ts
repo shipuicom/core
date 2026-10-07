@@ -14,7 +14,7 @@
 // of interacting edits, and makes "the group at the document edge stays put
 // while the others move" fall out for free.
 
-import { CodeDocument } from './document';
+import { CodeDocument, getLines } from './document';
 import { FlatChange, FlatPos, indexFor } from './line-index';
 import { FlatRange, FlatSelection, flatOrdered, primaryFlat } from './flat-motion';
 import { normalizeSelection } from './flat-multi';
@@ -121,8 +121,10 @@ export function moveLines(doc: CodeDocument, selection: FlatSelection, direction
   while (lo < lineCount && order[lo] === lo) lo++;
   let hi = lineCount - 1;
   while (hi > lo && order[hi] === hi) hi--;
+  // One read of every line: the permutation below needs each line's text or length once.
+  const all = getLines(doc);
   const texts: string[] = [];
-  for (let i = lo; i <= hi; i++) texts.push(doc.lines[order[i]].text);
+  for (let i = lo; i <= hi; i++) texts.push(all[order[i]]!);
 
   // Cursors are remapped through the permutation rather than shifted by a
   // pixel-count, which is what keeps them attached to their own text when
@@ -131,7 +133,7 @@ export function moveLines(doc: CodeDocument, selection: FlatSelection, direction
   let at = 0;
   for (let i = 0; i < lineCount; i++) {
     newStart[i] = at;
-    at += doc.lines[order[i]].text.length + 1;
+    at += all[order[i]]!.length + 1;
   }
   const remap = (pos: FlatPos, isRangeEnd: boolean): FlatPos => {
     const point = index.pointAt(pos);
@@ -141,7 +143,7 @@ export function moveLines(doc: CodeDocument, selection: FlatSelection, direction
     // excluded line went. (Clamped: the selected line may now be the last.)
     if (isRangeEnd && point.column === 0 && point.line > 0) {
       const prev = point.line - 1;
-      return Math.min(newStart[posOf[prev]] + doc.lines[prev].text.length + 1, index.size);
+      return Math.min(newStart[posOf[prev]] + all[prev]!.length + 1, index.size);
     }
     return newStart[posOf[point.line]] + point.column;
   };
