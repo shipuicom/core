@@ -131,6 +131,12 @@ export class ShipCode implements ControlValueAccessor {
 
   /** Two-way bound document text. */
   value = model<string | null>(null);
+  /**
+   * When an edit reaches `value` / the form control. Serializing the document is O(n) (about 1 ms at 50k lines),
+   * so by default it happens once the user pauses typing (`'idle'`), and always on blur, on `flushValue()` and
+   * before the editor is destroyed. `'immediate'` serializes on every edit; `'blur'` only on blur and flush.
+   */
+  valueSync = input<'idle' | 'immediate' | 'blur'>('idle');
   /** When `true`, the editor rejects all input. */
   readonly = input(false);
   /** Keymap preset name or a full custom keymap. */
@@ -201,8 +207,9 @@ export class ShipCode implements ControlValueAccessor {
    */
   #echoValue: unknown = NO_ECHO;
 
-  /** True while the document change being flushed came from an external write. */
-  #externalApply = false;
+  /** The document `value` last reflected (loaded from it or serialized into it); any other doc is unsent. */
+  #syncedDoc: CodeDocument | null = null;
+  #pendingSync: { cancel: () => void } | null = null;
   #dragSelecting = false;
   #destroyRef = inject(DestroyRef);
   #sanitizer = inject(DomSanitizer);
@@ -408,41 +415,18 @@ export class ShipCode implements ControlValueAccessor {
       const isEcho = externalVal === this.#echoValue;
       this.#echoValue = NO_ECHO;
       if (isEcho) return;
-      this.#externalApply = true;
-      untracked(() => {
-        const doc = createDocument(externalVal ?? '');
-        this.doc.set(doc);
-        this.#history = [];
-        this.#redoStack = [];
-        this.#win.reset(doc.lines.length, this.lineHeight());
-        const size = indexFor(doc).size;
-        const range = primaryFlat(this.sel());
-        this.sel.set(flatCaret(Math.min(range.head, size)));
-        // A wholesale document swap starts a fresh token cache.
-        const tokenizer = this.#tokenizer();
-        this.#incremental = tokenizer ? new IncrementalTokenizer(tokenizer) : null;
-        this.#tokensVersion.update((v) => v + 1);
-        this.#updateWindow();
-      });
+      untracked(() => this.#loadExternal(externalVal));
     });
 
-    // Document → value + window bookkeeping.
+    // Document → value (coalesced, see `valueSync`) + window bookkeeping.
     effect(() => {
       const doc = this.doc();
       untracked(() => {
-        const serialized = getText(doc);
-        if (this.value() !== serialized) {
-          this.#echoValue = serialized;
-          this.value.set(serialized);
-          // Normalizing an external write is not a user change: a
-          // programmatic setValue must not mark the control dirty or emit
-          // valueChanges (the CVA contract). Only user-originated edits do.
-          if (!this.#externalApply) this.onChange(serialized);
-        }
-        this.#externalApply = false;
+        if (doc !== this.#syncedDoc) this.#scheduleSync();
         this.#updateWindow();
       });
     });
+    this.#destroyRef.onDestroy(() => this.flushValue());
 
     // Keep the caret's line inside the window, and restart the blink so the
     // carets are solid the instant they move — the phase the whole layer
@@ -575,11 +559,81 @@ export class ShipCode implements ControlValueAccessor {
   }
 
   // -------------------------------------------------------------------------
+  // Value sync
+  // -------------------------------------------------------------------------
+
+  /** Replace the document with an externally written value (two-way binding or the form control). */
+  #loadExternal(externalVal: string | null) {
+    // An external write replaces the document, so an edit still waiting to be serialized is dropped.
+    this.#cancelPendingSync();
+    const doc = createDocument(externalVal ?? '');
+    this.#syncedDoc = doc;
+    // Normalizing an external write (line endings) is reflected back without onChange: a programmatic
+    // setValue must not mark the control dirty or emit valueChanges (the CVA contract).
+    const normalized = getText(doc);
+    if (externalVal !== null && normalized !== externalVal) {
+      this.#echoValue = normalized;
+      this.value.set(normalized);
+    }
+    this.doc.set(doc);
+    this.#history = [];
+    this.#redoStack = [];
+    this.#win.reset(doc.lines.length, this.lineHeight());
+    const size = indexFor(doc).size;
+    const range = primaryFlat(this.sel());
+    this.sel.set(flatCaret(Math.min(range.head, size)));
+    // A wholesale document swap starts a fresh token cache.
+    const tokenizer = this.#tokenizer();
+    this.#incremental = tokenizer ? new IncrementalTokenizer(tokenizer) : null;
+    this.#tokensVersion.update((v) => v + 1);
+    this.#updateWindow();
+  }
+
+  /** Push any unsent edit into `value` and the form control now. Cheap when nothing changed. */
+  flushValue(): void {
+    this.#cancelPendingSync();
+    const doc = this.doc();
+    if (doc === this.#syncedDoc) return;
+    this.#syncedDoc = doc;
+    const serialized = getText(doc);
+    if (this.value() === serialized) return;
+    this.#echoValue = serialized;
+    this.value.set(serialized);
+    this.onChange(serialized);
+  }
+
+  #scheduleSync() {
+    const mode = this.valueSync();
+    if (mode === 'immediate' || typeof window === 'undefined') return this.flushValue();
+    if (mode === 'blur' || this.#pendingSync) return;
+    const run = () => {
+      this.#pendingSync = null;
+      this.flushValue();
+    };
+    // Idle: after the browser has painted and the user paused; the timeout bounds the delay while typing nonstop.
+    if (typeof requestIdleCallback === 'function') {
+      const id = requestIdleCallback(run, { timeout: 300 });
+      this.#pendingSync = { cancel: () => cancelIdleCallback(id) };
+    } else {
+      const id = setTimeout(run, 100);
+      this.#pendingSync = { cancel: () => clearTimeout(id) };
+    }
+  }
+
+  #cancelPendingSync() {
+    this.#pendingSync?.cancel();
+    this.#pendingSync = null;
+  }
+
+  // -------------------------------------------------------------------------
   // ControlValueAccessor
   // -------------------------------------------------------------------------
 
   writeValue(obj: string | null): void {
     if (obj !== this.value()) this.value.set(obj);
+    // The same string as the last synced value does not notify the signal, but an unsent edit means the document
+    // differs from it: an external write wins over the edit, so load it directly.
+    else if (this.doc() !== this.#syncedDoc) this.#loadExternal(obj);
   }
   registerOnChange(fn: (value: string) => void): void {
     this.onChange = fn;
@@ -1120,6 +1174,7 @@ export class ShipCode implements ControlValueAccessor {
   }
   onBlur() {
     this.focused.set(false);
+    this.flushValue();
     this.onTouched();
   }
 
