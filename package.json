@@ -45,6 +45,7 @@
     "test:editor": "ng test ship-ui --watch=false --include='**/ship-editor/**/*.spec.ts'",
     "test:e2e:editor": "playwright test -c scripts/editor-e2e/playwright.config.ts",
     "bench:video": "bun projects/ship-ui/ship-video/benchmarks/run.ts",
+    "bench:code": "esbuild projects/ship-ui/ship-code/benchmarks/run.ts --bundle --platform=node --format=esm --log-level=warning --outfile=node_modules/.cache/ship-code-bench.mjs && node --expose-gc node_modules/.cache/ship-code-bench.mjs",
     "lint:structure": "bun scripts/lint-structure.ts",
     "lint:migration": "bun scripts/check-migration-rules.ts",
     "snap:baseline": "bun scripts/visual-snapshots/snap.ts baseline",

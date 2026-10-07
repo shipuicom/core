@@ -3,6 +3,7 @@
 // ---------------------------------------------------------------------------
 
 import { CaretPosition } from './selection';
+import { cachedText } from './text-cache';
 
 /**
  * A single line in the document.
@@ -60,17 +61,8 @@ export function lineCount(doc: CodeDocument): number {
 }
 
 /** Reconstruct the full text from the document. */
-// Documents are immutable, so a document's text never changes: cache it per document identity. The editor
-// serializes once per pause in typing, and commands that search the text (add next occurrence) reuse that string.
-const textCache = new WeakMap<CodeDocument, string>();
-
 export function getText(doc: CodeDocument): string {
-  let text = textCache.get(doc);
-  if (text === undefined) {
-    text = doc.lines.map((l) => l.text).join('\n');
-    textCache.set(doc, text);
-  }
-  return text;
+  return cachedText(doc, () => doc.lines.map((l) => l.text).join('\n'));
 }
 
 /**

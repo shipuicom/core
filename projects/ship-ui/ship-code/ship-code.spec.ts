@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ShipCode } from './ship-code';
+import { textSerializations } from './core/text-cache';
 
 @Component({
   imports: [ShipCode],
@@ -50,6 +51,23 @@ describe('ShipCode value sync', () => {
     TestBed.tick();
     expect(host.changes).toEqual(['xyzab']);
     expect(host.source()).toBe('xyzab');
+  });
+
+  it('never serializes the document while editing or rendering', () => {
+    vi.useFakeTimers();
+    const { code, fixture } = setup(BindingHost);
+    const before = textSerializations();
+    for (const ch of 'hello world') typeAtCaret(code, ch);
+    code.onKeyDown(new KeyboardEvent('keydown', { key: 'Backspace' }));
+    code.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter' }));
+    TestBed.tick();
+    fixture.detectChanges();
+    expect(textSerializations()).toBe(before);
+
+    // The idle flush serializes exactly once for all of it.
+    vi.runAllTimers();
+    TestBed.tick();
+    expect(textSerializations()).toBe(before + 1);
   });
 
   it('flushes an unsent edit on blur and on flushValue()', () => {
