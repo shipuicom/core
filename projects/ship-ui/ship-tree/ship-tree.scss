@@ -138,9 +138,11 @@ sh-tree {
 
     .node-icon {
       color: var(--tree-ic);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      // Not a flex box: Safari measures a ligature icon's text as wider than its glyph inside flex and centres it out
+      // of view (the open folder came out clipped). A block with centred text renders the glyph in place.
+      display: inline-block;
+      text-align: center;
+      vertical-align: middle;
       width: var(--tree-indent-step);
 
       &.folder {
@@ -199,9 +201,9 @@ sh-tree {
       flex: 1;
 
       sh-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+        display: inline-block;
+        text-align: center;
+        vertical-align: middle;
         width: var(--tree-indent-step);
       }
     }

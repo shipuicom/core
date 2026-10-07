@@ -12,6 +12,9 @@ sh-icon {
   max-width: 1em;
   max-height: 1em;
   text-align: left;
+  // The icon is a ligature (`folder-open`) in a 1em box: a hyphen is a line-break opportunity, and Safari wraps
+  // before forming the ligature, drawing `folder` with `open` clipped on a hidden second line. Never wrap.
+  white-space: nowrap;
   overflow: hidden;
   display: inline-block;
   color: var(--icon-c);
