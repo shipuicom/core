@@ -3,8 +3,10 @@
  * Rewrites a consumer's templates and styles for a ShipUI release's renames.
  *
  *   ship-migrate --src ./src            # rewrite in place, print what changed
+ *   ship-migrate ./src                  # same: one positional argument is the source folder
  *   ship-migrate --src ./src --dry-run  # print only
  *   ship-migrate --src ./src --to 0.26  # a specific release (default: all known, in order)
+ *   ship-migrate --help                 # usage; any argument it does not know stops it before touching a file
  *
  * Rules live in ./migrations/<version>.ts so later releases append a file instead of forking this script.
  * Anything the script cannot decide (an ambiguous class name, a removed input inside a bound expression)
@@ -105,9 +107,11 @@ function blankHtml(text: string, singleQuotes: boolean): string {
       // of the file in a tag) is treated as a plain character rather than swallowing everything after it.
       const limit = mode === 'interp' ? (text.indexOf('}}', i) < 0 ? text.length : text.indexOf('}}', i)) : text.length;
       while (j < limit && text[j] !== c) j += text[j] === '\\' && mode === 'interp' ? 2 : 1;
-      // An attribute value that runs onto a line starting a new tag is an unclosed quote that found the next
-      // element's quote: real values do not do that, so read the quote as a plain character.
-      if (j >= limit || (mode === 'tag' && /\n\s*<[a-zA-Z\/]/.test(text.slice(i + 1, j)))) {
+      // A real attribute value's closing quote is followed by whitespace, `>`, `/` or the end. Anything else means
+      // the opening quote never closed and matched a quote further on (`title="oops>` … `class="x"`): read the
+      // opening quote as a plain character instead. Values may span lines and contain markup either way.
+      const after = text[j + 1];
+      if (j >= limit || (mode === 'tag' && after !== undefined && !/[\s>\/]/.test(after))) {
         i++;
         continue;
       }
@@ -263,7 +267,8 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
     // Class renames only on the listed tags: `class="a warning b"` and `[class.warning]="…"`.
     // `class=` with either quote; every token in the list is renamed, whitespace kept as written.
     // Quoted (`class="a warning"`, `class='a'`) or unquoted (`class=warning`, one token by definition).
-    const classAttr = /(\sclass=)(?:(["'])([^"']*)\2|([^\s"'=<>`]+))/g;
+    // An unquoted value ends at whitespace or `>`, and at the `/` of a self-closing `/>` (Angular's lexer agrees).
+    const classAttr = /(\sclass=)(?:(["'])([^"']*)\2|((?:[^\s"'=<>`\/]|\/(?!>))+))/g;
     const classList = (m: RegExpMatchArray | string[]) => (m[3] ?? m[4] ?? '') as string;
     const renameTokens = (list: string, from: string, to: string) => list.replace(/[^\s]+/g, (token) => (token === from ? to : token));
     for (const { from, to, on } of rules.classes ?? []) {
@@ -395,15 +400,60 @@ function walk(dir: string, out: string[] = []): string[] {
   return out;
 }
 
+const USAGE = `Usage: ship-migrate [folder] [--src <folder>] [--dry-run] [--to <version>]
+
+Rewrites templates and styles under the folder (default: ./src) for ShipUI's renames, in place.
+  --dry-run       print what would change, write nothing
+  --to <version>  apply only that release's rules (known: ${MIGRATIONS.map((m) => m.version).join(', ')})
+  --help, -h      show this help
+
+Changes to make by hand are listed in node_modules/@ship-ui/core/MIGRATION.md.`;
+
+/** Strict argument parsing: the script rewrites files, so anything it does not understand stops it instead. */
+function parseArgs(argv: string[]): { help: true } | { help: false; src?: string; dryRun: boolean; to?: string } | { error: string } {
+  let src: string | undefined;
+  let to: string | undefined;
+  let dryRun = false;
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i]!;
+    const [flag, inline] = a.startsWith('--') && a.includes('=') ? [a.slice(0, a.indexOf('=')), a.slice(a.indexOf('=') + 1)] : [a, undefined];
+    const value = () => {
+      const v = inline ?? argv[++i];
+      if (v === undefined || v.startsWith('-')) throw new Error(`${flag} needs a value`);
+      return v;
+    };
+    try {
+      if (flag === '--help' || flag === '-h') return { help: true };
+      else if (flag === '--dry-run') dryRun = true;
+      else if (flag === '--src') src = value();
+      else if (flag === '--to') to = value();
+      else if (flag.startsWith('-')) return { error: `unknown option ${flag}` };
+      else if (src === undefined) src = flag;
+      else return { error: `unexpected argument ${flag} (the source folder is already ${src})` };
+    } catch (e) {
+      return { error: (e as Error).message };
+    }
+  }
+  return { help: false, src, dryRun, to };
+}
+
 export function main(argv: string[]) {
-  const arg = (name: string) => {
-    const i = argv.findIndex((a) => a === name || a.startsWith(name + '='));
-    if (i < 0) return undefined;
-    return argv[i].includes('=') ? argv[i].split('=')[1] : argv[i + 1];
-  };
-  const src = resolve(process.cwd(), arg('--src') ?? 'src');
-  const dryRun = argv.includes('--dry-run');
-  const to = arg('--to');
+  const parsed = parseArgs(argv);
+  if ('error' in parsed) {
+    console.error(`ship-migrate: ${parsed.error}\n\n${USAGE}`);
+    process.exit(2);
+  }
+  if (parsed.help) {
+    console.log(USAGE);
+    return;
+  }
+  const src = resolve(process.cwd(), parsed.src ?? 'src');
+  const dryRun = parsed.dryRun;
+  const to = parsed.to;
+  if (!existsSync(src) || !statSync(src).isDirectory()) {
+    console.error(`ship-migrate: no folder at ${src}. Pass the folder that holds your templates and styles: ship-migrate --src <folder>`);
+    process.exit(1);
+  }
   const selected = to ? MIGRATIONS.filter((m) => m.version.startsWith(to)) : MIGRATIONS;
   if (selected.length === 0) {
     console.error(`No migration for "${to}". Known: ${MIGRATIONS.map((m) => m.version).join(', ')}`);

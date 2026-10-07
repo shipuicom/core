@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { resolve } from 'node:path';
-import { describe, expect, it } from 'vitest';
-import { MIGRATIONS, migrateSource, projectChecks, styleFlags } from './ship-migrate';
+import { describe, expect, it, vi } from 'vitest';
+import { main, MIGRATIONS, migrateSource, projectChecks, styleFlags } from './ship-migrate';
 
 const v026 = MIGRATIONS.find((m) => m.version === '0.26.0')!;
 
@@ -201,6 +201,42 @@ describe('ship-migrate 0.26', () => {
     expect(migrateSource('<sh-form-field class=warning></sh-form-field>', '.html', v026).text).toBe('<sh-form-field class=warn></sh-form-field>');
     expect(migrateSource('<div class=warning></div>', '.html', v026).warnings).toHaveLength(1);
     expect(migrateSource('<sh-form-field class=warnings></sh-form-field>', '.html', v026).text).toBe('<sh-form-field class=warnings></sh-form-field>');
+  });
+
+  it('keeps attribute values that span lines and contain markup', () => {
+    const inner = migrateSource(`<sh-card [innerHTML]="'\n<b>x</b>'" color="primary"></sh-card>`, '.html', v026);
+    expect(inner.text).toBe(`<sh-card [innerHTML]="'\n<b>x</b>'"></sh-card>`);
+    const title = migrateSource(`<sh-card title="line1\n<em>hi</em>" color="primary"></sh-card>`, '.html', v026);
+    expect(title.text).toBe(`<sh-card title="line1\n<em>hi</em>"></sh-card>`);
+    const scoped = migrateSource(`<sh-select [innerHTML]="'\n<b>x</b>'" style="--miw: 1px"></sh-select>`, '.html', v026);
+    expect(scoped.text).toContain('--select-miw: 1px');
+    expect(scoped.warnings).toEqual([]);
+  });
+
+  it('ends an unquoted class value at a self-closing slash', () => {
+    expect(migrateSource('<sh-form-field class=warning/>', '.html', v026).text).toBe('<sh-form-field class=warn/>');
+    expect(migrateSource('<div class=warning/>', '.html', v026).warnings).toHaveLength(1);
+  });
+
+  it('prints usage for --help and refuses unknown arguments without touching a file', () => {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const exit = vi.spyOn(process, 'exit').mockImplementation(((code: number) => {
+      throw new Error(`exit ${code}`);
+    }) as never);
+    try {
+      main(['--help']);
+      expect(log.mock.calls[0]![0]).toContain('Usage: ship-migrate');
+      expect(() => main(['--nope'])).toThrow('exit 2');
+      expect(() => main(['--src'])).toThrow('exit 2');
+      expect(() => main(['a', 'b'])).toThrow('exit 2');
+      expect(() => main(['--src', '/definitely/not/a/folder'])).toThrow('exit 1');
+      expect(error.mock.calls.at(-1)![0]).toContain('no folder at');
+    } finally {
+      log.mockRestore();
+      error.mockRestore();
+      exit.mockRestore();
+    }
   });
 
   it('is idempotent', () => {
