@@ -13,6 +13,7 @@ import {
   signal,
   viewChild,
   ViewEncapsulation,
+  booleanAttribute,
 } from '@angular/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
@@ -204,7 +205,7 @@ export class ShipSpotlight {
   /** Placeholder text shown in the search field while it is empty. */
   placeholder = input<string>('Search actions, settings, or pages...');
   /** Disable the built-in fuzzy filtering and emit the raw query instead — bind `searchQuery` to filter items yourself (e.g. for a remote API). */
-  customFilter = input<boolean>(false);
+  customFilter = input(false, { transform: booleanAttribute });
   /** Two-way bound current search text. Read it to drive custom filtering; write it to preset or clear the query. */
   searchQuery = model<string>('');
 

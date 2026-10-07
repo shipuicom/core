@@ -6,6 +6,7 @@ import {
   input,
   numberAttribute,
   ViewEncapsulation,
+  isDevMode,
 } from '@angular/core';
 import { shipComponentClasses } from '@ship-ui/core';
 import { ShipColor, ShipLayoutRankingVariant } from '@ship-ui/core';
@@ -69,8 +70,15 @@ export class ShipLayoutRankingItem {
   /** The item's value; the bar is `value / max` of the parent list. */
   value = input(0, { transform: (v: unknown) => numberAttribute(v, 0) });
 
+  constructor() {
+    if (isDevMode() && !this.#ranking) {
+      console.warn('<sh-lo-ranking-item> belongs inside <sh-lo-ranking>: without the list there is no max, so the bar stays empty.');
+    }
+  }
+
   percent = computed(() => {
-    const max = this.#ranking?.max() || 1;
+    if (!this.#ranking) return 0;
+    const max = this.#ranking.max() || 1;
     return Math.max(0, Math.min(100, (this.value() / max) * 100));
   });
 }

@@ -10,7 +10,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { outputToObservable } from '@angular/core/rxjs-interop';
-import { shipComponentClasses, ShipColor } from '@ship-ui/core';
+import { shipComponentClasses, ShipColor, optionalBooleanAttribute } from '@ship-ui/core';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipVideo } from './ship-video';
 import { ShipVideoPlaylistItem, shipVideoToSourceArray } from './ship-video-types';
@@ -84,7 +84,7 @@ export class ShipVideoPlaylist {
   /** Color theme of active item accents (`ShipColor`). */
   color = input<ShipColor | null>(null);
   /** When `true`, renders with sharp (non-rounded) corners. */
-  sharp = input<boolean | undefined>(undefined);
+  sharp = input<boolean | undefined, unknown>(undefined, { transform: optionalBooleanAttribute });
 
   hostClasses = shipComponentClasses('videoPlaylist', {
     color: this.color,

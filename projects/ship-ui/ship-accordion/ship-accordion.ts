@@ -7,6 +7,7 @@ import {
   input,
   model,
   ViewEncapsulation,
+  booleanAttribute,
 } from '@angular/core';
 import { contentProjectionSignal, ShipAccordionVariant, shipComponentClasses, generateUniqueId } from '@ship-ui/core';
 
@@ -31,7 +32,7 @@ export class ShipAccordion {
   /** Two-way bound open item(s); a comma-separated list of item `value`s. */
   value = model<string | null>(null);
   /** Allow multiple items to be open at once instead of exclusive open. */
-  allowMultiple = input<boolean>(false);
+  allowMultiple = input(false, { transform: booleanAttribute });
   /** Visual variant (`type-b`). */
   variant = input<ShipAccordionVariant | null>(null);
   /** Size preset. */

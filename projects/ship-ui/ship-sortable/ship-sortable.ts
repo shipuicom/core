@@ -14,6 +14,7 @@ import {
   Renderer2,
   signal,
   WritableSignal,
+  booleanAttribute,
 } from '@angular/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { firstValueFrom, isObservable, Observable } from 'rxjs';
@@ -174,7 +175,7 @@ export class ShipSortable implements OnInit, OnDestroy {
    * Touch devices never fire the native drag events the mouse path relies on,
    * so this is the only route to reordering on a phone.
    */
-  touchEnabled = input<boolean>(false);
+  touchEnabled = input(false, { transform: booleanAttribute });
   /** How a touch drag is initiated: `'longpress'`, `'handle'`, or `'none'`. */
   touchActivation = input<'longpress' | 'handle' | 'none'>('longpress');
 

@@ -11,6 +11,7 @@ import {
   signal,
   untracked,
   ViewEncapsulation,
+  booleanAttribute,
 } from '@angular/core';
 import {
   classMutationSignal,
@@ -133,13 +134,13 @@ export class ShipColorPickerInput {
   /** Size preset. */
   size = input<ShipSize | null>(null);
   /** Render in a non-interactive read-only state. */
-  readonly = input<boolean>(false);
+  readonly = input(false, { transform: booleanAttribute });
   /**
    * Compact "swatch only" appearance: the field renders as a single color patch
    * that opens the picker popover when clicked. The text input is still present
    * (hidden) so `[(ngModel)]` value binding works exactly as in the full field.
    */
-  patch = input<boolean>(false);
+  patch = input(false, { transform: booleanAttribute });
 
   /** Emits the formatted color string when the picker popover closes. */
   closed = output<string>();
@@ -150,7 +151,7 @@ export class ShipColorPickerInput {
 
   isEyeDropperSupported = typeof window !== 'undefined' && 'EyeDropper' in window;
   /** Show the eyedropper button when the browser supports the EyeDropper API. */
-  showEyeDropper = input<boolean>(true);
+  showEyeDropper = input(true, { transform: booleanAttribute });
 
   internalHue = signal(0);
   internalAlpha = signal(1);

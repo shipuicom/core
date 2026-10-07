@@ -234,6 +234,7 @@ $shipDatepicker: true !default;
         padding: 0;
         background: transparent;
         font: var(--paragraph-30B);
+        line-height: var(--ff-lh);
         flex: 1 0;
         color: var(--base-8);
         margin: var(--ff-input-py) var(--ff-input-px);
@@ -271,10 +272,6 @@ $shipDatepicker: true !default;
             display: none;
           }
         }
-      }
-
-      input {
-        line-height: var(--ff-lh);
       }
     }
 

@@ -28,6 +28,14 @@ $shipLayoutStat: true !default;
     overflow: hidden;
     min-width: 0;
 
+    // No icon slotted: drop its column, otherwise the column gap indents the text by one gap.
+    &:not(:has(> .icon > *)) {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        'text'
+        'chart';
+    }
+
     > .icon {
       grid-area: icon;
       display: flex;

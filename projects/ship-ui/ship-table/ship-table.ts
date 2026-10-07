@@ -18,6 +18,7 @@ import {
   untracked,
   viewChild,
   ViewEncapsulation,
+  booleanAttribute,
 } from '@angular/core';
 import { observeChildren, shipComponentClasses, ShipTableVariant } from '@ship-ui/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
@@ -77,7 +78,7 @@ export class ShipResize {
   #sort = signal<ShipSort | null>(null);
 
   /** Whether the column header can be resized by dragging or keyboard shortcuts. */
-  resizable = input<boolean>(true);
+  resizable = input(true, { transform: booleanAttribute });
   /** Minimum width in pixels the column can be resized to. */
   minWidth = input<number>(50);
   /** Maximum width in pixels the column can be resized to, or `null` for no cap. */
@@ -292,7 +293,7 @@ export class ShipRowResize {
   #keybindings = inject(ShipA11yKeybindingsService);
 
   /** Whether the row can be resized by dragging or keyboard shortcuts. */
-  resizable = input<boolean>(true);
+  resizable = input(true, { transform: booleanAttribute });
   /** Minimum height in pixels the row can be resized to. */
   minHeight = input<number>(24);
   /** Maximum height in pixels the row can be resized to, or `null` for no cap. */
@@ -724,11 +725,11 @@ export class ShipTable {
   #keybindings = inject(ShipA11yKeybindingsService);
 
   /** Enables grid semantics and full keyboard cell navigation (`role="grid"`) instead of a plain table. */
-  grid = input<boolean>(false);
+  grid = input(false, { transform: booleanAttribute });
   role = computed(() => (this.grid() ? 'grid' : 'table'));
 
   /** Shows an indeterminate progress bar and marks the table as `aria-busy`. */
-  loading = input<boolean>(false);
+  loading = input(false, { transform: booleanAttribute });
   /** The row data rendered by the table. */
   data = input<any>([]);
   /** Emits the reordered data whenever the active sort changes. */
@@ -1367,7 +1368,7 @@ export class ShipTableContent {
   /** The row data rendered into table rows. */
   data = input<any[]>([]);
   /** When `true`, generated rows get the `shRowResize` drag/keyboard resize handle. Evaluated when rows are created. */
-  rowResize = input<boolean>(false);
+  rowResize = input(false, { transform: booleanAttribute });
 
   sortByColumn = this.#table.sortByColumn;
   grid = this.#table.grid;

@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { ApplicationRef, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
+import { computeAccessibleName } from '@ship-ui/core/ship-screenreader';
 import { ShipCodeInput } from './ship-code-input';
 import { ShipCodeInputDivider } from './ship-code-input-divider';
 import { ShipCodeInputGroup } from './ship-code-input-group';
@@ -152,5 +153,33 @@ describe('ShipCodeInput dividers', () => {
     expect(order(plain)).toEqual(['c', '/', 'c', '/', 'c']);
     // Dividers are not part of the code group.
     expect(grouped.querySelectorAll('.cells input').length).toBe(6);
+  });
+});
+
+@Component({
+  imports: [ShipCodeInput],
+  template: `<sh-code-input [length]="4"><label>Verification code</label><input type="text" /></sh-code-input>`,
+})
+class LabelledFormHost {}
+
+describe('ShipCodeInput accessible names', () => {
+  it('names the cell group and the projected form input after the slotted label', async () => {
+    const fixture = TestBed.createComponent(LabelledFormHost);
+    fixture.detectChanges();
+    // Slotted content is observed by a MutationObserver, which reports in a microtask after the first render.
+    await new Promise((resolve) => setTimeout(resolve));
+    TestBed.inject(ApplicationRef).tick();
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    const label = el.querySelector('label') as HTMLLabelElement;
+    const group = el.querySelector('.cells') as HTMLElement;
+    const formInput = el.querySelector('input:not(.cell)') as HTMLInputElement;
+
+    expect(label.id).toBeTruthy();
+    expect(group.getAttribute('role')).toBe('group');
+    expect(group.getAttribute('aria-labelledby')).toBe(label.id);
+    expect(formInput.getAttribute('aria-labelledby')).toBe(label.id);
+    expect(computeAccessibleName(formInput)).toBe('Verification code');
   });
 });

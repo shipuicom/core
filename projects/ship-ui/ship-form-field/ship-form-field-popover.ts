@@ -1,4 +1,4 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, inject, input, model, output, ViewEncapsulation } from '@angular/core';
+import { afterNextRender, booleanAttribute, ChangeDetectionStrategy, Component, ElementRef, inject, input, model, output, ViewEncapsulation } from '@angular/core';
 import { ShipPopover } from '@ship-ui/core/ship-popover';
 import { shipComponentClasses, generateUniqueId } from '@ship-ui/core';
 import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
@@ -69,7 +69,7 @@ export class ShipFormFieldPopover {
   /** Size of the form field. */
   size = input<ShipSize | null>(null);
   /** Renders the field in a read-only state. */
-  readonly = input<boolean>(false);
+  readonly = input(false, { transform: booleanAttribute });
 
   constructor() {
     // Same label/error/hint wiring as ShipFormField: associate the projected

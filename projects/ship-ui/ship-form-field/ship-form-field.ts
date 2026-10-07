@@ -1,4 +1,4 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, inject, input, ViewEncapsulation } from '@angular/core';
+import { afterNextRender, booleanAttribute, ChangeDetectionStrategy, Component, ElementRef, inject, input, ViewEncapsulation } from '@angular/core';
 import { shipComponentClasses, generateUniqueId } from '@ship-ui/core';
 import { ShipColor, ShipFormFieldVariant, ShipSize } from '@ship-ui/core';
 
@@ -53,7 +53,7 @@ export class ShipFormField {
   /** Size of the form field. */
   size = input<ShipSize | null>(null);
   /** Renders the field in a read-only state. */
-  readonly = input<boolean>(false);
+  readonly = input(false, { transform: booleanAttribute });
 
   hostClasses = shipComponentClasses('formField', {
     color: this.color,

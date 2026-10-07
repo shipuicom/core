@@ -8,6 +8,7 @@ import {
   output,
   PLATFORM_ID,
   Renderer2,
+  booleanAttribute,
 } from '@angular/core';
 import { ShipA11yKeybindingsService } from './ship-a11y-keybindings.service';
 
@@ -33,10 +34,10 @@ export class ShipA11yKeybindingsDirective {
   mode = input<'global' | 'local'>('local');
 
   /** Call `preventDefault()` on the keyboard event when the shortcut matches. */
-  preventDefault = input<boolean>(true);
+  preventDefault = input(true, { transform: booleanAttribute });
 
   /** Call `stopPropagation()` on the keyboard event when the shortcut matches. */
-  stopPropagation = input<boolean>(true);
+  stopPropagation = input(true, { transform: booleanAttribute });
 
   /** Emit the originating `KeyboardEvent` when the bound shortcut is triggered. */
   triggered = output<KeyboardEvent>();

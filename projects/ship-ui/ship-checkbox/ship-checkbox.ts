@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, effect, ElementRef, inject, input, model, viewChild, ViewEncapsulation } from '@angular/core';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { classMutationSignal, generateUniqueId } from '@ship-ui/core';
@@ -84,11 +84,11 @@ export class ShipCheckbox {
   /** Visual variant of the checkbox sheet. */
   variant = input<ShipSheetVariant | null>(null);
   /** Render in a non-interactive read-only state. */
-  readonly = input<boolean>(false);
+  readonly = input(false, { transform: booleanAttribute });
   /** Disable interaction. */
-  disabled = input<boolean>(false);
+  disabled = input(false, { transform: booleanAttribute });
   /** Suppress the internal `<input>` and expose the host element itself as the ARIA checkbox. */
-  noInternalInput = input<boolean>(false);
+  noInternalInput = input(false, { transform: booleanAttribute });
 
   onInternalInputChange(event: Event) {
     if (this.disabled()) return;

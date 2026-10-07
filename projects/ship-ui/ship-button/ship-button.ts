@@ -23,7 +23,7 @@ export class ShipButton {
   /** Size preset (`small`, `xsmall`, or default). */
   size = input<ShipButtonSize | null>(null);
   /** Render in a non-interactive read-only state. */
-  readonly = input<boolean>(false);
+  readonly = input(false, { transform: booleanAttribute });
   /** Remove the background (adds the `no-bg` class). */
   noBg = input<boolean, boolean | string>(false, { transform: booleanAttribute });
 

@@ -1,5 +1,5 @@
 import { isPlatformBrowser, JsonPipe } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, ElementRef, inject, input, model, OnDestroy, PLATFORM_ID, signal, viewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, booleanAttribute, ChangeDetectionStrategy, Component, computed, DOCUMENT, effect, ElementRef, inject, input, model, OnDestroy, PLATFORM_ID, signal, viewChild, ViewEncapsulation } from '@angular/core';
 import { ShipButton } from '@ship-ui/core/ship-button';
 import { ShipCard } from '@ship-ui/core/ship-card';
 import { ShipIcon } from '@ship-ui/core/ship-icon';
@@ -197,13 +197,13 @@ export class ShipBlueprint implements AfterViewInit, OnDestroy {
   lightMode = computed(() => this.#htmlClass().includes('light'));
 
   /** De-duplicate node and port ids on init instead of surfacing a validation error. */
-  forceUnique = input<boolean>(true);
+  forceUnique = input(true, { transform: booleanAttribute });
   /** Run the auto-layout algorithm once after the view initialises. */
-  autoLayout = input<boolean>(false);
+  autoLayout = input(false, { transform: booleanAttribute });
   /** Spacing in pixels of the background grid. */
   gridSize = input(20);
   /** Snap dragged nodes to the grid (also forced while holding Shift). */
-  snapToGrid = input<boolean>(true);
+  snapToGrid = input(true, { transform: booleanAttribute });
   /** Grid line/dot color as a `[light, dark]` pair, chosen by the document theme. */
   gridColor = input<[string, string]>(['#d8d8d8', '#2c2c2c']);
 

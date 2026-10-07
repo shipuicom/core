@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ComponentRef, computed, Directive, DOCUMENT, effect, ElementRef, EnvironmentInjector, inject, input, OnDestroy, Renderer2, signal, TemplateRef, untracked, ViewContainerRef, ViewEncapsulation } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, ComponentRef, computed, Directive, DOCUMENT, effect, ElementRef, EnvironmentInjector, inject, input, OnDestroy, Renderer2, signal, TemplateRef, untracked, ViewContainerRef, ViewEncapsulation } from '@angular/core';
 import { generateUniqueId } from '@ship-ui/core';
 
 type Timeout = ReturnType<typeof setTimeout>;
@@ -33,7 +33,7 @@ export class ShipTooltipWrapper {
   /** Reference to the anchor element the tooltip is positioned against. */
   anchorEl = input.required<ElementRef<HTMLElement>>();
   /** Whether the tooltip is currently shown. */
-  isOpen = input<boolean>(false);
+  isOpen = input(false, { transform: booleanAttribute });
   /** Content to render; a plain string or a `TemplateRef` for custom markup. */
   content = input<string | TemplateRef<any> | null | undefined>();
   /** Callback invoked to dismiss the tooltip, exposed to template content via context. */
