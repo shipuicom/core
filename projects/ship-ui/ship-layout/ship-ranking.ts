@@ -56,7 +56,7 @@ export class ShipLayoutRanking {
       <div class="label"><ng-content /></div>
       <div class="detail"><ng-content select="[detail]" /></div>
     </div>
-    <div class="bar" [style.--bar-pct]="percent()"></div>
+    <div class="bar"></div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {

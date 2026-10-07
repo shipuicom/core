@@ -43,6 +43,24 @@ describe('ship-migrate 0.26', () => {
     expect(r.warnings[0].line).toBe(2);
   });
 
+  it('renames every token in the class list, with either quote style', () => {
+    expect(migrateSource('<sh-form-field class="warning warning">', '.html', v026).text).toBe('<sh-form-field class="warn warn">');
+    expect(migrateSource("<sh-form-field class='x warning'>", '.html', v026).text).toBe("<sh-form-field class='x warn'>");
+    expect(migrateSource('<sh-form-field class="warnings warning-x">', '.html', v026).text).toBe('<sh-form-field class="warnings warning-x">');
+    expect(migrateSource("<div class='warning'>", '.html', v026).warnings).toHaveLength(1);
+  });
+
+  it('does not read `//` as a comment in HTML or CSS, nor inside strings and urls', () => {
+    const html = '<sh-form-field label="a // b">\n<div class="warning">x</div>\n<sh-card title="see // note">\n<my-el color="red">';
+    const r = migrateSource(html, '.html', v026);
+    expect(r.text).toBe(html);
+    expect(r.changes).toEqual([]);
+    expect(migrateSource('<!-- <sh-select> --><div [style.--miw]="x">', '.html', v026).text).toBe('<!-- <sh-select> --><div [style.--miw]="x">');
+    expect(migrateSource('sh-select { background: url(//x); }\n.other { --miw: 1px; }', '.scss', v026).text).toBe('sh-select { background: url(//x); }\n.other { --miw: 1px; }');
+    expect(migrateSource("sh-select { content: '//'; }\n.other { --miw: 1px; }", '.scss', v026).text).toBe("sh-select { content: '//'; }\n.other { --miw: 1px; }");
+    expect(migrateSource('sh-select { } // comment\n.other { --miw: 1px; }', '.css', v026).text).toBe('sh-select { } // comment\n.other { --miw: 1px; }');
+  });
+
   it('renames the alert container selector', () => {
     const r = migrateSource('<ship-alert-container></ship-alert-container>', '.html', v026);
     expect(r.text).toBe('<sh-alert-container></sh-alert-container>');

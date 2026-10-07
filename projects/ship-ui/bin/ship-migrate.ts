@@ -39,17 +39,26 @@ export interface FileResult {
 const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const lineOf = (text: string, index: number) => text.slice(0, index).split('\n').length;
 
+const LINE_COMMENT_EXT = new Set(['.ts', '.scss', '.sass', '.less']);
+
 /**
  * The same text with comments and string contents replaced by spaces (length preserved), so that braces, `>` and
- * tag names inside them cannot confuse the scope checks below. `//` after `:` (a URL) is not a comment.
+ * tag names inside them cannot confuse the scope checks below. One pass, leftmost token wins, so a `//` inside a
+ * string is part of the string. `//` is a comment only where the language has line comments (not HTML or CSS),
+ * and not after `:` or `(` (a URL). A template literal in `.ts` is blanked with the HTML rules so its tags stay visible.
  */
-function blank(text: string, { singleQuotes = true } = {}): string {
+function blank(text: string, ext: string, { singleQuotes = true } = {}): string {
   const pad = (m: string) => m.replace(/[^\n]/g, ' ');
-  const strings = singleQuotes ? /'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"/g : /"(?:[^"\\\n]|\\.)*"/g;
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, pad)
-    .replace(/(?<!:)\/\/[^\n]*/g, pad)
-    .replace(strings, (m) => m[0] + pad(m.slice(1, -1)) + m[0]);
+  const alts = ['\\/\\*[\\s\\S]*?\\*\\/', '"(?:[^"\\\\\\n]|\\\\.)*"'];
+  if (singleQuotes) alts.push("'(?:[^'\\\\\\n]|\\\\.)*'");
+  if (ext === '.html') alts.push('<!--[\\s\\S]*?-->');
+  if (LINE_COMMENT_EXT.has(ext)) alts.push('(?<![:(])\\/\\/[^\\n]*');
+  if (ext === '.ts') alts.push('`(?:[^`\\\\]|\\\\.)*`');
+  return text.replace(new RegExp(alts.join('|'), 'g'), (m) => {
+    if (m[0] === '`') return '`' + blank(m.slice(1, -1), '.html', { singleQuotes }) + '`';
+    if (m[0] === '/' || m[0] === '<') return pad(m);
+    return m[0] + pad(m.slice(1, -1)) + m[0];
+  });
 }
 
 /** Selectors of every block enclosing `index` in a (blanked) stylesheet, outermost last, joined with spaces. */
@@ -131,7 +140,7 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
     if (!re.test(out)) continue;
     re.lastIndex = 0;
     const src = out;
-    const blanked = blank(src);
+    const blanked = blank(src, ext);
     out = src.replace(re, (match, offset: number) => {
       if (requires && !targets(blanked, src, offset, requires, isStyle, ext)) {
         warnings.push({ line: lineOf(src, offset), rule: 'css-var', detail: `${from} → ${to} only where it targets ${requires}; this one is not inside a ${requires} rule or tag, left as is` });
@@ -155,7 +164,7 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
       if (!re.test(out)) continue;
       re.lastIndex = 0;
       const src = out;
-      const blanked = blank(src);
+      const blanked = blank(src, ext);
       out = src.replace(re, (match, offset: number) => {
         if (blanked.slice(offset, offset + match.length) !== match || !inSelector(blanked, offset, match.length)) return match;
         changes.push({ line: lineOf(src, offset), rule: 'selector', detail: `${from} → ${to}` });
@@ -173,7 +182,7 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
     // rewrite itself runs on the raw tag. In .ts the (often single-quoted) template literal must stay visible.
     const replaceOpenTags = (re: RegExp, fn: (tag: string, offset: number) => string) => {
       const src = out;
-      const blanked = blank(src, { singleQuotes: ext !== '.ts' });
+      const blanked = blank(src, ext, { singleQuotes: ext !== '.ts' });
       let result = '';
       let last = 0;
       for (const m of blanked.matchAll(re)) {
@@ -185,17 +194,21 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
     };
 
     // Class renames only on the listed tags: `class="a warning b"` and `[class.warning]="…"`.
+    // `class=` with either quote; every token in the list is renamed, whitespace kept as written.
+    const classAttr = /(\sclass=)(["'])([^"']*)\2/g;
+    const renameTokens = (list: string, from: string, to: string) => list.replace(/[^\s]+/g, (token) => (token === from ? to : token));
     for (const { from, to, on } of rules.classes ?? []) {
       const tags = on.map(esc).join('|');
       replaceOpenTags(new RegExp(`<(?:${tags})(?![a-z0-9-])[^>]*>`, 'g'), (tag, offset) => {
         let next = tag;
-        next = next.replace(new RegExp(`(class="[^"]*?)(?<![\\w-])${esc(from)}(?![\\w-])`, 'g'), `$1${to}`);
+        next = next.replace(classAttr, (_m, lead, quote, list) => lead + quote + renameTokens(list, from, to) + quote);
         next = next.replace(new RegExp(`\\[class\\.${esc(from)}\\]`, 'g'), `[class.${to}]`);
         if (next !== tag) changes.push({ line: lineOf(out, offset), rule: 'class', detail: `.${from} → .${to}` });
         return next;
       });
       // The same token elsewhere may be the consumer's own class: point at it, do not touch it.
-      for (const m of out.matchAll(new RegExp(`class="[^"]*(?<![\\w-])${esc(from)}(?![\\w-])[^"]*"`, 'g'))) {
+      for (const m of out.matchAll(classAttr)) {
+        if (!m[3]!.split(/\s+/).includes(from)) continue;
         warnings.push({ line: lineOf(out, m.index!), rule: 'class', detail: `"${from}" on an element that is not ${on.join('/')} — rename to "${to}" if it is a ShipUI colour` });
       }
     }

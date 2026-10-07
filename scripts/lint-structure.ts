@@ -69,19 +69,20 @@ function topLevel(scss: string): Array<{ text: string; index: number }> {
   const out: Array<{ text: string; index: number }> = [];
   let depth = 0;
   let start = 0;
+  // `index` points at the statement's first non-blank character, so `lineOf` reports its own line, not the
+  // line the previous statement ended on.
+  const push = (end: number) => {
+    const raw = scss.slice(start, end);
+    out.push({ text: raw.trim(), index: start + Math.max(0, raw.search(/\S/)) });
+    start = end;
+  };
   for (let i = 0; i < scss.length; i++) {
     const ch = scss[i];
     if (ch === '{') depth++;
     else if (ch === '}') {
       depth--;
-      if (depth === 0) {
-        out.push({ text: scss.slice(start, i + 1).trim(), index: start });
-        start = i + 1;
-      }
-    } else if (ch === ';' && depth === 0) {
-      out.push({ text: scss.slice(start, i + 1).trim(), index: start });
-      start = i + 1;
-    }
+      if (depth === 0) push(i + 1);
+    } else if (ch === ';' && depth === 0) push(i + 1);
   }
   return out.filter((s) => s.text.length > 0);
 }

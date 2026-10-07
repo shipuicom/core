@@ -47,13 +47,13 @@ export class ShipAlertContainer {
   }
 
   onMouseOver() {
-    if (typeof this.inline === 'string') return;
+    if (this.inline() !== null) return;
 
     this.alertService().setHidden(false);
   }
 
   onMouseOut() {
-    if (typeof this.inline === 'string') return;
+    if (this.inline() !== null) return;
 
     this.alertService().setHidden(true);
   }
