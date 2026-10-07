@@ -213,6 +213,15 @@ describe('ship-migrate 0.26', () => {
     expect(scoped.warnings).toEqual([]);
   });
 
+  it('reads attributes written with no space between them, as Angular allows', () => {
+    const r = migrateSource(`<sh-checkbox [x]="a > b"(change)="f()" style="--box-bc: red"></sh-checkbox>`, '.html', v026);
+    expect(r.text).toBe(`<sh-checkbox [x]="a > b"(change)="f()" style="--cb-bc: red"></sh-checkbox>`);
+    expect(r.warnings).toEqual([]);
+    expect(migrateSource(`<sh-card [a]="x > y"color="primary"></sh-card>`, '.html', v026).text).toBe(`<sh-card [a]="x > y"></sh-card>`);
+    // Still treats a quote that matched mid-way through the next element's attribute as unclosed.
+    expect(migrateSource(`<div title="oops>\n<sh-form-field class="warning"></sh-form-field>`, '.html', v026).text).toContain('class="warn"');
+  });
+
   it('ends an unquoted class value at a self-closing slash', () => {
     expect(migrateSource('<sh-form-field class=warning/>', '.html', v026).text).toBe('<sh-form-field class=warn/>');
     expect(migrateSource('<div class=warning/>', '.html', v026).warnings).toHaveLength(1);
@@ -230,6 +239,10 @@ describe('ship-migrate 0.26', () => {
       expect(() => main(['--nope'])).toThrow('exit 2');
       expect(() => main(['--src'])).toThrow('exit 2');
       expect(() => main(['a', 'b'])).toThrow('exit 2');
+      expect(() => main(['--to='])).toThrow('exit 2');
+      expect(() => main(['--src='])).toThrow('exit 2');
+      expect(() => main(['--dry-run=false'])).toThrow('exit 2');
+      expect(() => main(['--help=1'])).toThrow('exit 2');
       expect(() => main(['--src', '/definitely/not/a/folder'])).toThrow('exit 1');
       expect(error.mock.calls.at(-1)![0]).toContain('no folder at');
     } finally {

@@ -107,11 +107,12 @@ function blankHtml(text: string, singleQuotes: boolean): string {
       // of the file in a tag) is treated as a plain character rather than swallowing everything after it.
       const limit = mode === 'interp' ? (text.indexOf('}}', i) < 0 ? text.length : text.indexOf('}}', i)) : text.length;
       while (j < limit && text[j] !== c) j += text[j] === '\\' && mode === 'interp' ? 2 : 1;
-      // A real attribute value's closing quote is followed by whitespace, `>`, `/` or the end. Anything else means
-      // the opening quote never closed and matched a quote further on (`title="oops>` … `class="x"`): read the
-      // opening quote as a plain character instead. Values may span lines and contain markup either way.
-      const after = text[j + 1];
-      if (j >= limit || (mode === 'tag' && after !== undefined && !/[\s>\/]/.test(after))) {
+      // A real attribute value's closing quote is followed by whitespace, `>`, `/`, the end, or (Angular allows no
+      // space between attributes) another attribute name that is itself followed by `=`, whitespace, `>`, `/` or the
+      // end: `[x]="a > b"(change)="f()"`. Anything else means the opening quote never closed and matched a quote
+      // further on (`title="oops>` … `class="warning"`, where `warning` is followed by a quote): read the opening
+      // quote as a plain character instead. Values may span lines and contain markup either way.
+      if (j >= limit || (mode === 'tag' && !/^(?:$|[\s>\/]|[^\s"'>\/=]+(?:$|[\s=>\/]))/.test(text.slice(j + 1, j + 200)))) {
         i++;
         continue;
       }
@@ -268,7 +269,7 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
     // `class=` with either quote; every token in the list is renamed, whitespace kept as written.
     // Quoted (`class="a warning"`, `class='a'`) or unquoted (`class=warning`, one token by definition).
     // An unquoted value ends at whitespace or `>`, and at the `/` of a self-closing `/>` (Angular's lexer agrees).
-    const classAttr = /(\sclass=)(?:(["'])([^"']*)\2|((?:[^\s"'=<>`\/]|\/(?!>))+))/g;
+    const classAttr = /((?:\s|(?<=["']))class=)(?:(["'])([^"']*)\2|((?:[^\s"'=<>`\/]|\/(?!>))+))/g;
     const classList = (m: RegExpMatchArray | string[]) => (m[3] ?? m[4] ?? '') as string;
     const renameTokens = (list: string, from: string, to: string) => list.replace(/[^\s]+/g, (token) => (token === from ? to : token));
     for (const { from, to, on } of rules.classes ?? []) {
@@ -290,7 +291,7 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
       // Class lists the script cannot rewrite: interpolated (`class="{{ ok ? '' : 'warning' }}"`) or bound
       // (`[class]`, `[ngClass]`, `[className]`) expressions that mention the token.
       const tokenRe = new RegExp(`(?<![\\w-])${esc(from)}(?![\\w-])`);
-      const exprAttr = /\s(class|\[class\]|\[ngClass\]|\[className\])=(?:"([^"]*)"|'([^']*)')/g;
+      const exprAttr = /(?:\s|(?<=["']))(class|\[class\]|\[ngClass\]|\[className\])=(?:"([^"]*)"|'([^']*)')/g;
       for (const m of out.matchAll(exprAttr)) {
         const value = m[2] ?? m[3] ?? '';
         if (m[1] === 'class' && !value.includes('{{')) continue;
@@ -299,13 +300,14 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
       }
     }
 
+    // Attribute names count after whitespace or straight after a closing quote (Angular needs no space between).
     // Removed inputs: drop the attribute from the tag — static (`color="x"`, `color='x'`, `color=x`, bare `color`)
     // or bound (`[color]="x"`) — and report any other form (`bind-color`, `[(color)]`, `[attr.color]`).
     // Attributes are found on the blanked tag so text inside another attribute's value is never matched.
     for (const { tag, input } of rules.removedInputs ?? []) {
       const name = esc(input);
-      const attr = new RegExp(`\\s+(?:\\[${name}\\]|${name})(?:\\s*=\\s*(?:"[^"]*"|'[^']*'|[^\\s"'=<>\`/]+))?(?=[\\s/>])`, 'g');
-      const leftover = new RegExp(`(?:\\sbind-|\\[\\(|\\[attr\\.)${name}(?![\\w-])`);
+      const attr = new RegExp(`(?:\\s+|(?<=["']))(?:\\[${name}\\]|${name})(?:\\s*=\\s*(?:"[^"]*"|'[^']*'|[^\\s"'=<>\`/]+))?(?=[\\s/>])`, 'g');
+      const leftover = new RegExp(`(?:(?:\\s|(?<=["']))bind-|\\[\\(|\\[attr\\.)${name}(?![\\w-])`);
       replaceOpenTags(new RegExp(`<${esc(tag)}(?![a-z0-9-])[^>]*>`, 'g'), (t, offset, b) => {
         let next = '';
         let nextBlanked = '';
@@ -419,12 +421,21 @@ function parseArgs(argv: string[]): { help: true } | { help: false; src?: string
     const [flag, inline] = a.startsWith('--') && a.includes('=') ? [a.slice(0, a.indexOf('=')), a.slice(a.indexOf('=') + 1)] : [a, undefined];
     const value = () => {
       const v = inline ?? argv[++i];
-      if (v === undefined || v.startsWith('-')) throw new Error(`${flag} needs a value`);
+      if (v === undefined || v === '' || v.startsWith('-')) throw new Error(`${flag} needs a value`);
       return v;
     };
+    // A switch takes no value: `--dry-run=false` is a mistake, not a way to turn it off.
+    const noValue = () => {
+      if (inline !== undefined) throw new Error(`${flag} takes no value`);
+    };
     try {
-      if (flag === '--help' || flag === '-h') return { help: true };
-      else if (flag === '--dry-run') dryRun = true;
+      if (flag === '--help' || flag === '-h') {
+        noValue();
+        return { help: true };
+      } else if (flag === '--dry-run') {
+        noValue();
+        dryRun = true;
+      }
       else if (flag === '--src') src = value();
       else if (flag === '--to') to = value();
       else if (flag.startsWith('-')) return { error: `unknown option ${flag}` };
