@@ -37,12 +37,26 @@ emitted by the global stylesheet, so you can keep only what you use, switch a co
 ```
 
 The font is one custom property, `--font-family` (`'Inter Tight', sans-serif`), read by every text token. Density is two custom properties: `--pad-y` and `--pad-x` (defaults 8px / 12px). Every component's padding is a tier of
-that pair (`--pad-y-s`, `--pad-x-xl`, …) read through its own `--<component>-py` / `--<component>-px` tokens, so
-`:root { --pad-y: 6px; --pad-x: 10px; }` tightens the whole app and `sh-card { --card-px: var(--pad-x-l); }` one component.
+that pair (`--pad-y-1` … `--pad-y-8`, `--pad-x-1` … `--pad-x-8`) read through its own `--<component>-py` /
+`--<component>-px` tokens, so `:root { --pad-y: 6px; --pad-x: 10px; }` tightens the whole app and
+`sh-card { --card-px: var(--pad-x-6); }` one component.
 
 A palette is either the `(hue, saturation, lightness)` of its step 8 (optionally a fourth distribution exponent) or a
 full map of `step: (light, dark)` pairs; the built-in `primary accent warn error success` are hand-tuned maps you
 can override by name.
+
+#### Generating the `with` block
+
+The docs config editor exports the colours, variants and skins you keep as `ship-config.json` (or a bare
+`ship-styles.json`). The `ship-styles` CLI turns it into the `@use` block, so the selection lives in one JSON file:
+
+```bash
+npx ship-styles                                            # ./ship-config.json → ./src/_ship-styles.scss
+npx ship-styles --in ship-styles.json --out src/styles/_ship.scss
+npx ship-styles --stdout                                   # print instead of writing
+```
+
+Then make `@use 'ship-styles';` the first line of `styles.scss`, in place of `@use '@ship-ui/core/styles'`.
 
 ### Inside your angular.json file
 
@@ -93,6 +107,23 @@ You now wanna add when to build the font and when to watch so it works well toge
   ..
 }
 ```
+
+## Upgrading
+
+`ship-migrate` applies a release's renames (element tags, CSS custom properties, colour classes, removed inputs,
+Sass flags) to your templates and styles, and lists what it cannot decide with file and line:
+
+```bash
+npx ship-migrate --dry-run          # show what would change under ./src
+npx ship-migrate                    # rewrite ./src in place
+npx ship-migrate projects/app/src   # another folder
+npx ship-migrate --help
+```
+
+The changes to make by hand are in `node_modules/@ship-ui/core/MIGRATION.md`. One behaviour change worth knowing
+in 0.26: `sh-code` now updates `value` and its form control once typing pauses, on blur and on `flushValue()`,
+instead of on every keystroke (serializing a large document is the expensive part). Set `valueSync="immediate"` for
+the old behaviour, or `valueSync="blur"` to update only on blur.
 
 ## AI & Developer Experience
 

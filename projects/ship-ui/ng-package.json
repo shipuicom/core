@@ -3,9 +3,35 @@
   "dest": "../../dist/ship-ui",
   "lib": {
     "entryFile": "src/public-api.ts",
-    "styleIncludePaths": ["styles"]
+    "styleIncludePaths": [
+      "styles"
+    ]
   },
-  "assets": ["styles/**/*", "assets/**/*", "bin/**/*", "snippets/**/*", "ship-code/vendor/vscode-oniguruma/onig.wasm", "MIGRATION.md"],
+  "assets": [
+    "styles/**/*",
+    "assets/**/*",
+    {
+      "glob": "**/*",
+      "input": "bin",
+      "output": "bin",
+      "ignore": [
+        "**/*.spec.ts",
+        "ship-migrate.ts",
+        "ship-styles.ts",
+        "migrations/**",
+        "tsconfig.app.json",
+        "src/scanner.zig"
+      ]
+    },
+    "snippets/**/*",
+    "ship-code/vendor/vscode-oniguruma/onig.wasm",
+    "MIGRATION.md",
+    "CHANGELOG.md"
+  ],
   "inlineStyleLanguage": "scss",
-  "allowedNonPeerDependencies": ["harfbuzzjs", "wawoff2", "@phosphor-icons/web"]
+  "allowedNonPeerDependencies": [
+    "harfbuzzjs",
+    "wawoff2",
+    "@phosphor-icons/web"
+  ]
 }

@@ -1,5 +1,62 @@
 # Changelog
 
+## 0.26.0
+
+Component structure normalisation. This release renames tags, CSS custom properties, classes and config keys; run
+`npx ship-migrate --dry-run`, then `npx ship-migrate`, and read [MIGRATION.md](./MIGRATION.md) for the changes to make
+by hand.
+
+### Breaking
+
+- Every component tag is `sh-*` (`<sh-theme-toggle>`; `<ship-alert-container>` keeps working until 0.27).
+- About 40 CSS custom properties follow the `--<abbr>-<style>[-<state>]` naming (tree, list, datepicker, sidenav,
+  video, editor, avatar, code, spreadsheet, button, ranking); the `$ship*Shadow` flags now set `--btn-bs` / `--ff-bs` /
+  `--chip-bs` on `:root` instead of `--ship-*-shadow`. Full table in MIGRATION.md.
+- Single padding tokens (`--card-p`, `--list-p`, …) became `-py` / `-px` pairs fed by the new `--pad-y` / `--pad-x`
+  density tiers.
+- Variant × colour styling moved into the global stylesheet as skins: import `@ship-ui/core/styles`, or the variant and
+  colour classes no longer style anything.
+- `shipComponentClasses` no longer stamps a `base` class on hosts without a variant.
+- Removed inputs that never rendered anything (`color` on card, button-group, table, toggle-card; `variant` on tabs).
+- `SHIP_CONFIG`: `alertVariant` / `cardType` / `tableType` → `alert` / `card` / `table` `{ variant }`; `'event-card'` →
+  `eventCard`. `ShipAlertModule` is removed; `Sh*` collab classes are `Ship*`.
+- `sh-form-field` `.warning` → `.warn` (alias kept until 0.27).
+
+### Added
+
+- **ship-code**: `@ship-ui/core/ship-code` is published. The document is a persistent B-tree of lines, so edits and
+  line/offset lookups are O(log n): typing in a 50,000-line file costs about 3 µs per keystroke in the model. `value`
+  and the form control update when typing pauses, on blur and on `flushValue()` (`valueSync` input: `'idle'` default,
+  `'immediate'`, `'blur'`).
+- **ship-migrate** CLI: rewrites a release's renames in templates (`.html`, inline templates) and styles, warns with
+  file:line on anything it cannot decide, `--dry-run`, `--to <version>`, `--help`.
+- **ship-styles** CLI: turns the docs config editor's `ship-config.json` / `ship-styles.json` into the
+  `@use '@ship-ui/core/styles' with (...)` block.
+- Skins: `$shipColors`, `$shipVariants`, `$shipSkins` and `$ship<Name>: false` strip unused styling; `$shipPalettes`
+  adds palettes with a colour class on every skin; `$shipPaletteSteps` limits emitted steps.
+- `--font-family` token read by the whole type scale.
+- `optionalBooleanAttribute` utility; boolean inputs across ~25 components accept attribute syntax
+  (`<sh-checkbox readonly>`).
+- `ShipConfig` keys for `avatar`, `chartSparkline`, `colorPickerInput`, `editor`, `themeToggle`, `video`,
+  `videoPlaylist`, and those components honour them.
+
+### Fixed
+
+- `sh-alert-container` with `inline` no longer toggles the floating stack on hover.
+- `sh-code-input`, `sh-lo-stat-goal`, `sh-lo-ranking-item` and `sh-lo-setting` get accessible names from their slotted
+  labels, and `sh-lo-setting` keeps that wiring correct when controls render late, are nested, or are named by you.
+- `sh-editor` `variant="base"` overrides a project default of `document`; the toolbar reads its `--editor-*` tokens.
+- Selected `simple` / `outlined` chips fill with the selection colour; contrast text on coloured surfaces reads
+  `--<color>-c8`, so light custom palettes get dark text.
+- Shared stylesheets are split per component (datepicker inputs, form-field popover, color-picker input, avatar
+  group), so a component no longer carries another one's CSS.
+
+### Docs
+
+- Config editor: import and export of `ship-config.json`, `ship-styles.json` and `app.config.ts`, an "included styles"
+  picker for colours, variants and skins, and validation that drops malformed or outdated settings instead of breaking.
+- The Breadcrumbs, Chats, Layouts and Videos pages are in search, and Videos is in the navigation.
+
 ## 0.25.8
 
 ### Added
