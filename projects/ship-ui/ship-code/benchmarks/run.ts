@@ -5,6 +5,7 @@
  *   bun run bench:code -- --save    # run + save as the new baseline
  *   bun run bench:code -- --seed 7  # reproduce a run order
  *   bun run bench:code -- --filter typing
+ *   bun run bench:code -- --strict  # exit 1 on a regression (only meaningful on the baseline's machine)
  *
  * The script bundles this file with esbuild and runs it on Node with `--expose-gc`, the runtime the baseline was
  * taken on (Bun's array copies differ by ~3x, so the two must not be compared).
@@ -40,6 +41,7 @@ const argOf = (name: string) => {
   return i >= 0 ? args[i + 1] : undefined;
 };
 const SAVE = args.includes('--save');
+const STRICT = args.includes('--strict');
 const SEED = Number(argOf('--seed') ?? Math.floor(Math.random() * 1e6));
 const FILTER = argOf('--filter');
 const WARMUP_MS = 150;
@@ -423,7 +425,7 @@ if (SAVE) {
   console.log('No baseline found. Run with --save to create one.');
 } else if (regressions) {
   console.log(`⚠️  ${regressions} regression(s): median more than ${Math.round((REGRESSION - 1) * 100)}% above baseline`);
-  process.exitCode = 1;
+  if (STRICT) process.exitCode = 1;
 } else {
   console.log('✅ No regressions');
 }
