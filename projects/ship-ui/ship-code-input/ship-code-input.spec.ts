@@ -162,6 +162,21 @@ describe('ShipCodeInput dividers', () => {
 })
 class LabelledFormHost {}
 
+@Component({
+  imports: [ShipCodeInput],
+  template: `<sh-code-input [length]="4">@if (showLabel()) {<label>Code</label>}<input type="text" /></sh-code-input>`,
+})
+class ToggleLabelHost {
+  showLabel = signal(true);
+}
+
+const settle = async (fixture: { detectChanges(): void }) => {
+  fixture.detectChanges();
+  await new Promise((resolve) => setTimeout(resolve));
+  TestBed.inject(ApplicationRef).tick();
+  fixture.detectChanges();
+};
+
 describe('ShipCodeInput accessible names', () => {
   it('names the cell group and the projected form input after the slotted label', async () => {
     const fixture = TestBed.createComponent(LabelledFormHost);
@@ -181,5 +196,15 @@ describe('ShipCodeInput accessible names', () => {
     expect(group.getAttribute('aria-labelledby')).toBe(label.id);
     expect(formInput.getAttribute('aria-labelledby')).toBe(label.id);
     expect(computeAccessibleName(formInput)).toBe('Verification code');
+  });
+
+  it('takes back the name it gave the form input when the label goes away', async () => {
+    const fixture = TestBed.createComponent(ToggleLabelHost);
+    await settle(fixture);
+    const formInput = (fixture.nativeElement as HTMLElement).querySelector('input:not(.cell)') as HTMLInputElement;
+    expect(formInput.getAttribute('aria-labelledby')).toBeTruthy();
+    fixture.componentInstance.showLabel.set(false);
+    await settle(fixture);
+    expect(formInput.getAttribute('aria-labelledby')).toBeNull();
   });
 });

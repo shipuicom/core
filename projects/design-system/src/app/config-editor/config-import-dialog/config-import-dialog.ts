@@ -21,6 +21,11 @@ export class ConfigImportDialog {
     return p && 'error' in p ? p.error : null;
   });
 
+  ok = computed(() => {
+    const p = this.parsed();
+    return p && !('error' in p) ? p : null;
+  });
+
   async readFile(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) this.text.set(await file.text());

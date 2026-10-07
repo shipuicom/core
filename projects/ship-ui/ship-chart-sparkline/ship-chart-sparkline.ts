@@ -8,7 +8,8 @@ export type ShipChartSparklineColor = ShipColor;
 /**
  * A tiny standalone line chart: one series, no axes, no runtime dependencies
  * beyond `@ship-ui/core/ship-chart-scales`. It scales to whatever box it is
- * given and is styled entirely through custom properties on the host.
+ * given and is styled entirely through custom properties on the host, whose
+ * defaults read the theme's palette tokens like every other component.
  *
  * With `animate`, data changes tween: a value appended on the right slides in,
  * a value dropped from the left slides out, and the line eases to its new scale.

@@ -88,8 +88,8 @@ $shipSortable: true !default;
           content: '';
           position: absolute;
           top: p2r(-3);
-          left: calc(var(--tree-pl) + var(--tree-depth, 0) * var(--tree-indent-step) + #{p2r(6)});
-          right: var(--tree-pr);
+          left: calc(var(--tree-pl, #{p2r(12)}) + var(--tree-depth, 0) * var(--tree-indent-step, #{p2r(12)}) + #{p2r(6)});
+          right: var(--tree-pr, #{p2r(6)});
           height: p2r(6);
           background-image:
             radial-gradient(circle at p2r(3) p2r(3), var(--primary-8) p2r(3), transparent p2r(3)),
@@ -113,8 +113,8 @@ $shipSortable: true !default;
           content: '';
           position: absolute;
           bottom: p2r(-3);
-          left: calc(var(--tree-pl) + var(--tree-depth, 0) * var(--tree-indent-step) + #{p2r(6)});
-          right: var(--tree-pr);
+          left: calc(var(--tree-pl, #{p2r(12)}) + var(--tree-depth, 0) * var(--tree-indent-step, #{p2r(12)}) + #{p2r(6)});
+          right: var(--tree-pr, #{p2r(6)});
           height: p2r(6);
           background-image:
             radial-gradient(circle at p2r(3) p2r(3), var(--primary-8) p2r(3), transparent p2r(3)),

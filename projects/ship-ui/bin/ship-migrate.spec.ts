@@ -142,11 +142,60 @@ describe('ship-migrate 0.26', () => {
     expect(r.text).toBe("template: '<sh-card [a]=\"b > c\"></sh-card>'");
   });
 
+  it('does not read apostrophes in HTML text content as strings', () => {
+    const pre = "<p>Don't</p>\n";
+    const post = "\n<p>it's</p>";
+    // css-var scoped to a tag
+    expect(migrateSource(pre + '<sh-select [style.--miw]="w"></sh-select>' + post, '.html', v026).text).toBe(pre + '<sh-select [style.--select-miw]="w"></sh-select>' + post);
+    // class rename on a listed tag
+    expect(migrateSource(pre + '<sh-form-field class="warning"></sh-form-field>' + post, '.html', v026).text).toBe(pre + '<sh-form-field class="warn"></sh-form-field>' + post);
+    // removed input
+    expect(migrateSource(pre + '<sh-card color="primary"></sh-card>' + post, '.html', v026).text).toBe(pre + '<sh-card></sh-card>' + post);
+    // selector rename
+    expect(migrateSource(pre + '<ship-theme-toggle></ship-theme-toggle>' + post, '.html', v026).text).toBe(pre + '<sh-theme-toggle></sh-theme-toggle>' + post);
+    // the same inside a .ts template literal
+    const ts = "template: `<p>Don't</p><sh-card color=\"x\"></sh-card><p>it's</p>`";
+    expect(migrateSource(ts, '.ts', v026).text).toBe("template: `<p>Don't</p><sh-card></sh-card><p>it's</p>`");
+    // quotes inside attribute values still hide tags and `>`
+    expect(migrateSource('<sh-card title="it\'s <sh-x>" [x]="a > b" color="w"></sh-card>', '.html', v026).text).toBe('<sh-card title="it\'s <sh-x>" [x]="a > b"></sh-card>');
+  });
+
+  it('renames --bar-pct on sh-lo-ranking-item (and sh-lo-ranking)', () => {
+    expect(migrateSource('<sh-lo-ranking-item [style.--bar-pct]="p"></sh-lo-ranking-item>', '.html', v026).text).toBe('<sh-lo-ranking-item [style.--ranking-pct]="p"></sh-lo-ranking-item>');
+    expect(migrateSource('sh-lo-ranking-item .bar { --bar-pct: 3; }\nsh-lo-ranking { --bar-pct: 1; }', '.scss', v026).text).toBe('sh-lo-ranking-item .bar { --ranking-pct: 3; }\nsh-lo-ranking { --ranking-pct: 1; }');
+    expect(migrateSource('.x { --bar-pct: 1; }', '.scss', v026).warnings).toHaveLength(1);
+  });
+
+  it('renames list tokens on sh-list-item-swipe as well as sh-list', () => {
+    const r = migrateSource('sh-list-item-swipe { --list-color: red; --list-active-bg: blue; }\nsh-list { --list-active-bs: none; --list-item-active-b: 0; }', '.scss', v026);
+    expect(r.text).toBe('sh-list-item-swipe { --list-c: red; --list-bg-a: blue; }\nsh-list { --list-bs-a: none; --list-item-b-a: 0; }');
+    expect(migrateSource('<sh-list-item-swipe [style.--list-color]="c"></sh-list-item-swipe>', '.html', v026).text).toBe('<sh-list-item-swipe [style.--list-c]="c"></sh-list-item-swipe>');
+  });
+
+  it('drops removed inputs in every static and bound form, and warns on the rest', () => {
+    const r = migrateSource("<sh-card color='primary'></sh-card><sh-table color=accent></sh-table><sh-tabs variant></sh-tabs><sh-card [color]='c'></sh-card><sh-card colorful=\"x\" data-color=\"y\"></sh-card>", '.html', v026);
+    expect(r.text).toBe('<sh-card></sh-card><sh-table></sh-table><sh-tabs></sh-tabs><sh-card></sh-card><sh-card colorful="x" data-color="y"></sh-card>');
+    expect(r.changes).toHaveLength(4);
+    expect(r.warnings).toEqual([]);
+    const w = migrateSource('<sh-card bind-color="c" [(color)]="d"></sh-card>', '.html', v026);
+    expect(w.text).toBe('<sh-card bind-color="c" [(color)]="d"></sh-card>');
+    expect(w.warnings.map((x) => x.rule)).toEqual(['removed-input']);
+  });
+
+  it('warns on interpolated or bound class lists mentioning a renamed class', () => {
+    const r = migrateSource("<sh-form-field class=\"{{ ok ? '' : 'warning' }}\"></sh-form-field>\n<sh-form-field [class]=\"x ? 'warning' : ''\"></sh-form-field>\n<div [ngClass]=\"{ warning: bad }\"></div>\n<div [ngClass]=\"{ warnings: bad }\"></div>", '.html', v026);
+    expect(r.changes).toEqual([]);
+    expect(r.warnings.map((w) => w.line)).toEqual([1, 2, 3]);
+  });
+
   it('is idempotent', () => {
     const once = migrateSource('<sh-card color="a" class="warning"></sh-card> --breadcrumbs-c', '.html', v026).text;
     const twice = migrateSource(once, '.html', v026);
     expect(twice.text).toBe(once);
     expect(twice.changes).toHaveLength(0);
+    const tricky = "<p>Don't</p><sh-card color='a'></sh-card><sh-lo-ranking-item [style.--bar-pct]=\"p\"></sh-lo-ranking-item><p>it's</p>";
+    const a = migrateSource(tricky, '.html', v026).text;
+    expect(migrateSource(a, '.html', v026).changes).toHaveLength(0);
   });
 });
 

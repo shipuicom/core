@@ -2,7 +2,6 @@
 
 sh-lo-setting {
   --setting-py: var(--pad-y-6);
-  --setting-px: var(--pad-x-6);
   --setting-gap: var(--space-3) var(--space-6);
   --setting-text-w: #{p2r(224)};
 
@@ -39,7 +38,6 @@ sh-lo-setting {
   // Compact: tighter rows, no dividers.
   &.type-c {
     --setting-py: var(--pad-y-4);
-    --setting-px: var(--pad-x-3);
 
     & + sh-lo-setting {
       border-top: 0;

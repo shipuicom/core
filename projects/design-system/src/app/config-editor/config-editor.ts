@@ -285,7 +285,7 @@ export class ConfigEditor {
       width: '640px',
       maxWidth: '95vw',
       closed: result => {
-        if (result) this.configService.importConfig(result.config, result.styles);
+        if (result) this.configService.importConfig(result.config, result.styles, result.source);
       },
     });
   }

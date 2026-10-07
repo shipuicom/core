@@ -23,7 +23,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { shipComponentClasses } from '@ship-ui/core';
+import { SHIP_CONFIG } from '@ship-ui/core';
 import { ShipA11yKeybindingsService } from '@ship-ui/core/ship-a11y-keybindings';
 import { BaseBlockBehavior, BaseInlineBehavior, SlashCommand } from './editor-behaviors';
 import { EditorEngineService, RenderHint } from './editor-engine.service';
@@ -124,10 +124,14 @@ export class ShipEditor implements ControlValueAccessor {
   /** Visual variant: compact `base` (the default) or full-width `document` styling; project default via `ShipConfig.editor.variant`. */
   variant = input<'base' | 'document' | null>(null);
 
-  /** The `document` class when that variant is active; `base` is the unstyled default and stamps nothing. */
-  hostClasses = shipComponentClasses('editor', {
-    variant: computed(() => (this.variant() === 'base' ? '' : this.variant())),
-  });
+  #config = inject(SHIP_CONFIG, { optional: true });
+
+  /**
+   * The `document` class when that variant is active; `base` is the unstyled default and stamps nothing. The variant
+   * is resolved here rather than in `shipComponentClasses`, whose `input || config` fallback would let a project
+   * default of `document` override an explicit `variant="base"` on one instance.
+   */
+  hostClasses = computed(() => ((this.variant() ?? this.#config?.editor?.variant) === 'document' ? 'document' : ''));
 
   /** Additional block and inline behaviors to register alongside the built-in ones. */
   behaviors = input<(BaseBlockBehavior | BaseInlineBehavior)[]>([]);

@@ -16,6 +16,15 @@ class BindingHost {
 }
 
 @Component({
+  imports: [ShipCode],
+  template: `@if (show()) { <sh-code [(value)]="source" valueSync="blur" /> }`,
+})
+class RemovableHost {
+  show = signal(true);
+  source = signal<string | null>('ab');
+}
+
+@Component({
   imports: [ShipCode, ReactiveFormsModule],
   template: `<sh-code [formControl]="control" valueSync="blur" />`,
 })
@@ -135,5 +144,16 @@ describe('ShipCode value sync', () => {
     TestBed.tick();
     code.flushValue();
     expect(host.control.value).toBe('ab');
+  });
+
+  it('hands an unsent edit to the two-way binding when the editor is removed', () => {
+    const warn = vi.spyOn(console, 'warn');
+    const { host, code, fixture } = setup(RemovableHost);
+    typeAtCaret(code, 'x');
+    host.show.set(false);
+    fixture.detectChanges();
+    TestBed.tick();
+    expect(host.source()).toBe('xab');
+    expect(warn).not.toHaveBeenCalled();
   });
 });

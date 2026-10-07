@@ -120,17 +120,25 @@ export class ShipCodeInput {
   // a control through `for` or nesting, and here the input is a sibling.
   projectedLabel = contentProjectionSignal<HTMLLabelElement>('label', { childList: true }, 0);
   labelId = signal<string | null>(null);
+  /** The aria-labelledby this component stamped, so it can take it back when the label goes or changes. */
+  #stamped: { input: HTMLInputElement; id: string } | null = null;
   #labelEffect = effect(() => {
     const label = this.projectedLabel();
     const input = this.projectedInput();
+    const stamped = this.#stamped;
+    if (stamped && (stamped.input !== input || stamped.id !== label?.id)) {
+      if (stamped.input.getAttribute('aria-labelledby') === stamped.id) stamped.input.removeAttribute('aria-labelledby');
+      this.#stamped = null;
+    }
     if (!label) {
       this.labelId.set(null);
       return;
     }
     if (!label.id) label.id = `sh-code-input-label-${generateUniqueId()}`;
     this.labelId.set(label.id);
-    if (input && !label.htmlFor && !input.getAttribute('aria-label') && !input.getAttribute('aria-labelledby') && !input.labels?.length) {
+    if (input && !this.#stamped && !label.htmlFor && !input.getAttribute('aria-label') && !input.getAttribute('aria-labelledby') && !input.labels?.length) {
       input.setAttribute('aria-labelledby', label.id);
+      this.#stamped = { input, id: label.id };
     }
   });
   #valueSync = nativeInputValueSignal<string>(this.projectedInput, {

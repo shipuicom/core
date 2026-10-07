@@ -48,17 +48,65 @@ const LINE_COMMENT_EXT = new Set(['.ts', '.scss', '.sass', '.less']);
  * and not after `:` or `(` (a URL). A template literal in `.ts` is blanked with the HTML rules so its tags stay visible.
  */
 function blank(text: string, ext: string, { singleQuotes = true } = {}): string {
+  if (ext === '.html') return blankHtml(text, singleQuotes);
   const pad = (m: string) => m.replace(/[^\n]/g, ' ');
   const alts = ['\\/\\*[\\s\\S]*?\\*\\/', '"(?:[^"\\\\\\n]|\\\\.)*"'];
   if (singleQuotes) alts.push("'(?:[^'\\\\\\n]|\\\\.)*'");
-  if (ext === '.html') alts.push('<!--[\\s\\S]*?-->');
   if (LINE_COMMENT_EXT.has(ext)) alts.push('(?<![:(])\\/\\/[^\\n]*');
   if (ext === '.ts') alts.push('`(?:[^`\\\\]|\\\\.)*`');
   return text.replace(new RegExp(alts.join('|'), 'g'), (m) => {
     if (m[0] === '`') return '`' + blank(m.slice(1, -1), '.html', { singleQuotes }) + '`';
-    if (m[0] === '/' || m[0] === '<') return pad(m);
+    if (m[0] === '/') return pad(m);
     return m[0] + pad(m.slice(1, -1)) + m[0];
   });
+}
+
+/**
+ * HTML flavour of blank(): comments are blanked, and quotes start a string only inside a tag (attribute values)
+ * or an `{{ … }}` interpolation, so an apostrophe in text content (`<p>Don't</p>`) cannot swallow the tags after it.
+ */
+function blankHtml(text: string, singleQuotes: boolean): string {
+  const out = text.split('');
+  const padRange = (from: number, to: number) => {
+    for (let k = from; k < to; k++) if (out[k] !== '\n') out[k] = ' ';
+  };
+  let i = 0;
+  let mode: 'text' | 'tag' | 'interp' = 'text';
+  while (i < text.length) {
+    const c = text[i];
+    if (mode === 'text') {
+      if (text.startsWith('<!--', i)) {
+        const end = text.indexOf('-->', i + 4);
+        const stop = end < 0 ? text.length : end + 3;
+        padRange(i, stop);
+        i = stop;
+        continue;
+      }
+      if (c === '<' && /[a-zA-Z\/]/.test(text[i + 1] ?? '')) mode = 'tag';
+      else if (text.startsWith('{{', i)) {
+        mode = 'interp';
+        i += 2;
+        continue;
+      }
+      i++;
+      continue;
+    }
+    if (c === '"' || (c === "'" && singleQuotes)) {
+      let j = i + 1;
+      while (j < text.length && text[j] !== c) j += text[j] === '\\' && mode === 'interp' ? 2 : 1;
+      padRange(i + 1, Math.min(j, text.length));
+      i = j + 1;
+      continue;
+    }
+    if (mode === 'tag' && c === '>') mode = 'text';
+    else if (mode === 'interp' && text.startsWith('}}', i)) {
+      mode = 'text';
+      i += 2;
+      continue;
+    }
+    i++;
+  }
+  return out.join('');
 }
 
 /** Selectors of every block enclosing `index` in a (blanked) stylesheet, outermost last, joined with spaces. */
@@ -136,14 +184,16 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
   // Generic names (`--miw`, `--overlay`) are only renamed where they target the component: inside a rule whose
   // selector names the tag, or on that tag in a template. Anywhere else may be the consumer's own variable.
   for (const { from, to, requires } of rules.cssVars ?? []) {
+    const tags = requires === undefined ? [] : Array.isArray(requires) ? requires : [requires];
+    const scope = tags.join(' / ');
     const re = new RegExp(esc(from) + '(?![a-z0-9-])', 'g');
     if (!re.test(out)) continue;
     re.lastIndex = 0;
     const src = out;
     const blanked = blank(src, ext);
     out = src.replace(re, (match, offset: number) => {
-      if (requires && !targets(blanked, src, offset, requires, isStyle, ext)) {
-        warnings.push({ line: lineOf(src, offset), rule: 'css-var', detail: `${from} → ${to} only where it targets ${requires}; this one is not inside a ${requires} rule or tag, left as is` });
+      if (tags.length && !tags.some((tag) => targets(blanked, src, offset, tag, isStyle, ext))) {
+        warnings.push({ line: lineOf(src, offset), rule: 'css-var', detail: `${from} → ${to} only where it targets ${scope}; this one is not inside a ${scope} rule or tag, left as is` });
         return match;
       }
       changes.push({ line: lineOf(src, offset), rule: 'css-var', detail: `${from} → ${to}` });
@@ -180,14 +230,14 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
 
     // Open tags are located on the blanked text so a `>` inside an attribute value cannot end them early; the
     // rewrite itself runs on the raw tag. In .ts the (often single-quoted) template literal must stay visible.
-    const replaceOpenTags = (re: RegExp, fn: (tag: string, offset: number) => string) => {
+    const replaceOpenTags = (re: RegExp, fn: (tag: string, offset: number, blankedTag: string) => string) => {
       const src = out;
       const blanked = blank(src, ext, { singleQuotes: ext !== '.ts' });
       let result = '';
       let last = 0;
       for (const m of blanked.matchAll(re)) {
         const end = m.index! + m[0].length;
-        result += src.slice(last, m.index!) + fn(src.slice(m.index!, end), m.index!);
+        result += src.slice(last, m.index!) + fn(src.slice(m.index!, end), m.index!, m[0]);
         last = end;
       }
       out = result + src.slice(last);
@@ -211,14 +261,40 @@ export function migrateSource(text: string, ext: string, rules: MigrationRules):
         if (!m[3]!.split(/\s+/).includes(from)) continue;
         warnings.push({ line: lineOf(out, m.index!), rule: 'class', detail: `"${from}" on an element that is not ${on.join('/')} — rename to "${to}" if it is a ShipUI colour` });
       }
+      // Class lists the script cannot rewrite: interpolated (`class="{{ ok ? '' : 'warning' }}"`) or bound
+      // (`[class]`, `[ngClass]`, `[className]`) expressions that mention the token.
+      const tokenRe = new RegExp(`(?<![\\w-])${esc(from)}(?![\\w-])`);
+      const exprAttr = /\s(class|\[class\]|\[ngClass\]|\[className\])=(?:"([^"]*)"|'([^']*)')/g;
+      for (const m of out.matchAll(exprAttr)) {
+        const value = m[2] ?? m[3] ?? '';
+        if (m[1] === 'class' && !value.includes('{{')) continue;
+        if (!tokenRe.test(value)) continue;
+        warnings.push({ line: lineOf(out, m.index!), rule: 'class', detail: `"${from}" inside a ${m[1]} expression — rename it to "${to}" by hand if it is a ShipUI colour on ${on.join('/')}` });
+      }
     }
 
-    // Removed inputs: drop the static or bound attribute from the tag, report the rest.
+    // Removed inputs: drop the attribute from the tag — static (`color="x"`, `color='x'`, `color=x`, bare `color`)
+    // or bound (`[color]="x"`) — and report any other form (`bind-color`, `[(color)]`, `[attr.color]`).
+    // Attributes are found on the blanked tag so text inside another attribute's value is never matched.
     for (const { tag, input } of rules.removedInputs ?? []) {
-      replaceOpenTags(new RegExp(`<${esc(tag)}(?![a-z0-9-])[^>]*>`, 'g'), (t, offset) => {
-        const attr = new RegExp(`\\s+\\[?${esc(input)}\\]?="[^"]*"`, 'g');
-        const next = t.replace(attr, '');
+      const name = esc(input);
+      const attr = new RegExp(`\\s+(?:\\[${name}\\]|${name})(?:\\s*=\\s*(?:"[^"]*"|'[^']*'|[^\\s"'=<>\`/]+))?(?=[\\s/>])`, 'g');
+      const leftover = new RegExp(`(?:\\sbind-|\\[\\(|\\[attr\\.)${name}(?![\\w-])`);
+      replaceOpenTags(new RegExp(`<${esc(tag)}(?![a-z0-9-])[^>]*>`, 'g'), (t, offset, b) => {
+        let next = '';
+        let nextBlanked = '';
+        let last = 0;
+        for (const m of b.matchAll(attr)) {
+          next += t.slice(last, m.index!);
+          nextBlanked += b.slice(last, m.index!);
+          last = m.index! + m[0].length;
+        }
+        next += t.slice(last);
+        nextBlanked += b.slice(last);
         if (next !== t) changes.push({ line: lineOf(out, offset), rule: 'removed-input', detail: `<${tag} ${input}> removed (it had no effect)` });
+        if (leftover.test(nextBlanked.replace(/^<[\\w-]+/, ''))) {
+          warnings.push({ line: lineOf(out, offset), rule: 'removed-input', detail: `<${tag}> no longer has a ${input} input; remove this binding by hand` });
+        }
         return next;
       });
     }

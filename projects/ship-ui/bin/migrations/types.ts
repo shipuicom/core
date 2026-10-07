@@ -3,8 +3,8 @@ export interface MigrationRules {
   notes?: string;
   /** `--old-` → `--new-` for every variable starting with the prefix. */
   cssVarPrefixes?: Array<{ from: string; to: string }>;
-  /** Exact variable renames; `requires` limits the rewrite to files mentioning that selector. */
-  cssVars?: Array<{ from: string; to: string; requires?: string }>;
+  /** Exact variable renames; `requires` limits the rewrite to rules / tags for that element (or any of a list). */
+  cssVars?: Array<{ from: string; to: string; requires?: string | string[] }>;
   /** Class renames applied only on the listed tags. */
   classes?: Array<{ from: string; to: string; on: string[] }>;
   /** Element selector renames. */

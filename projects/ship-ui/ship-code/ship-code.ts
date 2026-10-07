@@ -14,6 +14,7 @@ import {
   signal,
   untracked,
   viewChild,
+  OnDestroy,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -126,7 +127,7 @@ interface HistoryEntry {
   },
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => ShipCode), multi: true }],
 })
-export class ShipCode implements ControlValueAccessor {
+export class ShipCode implements ControlValueAccessor, OnDestroy {
   scroller = viewChild.required<ElementRef<HTMLElement>>('scroller');
   caretLayer = viewChild<ElementRef<HTMLElement>>('caretLayer');
   inputArea = viewChild.required<ElementRef<HTMLTextAreaElement>>('inputArea');
@@ -430,7 +431,6 @@ export class ShipCode implements ControlValueAccessor {
         this.#updateWindow();
       });
     });
-    this.#destroyRef.onDestroy(() => this.flushValue());
 
     // Keep the caret's line inside the window, and restart the blink so the
     // carets are solid the instant they move — the phase the whole layer
@@ -591,6 +591,15 @@ export class ShipCode implements ControlValueAccessor {
     this.#incremental = tokenizer ? new IncrementalTokenizer(tokenizer) : null;
     this.#tokensVersion.update((v) => v + 1);
     this.#updateWindow();
+  }
+
+  /**
+   * Flush on destroy from the lifecycle hook, not a DestroyRef callback: Angular runs `ngOnDestroy` before it
+   * removes the parent's output listeners and tears down `model()`'s output, so a `[(value)]` binding still
+   * receives the last edit. A DestroyRef callback runs after both and the edit would be lost (NG0953).
+   */
+  ngOnDestroy(): void {
+    this.flushValue();
   }
 
   /** Push any unsent edit into `value` and the form control now. Cheap when nothing changed. */

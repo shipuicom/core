@@ -1,4 +1,4 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, ElementRef, inject, input, ViewEncapsulation } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, input, ViewEncapsulation } from '@angular/core';
 import { generateUniqueId, shipComponentClasses } from '@ship-ui/core';
 import { ShipLayoutSettingVariant } from '@ship-ui/core';
 
@@ -27,24 +27,42 @@ import { ShipLayoutSettingVariant } from '@ship-ui/core';
 })
 export class ShipLayoutSetting {
   #host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  #destroyRef = inject(DestroyRef);
 
   /** Visual variant (`type-b`, `type-c`, or default). Project default via `ShipConfig.layoutSetting.variant`. */
   variant = input<ShipLayoutSettingVariant | null>(null);
 
   hostClasses = shipComponentClasses('layoutSetting', { variant: this.variant });
 
+  /** The aria-labelledby this component stamped, so it can take it back when the label or control changes. */
+  #stamped: { control: HTMLElement; id: string } | null = null;
+
   constructor() {
-    afterNextRender(() => this.#nameControl());
+    // Browser only, after render: the label and control are queried then, and again whenever the projected content
+    // changes, so a control rendered later (@if/@defer, an async component stamping its role) still gets named.
+    afterNextRender(() => {
+      this.#nameControl();
+      if (typeof MutationObserver === 'undefined') return;
+      const observer = new MutationObserver(() => this.#nameControl());
+      observer.observe(this.#host, { childList: true, subtree: true, attributes: true, attributeFilter: ['role', 'id'] });
+      this.#destroyRef.onDestroy(() => observer.disconnect());
+    });
   }
 
   // A `<label>` only names a control through `for`/nesting; here the two sit in separate
   // slots, so point the first focusable control at the label unless the consumer named it.
   #nameControl() {
-    const label = this.#host.querySelector<HTMLElement>(':scope > .text > :is(label, h3, h4)');
-    const control = this.#host.querySelector<HTMLElement>(
-      '.control :is(input, select, textarea, [role="switch"], [role="checkbox"], [role="combobox"], [role="slider"])'
-    );
-    if (!label || !control) return;
+    const label = this.#host.querySelector<HTMLElement>(':scope > .text > :is(label, h3, h4)') ?? undefined;
+    const control =
+      this.#host.querySelector<HTMLElement>(
+        '.control :is(input, select, textarea, [role="switch"], [role="checkbox"], [role="combobox"], [role="slider"])'
+      ) ?? undefined;
+    const stamped = this.#stamped;
+    if (stamped && (stamped.control !== control || stamped.id !== label?.id)) {
+      if (stamped.control.getAttribute('aria-labelledby') === stamped.id) stamped.control.removeAttribute('aria-labelledby');
+      this.#stamped = null;
+    }
+    if (!label || !control || this.#stamped) return;
     if (label instanceof HTMLLabelElement && label.htmlFor) return;
     if ('labels' in control && (control as HTMLInputElement).labels?.length) return;
     if (control.getAttribute('aria-label')) return;
@@ -53,5 +71,6 @@ export class ShipLayoutSetting {
     if (named && named.split(/\s+/).some(id => this.#host.ownerDocument.getElementById(id)?.textContent?.trim())) return;
     if (!label.id) label.id = `sh-lo-setting-${generateUniqueId()}`;
     control.setAttribute('aria-labelledby', label.id);
+    this.#stamped = { control, id: label.id };
   }
 }

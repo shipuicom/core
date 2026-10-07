@@ -23,6 +23,17 @@
   @if (error(); as error) {
     <p class="error">{{ error }}</p>
   }
+  @if (ok(); as ok) {
+    @if (ok.source === 'ts') {
+      <p class="note">
+        An app.config.ts only holds component defaults. Global theme settings (colours, font, sizes, padding) come
+        from <code>ship-config.json</code>, so the current ones are kept.
+      </p>
+    }
+    @if (ok.ignored.length) {
+      <p class="note">Ignored or migrated: {{ ok.ignored.join('; ') }}.</p>
+    }
+  }
 </div>
 
 <div footer>

@@ -2,10 +2,10 @@
 
 sh-editor-toolbar {
   display: block;
-  background: rgb(from var(--base-1) r g b / 70%);
+  background: var(--editor-toolbar-bg, rgb(from var(--base-1) r g b / 70%));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--base-4);
+  border-bottom: 1px solid var(--editor-toolbar-bc, var(--base-4));
   z-index: 10;
 }
 sh-editor-toolbar[data-position='top'] {
@@ -17,7 +17,7 @@ sh-editor-toolbar[data-position='top'] {
 sh-editor-toolbar[data-position='bottom'] {
   position: sticky;
   bottom: 0;
-  border-top: 1px solid var(--base-4);
+  border-top: 1px solid var(--editor-toolbar-bc, var(--base-4));
   border-bottom: none;
   border-bottom-left-radius: inherit;
   border-bottom-right-radius: inherit;
@@ -48,7 +48,7 @@ sh-editor-toolbar[data-position='bottom'] {
 }
 
 .sh-editor-toolbar-inner button:hover:not(:disabled) {
-  background-color: var(--base-3);
+  background-color: var(--editor-btn-bg-h, var(--base-3));
   color: var(--base-12);
 }
 
@@ -58,8 +58,8 @@ sh-editor-toolbar[data-position='bottom'] {
 }
 
 .sh-editor-toolbar-inner button.sh-editor-action-active {
-  background-color: var(--primary-3);
-  color: var(--primary-11);
+  background-color: var(--editor-btn-bg-a, var(--primary-3));
+  color: var(--editor-btn-c-a, var(--primary-11));
 }
 
 .sh-editor-toolbar-inner .divider {

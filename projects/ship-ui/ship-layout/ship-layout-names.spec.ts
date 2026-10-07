@@ -1,9 +1,10 @@
-import { ApplicationRef, Component } from '@angular/core';
+import { ApplicationRef, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 import { computeAccessibleName } from '@ship-ui/core/ship-screenreader';
 import { ShipLayoutRankingItem } from './ship-ranking';
 import { ShipLayoutStatGoal } from './ship-stat-goal';
+import { ShipLayoutSetting } from './ship-setting';
 
 @Component({
   imports: [ShipLayoutStatGoal, ShipLayoutRankingItem],
@@ -53,5 +54,25 @@ describe('ship-layout accessible names', () => {
     expect((el.querySelector('#orphan') as HTMLElement).getAttribute('style')).toContain('--ranking-pct: 0');
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('sh-lo-ranking'));
     warn.mockRestore();
+  });
+
+  it('names a setting control that renders after the first pass', async () => {
+    @Component({
+      imports: [ShipLayoutSetting],
+      template: `<sh-lo-setting><label>Alerts</label><div control>@if (ready()) {<input type="checkbox" />}</div></sh-lo-setting>`,
+    })
+    class LateControlHost {
+      ready = signal(false);
+    }
+    const fixture = TestBed.createComponent(LateControlHost);
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve));
+    fixture.componentInstance.ready.set(true);
+    fixture.detectChanges();
+    await new Promise((resolve) => setTimeout(resolve));
+    const el = fixture.nativeElement as HTMLElement;
+    const input = el.querySelector('input') as HTMLInputElement;
+    expect(input.getAttribute('aria-labelledby')).toBe((el.querySelector('label') as HTMLElement).id);
+    expect(computeAccessibleName(input)).toBe('Alerts');
   });
 });

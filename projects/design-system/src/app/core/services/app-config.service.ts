@@ -2,6 +2,7 @@ import { DOCUMENT, Injectable, effect, inject, signal } from '@angular/core';
 import { ShipConfig, ShipStylesManifest, defaultThemeColors, shipStylesWith } from '@ship-ui/core';
 import { LOCALSTORAGE } from './localstorage.token';
 import { googleFontUrl } from './google-fonts';
+import { SHIP_GLOBAL_KEYS, sanitizeShipConfig } from './ship-config-export';
 
 @Injectable({ providedIn: 'root' })
 export class AppConfigService {
@@ -156,8 +157,20 @@ export class AppConfigService {
   }
 
   private loadConfig(): ShipConfig {
-    const saved = this.#ls.getItemParsed<ShipConfig>('ship-config');
-    return saved || { sidenavType: 'overlay' };
+    let saved: unknown;
+    try {
+      saved = this.#ls.getItemParsed<unknown>('ship-config');
+    } catch {
+      saved = null;
+    }
+    if (!saved) return { sidenavType: 'overlay' };
+    // State persisted by an older version may hold legacy keys or bad values: never let it break the page.
+    const { config, ignored } = sanitizeShipConfig(saved);
+    if (ignored.length) {
+      console.warn(`ship-config: ignored from saved editor state: ${ignored.join(', ')}`);
+      this.#ls.setItemParsed('ship-config', config);
+    }
+    return Object.keys(config).length ? config : { sidenavType: 'overlay' };
   }
 
   get config(): ShipConfig {
@@ -198,9 +211,21 @@ export class AppConfigService {
   }
 
   /** Replaces the editor state with an imported one (see parseShipConfigImport). */
-  importConfig(config: ShipConfig, styles: ShipStylesManifest) {
+  importConfig(config: ShipConfig, styles: ShipStylesManifest, source: 'json' | 'ts' = 'json') {
+    const clean = sanitizeShipConfig(config).config;
+    if (source === 'ts') {
+      // app.config.ts only carries component defaults: keep the global theme settings and the styles manifest.
+      const current = this._configSignal();
+      const globals: Partial<ShipConfig> = {};
+      for (const key of SHIP_GLOBAL_KEYS) if (current[key] !== undefined) (globals as any)[key] = current[key];
+      const keptStyles = this.styles();
+      this.resetConfig();
+      this.updateConfig({ ...clean, ...globals });
+      this.styles.set(keptStyles);
+      return;
+    }
     this.resetConfig();
-    this.updateConfig(config);
+    this.updateConfig(clean);
     this.styles.set(styles);
   }
 

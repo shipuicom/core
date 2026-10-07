@@ -21,7 +21,7 @@ export const SHIP_TOKEN_DEFAULTS = {
 const SCSS_PALETTES = ['primary', 'accent', 'warn', 'error', 'success'] as const;
 
 /** Keys the docs shell applies at runtime (as CSS custom properties) rather than through `SHIP_CONFIG`. */
-const GLOBAL_KEYS: (keyof ShipConfig)[] = [
+export const SHIP_GLOBAL_KEYS = [
   'fontSize',
   'colors',
   'distribution',
@@ -31,7 +31,8 @@ const GLOBAL_KEYS: (keyof ShipConfig)[] = [
   'paddingX',
   'fontFamily',
   'sidenavType',
-];
+] as const satisfies readonly (keyof ShipConfig)[];
+const GLOBAL_KEYS: readonly (keyof ShipConfig)[] = SHIP_GLOBAL_KEYS;
 
 export interface ShipConfigExport {
   /** `app.config.ts`: the component defaults, provided through `SHIP_CONFIG`. */
@@ -135,7 +136,8 @@ function formatValue(value: unknown, indent: string): string {
   const entries = Object.entries(value as Record<string, unknown>);
   if (!entries.length) return '{}';
   const inner = indent + '  ';
-  return `{\n${entries.map(([k, v]) => `${inner}${k}: ${formatValue(v, inner)},`).join('\n')}\n${indent}}`;
+  const key = (k: string) => (/^[A-Za-z_$][\w$]*$/.test(k) ? k : formatValue(k, ''));
+  return `{\n${entries.map(([k, v]) => `${inner}${key(k)}: ${formatValue(v, inner)},`).join('\n')}\n${indent}}`;
 }
 
 /** The component defaults, minus what `exportShipScss` covers, as a `SHIP_CONFIG` provider. */
@@ -183,6 +185,110 @@ export function exportShipEditorJson(config: ShipConfig, styles: ShipStylesManif
 export interface ShipConfigImport {
   config: ShipConfig;
   styles: ShipStylesManifest;
+  /** `ts`: an exported app.config.ts, which only carries component defaults (globals live in ship-config.json). */
+  source: 'json' | 'ts';
+  /** Human readable notes on what was dropped or migrated. */
+  ignored: string[];
+}
+
+const NUMBER_KEYS = ['fontSize', 'borderRadius', 'borderWidth', 'paddingY', 'paddingX'] as const;
+/** Every `ShipConfig` key whose value is a `ShipComponentConfig`. Keep in sync with ship-config.ts. */
+export const SHIP_COMPONENT_KEYS = [
+  'button', 'chip', 'alert', 'progressBar', 'spinner', 'card', 'toggleCard', 'table', 'buttonGroup', 'checkbox',
+  'radio', 'toggle', 'formField', 'icon', 'stepper', 'select', 'accordion', 'tabs', 'eventCard', 'datepicker',
+  'rangeSlider', 'layoutPage', 'layoutSection', 'layoutSetting', 'layoutEmptyState', 'layoutStat', 'layoutStatTrend',
+  'layoutStatGoal', 'layoutStatRing', 'layoutRanking', 'layoutAchievement', 'layoutInbox', 'layoutTableView',
+  'layoutDetails', 'layoutTimeline', 'layoutToolbar', 'breadcrumbs', 'chat', 'avatar', 'chartSparkline',
+  'colorPickerInput', 'editor', 'themeToggle', 'video', 'videoPlaylist',
+] as const satisfies readonly (keyof ShipConfig)[];
+const COMPONENT_STRING_KEYS = ['color', 'variant', 'size'];
+const COMPONENT_BOOLEAN_KEYS = ['readonly', 'sharp', 'dynamic', 'alwaysShow', 'disableUnfocus'];
+/** Removed top-level keys (see projects/ship-ui/MIGRATION.md) and the component they moved to as `variant`. */
+const LEGACY_VARIANT_KEYS: Record<string, string> = { alertVariant: 'alert', cardType: 'card', tableType: 'table' };
+
+function sanitizeComponent(path: string, raw: unknown, ignored: string[]): Record<string, unknown> | undefined {
+  if (!isObject(raw)) {
+    ignored.push(`${path} (expected an object)`);
+    return undefined;
+  }
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (v === undefined || v === null || v === '') continue;
+    if (COMPONENT_STRING_KEYS.includes(k)) {
+      if (typeof v === 'string') out[k] = v;
+      else ignored.push(`${path}.${k} (expected a string)`);
+    } else if (COMPONENT_BOOLEAN_KEYS.includes(k) && (k !== 'disableUnfocus' || path === 'icon')) {
+      if (typeof v === 'boolean') out[k] = v;
+      else ignored.push(`${path}.${k} (expected true/false)`);
+    } else ignored.push(`${path}.${k} (unknown option)`);
+  }
+  return out;
+}
+
+function sanitizeMap(path: string, raw: unknown, type: 'string' | 'number', ignored: string[]) {
+  if (!isObject(raw)) {
+    ignored.push(`${path} (expected an object)`);
+    return undefined;
+  }
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (v === undefined || v === null || v === '') continue;
+    if (type === 'string' ? typeof v === 'string' : typeof v === 'number' && Number.isFinite(v)) out[k] = v;
+    else ignored.push(`${path}.${k} (expected a ${type})`);
+  }
+  return out;
+}
+
+/**
+ * Coerces untrusted data (an import, or editor state persisted by an older version) into a valid `ShipConfig`:
+ * legacy keys are migrated, unknown keys and wrongly typed values are dropped and listed in `ignored`.
+ */
+export function sanitizeShipConfig(raw: unknown): { config: ShipConfig; ignored: string[] } {
+  const ignored: string[] = [];
+  if (!isObject(raw)) return { config: {}, ignored: raw === undefined || raw === null ? [] : ['config (expected an object)'] };
+  const src: Record<string, unknown> = { ...raw };
+
+  if ('event-card' in src) {
+    if (src['eventCard'] === undefined) src['eventCard'] = src['event-card'];
+    delete src['event-card'];
+    ignored.push("'event-card' (renamed to eventCard)");
+  }
+  for (const [legacy, component] of Object.entries(LEGACY_VARIANT_KEYS)) {
+    if (!(legacy in src)) continue;
+    const value = src[legacy];
+    delete src[legacy];
+    const target = isObject(src[component]) ? { ...(src[component] as Record<string, unknown>) } : {};
+    const slotFree = src[component] === undefined || isObject(src[component]);
+    if (typeof value === 'string' && value && slotFree && target['variant'] === undefined) {
+      src[component] = { ...target, variant: value };
+      ignored.push(`${legacy} (moved to ${component}.variant)`);
+    } else ignored.push(`${legacy} (removed)`);
+  }
+
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(src)) {
+    if (value === undefined || value === null || value === '') continue;
+    if ((NUMBER_KEYS as readonly string[]).includes(key)) {
+      if (typeof value === 'number' && Number.isFinite(value)) out[key] = value;
+      else ignored.push(`${key} (expected a number)`);
+    } else if (key === 'fontFamily') {
+      if (typeof value === 'string') out[key] = value;
+      else ignored.push(`${key} (expected a string)`);
+    } else if (key === 'colors' || key === 'distribution') {
+      const map = sanitizeMap(key, value, key === 'colors' ? 'string' : 'number', ignored);
+      if (map && Object.keys(map).length) out[key] = map;
+    } else if ((SHIP_COMPONENT_KEYS as readonly string[]).includes(key)) {
+      const c = sanitizeComponent(key, value, ignored);
+      if (c && Object.keys(c).length) out[key] = c;
+    } else if (key === 'dialogType') {
+      if (value === 'type-b') out[key] = value;
+      else ignored.push(`${key} (expected 'type-b')`);
+    } else if (key === 'sidenavType') {
+      if (value === 'overlay' || value === 'simple') out[key] = value;
+      else ignored.push(`${key} (expected 'overlay' or 'simple')`);
+    } else ignored.push(`${key} (unknown key)`);
+  }
+  return { config: out as ShipConfig, ignored };
 }
 
 const STYLE_KEYS = ['colors', 'variants', 'skins'];
@@ -237,6 +343,7 @@ export function parseShipConfigImport(text: string): ShipConfigImport | { error:
   if (!trimmed) return { error: 'Nothing to import.' };
 
   let data: unknown;
+  let source: 'json' | 'ts' = 'json';
   try {
     data = JSON.parse(trimmed);
   } catch {
@@ -244,6 +351,7 @@ export function parseShipConfigImport(text: string): ShipConfigImport | { error:
     if (!json) return { error: 'Expected JSON (ship-config.json / ship-styles.json) or an exported app.config.ts.' };
     try {
       data = { config: JSON.parse(json) };
+      source = 'ts';
     } catch {
       return { error: 'Could not read the shipConfig object in that app.config.ts.' };
     }
@@ -280,5 +388,6 @@ export function parseShipConfigImport(text: string): ShipConfigImport | { error:
     if (unknown.length) return { error: `Unknown skin(s): ${unknown.join(', ')}.` };
   }
 
-  return { config: config as ShipConfig, styles: styles as ShipStylesManifest };
+  const { config: clean, ignored } = sanitizeShipConfig(config);
+  return { config: clean, styles: styles as ShipStylesManifest, source, ignored };
 }
