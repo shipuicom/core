@@ -1,0 +1,105 @@
+<h1>Palettes</h1>
+<!-- @keywords: palette, colors, color scale, tokens, primary, accent, warn, error, success, base, shipPalettes, contrast, gradient -->
+<p class="lead">
+  Every colour in Ship is a twelve-step scale exposed as custom properties. The built-in scales are hand-tuned for
+  light and dark mode, and you can add your own, which every skin then supports as a colour class.
+</p>
+
+<app-property-viewer>
+  <section>
+    <h4>The scales</h4>
+    <p>
+      Each palette emits <code>--&lt;name&gt;-1</code> to <code>--&lt;name&gt;-12</code>, two gradients
+      <code>-g2</code> / <code>-g3</code>, and <code>-c8</code>, a text colour with enough contrast on step 8. These are
+      live tokens: toggle the theme to see the dark steps.
+    </p>
+    <div class="palettes">
+      <div class="palette">
+        <span></span>
+        @for (step of steps; track step) {
+          <span class="head">{{ step }}</span>
+        }
+        <span class="head">g2</span>
+        <span class="head">g3</span>
+        <span class="head">c8</span>
+      </div>
+      @for (palette of palettes; track palette) {
+        <div class="palette">
+          <span class="name">{{ palette }}</span>
+          @for (step of steps; track step) {
+            <span class="swatch" [style.background]="'var(--' + palette + '-' + step + ')'" [title]="'--' + palette + '-' + step"></span>
+          }
+          <span class="swatch" [style.background]="'var(--' + palette + '-g2)'" [title]="'--' + palette + '-g2'"></span>
+          <span class="swatch" [style.background]="'var(--' + palette + '-g3)'" [title]="'--' + palette + '-g3'"></span>
+          @if (palette !== 'base') {
+            <span class="swatch contrast" [style.background]="'var(--' + palette + '-8)'" [style.color]="'var(--' + palette + '-c8)'" [title]="'--' + palette + '-c8 on --' + palette + '-8'">Aa</span>
+          } @else {
+            <span></span>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <section>
+    <h4>Using the steps</h4>
+    <p>
+      Ship's own skins lean on step 8 for a solid colour, with <code>-c8</code> for the text on it and
+      <code>-g2</code> / <code>-g3</code> for the raised gradient. Steps 1–4 give tinted surfaces and 6–7 borders. The
+      same split works well in your own styles:
+    </p>
+    <ul>
+      <li><b>1–4</b>: tinted backgrounds, from subtle to pressed.</li>
+      <li><b>6–7</b>: borders and separators.</li>
+      <li><b>8–9</b>: solid fills; 9 for hover.</li>
+      <li><b>10–12</b>: coloured text and icons on light surfaces, from lower to higher contrast.</li>
+    </ul>
+    <app-highlight lang="scss" [content]="USAGE" />
+  </section>
+
+  <section>
+    <h4>Colour classes</h4>
+    <p>
+      <code>primary</code>, <code>accent</code>, <code>warn</code>, <code>error</code> and <code>success</code> are colour
+      classes on every skin, usable as a <code>color</code> input or a plain class. <code>base</code> is the neutral
+      grey scale the UI itself is built from.
+    </p>
+    <div class="row">
+      @for (color of colors; track color) {
+        <button shButton [color]="color" variant="raised" size="small">{{ color }}</button>
+      }
+    </div>
+  </section>
+
+  <section>
+    <h4>Add your own palette</h4>
+    <p>
+      <code>$shipPalettes</code> adds scales to the global stylesheet. The shorthand is the hue, saturation and
+      lightness of step 8; Ship generates the other steps and the gradients with the same curve as the theme editor.
+    </p>
+    <app-highlight lang="scss" [content]="CUSTOM" />
+    <p>Or give the full step map, which also lets you override a built-in palette by name:</p>
+    <app-highlight lang="scss" [content]="STEP_MAP" />
+    <p>
+      An added palette is a colour class on every skin, and <code>ShipColor</code> accepts its name:
+    </p>
+    <app-highlight lang="html" [content]="USE_CLASS" />
+  </section>
+
+  <section>
+    <h4>Emit fewer steps</h4>
+    <p>
+      <code>$shipPaletteSteps</code> limits which numbered steps the colour palettes emit. The grey
+      <code>base</code> scale is always emitted in full, because the stylesheet and every skin read it.
+    </p>
+    <app-highlight lang="scss" [content]="STEPS" />
+  </section>
+
+  <section>
+    <h4>Try it live</h4>
+    <p>
+      The theme editor changes the built-in palettes' hue, saturation, lightness and distribution in place and exports
+      the result. See <a routerLink="/theming">Theming & styles</a> for exporting and the <code>ship-styles</code> CLI.
+    </p>
+  </section>
+</app-property-viewer>

@@ -1,0 +1,20 @@
+@use '../guide' as *;
+
+:host {
+  @extend %guide-host;
+  @extend %guide-content;
+}
+
+.matrix {
+  display: grid;
+  grid-template-columns: auto repeat(5, minmax(0, 1fr));
+  gap: var(--space-2);
+  align-items: center;
+  width: 100%;
+  overflow-x: auto;
+
+  .label {
+    font: var(--paragraph-30B);
+    color: var(--base-9);
+  }
+}

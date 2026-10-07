@@ -1,0 +1,11 @@
+@use '../guide' as *;
+
+:host {
+  @extend %guide-host;
+  @extend %guide-content;
+}
+
+ol {
+  max-width: 72ch;
+  padding-left: p2r(20);
+}

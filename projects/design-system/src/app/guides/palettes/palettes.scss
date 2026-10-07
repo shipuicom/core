@@ -1,0 +1,51 @@
+@use '../guide' as *;
+
+:host {
+  @extend %guide-host;
+  @extend %guide-content;
+}
+
+.palette {
+  display: grid;
+  grid-template-columns: p2r(72) repeat(12, minmax(0, 1fr)) repeat(3, minmax(0, 1fr));
+  gap: var(--space-1);
+  width: 100%;
+  align-items: stretch;
+
+  .name {
+    font: var(--paragraph-30B);
+    align-self: center;
+  }
+
+  .head {
+    font: var(--paragraph-40);
+    color: var(--base-9);
+    text-align: center;
+  }
+}
+
+.swatch {
+  height: p2r(36);
+  border-radius: var(--shape-1);
+  border: 1px solid rgb(from var(--base-12) r g b / 8%);
+
+  &.contrast {
+    display: grid;
+    place-items: center;
+    font: var(--paragraph-40B);
+  }
+}
+
+.palettes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  overflow-x: auto;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

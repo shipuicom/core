@@ -1,0 +1,100 @@
+<h1>Theming & styles</h1>
+<!-- @keywords: theme, skins, styles.scss, shipColors, shipVariants, shipSkins, SHIP_CONFIG, dark mode, light mode, font, ship-styles -->
+<p class="lead">
+  Every component ships its own structure (layout, sizing, states). Colour and variant styling, the "skins", come from
+  one global stylesheet you control: keep what you use, drop what you don't, and set project-wide defaults.
+</p>
+
+<app-property-viewer>
+  <section>
+    <h4>The global stylesheet</h4>
+    <p>
+      Import it once at the top of <code>src/styles.scss</code>. It emits the design tokens (palettes, type scale,
+      spacing, shapes) and the skins every component reads. Without it, colour and variant classes style nothing.
+    </p>
+    <app-highlight lang="scss" [content]="STYLES" />
+  </section>
+
+  <section>
+    <h4>Variants × colours</h4>
+    <p>
+      Sheet components take one of four variants and one of the palettes as a class or input. This is the skin the
+      global stylesheet emits for buttons:
+    </p>
+    <div class="matrix">
+      <span></span>
+      @for (color of colors; track color) {
+        <span class="label">{{ color }}</span>
+      }
+      @for (variant of variants; track variant) {
+        <span class="label">{{ variant }}</span>
+        @for (color of colors; track color) {
+          <button shButton [variant]="variant" [color]="color" size="small">Button</button>
+        }
+      }
+    </div>
+  </section>
+
+  <section>
+    <h4>Keep only what you use</h4>
+    <p>
+      Pass a <code>with (...)</code> block to emit fewer colour classes, fewer variants, or no skin at all for a
+      component. A <code>$ship&lt;Name&gt;</code> flag switches that component's skin only; its structure always ships
+      with the component.
+    </p>
+    <app-highlight lang="scss" [content]="WITH" />
+    <table class="token-table">
+      <thead>
+        <tr><th>Setting</th><th>Effect</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>$shipColors</code></td><td>Colour classes every skin emits. Defaults to every palette.</td></tr>
+        <tr><td><code>$shipVariants</code></td><td>Sheet variants every skin emits: <code>simple outlined flat raised</code>.</td></tr>
+        <tr><td><code>$shipSkins</code></td><td>Per component <code>(colors: …, variants: …)</code> overrides of the two lists.</td></tr>
+        <tr><td><code>$ship&lt;Name&gt;: false</code></td><td>Drops that component's skin, e.g. <code>$shipChip</code>, <code>$shipToggle</code>.</td></tr>
+        <tr><td><code>$shipPalettes</code>, <code>$shipPaletteSteps</code></td><td>Add palettes, or emit fewer palette steps. See <a routerLink="/palettes">Palettes</a>.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h4>Generate the block</h4>
+    <p>
+      The theme editor exports the colours, variants and skins you pick as <code>ship-config.json</code> (or a bare
+      <code>ship-styles.json</code>). The <code>ship-styles</code> CLI turns it into the <code>&#64;use</code> block, so
+      the selection lives in one JSON file:
+    </p>
+    <app-highlight lang="shell" [content]="SHIP_STYLES" />
+    <app-highlight lang="scss" [content]="SHIP_STYLES_USE" />
+  </section>
+
+  <section>
+    <h4>Project defaults</h4>
+    <p>
+      <code>SHIP_CONFIG</code> sets the colour, variant, size and modifiers a component uses when the template doesn't
+      say. An input on the element always wins over the config.
+    </p>
+    <app-highlight lang="ts" [content]="CONFIG" />
+  </section>
+
+  <section>
+    <h4>Light and dark</h4>
+    <p>
+      Palettes are <code>light-dark()</code> pairs, so the whole UI follows the system setting. A <code>dark</code> or
+      <code>light</code> class on <code>&lt;html&gt;</code> forces one; the
+      <a routerLink="/theme-toggle">theme toggle</a> sets and remembers it. Inline the init script so a saved choice
+      applies before the first paint:
+    </p>
+    <app-highlight lang="ts" [content]="THEME_HEAD" />
+  </section>
+
+  <section>
+    <h4>Font, size, shape and density</h4>
+    <p>
+      A handful of custom properties on <code>:root</code> retune everything at once. The type scale reads
+      <code>--font-family</code>; rem sizes follow <code>--font-size</code>; corner radii scale with
+      <code>--shape-scale</code>; padding follows the <a routerLink="/spacing">density pair</a>.
+    </p>
+    <app-highlight lang="scss" [content]="KNOBS" />
+  </section>
+</app-property-viewer>

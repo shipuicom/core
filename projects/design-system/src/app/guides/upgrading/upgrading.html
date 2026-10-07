@@ -1,0 +1,67 @@
+<h1>Upgrading</h1>
+<!-- @keywords: upgrade, migrate, migration, ship-migrate, breaking changes, 0.26, rename, codemod -->
+<p class="lead">
+  <code>ship-migrate</code> applies a release's renames to your templates and styles: element tags, CSS custom
+  properties, colour classes, removed inputs, Sass flags and TypeScript class names. What it cannot decide safely, it
+  lists with file and line instead of guessing.
+</p>
+
+<app-property-viewer>
+  <section>
+    <h4>Run it</h4>
+    <ol>
+      <li>Commit or stash your work, so the rewrite is one reviewable diff.</li>
+      <li>Update the package, then do a dry run to see what would change.</li>
+      <li>Run it for real and read the warnings it prints.</li>
+      <li>Make the remaining changes by hand from the migration guide.</li>
+    </ol>
+    <app-highlight lang="shell" [content]="STEPS" />
+    <p>
+      Every change and every warning comes with its file and line. It also warns at the top when no stylesheet loads
+      <code>&#64;ship-ui/core/styles</code>.
+    </p>
+    <app-highlight lang="shell" [content]="OUTPUT" />
+  </section>
+
+  <section>
+    <h4>Options</h4>
+    <table class="token-table">
+      <thead>
+        <tr><th>Option</th><th>Effect</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>[folder]</code> or <code>--src &lt;folder&gt;</code></td><td>Where to look (default <code>./src</code>). <code>node_modules</code>, <code>dist</code> and dot-folders are skipped.</td></tr>
+        <tr><td><code>--dry-run</code></td><td>Print what would change, write nothing.</td></tr>
+        <tr><td><code>--to &lt;version&gt;</code></td><td>Apply one release's rules only (default: every known release, in order).</td></tr>
+        <tr><td><code>--help</code></td><td>Usage. Any option it doesn't know stops it before it reads a file.</td></tr>
+      </tbody>
+    </table>
+    <p>
+      It reads <code>.html</code>, <code>.ts</code> (inline templates and styles), <code>.scss</code>,
+      <code>.sass</code>, <code>.css</code> and <code>.less</code>. Running it twice is safe: the second run changes nothing.
+    </p>
+  </section>
+
+  <section>
+    <h4>How it stays safe</h4>
+    <ul>
+      <li>A generic name such as <code>--miw</code> is renamed only inside a rule or on a tag for the component that read it; elsewhere it may be your own variable, so it is reported instead.</li>
+      <li>A colour class like <code>warning</code> is renamed only on the components that had it; the same class on your own elements is reported.</li>
+      <li>Comments, strings and URLs are never rewritten, and a tag is read to its real end, attribute values and Angular bindings included.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h4>0.26: what to do by hand</h4>
+    <p>The script points at most of these; the <a [href]="MIGRATION_URL" target="_blank">migration guide</a> has the full list and rename tables.</p>
+    <ul>
+      <li>Import <code>&#64;ship-ui/core/styles</code> if you didn't: variant and colour styling now comes from the global stylesheet. See <a routerLink="/theming">Theming & styles</a>.</li>
+      <li>Single padding tokens (<code>--card-p</code>, <code>--list-p</code>, …) became <code>-py</code> / <code>-px</code> pairs fed by the <a routerLink="/spacing">density tiers</a>.</li>
+      <li>Selectors that relied on a <code>base</code> host class: it is no longer added when a component has no variant.</li>
+      <li><code>SHIP_CONFIG</code>: <code>alertVariant</code>, <code>cardType</code> and <code>tableType</code> became <code>alert</code> / <code>card</code> / <code>table</code> <code>{{ '{' }} variant {{ '}' }}</code>.</li>
+      <li><code>sh-list-item-swipe</code> action buttons: <code>.danger</code> / <code>.warning</code> → <code>.error</code> / <code>.warn</code> (old names keep working until 0.27).</li>
+      <li><code>sh-code</code> updates <code>value</code> and its form control when typing pauses, on blur and on <code>flushValue()</code>. For the old per-keystroke behaviour:</li>
+    </ul>
+    <app-highlight lang="html" [content]="VALUE_SYNC" />
+  </section>
+</app-property-viewer>
