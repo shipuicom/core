@@ -1,0 +1,116 @@
+<h1>Spacing & density</h1>
+<!-- @keywords: spacing, density, padding, pad-y, pad-x, tiers, space, shape, radius, compact, comfortable -->
+<p class="lead">
+  Two custom properties set the density of the whole library. Every component's padding is a tier of that pair, so
+  one change makes an app tighter or airier, and any component can still be tuned on its own.
+</p>
+
+<app-property-viewer>
+  <section>
+    <h4>Try the density pair</h4>
+    <p>The sliders set <code>--pad-y</code> and <code>--pad-x</code> for the preview below, the way <code>:root</code> sets them for an app.</p>
+    <div class="controls">
+      <sh-range-slider>
+        <label>--pad-y: {{ padY() }}px</label>
+        <input type="range" min="2" max="16" step="1" [ngModel]="padY()" (ngModelChange)="padY.set(+$event)" />
+      </sh-range-slider>
+      <sh-range-slider>
+        <label>--pad-x: {{ padX() }}px</label>
+        <input type="range" min="4" max="24" step="1" [ngModel]="padX()" (ngModelChange)="padX.set(+$event)" />
+      </sh-range-slider>
+    </div>
+    <div class="preview" [style.--pad-y.px]="padY()" [style.--pad-x.px]="padX()">
+      <sh-card>
+        <h5>Invite a teammate</h5>
+        <sh-form-field>
+          <label>Email</label>
+          <input placeholder="name@company.com" />
+          <sh-icon prefix>envelope</sh-icon>
+        </sh-form-field>
+        <div class="row">
+          <sh-chip class="primary">Editor</sh-chip>
+          <sh-chip>Viewer</sh-chip>
+        </div>
+        <div class="row">
+          <button shButton variant="raised" color="primary">Send invite</button>
+          <button shButton variant="outlined">Cancel</button>
+        </div>
+      </sh-card>
+    </div>
+  </section>
+
+  <section>
+    <h4>Set the density</h4>
+    <app-highlight lang="scss" [content]="DENSITY" />
+    <p>
+      The pair feeds eight tiers per axis. Tiers round to a 2px grid at any density, so borders and text stay crisp:
+    </p>
+    <table class="token-table">
+      <thead>
+        <tr><th>Tier</th><th>Vertical</th><th>At 8px</th><th>Horizontal</th><th>At 12px</th><th></th></tr>
+      </thead>
+      <tbody>
+        @for (t of tiers; track t.tier) {
+          <tr>
+            <td><code>--pad-y-{{ t.tier }}</code> / <code>--pad-x-{{ t.tier }}</code></td>
+            <td>× {{ t.y }}</td>
+            <td>{{ t.yPx }}px</td>
+            <td>× {{ t.x }}</td>
+            <td>{{ t.xPx }}px</td>
+            <td><span class="bar" [style.width.px]="t.xPx"></span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h4>A denser region</h4>
+    <p>
+      Set the pair on <code>:root</code>: the tiers are computed once on <code>&lt;body&gt;</code>, so changing
+      <code>--pad-y</code> deeper in the page doesn't reach them. To give one region its own density, redeclare the
+      tiers its components read there, as the preview above does:
+    </p>
+    <app-highlight lang="scss" [content]="SCOPE" />
+  </section>
+
+  <section>
+    <h4>Tune one component</h4>
+    <p>
+      Each padded component reads its tier through its own pair, <code>--&lt;component&gt;-py</code> and
+      <code>--&lt;component&gt;-px</code> (<code>--card-px</code>, <code>--ff-py</code>, <code>--btn-px</code>, …).
+      Point it at another tier, or at a fixed value, anywhere in the tree:
+    </p>
+    <app-highlight lang="scss" [content]="ONE_COMPONENT" />
+  </section>
+
+  <section>
+    <h4>Space and shape</h4>
+    <p>
+      Gaps between elements use a fixed spacing scale; corner radii use the shape scale, which multiplies by
+      <code>--shape-scale</code>.
+    </p>
+    <table class="token-table">
+      <thead>
+        <tr><th>Space</th><th>Value</th><th></th><th>Shape</th><th>Value</th><th></th></tr>
+      </thead>
+      <tbody>
+        @for (s of space; track s.token; let i = $index) {
+          <tr>
+            <td><code>{{ s.token }}</code></td>
+            <td>{{ s.px }}px</td>
+            <td><span class="bar" [style.width.px]="s.px"></span></td>
+            @if (shapes[i]; as shape) {
+              <td><code>{{ shape.token }}</code></td>
+              <td>{{ shape.px }}px × scale</td>
+              <td><span class="shape" [style.border-radius]="'var(' + shape.token + ')'"></span></td>
+            } @else {
+              <td></td><td></td><td></td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-highlight lang="scss" [content]="SHAPE" />
+  </section>
+</app-property-viewer>

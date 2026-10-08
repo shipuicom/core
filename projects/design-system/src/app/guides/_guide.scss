@@ -1,0 +1,66 @@
+@forward '../ship/showcase';
+@use '../ship/showcase' as *;
+
+// Shared layout for the guide pages: a page column of headed sections with prose, code and live demos.
+%guide-host {
+  @extend %showcase-host;
+  max-width: p2r(960);
+}
+
+%guide-content {
+  h1 {
+    font: var(--title-20B);
+  }
+
+  .lead {
+    font: var(--paragraph-10);
+    color: var(--base-9);
+    max-width: 70ch;
+  }
+
+  app-property-viewer section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: p2r(12);
+
+    > p,
+    > ul {
+      max-width: 72ch;
+    }
+
+    > app-highlight {
+      width: 100%;
+    }
+  }
+
+  h4 {
+    font: var(--title-30B);
+  }
+
+  h5 {
+    font: var(--paragraph-20B);
+  }
+
+  .token-table {
+    width: 100%;
+    border-collapse: collapse;
+    font: var(--paragraph-30);
+
+    th,
+    td {
+      text-align: left;
+      padding: var(--pad-y-2) var(--pad-x-2);
+      border-bottom: var(--border-10);
+    }
+
+    th {
+      font: var(--paragraph-30B);
+      color: var(--base-9);
+    }
+
+    code {
+      white-space: nowrap;
+    }
+  }
+}

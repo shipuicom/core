@@ -62,11 +62,36 @@
         Getting Started
       </button>
 
+      <button action routerLink="/tooling" routerLinkActive="active">
+        <sh-icon class="primary">wrench</sh-icon>
+        Developer Tools
+      </button>
+
+      <button action routerLink="/upgrading" routerLinkActive="active">
+        <sh-icon class="primary">arrow-circle-up</sh-icon>
+        Upgrading
+      </button>
+
       <h3 title>Theme</h3>
 
       <button action (click)="toggleEditor()">
         <sh-icon class="primary">paint-roller</sh-icon>
         Theme Editor (WIP)
+      </button>
+
+      <button action routerLink="/theming" routerLinkActive="active">
+        <sh-icon class="primary">paint-brush</sh-icon>
+        Theming & Styles
+      </button>
+
+      <button action routerLink="/palettes" routerLinkActive="active">
+        <sh-icon class="primary">swatches</sh-icon>
+        Palettes
+      </button>
+
+      <button action routerLink="/spacing" routerLinkActive="active">
+        <sh-icon class="primary">ruler</sh-icon>
+        Spacing & Density
       </button>
 
       <button action routerLink="/typography" routerLinkActive="active">

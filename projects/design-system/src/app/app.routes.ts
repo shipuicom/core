@@ -27,6 +27,11 @@ export const routes: Routes = [
         path: 'theme-editor',
         loadComponent: () => import('./theme-editor/theme-editor'),
       },
+      { path: 'theming', loadComponent: () => import('./guides/theming/theming') },
+      { path: 'palettes', loadComponent: () => import('./guides/palettes/palettes') },
+      { path: 'spacing', loadComponent: () => import('./guides/spacing/spacing') },
+      { path: 'tooling', loadComponent: () => import('./guides/tooling/tooling') },
+      { path: 'upgrading', loadComponent: () => import('./guides/upgrading/upgrading') },
       {
         path: 'theme-toggle',
         loadComponent: () => import('./ship/theme-toggle/theme-toggle'),

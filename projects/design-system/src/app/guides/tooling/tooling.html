@@ -1,0 +1,85 @@
+<h1>Developer tools</h1>
+<!-- @keywords: mcp, model context protocol, ai, cursor, claude, antigravity, snippets, vscode, cli, ship-fg, ship-styles, ship-migrate, ship-mcp, icon font -->
+<p class="lead">
+  The package ships an MCP server so AI agents know the components, editor snippets for every component, and four
+  command-line tools.
+</p>
+
+<app-property-viewer>
+  <section>
+    <h4>MCP server</h4>
+    <p>
+      The Model Context Protocol server gives AI agents the component list, their inputs, outputs and tokens, so they
+      write ShipUI correctly instead of guessing. It runs from the package with one command:
+    </p>
+    <app-highlight lang="shell" [content]="MCP_COMMAND" />
+
+    <h5>Cursor</h5>
+    <ol>
+      <li>Open <b>Settings</b> › <b>Models</b> › <b>MCP</b>.</li>
+      <li>Click <b>+ Add new MCP server</b>.</li>
+      <li>Name <code>ShipUI</code>, type <code>command</code>, command <code>npx &#64;ship-ui/core ship-mcp</code>.</li>
+    </ol>
+
+    <h5>Antigravity</h5>
+    <ol>
+      <li>Open your workspace or global configuration.</li>
+      <li>Add <code>&#64;ship-ui/core</code> to the <code>mcpServers</code> list, or run it with the command above.</li>
+    </ol>
+
+    <p>Agents get these tools:</p>
+    <table class="token-table">
+      <tbody>
+        <tr><td><code>search_components</code></td><td>Find components by name or selector.</td></tr>
+        <tr><td><code>get_component_details</code></td><td>Inputs, outputs, methods, CSS variables and examples for one component.</td></tr>
+        <tr><td><code>get_setup_instructions</code></td><td>Installation and setup steps.</td></tr>
+        <tr><td><code>get_design_tokens</code></td><td>Palettes, type scale, shapes and utility classes.</td></tr>
+        <tr><td><code>get_css_variable_abbreviations</code></td><td>The naming scheme behind tokens like <code>--btn-c-h</code>.</td></tr>
+        <tr><td><code>get_icon_guide</code></td><td>Icon usage and the <code>ship-fg</code> CLI.</td></tr>
+      </tbody>
+    </table>
+
+    <h5>Claude Desktop and other clients</h5>
+    <p>Add the server to the client's MCP configuration, for Claude Desktop <code>claude_desktop_config.json</code>:</p>
+    <app-highlight lang="json" [content]="CLAUDE_DESKTOP" />
+  </section>
+
+  <section>
+    <h4>Editor snippets</h4>
+    <p>
+      TextMate snippets for every component, including "full" versions with choices for colours, variants and sizes.
+      Link the file from <code>.vscode/settings.json</code> or copy it into your project's snippets:
+    </p>
+    <app-highlight lang="shell" [content]="SNIPPETS" />
+  </section>
+
+  <section>
+    <h4>Command-line tools</h4>
+    <table class="token-table">
+      <thead>
+        <tr><th>Command</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>ship-fg</code></td><td>Builds an icon font holding only the Phosphor icons your templates use.</td></tr>
+        <tr><td><code>ship-styles</code></td><td>Turns a <code>ship-config.json</code> / <code>ship-styles.json</code> into the <code>&#64;use … with (...)</code> block. See <a routerLink="/theming">Theming & styles</a>.</td></tr>
+        <tr><td><code>ship-migrate</code></td><td>Rewrites a release's renames in your templates and styles. See <a routerLink="/upgrading">Upgrading</a>.</td></tr>
+        <tr><td><code>ship-mcp</code></td><td>Runs the MCP server above.</td></tr>
+      </tbody>
+    </table>
+    <app-highlight lang="shell" [content]="SHIP_STYLES" />
+    <app-highlight lang="shell" [content]="SHIP_MIGRATE" />
+  </section>
+
+  <section>
+    <h4>Icon font setup</h4>
+    <p>
+      <code>ship-fg</code> scans your sources and writes a subset font plus <code>ship.css</code>. Run it once for builds
+      and in watch mode next to the dev server, and load the stylesheet in <code>index.html</code>. The
+      <a routerLink="/icons">Icons</a> page covers sizes, colours and weights.
+    </p>
+    <app-highlight lang="json" [content]="ICON_SCRIPTS" />
+    <app-highlight lang="html" [content]="ICON_HEAD" />
+    <p>The library's own font files are assets; register them in <code>angular.json</code>:</p>
+    <app-highlight lang="json" [content]="ASSETS" />
+  </section>
+</app-property-viewer>

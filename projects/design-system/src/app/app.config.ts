@@ -49,6 +49,11 @@ export const appConfig: ApplicationConfig = {
           icon: 'play',
           data: { route: '/getting-started' },
         },
+        { id: 'tooling', label: 'Developer Tools', category: 'Guide', icon: 'wrench', data: { route: '/tooling' } },
+        { id: 'upgrading', label: 'Upgrading', category: 'Guide', icon: 'arrow-circle-up', data: { route: '/upgrading' } },
+        { id: 'theming', label: 'Theming & Styles', category: 'Theme', icon: 'paint-brush', data: { route: '/theming' } },
+        { id: 'palettes', label: 'Palettes', category: 'Theme', icon: 'swatches', data: { route: '/palettes' } },
+        { id: 'spacing', label: 'Spacing & Density', category: 'Theme', icon: 'ruler', data: { route: '/spacing' } },
         { id: 'typography', label: 'Typography', category: 'Theme', icon: 'text-t', data: { route: '/typography' } },
         {
           id: 'theme-toggle',
@@ -58,6 +63,7 @@ export const appConfig: ApplicationConfig = {
           data: { route: '/theme-toggle' },
         },
         { id: 'accordions', label: 'Accordions', category: 'Components', data: { route: '/accordions' } },
+        { id: 'a11y-keybindings', label: 'A11y Keybindings', category: 'Directives', icon: 'keyboard', data: { route: '/a11y-keybindings' } },
         { id: 'alerts', label: 'Alerts', category: 'Components', data: { route: '/alerts' } },
         { id: 'avatars', label: 'Avatars', category: 'Components', data: { route: '/avatars' } },
         {
