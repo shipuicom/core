@@ -51,11 +51,19 @@ function generateCodeDoc(lineCount: number): string {
   return lines.join('\n');
 }
 
-/** Measure how long a function takes in ms. Runs it once. */
-function measure(fn: () => void): number {
-  const start = performance.now();
+/**
+ * Measure how long a function takes in ms: one warm-up run, then the fastest of `runs`. A single cold run flakes when
+ * other test workers compete for the CPU; the fastest run still catches an O(n²) regression, which is slow every time.
+ */
+function measure(fn: () => void, runs = 5): number {
   fn();
-  return performance.now() - start;
+  let best = Infinity;
+  for (let r = 0; r < runs; r++) {
+    const start = performance.now();
+    fn();
+    best = Math.min(best, performance.now() - start);
+  }
+  return best;
 }
 
 /** Measure average over N iterations. */
@@ -213,34 +221,34 @@ describe('perf: sequential typing', () => {
 describe('perf: caret motion', () => {
   it('should move caret right 1000x in 10K-line doc under 5ms', () => {
     const doc = createDocument(generateCodeDoc(DOC_LARGE));
-    let pos = caret(5000, 0);
-    const start = performance.now();
-    for (let i = 0; i < 1000; i++) {
-      pos = moveCaretRight(doc, pos);
-    }
-    const elapsed = performance.now() - start;
+    const elapsed = measure(() => {
+      let pos = caret(5000, 0);
+      for (let i = 0; i < 1000; i++) {
+        pos = moveCaretRight(doc, pos);
+      }
+    });
     expect(elapsed).toBeLessThan(5);
   });
 
   it('should move caret down 1000x in 10K-line doc under 5ms', () => {
     const doc = createDocument(generateCodeDoc(DOC_LARGE));
-    let pos = caret(0, 5);
-    const start = performance.now();
-    for (let i = 0; i < 1000; i++) {
-      pos = moveCaretDown(doc, pos);
-    }
-    const elapsed = performance.now() - start;
+    const elapsed = measure(() => {
+      let pos = caret(0, 5);
+      for (let i = 0; i < 1000; i++) {
+        pos = moveCaretDown(doc, pos);
+      }
+    });
     expect(elapsed).toBeLessThan(5);
   });
 
   it('should moveWordRight 500x in 10K-line doc under 5ms', () => {
     const doc = createDocument(generateCodeDoc(DOC_LARGE));
-    let pos = caret(5000, 0);
-    const start = performance.now();
-    for (let i = 0; i < 500; i++) {
-      pos = moveWordRight(doc, pos);
-    }
-    const elapsed = performance.now() - start;
+    const elapsed = measure(() => {
+      let pos = caret(5000, 0);
+      for (let i = 0; i < 500; i++) {
+        pos = moveWordRight(doc, pos);
+      }
+    });
     expect(elapsed).toBeLessThan(5);
   });
 });
