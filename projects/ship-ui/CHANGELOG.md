@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.27.1
+
+### Fixed
+
+- Small form fields (`sh-form-field.small`, `sh-form-field-popover.small`, small datepicker / daterange inputs) are
+  32px tall again; since 0.26.0 they rendered at the default 40px.
+
 ## 0.27.0
 
 Lazy skins and the `ship` cascade layer. Read [MIGRATION.md](./MIGRATION.md).
