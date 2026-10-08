@@ -1,20 +1,23 @@
 @use 'helpers' as *;
+
 @use './datepicker-input-base' as *;
 
-sh-daterange-input {
-  @include datepicker-input-base;
+@layer ship {
+  sh-daterange-input {
+    @include datepicker-input-base;
 
-  sh-popover .popover-content {
-    --dp-w: #{p2r(300)};
-    min-width: var(--dp-w);
-  }
+    sh-popover .popover-content {
+      --dp-w: #{p2r(300)};
+      min-width: var(--dp-w);
+    }
 
-  @for $i from 1 through 3 {
-    sh-form-field-popover.columns-#{$i} {
-      $gap: 1rem;
+    @for $i from 1 through 3 {
+      sh-form-field-popover.columns-#{$i} {
+        $gap: 1rem;
 
-      sh-popover .popover-content {
-        --dp-w: calc(#{p2r($i * 300)} + #{(($i - 1) * $gap)});
+        sh-popover .popover-content {
+          --dp-w: calc(#{p2r($i * 300)} + #{(($i - 1) * $gap)});
+        }
       }
     }
   }

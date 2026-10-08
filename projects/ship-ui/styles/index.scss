@@ -1,9 +1,10 @@
-// Entry point: `@use '@ship-ui/core/styles' with (...)`. A `$ship<Name>` flag switches one component's
-// skin (see ./skins/_index.scss); `$shipColors`, `$shipVariants` and `$shipSkins` decide how much of each skin is emitted.
-// A component's structure ships inside the component itself (its styleUrl), so a flag never removes structure;
-// the flags of components without a skin yet (table, card, dialog, menu, select, sidenav, the layout containers, …)
-// are accepted so a `with (...)` block stays valid, and do nothing until that skin exists. `$shipSortable` is the one
-// exception: the directive has no component to carry its styles, so they are included here behind the flag.
+// Entry point: `@use '@ship-ui/core/styles' with (...)`. It emits the palettes, the colour classes (`.primary`, … one per
+// palette, each pointing the --c-* tokens at its scale) and the few skins that have to be global: the shared sheet
+// surface, the tooltip and the avatar ring (see ./skins/_index.scss). Every component's structure and its variant x
+// colour styles ship inside the component itself (its styleUrl), so they load only with the component.
+// `$shipColors` limits the colour classes, `$shipVariants` the sheet variants. The other `$ship<Name>` flags are
+// accepted so a `with (...)` block stays valid and do nothing. `$shipSortable` is the one exception: the directive has
+// no component to carry its styles, so they are included here behind the flag.
 $useInterTight: true !default;
 $useApexcharts: false !default;
 $shipFormFieldShadow: false !default;
@@ -86,6 +87,8 @@ $shipLayoutTimeline: true !default;
 $shipLayoutToolbar: true !default;
 
 @use 'sass:map';
+@use 'sass:meta';
+@use './skins/colors';
 @use './palettes' with (
   $extra: $shipPalettes,
   $steps: $shipPaletteSteps
@@ -94,84 +97,97 @@ $shipLayoutToolbar: true !default;
 /// Colour classes every skin emits: one per palette, built-in and added.
 $shipColors: map.keys(palettes.$all) !default;
 
-@use './core.scss' with (
-  $useInterTight: $useInterTight,
-  $useApexcharts: $useApexcharts,
-  $shipSortable: $shipSortable,
-  $shipFormFieldShadow: $shipFormFieldShadow,
-  $shipButtonShadow: $shipButtonShadow,
-  $shipChipShadow: $shipChipShadow
-);
+// The --c-* registrations sit outside the layer: they only declare the tokens (non-inheriting), they style nothing.
+@include colors.properties();
 
-@use './skins' with (
-  $colors: $shipColors,
-  $variants: $shipVariants,
-  $overrides: $shipSkins,
-  $enabled: (
-    sheet: $shipSheet,
-    sortable: $shipSortable,
-    alert: $shipAlert,
-    blueprint: $shipBlueprint,
-    toggle: $shipToggle,
-    button: $shipButton,
-    progressBar: $shipProgressBar,
-    checkbox: $shipCheckbox,
-    datepicker: $shipDatepicker,
-    eventCard: $shipEventCard,
-    icon: $shipIcon,
-    menu: $shipMenu,
-    divider: $shipDivider,
-    dialog: $shipDialog,
-    popover: $shipPopover,
-    chip: $shipChip,
-    formField: $shipFormField,
-    codeInput: $shipCodeInput,
-    colorPicker: $shipColorPicker,
-    sidenav: $shipSidenav,
-    list: $shipList,
-    radio: $shipRadio,
-    buttonGroup: $shipButtonGroup,
-    rangeSlider: $shipRangeSlider,
-    tooltip: $shipTooltip,
-    themeToggle: $shipThemeToggle,
-    virtualScroll: $shipVirtualScroll,
-    select: $shipSelect,
-    card: $shipCard,
-    stepper: $shipStepper,
-    spinner: $shipSpinner,
-    toggleCard: $shipToggleCard,
-    table: $shipTable,
-    tabs: $shipTabs,
-    fileUpload: $shipFileUpload,
-    accordion: $shipAccordion,
-    tree: $shipTree,
-    video: $shipVideo,
-    videoPlaylist: $shipVideoPlaylist,
-    chartSparkline: $shipChartSparkline,
-    avatar: $shipAvatar,
-    breadcrumbs: $shipBreadcrumbs,
-    chat: $shipChat,
-    code: $shipCode,
-    editor: $shipEditor,
-    kbd: $shipKbd,
-    listItemSwipe: $shipListItemSwipe,
-    screenreader: $shipScreenreader,
-    spotlight: $shipSpotlight,
-    spreadsheet: $shipSpreadsheet,
-    layoutPage: $shipLayoutPage,
-    layoutSection: $shipLayoutSection,
-    layoutSetting: $shipLayoutSetting,
-    layoutEmptyState: $shipLayoutEmptyState,
-    layoutStat: $shipLayoutStat,
-    layoutStatTrend: $shipLayoutStatTrend,
-    layoutStatGoal: $shipLayoutStatGoal,
-    layoutStatRing: $shipLayoutStatRing,
-    layoutRanking: $shipLayoutRanking,
-    layoutAchievement: $shipLayoutAchievement,
-    layoutInbox: $shipLayoutInbox,
-    layoutTableView: $shipLayoutTableView,
-    layoutDetails: $shipLayoutDetails,
-    layoutTimeline: $shipLayoutTimeline,
-    layoutToolbar: $shipLayoutToolbar
-  )
-);
+// Every ShipUI rule lives in the `ship` layer (component stylesheets wrap themselves in it too), so any unlayered
+// app CSS wins over it regardless of specificity. One layer, not several: inside it the cascade is unchanged.
+@layer ship {
+  @include meta.load-css(
+    './core.scss',
+    $with: (
+      useInterTight: $useInterTight,
+      useApexcharts: $useApexcharts,
+      shipSortable: $shipSortable,
+      shipFormFieldShadow: $shipFormFieldShadow,
+      shipButtonShadow: $shipButtonShadow,
+      shipChipShadow: $shipChipShadow
+    )
+  );
+
+  @include meta.load-css(
+    './skins',
+    $with: (
+      colors: $shipColors,
+      variants: $shipVariants,
+      overrides: $shipSkins,
+      enabled: (
+        sheet: $shipSheet,
+        sortable: $shipSortable,
+        alert: $shipAlert,
+        blueprint: $shipBlueprint,
+        toggle: $shipToggle,
+        button: $shipButton,
+        progressBar: $shipProgressBar,
+        checkbox: $shipCheckbox,
+        datepicker: $shipDatepicker,
+        eventCard: $shipEventCard,
+        icon: $shipIcon,
+        menu: $shipMenu,
+        divider: $shipDivider,
+        dialog: $shipDialog,
+        popover: $shipPopover,
+        chip: $shipChip,
+        formField: $shipFormField,
+        codeInput: $shipCodeInput,
+        colorPicker: $shipColorPicker,
+        sidenav: $shipSidenav,
+        list: $shipList,
+        radio: $shipRadio,
+        buttonGroup: $shipButtonGroup,
+        rangeSlider: $shipRangeSlider,
+        tooltip: $shipTooltip,
+        themeToggle: $shipThemeToggle,
+        virtualScroll: $shipVirtualScroll,
+        select: $shipSelect,
+        card: $shipCard,
+        stepper: $shipStepper,
+        spinner: $shipSpinner,
+        toggleCard: $shipToggleCard,
+        table: $shipTable,
+        tabs: $shipTabs,
+        fileUpload: $shipFileUpload,
+        accordion: $shipAccordion,
+        tree: $shipTree,
+        video: $shipVideo,
+        videoPlaylist: $shipVideoPlaylist,
+        chartSparkline: $shipChartSparkline,
+        avatar: $shipAvatar,
+        breadcrumbs: $shipBreadcrumbs,
+        chat: $shipChat,
+        code: $shipCode,
+        editor: $shipEditor,
+        kbd: $shipKbd,
+        listItemSwipe: $shipListItemSwipe,
+        screenreader: $shipScreenreader,
+        spotlight: $shipSpotlight,
+        spreadsheet: $shipSpreadsheet,
+        layoutPage: $shipLayoutPage,
+        layoutSection: $shipLayoutSection,
+        layoutSetting: $shipLayoutSetting,
+        layoutEmptyState: $shipLayoutEmptyState,
+        layoutStat: $shipLayoutStat,
+        layoutStatTrend: $shipLayoutStatTrend,
+        layoutStatGoal: $shipLayoutStatGoal,
+        layoutStatRing: $shipLayoutStatRing,
+        layoutRanking: $shipLayoutRanking,
+        layoutAchievement: $shipLayoutAchievement,
+        layoutInbox: $shipLayoutInbox,
+        layoutTableView: $shipLayoutTableView,
+        layoutDetails: $shipLayoutDetails,
+        layoutTimeline: $shipLayoutTimeline,
+        layoutToolbar: $shipLayoutToolbar
+      )
+    )
+  );
+}

@@ -1,253 +1,255 @@
 @use 'helpers' as *;
 
-sh-tree {
-  --tree-bg: var(--base-2);
-  --tree-bc: var(--base-3);
-  --tree-c: var(--base-12);
-  --tree-bg-h: var(--base-3);
-  --tree-bg-a: var(--base-4);
-  --tree-bg-s: var(--base-4);
-  --tree-guide-c: var(--base-4);
-  --tree-caret-c: var(--base-9);
-  --tree-caret-c-h: var(--base-12);
-  --tree-ic: var(--base-9);
-  --tree-folder-ic: var(--primary-8);
-  --tree-indent-step: #{p2r(12)};
-  --tree-pl: #{p2r(12)};
-  --tree-pr: #{p2r(6)};
+@layer ship {
+  sh-tree {
+    --tree-bg: var(--base-2);
+    --tree-bc: var(--base-3);
+    --tree-c: var(--base-12);
+    --tree-bg-h: var(--base-3);
+    --tree-bg-a: var(--base-4);
+    --tree-bg-s: var(--base-4);
+    --tree-guide-c: var(--base-4);
+    --tree-caret-c: var(--base-9);
+    --tree-caret-c-h: var(--base-12);
+    --tree-ic: var(--base-9);
+    --tree-folder-ic: var(--primary-8);
+    --tree-indent-step: #{p2r(12)};
+    --tree-pl: #{p2r(12)};
+    --tree-pr: #{p2r(6)};
 
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  background: var(--tree-bg);
-  border: 1px solid var(--tree-bc);
-  border-radius: var(--shape-2);
-  overflow: hidden;
-  box-shadow: var(--box-shadow-10);
-
-  .sh-tree-container {
-    flex: 1;
-    padding: p2r(8) 0;
-    overflow-y: auto;
-    position: relative;
-  }
-
-  .sh-tree-node {
     display: flex;
-    align-items: center;
-    height: p2r(32);
-    position: relative;
-    cursor: pointer;
-    user-select: none;
-    color: var(--tree-c);
-    font: var(--paragraph-20);
-    gap: p2r(6);
-    transition: background 120ms ease;
-    padding-left: calc(var(--tree-pl) + var(--tree-depth, 0) * var(--tree-indent-step));
-    padding-right: var(--tree-pr);
+    flex-direction: column;
+    width: 100%;
     background: var(--tree-bg);
+    border: 1px solid var(--tree-bc);
+    border-radius: var(--shape-2);
+    overflow: hidden;
+    box-shadow: var(--box-shadow-10);
 
-    &:hover {
-      background: var(--tree-bg-h);
+    .sh-tree-container {
+      flex: 1;
+      padding: p2r(8) 0;
+      overflow-y: auto;
+      position: relative;
     }
 
-    &:focus {
-      outline: none;
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--primary-8, currentColor);
-      outline-offset: -2px;
-    }
-
-    &.is-selected {
-      background: var(--tree-bg-s);
-    }
-
-    &.is-grabbed {
-      outline: 2px dashed var(--primary-8, currentColor);
-      outline-offset: -2px;
-      background: var(--tree-bg-a, var(--tree-bg-h));
-    }
-
-    &.sortable-ghost {
-      opacity: 0.4;
-      background: var(--tree-bg-a);
-    }
-
-    .indent-guide {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 1px;
-      border-left: 1px solid var(--tree-guide-c);
-      opacity: 0.5;
-      left: calc(
-        var(--tree-pl) + (var(--tree-indent-step) / 2) + var(--tree-guide-i, 0) * var(--tree-indent-step)
-      );
-    }
-
-    .caret-container {
+    .sh-tree-node {
       display: flex;
       align-items: center;
-      justify-content: center;
-      width: var(--tree-indent-step);
-      height: p2r(16);
-      z-index: 2;
+      height: p2r(32);
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      color: var(--tree-c);
+      font: var(--paragraph-20);
+      gap: p2r(6);
+      transition: background 120ms ease;
+      padding-left: calc(var(--tree-pl) + var(--tree-depth, 0) * var(--tree-indent-step));
+      padding-right: var(--tree-pr);
+      background: var(--tree-bg);
 
-      &:has(+ .node-icon) {
-        position: absolute;
-        opacity: 0;
-        z-index: 3;
-        width: var(--tree-indent-step);
+      &:hover {
+        background: var(--tree-bg-h);
       }
 
-      .caret-btn {
-        background: none;
-        border: none;
-        padding: 0;
-        cursor: pointer;
+      &:focus {
+        outline: none;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--primary-8, currentColor);
+        outline-offset: -2px;
+      }
+
+      &.is-selected {
+        background: var(--tree-bg-s);
+      }
+
+      &.is-grabbed {
+        outline: 2px dashed var(--primary-8, currentColor);
+        outline-offset: -2px;
+        background: var(--tree-bg-a, var(--tree-bg-h));
+      }
+
+      &.sortable-ghost {
+        opacity: 0.4;
+        background: var(--tree-bg-a);
+      }
+
+      .indent-guide {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        border-left: 1px solid var(--tree-guide-c);
+        opacity: 0.5;
+        left: calc(
+          var(--tree-pl) + (var(--tree-indent-step) / 2) + var(--tree-guide-i, 0) * var(--tree-indent-step)
+        );
+      }
+
+      .caret-container {
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--tree-caret-c);
-        border-radius: var(--shape-1);
-        width: 100%;
-        height: 100%;
-        position: relative;
-        transition:
-          background 150ms ease,
-          color 150ms ease;
+        width: var(--tree-indent-step);
+        height: p2r(16);
+        z-index: 2;
 
-        &::after {
-          content: '';
+        &:has(+ .node-icon) {
           position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          width: p2r(24);
-          height: p2r(24);
-          z-index: 1;
+          opacity: 0;
+          z-index: 3;
+          width: var(--tree-indent-step);
         }
 
-        &:hover {
-          color: var(--tree-caret-c-h);
+        .caret-btn {
+          background: none;
+          border: none;
+          padding: 0;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--tree-caret-c);
+          border-radius: var(--shape-1);
+          width: 100%;
+          height: 100%;
+          position: relative;
+          transition:
+            background 150ms ease,
+            color 150ms ease;
+
+          &::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: p2r(24);
+            height: p2r(24);
+            z-index: 1;
+          }
+
+          &:hover {
+            color: var(--tree-caret-c-h);
+          }
         }
       }
-    }
 
-    .node-icon {
-      color: var(--tree-ic);
-      // Not a flex box: Safari measures a ligature icon's text as wider than its glyph inside flex and centres it out
-      // of view (the open folder came out clipped). A block with centred text renders the glyph in place.
-      display: inline-block;
-      text-align: center;
-      vertical-align: middle;
-      width: var(--tree-indent-step);
-
-      &.folder {
-        color: var(--tree-folder-ic);
-      }
-
-      &:has(~ .node-content sh-tree-node sh-icon) {
-        display: none;
-      }
-    }
-
-    &.is-folder {
-      sh-tree-node .sh-tree-node-left sh-icon {
-        color: var(--tree-folder-ic);
-      }
-    }
-
-    &:not(.is-folder) {
-      sh-tree-node .sh-tree-node-left sh-icon {
+      .node-icon {
         color: var(--tree-ic);
-      }
-    }
-
-    .node-content {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-    }
-
-    .node-name {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-
-  sh-tree-node {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    gap: p2r(8);
-    justify-content: space-between;
-    min-width: 0;
-
-    .sh-tree-node-left {
-      display: flex;
-      align-items: center;
-      gap: p2r(4);
-      padding-left: p2r(4);
-      overflow: hidden;
-      min-width: 0;
-      flex: 1;
-
-      sh-icon {
+        // Not a flex box: Safari measures a ligature icon's text as wider than its glyph inside flex and centres it out
+        // of view (the open folder came out clipped). A block with centred text renders the glyph in place.
         display: inline-block;
         text-align: center;
         vertical-align: middle;
         width: var(--tree-indent-step);
+
+        &.folder {
+          color: var(--tree-folder-ic);
+        }
+
+        &:has(~ .node-content sh-tree-node sh-icon) {
+          display: none;
+        }
       }
-    }
 
-    .sh-tree-node-label {
-      display: inline-block;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      min-width: 0;
+      &.is-folder {
+        sh-tree-node .sh-tree-node-left sh-icon {
+          color: var(--tree-folder-ic);
+        }
+      }
 
-      span {
+      &:not(.is-folder) {
+        sh-tree-node .sh-tree-node-left sh-icon {
+          color: var(--tree-ic);
+        }
+      }
+
+      .node-content {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+      }
+
+      .node-name {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
     }
 
-    .sh-tree-node-actions,
-    sh-tree-node-actions {
+    sh-tree-node {
       display: flex;
       align-items: center;
+      width: 100%;
       gap: p2r(8);
+      justify-content: space-between;
+      min-width: 0;
+
+      .sh-tree-node-left {
+        display: flex;
+        align-items: center;
+        gap: p2r(4);
+        padding-left: p2r(4);
+        overflow: hidden;
+        min-width: 0;
+        flex: 1;
+
+        sh-icon {
+          display: inline-block;
+          text-align: center;
+          vertical-align: middle;
+          width: var(--tree-indent-step);
+        }
+      }
+
+      .sh-tree-node-label {
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+
+        span {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      .sh-tree-node-actions,
+      sh-tree-node-actions {
+        display: flex;
+        align-items: center;
+        gap: p2r(8);
+      }
+
     }
 
+    .empty-state {
+      padding: p2r(32);
+      text-align: center;
+      color: var(--tree-caret-c);
+      font: var(--paragraph-20);
+    }
   }
 
-  .empty-state {
-    padding: p2r(32);
-    text-align: center;
-    color: var(--tree-caret-c);
-    font: var(--paragraph-20);
+  // Visually hidden live region announced by the tree.
+  .sh-tree-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
-}
-
-// Visually hidden live region announced by the tree.
-.sh-tree-live {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
 }

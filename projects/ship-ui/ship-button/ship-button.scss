@@ -1,102 +1,66 @@
 @use 'helpers' as *;
 
-[shButton] {
-  --btn-h: #{p2r(40)};
-  --btn-mw: #{p2r(40)};
-  --btn-f: var(--paragraph-20);
-  --btn-py: 0;
-  --btn-px: var(--pad-x-3);
-  --btn-o-a: 0.05;
-
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: p2r(11);
-  position: relative;
-  padding: var(--btn-py) var(--btn-px);
-  transition: color 80ms linear;
-  min-width: var(--btn-mw);
-  cursor: pointer;
-  outline: none;
-  line-height: inherit;
-  user-select: none;
-  appearance: none;
-  overflow: visible;
-  vertical-align: middle;
-  text-decoration: none;
-  height: var(--btn-h);
-  box-shadow: var(--btn-bs);
-  font: var(--btn-f);
-
-  transition: transform 250ms ease-in;
-  transform: scale(1);
-
-  &:before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(var(--dark-text) 30%, transparent);
-    opacity: 0;
-    transition: opacity 175ms linear;
+@layer ship {
+  // Skin: the surface comes from the sheet; filled variants get a stronger press overlay.
+  [shButton] {
+    &.raised,
+    &.flat {
+      --btn-o-a: 0.1;
+    }
   }
 
-  &:active {
-    transform: scale(0.98);
+  [shButton] {
+    --btn-h: #{p2r(40)};
+    --btn-mw: #{p2r(40)};
+    --btn-f: var(--paragraph-20);
+    --btn-py: 0;
+    --btn-px: var(--pad-x-3);
+    --btn-o-a: 0.05;
+
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: p2r(11);
+    position: relative;
+    padding: var(--btn-py) var(--btn-px);
+    transition: color 80ms linear;
+    min-width: var(--btn-mw);
+    cursor: pointer;
+    outline: none;
+    line-height: inherit;
+    user-select: none;
+    appearance: none;
+    overflow: visible;
+    vertical-align: middle;
+    text-decoration: none;
+    height: var(--btn-h);
+    box-shadow: var(--btn-bs);
+    font: var(--btn-f);
+
+    transition: transform 250ms ease-in;
+    transform: scale(1);
 
     &:before {
-      opacity: var(--btn-o-a);
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(var(--dark-text) 30%, transparent);
+      opacity: 0;
+      transition: opacity 175ms linear;
     }
-  }
 
-  sh-icon {
-    rotate: var(--btn-ir);
-    transition: rotate 125ms ease-in-out;
-  }
+    &:active {
+      transform: scale(0.98);
 
-  sh-icon:first-child {
-    margin-left: p2r(-3);
-  }
-
-  sh-icon:last-child {
-    margin-right: p2r(-3);
-  }
-
-  &.rotated-icon sh-icon {
-    --btn-ir: 180deg;
-  }
-
-  &.small {
-    --btn-h: #{p2r(32)};
-    --btn-mw: #{p2r(32)};
-    --btn-f: var(--paragraph-30);
-
-    --btn-px: var(--pad-x-2);
-    gap: p2r(5);
+      &:before {
+        opacity: var(--btn-o-a);
+      }
+    }
 
     sh-icon {
-      font-size: p2r(16);
-    }
-
-    sh-icon:first-child {
-      margin-left: p2r(-1);
-    }
-
-    sh-icon:last-child {
-      margin-right: p2r(-1);
-    }
-  }
-
-  &.xsmall {
-    --btn-h: #{p2r(24)};
-    --btn-mw: #{p2r(24)};
-    --btn-f: var(--paragraph-40);
-
-    --btn-px: var(--pad-x-2);
-    gap: p2r(4);
-
-    sh-icon {
-      font-size: p2r(12);
+      rotate: var(--btn-ir);
+      transition: rotate 125ms ease-in-out;
     }
 
     sh-icon:first-child {
@@ -106,33 +70,79 @@
     sh-icon:last-child {
       margin-right: p2r(-3);
     }
-  }
 
-  &.no-bg {
-    --sheet-bg: transparent;
-    background: transparent;
-
-    &.simple {
-      --sheet-bc: transparent;
+    &.rotated-icon sh-icon {
+      --btn-ir: 180deg;
     }
-  }
 
-  &[disabled] {
-    opacity: 0.5;
-    pointer-events: none;
-    user-select: none;
-  }
+    &.small {
+      --btn-h: #{p2r(32)};
+      --btn-mw: #{p2r(32)};
+      --btn-f: var(--paragraph-30);
 
-  &[readonly],
-  &.readonly {
-    pointer-events: none;
-    user-select: none;
-  }
+      --btn-px: var(--pad-x-2);
+      gap: p2r(5);
 
-  &[disabled],
-  &[readonly] {
-    &:active {
-      transform: scale(1);
+      sh-icon {
+        font-size: p2r(16);
+      }
+
+      sh-icon:first-child {
+        margin-left: p2r(-1);
+      }
+
+      sh-icon:last-child {
+        margin-right: p2r(-1);
+      }
+    }
+
+    &.xsmall {
+      --btn-h: #{p2r(24)};
+      --btn-mw: #{p2r(24)};
+      --btn-f: var(--paragraph-40);
+
+      --btn-px: var(--pad-x-2);
+      gap: p2r(4);
+
+      sh-icon {
+        font-size: p2r(12);
+      }
+
+      sh-icon:first-child {
+        margin-left: p2r(-3);
+      }
+
+      sh-icon:last-child {
+        margin-right: p2r(-3);
+      }
+    }
+
+    &.no-bg {
+      --sheet-bg: transparent;
+      background: transparent;
+
+      &.simple {
+        --sheet-bc: transparent;
+      }
+    }
+
+    &[disabled] {
+      opacity: 0.5;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    &[readonly],
+    &.readonly {
+      pointer-events: none;
+      user-select: none;
+    }
+
+    &[disabled],
+    &[readonly] {
+      &:active {
+        transform: scale(1);
+      }
     }
   }
 }

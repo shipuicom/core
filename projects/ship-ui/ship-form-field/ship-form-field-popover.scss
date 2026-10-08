@@ -1,6 +1,9 @@
 @use 'helpers' as *;
+
 @use './form-field-base' as *;
 
-sh-form-field-popover {
-  @include form-field-base;
+@layer ship {
+  sh-form-field-popover {
+    @include form-field-base;
+  }
 }

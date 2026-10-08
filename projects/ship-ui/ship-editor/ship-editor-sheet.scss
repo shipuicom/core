@@ -1,25 +1,27 @@
 @use 'helpers' as *;
 
-sh-editor-sheet {
-  display: block;
+@layer ship {
+  sh-editor-sheet {
+    display: block;
 
-  .sh-editor-sheet-preview {
-    position: relative;
-    cursor: pointer;
-
-    // The preview is inert — the sheet is the editing surface.
-    sh-editor {
-      pointer-events: none;
-    }
-
-    .sh-editor-sheet-preview-hit {
-      position: absolute;
-      inset: 0;
-      border: none;
-      background: transparent;
-      padding: 0;
+    .sh-editor-sheet-preview {
+      position: relative;
       cursor: pointer;
-      width: 100%;
+
+      // The preview is inert — the sheet is the editing surface.
+      sh-editor {
+        pointer-events: none;
+      }
+
+      .sh-editor-sheet-preview-hit {
+        position: absolute;
+        inset: 0;
+        border: none;
+        background: transparent;
+        padding: 0;
+        cursor: pointer;
+        width: 100%;
+      }
     }
   }
 }

@@ -1,162 +1,164 @@
 @use 'helpers' as *;
 
-sh-lo-stat {
-  --stat-bg: var(--base-1);
-  --stat-bc: var(--base-4);
-  --stat-py: var(--pad-y-6);
-  --stat-px: var(--pad-x-6);
-  --stat-s: var(--shape-3);
-  --stat-gap: var(--space-4);
-  --stat-ic: var(--base-8);
-  --stat-chart-h: #{p2r(40)};
+@layer ship {
+  sh-lo-stat {
+    --stat-bg: var(--base-1);
+    --stat-bc: var(--base-4);
+    --stat-py: var(--pad-y-6);
+    --stat-px: var(--pad-x-6);
+    --stat-s: var(--shape-3);
+    --stat-gap: var(--space-4);
+    --stat-ic: var(--base-8);
+    --stat-chart-h: #{p2r(40)};
 
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-areas:
-    'icon text'
-    'chart chart';
-  align-items: start;
-  gap: var(--stat-gap);
-  padding: var(--stat-py) var(--stat-px);
-  background-color: var(--stat-bg);
-  border: var(--border-10);
-  border-color: var(--stat-bc);
-  border-radius: var(--stat-s);
-  overflow: hidden;
-  min-width: 0;
-
-  // No icon slotted: drop its column, otherwise the column gap indents the text by one gap.
-  &:not(:has(> .icon > *)) {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      'text'
-      'chart';
-  }
-
-  > .icon {
-    grid-area: icon;
-    display: flex;
-    color: var(--stat-ic);
-    font-size: #{p2r(20)};
-
-    &:empty {
-      display: none;
-    }
-  }
-
-  > .text {
-    grid-area: text;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    min-width: 0;
-
-    > p,
-    > [label] {
-      font: var(--paragraph-30);
-    }
-
-    > .value {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-2);
-
-      > sh-chip,
-      > [delta] {
-        flex: 0 0 auto;
-      }
-
-      > h2,
-      > h3,
-      > [value] {
-        font: var(--title-30B);
-      }
-    }
-  }
-
-  > .chart {
-    grid-area: chart;
-    height: var(--stat-chart-h);
-
-    > * {
-      width: 100%;
-      height: 100%;
-    }
-
-    &:empty {
-      display: none;
-    }
-  }
-
-  // Icon in a tinted square beside the text; chart to the right of the value.
-  &.type-b {
+    display: grid;
+    grid-template-columns: auto 1fr;
     grid-template-areas:
       'icon text'
-      'icon chart';
+      'chart chart';
+    align-items: start;
+    gap: var(--stat-gap);
+    padding: var(--stat-py) var(--stat-px);
+    background-color: var(--stat-bg);
+    border: var(--border-10);
+    border-color: var(--stat-bc);
+    border-radius: var(--stat-s);
+    overflow: hidden;
+    min-width: 0;
 
-    > .icon {
-      align-items: center;
-      justify-content: center;
-      width: #{p2r(44)};
-      height: #{p2r(44)};
-      border-radius: var(--shape-2);
-      background-color: var(--base-3);
-      font-size: #{p2r(22)};
+    // No icon slotted: drop its column, otherwise the column gap indents the text by one gap.
+    &:not(:has(> .icon > *)) {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        'text'
+        'chart';
     }
-  }
-
-  // Flush: same hairline card, no padding — the text sits in its own inset
-  // and the chart bleeds to the edges.
-  &.type-c {
-    --stat-py: 0;
-    --stat-px: 0;
-    --stat-gap: 0;
 
     > .icon {
-      padding: var(--space-4) 0 0 var(--space-4);
+      grid-area: icon;
+      display: flex;
+      color: var(--stat-ic);
+      font-size: #{p2r(20)};
+
+      &:empty {
+        display: none;
+      }
     }
 
     > .text {
-      padding: var(--space-4);
-    }
+      grid-area: text;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      min-width: 0;
 
-    > .icon:not(:empty) + .text {
-      padding-left: var(--space-3);
-    }
+      > p,
+      > [label] {
+        font: var(--paragraph-30);
+      }
 
-    > .chart {
-      height: calc(var(--stat-chart-h) + var(--space-2));
-    }
-  }
+      > .value {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
 
-  // Highlighted headline tile: colored wash, border, icon and value; the chart
-  // runs to the card edges.
-  &.type-d {
-    --stat-c: var(--primary-8);
-    --stat-ic: var(--stat-c);
-    --stat-bc: rgb(from var(--stat-c) r g b / 0.4);
+        > sh-chip,
+        > [delta] {
+          flex: 0 0 auto;
+        }
 
-    padding-bottom: 0;
-    background-image: radial-gradient(130% 100% at 0% 0%, rgb(from var(--stat-c) r g b / 0.2), transparent 65%);
-
-    > .text > .value > h2,
-    > .text > .value > h3,
-    > .text > .value > [value] {
-      color: var(--stat-c);
-    }
-
-    > .chart {
-      margin: 0 calc(var(--stat-px) * -1);
-      height: calc(var(--stat-chart-h) + var(--space-4));
-
-      > * {
-        display: block;
+        > h2,
+        > h3,
+        > [value] {
+          font: var(--title-30B);
+        }
       }
     }
 
-    &:has(> .chart:empty) {
-      padding-bottom: var(--stat-py);
+    > .chart {
+      grid-area: chart;
+      height: var(--stat-chart-h);
+
+      > * {
+        width: 100%;
+        height: 100%;
+      }
+
+      &:empty {
+        display: none;
+      }
+    }
+
+    // Icon in a tinted square beside the text; chart to the right of the value.
+    &.type-b {
+      grid-template-areas:
+        'icon text'
+        'icon chart';
+
+      > .icon {
+        align-items: center;
+        justify-content: center;
+        width: #{p2r(44)};
+        height: #{p2r(44)};
+        border-radius: var(--shape-2);
+        background-color: var(--base-3);
+        font-size: #{p2r(22)};
+      }
+    }
+
+    // Flush: same hairline card, no padding — the text sits in its own inset
+    // and the chart bleeds to the edges.
+    &.type-c {
+      --stat-py: 0;
+      --stat-px: 0;
+      --stat-gap: 0;
+
+      > .icon {
+        padding: var(--space-4) 0 0 var(--space-4);
+      }
+
+      > .text {
+        padding: var(--space-4);
+      }
+
+      > .icon:not(:empty) + .text {
+        padding-left: var(--space-3);
+      }
+
+      > .chart {
+        height: calc(var(--stat-chart-h) + var(--space-2));
+      }
+    }
+
+    // Highlighted headline tile: colored wash, border, icon and value; the chart
+    // runs to the card edges.
+    &.type-d {
+      --stat-c: var(--c-8, var(--primary-8));
+      --stat-ic: var(--stat-c);
+      --stat-bc: rgb(from var(--stat-c) r g b / 0.4);
+
+      padding-bottom: 0;
+      background-image: radial-gradient(130% 100% at 0% 0%, rgb(from var(--stat-c) r g b / 0.2), transparent 65%);
+
+      > .text > .value > h2,
+      > .text > .value > h3,
+      > .text > .value > [value] {
+        color: var(--stat-c);
+      }
+
+      > .chart {
+        margin: 0 calc(var(--stat-px) * -1);
+        height: calc(var(--stat-chart-h) + var(--space-4));
+
+        > * {
+          display: block;
+        }
+      }
+
+      &:has(> .chart:empty) {
+        padding-bottom: var(--stat-py);
+      }
     }
   }
 }

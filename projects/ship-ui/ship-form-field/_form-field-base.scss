@@ -3,6 +3,20 @@
 /// Everything `sh-form-field` and `sh-form-field-popover` share: the popover variant renders the same label,
 /// input-wrap, affixes and helpers, so each component includes this into its own stylesheet.
 @mixin form-field-base {
+  // Validation state on the field itself tints its icons. `.warning` stays as an alias for one minor. // structure-lint: allow — `.warning` is a 0.26 alias of `.warn` for one minor
+  &.warn,
+  &.warning { // structure-lint: allow — `.warning` is a 0.26 alias of `.warn` for one minor
+    --ff-ic: var(--warn-8);
+  }
+
+  &.error {
+    --ff-ic: var(--error-8);
+  }
+
+  &.success {
+    --ff-ic: var(--success-8);
+  }
+
   --ff-s: var(--shape-2);
   --ff-bc: var(--base-4);
   --ff-boxfix-bg: var(--base-2);
@@ -190,7 +204,7 @@
     }
 
     sh-icon {
-      color: var(--ff-ic);
+      color: var(--c-8, var(--ff-ic));
       transition: color 125ms linear;
     }
 

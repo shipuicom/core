@@ -1,106 +1,108 @@
 @use 'helpers' as *;
 
-sh-lo-toolbar {
-  --toolbar-h: #{p2r(44)};
-  --toolbar-gap: var(--space-1);
-  --toolbar-py: 0;
-  --toolbar-px: 0;
-  --toolbar-bg: var(--base-1);
-  --toolbar-bc: var(--base-4);
-  --toolbar-s: var(--shape-2);
-  --toolbar-btn-si: #{p2r(32)};
-  --toolbar-btn-bg-h: var(--base-3);
+@layer ship {
+  sh-lo-toolbar {
+    --toolbar-h: #{p2r(44)};
+    --toolbar-gap: var(--space-1);
+    --toolbar-py: 0;
+    --toolbar-px: 0;
+    --toolbar-bg: var(--base-1);
+    --toolbar-bc: var(--base-4);
+    --toolbar-s: var(--shape-2);
+    --toolbar-btn-si: #{p2r(32)};
+    --toolbar-btn-bg-h: var(--base-3);
 
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: var(--toolbar-gap);
-  height: var(--toolbar-h);
-  padding: var(--toolbar-py) var(--toolbar-px);
-  min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
-  // Flat icon buttons: square, transparent until hovered.
-  > [shButton],
-  > sh-menu [shButton],
-  > .end [shButton] {
-    --btn-h: var(--toolbar-btn-si);
-    --btn-mw: var(--toolbar-btn-si);
-    --sheet-bg: transparent;
-    --sheet-bc: transparent;
-
-    flex: 0 0 auto;
-    padding: 0 p2r(6);
-    box-shadow: none;
-
-    > sh-icon:only-child {
-      margin: 0;
-    }
-
-    &:hover {
-      --sheet-bg: var(--toolbar-btn-bg-h);
-    }
-  }
-
-  > sh-checkbox {
-    flex: 0 0 auto;
-    padding: 0 p2r(6);
-  }
-
-  > sh-divider {
-    flex: 0 0 #{p2r(1)};
-    flex-direction: column;
-    width: p2r(1);
-    height: p2r(20);
-    margin: 0 var(--space-1);
-    gap: 0;
-
-    &::before,
-    &::after {
-      width: 100%;
-      height: auto;
-    }
-  }
-
-  > .end {
     display: flex;
+    flex-wrap: nowrap;
     align-items: center;
-    gap: var(--space-1);
-    flex: 0 0 auto;
-    margin-inline-start: auto;
-    padding-inline-start: var(--space-3);
-    font: var(--paragraph-30);
-    color: var(--base-8);
-    white-space: nowrap;
+    gap: var(--toolbar-gap);
+    height: var(--toolbar-h);
+    padding: var(--toolbar-py) var(--toolbar-px);
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
 
-    > span,
-    > p {
-      padding: 0 var(--space-2);
-    }
-
-    &:empty {
+    &::-webkit-scrollbar {
       display: none;
     }
-  }
 
-  // Boxed surface.
-  &.type-b {
-    --toolbar-px: var(--pad-x-2);
+    // Flat icon buttons: square, transparent until hovered.
+    > [shButton],
+    > sh-menu [shButton],
+    > .end [shButton] {
+      --btn-h: var(--toolbar-btn-si);
+      --btn-mw: var(--toolbar-btn-si);
+      --sheet-bg: transparent;
+      --sheet-bc: transparent;
 
-    background-color: var(--toolbar-bg);
-    border: var(--border-10);
-    border-color: var(--toolbar-bc);
-    border-radius: var(--toolbar-s);
-  }
+      flex: 0 0 auto;
+      padding: 0 p2r(6);
+      box-shadow: none;
 
-  // Divided from the rows below.
-  &.type-c {
-    border-bottom: var(--border-10);
-    border-color: var(--toolbar-bc);
+      > sh-icon:only-child {
+        margin: 0;
+      }
+
+      &:hover {
+        --sheet-bg: var(--toolbar-btn-bg-h);
+      }
+    }
+
+    > sh-checkbox {
+      flex: 0 0 auto;
+      padding: 0 p2r(6);
+    }
+
+    > sh-divider {
+      flex: 0 0 #{p2r(1)};
+      flex-direction: column;
+      width: p2r(1);
+      height: p2r(20);
+      margin: 0 var(--space-1);
+      gap: 0;
+
+      &::before,
+      &::after {
+        width: 100%;
+        height: auto;
+      }
+    }
+
+    > .end {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      flex: 0 0 auto;
+      margin-inline-start: auto;
+      padding-inline-start: var(--space-3);
+      font: var(--paragraph-30);
+      color: var(--base-8);
+      white-space: nowrap;
+
+      > span,
+      > p {
+        padding: 0 var(--space-2);
+      }
+
+      &:empty {
+        display: none;
+      }
+    }
+
+    // Boxed surface.
+    &.type-b {
+      --toolbar-px: var(--pad-x-2);
+
+      background-color: var(--toolbar-bg);
+      border: var(--border-10);
+      border-color: var(--toolbar-bc);
+      border-radius: var(--toolbar-s);
+    }
+
+    // Divided from the rows below.
+    &.type-c {
+      border-bottom: var(--border-10);
+      border-color: var(--toolbar-bc);
+    }
   }
 }

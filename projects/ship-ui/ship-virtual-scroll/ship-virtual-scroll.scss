@@ -1,8 +1,10 @@
 @use 'helpers' as *;
 
-sh-virtual-scroll {
-  overflow-y: auto;
-  position: relative;
-  display: block;
-  height: 600px;
+@layer ship {
+  sh-virtual-scroll {
+    overflow-y: auto;
+    position: relative;
+    display: block;
+    height: 600px;
+  }
 }

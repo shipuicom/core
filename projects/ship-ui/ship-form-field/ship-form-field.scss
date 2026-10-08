@@ -1,6 +1,9 @@
 @use 'helpers' as *;
+
 @use './form-field-base' as *;
 
-sh-form-field {
-  @include form-field-base;
+@layer ship {
+  sh-form-field {
+    @include form-field-base;
+  }
 }

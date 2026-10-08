@@ -1,148 +1,150 @@
 @use 'helpers' as *;
 
-sh-lo-stat-ring {
-  --ring-bg: var(--base-1);
-  --ring-bc: var(--base-4);
-  --ring-py: var(--pad-y-6);
-  --ring-px: var(--pad-x-6);
-  --ring-s: var(--shape-3);
-  --ring-gap: var(--space-4);
-  --ring-size: #{p2r(72)};
-  --ring-w: #{p2r(7)};
-  --ring-c: var(--primary-8);
-  --ring-track: var(--base-3);
+@layer ship {
+  sh-lo-stat-ring {
+    --ring-bg: var(--base-1);
+    --ring-bc: var(--base-4);
+    --ring-py: var(--pad-y-6);
+    --ring-px: var(--pad-x-6);
+    --ring-s: var(--shape-3);
+    --ring-gap: var(--space-4);
+    --ring-size: #{p2r(72)};
+    --ring-w: #{p2r(7)};
+    --ring-c: var(--c-8, var(--primary-8));
+    --ring-track: var(--base-3);
 
-  display: flex;
-  align-items: center;
-  gap: var(--ring-gap);
-  padding: var(--ring-py) var(--ring-px);
-  background-color: var(--ring-bg);
-  border: var(--border-10);
-  border-color: var(--ring-bc);
-  border-radius: var(--ring-s);
-  min-width: 0;
-
-  > .ring {
-    flex: 0 0 auto;
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: var(--ring-size);
-    height: var(--ring-size);
-
-    // The ring itself: a conic fill hollowed out by a radial mask.
-    &::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      background: conic-gradient(var(--ring-c) calc(var(--ring-pct, 0) * 1%), var(--ring-track) 0);
-      mask: radial-gradient(
-        farthest-side,
-        transparent calc(100% - var(--ring-w) - 0.5px),
-        var(--dark-text) calc(100% - var(--ring-w) + 0.5px)
-      );
-    }
-
-    > .center {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-1);
-      padding: var(--ring-w);
-      font: var(--paragraph-30B);
-      font-variant-numeric: tabular-nums;
-      color: var(--base-12);
-
-      > sh-icon,
-      > [icon] {
-        color: var(--ring-c);
-      }
-
-      > h2,
-      > h3,
-      > [value] {
-        font: inherit;
-      }
-
-      // The default percentage yields to a slotted value.
-      > :is(h2, h3, [value]) + .pct {
-        display: none;
-      }
-    }
-  }
-
-  > .text {
     display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
+    align-items: center;
+    gap: var(--ring-gap);
+    padding: var(--ring-py) var(--ring-px);
+    background-color: var(--ring-bg);
+    border: var(--border-10);
+    border-color: var(--ring-bc);
+    border-radius: var(--ring-s);
     min-width: 0;
 
-    > p,
-    > [label] {
-      font: var(--paragraph-30);
-      color: var(--base-8);
-    }
+    > .ring {
+      flex: 0 0 auto;
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: var(--ring-size);
+      height: var(--ring-size);
 
-    > sh-chip,
-    > [delta] {
-      align-self: flex-start;
-    }
+      // The ring itself: a conic fill hollowed out by a radial mask.
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: conic-gradient(var(--ring-c) calc(var(--ring-pct, 0) * 1%), var(--ring-track) 0);
+        mask: radial-gradient(
+          farthest-side,
+          transparent calc(100% - var(--ring-w) - 0.5px),
+          var(--dark-text) calc(100% - var(--ring-w) + 0.5px)
+        );
+      }
 
-    > .footer {
-      font: var(--paragraph-40);
-      color: var(--base-8);
+      > .center {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-1);
+        padding: var(--ring-w);
+        font: var(--paragraph-30B);
+        font-variant-numeric: tabular-nums;
+        color: var(--base-12);
 
-      &:empty {
-        display: none;
+        > sh-icon,
+        > [icon] {
+          color: var(--ring-c);
+        }
+
+        > h2,
+        > h3,
+        > [value] {
+          font: inherit;
+        }
+
+        // The default percentage yields to a slotted value.
+        > :is(h2, h3, [value]) + .pct {
+          display: none;
+        }
       }
     }
-  }
-
-  // Large ring with the label underneath (feature tile).
-  &.type-b {
-    --ring-size: #{p2r(120)};
-    --ring-w: #{p2r(10)};
-
-    > .ring > .center {
-      font: var(--title-30B);
-    }
-
-    flex-direction: column;
-    text-align: center;
 
     > .text {
-      align-items: center;
-    }
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      min-width: 0;
 
-    > .text > sh-chip,
-    > .text > [delta] {
-      align-self: center;
-    }
-  }
+      > p,
+      > [label] {
+        font: var(--paragraph-30);
+        color: var(--base-8);
+      }
 
-  // Compact inline row: small ring, no card.
-  &.type-c {
-    --ring-size: #{p2r(40)};
-    --ring-w: #{p2r(4)};
-    --ring-py: 0;
-    --ring-px: 0;
-    --ring-gap: var(--space-3);
+      > sh-chip,
+      > [delta] {
+        align-self: flex-start;
+      }
 
-    > .ring > .center {
-      font: var(--paragraph-40B);
-      padding: 0;
+      > .footer {
+        font: var(--paragraph-40);
+        color: var(--base-8);
 
-      > sh-icon,
-      > [icon] {
-        display: none;
+        &:empty {
+          display: none;
+        }
       }
     }
 
-    background: none;
-    border: 0;
-    border-radius: 0;
+    // Large ring with the label underneath (feature tile).
+    &.type-b {
+      --ring-size: #{p2r(120)};
+      --ring-w: #{p2r(10)};
+
+      > .ring > .center {
+        font: var(--title-30B);
+      }
+
+      flex-direction: column;
+      text-align: center;
+
+      > .text {
+        align-items: center;
+      }
+
+      > .text > sh-chip,
+      > .text > [delta] {
+        align-self: center;
+      }
+    }
+
+    // Compact inline row: small ring, no card.
+    &.type-c {
+      --ring-size: #{p2r(40)};
+      --ring-w: #{p2r(4)};
+      --ring-py: 0;
+      --ring-px: 0;
+      --ring-gap: var(--space-3);
+
+      > .ring > .center {
+        font: var(--paragraph-40B);
+        padding: 0;
+
+        > sh-icon,
+        > [icon] {
+          display: none;
+        }
+      }
+
+      background: none;
+      border: 0;
+      border-radius: 0;
+    }
   }
 }

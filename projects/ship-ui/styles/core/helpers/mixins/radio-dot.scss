@@ -3,7 +3,7 @@
 /// The radio control's structure: the dot, its input overlay and the checked/disabled states. `sh-radio` uses it,
 /// and so does `sh-stepper`, which stamps `.sh-radio` dots itself and must not depend on the radio package.
 @mixin radio-dot {
-  --radiod-c: var(--base-8);
+  --radiod-c: var(--c-8, var(--base-8));
   --radiod-o: 0;
   --radio-bc: var(--base-4);
 

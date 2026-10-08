@@ -12,13 +12,13 @@ describe('shipStylesWith', () => {
       shipStylesWith({
         colors: ['primary', 'error'],
         variants: ['flat'],
-        skins: { toggle: false, chip: { colors: ['primary'] } },
+        skins: { tooltip: false, sheet: { colors: ['primary'] } },
       })
     ).toEqual([
       '$shipColors: (primary, error)',
       '$shipVariants: (flat)',
-      '$shipToggle: false',
-      '$shipSkins: (\n    chip: (colors: (primary)),\n  )',
+      '$shipTooltip: false',
+      '$shipSkins: (\n    sheet: (colors: (primary)),\n  )',
     ]);
   });
 });
@@ -29,8 +29,8 @@ describe('shipStylesUse', () => {
   });
 
   it('appends extra with entries', () => {
-    expect(shipStylesUse({ skins: { video: false } }, ['$shipPalettes: ()'])).toBe(
-      `@use '@ship-ui/core/styles' with (\n  $shipVideo: false,\n  $shipPalettes: (),\n);`
+    expect(shipStylesUse({ skins: { avatar: false } }, ['$shipPalettes: ()'])).toBe(
+      `@use '@ship-ui/core/styles' with (\n  $shipAvatar: false,\n  $shipPalettes: (),\n);`
     );
   });
 });

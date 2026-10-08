@@ -271,7 +271,8 @@ describe('ship-migrate project checks', () => {
     expect(flags.known.has('$shipColors')).toBe(true);
     expect(flags.known.has('$useInterTight')).toBe(true);
     expect(flags.reserved.has('$shipTable')).toBe(true);
-    expect(flags.reserved.has('$shipToggle')).toBe(false);
+    expect(flags.reserved.has('$shipToggle')).toBe(true);
+    expect(flags.reserved.has('$shipTooltip')).toBe(false);
   });
 
   it('warns when no stylesheet loads @ship-ui/core/styles', () => {

@@ -1,8 +1,10 @@
 @use 'helpers' as *;
 
-sh-theme-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
+@layer ship {
+  sh-theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
 }

@@ -1,591 +1,593 @@
 @use 'helpers' as *;
 
-sh-editor {
-  --editor-bg: var(--base-1);
-  --editor-code-bg: var(--base-2);
-  --editor-bc: var(--base-4);
-  --editor-toolbar-bg: rgb(from var(--base-1) r g b / 70%);
-  --editor-toolbar-bc: var(--base-4);
-  --editor-btn-bg-h: var(--base-3);
-  --editor-btn-bg-a: var(--primary-3);
-  --editor-btn-c-a: var(--primary-11);
-  --editor-footer-bg: var(--base-2);
-  --editor-py: var(--pad-y-5);
-  --editor-px: var(--pad-x-5);
-  --editor-min-h: #{p2r(150)};
+@layer ship {
+  sh-editor {
+    --editor-bg: var(--base-1);
+    --editor-code-bg: var(--base-2);
+    --editor-bc: var(--base-4);
+    --editor-toolbar-bg: rgb(from var(--base-1) r g b / 70%);
+    --editor-toolbar-bc: var(--base-4);
+    --editor-btn-bg-h: var(--base-3);
+    --editor-btn-bg-a: var(--primary-3);
+    --editor-btn-c-a: var(--primary-11);
+    --editor-footer-bg: var(--base-2);
+    --editor-py: var(--pad-y-5);
+    --editor-px: var(--pad-x-5);
+    --editor-min-h: #{p2r(150)};
 
-  --editor-bc-f: var(--base-8);
-  --editor-s: var(--shape-3);
+    --editor-bc-f: var(--base-8);
+    --editor-s: var(--shape-3);
 
-  display: block;
-  width: 100%;
-  border-radius: var(--editor-s);
-
-  .sh-editor-container {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: var(--editor-min-h);
-    background-color: var(--editor-bg);
-    border: 1px solid var(--editor-bc);
-    border-radius: inherit;
-    overflow: hidden;
-    transition: border-color 0.2s ease;
-
-    &:focus-within {
-      border-color: var(--editor-bc-f);
-    }
-  }
-
-  &.document {
-    --editor-min-h: #{p2r(720)};
-    --editor-py: #{p2r(64)};
-    --editor-px: #{p2r(72)};
-    background: var(--base-3);
-    border-radius: 0;
-    padding: #{p2r(32)} #{p2r(20)};
+    display: block;
+    width: 100%;
+    border-radius: var(--editor-s);
 
     .sh-editor-container {
-      max-width: #{p2r(816)};
-      margin-inline: auto;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: var(--editor-min-h);
+      background-color: var(--editor-bg);
+      border: 1px solid var(--editor-bc);
+      border-radius: inherit;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
 
-      border-radius: var(--shape-2);
-      box-shadow: var(--box-shadow-30);
-    }
-  }
-
-  .sh-editor-body {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-  }
-
-  // Extra cursors. A contenteditable gets one native caret, and its blink
-  // phase is the browser's — unreadable and unalignable. So while several
-  // cursors are live the native caret is hidden and every one of them is drawn
-  // on the layer below, which carries the single animation they all share.
-  // A caret mounted mid-cycle inherits the layer's phase rather than starting
-  // its own.
-  .sh-editor-caret-layer {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 5;
-    animation: sh-editor-caret-blink 1.1s steps(1) infinite;
-  }
-
-  .sh-editor-drawn-caret {
-    position: absolute;
-    width: #{p2r(2)};
-    background: var(--primary-9);
-    pointer-events: none;
-
-    // Added cursors sit slightly back so the primary stays findable.
-    &.secondary {
-      opacity: 0.7;
-    }
-  }
-
-  .sh-editor-drop-indicator {
-    position: absolute;
-    left: #{p2r(20)};
-    right: #{p2r(20)};
-    height: #{p2r(3)};
-    margin-top: #{p2r(-1.5)};
-    background: var(--primary-9);
-    border-radius: #{p2r(2)};
-    pointer-events: none;
-    z-index: 5;
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: #{p2r(-4)};
-      top: 50%;
-      width: #{p2r(9)};
-      height: #{p2r(9)};
-      border-radius: 50%;
-      background: var(--primary-9);
-      transform: translateY(-50%);
-    }
-  }
-
-  // Multi-cursor hides the browser's own caret; every caret is drawn instead,
-  // so they can all share one blink clock. Selection painting is unaffected —
-  // `caret-color` only governs the insertion caret.
-  .sh-editor-content.multi-cursor {
-    caret-color: transparent;
-  }
-
-  .sh-editor-content {
-    padding: var(--editor-py) var(--editor-px);
-    outline: none;
-    flex: 1;
-    z-index: 2;
-    position: relative;
-    color: var(--base-12);
-    font: var(--paragraph-20);
-    line-height: 1.6;
-    // Preserve significant whitespace (trailing/consecutive spaces) so the
-    // browser doesn't collapse or strip them during contenteditable editing —
-    // notably iOS WebKit, which otherwise drops a just-typed trailing space on
-    // the next autocorrect/composition pass ("space inserts then vanishes").
-    // pair with overflow-wrap so long words still wrap under pre-wrap.
-    white-space: pre-wrap;
-    overflow-wrap: break-word;
-    word-break: break-word;
-
-    p {
-      margin-top: 0;
-      margin-bottom: #{p2r(12)};
-      &:last-child {
-        margin-bottom: 0;
+      &:focus-within {
+        border-color: var(--editor-bc-f);
       }
     }
 
-    h1, h2, h3 {
-      color: var(--base-12);
-      font-weight: 700;
-      margin-top: #{p2r(16)};
-      margin-bottom: #{p2r(8)};
-      line-height: 1.3;
+    &.document {
+      --editor-min-h: #{p2r(720)};
+      --editor-py: #{p2r(64)};
+      --editor-px: #{p2r(72)};
+      background: var(--base-3);
+      border-radius: 0;
+      padding: #{p2r(32)} #{p2r(20)};
+
+      .sh-editor-container {
+        max-width: #{p2r(816)};
+        margin-inline: auto;
+
+        border-radius: var(--shape-2);
+        box-shadow: var(--box-shadow-30);
+      }
     }
 
-    h1 { font: var(--title-30B); }
-    h2 { font: var(--title-20B); }
-    h3 { font: var(--title-10B); }
+    .sh-editor-body {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
 
-    blockquote {
+    // Extra cursors. A contenteditable gets one native caret, and its blink
+    // phase is the browser's — unreadable and unalignable. So while several
+    // cursors are live the native caret is hidden and every one of them is drawn
+    // on the layer below, which carries the single animation they all share.
+    // A caret mounted mid-cycle inherits the layer's phase rather than starting
+    // its own.
+    .sh-editor-caret-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+      animation: sh-editor-caret-blink 1.1s steps(1) infinite;
+    }
 
-      display: flow-root;
-      border-left: 4px solid var(--primary-8);
-      background: var(--base-2);
-      padding: #{p2r(8)} #{p2r(16)};
-      margin: #{p2r(16)} 0;
-      color: var(--base-11);
-      border-radius: 0 var(--shape-2) var(--shape-2) 0;
-      font-style: italic;
+    .sh-editor-drawn-caret {
+      position: absolute;
+      width: #{p2r(2)};
+      background: var(--primary-9);
+      pointer-events: none;
 
-      &.sh-editor-callout-info {
-        border-left-color: var(--primary-8);
-        background: var(--primary-2);
-        padding-left: #{p2r(40)};
-        position: relative;
+      // Added cursors sit slightly back so the primary stays findable.
+      &.secondary {
+        opacity: 0.7;
+      }
+    }
 
-        &::before {
-          content: '💡';
-          position: absolute;
-          left: #{p2r(12)};
-          top: #{p2r(8)};
-          font-style: normal;
-          user-select: none;
-          pointer-events: none;
+    .sh-editor-drop-indicator {
+      position: absolute;
+      left: #{p2r(20)};
+      right: #{p2r(20)};
+      height: #{p2r(3)};
+      margin-top: #{p2r(-1.5)};
+      background: var(--primary-9);
+      border-radius: #{p2r(2)};
+      pointer-events: none;
+      z-index: 5;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: #{p2r(-4)};
+        top: 50%;
+        width: #{p2r(9)};
+        height: #{p2r(9)};
+        border-radius: 50%;
+        background: var(--primary-9);
+        transform: translateY(-50%);
+      }
+    }
+
+    // Multi-cursor hides the browser's own caret; every caret is drawn instead,
+    // so they can all share one blink clock. Selection painting is unaffected —
+    // `caret-color` only governs the insertion caret.
+    .sh-editor-content.multi-cursor {
+      caret-color: transparent;
+    }
+
+    .sh-editor-content {
+      padding: var(--editor-py) var(--editor-px);
+      outline: none;
+      flex: 1;
+      z-index: 2;
+      position: relative;
+      color: var(--base-12);
+      font: var(--paragraph-20);
+      line-height: 1.6;
+      // Preserve significant whitespace (trailing/consecutive spaces) so the
+      // browser doesn't collapse or strip them during contenteditable editing —
+      // notably iOS WebKit, which otherwise drops a just-typed trailing space on
+      // the next autocorrect/composition pass ("space inserts then vanishes").
+      // pair with overflow-wrap so long words still wrap under pre-wrap.
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      word-break: break-word;
+
+      p {
+        margin-top: 0;
+        margin-bottom: #{p2r(12)};
+        &:last-child {
+          margin-bottom: 0;
         }
       }
-    }
 
-    pre {
-      background-color: var(--editor-code-bg);
-      border-radius: var(--shape-2);
-      padding: #{p2r(12)} #{p2r(16)};
-      margin: #{p2r(16)} 0;
-      overflow-x: auto;
-      // Browsers default to 8-column tabs; pasted tab-indented code reads
-      // twice as deep as in its source editor without this.
-      tab-size: 4;
-      min-height: #{p2r(50)};
-      border: 2px solid transparent;
-      transition:
-        border-color 0.15s ease,
-        box-shadow 0.15s ease;
+      h1, h2, h3 {
+        color: var(--base-12);
+        font-weight: 700;
+        margin-top: #{p2r(16)};
+        margin-bottom: #{p2r(8)};
+        line-height: 1.3;
+      }
+
+      h1 { font: var(--title-30B); }
+      h2 { font: var(--title-20B); }
+      h3 { font: var(--title-10B); }
+
+      blockquote {
+
+        display: flow-root;
+        border-left: 4px solid var(--primary-8);
+        background: var(--base-2);
+        padding: #{p2r(8)} #{p2r(16)};
+        margin: #{p2r(16)} 0;
+        color: var(--base-11);
+        border-radius: 0 var(--shape-2) var(--shape-2) 0;
+        font-style: italic;
+
+        &.sh-editor-callout-info {
+          border-left-color: var(--primary-8);
+          background: var(--primary-2);
+          padding-left: #{p2r(40)};
+          position: relative;
+
+          &::before {
+            content: '💡';
+            position: absolute;
+            left: #{p2r(12)};
+            top: #{p2r(8)};
+            font-style: normal;
+            user-select: none;
+            pointer-events: none;
+          }
+        }
+      }
+
+      pre {
+        background-color: var(--editor-code-bg);
+        border-radius: var(--shape-2);
+        padding: #{p2r(12)} #{p2r(16)};
+        margin: #{p2r(16)} 0;
+        overflow-x: auto;
+        // Browsers default to 8-column tabs; pasted tab-indented code reads
+        // twice as deep as in its source editor without this.
+        tab-size: 4;
+        min-height: #{p2r(50)};
+        border: 2px solid transparent;
+        transition:
+          border-color 0.15s ease,
+          box-shadow 0.15s ease;
+
+        code {
+          font: var(--code-20);
+          background: transparent;
+          padding: 0;
+          border-radius: 0;
+          color: inherit;
+        }
+
+        &.sh-editor-code-active {
+          border-color: var(--primary-8);
+          box-shadow: 0 0 0 3px var(--primary-3);
+        }
+      }
 
       code {
         font: var(--code-20);
-        background: transparent;
-        padding: 0;
-        border-radius: 0;
-        color: inherit;
+        background-color: var(--base-2);
+        padding: #{p2r(2)} #{p2r(6)};
+        border-radius: var(--shape-1);
+        color: var(--primary-11);
       }
 
-      &.sh-editor-code-active {
-        border-color: var(--primary-8);
-        box-shadow: 0 0 0 3px var(--primary-3);
-      }
-    }
-
-    code {
-      font: var(--code-20);
-      background-color: var(--base-2);
-      padding: #{p2r(2)} #{p2r(6)};
-      border-radius: var(--shape-1);
-      color: var(--primary-11);
-    }
-
-    hr {
-      // A taller box with the rule centered in it: the line stays 1px but the
-      // click target for selecting the block is comfortable.
-      border: none;
-      height: #{p2r(16)};
-      margin: #{p2r(16)} 0;
-      background: linear-gradient(var(--editor-bc), var(--editor-bc)) center / 100% 1px no-repeat;
-      cursor: pointer;
-    }
-
-    ul,
-    ol {
-      display: flow-root;
-      margin: #{p2r(12)} 0;
-      padding-left: #{p2r(24)};
-    }
-
-    img {
-      height: auto;
-      max-width: 100%;
-      border-radius: var(--shape-2);
-      cursor: pointer;
-      transition: width 0.2s ease;
-
-      &.sh-editor-img-content {
-        display: block;
-        box-sizing: border-box;
-        width: calc(100% - #{p2r(48)});
-        max-width: 100% !important;
-        margin: #{p2r(16)} auto;
+      hr {
+        // A taller box with the rule centered in it: the line stays 1px but the
+        // click target for selecting the block is comfortable.
+        border: none;
+        height: #{p2r(16)};
+        margin: #{p2r(16)} 0;
+        background: linear-gradient(var(--editor-bc), var(--editor-bc)) center / 100% 1px no-repeat;
+        cursor: pointer;
       }
 
-      &.sh-editor-img-theater {
-        display: block;
-        width: calc(100% + #{p2r(40)});
-        max-width: none !important;
-        margin: #{p2r(16)} #{p2r(-20)};
-        border-radius: 0;
-      }
-
-      &.sh-editor-img-float {
-        float: left;
-
-        margin: #{p2r(8)} #{p2r(16)};
-
-        &.sh-editor-img-size-small { width: #{p2r(240)}; max-width: 100% !important; }
-        &.sh-editor-img-size-medium { width: #{p2r(480)}; max-width: 100% !important; }
-        &.sh-editor-img-size-large { width: 100%; max-width: 100% !important; }
-        &:not([class*='sh-editor-img-size-']) { width: auto; max-width: 100% !important; }
-      }
-
-      &.sh-editor-img-custom {
-        display: inline-block;
+      ul,
+      ol {
+        display: flow-root;
         margin: #{p2r(12)} 0;
+        padding-left: #{p2r(24)};
+      }
 
-        &.sh-editor-img-size-small { width: #{p2r(240)}; max-width: 100% !important; }
-        &.sh-editor-img-size-medium { width: #{p2r(480)}; max-width: 100% !important; }
-        &.sh-editor-img-size-large { width: 100%; max-width: 100% !important; }
-        &:not([class*='sh-editor-img-size-']) { width: auto; max-width: 100% !important; }
+      img {
+        height: auto;
+        max-width: 100%;
+        border-radius: var(--shape-2);
+        cursor: pointer;
+        transition: width 0.2s ease;
+
+        &.sh-editor-img-content {
+          display: block;
+          box-sizing: border-box;
+          width: calc(100% - #{p2r(48)});
+          max-width: 100% !important;
+          margin: #{p2r(16)} auto;
+        }
+
+        &.sh-editor-img-theater {
+          display: block;
+          width: calc(100% + #{p2r(40)});
+          max-width: none !important;
+          margin: #{p2r(16)} #{p2r(-20)};
+          border-radius: 0;
+        }
+
+        &.sh-editor-img-float {
+          float: left;
+
+          margin: #{p2r(8)} #{p2r(16)};
+
+          &.sh-editor-img-size-small { width: #{p2r(240)}; max-width: 100% !important; }
+          &.sh-editor-img-size-medium { width: #{p2r(480)}; max-width: 100% !important; }
+          &.sh-editor-img-size-large { width: 100%; max-width: 100% !important; }
+          &:not([class*='sh-editor-img-size-']) { width: auto; max-width: 100% !important; }
+        }
+
+        &.sh-editor-img-custom {
+          display: inline-block;
+          margin: #{p2r(12)} 0;
+
+          &.sh-editor-img-size-small { width: #{p2r(240)}; max-width: 100% !important; }
+          &.sh-editor-img-size-medium { width: #{p2r(480)}; max-width: 100% !important; }
+          &.sh-editor-img-size-large { width: 100%; max-width: 100% !important; }
+          &:not([class*='sh-editor-img-size-']) { width: auto; max-width: 100% !important; }
+        }
+      }
+
+      mark.sh-editor-highlight {
+        background-color: var(--warn-3);
+        color: var(--base-12);
+        border-radius: var(--shape-1);
+        padding: 0 #{p2r(2)};
+        box-decoration-break: clone;
+        -webkit-box-decoration-break: clone;
       }
     }
 
-    mark.sh-editor-highlight {
-      background-color: var(--warn-3);
+    .sh-editor-placeholder {
+      position: absolute;
+      top: p2r(16);
+      left: p2r(20);
+      color: var(--base-7);
+      pointer-events: none;
+      z-index: 1;
+      font-style: italic;
+    }
+
+    .sh-editor-source {
+      display: block;
+      width: 100%;
+      flex: 1;
+      min-height: var(--editor-min-h);
+      box-sizing: border-box;
+      padding: var(--editor-py) var(--editor-px);
+      border: none;
+      outline: none;
+      resize: vertical;
+      background: var(--editor-code-bg);
       color: var(--base-12);
-      border-radius: var(--shape-1);
-      padding: 0 #{p2r(2)};
-      box-decoration-break: clone;
-      -webkit-box-decoration-break: clone;
+      font: var(--code-20);
+      line-height: 1.6;
+      white-space: pre;
+      tab-size: 2;
+    }
+
+    .sh-editor-source-error {
+      padding: calc(var(--editor-py) / 2) var(--editor-px);
+      background: var(--editor-code-bg);
+      color: var(--error-8);
+      font: var(--code-20);
+    }
+
+    .sh-editor-slash-menu {
+      position: fixed;
+      z-index: 100;
+      border: 1px solid var(--base-4);
+      border-radius: var(--shape-2);
+      box-shadow: var(--box-shadow-30);
+      display: flex;
+      flex-direction: column;
+      padding: p2r(4);
+      min-width: p2r(180);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgb(from var(--base-1) r g b / 85%);
+
+      .slash-header {
+        font-size: p2r(11);
+        text-transform: uppercase;
+        color: var(--base-8);
+        padding: p2r(6) p2r(12);
+        font-weight: 700;
+        letter-spacing: 0.05em;
+      }
+
+      button {
+        display: flex;
+        align-items: center;
+        gap: p2r(10);
+        padding: p2r(8) p2r(12);
+        text-align: left;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--base-11);
+        border-radius: var(--shape-1);
+        font: var(--paragraph-20);
+        transition: background 0.1s ease;
+
+        sh-icon {
+          color: var(--base-9);
+          flex: none;
+        }
+
+        &:hover,
+        &.active {
+          background: var(--base-3);
+          color: var(--base-12);
+          sh-icon { color: var(--base-11); }
+        }
+      }
+
+      .slash-empty {
+        padding: p2r(8) p2r(12);
+        color: var(--base-8);
+        font: var(--paragraph-20);
+      }
+    }
+
+    .sh-editor-stats {
+      padding: p2r(6) p2r(12);
+      font: var(--paragraph-10);
+      color: var(--base-8);
+      border-top: 1px solid var(--editor-bc);
+      background: var(--editor-footer-bg);
+      text-align: right;
     }
   }
 
-  .sh-editor-placeholder {
+  .sh-editor-link-anchor {
     position: absolute;
-    top: p2r(16);
-    left: p2r(20);
-    color: var(--base-7);
-    pointer-events: none;
-    z-index: 1;
-    font-style: italic;
+    width: 0;
+    height: 0;
+
+    .trigger-wrapper {
+      display: none;
+    }
   }
 
-  .sh-editor-source {
-    display: block;
-    width: 100%;
-    flex: 1;
-    min-height: var(--editor-min-h);
-    box-sizing: border-box;
-    padding: var(--editor-py) var(--editor-px);
-    border: none;
-    outline: none;
-    resize: vertical;
-    background: var(--editor-code-bg);
-    color: var(--base-12);
-    font: var(--code-20);
-    line-height: 1.6;
-    white-space: pre;
-    tab-size: 2;
-  }
-
-  .sh-editor-source-error {
-    padding: calc(var(--editor-py) / 2) var(--editor-px);
-    background: var(--editor-code-bg);
-    color: var(--error-8);
-    font: var(--code-20);
-  }
-
-  .sh-editor-slash-menu {
-    position: fixed;
-    z-index: 100;
-    border: 1px solid var(--base-4);
-    border-radius: var(--shape-2);
-    box-shadow: var(--box-shadow-30);
+  .sh-editor-popover {
     display: flex;
     flex-direction: column;
-    padding: p2r(4);
-    min-width: p2r(180);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    background: rgb(from var(--base-1) r g b / 85%);
+    gap: #{p2r(12)};
+    padding: #{p2r(16)};
+    min-width: #{p2r(320)};
+    max-width: min(#{p2r(420)}, 90vw);
 
-    .slash-header {
-      font-size: p2r(11);
-      text-transform: uppercase;
-      color: var(--base-8);
-      padding: p2r(6) p2r(12);
-      font-weight: 700;
-      letter-spacing: 0.05em;
+    sh-form-field {
+      width: 100%;
     }
+    input[type='text'] {
+      width: 100%;
+      box-sizing: border-box;
+    }
+  }
+
+  .sh-editor-popover-header {
+    display: flex;
+    align-items: center;
+    gap: #{p2r(8)};
+    color: var(--base-12);
+    font: var(--paragraph-20);
+    font-weight: 700;
+    padding-bottom: #{p2r(10)};
+    border-bottom: 1px solid var(--base-4);
+
+    sh-icon {
+      color: var(--primary-9);
+      font-size: #{p2r(18)};
+      flex: none;
+    }
+  }
+
+  .sh-editor-popover-actions {
+    display: flex;
+    align-items: center;
+    gap: #{p2r(8)};
+    justify-content: flex-end;
+
+    .sh-editor-popover-spacer {
+      flex: 1;
+    }
+
+    button sh-icon {
+      font-size: #{p2r(16)};
+      margin-right: #{p2r(4)};
+    }
+  }
+
+  .sh-editor-block-selected {
+    outline: 2px solid var(--primary-9);
+    outline-offset: 2px;
+    border-radius: var(--shape-1);
+  }
+
+  // Selecting a void block wraps it in a real DOM range (that is what routes
+  // copy/cut/paste and type-to-replace at it). Over a component block's UI text
+  // that range would paint as a native text selection — suppress it by default.
+  // Keyed on data-sh-block (the mount contract every component block carries,
+  // whatever its renderHTML emits), not the default wrapper class. Editable
+  // controls inside (an embedded editor, a textarea) keep their own text
+  // selection; a component can opt other regions back in with user-select: text.
+  .sh-editor-content > [data-sh-block] {
+    user-select: none;
+    -webkit-user-select: none;
+
+    :is(input, textarea, select, [contenteditable]:not([contenteditable='false'])) {
+      user-select: text;
+      -webkit-user-select: text;
+    }
+  }
+
+  // A void block sitting inside the live text selection: the native selection
+  // paints no highlight over voids, so they looked unselected while being part
+  // of the range.
+  .sh-editor-void-in-selection {
+    outline: 2px solid var(--primary-7);
+    outline-offset: 2px;
+    border-radius: var(--shape-1);
+    background: var(--primary-4);
+  }
+
+  .sh-editor-resize-frame {
+    position: absolute;
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  .sh-editor-resize-handle {
+    position: absolute;
+    width: #{p2r(11)};
+    height: #{p2r(11)};
+    box-sizing: border-box;
+    background: var(--base-1);
+    border: 2px solid var(--primary-9);
+    border-radius: 2px;
+    pointer-events: auto;
+
+    &.sh-editor-resize-nw { top: #{p2r(-6)}; left: #{p2r(-6)}; cursor: nwse-resize; }
+    &.sh-editor-resize-ne { top: #{p2r(-6)}; right: #{p2r(-6)}; cursor: nesw-resize; }
+    &.sh-editor-resize-sw { bottom: #{p2r(-6)}; left: #{p2r(-6)}; cursor: nesw-resize; }
+    &.sh-editor-resize-se { bottom: #{p2r(-6)}; right: #{p2r(-6)}; cursor: nwse-resize; }
+
+    &.sh-editor-resize-n { top: #{p2r(-6)}; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+    &.sh-editor-resize-s { bottom: #{p2r(-6)}; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+    &.sh-editor-resize-w { left: #{p2r(-6)}; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+    &.sh-editor-resize-e { right: #{p2r(-6)}; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+  }
+
+  .sh-editor-block-anchor {
+    position: absolute;
+    pointer-events: none;
+
+    .sh-editor-block-anchor-trigger {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  .sh-editor-contextual-toolbar {
+
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    background: rgb(from var(--base-12) r g b / 90%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--base-1);
+    border-radius: var(--shape-2);
+    box-shadow: var(--box-shadow-30);
 
     button {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: p2r(10);
-      padding: p2r(8) p2r(12);
-      text-align: left;
-      background: none;
+      justify-content: center;
+      height: 28px;
+      min-width: 28px;
+      padding: 0 8px;
+      background: transparent;
       border: none;
-      cursor: pointer;
-      color: var(--base-11);
       border-radius: var(--shape-1);
+      color: var(--base-1);
+      cursor: pointer;
       font: var(--paragraph-20);
-      transition: background 0.1s ease;
+      transition: all 0.15s ease;
 
-      sh-icon {
-        color: var(--base-9);
-        flex: none;
+      &:hover {
+        background: rgb(from var(--base-1) r g b / 15%);
       }
-
-      &:hover,
       &.active {
-        background: var(--base-3);
-        color: var(--base-12);
-        sh-icon { color: var(--base-11); }
+        background: rgb(from var(--base-1) r g b / 28%);
+      }
+      &.error:hover,
+      &.danger:hover { // structure-lint: allow — alias for one minor, use .error
+        background: var(--error-9);
       }
     }
 
-    .slash-empty {
-      padding: p2r(8) p2r(12);
-      color: var(--base-8);
-      font: var(--paragraph-20);
+    .divider {
+      width: 1px;
+      align-self: stretch;
+      margin: 2px 2px;
+      background: rgb(from var(--base-1) r g b / 20%);
     }
   }
 
-  .sh-editor-stats {
-    padding: p2r(6) p2r(12);
-    font: var(--paragraph-10);
-    color: var(--base-8);
-    border-top: 1px solid var(--editor-bc);
-    background: var(--editor-footer-bg);
-    text-align: right;
-  }
-}
-
-.sh-editor-link-anchor {
-  position: absolute;
-  width: 0;
-  height: 0;
-
-  .trigger-wrapper {
-    display: none;
-  }
-}
-
-.sh-editor-popover {
-  display: flex;
-  flex-direction: column;
-  gap: #{p2r(12)};
-  padding: #{p2r(16)};
-  min-width: #{p2r(320)};
-  max-width: min(#{p2r(420)}, 90vw);
-
-  sh-form-field {
-    width: 100%;
-  }
-  input[type='text'] {
-    width: 100%;
-    box-sizing: border-box;
-  }
-}
-
-.sh-editor-popover-header {
-  display: flex;
-  align-items: center;
-  gap: #{p2r(8)};
-  color: var(--base-12);
-  font: var(--paragraph-20);
-  font-weight: 700;
-  padding-bottom: #{p2r(10)};
-  border-bottom: 1px solid var(--base-4);
-
-  sh-icon {
-    color: var(--primary-9);
-    font-size: #{p2r(18)};
-    flex: none;
-  }
-}
-
-.sh-editor-popover-actions {
-  display: flex;
-  align-items: center;
-  gap: #{p2r(8)};
-  justify-content: flex-end;
-
-  .sh-editor-popover-spacer {
-    flex: 1;
+  // Selection paint for the extra cursors. The native selection covers the
+  // primary range only; these are published through the CSS Custom Highlight
+  // API, which tints text without inserting any nodes — the editing path's
+  // text nodes have to stay exactly as the model expects them.
+  ::highlight(sh-editor-secondary) {
+    background: var(--primary-4);
   }
 
-  button sh-icon {
-    font-size: #{p2r(16)};
-    margin-right: #{p2r(4)};
-  }
-}
-
-.sh-editor-block-selected {
-  outline: 2px solid var(--primary-9);
-  outline-offset: 2px;
-  border-radius: var(--shape-1);
-}
-
-// Selecting a void block wraps it in a real DOM range (that is what routes
-// copy/cut/paste and type-to-replace at it). Over a component block's UI text
-// that range would paint as a native text selection — suppress it by default.
-// Keyed on data-sh-block (the mount contract every component block carries,
-// whatever its renderHTML emits), not the default wrapper class. Editable
-// controls inside (an embedded editor, a textarea) keep their own text
-// selection; a component can opt other regions back in with user-select: text.
-.sh-editor-content > [data-sh-block] {
-  user-select: none;
-  -webkit-user-select: none;
-
-  :is(input, textarea, select, [contenteditable]:not([contenteditable='false'])) {
-    user-select: text;
-    -webkit-user-select: text;
-  }
-}
-
-// A void block sitting inside the live text selection: the native selection
-// paints no highlight over voids, so they looked unselected while being part
-// of the range.
-.sh-editor-void-in-selection {
-  outline: 2px solid var(--primary-7);
-  outline-offset: 2px;
-  border-radius: var(--shape-1);
-  background: var(--primary-4);
-}
-
-.sh-editor-resize-frame {
-  position: absolute;
-  z-index: 5;
-  pointer-events: none;
-}
-
-.sh-editor-resize-handle {
-  position: absolute;
-  width: #{p2r(11)};
-  height: #{p2r(11)};
-  box-sizing: border-box;
-  background: var(--base-1);
-  border: 2px solid var(--primary-9);
-  border-radius: 2px;
-  pointer-events: auto;
-
-  &.sh-editor-resize-nw { top: #{p2r(-6)}; left: #{p2r(-6)}; cursor: nwse-resize; }
-  &.sh-editor-resize-ne { top: #{p2r(-6)}; right: #{p2r(-6)}; cursor: nesw-resize; }
-  &.sh-editor-resize-sw { bottom: #{p2r(-6)}; left: #{p2r(-6)}; cursor: nesw-resize; }
-  &.sh-editor-resize-se { bottom: #{p2r(-6)}; right: #{p2r(-6)}; cursor: nwse-resize; }
-
-  &.sh-editor-resize-n { top: #{p2r(-6)}; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
-  &.sh-editor-resize-s { bottom: #{p2r(-6)}; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
-  &.sh-editor-resize-w { left: #{p2r(-6)}; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
-  &.sh-editor-resize-e { right: #{p2r(-6)}; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
-}
-
-.sh-editor-block-anchor {
-  position: absolute;
-  pointer-events: none;
-
-  .sh-editor-block-anchor-trigger {
-    width: 100%;
-    height: 100%;
-  }
-}
-
-.sh-editor-contextual-toolbar {
-
-  pointer-events: auto;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px;
-  background: rgb(from var(--base-12) r g b / 90%);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: var(--base-1);
-  border-radius: var(--shape-2);
-  box-shadow: var(--box-shadow-30);
-
-  button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 28px;
-    min-width: 28px;
-    padding: 0 8px;
-    background: transparent;
-    border: none;
-    border-radius: var(--shape-1);
-    color: var(--base-1);
-    cursor: pointer;
-    font: var(--paragraph-20);
-    transition: all 0.15s ease;
-
-    &:hover {
-      background: rgb(from var(--base-1) r g b / 15%);
+  @keyframes sh-editor-caret-blink {
+    50% {
+      opacity: 0;
     }
-    &.active {
-      background: rgb(from var(--base-1) r g b / 28%);
-    }
-    &.error:hover,
-    &.danger:hover { // structure-lint: allow — alias for one minor, use .error
-      background: var(--error-9);
-    }
-  }
-
-  .divider {
-    width: 1px;
-    align-self: stretch;
-    margin: 2px 2px;
-    background: rgb(from var(--base-1) r g b / 20%);
-  }
-}
-
-// Selection paint for the extra cursors. The native selection covers the
-// primary range only; these are published through the CSS Custom Highlight
-// API, which tints text without inserting any nodes — the editing path's
-// text nodes have to stay exactly as the model expects them.
-::highlight(sh-editor-secondary) {
-  background: var(--primary-4);
-}
-
-@keyframes sh-editor-caret-blink {
-  50% {
-    opacity: 0;
   }
 }

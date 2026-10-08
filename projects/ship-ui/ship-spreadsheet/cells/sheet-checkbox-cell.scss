@@ -1,17 +1,19 @@
 @use 'helpers' as *;
 
-sh-sheet-checkbox-cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
+@layer ship {
+  sh-sheet-checkbox-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
 
-  sh-checkbox .box {
-    width: p2r(14);
-    height: p2r(14);
-  }
+    sh-checkbox .box {
+      width: p2r(14);
+      height: p2r(14);
+    }
 
-  sh-checkbox .box sh-icon {
-    font-size: p2r(11);
+    sh-checkbox .box sh-icon {
+      font-size: p2r(11);
+    }
   }
 }

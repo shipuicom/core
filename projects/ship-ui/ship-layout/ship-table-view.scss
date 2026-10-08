@@ -1,48 +1,61 @@
 @use 'helpers' as *;
 
-sh-lo-table-view {
-  --tv-py: var(--pad-y-7);
-  --tv-px: var(--pad-x-7);
-  --tv-gap: var(--space-4);
+@layer ship {
+  sh-lo-table-view {
+    --tv-py: var(--pad-y-7);
+    --tv-px: var(--pad-x-7);
+    --tv-gap: var(--space-4);
 
-  display: flex;
-  flex-direction: column;
-  gap: var(--tv-gap);
-  height: 100%;
-  min-height: 0;
-  padding: var(--tv-py) var(--tv-px);
-
-  > .head {
     display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: var(--space-4);
+    flex-direction: column;
+    gap: var(--tv-gap);
+    height: 100%;
+    min-height: 0;
+    padding: var(--tv-py) var(--tv-px);
 
-    &:not(:has(> .text > *)):not(:has(> .actions > *)) {
-      display: none;
-    }
-
-    > .text {
+    > .head {
       display: flex;
-      flex-direction: column;
-      gap: var(--space-1);
-      min-width: 0;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-4);
 
-      > h1,
-      > h2,
-      > [title] {
-        font: var(--title-30B);
+      &:not(:has(> .text > *)):not(:has(> .actions > *)) {
+        display: none;
       }
 
-      > p,
-      > [description] {
-        font: var(--paragraph-30);
-        color: var(--base-8);
+      > .text {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+        min-width: 0;
+
+        > h1,
+        > h2,
+        > [title] {
+          font: var(--title-30B);
+        }
+
+        > p,
+        > [description] {
+          font: var(--paragraph-30);
+          color: var(--base-8);
+        }
+      }
+
+      > .actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-2);
+
+        &:empty {
+          display: none;
+        }
       }
     }
 
-    > .actions {
+    > .filters {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -51,104 +64,93 @@ sh-lo-table-view {
       &:empty {
         display: none;
       }
-    }
-  }
 
-  > .filters {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-2);
-
-    &:empty {
-      display: none;
+      // The [filters] element is a row of its own: search, chips, button groups.
+      > [filters] {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-2);
+        min-width: 0;
+      }
     }
 
-    // The [filters] element is a row of its own: search, chips, button groups.
-    > [filters] {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--space-2);
-      min-width: 0;
-    }
-  }
-
-  > .surface {
-    flex: 1 1 0;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-
-    > sh-lo-toolbar,
-    > [toolbar] {
-      flex: 0 0 auto;
-    }
-
-    > .table {
+    > .surface {
       flex: 1 1 0;
       display: flex;
       flex-direction: column;
       min-height: 0;
 
-      > sh-table,
-      > table,
-      > [table] {
+      > sh-lo-toolbar,
+      > [toolbar] {
+        flex: 0 0 auto;
+      }
+
+      > .table {
         flex: 1 1 0;
+        display: flex;
+        flex-direction: column;
         min-height: 0;
-        overflow: auto;
-        // sh-table is a grid: with few rows it would stretch them to fill the
-        // height. Keep rows at their natural size, packed to the top.
-        align-content: start;
+
+        > sh-table,
+        > table,
+        > [table] {
+          flex: 1 1 0;
+          min-height: 0;
+          overflow: auto;
+          // sh-table is a grid: with few rows it would stretch them to fill the
+          // height. Keep rows at their natural size, packed to the top.
+          align-content: start;
+        }
+      }
+
+      > .footer {
+        flex: 0 0 auto;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+        padding-top: var(--space-3);
+        font: var(--paragraph-30);
+        color: var(--base-8);
+
+        &:empty {
+          display: none;
+        }
       }
     }
 
-    > .footer {
-      flex: 0 0 auto;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-2);
-      padding-top: var(--space-3);
-      font: var(--paragraph-30);
-      color: var(--base-8);
+    // Toolbar, table and footer inside one card.
+    &.type-b > .surface {
+      background-color: var(--base-1);
+      border: var(--border-10);
+      border-radius: var(--shape-3);
+      overflow: hidden;
 
-      &:empty {
-        display: none;
+      > sh-lo-toolbar,
+      > [toolbar] {
+        border-bottom: var(--border-10);
+        padding-inline: var(--space-3);
+      }
+
+      > .footer {
+        padding: var(--space-3);
+        border-top: var(--border-10);
       }
     }
-  }
 
-  // Toolbar, table and footer inside one card.
-  &.type-b > .surface {
-    background-color: var(--base-1);
-    border: var(--border-10);
-    border-radius: var(--shape-3);
-    overflow: hidden;
-
-    > sh-lo-toolbar,
-    > [toolbar] {
-      border-bottom: var(--border-10);
-      padding-inline: var(--space-3);
+    // Flush: the parent already pads.
+    &.type-c {
+      --tv-py: 0;
+      --tv-px: 0;
     }
 
-    > .footer {
-      padding: var(--space-3);
-      border-top: var(--border-10);
-    }
-  }
-
-  // Flush: the parent already pads.
-  &.type-c {
-    --tv-py: 0;
-    --tv-px: 0;
-  }
-
-  @include breakpoint(-milli) {
-    &:not(.type-c) {
-      --tv-py: var(--pad-y-5);
-      --tv-px: var(--pad-x-4);
+    @include breakpoint(-milli) {
+      &:not(.type-c) {
+        --tv-py: var(--pad-y-5);
+        --tv-px: var(--pad-x-4);
+      }
     }
   }
 }

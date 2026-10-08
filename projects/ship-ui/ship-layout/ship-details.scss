@@ -1,129 +1,131 @@
 @use 'helpers' as *;
 
-sh-lo-details {
-  --details-gap: var(--space-3);
-  --details-term-w: #{p2r(160)};
-  --details-term-c: var(--base-8);
-  --details-cols: #{p2r(160)};
+@layer ship {
+  sh-lo-details {
+    --details-gap: var(--space-3);
+    --details-term-w: #{p2r(160)};
+    --details-term-c: var(--base-8);
+    --details-cols: #{p2r(160)};
 
-  display: flex;
-  flex-direction: column;
-  gap: var(--details-gap);
-  min-width: 0;
-
-  > .head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-
-    &:not(:has(> *:not(.actions))):has(> .actions:empty) {
-      display: none;
-    }
-
-    > h2,
-    > h3,
-    > [title] {
-      font: var(--paragraph-10B);
-    }
-
-    > .actions {
-      display: flex;
-      gap: var(--space-2);
-
-      &:empty {
-        display: none;
-      }
-    }
-  }
-
-  > .body {
     display: flex;
     flex-direction: column;
-    min-width: 0;
-  }
-
-  sh-lo-detail {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-2) var(--space-4);
-    padding-block: var(--details-gap);
+    gap: var(--details-gap);
     min-width: 0;
 
-    & + sh-lo-detail {
-      border-top: var(--border-10);
+    > .head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+
+      &:not(:has(> *:not(.actions))):has(> .actions:empty) {
+        display: none;
+      }
+
+      > h2,
+      > h3,
+      > [title] {
+        font: var(--paragraph-10B);
+      }
+
+      > .actions {
+        display: flex;
+        gap: var(--space-2);
+
+        &:empty {
+          display: none;
+        }
+      }
     }
 
-    &:first-child {
-      padding-top: 0;
-    }
-
-    &:last-child {
-      padding-bottom: 0;
-    }
-
-    > .term {
-      flex: 0 0 var(--details-term-w);
-      font: var(--paragraph-30);
-      color: var(--details-term-c);
-      min-width: 0;
-    }
-
-    > .value {
-      flex: 1 1 0;
-      font: var(--paragraph-30B);
-      color: var(--base-12);
-      min-width: 0;
-      overflow-wrap: anywhere;
-    }
-  }
-
-  // Stacked pairs in an auto-filling grid (term above value, no dividers).
-  &.type-b {
     > .body {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(var(--details-cols), 1fr));
-      gap: var(--space-4) var(--space-5);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
     }
 
     sh-lo-detail {
-      flex-direction: column;
-      gap: var(--space-1);
-      padding: 0;
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2) var(--space-4);
+      padding-block: var(--details-gap);
+      min-width: 0;
 
       & + sh-lo-detail {
-        border-top: 0;
+        border-top: var(--border-10);
+      }
+
+      &:first-child {
+        padding-top: 0;
+      }
+
+      &:last-child {
+        padding-bottom: 0;
       }
 
       > .term {
-        flex-basis: auto;
+        flex: 0 0 var(--details-term-w);
+        font: var(--paragraph-30);
+        color: var(--details-term-c);
+        min-width: 0;
+      }
+
+      > .value {
+        flex: 1 1 0;
+        font: var(--paragraph-30B);
+        color: var(--base-12);
+        min-width: 0;
+        overflow-wrap: anywhere;
       }
     }
-  }
 
-  // Compact: tight inline pairs, no dividers.
-  &.type-c {
-    --details-gap: var(--space-1);
-
-    sh-lo-detail {
-      & + sh-lo-detail {
-        border-top: 0;
+    // Stacked pairs in an auto-filling grid (term above value, no dividers).
+    &.type-b {
+      > .body {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(var(--details-cols), 1fr));
+        gap: var(--space-4) var(--space-5);
       }
 
-      > .term {
-        flex-basis: auto;
-        min-width: #{p2r(96)};
+      sh-lo-detail {
+        flex-direction: column;
+        gap: var(--space-1);
+        padding: 0;
+
+        & + sh-lo-detail {
+          border-top: 0;
+        }
+
+        > .term {
+          flex-basis: auto;
+        }
       }
     }
-  }
 
-  @include breakpoint(-nano) {
-    &:not(.type-b):not(.type-c) sh-lo-detail {
-      flex-direction: column;
-      gap: var(--space-1);
+    // Compact: tight inline pairs, no dividers.
+    &.type-c {
+      --details-gap: var(--space-1);
 
-      > .term {
-        flex-basis: auto;
+      sh-lo-detail {
+        & + sh-lo-detail {
+          border-top: 0;
+        }
+
+        > .term {
+          flex-basis: auto;
+          min-width: #{p2r(96)};
+        }
+      }
+    }
+
+    @include breakpoint(-nano) {
+      &:not(.type-b):not(.type-c) sh-lo-detail {
+        flex-direction: column;
+        gap: var(--space-1);
+
+        > .term {
+          flex-basis: auto;
+        }
       }
     }
   }

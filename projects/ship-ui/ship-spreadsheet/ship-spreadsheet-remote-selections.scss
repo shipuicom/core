@@ -1,36 +1,38 @@
 @use 'helpers' as *;
 
-sh-spreadsheet-remote-selections {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  // Level with the grid's own selection boxes, below the sticky rails and the cell editor.
-  z-index: 1;
-
-  .remote-range {
+@layer ship {
+  sh-spreadsheet-remote-selections {
     position: absolute;
-    box-sizing: border-box;
-    border: #{p2r(2)} solid var(--peer-c);
-    background: color-mix(in srgb, var(--peer-c) 12%, transparent);
-    border-radius: #{p2r(2)};
-  }
+    inset: 0;
+    pointer-events: none;
+    // Level with the grid's own selection boxes, below the sticky rails and the cell editor.
+    z-index: 1;
 
-  .remote-label {
-    position: absolute;
-    bottom: 100%;
-    left: #{p2r(-2)};
-    padding: #{p2r(0 5)};
-    border-radius: #{p2r(4 4 4 0)};
-    background: var(--peer-c);
-    color: var(--light-text);
-    font-size: #{p2r(11)};
-    line-height: 1.5;
-    white-space: nowrap;
+    .remote-range {
+      position: absolute;
+      box-sizing: border-box;
+      border: #{p2r(2)} solid var(--peer-c);
+      background: color-mix(in srgb, var(--peer-c) 12%, transparent);
+      border-radius: #{p2r(2)};
+    }
 
-    &.inside {
-      bottom: auto;
-      top: #{p2r(-2)};
-      border-radius: #{p2r(0 0 4 0)};
+    .remote-label {
+      position: absolute;
+      bottom: 100%;
+      left: #{p2r(-2)};
+      padding: #{p2r(0 5)};
+      border-radius: #{p2r(4 4 4 0)};
+      background: var(--peer-c);
+      color: var(--light-text);
+      font-size: #{p2r(11)};
+      line-height: 1.5;
+      white-space: nowrap;
+
+      &.inside {
+        bottom: auto;
+        top: #{p2r(-2)};
+        border-radius: #{p2r(0 0 4 0)};
+      }
     }
   }
 }

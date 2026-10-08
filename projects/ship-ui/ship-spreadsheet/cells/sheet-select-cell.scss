@@ -1,20 +1,22 @@
 @use 'helpers' as *;
 
-sh-sheet-select-cell {
-  display: contents;
+@layer ship {
+  sh-sheet-select-cell {
+    display: contents;
 
-  sh-chip {
-    max-width: 100%;
-    overflow: hidden;
-
-    div {
-      display: block;
+    sh-chip {
+      max-width: 100%;
       overflow: hidden;
-      text-overflow: ellipsis;
-    }
 
-    &.unknown {
-      --chip-c: var(--error-8);
+      div {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      &.unknown {
+        --chip-c: var(--error-8);
+      }
     }
   }
 }

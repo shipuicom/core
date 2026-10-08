@@ -1,234 +1,236 @@
 @use 'helpers' as *;
 
-sh-popover {
-  --po-py: var(--pad-y-5);
-  --po-px: var(--pad-x-5);
-  --po-overlay: rgb(from var(--dark-text) r g b / 50%);
-  --po-d: block;
+@layer ship {
+  sh-popover {
+    --po-py: var(--pad-y-5);
+    --po-px: var(--pad-x-5);
+    --po-overlay: rgb(from var(--dark-text) r g b / 50%);
+    --po-d: block;
 
-  display: var(--po-d);
-
-  &.centered {
-    .popover-content {
-      @supports (anchor-name: --anchor) {
-        position-area: bottom center;
-        position-try-fallbacks:
-          --po-top-center, --po-bottom-span-right, --po-top-span-right, --po-bottom-span-left, --po-top-span-left,
-          --po-right-center, --po-left-center;
-      }
-    }
-  }
-
-  &.multi-layer {
-    .popover-content {
-      position-area: right span-y-end;
-    }
-
-    .trigger .trigger-anchor {
-      right: p2r(-4);
-      left: p2r(-4);
-      top: 0;
-      bottom: 0;
-    }
-  }
-
-  .trigger {
-    cursor: pointer;
     display: var(--po-d);
-    position: relative;
 
-    .trigger-wrapper {
-      display: var(--po-d);
-
-      &:empty + * {
-        display: inherit;
-      }
-    }
-
-    .trigger-anchor {
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-    }
-  }
-
-  .popover {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-    opacity: 1;
-    background-color: transparent;
-    z-index: -1;
-
-    .overlay {
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-      background-color: transparent;
-
-      // Non-modal (closeOnOverlay: false): let clicks reach the content behind
-      // the popover so it stays interactive (e.g. an editor contextual toolbar).
-      &.click-through {
-        pointer-events: none;
-      }
-    }
-  }
-
-  [popover]::backdrop {
-    display: none;
-  }
-
-  .popover-content {
-    position: fixed;
-    margin: 0;
-    min-width: p2r(180);
-    max-width: calc(100vw - #{p2r(8)});
-    max-height: calc(100dvh - #{p2r(8)});
-    overflow: auto;
-    z-index: 0;
-    background-color: var(--base-1);
-    border: var(--border-10);
-    border-radius: var(--shape-2);
-    font: var(--paragraph-30);
-    color: var(--base-8);
-    padding: 0;
-
-    @supports (anchor-name: --anchor) {
-      inset: auto;
-      top: p2r(4);
-      position: fixed;
-      position-area: bottom span-right;
-      max-width: unset;
-      max-height: unset;
-      overflow: visible;
-      position-try-fallbacks:
-        --po-top-span-right, --po-bottom-span-left, --po-top-span-left, --po-right-span-bottom, --po-left-span-bottom,
-        --po-right-center, --po-left-center, --po-right-span-top, --po-left-span-top;
-    }
-  }
-
-  @include breakpoint(-milli) {
-    &.as-sheet {
-      .popover {
-        z-index: 9999;
-
-        .overlay {
-          background-color: var(--po-overlay);
-        }
-      }
-
+    &.centered {
       .popover-content {
         @supports (anchor-name: --anchor) {
-          position-area: none;
-          position-try-fallbacks: none;
-          inset: auto;
+          position-area: bottom center;
+          position-try-fallbacks:
+            --po-top-center, --po-bottom-span-right, --po-top-span-right, --po-bottom-span-left, --po-top-span-left,
+            --po-right-center, --po-left-center;
+        }
+      }
+    }
+
+    &.multi-layer {
+      .popover-content {
+        position-area: right span-y-end;
+      }
+
+      .trigger .trigger-anchor {
+        right: p2r(-4);
+        left: p2r(-4);
+        top: 0;
+        bottom: 0;
+      }
+    }
+
+    .trigger {
+      cursor: pointer;
+      display: var(--po-d);
+      position: relative;
+
+      .trigger-wrapper {
+        display: var(--po-d);
+
+        &:empty + * {
+          display: inherit;
+        }
+      }
+
+      .trigger-anchor {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+      }
+    }
+
+    .popover {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      opacity: 1;
+      background-color: transparent;
+      z-index: -1;
+
+      .overlay {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: transparent;
+
+        // Non-modal (closeOnOverlay: false): let clicks reach the content behind
+        // the popover so it stays interactive (e.g. an editor contextual toolbar).
+        &.click-through {
+          pointer-events: none;
+        }
+      }
+    }
+
+    [popover]::backdrop {
+      display: none;
+    }
+
+    .popover-content {
+      position: fixed;
+      margin: 0;
+      min-width: p2r(180);
+      max-width: calc(100vw - #{p2r(8)});
+      max-height: calc(100dvh - #{p2r(8)});
+      overflow: auto;
+      z-index: 0;
+      background-color: var(--base-1);
+      border: var(--border-10);
+      border-radius: var(--shape-2);
+      font: var(--paragraph-30);
+      color: var(--base-8);
+      padding: 0;
+
+      @supports (anchor-name: --anchor) {
+        inset: auto;
+        top: p2r(4);
+        position: fixed;
+        position-area: bottom span-right;
+        max-width: unset;
+        max-height: unset;
+        overflow: visible;
+        position-try-fallbacks:
+          --po-top-span-right, --po-bottom-span-left, --po-top-span-left, --po-right-span-bottom, --po-left-span-bottom,
+          --po-right-center, --po-left-center, --po-right-span-top, --po-left-span-top;
+      }
+    }
+
+    @include breakpoint(-milli) {
+      &.as-sheet {
+        .popover {
+          z-index: 9999;
+
+          .overlay {
+            background-color: var(--po-overlay);
+          }
         }
 
-        position: fixed;
-        top: auto;
-        bottom: 0;
-        left: p2r(8);
-        right: p2r(8);
-        width: calc(100% - #{p2r(16)});
-        max-width: unset;
-        height: auto;
-        max-height: calc(100dvh - #{p2r(80)});
-        border-bottom-left-radius: 0;
-        border-bottom-right-radius: 0;
-        margin: 0;
-        transform: translateY(0);
-        display: flex;
-        align-items: center;
-        padding: var(--po-py) var(--po-px);
-        justify-content: center;
+        .popover-content {
+          @supports (anchor-name: --anchor) {
+            position-area: none;
+            position-try-fallbacks: none;
+            inset: auto;
+          }
+
+          position: fixed;
+          top: auto;
+          bottom: 0;
+          left: p2r(8);
+          right: p2r(8);
+          width: calc(100% - #{p2r(16)});
+          max-width: unset;
+          height: auto;
+          max-height: calc(100dvh - #{p2r(80)});
+          border-bottom-left-radius: 0;
+          border-bottom-right-radius: 0;
+          margin: 0;
+          transform: translateY(0);
+          display: flex;
+          align-items: center;
+          padding: var(--po-py) var(--po-px);
+          justify-content: center;
+        }
       }
     }
   }
-}
 
-.full-popover sh-popover .popover-content,
-sh-popover.full .popover-content {
-  width: auto;
+  .full-popover sh-popover .popover-content,
+  sh-popover.full .popover-content {
+    width: auto;
 
-  @supports (anchor-name: --anchor) {
-    left: anchor(left);
-    right: anchor(right);
+    @supports (anchor-name: --anchor) {
+      left: anchor(left);
+      right: anchor(right);
+    }
   }
-}
 
-// Anchor-positioning fallbacks for the popover content.
-@position-try --po-bottom-span-right {
-  position-area: bottom span-right;
-  inset: auto;
-  top: p2r(4);
-}
+  // Anchor-positioning fallbacks for the popover content.
+  @position-try --po-bottom-span-right {
+    position-area: bottom span-right;
+    inset: auto;
+    top: p2r(4);
+  }
 
-@position-try --po-bottom-center {
-  position-area: bottom center;
-  inset: auto;
-  top: p2r(4);
-}
+  @position-try --po-bottom-center {
+    position-area: bottom center;
+    inset: auto;
+    top: p2r(4);
+  }
 
-@position-try --po-top-center {
-  position-area: top center;
-  inset: auto;
-  bottom: p2r(4);
-}
+  @position-try --po-top-center {
+    position-area: top center;
+    inset: auto;
+    bottom: p2r(4);
+  }
 
-@position-try --po-bottom-span-left {
-  position-area: bottom span-left;
-  inset: auto;
-  top: p2r(4);
-}
+  @position-try --po-bottom-span-left {
+    position-area: bottom span-left;
+    inset: auto;
+    top: p2r(4);
+  }
 
-@position-try --po-top-span-right {
-  position-area: top span-right;
-  inset: auto;
-  bottom: p2r(4);
-}
+  @position-try --po-top-span-right {
+    position-area: top span-right;
+    inset: auto;
+    bottom: p2r(4);
+  }
 
-@position-try --po-top-span-left {
-  position-area: top span-left;
-  inset: auto;
-  bottom: p2r(4);
-}
+  @position-try --po-top-span-left {
+    position-area: top span-left;
+    inset: auto;
+    bottom: p2r(4);
+  }
 
-@position-try --po-right-span-top {
-  position-area: right span-top;
-  inset: auto;
-  left: p2r(4);
-}
+  @position-try --po-right-span-top {
+    position-area: right span-top;
+    inset: auto;
+    left: p2r(4);
+  }
 
-@position-try --po-left-span-top {
-  position-area: left span-top;
-  inset: auto;
-  right: p2r(4);
-}
+  @position-try --po-left-span-top {
+    position-area: left span-top;
+    inset: auto;
+    right: p2r(4);
+  }
 
-@position-try --po-right-center {
-  position-area: right center;
-  inset: auto;
-  left: p2r(4);
-}
+  @position-try --po-right-center {
+    position-area: right center;
+    inset: auto;
+    left: p2r(4);
+  }
 
-@position-try --po-left-center {
-  position-area: left center;
-  inset: auto;
-  right: p2r(4);
-}
+  @position-try --po-left-center {
+    position-area: left center;
+    inset: auto;
+    right: p2r(4);
+  }
 
-@position-try --po-right-span-bottom {
-  position-area: right span-bottom;
-  inset: auto;
-  left: p2r(4);
-}
+  @position-try --po-right-span-bottom {
+    position-area: right span-bottom;
+    inset: auto;
+    left: p2r(4);
+  }
 
-@position-try --po-left-span-bottom {
-  position-area: left span-bottom;
-  inset: auto;
-  right: p2r(4);
+  @position-try --po-left-span-bottom {
+    position-area: left span-bottom;
+    inset: auto;
+    right: p2r(4);
+  }
 }

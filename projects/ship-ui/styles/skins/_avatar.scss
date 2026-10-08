@@ -1,13 +1,9 @@
 @mixin skin($colors, $variants) {
+  // `.ring-<colour>` is a second colour next to the fill's colour class, so it cannot use the --c-* tokens.
   sh-avatar {
     @each $c in $colors {
       &.ring-#{$c} {
         --avatar-ring-c: var(--#{$c}-8);
-      }
-
-      &.#{$c} {
-        --avatar-bg: var(--#{$c}-3);
-        --avatar-c: var(--#{$c}-11);
       }
     }
   }
