@@ -85,6 +85,11 @@ html body {
   --space-7: #{p2r(48)};
   --space-8: #{p2r(64)};
 
+  // Website blocks (ship-block): content width and the outer padding every block reads by default.
+  --block-mw: #{p2r(1200)};
+  --block-py: var(--space-8);
+  --block-px: var(--space-5);
+
   // Padding tiers follow the --pad-y / --pad-x base pair (set on :root with the other global knobs).
   // Components read a tier through their own --<abbr>-py / --<abbr>-px tokens.
   @each $axis, $mults in $pad-tiers {

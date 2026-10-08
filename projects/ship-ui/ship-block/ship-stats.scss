@@ -1,0 +1,159 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+@layer ship {
+  sh-bl-stats {
+    --stats-bg: transparent;
+    --stats-c: var(--base-12);
+    --stats-mw: var(--block-mw);
+    --stats-py: var(--block-py);
+    --stats-px: var(--block-px);
+    --stats-gap: var(--space-7);
+    --stats-ec: var(--c-9, var(--primary-9));
+    --stats-min: #{p2r(180)};
+    --stats-row-gap: var(--space-6);
+    --stats-item-p: var(--space-2) var(--space-5);
+    --stats-bc: var(--base-4);
+    --stats-ic: var(--c-9, var(--primary-9));
+    --stats-vc: var(--base-12);
+    --stats-vf: var(--display-50);
+    --stats-lc: var(--base-11);
+    --stats-nc: var(--base-11);
+    --stats-item-bg: var(--base-1);
+    --stats-item-bc: var(--base-4);
+    --stats-item-s: var(--shape-3);
+    --stats-pbg: var(--c-8, var(--base-12));
+    --stats-pc: var(--c-c8, var(--base-1));
+    --stats-ps: var(--shape-5);
+    --stats-pp: var(--space-8) var(--space-7);
+
+    @include frame(stats);
+    @include head(stats);
+
+    // Hairlines: every stat draws its start border one pixel outside its cell and the list clips that pixel, so the
+    // first stat of each row (wrapped or not) shows no line.
+    > .inner > .items {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(var(--stats-min), 100%), 1fr));
+      row-gap: var(--stats-row-gap);
+      overflow: clip;
+    }
+
+    sh-bl-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      min-width: 0;
+      margin-inline-start: -1px;
+      padding: var(--stats-item-p);
+      border-inline-start: 1px solid var(--stats-bc);
+      text-align: center;
+      font: var(--paragraph-40);
+      color: var(--stats-nc);
+
+      > sh-icon,
+      > [icon] {
+        font-size: #{p2r(28)};
+        color: var(--stats-ic);
+        margin-bottom: var(--space-1);
+      }
+
+      > b,
+      > strong,
+      > [value] {
+        font: var(--stats-vf);
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+        color: var(--stats-vc);
+      }
+
+      > p,
+      > [label] {
+        font: var(--paragraph-20);
+        color: var(--stats-lc);
+        text-wrap: balance;
+      }
+    }
+
+    // Cards: every stat on its own surface, start aligned.
+    &.type-b {
+      --stats-row-gap: var(--space-4);
+      --stats-item-p: var(--space-5);
+
+      > .inner > .items {
+        column-gap: var(--space-4);
+        overflow: visible;
+      }
+
+      sh-bl-stat {
+        align-items: flex-start;
+        margin-inline-start: 0;
+        text-align: start;
+        background-color: var(--stats-item-bg);
+        border: var(--border-10);
+        border-color: var(--stats-item-bc);
+        border-radius: var(--stats-item-s);
+      }
+    }
+
+    // Colour band: the content column is a rounded solid panel in the block's colour.
+    &.type-c {
+      --stats-ec: var(--stats-pc);
+      --stats-ic: var(--stats-pc);
+      --stats-vc: var(--stats-pc);
+      --stats-lc: rgb(from var(--stats-pc) r g b / 0.85);
+      --stats-nc: rgb(from var(--stats-pc) r g b / 0.7);
+      --stats-bc: rgb(from var(--stats-pc) r g b / 0.2);
+      --stats-vf: var(--display-40);
+
+      padding: var(--stats-py) var(--stats-px);
+
+      > .inner {
+        box-sizing: border-box;
+        padding: var(--stats-pp);
+        color: var(--stats-pc);
+        background-color: var(--stats-pbg);
+        border-radius: var(--stats-ps);
+      }
+
+      > .inner > .head > h2,
+      > .inner > .head > p,
+      > .inner > .head > [description] {
+        color: inherit;
+      }
+
+      > .inner > .head > p,
+      > .inner > .head > [description] {
+        opacity: 0.85;
+      }
+
+      &.flush {
+        padding: 0;
+      }
+    }
+
+    @include below($medium) {
+      &.type-c > .inner {
+        --stats-vf: var(--display-50);
+      }
+    }
+
+    @include below($narrow) {
+      > .inner {
+        --stats-min: #{p2r(140)};
+        --stats-vf: var(--title-10B);
+        --stats-item-p: var(--space-2) var(--space-4);
+      }
+
+      &.type-b > .inner {
+        --stats-item-p: var(--space-4);
+      }
+
+      &.type-c > .inner {
+        --stats-pp: var(--space-6) var(--space-4);
+        --stats-vf: var(--title-10B);
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+<sh-bl-logos [variant]="variant()">
+  <p>Trusted by product teams at 2,000+ companies</p>
+
+  @for (brand of brands; track brand.name) {
+    <span logo>
+      <sh-icon>{{ brand.icon }}</sh-icon>
+      {{ brand.name }}
+    </span>
+  }
+</sh-bl-logos>

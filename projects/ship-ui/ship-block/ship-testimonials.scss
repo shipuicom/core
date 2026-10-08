@@ -1,0 +1,222 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+@layer ship {
+  sh-bl-testimonials {
+    --testimonials-bg: transparent;
+    --testimonials-c: var(--base-12);
+    --testimonials-mw: var(--block-mw);
+    --testimonials-py: var(--block-py);
+    --testimonials-px: var(--block-px);
+    --testimonials-gap: var(--space-7);
+    --testimonials-ec: var(--c-9, var(--primary-9));
+    --testimonials-ac: var(--c-9, var(--primary-9));
+    --testimonials-cols: 3;
+    --testimonials-col-gap: var(--space-4);
+    --testimonials-row-gap: var(--space-4);
+    --testimonials-item-bg: var(--base-1);
+    --testimonials-item-bc: var(--base-4);
+    --testimonials-item-s: var(--shape-4);
+    --testimonials-item-p: var(--space-6);
+    --testimonials-qc: var(--base-12);
+    --testimonials-nc: var(--base-12);
+    --testimonials-rc: var(--base-11);
+    --testimonials-as: #{p2r(40)};
+    --testimonials-lw: #{p2r(800)};
+
+    @include frame(testimonials);
+    @include head(testimonials);
+
+    > .inner > .items {
+      display: grid;
+      grid-template-columns: repeat(var(--testimonials-cols), minmax(0, 1fr));
+      gap: var(--testimonials-row-gap) var(--testimonials-col-gap);
+    }
+
+    sh-bl-testimonial {
+      display: flex;
+      min-width: 0;
+      box-sizing: border-box;
+      padding: var(--testimonials-item-p);
+      background-color: var(--testimonials-item-bg);
+      border: var(--border-10);
+      border-color: var(--testimonials-item-bc);
+      border-radius: var(--testimonials-item-s);
+
+      > figure {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-5);
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+
+        > [rating] {
+          display: flex;
+          align-items: center;
+          gap: var(--space-1);
+          font-size: #{p2r(18)};
+          color: var(--testimonials-ac);
+        }
+
+        > blockquote,
+        > p,
+        > [quote] {
+          margin: 0;
+          font: var(--paragraph-20);
+          line-height: 1.6;
+          color: var(--testimonials-qc);
+          text-wrap: pretty;
+
+          > p {
+            margin: 0;
+          }
+        }
+
+        // The caption sits at the bottom, so authors line up across a row of cards.
+        > figcaption {
+          display: flex;
+          align-items: center;
+          gap: var(--space-3);
+          margin-top: auto;
+
+          > img,
+          > [avatar] {
+            flex: none;
+            width: var(--testimonials-as);
+            height: var(--testimonials-as);
+            object-fit: cover;
+            border-radius: 50%;
+          }
+
+          > sh-avatar {
+            flex: none;
+          }
+
+          > .who {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+
+            > b,
+            > cite,
+            > [name] {
+              font: var(--paragraph-20B);
+              font-style: normal;
+              color: var(--testimonials-nc);
+            }
+
+            > span,
+            > small,
+            > [role] {
+              font: var(--paragraph-30);
+              color: var(--testimonials-rc);
+            }
+          }
+        }
+      }
+    }
+
+    // Featured: one large centered quote under its stars, or an accent quote mark without them; several stack
+    // between rules.
+    &.type-b {
+      > .inner > .items {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        width: 100%;
+        max-width: var(--testimonials-lw);
+        margin-inline: auto;
+      }
+
+      sh-bl-testimonial {
+        padding: var(--space-7) 0;
+        background-color: transparent;
+        border: 0;
+        border-radius: 0;
+        text-align: center;
+
+        + sh-bl-testimonial {
+          border-top: var(--border-10);
+          border-color: var(--testimonials-item-bc);
+        }
+
+        &:first-child {
+          padding-top: 0;
+        }
+
+        &:last-child {
+          padding-bottom: 0;
+        }
+
+        > figure {
+          align-items: center;
+          gap: var(--space-5);
+
+          &:not(:has(> [rating]))::before {
+            content: '\201C';
+            content: '\201C' / '';
+            display: block;
+            height: 0.5em;
+            font: var(--display-20);
+            line-height: 1;
+            color: var(--testimonials-ac);
+          }
+
+          > blockquote,
+          > p,
+          > [quote] {
+            font: var(--title-30);
+            line-height: 1.4;
+            text-wrap: balance;
+          }
+
+          > figcaption {
+            justify-content: center;
+            margin-top: var(--space-2);
+            text-align: start;
+          }
+        }
+      }
+    }
+
+    // Masonry: cards flow down columns at their own height.
+    &.type-c {
+      > .inner > .items {
+        display: block;
+        columns: var(--testimonials-cols);
+        column-gap: var(--testimonials-col-gap);
+      }
+
+      sh-bl-testimonial {
+        break-inside: avoid;
+        margin-bottom: var(--testimonials-row-gap);
+      }
+    }
+
+    @include below($medium) {
+      > .inner > .items {
+        --testimonials-cols: 2;
+      }
+    }
+
+    @include below($narrow) {
+      > .inner > .items {
+        --testimonials-cols: 1;
+      }
+
+      > .inner > .items > sh-bl-testimonial {
+        --testimonials-item-p: var(--space-5);
+      }
+
+      &.type-b > .inner > .items > sh-bl-testimonial > figure {
+        > blockquote,
+        > p,
+        > [quote] {
+          font: var(--paragraph-10);
+          line-height: 1.5;
+        }
+      }
+    }
+  }
+}

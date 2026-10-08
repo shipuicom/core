@@ -199,7 +199,9 @@ export const SHIP_COMPONENT_KEYS = [
   'rangeSlider', 'layoutPage', 'layoutSection', 'layoutSetting', 'layoutEmptyState', 'layoutStat', 'layoutStatTrend',
   'layoutStatGoal', 'layoutStatRing', 'layoutRanking', 'layoutAchievement', 'layoutInbox', 'layoutTableView',
   'layoutDetails', 'layoutTimeline', 'layoutToolbar', 'breadcrumbs', 'chat', 'avatar', 'chartSparkline',
-  'colorPickerInput', 'editor', 'themeToggle', 'video', 'videoPlaylist',
+  'colorPickerInput', 'editor', 'themeToggle', 'video', 'videoPlaylist', 'blockBanner', 'blockHeader', 'blockHero',
+  'blockLogos', 'blockFeatures', 'blockSplit', 'blockSteps', 'blockStats', 'blockTestimonials', 'blockPricing', 'blockFaq',
+  'blockCta', 'blockNewsletter', 'blockTeam', 'blockPosts', 'blockContact', 'blockFooter',
 ] as const satisfies readonly (keyof ShipConfig)[];
 const COMPONENT_STRING_KEYS = ['color', 'variant', 'size'];
 const COMPONENT_BOOLEAN_KEYS = ['readonly', 'sharp', 'dynamic', 'alwaysShow', 'disableUnfocus'];

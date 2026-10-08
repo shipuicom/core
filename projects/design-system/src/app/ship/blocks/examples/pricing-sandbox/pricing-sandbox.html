@@ -1,0 +1,35 @@
+<sh-bl-pricing [variant]="variant()" [color]="color()">
+  <span eyebrow>Pricing</span>
+  <h2>Simple pricing that grows with you</h2>
+  <p>Start free and upgrade when your team does. Every plan includes every component.</p>
+  <sh-button-group actions [(value)]="billing">
+    <button type="button" value="monthly">Monthly</button>
+    <button type="button" value="yearly">Yearly · save 20%</button>
+  </sh-button-group>
+
+  @for (tier of tiers(); track tier.name) {
+    <sh-bl-pricing-tier [featured]="tier.featured">
+      <h3>{{ tier.name }}</h3>
+      @if (tier.featured) {
+        <sh-chip size="small" variant="flat" [color]="color()">Most popular</sh-chip>
+      }
+      <p>{{ tier.text }}</p>
+      <div price>
+        <b>${{ tier.price }}</b>
+        <span>{{ tier.period }}</span>
+      </div>
+      <ul>
+        @for (feature of tier.features; track feature) {
+          <li>{{ feature }}</li>
+        }
+      </ul>
+      <button
+        shButton
+        type="button"
+        [variant]="tier.featured ? 'raised' : 'outlined'"
+        [color]="tier.featured ? color() : null">
+        {{ tier.cta }}
+      </button>
+    </sh-bl-pricing-tier>
+  }
+</sh-bl-pricing>

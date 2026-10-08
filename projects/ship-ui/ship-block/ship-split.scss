@@ -1,0 +1,268 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+// type-c: distance from the block's edge to where the centered content column starts.
+$edge: max(var(--split-px), calc((100cqi - var(--split-mw)) / 2));
+
+@layer ship {
+  sh-bl-split {
+    --split-bg: transparent;
+    --split-c: var(--base-12);
+    --split-mw: var(--block-mw);
+    --split-py: var(--block-py);
+    --split-px: var(--block-px);
+    --split-gap: var(--space-8);
+    --split-ec: var(--c-9, var(--primary-9));
+    --split-dc: var(--base-11);
+    --split-ac: var(--c-9, var(--primary-9));
+    --split-mk-bg: var(--c-3, var(--primary-3));
+    --split-mk-s: #{p2r(20)};
+    --split-ms: var(--shape-4);
+    --split-mbc: var(--base-4);
+    --split-msh: var(--box-shadow-50);
+    --split-mh: #{p2r(420)};
+    --split-pbg: var(--c-2, var(--base-2));
+    --split-pbg2: var(--c-3, var(--base-3));
+    --split-pbc: var(--c-4, var(--base-4));
+    --split-pp: var(--space-7);
+    --split-ps: var(--shape-5);
+
+    @include frame(split);
+
+    > .inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+    }
+
+    > .inner > .text {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-4);
+      min-width: 0;
+
+      > [eyebrow] {
+        font: var(--paragraph-30B);
+        color: var(--split-ec);
+      }
+
+      > h2 {
+        font: var(--title-20B);
+        letter-spacing: -0.01em;
+        color: var(--base-12);
+        text-wrap: balance;
+      }
+
+      > p,
+      > [description] {
+        font: var(--paragraph-10);
+        color: var(--split-dc);
+        text-wrap: pretty;
+      }
+
+      > ul {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        margin: var(--space-1) 0 0;
+        padding: 0;
+        list-style: none;
+
+        > li {
+          position: relative;
+          padding-inline-start: calc(var(--split-mk-s) + var(--space-3));
+          font: var(--paragraph-20);
+          color: var(--split-dc);
+
+          // A tinted disc with a check drawn from two borders: no icon font needed.
+          &::before,
+          &::after {
+            content: '';
+            position: absolute;
+          }
+
+          &::before {
+            inset-inline-start: 0;
+            top: calc((1lh - var(--split-mk-s)) / 2);
+            width: var(--split-mk-s);
+            height: var(--split-mk-s);
+            border-radius: 50%;
+            background-color: var(--split-mk-bg);
+          }
+
+          &::after {
+            box-sizing: border-box;
+            inset-inline-start: calc((var(--split-mk-s) - #{p2r(6)}) / 2);
+            top: calc(1lh / 2 - #{p2r(6)});
+            width: #{p2r(6)};
+            height: #{p2r(10)};
+            border: solid var(--split-ac);
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+          }
+        }
+      }
+
+      > .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-3);
+        margin-top: var(--space-3);
+
+        &:empty {
+          display: none;
+        }
+      }
+    }
+
+    > .inner > .media {
+      min-width: 0;
+
+      &:empty {
+        display: none;
+      }
+
+      > img,
+      > video,
+      > picture,
+      > [media] {
+        display: block;
+        width: 100%;
+        height: auto;
+        border: var(--border-10);
+        border-color: var(--split-mbc);
+        border-radius: var(--split-ms);
+        box-shadow: var(--split-msh);
+      }
+
+      > picture {
+        overflow: hidden;
+      }
+
+      > picture > img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+    }
+
+    &.reverse > .inner > .media {
+      order: -1;
+    }
+
+    // Framed: the media sits on a tinted panel, like a screenshot on a backdrop.
+    &.type-b {
+      --split-ms: var(--shape-3);
+
+      > .inner > .media {
+        padding: var(--split-pp);
+        background: linear-gradient(145deg, var(--split-pbg), var(--split-pbg2));
+        border: var(--border-10);
+        border-color: var(--split-pbc);
+        border-radius: var(--split-ps);
+      }
+    }
+
+    // Bleed: the media runs to the block's edge on its outer side; the text keeps the content column's edge.
+    &.type-c {
+      > .inner {
+        max-width: none;
+        padding-inline: 0;
+        column-gap: 0;
+        align-items: stretch;
+      }
+
+      > .inner > .text {
+        justify-content: center;
+        padding-inline: $edge var(--split-gap);
+      }
+
+      > .inner > .media {
+        display: flex;
+
+        > img,
+        > video,
+        > picture,
+        > [media] {
+          height: 100%;
+          min-height: var(--split-mh);
+          object-fit: cover;
+          border-inline-end: 0;
+          border-start-end-radius: 0;
+          border-end-end-radius: 0;
+        }
+
+        > picture > img {
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+    }
+
+    &.type-c.reverse {
+      > .inner > .text {
+        padding-inline: var(--split-gap) $edge;
+      }
+
+      > .inner > .media {
+        > img,
+        > video,
+        > picture,
+        > [media] {
+          border-inline-start: 0;
+          border-inline-end: var(--border-10);
+          border-color: var(--split-mbc);
+          border-start-start-radius: 0;
+          border-end-start-radius: 0;
+          border-start-end-radius: var(--split-ms);
+          border-end-end-radius: var(--split-ms);
+        }
+      }
+    }
+
+    @include below($medium) {
+      > .inner {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--space-6);
+      }
+
+      > .inner > .media {
+        --split-pp: var(--space-5);
+      }
+
+      &.type-c > .inner > .text,
+      &.type-c.reverse > .inner > .text {
+        padding-inline: var(--split-px);
+      }
+
+      &.type-c > .inner > .media,
+      &.type-c.reverse > .inner > .media {
+        > img,
+        > video,
+        > picture,
+        > [media] {
+          min-height: 0;
+          max-height: #{p2r(480)};
+          border-inline: 0;
+          border-radius: 0;
+        }
+      }
+    }
+
+    @include below($narrow) {
+      > .inner > .text > h2 {
+        font: var(--title-30B);
+      }
+
+      > .inner > .text > p,
+      > .inner > .text > [description] {
+        font: var(--paragraph-20);
+      }
+
+      > .inner > .media {
+        --split-pp: var(--space-4);
+      }
+    }
+  }
+}

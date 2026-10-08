@@ -1,0 +1,15 @@
+<sh-bl-steps [variant]="variant()" [color]="color()">
+  <span eyebrow>How it works</span>
+  <h2>From install to launch in three steps</h2>
+  <p>No design handoff, no CSS rewrites. The blocks read your theme and do the layout.</p>
+  <div actions>
+    <button shButton variant="raised" [color]="color()">Start building</button>
+  </div>
+
+  @for (step of steps; track step.title) {
+    <sh-bl-step>
+      <h3>{{ step.title }}</h3>
+      <p>{{ step.text }}</p>
+    </sh-bl-step>
+  }
+</sh-bl-steps>

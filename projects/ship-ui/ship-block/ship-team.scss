@@ -1,0 +1,245 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+@layer ship {
+  sh-bl-team {
+    --team-bg: transparent;
+    --team-c: var(--base-12);
+    --team-mw: var(--block-mw);
+    --team-py: var(--block-py);
+    --team-px: var(--block-px);
+    --team-gap: var(--space-7);
+    --team-ec: var(--primary-9);
+    --team-cols: 4;
+    --team-row-gap: var(--space-7);
+    --team-col-gap: var(--space-6);
+    --team-ps: #{p2r(96)};
+    --team-pbg: var(--base-3);
+    --team-nc: var(--base-12);
+    --team-rc: var(--base-11);
+    --team-bc: var(--base-11);
+    --team-sc: var(--base-10);
+    --team-sc-h: var(--base-12);
+    --team-sbg-h: var(--base-3);
+    --team-item-bg: var(--base-1);
+    --team-item-bc: var(--base-4);
+    --team-item-s: var(--shape-3);
+    --team-item-p: var(--space-5);
+
+    @include frame(team);
+    @include head(team);
+
+    > .inner > .items {
+      display: grid;
+      grid-template-columns: repeat(var(--team-cols), minmax(0, 1fr));
+      gap: var(--team-row-gap) var(--team-col-gap);
+    }
+
+    sh-bl-member {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-4);
+      min-width: 0;
+      text-align: center;
+
+      > img,
+      > [photo] {
+        display: block;
+        width: var(--team-ps);
+        height: var(--team-ps);
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 50%;
+        background-color: var(--team-pbg);
+      }
+
+      > sh-avatar {
+        --avatar-si: var(--team-ps);
+        --avatar-f: var(--title-20B);
+      }
+
+      > .text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-1);
+        min-width: 0;
+        font: var(--paragraph-30);
+        color: var(--team-bc);
+        text-wrap: pretty;
+
+        > b,
+        > h3,
+        > [name] {
+          font: var(--paragraph-10B);
+          color: var(--team-nc);
+        }
+
+        > span,
+        > [job] {
+          font: var(--paragraph-30);
+          color: var(--team-rc);
+        }
+
+        > p {
+          margin-top: var(--space-2);
+        }
+      }
+
+      > [social] {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: var(--space-1);
+
+        > a,
+        > button {
+          display: inline-grid;
+          place-items: center;
+          width: #{p2r(32)};
+          height: #{p2r(32)};
+          color: var(--team-sc);
+          text-decoration: none;
+          border-radius: var(--shape-2);
+          transition:
+            color 150ms ease-out,
+            background-color 150ms ease-out;
+
+          &:hover {
+            color: var(--team-sc-h);
+            background-color: var(--team-sbg-h);
+          }
+
+          &:focus-visible {
+            outline: 2px solid var(--primary-8);
+            outline-offset: 2px;
+          }
+
+          > sh-icon {
+            color: inherit;
+          }
+        }
+      }
+    }
+
+    // Cards: a square photo across the top of each card, the text start aligned below it.
+    &.type-b {
+      --team-row-gap: var(--space-5);
+      --team-col-gap: var(--space-5);
+
+      sh-bl-member {
+        align-items: stretch;
+        gap: 0;
+        padding-bottom: var(--team-item-p);
+        overflow: hidden;
+        text-align: start;
+        background-color: var(--team-item-bg);
+        border: var(--border-10);
+        border-color: var(--team-item-bc);
+        border-radius: var(--team-item-s);
+
+        > img,
+        > [photo],
+        > sh-avatar {
+          width: 100%;
+          height: auto;
+          aspect-ratio: 1;
+          border-radius: 0;
+        }
+
+        > sh-avatar {
+          --avatar-f: var(--display-50);
+        }
+
+        > .text {
+          align-items: flex-start;
+          padding: var(--team-item-p) var(--team-item-p) 0;
+        }
+
+        > [social] {
+          justify-content: flex-start;
+          padding: var(--space-3) calc(var(--team-item-p) - var(--space-2)) 0;
+        }
+      }
+    }
+
+    // Compact list: one row per person (photo, name and role, social links at the end), two columns.
+    &.type-c {
+      --team-cols: 2;
+      --team-row-gap: 0;
+      --team-col-gap: var(--space-7);
+      --team-ps: #{p2r(48)};
+
+      sh-bl-member {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: var(--space-4);
+        padding-block: var(--space-4);
+        text-align: start;
+        border-bottom: 1px solid var(--team-item-bc);
+
+        > sh-avatar {
+          --avatar-f: var(--paragraph-20B);
+        }
+
+        > .text {
+          grid-column: 2;
+          align-items: flex-start;
+          gap: 0;
+
+          > b,
+          > h3,
+          > [name] {
+            font: var(--paragraph-20B);
+          }
+
+          > p {
+            margin-top: var(--space-1);
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            overflow: hidden;
+          }
+        }
+
+        > [social] {
+          grid-column: 3;
+          flex-wrap: nowrap;
+        }
+      }
+    }
+
+    @include below($medium) {
+      > .inner > .items {
+        --team-cols: 3;
+      }
+
+      &.type-c > .inner > .items {
+        --team-cols: 2;
+      }
+    }
+
+    @include below($narrow) {
+      > .inner > .items {
+        --team-cols: 2;
+        --team-col-gap: var(--space-4);
+        --team-row-gap: var(--space-6);
+        --team-ps: #{p2r(80)};
+      }
+
+      &.type-b > .inner > .items {
+        --team-row-gap: var(--space-4);
+        --team-item-p: var(--space-4);
+      }
+
+      &.type-c > .inner > .items {
+        --team-cols: 1;
+        --team-row-gap: 0;
+        --team-ps: #{p2r(40)};
+      }
+    }
+  }
+}

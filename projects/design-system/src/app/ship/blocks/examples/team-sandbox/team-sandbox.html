@@ -1,0 +1,25 @@
+<sh-bl-team [variant]="variant()">
+  <span eyebrow>The team</span>
+  <h2>The people behind ShipUI</h2>
+  <p>A small, remote team of designers and engineers who care about the details nobody notices until they are wrong.</p>
+  <a shButton actions href="#" variant="outlined">
+    We're hiring
+    <sh-icon>arrow-right</sh-icon>
+  </a>
+
+  @for (member of members; track member.name) {
+    <sh-bl-member>
+      <sh-avatar [name]="member.name" />
+      <b>{{ member.name }}</b>
+      <span>{{ member.role }}</span>
+      <p>{{ member.bio }}</p>
+      <div social>
+        @for (link of member.social; track link.icon) {
+          <a href="#" [attr.aria-label]="member.name + ' on ' + link.label">
+            <sh-icon>{{ link.icon }}</sh-icon>
+          </a>
+        }
+      </div>
+    </sh-bl-member>
+  }
+</sh-bl-team>

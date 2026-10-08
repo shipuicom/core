@@ -1,0 +1,14 @@
+<sh-bl-stats [variant]="variant()" [color]="color()">
+  <span eyebrow>By the numbers</span>
+  <h2>Trusted by teams that ship every day</h2>
+  <p>From weekend side projects to products with millions of users, ShipUI keeps the interface consistent.</p>
+
+  @for (stat of stats; track stat.label) {
+    <sh-bl-stat>
+      <sh-icon>{{ stat.icon }}</sh-icon>
+      <b>{{ stat.value }}</b>
+      <p>{{ stat.label }}</p>
+      <small>{{ stat.note }}</small>
+    </sh-bl-stat>
+  }
+</sh-bl-stats>

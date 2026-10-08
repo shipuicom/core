@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `@ship-ui/core/ship-block`: website blocks, slot based like the layouts. Site chrome (`sh-bl-banner`,
+  `sh-bl-header` with a built-in mobile menu, `sh-bl-footer`), marketing (`sh-bl-hero`, `sh-bl-logos`,
+  `sh-bl-features`, `sh-bl-split`, `sh-bl-steps`, `sh-bl-cta`), conversion (`sh-bl-pricing`, `sh-bl-testimonials`,
+  `sh-bl-faq`, `sh-bl-newsletter`) and content (`sh-bl-stats`, `sh-bl-team`, `sh-bl-posts`, `sh-bl-contact`). Every
+  block has a default, `type-b` and `type-c` variant (ShipConfig `block<Name>`), reflows at its own width through
+  container queries, and reads the new `--block-mw` / `--block-py` / `--block-px` tokens.
+- MCP prompt `implement_website`.
+
 ## 0.27.1
 
 ### Fixed

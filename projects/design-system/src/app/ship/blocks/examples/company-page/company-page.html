@@ -1,0 +1,135 @@
+<header>
+  <sh-bl-header variant="type-c">
+    <a logo href="#">
+      <sh-icon>sailboat</sh-icon>
+      Acme
+    </a>
+    <nav aria-label="Main">
+      <a href="#">Product</a>
+      <a href="#">Pricing</a>
+      <a href="#" aria-current="page">Company</a>
+      <a href="#">Blog</a>
+    </nav>
+    <a shButton actions href="#" variant="raised" color="primary">Start free</a>
+  </sh-bl-header>
+</header>
+
+<main>
+  <sh-bl-hero>
+    <span eyebrow>About Acme</span>
+    <h1>
+      We build tools for teams
+      <em>that ship</em>
+    </h1>
+    <p>Founded in 2021 by three engineers tired of hunting for the latest spec. Today 4,000 teams plan their week in Acme.</p>
+  </sh-bl-hero>
+
+  <sh-bl-steps variant="type-c">
+    <span eyebrow>How we work</span>
+    <h2>Small team, short loops</h2>
+    <sh-bl-step>
+      <h3>Talk to customers</h3>
+      <p>Every engineer joins two customer calls a month. Nothing gets built from a ticket alone.</p>
+    </sh-bl-step>
+    <sh-bl-step>
+      <h3>Ship behind a flag</h3>
+      <p>Work lands in production the day it is written, switched on for us first.</p>
+    </sh-bl-step>
+    <sh-bl-step>
+      <h3>Measure, then decide</h3>
+      <p>A feature graduates when the numbers say so, not when the sprint ends.</p>
+    </sh-bl-step>
+  </sh-bl-steps>
+
+  <sh-bl-team>
+    <span eyebrow>The team</span>
+    <h2>The people behind Acme</h2>
+    @for (member of team; track member.name) {
+      <sh-bl-member>
+        <sh-avatar [name]="member.name" />
+        <b>{{ member.name }}</b>
+        <span>{{ member.role }}</span>
+      </sh-bl-member>
+    }
+  </sh-bl-team>
+
+  <sh-bl-posts variant="type-c">
+    <span eyebrow>Blog</span>
+    <h2>Latest from the team</h2>
+    <a shButton actions href="#" variant="outlined">
+      All posts
+      <sh-icon>arrow-right</sh-icon>
+    </a>
+    @for (post of posts; track post.title) {
+      <sh-bl-post>
+        <img [src]="post.image" alt="" />
+        <sh-chip size="small" variant="simple">{{ post.category }}</sh-chip>
+        <time [attr.datetime]="post.date">{{ post.dateLabel }}</time>
+        <h3>
+          <a href="#">{{ post.title }}</a>
+        </h3>
+        <p>{{ post.excerpt }}</p>
+      </sh-bl-post>
+    }
+  </sh-bl-posts>
+
+  <sh-bl-contact color="primary">
+    <span eyebrow>Contact</span>
+    <h2>Talk to a human</h2>
+    <p>Questions about plans, security or a migration? We answer within a working day.</p>
+    <ul>
+      <li>
+        <sh-icon>envelope-simple</sh-icon>
+        <b>Email</b>
+        <a href="mailto:hello@example.com">hello&#64;example.com</a>
+      </li>
+      <li>
+        <sh-icon>map-pin</sh-icon>
+        <b>Office</b>
+        Nørrebrogade 1, Copenhagen
+      </li>
+    </ul>
+    <form (submit)="$event.preventDefault()">
+      <sh-form-field>
+        <label>Name</label>
+        <input type="text" autocomplete="name" />
+      </sh-form-field>
+      <sh-form-field>
+        <label>Email</label>
+        <input type="email" autocomplete="email" />
+      </sh-form-field>
+      <sh-form-field>
+        <label>Message</label>
+        <textarea rows="4"></textarea>
+      </sh-form-field>
+      <button shButton type="submit" variant="raised" color="primary">Send message</button>
+    </form>
+  </sh-bl-contact>
+
+  <sh-bl-newsletter variant="type-b">
+    <h2>Get the monthly letter</h2>
+    <p>One email a month about what we shipped and what we learned.</p>
+    <form (submit)="$event.preventDefault()">
+      <sh-form-field>
+        <input type="email" placeholder="you@example.com" aria-label="Email address" autocomplete="email" />
+      </sh-form-field>
+      <button shButton type="submit" variant="raised" color="primary">Subscribe</button>
+    </form>
+  </sh-bl-newsletter>
+</main>
+
+<footer>
+  <sh-bl-footer variant="type-c">
+    <a logo href="#">
+      <sh-icon>sailboat</sh-icon>
+      Acme
+    </a>
+    <nav aria-label="Footer">
+      <h3>Links</h3>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Status</a>
+    </nav>
+    <small>© 2026 Acme Inc.</small>
+  </sh-bl-footer>
+</footer>

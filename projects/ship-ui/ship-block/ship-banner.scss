@@ -1,0 +1,186 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+@layer ship {
+  sh-bl-banner {
+    --banner-bg: var(--c-3, var(--base-2));
+    --banner-c: var(--c-11, var(--base-12));
+    --banner-mw: var(--block-mw);
+    --banner-py: var(--space-2);
+    --banner-px: var(--block-px);
+    --banner-gap: var(--space-3);
+    --banner-bc: var(--c-5, var(--base-4));
+    --banner-ac: currentColor;
+    --banner-ic: var(--c-9, var(--base-11));
+    --banner-dh: #{p2r(28)};
+    --banner-dbg-h: color-mix(in srgb, currentColor 12%, transparent);
+    --banner-ds: var(--shape-2);
+    --banner-s: #{p2r(999)};
+    --banner-sh: var(--box-shadow-30);
+
+    @include frame(banner);
+
+    &[hidden] {
+      display: none;
+    }
+
+    > .inner {
+      position: relative;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      column-gap: var(--banner-gap);
+      row-gap: var(--space-1);
+      font: var(--paragraph-30);
+      text-align: center;
+
+      // Room for the dismiss button on both sides keeps the message centred.
+      &:has(> .dismiss) {
+        padding-inline: calc(var(--banner-px) + var(--banner-dh) + var(--space-2));
+      }
+    }
+
+    > .inner > sh-icon {
+      flex-shrink: 0;
+      font-size: #{p2r(18)};
+      color: var(--banner-ic);
+    }
+
+    > .inner > .message {
+      min-width: 0;
+      text-wrap: pretty;
+
+      b,
+      strong {
+        font-weight: 600;
+      }
+
+      a {
+        color: var(--banner-ac);
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+      }
+    }
+
+    > .inner > .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-3);
+
+      &:empty {
+        display: none;
+      }
+
+      > a,
+      > [actions] {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
+        font: var(--paragraph-30B);
+        color: var(--banner-ac);
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+        border-radius: var(--shape-1);
+
+        &:hover {
+          text-decoration-thickness: 2px;
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--primary-8);
+          outline-offset: 2px;
+        }
+      }
+    }
+
+    > .inner > .dismiss {
+      position: absolute;
+      inset-inline-end: var(--banner-px);
+      top: 50%;
+      translate: 0 -50%;
+      display: grid;
+      place-items: center;
+      width: var(--banner-dh);
+      height: var(--banner-dh);
+      padding: 0;
+      font-size: #{p2r(16)};
+      color: inherit;
+      background: transparent;
+      border: 0;
+      border-radius: var(--banner-ds);
+      cursor: pointer;
+
+      &:hover {
+        background-color: var(--banner-dbg-h);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--primary-8);
+        outline-offset: 2px;
+      }
+    }
+
+    // Solid: the colour's step 8 with its contrast text, inverted base without a colour.
+    &.type-b {
+      --banner-bg: var(--c-8, var(--base-12));
+      --banner-c: var(--c-c8, var(--base-1));
+      --banner-ic: currentColor;
+    }
+
+    // Floating pill: inset from the edges, sized to its content.
+    &.type-c {
+      --banner-px: var(--space-4);
+
+      background-color: transparent;
+      padding: var(--space-3) var(--space-4) 0;
+
+      > .inner {
+        width: fit-content;
+        max-width: 100%;
+        box-sizing: border-box;
+        background-color: var(--banner-bg);
+        border: var(--border-10);
+        border-color: var(--banner-bc);
+        border-radius: var(--banner-s);
+        box-shadow: var(--banner-sh);
+      }
+
+      > .inner > .dismiss {
+        inset-inline-end: var(--space-2);
+      }
+
+      > .inner:has(> .dismiss) {
+        padding-inline: var(--banner-px) calc(var(--space-2) + var(--banner-dh) + var(--space-2));
+      }
+    }
+
+    @include below($narrow) {
+      > .inner {
+        justify-content: flex-start;
+        text-align: start;
+      }
+
+      > .inner:has(> .dismiss) {
+        padding-inline-start: var(--banner-px);
+      }
+
+      // The icon keeps its own column so the wrapped message and link line up beside it.
+      > .inner:has(> sh-icon) {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: start;
+
+        > .message,
+        > .actions {
+          grid-column: 2;
+        }
+      }
+
+      &.type-c > .inner {
+        border-radius: var(--shape-4);
+      }
+    }
+  }
+}

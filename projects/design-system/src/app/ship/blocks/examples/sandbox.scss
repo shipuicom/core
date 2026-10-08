@@ -1,0 +1,7 @@
+@use 'helpers' as *;
+
+// Blocks bring their own padding and max width; the sandbox only gives them the previewer's width.
+:host {
+  display: block;
+  width: 100%;
+}

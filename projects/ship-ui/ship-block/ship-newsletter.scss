@@ -1,0 +1,192 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+@layer ship {
+  sh-bl-newsletter {
+    --newsletter-bg: transparent;
+    --newsletter-c: var(--base-12);
+    --newsletter-mw: var(--block-mw);
+    --newsletter-py: var(--block-py);
+    --newsletter-px: var(--block-px);
+    --newsletter-gap: var(--space-6);
+    --newsletter-ec: var(--c-9, var(--primary-9));
+    --newsletter-ic: var(--c-9, var(--primary-9));
+    --newsletter-ibg: var(--c-3, var(--primary-3));
+    --newsletter-is: var(--shape-3);
+    --newsletter-dc: var(--base-11);
+    --newsletter-tw: #{p2r(640)};
+    --newsletter-fw: #{p2r(480)};
+    --newsletter-box-mw: #{p2r(720)};
+    --newsletter-box-bg: color-mix(in oklab, var(--newsletter-ic) 6%, var(--base-1));
+    --newsletter-box-bc: color-mix(in oklab, var(--newsletter-ic) 25%, var(--base-4));
+    --newsletter-box-s: var(--shape-5);
+    --newsletter-box-py: var(--space-7);
+    --newsletter-box-px: var(--space-6);
+
+    @include frame(newsletter);
+
+    > .inner > .box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--newsletter-gap);
+      text-align: center;
+    }
+
+    > .inner > .box > .text {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      max-width: var(--newsletter-tw);
+
+      &:empty {
+        display: none;
+      }
+
+      > sh-icon,
+      > [icon] {
+        display: grid;
+        place-items: center;
+        width: #{p2r(48)};
+        height: #{p2r(48)};
+        margin-bottom: var(--space-2);
+        font-size: #{p2r(24)};
+        color: var(--newsletter-ic);
+        background-color: var(--newsletter-ibg);
+        border-radius: var(--newsletter-is);
+      }
+
+      > [eyebrow] {
+        font: var(--paragraph-30B);
+        color: var(--newsletter-ec);
+      }
+
+      > h2 {
+        font: var(--title-20B);
+        color: var(--base-12);
+        text-wrap: balance;
+      }
+
+      > h3 {
+        font: var(--title-30B);
+        color: var(--base-12);
+        text-wrap: balance;
+      }
+
+      > p,
+      > [description] {
+        font: var(--paragraph-10);
+        color: var(--newsletter-dc);
+        text-wrap: pretty;
+      }
+    }
+
+    > .inner > .box > .form {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-3);
+      width: 100%;
+      max-width: var(--newsletter-fw);
+
+      &:empty {
+        display: none;
+      }
+
+      // One row: the field grows, the button keeps its width and lines up with the input.
+      > form,
+      > [form] {
+        display: flex;
+        align-items: flex-end;
+        gap: var(--space-2);
+        margin: 0;
+
+        > sh-form-field {
+          flex: 1 1 auto;
+          min-width: 0;
+        }
+
+        > button,
+        > [shButton] {
+          flex: none;
+        }
+      }
+
+      > small {
+        font: var(--paragraph-40);
+        color: var(--newsletter-dc);
+
+        > a {
+          color: inherit;
+          text-decoration: underline;
+        }
+      }
+    }
+
+    // Inline: the text on the left, the form on the right.
+    &.type-b {
+      > .inner > .box {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        align-items: center;
+        gap: var(--space-7);
+        text-align: start;
+      }
+
+      > .inner > .box > .text {
+        align-items: flex-start;
+        max-width: none;
+      }
+
+      > .inner > .box > .form {
+        justify-self: end;
+      }
+    }
+
+    // Boxed: a tinted sign-up card; the icon tile turns white on it.
+    &.type-c {
+      --newsletter-ibg: var(--base-1);
+    }
+
+    &.type-c > .inner > .box {
+      box-sizing: border-box;
+      width: 100%;
+      max-width: var(--newsletter-box-mw);
+      margin-inline: auto;
+      padding: var(--newsletter-box-py) var(--newsletter-box-px);
+      background-color: var(--newsletter-box-bg);
+      border: var(--border-10);
+      border-color: var(--newsletter-box-bc);
+      border-radius: var(--newsletter-box-s);
+    }
+
+    @include below($medium) {
+      &.type-b > .inner > .box {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--newsletter-gap);
+      }
+
+      &.type-b > .inner > .box > .form {
+        justify-self: start;
+      }
+    }
+
+    @include below($narrow) {
+      > .inner > .box > .form > form,
+      > .inner > .box > .form > [form] {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      > .inner > .box > .text > h2 {
+        font: var(--title-30B);
+      }
+
+      &.type-c > .inner > .box {
+        --newsletter-box-py: var(--space-6);
+        --newsletter-box-px: var(--space-5);
+      }
+    }
+  }
+}

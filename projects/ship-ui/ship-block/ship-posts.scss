@@ -1,0 +1,306 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+@layer ship {
+  sh-bl-posts {
+    --posts-bg: transparent;
+    --posts-c: var(--base-12);
+    --posts-mw: var(--block-mw);
+    --posts-py: var(--block-py);
+    --posts-px: var(--block-px);
+    --posts-gap: var(--space-7);
+    --posts-ec: var(--primary-9);
+    --posts-cols: 3;
+    --posts-row-gap: var(--space-7);
+    --posts-col-gap: var(--space-6);
+    --posts-ms: var(--shape-3);
+    --posts-mbg: var(--base-3);
+    --posts-mbc: var(--base-4);
+    --posts-tc: var(--base-12);
+    --posts-tf: var(--paragraph-10B);
+    --posts-mc: var(--base-11);
+    --posts-dc: var(--base-11);
+    --posts-lines: 3;
+    --posts-hbc: var(--base-4);
+
+    @include frame(posts);
+    @include head(posts);
+
+    > .inner > .items {
+      display: grid;
+      grid-template-columns: repeat(var(--posts-cols), minmax(0, 1fr));
+      gap: var(--posts-row-gap) var(--posts-col-gap);
+    }
+
+    sh-bl-post {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      min-width: 0;
+      border-radius: var(--posts-ms);
+
+      // The title link covers the card (see `h3 a::after`), so the card shows its focus.
+      &:has(> .body > h3 a:focus-visible) {
+        outline: 2px solid var(--primary-8);
+        outline-offset: var(--space-2);
+      }
+
+      &:hover > .media > img,
+      &:hover > .media > picture > img,
+      &:hover > .media > [media] {
+        transform: scale(1.03);
+      }
+
+      &:hover > .body > h3 a {
+        text-decoration: underline;
+        text-underline-offset: 0.15em;
+      }
+
+      > .media {
+        overflow: hidden;
+        border-radius: var(--posts-ms);
+        background-color: var(--posts-mbg);
+        outline: 1px solid var(--posts-mbc);
+        outline-offset: -1px;
+
+        &:empty {
+          display: none;
+        }
+
+        > img,
+        > picture,
+        > [media],
+        > picture > img {
+          display: block;
+          width: 100%;
+          height: auto;
+          aspect-ratio: 16 / 9;
+          object-fit: cover;
+          transition: transform 300ms ease-out;
+        }
+      }
+
+      > .body {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: var(--space-2);
+        min-width: 0;
+        font: var(--paragraph-30);
+        color: var(--posts-dc);
+
+        > .meta {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: var(--space-2) var(--space-3);
+
+          &:empty {
+            display: none;
+          }
+
+          > time,
+          > [meta] {
+            font: var(--paragraph-30);
+            color: var(--posts-mc);
+          }
+        }
+
+        > h3 {
+          font: var(--posts-tf);
+          color: var(--posts-tc);
+          text-wrap: balance;
+
+          a {
+            color: inherit;
+            text-decoration: none;
+
+            &::after {
+              content: '';
+              position: absolute;
+              inset: 0;
+              border-radius: inherit;
+            }
+
+            &:focus-visible {
+              outline: none;
+            }
+          }
+        }
+
+        > p {
+          font: var(--paragraph-20);
+          color: var(--posts-dc);
+          text-wrap: pretty;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: var(--posts-lines);
+          line-clamp: var(--posts-lines);
+          overflow: hidden;
+        }
+
+        > footer,
+        > [author] {
+          display: flex;
+          align-items: center;
+          gap: var(--space-2);
+          margin-top: auto;
+          padding-top: var(--space-2);
+          font: var(--paragraph-30B);
+          color: var(--posts-tc);
+        }
+
+        // Links and chips besides the title stay clickable above the stretched title link.
+        > .meta > sh-chip,
+        > .meta a,
+        > footer a,
+        > [author] a {
+          position: relative;
+          z-index: 1;
+        }
+      }
+    }
+
+    // List: one post per row, the thumbnail on the left (about 40 %) and the text beside it.
+    &.type-b {
+      --posts-cols: 1;
+      --posts-row-gap: var(--space-6);
+
+      sh-bl-post {
+        --posts-tf: var(--title-30B);
+
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+        align-items: center;
+        gap: var(--space-6);
+
+        > .body {
+          align-self: stretch;
+          justify-content: center;
+
+          > footer,
+          > [author] {
+            margin-top: var(--space-2);
+          }
+        }
+
+        &:not(:has(> .media > *)) {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      sh-bl-post + sh-bl-post {
+        padding-top: var(--posts-row-gap);
+        border-top: 1px solid var(--posts-hbc);
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+      }
+    }
+
+    // Featured: the first post takes two columns and two rows, the rest fill the grid around it.
+    &.type-c {
+      sh-bl-post:first-child {
+        --posts-tf: var(--title-30B);
+        --posts-lines: 4;
+
+        grid-column: span 2;
+        grid-row: span 2;
+
+        // The image takes whatever height the two rows leave, so the card ends level with its neighbours.
+        > .media {
+          position: relative;
+          flex: 1 1 0;
+          min-height: #{p2r(240)};
+
+          > img,
+          > picture,
+          > [media] {
+            position: absolute;
+            inset: 0;
+            height: 100%;
+            aspect-ratio: auto;
+          }
+
+          > picture > img {
+            height: 100%;
+            aspect-ratio: auto;
+          }
+        }
+
+        > .body {
+          flex: none;
+
+          > p {
+            font: var(--paragraph-10);
+          }
+        }
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      sh-bl-post > .media > img,
+      sh-bl-post > .media > picture > img,
+      sh-bl-post > .media > [media] {
+        transition: none;
+      }
+    }
+
+    @include below($medium) {
+      > .inner > .items {
+        --posts-cols: 2;
+      }
+
+      &.type-b > .inner > .items {
+        --posts-cols: 1;
+      }
+
+      &.type-c > .inner > .items > sh-bl-post:first-child {
+        grid-row: span 1;
+
+        > .media {
+          flex: none;
+          min-height: 0;
+
+          > img,
+          > picture,
+          > [media],
+          > picture > img {
+            position: static;
+            height: auto;
+            aspect-ratio: 16 / 9;
+          }
+        }
+
+        > .body {
+          flex: 1;
+        }
+      }
+    }
+
+    @include below($narrow) {
+      > .inner > .items {
+        --posts-cols: 1;
+        --posts-row-gap: var(--space-6);
+      }
+
+      &.type-b > .inner > .items > sh-bl-post {
+        --posts-tf: var(--paragraph-10B);
+
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--space-4);
+      }
+
+      &.type-c > .inner > .items > sh-bl-post:first-child {
+        --posts-tf: var(--paragraph-10B);
+        --posts-lines: 3;
+
+        grid-column: span 1;
+
+        > .body > p {
+          font: var(--paragraph-20);
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+<sh-bl-newsletter [variant]="variant()" [color]="color()">
+  <sh-icon>envelope-simple</sh-icon>
+  <span eyebrow>The ShipUI letter</span>
+  <h2>Release notes, minus the noise</h2>
+  <p>One email a month with new components, blocks and the occasional deep dive. Join 12,000 Angular developers.</p>
+  <form (submit)="$event.preventDefault()">
+    <sh-form-field>
+      <input type="email" placeholder="you@example.com" aria-label="Email address" autocomplete="email" required />
+    </sh-form-field>
+    <button shButton type="submit" variant="raised" [color]="color()">Subscribe</button>
+  </form>
+  <small>No spam, unsubscribe in one click. We never share your address.</small>
+</sh-bl-newsletter>

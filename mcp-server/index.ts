@@ -515,6 +515,18 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => {
           },
         ],
       },
+      {
+        name: 'implement_website',
+        description:
+          'Get the rules and block recipe for website pages (landing, pricing, about, blog) using @ship-ui/core/ship-block',
+        arguments: [
+          {
+            name: 'pageType',
+            description: 'e.g., SaaS landing page, pricing page, company page (optional)',
+            required: false,
+          },
+        ],
+      },
     ],
   };
 });
@@ -645,6 +657,29 @@ Rules:
 - \`<sh-lo-page size="small">\` for forms and settings, default for most pages, \`large\` for dense dashboards. Settings pages are \`sh-lo-page size="small"\` → \`sh-lo-section\`s → \`sh-card\` containing \`sh-lo-setting\`s.
 - App chrome (sidebar navigation) is \`<sh-sidenav>\`; the \`<sh-lo-page>\` goes in its main content.`,
 
+          },
+        },
+      ],
+    };
+  }
+
+  if (name === 'implement_website') {
+    const pageType = args?.pageType || 'SaaS landing page';
+
+    return {
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: `I want to build a ${pageType} with ShipUI. Compose it from the website blocks in '@ship-ui/core/ship-block' (call get_component_details for each one you use), stacked one after another, and plain CSS only for content inside them.
+
+Rules:
+- Blocks are slot based. Section blocks share one header: an element marked \`eyebrow\` (or an \`sh-chip\`), an \`h2\`, a \`p\` and buttons marked \`actions\`, then their items: \`<sh-bl-features>\` → \`sh-bl-feature\` (\`sh-icon\`, \`h3\`, \`p\`), \`<sh-bl-steps>\` → \`sh-bl-step\`, \`<sh-bl-stats>\` → \`sh-bl-stat\` (\`b\` value, \`p\` label), \`<sh-bl-testimonials>\` → \`sh-bl-testimonial\` (\`blockquote\`, \`sh-avatar\`, \`b\` name, \`span\` role), \`<sh-bl-pricing>\` → \`sh-bl-pricing-tier\` (\`h3\`, \`p\`, \`[price]\`, \`ul\`, a button; \`featured\` on one), \`<sh-bl-faq>\` → native \`details\`/\`summary\`, \`<sh-bl-team>\` → \`sh-bl-member\`, \`<sh-bl-posts>\` → \`sh-bl-post\` (\`img\`, \`time\`, \`h3 > a\`, \`p\`).
+- \`<sh-bl-hero>\` takes \`eyebrow\`, \`h1\` (wrap accent words in \`em\`), \`p\`, buttons, \`small\` and an \`img\`. \`<sh-bl-split>\` takes \`h2\`, \`p\`, a \`ul\` of benefits, buttons and an \`img\` (class \`reverse\` flips it). \`<sh-bl-cta>\`, \`<sh-bl-newsletter>\` (a \`form\` with an \`sh-form-field\` and a button), \`<sh-bl-contact>\` (a \`ul\` of \`sh-icon\` rows and a \`form\`) and \`<sh-bl-logos>\` (a caption \`p\` and \`span logo\` marks) work the same way.
+- Site chrome: \`<sh-bl-banner dismissible>\` on top, \`<sh-bl-header>\` inside a \`<header>\` (\`a logo\`, a \`nav\` of links with \`aria-current="page"\` on the current one, buttons marked \`actions\`; it collapses into a menu by itself), the blocks inside \`<main>\`, and \`<sh-bl-footer>\` inside a \`<footer>\` (\`a logo\`, \`p\`, one \`nav\` per link column with an \`h3\`, \`small\` legal, \`div social\`).
+- Blocks own their outer rhythm and max width (\`--block-mw\`, \`--block-py\`, \`--block-px\`) and reflow at their own width with container queries: never add margins or media queries around them.
+- Every block takes \`variant="type-b" | "type-c"\`; accent blocks also take \`color\`. Alternate variants down the page for rhythm (e.g. a \`type-b\` split hero, a \`type-c\` stats band, a \`type-b\` solid CTA). A project default goes in ShipConfig, e.g. \`{ blockHeader: { variant: 'type-c' } }\`.`,
           },
         },
       ],

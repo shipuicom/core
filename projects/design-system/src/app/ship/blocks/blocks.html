@@ -1,0 +1,12 @@
+<h1>Blocks</h1>
+<!-- @keywords: block, blocks, website, landing page, marketing, header, navbar, footer, hero, banner, announcement, features, split, steps, how it works, stats, logos, logo cloud, testimonials, pricing, faq, cta, call to action, newsletter, team, blog, posts, contact -->
+
+<sh-tabs color="primary">
+  <button routerLink="/blocks" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Overview</button>
+  <button routerLink="/blocks/api" routerLinkActive="active">API</button>
+  <button routerLink="/blocks/examples" routerLinkActive="active">Examples</button>
+</sh-tabs>
+
+<div class="tab-content">
+  <router-outlet />
+</div>
