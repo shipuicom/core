@@ -25,21 +25,30 @@ const argOf = (name: string) => {
 };
 const git = (...a: string[]) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
 
+const rules = MIGRATIONS[MIGRATIONS.length - 1];
+
+/** -1, 0 or 1 for two `x.y.z` versions. */
+const compareVersions = (a: string, b: string) => {
+  const [x, y] = [a.split('.').map(Number), b.split('.').map(Number)];
+  for (let i = 0; i < 3; i++) if ((x[i] ?? 0) !== (y[i] ?? 0)) return (x[i] ?? 0) < (y[i] ?? 0) ? -1 : 1;
+  return 0;
+};
+
 /**
- * The previous release: the newest commit titled with a bare version, skipping HEAD itself (at publish time HEAD is
- * the new bump, and consumers are on the one before it).
+ * The release the newest rules migrate from: the newest commit titled with a bare version older than the rules'
+ * version. Not merely "the newest one but HEAD": on main HEAD is a merge commit, so that found the new release's own
+ * bump (where every renamed name is already gone), and a release without rules of its own still needs the last
+ * rules checked against the release before them.
  */
 function lastRelease(): string {
-  const headSha = git('rev-parse', 'HEAD').trim();
   for (const line of git('log', '--format=%H %s', '-500').split('\n')) {
     const [sha, subject] = [line.slice(0, 40), line.slice(41).trim()];
-    if (sha !== headSha && /^\d+\.\d+\.\d+$/.test(subject)) return `${sha.slice(0, 8)} (${subject})`;
+    if (/^\d+\.\d+\.\d+$/.test(subject) && compareVersions(subject, rules.version) < 0) return `${sha.slice(0, 8)} (${subject})`;
   }
   return git('describe', '--tags', '--abbrev=0').trim();
 }
 const FROM_ARG = argOf('--from') ?? lastRelease();
 const FROM = FROM_ARG.split(' ')[0]!;
-const rules = MIGRATIONS[MIGRATIONS.length - 1];
 const migrationDoc = readFileSync(join(ROOT, LIB, 'MIGRATION.md'), 'utf8');
 
 // ---------------------------------------------------------------------------------------------
