@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.27.0 (unreleased)
+## 0.27.0
 
 Lazy skins and the `ship` cascade layer. Read [MIGRATION.md](./MIGRATION.md).
 
