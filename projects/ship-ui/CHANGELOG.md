@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.27.0 (unreleased)
+
+Lazy skins and the `ship` cascade layer. Read [MIGRATION.md](./MIGRATION.md).
+
+### Changed
+
+- Each component carries its own variant × colour styles again, written once against `--c-*` tokens that a colour
+  class (`.primary`, `.brand`, …) points at its palette. The default global stylesheet goes from 66 kB to 22 kB
+  (8.4 → 4.4 kB gzip) and no longer grows with components an app does not use. Custom `$shipPalettes` colour classes
+  work on every component.
+- All ShipUI CSS is in `@layer ship`: unlayered app CSS overrides it without `!important` or higher specificity.
+- `$ship<Name>` flags and `$shipSkins` only affect the global skins (`sheet`, `tooltip`, `avatar`); `ship-migrate` flags
+  the others as not honoured.
+
+### Fixed
+
+- Uncoloured flat and raised selected `sh-chip`s keep their fill (they rendered transparent).
+- Coloured `sh-list-item-swipe` actions use the palette's contrast text, not `--base-1` (dark text in dark mode).
+
 ## 0.26.0
 
 Component structure normalisation. This release renames tags, CSS custom properties, classes and config keys; run

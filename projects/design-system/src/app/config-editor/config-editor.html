@@ -171,7 +171,7 @@
           </sh-toggle>
         }
 
-        <h5 class="styles-group">Component skins</h5>
+        <h5 class="styles-group">Global skins</h5>
         @for (skin of styleSkins; track skin) {
           <sh-toggle color="primary" variant="raised" [checked]="hasSkin(skin)" (checkedChange)="setSkin(skin, $event)">
             {{ skinLabel(skin) }}
