@@ -1,208 +1,210 @@
 @use 'helpers' as *;
 
-sh-lo-achievement {
-  --ach-c: var(--primary-8);
-  --ach-bg: var(--base-1);
-  --ach-py: var(--pad-y-6);
-  --ach-px: var(--pad-x-6);
-  --ach-s: var(--shape-3);
-  --ach-size: #{p2r(72)};
-  --ach-icon: #{p2r(32)};
+@layer ship {
+  sh-lo-achievement {
+    --ach-c: var(--c-8, var(--primary-8));
+    --ach-bg: var(--base-1);
+    --ach-py: var(--pad-y-6);
+    --ach-px: var(--pad-x-6);
+    --ach-s: var(--shape-3);
+    --ach-size: #{p2r(72)};
+    --ach-icon: #{p2r(32)};
 
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--ach-py) var(--ach-px);
-  text-align: center;
-  background-color: var(--ach-bg);
-  background-image: radial-gradient(90% 60% at 50% 0%, rgb(from var(--ach-c) r g b / 0.16), transparent 70%);
-  border: var(--border-10);
-  border-color: var(--base-4);
-  border-radius: var(--ach-s);
-  min-width: 0;
-
-  // Any color: the consumer sets --achievement-c (e.g. from a color picker).
-  &.dynamic {
-    --ach-c: var(--achievement-c, var(--primary-8));
-  }
-
-  // The badge: a ring of the color around a tinted disc, with a soft glow.
-  > .medallion {
     position: relative;
-    flex: 0 0 auto;
-    display: grid;
-    place-items: center;
-    width: var(--ach-size);
-    height: var(--ach-size);
-    border-radius: 50%;
-    color: var(--ach-c);
-    font-size: var(--ach-icon);
-    background:
-      radial-gradient(circle at 30% 25%, rgb(from var(--ach-c) r g b / 0.35), transparent 60%),
-      rgb(from var(--ach-c) r g b / 0.14);
-    box-shadow:
-      inset 0 0 0 #{p2r(2)} rgb(from var(--ach-c) r g b / 0.7),
-      0 0 #{p2r(24)} rgb(from var(--ach-c) r g b / 0.3);
-
-    > sh-icon,
-    > [media] {
-      font-size: inherit;
-    }
-
-    > img,
-    > sh-avatar {
-      width: calc(100% - #{p2r(8)});
-      height: calc(100% - #{p2r(8)});
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    > .lock {
-      position: absolute;
-      right: #{p2r(-2)};
-      bottom: #{p2r(-2)};
-      width: calc(var(--ach-size) * 0.34);
-      height: calc(var(--ach-size) * 0.34);
-      border-radius: 50%;
-      background-color: var(--base-3);
-      box-shadow: 0 0 0 #{p2r(2)} var(--ach-bg);
-
-      // Padlock glyph drawn with a mask so it follows the text color.
-      &::before {
-        content: '';
-        position: absolute;
-        inset: 22%;
-        background-color: var(--base-10);
-        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V7a5 5 0 0 1 10 0v3h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1Zm2 0h6V7a3 3 0 0 0-6 0v3Z'/%3E%3C/svg%3E")
-          center /
-          contain
-          no-repeat;
-      }
-    }
-  }
-
-  > .text {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-1);
+    gap: var(--space-4);
+    padding: var(--ach-py) var(--ach-px);
+    text-align: center;
+    background-color: var(--ach-bg);
+    background-image: radial-gradient(90% 60% at 50% 0%, rgb(from var(--ach-c) r g b / 0.16), transparent 70%);
+    border: var(--border-10);
+    border-color: var(--base-4);
+    border-radius: var(--ach-s);
     min-width: 0;
 
-    > .title {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-2);
-
-      > h2,
-      > h3,
-      > h4,
-      > [title] {
-        font: var(--paragraph-20B);
-      }
+    // Any color: the consumer sets --achievement-c (e.g. from a color picker).
+    &.dynamic {
+      --ach-c: var(--achievement-c, var(--primary-8));
     }
 
-    > p,
-    > [description] {
-      font: var(--paragraph-30);
-      color: var(--base-8);
-    }
-
-    > .meta {
-      margin-top: var(--space-1);
-      font: var(--paragraph-40);
-      color: var(--base-8);
-
-      &:empty {
-        display: none;
-      }
-    }
-  }
-
-  &.locked {
-    background-image: none;
-
+    // The badge: a ring of the color around a tinted disc, with a soft glow.
     > .medallion {
-      color: var(--base-8);
-      background: var(--base-3);
-      box-shadow: inset 0 0 0 #{p2r(2)} var(--base-5);
-      filter: grayscale(1);
+      position: relative;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      width: var(--ach-size);
+      height: var(--ach-size);
+      border-radius: 50%;
+      color: var(--ach-c);
+      font-size: var(--ach-icon);
+      background:
+        radial-gradient(circle at 30% 25%, rgb(from var(--ach-c) r g b / 0.35), transparent 60%),
+        rgb(from var(--ach-c) r g b / 0.14);
+      box-shadow:
+        inset 0 0 0 #{p2r(2)} rgb(from var(--ach-c) r g b / 0.7),
+        0 0 #{p2r(24)} rgb(from var(--ach-c) r g b / 0.3);
+
+      > sh-icon,
+      > [media] {
+        font-size: inherit;
+      }
 
       > img,
       > sh-avatar {
-        opacity: 0.45;
+        width: calc(100% - #{p2r(8)});
+        height: calc(100% - #{p2r(8)});
+        border-radius: 50%;
+        object-fit: cover;
       }
-    }
-
-    > .text > .title > h2,
-    > .text > .title > h3,
-    > .text > .title > h4,
-    > .text > .title > [title] {
-      color: var(--base-8);
-    }
-  }
-
-  // Horizontal row: medallion beside the text.
-  &.type-b {
-    --ach-size: #{p2r(56)};
-    --ach-icon: #{p2r(26)};
-
-    flex-direction: row;
-    align-items: center;
-    text-align: left;
-    background-image: radial-gradient(60% 120% at 0% 50%, rgb(from var(--ach-c) r g b / 0.16), transparent 70%);
-
-    > .text,
-    > .text > .title {
-      align-items: flex-start;
-      justify-content: flex-start;
-    }
-
-    &.locked {
-      background-image: none;
-    }
-  }
-
-  // Compact pill: small medallion and the title, for rows of earned badges.
-  &.type-c {
-    --ach-size: #{p2r(32)};
-    --ach-icon: #{p2r(16)};
-    --ach-py: var(--pad-y-2);
-    --ach-px: var(--pad-x-1);
-    padding-inline-end: var(--pad-x-3);
-
-    flex-direction: row;
-    display: inline-flex;
-    gap: var(--space-2);
-    text-align: left;
-    border-radius: #{p2r(999)};
-    background-image: none;
-
-    > .medallion {
-      box-shadow: inset 0 0 0 #{p2r(1.5)} rgb(from var(--ach-c) r g b / 0.7);
 
       > .lock {
-        display: none;
+        position: absolute;
+        right: #{p2r(-2)};
+        bottom: #{p2r(-2)};
+        width: calc(var(--ach-size) * 0.34);
+        height: calc(var(--ach-size) * 0.34);
+        border-radius: 50%;
+        background-color: var(--base-3);
+        box-shadow: 0 0 0 #{p2r(2)} var(--ach-bg);
+
+        // Padlock glyph drawn with a mask so it follows the text color.
+        &::before {
+          content: '';
+          position: absolute;
+          inset: 22%;
+          background-color: var(--base-10);
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V7a5 5 0 0 1 10 0v3h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1Zm2 0h6V7a3 3 0 0 0-6 0v3Z'/%3E%3C/svg%3E")
+            center /
+            contain
+            no-repeat;
+        }
       }
     }
 
     > .text {
-      align-items: flex-start;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-1);
+      min-width: 0;
 
-      > .title > h2,
-      > .title > h3,
-      > .title > h4,
-      > .title > [title] {
-        font: var(--paragraph-30B);
+      > .title {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+
+        > h2,
+        > h3,
+        > h4,
+        > [title] {
+          font: var(--paragraph-20B);
+        }
       }
 
       > p,
-      > [description],
+      > [description] {
+        font: var(--paragraph-30);
+        color: var(--base-8);
+      }
+
       > .meta {
-        display: none;
+        margin-top: var(--space-1);
+        font: var(--paragraph-40);
+        color: var(--base-8);
+
+        &:empty {
+          display: none;
+        }
+      }
+    }
+
+    &.locked {
+      background-image: none;
+
+      > .medallion {
+        color: var(--base-8);
+        background: var(--base-3);
+        box-shadow: inset 0 0 0 #{p2r(2)} var(--base-5);
+        filter: grayscale(1);
+
+        > img,
+        > sh-avatar {
+          opacity: 0.45;
+        }
+      }
+
+      > .text > .title > h2,
+      > .text > .title > h3,
+      > .text > .title > h4,
+      > .text > .title > [title] {
+        color: var(--base-8);
+      }
+    }
+
+    // Horizontal row: medallion beside the text.
+    &.type-b {
+      --ach-size: #{p2r(56)};
+      --ach-icon: #{p2r(26)};
+
+      flex-direction: row;
+      align-items: center;
+      text-align: left;
+      background-image: radial-gradient(60% 120% at 0% 50%, rgb(from var(--ach-c) r g b / 0.16), transparent 70%);
+
+      > .text,
+      > .text > .title {
+        align-items: flex-start;
+        justify-content: flex-start;
+      }
+
+      &.locked {
+        background-image: none;
+      }
+    }
+
+    // Compact pill: small medallion and the title, for rows of earned badges.
+    &.type-c {
+      --ach-size: #{p2r(32)};
+      --ach-icon: #{p2r(16)};
+      --ach-py: var(--pad-y-2);
+      --ach-px: var(--pad-x-1);
+      padding-inline-end: var(--pad-x-3);
+
+      flex-direction: row;
+      display: inline-flex;
+      gap: var(--space-2);
+      text-align: left;
+      border-radius: #{p2r(999)};
+      background-image: none;
+
+      > .medallion {
+        box-shadow: inset 0 0 0 #{p2r(1.5)} rgb(from var(--ach-c) r g b / 0.7);
+
+        > .lock {
+          display: none;
+        }
+      }
+
+      > .text {
+        align-items: flex-start;
+
+        > .title > h2,
+        > .title > h3,
+        > .title > h4,
+        > .title > [title] {
+          font: var(--paragraph-30B);
+        }
+
+        > p,
+        > [description],
+        > .meta {
+          display: none;
+        }
       }
     }
   }

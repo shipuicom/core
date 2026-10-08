@@ -1,5 +1,17 @@
 # Migration Guide
 
+## v0.27.0 — lazy skins and the `ship` layer
+
+Nothing to rewrite in templates. Check two things in your styles:
+
+- **App CSS now wins.** All ShipUI CSS is in `@layer ship`, and unlayered CSS beats layered CSS regardless of
+  specificity. Rules in your app that used to lose to ShipUI now apply: look for `padding`, `margin`, `border` or
+  `display` on elements that are also ShipUI parts (list items, buttons, sheets), and for global resets such as
+  `button { background: none }`. Delete the rules you no longer want; they never had an effect before.
+- **Per-component flags are gone.** Variant × colour styles ship with each component again, so `$shipToggle: false`
+  and the other `$ship<Name>` flags do nothing (`ship-migrate` reports them), and `$shipSkins` only reaches the
+  remaining global skins (`sheet`, `tooltip`, `avatar`). `$shipColors`, `$shipVariants` and `$shipPalettes` work as before.
+
 ## v0.26.0 — component structure normalisation
 
 Every component's scss now follows [COMPONENT-STRUCTURE.md](./COMPONENT-STRUCTURE.md) (`bun run lint:structure`

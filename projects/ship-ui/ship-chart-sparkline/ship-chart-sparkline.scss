@@ -1,63 +1,65 @@
 @use 'helpers' as *;
 
-sh-chart-sparkline {
-  --chart-stroke: var(--primary-8);
-  --chart-fill: var(--primary-3);
-  --chart-fill-opacity: 0.6;
-  --chart-stroke-width: 2;
-  --chart-dot-size: #{p2r(6)};
-  --chart-h: 2rem;
-  // Vertical inset so a stroke on the highest or lowest value is not cut in half.
-  --chart-pad: calc(var(--chart-stroke-width) * 0.5px + 1px);
+@layer ship {
+  sh-chart-sparkline {
+    --chart-stroke: var(--c-8, var(--primary-8));
+    --chart-fill: var(--c-3, var(--primary-3));
+    --chart-fill-opacity: 0.6;
+    --chart-stroke-width: 2;
+    --chart-dot-size: #{p2r(6)};
+    --chart-h: 2rem;
+    // Vertical inset so a stroke on the highest or lowest value is not cut in half.
+    --chart-pad: calc(var(--chart-stroke-width) * 0.5px + 1px);
 
-  display: inline-block;
-  position: relative;
-  box-sizing: border-box;
-  width: 100%;
-  height: var(--chart-h);
-  padding: var(--chart-pad) 0;
-  line-height: 0;
-
-
-  svg {
-    display: block;
+    display: inline-block;
+    position: relative;
+    box-sizing: border-box;
     width: 100%;
-    height: 100%;
-    overflow: visible;
-  }
+    height: var(--chart-h);
+    padding: var(--chart-pad) 0;
+    line-height: 0;
 
-  &.animate svg {
-    overflow: hidden;
-  }
 
-  &.animate .dot {
-    transition: none;
-  }
+    svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
 
-  .line {
-    fill: none;
-    stroke: var(--chart-stroke);
-    stroke-width: var(--chart-stroke-width);
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    vector-effect: non-scaling-stroke;
-  }
+    &.animate svg {
+      overflow: hidden;
+    }
 
-  .area {
-    fill: var(--chart-fill);
-    fill-opacity: var(--chart-fill-opacity);
-    stroke: none;
-  }
+    &.animate .dot {
+      transition: none;
+    }
 
-  .dot {
-    position: absolute;
-    left: calc(var(--x) * 1%);
-    top: calc(var(--chart-pad) + (100% - 2 * var(--chart-pad)) * var(--y) / 100);
-    width: var(--chart-dot-size);
-    height: var(--chart-dot-size);
-    border-radius: 50%;
-    background: var(--chart-stroke);
-    transform: translate(-50%, -50%);
-    pointer-events: none;
+    .line {
+      fill: none;
+      stroke: var(--chart-stroke);
+      stroke-width: var(--chart-stroke-width);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .area {
+      fill: var(--chart-fill);
+      fill-opacity: var(--chart-fill-opacity);
+      stroke: none;
+    }
+
+    .dot {
+      position: absolute;
+      left: calc(var(--x) * 1%);
+      top: calc(var(--chart-pad) + (100% - 2 * var(--chart-pad)) * var(--y) / 100);
+      width: var(--chart-dot-size);
+      height: var(--chart-dot-size);
+      border-radius: 50%;
+      background: var(--chart-stroke);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
   }
 }

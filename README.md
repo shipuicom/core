@@ -20,21 +20,28 @@ npm i -S @ship-ui/core
 @use '@ship-ui/core/styles';
 ```
 
-#### Skins and palettes
+#### Layer, colours and palettes
 
-Every component ships its structure (layout, sizing, states) with the component. The variant × colour "skins" are
-emitted by the global stylesheet, so you can keep only what you use, switch a component's skin off, or add palettes:
+Every ShipUI rule (the global stylesheet and each component's own styles) sits in one cascade layer, `ship`. Any CSS
+your app writes outside a layer wins over it whatever the specificity, so `sh-toggle { --toggle-bg: red }` or
+`.my-card { padding: 0 }` override ShipUI without `!important` or deeper selectors.
+
+A component carries its own variant x colour styles and loads them with the component, so the global stylesheet stays
+small (about 22 kB) and does not grow with components you never use. Colour classes (`.primary`, `.error`, ...) point
+the `--c-*` tokens at a palette, and every component reads those tokens, so a palette you add is a colour class on
+every component:
 
 ```scss
 @use '@ship-ui/core/styles' with (
-  $shipColors: (primary, error),                // colour classes every skin emits (default: all palettes)
-  $shipVariants: (simple, flat),                // sheet variants every skin emits (default: simple outlined flat raised)
-  $shipSkins: (toggle: (colors: (primary))),    // per component overrides
-  $shipChip: false,                             // drop one component's skin entirely
-  $shipPalettes: (brand: (200, 80%, 45%)),      // --brand-1..12, --brand-g2/g3/c8 and .brand on every skin
+  $shipPalettes: (brand: (200, 80%, 45%)),      // --brand-1..12, --brand-g2/g3/c8 and a .brand colour class
+  $shipColors: (primary, error, brand),         // colour classes to emit (default: every palette)
+  $shipVariants: (simple, flat),                // sheet variants to emit (default: simple outlined flat raised)
   $shipPaletteSteps: (1, 2, 3, 4, 8, 9)         // emit only these palette steps
 );
 ```
+
+`<sh-chip class="brand">` then works like `primary`. Your own CSS can read the current colour the same way:
+`.my-badge { background: var(--c-8, var(--base-8)); }` is the colour class's step 8, or the grey base without one.
 
 The font is one custom property, `--font-family` (`'Inter Tight', sans-serif`), read by every text token. Density is two custom properties: `--pad-y` and `--pad-x` (defaults 8px / 12px). Every component's padding is a tier of
 that pair (`--pad-y-1` … `--pad-y-8`, `--pad-x-1` … `--pad-x-8`) read through its own `--<component>-py` /
@@ -47,7 +54,7 @@ can override by name.
 
 #### Generating the `with` block
 
-The docs config editor exports the colours, variants and skins you keep as `ship-config.json` (or a bare
+The docs config editor exports the colours and variants you keep as `ship-config.json` (or a bare
 `ship-styles.json`). The `ship-styles` CLI turns it into the `@use` block, so the selection lives in one JSON file:
 
 ```bash

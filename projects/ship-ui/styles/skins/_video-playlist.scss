@@ -1,9 +1,0 @@
-@mixin skin($colors, $variants) {
-  sh-video-playlist {
-    @each $c in $colors {
-      &.#{$c} {
-        --vpl-accent: var(--#{$c}-8);
-      }
-    }
-  }
-}

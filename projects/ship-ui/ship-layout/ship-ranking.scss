@@ -1,88 +1,39 @@
 @use 'helpers' as *;
 
-sh-lo-ranking {
-  --ranking-gap: var(--space-3);
-  --ranking-bar-h: #{p2r(6)};
-  --ranking-bar-s: #{p2r(999)};
-  --ranking-c: var(--primary-8);
-  --ranking-track: var(--base-3);
+@layer ship {
+  sh-lo-ranking {
+    --ranking-gap: var(--space-3);
+    --ranking-bar-h: #{p2r(6)};
+    --ranking-bar-s: #{p2r(999)};
+    --ranking-c: var(--c-8, var(--primary-8));
+    --ranking-track: var(--base-3);
 
-  display: flex;
-  flex-direction: column;
-  gap: var(--ranking-gap);
-  min-width: 0;
-
-  > .head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-
-    &:not(:has(> *:not(.actions))):not(:has(> .actions > *)) {
-      display: none;
-    }
-
-    > h2,
-    > h3,
-    > h4,
-    > [title] {
-      font: var(--paragraph-20B);
-    }
-
-    > .actions {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-
-      &:empty {
-        display: none;
-      }
-    }
-  }
-
-  > .items {
     display: flex;
     flex-direction: column;
     gap: var(--ranking-gap);
     min-width: 0;
-  }
 
-  > .items > sh-lo-ranking-item {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    min-width: 0;
-    position: relative;
-
-    > .row {
+    > .head {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: var(--space-3);
-      min-width: 0;
-      font: var(--paragraph-30);
 
-      > .lead {
+      &:not(:has(> *:not(.actions))):not(:has(> .actions > *)) {
+        display: none;
+      }
+
+      > h2,
+      > h3,
+      > h4,
+      > [title] {
+        font: var(--paragraph-20B);
+      }
+
+      > .actions {
         display: flex;
         align-items: center;
-        color: var(--base-8);
-
-        &:empty {
-          display: none;
-        }
-      }
-
-      > .label {
-        flex: 1 1 0;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      > .detail {
-        flex: 0 0 auto;
-        font: var(--paragraph-30B);
-        font-variant-numeric: tabular-nums;
+        gap: var(--space-2);
 
         &:empty {
           display: none;
@@ -90,68 +41,119 @@ sh-lo-ranking {
       }
     }
 
-    > .bar {
-      height: var(--ranking-bar-h);
-      border-radius: var(--ranking-bar-s);
-      background-color: var(--ranking-track);
-      overflow: hidden;
-
-      &::before {
-        content: '';
-        display: block;
-        height: 100%;
-        width: calc(var(--ranking-pct, 0) * 1%);
-        border-radius: inherit;
-        background-color: var(--ranking-c);
-        transition: width 0.4s ease;
-      }
+    > .items {
+      display: flex;
+      flex-direction: column;
+      gap: var(--ranking-gap);
+      min-width: 0;
     }
-  }
-
-  // Bar as a tinted background behind the whole row.
-  &.type-b {
-    --ranking-gap: var(--space-2);
 
     > .items > sh-lo-ranking-item {
-      padding: var(--pad-y-3) var(--pad-x-3);
-      border-radius: var(--shape-2);
-      background-color: var(--ranking-track);
-      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+      min-width: 0;
+      position: relative;
 
       > .row {
-        position: relative;
-        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        min-width: 0;
+        font: var(--paragraph-30);
+
+        > .lead {
+          display: flex;
+          align-items: center;
+          color: var(--base-8);
+
+          &:empty {
+            display: none;
+          }
+        }
+
+        > .label {
+          flex: 1 1 0;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        > .detail {
+          flex: 0 0 auto;
+          font: var(--paragraph-30B);
+          font-variant-numeric: tabular-nums;
+
+          &:empty {
+            display: none;
+          }
+        }
       }
 
       > .bar {
-        position: absolute;
-        inset: 0;
-        height: auto;
-        border-radius: 0;
-        background: none;
+        height: var(--ranking-bar-h);
+        border-radius: var(--ranking-bar-s);
+        background-color: var(--ranking-track);
+        overflow: hidden;
 
         &::before {
-          border-radius: 0;
-          background-color: rgb(from var(--ranking-c) r g b / 0.22);
+          content: '';
+          display: block;
+          height: 100%;
+          width: calc(var(--ranking-pct, 0) * 1%);
+          border-radius: inherit;
+          background-color: var(--ranking-c);
+          transition: width 0.4s ease;
         }
       }
     }
-  }
 
-  // Compact leaderboard: dense divided rows, no bars.
-  &.type-c {
-    --ranking-gap: 0;
+    // Bar as a tinted background behind the whole row.
+    &.type-b {
+      --ranking-gap: var(--space-2);
 
-    > .items > sh-lo-ranking-item {
-      padding: var(--pad-y-3) 0;
-      border-bottom: var(--border-10);
+      > .items > sh-lo-ranking-item {
+        padding: var(--pad-y-3) var(--pad-x-3);
+        border-radius: var(--shape-2);
+        background-color: var(--ranking-track);
+        overflow: hidden;
 
-      &:last-child {
-        border-bottom: 0;
+        > .row {
+          position: relative;
+          z-index: 1;
+        }
+
+        > .bar {
+          position: absolute;
+          inset: 0;
+          height: auto;
+          border-radius: 0;
+          background: none;
+
+          &::before {
+            border-radius: 0;
+            background-color: rgb(from var(--ranking-c) r g b / 0.22);
+          }
+        }
       }
+    }
 
-      > .bar {
-        display: none;
+    // Compact leaderboard: dense divided rows, no bars.
+    &.type-c {
+      --ranking-gap: 0;
+
+      > .items > sh-lo-ranking-item {
+        padding: var(--pad-y-3) 0;
+        border-bottom: var(--border-10);
+
+        &:last-child {
+          border-bottom: 0;
+        }
+
+        > .bar {
+          display: none;
+        }
       }
     }
   }

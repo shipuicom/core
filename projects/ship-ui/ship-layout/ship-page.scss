@@ -1,159 +1,161 @@
 @use 'helpers' as *;
 
-sh-lo-page {
-  --page-mw: #{p2r(1200)};
-  --page-py: var(--pad-y-7);
-  --page-px: var(--pad-x-7);
-  --page-gap: var(--space-6);
-  --page-head-gap: var(--space-4);
-  --page-aside-w: #{p2r(320)};
+@layer ship {
+  sh-lo-page {
+    --page-mw: #{p2r(1200)};
+    --page-py: var(--pad-y-7);
+    --page-px: var(--pad-x-7);
+    --page-gap: var(--space-6);
+    --page-head-gap: var(--space-4);
+    --page-aside-w: #{p2r(320)};
 
-  display: flex;
-  flex-direction: column;
-  gap: var(--page-gap);
-  width: 100%;
-  max-width: var(--page-mw);
-  margin-inline: auto;
-  padding: var(--page-py) var(--page-px);
-
-  &.small {
-    --page-mw: #{p2r(720)};
-  }
-
-  &.large {
-    --page-mw: #{p2r(1440)};
-  }
-
-  &.full {
-    --page-mw: none;
-  }
-
-  // Header divided from the content.
-  &.type-b > .head {
-    padding-bottom: var(--page-head-gap);
-    border-bottom: var(--border-10);
-  }
-
-  // Flush: the parent (e.g. sh-sidenav's main) already pads.
-  &.type-c {
-    --page-py: 0;
-    --page-px: 0;
-  }
-
-  > .head {
     display: flex;
     flex-direction: column;
-    gap: var(--page-head-gap);
+    gap: var(--page-gap);
+    width: 100%;
+    max-width: var(--page-mw);
+    margin-inline: auto;
+    padding: var(--page-py) var(--page-px);
 
-    &:not(:has(> .nav > *)):not(:has(> .title > * > *)):not(:has(> sh-tabs)) {
-      display: none;
+    &.small {
+      --page-mw: #{p2r(720)};
     }
 
-    > .nav {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--space-2);
-      font: var(--paragraph-30);
-      color: var(--base-8);
+    &.large {
+      --page-mw: #{p2r(1440)};
+    }
 
-      &:empty {
+    &.full {
+      --page-mw: none;
+    }
+
+    // Header divided from the content.
+    &.type-b > .head {
+      padding-bottom: var(--page-head-gap);
+      border-bottom: var(--border-10);
+    }
+
+    // Flush: the parent (e.g. sh-sidenav's main) already pads.
+    &.type-c {
+      --page-py: 0;
+      --page-px: 0;
+    }
+
+    > .head {
+      display: flex;
+      flex-direction: column;
+      gap: var(--page-head-gap);
+
+      &:not(:has(> .nav > *)):not(:has(> .title > * > *)):not(:has(> sh-tabs)) {
         display: none;
       }
-    }
 
-    > .title {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: var(--space-4);
-
-      > .text {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-1);
-        flex: 1 1 #{p2r(320)};
-        min-width: 0;
-
-        > h1 {
-          font: var(--title-30B);
-        }
-
-        > p,
-        > [description] {
-          font: var(--paragraph-20);
-        }
-      }
-
-      > .actions {
+      > .nav {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         gap: var(--space-2);
+        font: var(--paragraph-30);
+        color: var(--base-8);
+
+        &:empty {
+          display: none;
+        }
+      }
+
+      > .title {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--space-4);
+
+        > .text {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-1);
+          flex: 1 1 #{p2r(320)};
+          min-width: 0;
+
+          > h1 {
+            font: var(--title-30B);
+          }
+
+          > p,
+          > [description] {
+            font: var(--paragraph-20);
+          }
+        }
+
+        > .actions {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: var(--space-2);
+
+          &:empty {
+            display: none;
+          }
+        }
+      }
+    }
+
+    > .body {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--page-gap);
+      min-width: 0;
+
+      > .main {
+        display: flex;
+        flex-direction: column;
+        gap: var(--page-gap);
+        flex: 1 1 0;
+        min-width: 0;
+      }
+
+      > .aside {
+        display: flex;
+        flex-direction: column;
+        gap: var(--page-gap);
+        flex: 0 0 var(--page-aside-w);
+        min-width: 0;
 
         &:empty {
           display: none;
         }
       }
     }
-  }
 
-  > .body {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--page-gap);
-    min-width: 0;
-
-    > .main {
-      display: flex;
-      flex-direction: column;
-      gap: var(--page-gap);
-      flex: 1 1 0;
-      min-width: 0;
+    &.aside-start > .body > .aside {
+      order: -1;
     }
 
-    > .aside {
-      display: flex;
-      flex-direction: column;
-      gap: var(--page-gap);
-      flex: 0 0 var(--page-aside-w);
-      min-width: 0;
+    &.sticky > .body > .aside {
+      position: sticky;
+      top: var(--page-py);
+    }
 
-      &:empty {
-        display: none;
+    @include breakpoint(-centi) {
+      > .body {
+        flex-direction: column;
+        align-items: stretch;
+
+        > .aside {
+          flex-basis: auto;
+          order: 0;
+          position: static;
+        }
       }
     }
-  }
 
-  &.aside-start > .body > .aside {
-    order: -1;
-  }
+    @include breakpoint(-milli) {
+      --page-gap: var(--space-5);
 
-  &.sticky > .body > .aside {
-    position: sticky;
-    top: var(--page-py);
-  }
-
-  @include breakpoint(-centi) {
-    > .body {
-      flex-direction: column;
-      align-items: stretch;
-
-      > .aside {
-        flex-basis: auto;
-        order: 0;
-        position: static;
+      &:not(.type-c) {
+        --page-py: var(--pad-y-5);
+        --page-px: var(--pad-x-4);
       }
-    }
-  }
-
-  @include breakpoint(-milli) {
-    --page-gap: var(--space-5);
-
-    &:not(.type-c) {
-      --page-py: var(--pad-y-5);
-      --page-px: var(--pad-x-4);
     }
   }
 }

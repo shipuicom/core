@@ -1,6 +1,23 @@
 @use 'helpers' as *;
 
-.sh-radio,
-sh-radio {
-  @include radio-dot;
+@layer ship {
+  // Skin: on a filled sheet the dot is the contrast text of the fill, and the unchecked radio stays an outlined circle.
+  .sh-radio,
+  sh-radio {
+    &.flat,
+    &.raised {
+      --radiod-c: var(--c-c8, var(--light-text));
+
+      &:not(:has(input:checked)):not(.active) .radio {
+        background: transparent;
+        border: var(--border-10);
+        border-color: var(--radio-bc);
+      }
+    }
+  }
+
+  .sh-radio,
+  sh-radio {
+    @include radio-dot;
+  }
 }

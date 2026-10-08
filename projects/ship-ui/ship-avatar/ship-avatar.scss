@@ -1,63 +1,65 @@
 @use 'helpers' as *;
 
-sh-avatar {
-  --avatar-si: #{p2r(32)};
-  --avatar-f: var(--paragraph-30B);
-  --avatar-bg: var(--base-3);
-  --avatar-c: var(--base-11);
-  --avatar-ring-c: var(--primary-8);
-  --avatar-bc: var(--base-1);
+@layer ship {
+  sh-avatar {
+    --avatar-si: #{p2r(32)};
+    --avatar-f: var(--paragraph-30B);
+    --avatar-bg: var(--c-3, var(--base-3));
+    --avatar-c: var(--c-11, var(--base-11));
+    --avatar-ring-c: var(--primary-8);
+    --avatar-bc: var(--base-1);
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-sizing: border-box;
-  width: var(--avatar-si);
-  height: var(--avatar-si);
-  border-radius: 50%;
-  background: var(--avatar-bg);
-  color: var(--avatar-c);
-  font: var(--avatar-f);
-  letter-spacing: 0.02em;
-  overflow: hidden;
-  user-select: none;
-  vertical-align: middle;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    width: var(--avatar-si);
+    height: var(--avatar-si);
+    border-radius: 50%;
+    background: var(--avatar-bg);
+    color: var(--avatar-c);
+    font: var(--avatar-f);
+    letter-spacing: 0.02em;
+    overflow: hidden;
+    user-select: none;
+    vertical-align: middle;
 
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  .initials {
-    line-height: 1;
-  }
-
-  &.small {
-    --avatar-si: #{p2r(24)};
-    --avatar-f: var(--paragraph-40B);
-    font-size: p2r(10);
-  }
-
-  &.ring {
-    box-shadow:
-      0 0 0 2px var(--avatar-bc),
-      0 0 0 4px var(--avatar-ring-c);
-  }
-
-  // Name-derived hues: the primary palette rotated in 45° steps, so every hue keeps the palette's
-  // lightness (a tint behind a dark ink in light mode, the reverse in dark mode) and follows the theme.
-  @for $i from 0 through 7 {
-    &.hue-#{$i} {
-      --avatar-hr: #{$i * 45};
-      --avatar-bg: hsl(from var(--primary-3) calc(h + var(--avatar-hr)) s l);
-      --avatar-c: hsl(from var(--primary-11) calc(h + var(--avatar-hr)) s l);
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
-  }
 
-  &.hidden {
-    display: none;
+    .initials {
+      line-height: 1;
+    }
+
+    &.small {
+      --avatar-si: #{p2r(24)};
+      --avatar-f: var(--paragraph-40B);
+      font-size: p2r(10);
+    }
+
+    &.ring {
+      box-shadow:
+        0 0 0 2px var(--avatar-bc),
+        0 0 0 4px var(--avatar-ring-c);
+    }
+
+    // Name-derived hues: the primary palette rotated in 45° steps, so every hue keeps the palette's
+    // lightness (a tint behind a dark ink in light mode, the reverse in dark mode) and follows the theme.
+    @for $i from 0 through 7 {
+      &.hue-#{$i} {
+        --avatar-hr: #{$i * 45};
+        --avatar-bg: hsl(from var(--primary-3) calc(h + var(--avatar-hr)) s l);
+        --avatar-c: hsl(from var(--primary-11) calc(h + var(--avatar-hr)) s l);
+      }
+    }
+
+    &.hidden {
+      display: none;
+    }
   }
 }

@@ -1,95 +1,145 @@
 @use 'helpers' as *;
 
-sh-toggle {
-  --toggle-bg: var(--base-4);
-  --toggle-b: 0;
-  --togglek-bg: var(--base-2);
-  --togglek-bs: var(--box-shadow-20);
+@layer ship {
+  // Skin: variant x colour. Every colour value falls back to the uncoloured variant's own value.
+  sh-toggle {
+    &.outlined {
+      --toggle-bg: var(--base-1);
+      --togglek-bg: var(--base-5);
+      --togglek-bs: none;
+      --toggle-b: 1px solid var(--base-5);
 
-  display: flex;
-  align-items: center;
-  gap: p2r(8);
-  cursor: pointer;
-  user-select: none;
-  position: relative;
+      &.active {
+        --togglek-bg: var(--c-8, var(--base-8));
+        --toggle-b: 1px solid var(--c-8, var(--base-8));
+      }
+    }
 
-  &:focus-visible > .box,
-  &:has(input:focus-visible) > .box {
-    outline: 2px solid var(--primary-8);
-    outline-offset: 2px;
+    &.simple {
+      --togglek-bg: var(--light-text);
+
+      &:has(input[type='checkbox']:checked),
+      &.active {
+        --togglek-bg: var(--c-8, var(--base-8));
+      }
+    }
+
+    &.flat {
+      --togglek-bg: var(--light-text);
+
+      &:has(input[type='checkbox']:checked),
+      &.active {
+        --toggle-bg: var(--base-8);
+        --toggle-bg-c: var(--c-8);
+        --togglek-bg: var(--c-c8, var(--light-text));
+      }
+    }
+
+    &.raised {
+      --togglek-bg: var(--light-text);
+
+      &:has(input[type='checkbox']:checked),
+      &.active {
+        --toggle-bg: var(--base-g2);
+        --toggle-bg-c: var(--c-g2);
+        --togglek-bg: var(--c-c8, var(--light-text));
+      }
+    }
   }
 
-  label {
+  sh-toggle {
+    --toggle-bg: var(--base-4);
+    --toggle-b: 0;
+    --togglek-bg: var(--base-2);
+    --togglek-bs: var(--box-shadow-20);
+
     display: flex;
     align-items: center;
     gap: p2r(8);
-    position: relative;
-    z-index: 1;
-  }
-
-  .box {
-    display: block;
-    width: p2r(34);
-    min-width: p2r(34);
-    height: p2r(20);
     cursor: pointer;
-    position: relative;
-    border-radius: 999px;
-    background: var(--toggle-bg);
-    border: var(--toggle-b);
-    transition: background 150ms linear;
-  }
-
-  > input[type='checkbox'] {
-    appearance: none;
-    position: absolute;
-    inset: 0;
-    cursor: pointer;
-    z-index: 0;
-    margin: 0;
-
-    &:focus,
-    &:focus-visible {
-      outline: none;
-    }
-  }
-
-  &:has(> input:not(.internal-input)) > input.internal-input {
-    display: none;
-  }
-
-  &:has(input[disabled]),
-  &[disabled]:not([disabled='false']) {
-    opacity: 0.5;
-    pointer-events: none;
     user-select: none;
-    cursor: initial;
-  }
+    position: relative;
 
-  .knob {
-    position: absolute;
-    top: p2r(2);
-    left: p2r(2);
-    width: p2r(16);
-    height: p2r(16);
-    border-radius: 50%;
-    background: var(--togglek-bg);
-    box-shadow: var(--togglek-bs);
-    box-sizing: border-box;
-    transition: left 125ms ease-in-out;
-  }
+    &:focus-visible > .box,
+    &:has(input:focus-visible) > .box {
+      outline: 2px solid var(--primary-8);
+      outline-offset: 2px;
+    }
 
-  &:has(input[type='checkbox']:checked),
-  &.active {
-    --togglek-bg: var(--base-8);
+    label {
+      display: flex;
+      align-items: center;
+      gap: p2r(8);
+      position: relative;
+      z-index: 1;
+    }
+
+    .box {
+      display: block;
+      width: p2r(34);
+      min-width: p2r(34);
+      height: p2r(20);
+      cursor: pointer;
+      position: relative;
+      border-radius: 999px;
+      background: var(--toggle-bg-c, var(--toggle-bg));
+      border: var(--toggle-b);
+      transition: background 150ms linear;
+    }
+
+    > input[type='checkbox'] {
+      appearance: none;
+      position: absolute;
+      inset: 0;
+      cursor: pointer;
+      z-index: 0;
+      margin: 0;
+
+      &:focus,
+      &:focus-visible {
+        outline: none;
+      }
+    }
+
+    &:has(> input:not(.internal-input)) > input.internal-input {
+      display: none;
+    }
+
+    &:has(input[disabled]),
+    &[disabled]:not([disabled='false']) {
+      opacity: 0.5;
+      pointer-events: none;
+      user-select: none;
+      cursor: initial;
+    }
 
     .knob {
-      left: p2r(16);
+      position: absolute;
+      top: p2r(2);
+      left: p2r(2);
+      width: p2r(16);
+      height: p2r(16);
+      border-radius: 50%;
+      background: var(--togglek-bg);
+      box-shadow: var(--togglek-bs);
+      box-sizing: border-box;
+      transition: left 125ms ease-in-out;
     }
-  }
 
-  &.outlined .knob {
-    width: p2r(14);
-    height: p2r(14);
+    &:has(input[type='checkbox']:checked),
+    &.active {
+      // Set only under a colour class; wins over the variant's --toggle-bg.
+      --toggle-bg-c: var(--c-3);
+      --togglek-bg: var(--c-8, var(--base-8));
+
+      .knob {
+        left: p2r(16);
+      }
+    }
+
+    &.outlined .knob {
+      width: p2r(14);
+      height: p2r(14);
+    }
   }
 }

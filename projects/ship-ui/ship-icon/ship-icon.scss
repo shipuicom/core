@@ -1,38 +1,40 @@
 @use 'helpers' as *;
 
-sh-icon {
-  --icon-c: inherit;
+@layer ship {
+  sh-icon {
+    --icon-c: inherit;
 
-  font-size: p2r(20);
-  line-height: 1em;
-  width: 1em;
-  height: 1em;
-  min-width: 1em;
-  min-height: 1em;
-  max-width: 1em;
-  max-height: 1em;
-  text-align: left;
-  // The icon is a ligature (`folder-open`) in a 1em box: a hyphen is a line-break opportunity, and Safari wraps
-  // before forming the ligature, drawing `folder` with `open` clipped on a hidden second line. Never wrap.
-  white-space: nowrap;
-  overflow: hidden;
-  display: inline-block;
-  color: var(--icon-c);
-  transition: color 150ms ease-out;
+    font-size: p2r(20);
+    line-height: 1em;
+    width: 1em;
+    height: 1em;
+    min-width: 1em;
+    min-height: 1em;
+    max-width: 1em;
+    max-height: 1em;
+    text-align: left;
+    // The icon is a ligature (`folder-open`) in a 1em box: a hyphen is a line-break opportunity, and Safari wraps
+    // before forming the ligature, drawing `folder` with `open` clipped on a hidden second line. Never wrap.
+    white-space: nowrap;
+    overflow: hidden;
+    display: inline-block;
+    color: var(--icon-c, var(--c-8));
+    transition: color 150ms ease-out;
 
-  &.unfocused {
-    --icon-c: var(--base-8);
-  }
+    &.unfocused {
+      --icon-c: var(--base-8);
+    }
 
-  &.large {
-    font-size: p2r(32);
-  }
+    &.large {
+      font-size: p2r(32);
+    }
 
-  &.small {
-    font-size: p2r(16);
-  }
+    &.small {
+      font-size: p2r(16);
+    }
 
-  &.inherit {
-    font-size: inherit;
+    &.inherit {
+      font-size: inherit;
+    }
   }
 }

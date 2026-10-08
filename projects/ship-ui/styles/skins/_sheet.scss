@@ -2,9 +2,10 @@
 @use '../helpers.scss' as *;
 @use './util' as *;
 
-// The sheet is the shared surface skin. Variants (simple / outlined / flat / raised) x colours set the
-// --sheet-* tokens that button, chip, alert, checkbox, radio, event-card and stepper consume through the
-// sh-sheet (static) or sh-sheet-h (hoverable) host class.
+// The sheet is the shared surface skin. Variants (simple / outlined / flat / raised) set the --sheet-* tokens that
+// button, chip, alert, checkbox, radio, event-card and stepper consume through the sh-sheet (static) or sh-sheet-h
+// (hoverable) host class. Colour comes from the --c-* tokens a colour class sets (see ./_colors.scss); each token
+// falls back to the uncoloured base step, so one rule covers every palette, built-in or added.
 
 @mixin skin($colors, $variants) {
   .sh-sheet-h,
@@ -13,7 +14,7 @@
     --sheet-bg: var(--base-1);
     --sheet-bc: var(--base-4);
     --sheet-s: var(--shape-2);
-    --sheet-ic: var(--base-12);
+    --sheet-ic: var(--c-8, var(--base-12));
     --loader-c: var(--sheet-ic);
 
     border-radius: var(--sheet-s);
@@ -56,12 +57,6 @@
           color: transparent;
         }
 
-        @each $c in $colors {
-          &.#{$c} {
-            color: transparent;
-          }
-        }
-
         > * {
           opacity: 0;
         }
@@ -72,12 +67,6 @@
       }
     }
 
-    @each $c in $colors {
-      &.#{$c} {
-        --sheet-ic: var(--#{$c}-8);
-      }
-    }
-
     sh-icon {
       color: var(--sheet-ic);
     }
@@ -85,20 +74,13 @@
     @each $v in (simple, outlined) {
       @if has($variants, $v) {
         &.#{$v} {
-          --sheet-c: var(--base-12);
-          --sheet-bg: var(--base-2);
+          --sheet-c: var(--c-8, var(--base-12));
+          --sheet-bg: var(--c-1, var(--base-2));
+          --sheet-bc: var(--c-4, var(--base-4));
 
           transition:
             color 80ms linear,
             background 80ms linear;
-
-          @each $c in $colors {
-            &.#{$c} {
-              --sheet-c: var(--#{$c}-8);
-              --sheet-bg: var(--#{$c}-1);
-              --sheet-bc: var(--#{$c}-4);
-            }
-          }
         }
       }
     }
@@ -106,58 +88,32 @@
     @if has($variants, simple) {
       &.simple {
         --sheet-bc: var(--sheet-bg);
-
-        @each $c in $colors {
-          &.#{$c} {
-            --sheet-bc: var(--sheet-bg);
-          }
-        }
       }
     }
 
     @if has($variants, outlined) {
       &.outlined {
         --sheet-c: var(--base-12);
-
-        @each $c in $colors {
-          &.#{$c} {
-            --sheet-c: var(--base-12);
-          }
-        }
       }
     }
 
     @if has($variants, flat) {
       &.flat {
-        --sheet-c: var(--light-text);
+        --sheet-c: var(--c-c8, var(--light-text));
         --sheet-ic: var(--light-text);
-        --sheet-bg: var(--base-8);
+        --sheet-bg: var(--c-8, var(--base-8));
 
         border: 0;
-
-        @each $c in $colors {
-          &.#{$c} {
-            --sheet-c: var(--#{$c}-c8);
-            --sheet-bg: var(--#{$c}-8);
-          }
-        }
       }
     }
 
     @if has($variants, raised) {
       &.raised {
-        --sheet-c: var(--light-text);
+        --sheet-c: var(--c-c8, var(--light-text));
         --sheet-ic: var(--light-text);
-        --sheet-bg: var(--base-g6);
+        --sheet-bg: var(--c-g2, var(--base-g6));
 
         border: 0;
-
-        @each $c in $colors {
-          &.#{$c} {
-            --sheet-c: var(--#{$c}-c8);
-            --sheet-bg: var(--#{$c}-g2);
-          }
-        }
       }
     }
 
@@ -180,38 +136,20 @@
       @each $v in (simple, outlined) {
         @if has($variants, $v) {
           &.#{$v} {
-            --sheet-bg: var(--base-3);
-
-            @each $c in $colors {
-              &.#{$c} {
-                --sheet-bg: var(--#{$c}-2);
-              }
-            }
+            --sheet-bg: var(--c-2, var(--base-3));
           }
         }
       }
 
       @if has($variants, flat) {
         &.flat {
-          --sheet-bg: var(--base-7);
-
-          @each $c in $colors {
-            &.#{$c} {
-              --sheet-bg: var(--#{$c}-7);
-            }
-          }
+          --sheet-bg: var(--c-7, var(--base-7));
         }
       }
 
       @if has($variants, raised) {
         &.raised {
-          --sheet-bg: var(--base-g7);
-
-          @each $c in $colors {
-            &.#{$c} {
-              --sheet-bg: var(--#{$c}-g3);
-            }
-          }
+          --sheet-bg: var(--c-g3, var(--base-g7));
         }
       }
     }

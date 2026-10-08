@@ -5,288 +5,312 @@
 // hr stays a plain divider. [item]/[action] remain valid but optional.
 // sh-list-item-swipe manages its own item layout, so it is not an implicit item.
 $item: '> *:not([title]):not([raw]):not(hr):not(sh-list-item-swipe)';
+
 // Inherently interactive children get action affordances without needing the
 // [action] attribute. :where() keeps specificity flat.
 $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([raw])';
 
-sh-list {
-  --list-collapsed-w: #{p2r(68)};
-  --list-collapsed-item: #{p2r(44)};
-  --list-s: var(--shape-2);
-  --list-bg-a: var(--base-1);
-  --list-c: var(--base-9);
-  --list-bs-a: none;
-  --list-item-b: 1px solid transparent;
-  --list-item-b-a: 1px solid var(--list-bg-a);
-  --list-py: var(--pad-y-5);
-  --list-px: var(--pad-x-4);
-  --list-item-py: var(--pad-y-3);
-  --list-item-px: var(--pad-x-3);
-  --list-item-gap: #{p2r(8)};
-  // Color of the active item's leading icon and, for .outlined, its border.
-  // Follows the color class (.primary, .accent, ...); the plain list keeps
-  // the icon in the text color.
-  --list-accent: var(--base-12);
-
-  width: 100%;
-  padding: var(--list-py) var(--list-px);
-  gap: p2r(8);
-  display: flex;
-  flex-direction: column;
-  transition: width 200ms linear;
-
-  &.base-1 {
-    --list-bg-a: var(--base-1);
-    --list-bs-a: var(--box-shadow-20);
+@layer ship {
+  // Skin: the outlined list borders the active item in the accent.
+  sh-list.outlined {
+    --list-bg-a: transparent;
+    --list-bs-a: none;
+    --list-item-b: 1px solid transparent;
+    --list-item-b-a: 1px solid var(--list-accent);
   }
 
-  &.type-b {
-    --list-py: 0;
-    --list-px: 0;
-    --list-accent: var(--primary-8);
+  sh-list {
+    --list-collapsed-w: #{p2r(68)};
+    --list-collapsed-item: #{p2r(44)};
+    --list-s: var(--shape-2);
+    --list-bg-a: var(--base-1);
+    --list-c: var(--base-9);
+    --list-bs-a: none;
+    --list-item-b: 1px solid transparent;
+    --list-item-b-a: 1px solid var(--list-bg-a);
+    --list-py: var(--pad-y-5);
+    --list-px: var(--pad-x-4);
     --list-item-py: var(--pad-y-3);
     --list-item-px: var(--pad-x-3);
-    --list-item-gap: #{p2r(12)};
-    --list-s: var(--shape-2);
+    --list-item-gap: #{p2r(8)};
+    // Color of the active item's leading icon and, for .outlined, its border.
+    // Follows the color class (.primary, .accent, ...); the plain list keeps
+    // the icon in the text color.
+    --list-accent: var(--c-8, var(--base-12));
+    // Set only under a colour class: the selected item's leading icon takes it.
+    --list-ic: var(--c-8);
 
+    width: 100%;
+    padding: var(--list-py) var(--list-px);
+    gap: p2r(8);
+    display: flex;
+    flex-direction: column;
+    transition: width 200ms linear;
+
+    // Under a colour class the selected item's leading icon takes the accent.
     #{$item} {
-      color: var(--base-10);
-
+      &:has(input:checked),
       &.active,
       &.selected {
-        background: rgb(from var(--base-3) r g b / 90%);
-        color: var(--base-12);
-
         sh-icon:first-child {
-          color: var(--list-accent);
-        }
-
-        .description {
-          color: var(--base-9);
-        }
-      }
-
-      sh-icon:first-child {
-        font-size: p2r(18);
-        color: var(--base-7);
-        transition: color 150ms ease;
-      }
-
-      .text-group {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-      }
-
-      .label {
-        font: var(--paragraph-30B);
-      }
-
-      .description {
-        font: var(--paragraph-40);
-        color: var(--base-7);
-        transition:
-          color 150ms ease,
-          opacity 150ms ease;
-      }
-
-      .shortcut {
-        display: flex;
-        gap: p2r(4);
-
-        kbd {
-          font-family: inherit;
-          background: rgb(from var(--base-3) r g b / 80%);
-          border: 1px solid rgb(from var(--base-4) r g b / 60%);
-          color: var(--base-8);
-          border-radius: var(--shape-1);
-          padding: p2r(2) p2r(6);
-          font-size: p2r(11);
-          line-height: 1;
-          box-shadow: 0 1px 0 rgb(from var(--dark-text) r g b / 10%);
+          --icon-c: var(--list-ic);
         }
       }
     }
-  }
 
-  // Bordered navigation rows: each item is a raised surface with a leading
-  // icon, a .label/.description text column and a trailing [suffix] (for
-  // example a caret). Used for "pick a page" lists and drill-down menus.
-  &.type-c {
-    --list-py: 0;
-    --list-px: 0;
-    --list-item-py: var(--pad-y-4);
-    --list-item-px: var(--pad-x-4);
-    --list-item-gap: #{p2r(12)};
-    --list-s: var(--shape-3);
-    --list-c: var(--base-12);
-    --list-bg-a: var(--base-3);
-    --list-item-b-a: 1px solid var(--base-4);
-
-    #{$item} {
-      font: var(--paragraph-30);
-      background: var(--base-2);
-      border: 1px solid var(--base-4);
-      transition:
-        background-color 125ms ease-out,
-        transform 125ms linear,
-        box-shadow 125ms linear;
-
-      sh-icon:first-child {
-        font-size: p2r(18);
-        color: var(--base-9);
-      }
-
-      [suffix] {
-        color: var(--base-7);
-      }
-
-      .text-group {
-        display: flex;
-        flex-direction: column;
-        flex: 1 1 0;
-      }
-
-      .label {
-        font: var(--paragraph-30B);
-      }
-
-      .description {
-        font: var(--paragraph-40);
-        color: var(--base-8);
-      }
-    }
-
-    #{$interactive}:hover {
-      background: var(--base-3);
-    }
-  }
-
-  &:empty {
-    padding: 0;
-  }
-
-  // WCAG 2.5.5 (AAA) target size: selectable options are at least 44px tall.
-  &[role='listbox'] {
-    #{$item} {
-      min-height: p2r(44);
-    }
-  }
-
-  > [title] {
-    color: var(--base-12);
-    margin: p2r(8 8 0);
-    font: var(--paragraph-30B);
-    line-height: p2r(24);
-    transition: color 150ms ease;
-  }
-
-  // Icon-only mode: the list narrows to --list-collapsed-w and item labels
-  // fade out. Text nodes can't be wrapped, so labels hide by turning the
-  // item's text color transparent while the leading icon keeps its color.
-  &.collapsed {
-    --list-item-py: 0;
-    --list-item-px: 0;
-
-    width: var(--list-collapsed-w);
-    // Tiles center themselves with auto margins, so the rail's own side
-    // padding would only push them off-center.
-    padding-inline: 0;
-
-    > [title] {
-      color: transparent;
-    }
-
-    // Every variant collapses to the same square tile, centered in the
-    // rail, whatever its expanded padding, borders or min-height were.
-    #{$item} {
-      box-sizing: border-box;
-      width: var(--list-collapsed-item);
-      height: var(--list-collapsed-item);
-      min-height: 0;
-      margin-inline: auto;
-      color: transparent;
-      white-space: nowrap;
-      text-wrap: nowrap;
-      overflow: hidden;
-
-      // sh-icon caps its own width at 1em, so it cannot stretch to fill the
-      // rail. Instead its start margin (50% of the item minus half the icon)
-      // parks it in the middle; the faded-out label and suffix overflow past
-      // the clipped edge.
-      sh-icon:first-child {
-        color: var(--list-c);
-        flex-shrink: 0;
-        margin-inline-start: calc(50% - 0.5em);
-      }
-
-      [suffix],
-      .shortcut,
-      .description {
-        opacity: 0;
-      }
+    &.base-1 {
+      --list-bg-a: var(--base-1);
+      --list-bs-a: var(--box-shadow-20);
     }
 
     &.type-b {
+      --list-py: 0;
+      --list-px: 0;
+      --list-accent: var(--c-8, var(--primary-8));
+      --list-item-py: var(--pad-y-3);
+      --list-item-px: var(--pad-x-3);
+      --list-item-gap: #{p2r(12)};
+      --list-s: var(--shape-2);
+
       #{$item} {
-        sh-icon:first-child {
-          color: var(--base-7);
-        }
+        color: var(--base-10);
 
         &.active,
         &.selected {
-          color: transparent;
+          background: rgb(from var(--base-3) r g b / 90%);
+          color: var(--base-12);
 
           sh-icon:first-child {
             color: var(--list-accent);
           }
+
+          .description {
+            color: var(--base-9);
+          }
+        }
+
+        sh-icon:first-child {
+          font-size: p2r(18);
+          color: var(--base-7);
+          transition: color 150ms ease;
+        }
+
+        .text-group {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+        }
+
+        .label {
+          font: var(--paragraph-30B);
+        }
+
+        .description {
+          font: var(--paragraph-40);
+          color: var(--base-7);
+          transition:
+            color 150ms ease,
+            opacity 150ms ease;
+        }
+
+        .shortcut {
+          display: flex;
+          gap: p2r(4);
+
+          kbd {
+            font-family: inherit;
+            background: rgb(from var(--base-3) r g b / 80%);
+            border: 1px solid rgb(from var(--base-4) r g b / 60%);
+            color: var(--base-8);
+            border-radius: var(--shape-1);
+            padding: p2r(2) p2r(6);
+            font-size: p2r(11);
+            line-height: 1;
+            box-shadow: 0 1px 0 rgb(from var(--dark-text) r g b / 10%);
+          }
         }
       }
     }
-  }
 
-  &[shsortable] [item]:active {
-    transform: scale(1);
-  }
-
-  #{$item} {
-    @include ship-list-item-layout;
-
-    transition:
-      transform 125ms linear,
-      box-shadow 125ms linear,
-      color 150ms ease;
-    transform: scale(1);
-
-    &:active {
-      --list-bs-a: var(--box-shadow-10);
-      transform: scale(0.98);
-    }
-
-    &:focus {
-      outline: none;
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--primary-8);
-      outline-offset: 2px;
-    }
-  }
-
-  :has(input),
-  #{$interactive} {
-    cursor: pointer;
-  }
-
-  #{$item} {
-    &:has(input:checked),
-    &.active,
-    &.selected {
+    // Bordered navigation rows: each item is a raised surface with a leading
+    // icon, a .label/.description text column and a trailing [suffix] (for
+    // example a caret). Used for "pick a page" lists and drill-down menus.
+    &.type-c {
+      --list-py: 0;
+      --list-px: 0;
+      --list-item-py: var(--pad-y-4);
+      --list-item-px: var(--pad-x-4);
+      --list-item-gap: #{p2r(12)};
+      --list-s: var(--shape-3);
       --list-c: var(--base-12);
+      --list-bg-a: var(--base-3);
+      --list-item-b-a: 1px solid var(--base-4);
 
-      background-color: var(--list-bg-a);
-      box-shadow: var(--list-bs-a);
-      border: var(--list-item-b-a);
+      #{$item} {
+        font: var(--paragraph-30);
+        background: var(--base-2);
+        border: 1px solid var(--base-4);
+        transition:
+          background-color 125ms ease-out,
+          transform 125ms linear,
+          box-shadow 125ms linear;
+
+        sh-icon:first-child {
+          font-size: p2r(18);
+          color: var(--base-9);
+        }
+
+        [suffix] {
+          color: var(--base-7);
+        }
+
+        .text-group {
+          display: flex;
+          flex-direction: column;
+          flex: 1 1 0;
+        }
+
+        .label {
+          font: var(--paragraph-30B);
+        }
+
+        .description {
+          font: var(--paragraph-40);
+          color: var(--base-8);
+        }
+      }
+
+      #{$interactive}:hover {
+        background: var(--base-3);
+      }
+    }
+
+    &:empty {
+      padding: 0;
+    }
+
+    // WCAG 2.5.5 (AAA) target size: selectable options are at least 44px tall.
+    &[role='listbox'] {
+      #{$item} {
+        min-height: p2r(44);
+      }
+    }
+
+    > [title] {
+      color: var(--base-12);
+      margin: p2r(8 8 0);
+      font: var(--paragraph-30B);
+      line-height: p2r(24);
+      transition: color 150ms ease;
+    }
+
+    // Icon-only mode: the list narrows to --list-collapsed-w and item labels
+    // fade out. Text nodes can't be wrapped, so labels hide by turning the
+    // item's text color transparent while the leading icon keeps its color.
+    &.collapsed {
+      --list-item-py: 0;
+      --list-item-px: 0;
+
+      width: var(--list-collapsed-w);
+      // Tiles center themselves with auto margins, so the rail's own side
+      // padding would only push them off-center.
+      padding-inline: 0;
+
+      > [title] {
+        color: transparent;
+      }
+
+      // Every variant collapses to the same square tile, centered in the
+      // rail, whatever its expanded padding, borders or min-height were.
+      #{$item} {
+        box-sizing: border-box;
+        width: var(--list-collapsed-item);
+        height: var(--list-collapsed-item);
+        min-height: 0;
+        margin-inline: auto;
+        color: transparent;
+        white-space: nowrap;
+        text-wrap: nowrap;
+        overflow: hidden;
+
+        // sh-icon caps its own width at 1em, so it cannot stretch to fill the
+        // rail. Instead its start margin (50% of the item minus half the icon)
+        // parks it in the middle; the faded-out label and suffix overflow past
+        // the clipped edge.
+        sh-icon:first-child {
+          color: var(--list-c);
+          flex-shrink: 0;
+          margin-inline-start: calc(50% - 0.5em);
+        }
+
+        [suffix],
+        .shortcut,
+        .description {
+          opacity: 0;
+        }
+      }
+
+      &.type-b {
+        #{$item} {
+          sh-icon:first-child {
+            color: var(--base-7);
+          }
+
+          &.active,
+          &.selected {
+            color: transparent;
+
+            sh-icon:first-child {
+              color: var(--list-accent);
+            }
+          }
+        }
+      }
+    }
+
+    &[shsortable] [item]:active {
+      transform: scale(1);
+    }
+
+    #{$item} {
+      @include ship-list-item-layout;
+
+      transition:
+        transform 125ms linear,
+        box-shadow 125ms linear,
+        color 150ms ease;
+      transform: scale(1);
+
+      &:active {
+        --list-bs-a: var(--box-shadow-10);
+        transform: scale(0.98);
+      }
+
+      &:focus {
+        outline: none;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--primary-8);
+        outline-offset: 2px;
+      }
+    }
+
+    :has(input),
+    #{$interactive} {
+      cursor: pointer;
+    }
+
+    #{$item} {
+      &:has(input:checked),
+      &.active,
+      &.selected {
+        --list-c: var(--base-12);
+
+        background-color: var(--list-bg-a);
+        box-shadow: var(--list-bs-a);
+        border: var(--list-item-b-a);
+      }
     }
   }
 }

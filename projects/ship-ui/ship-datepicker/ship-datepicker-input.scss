@@ -1,6 +1,9 @@
 @use 'helpers' as *;
+
 @use './datepicker-input-base' as *;
 
-sh-datepicker-input {
-  @include datepicker-input-base;
+@layer ship {
+  sh-datepicker-input {
+    @include datepicker-input-base;
+  }
 }

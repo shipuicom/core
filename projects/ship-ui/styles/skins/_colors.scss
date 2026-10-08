@@ -1,0 +1,27 @@
+// Colour classes: `.primary`, `.brand`, … point the neutral --c-* tokens at that palette. Skins read
+// `var(--c-8, var(--base-12))`, so a component's colour CSS is written once and works for every palette, including the
+// ones a consumer adds after the library was built. The tokens do not inherit: a colour class colours its own element,
+// never the components nested inside it, and a nested component falls back to its uncoloured base steps.
+
+/// Palette tokens a colour class maps.
+$tokens: (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, g2, g3, c8);
+
+/// Registers the tokens as non-inheriting. Emitted outside the `ship` layer (see ../index.scss).
+@mixin properties() {
+  @each $t in $tokens {
+    @property --c-#{$t} {
+      syntax: '*';
+      inherits: false;
+    }
+  }
+}
+
+@mixin emit($colors) {
+  @each $c in $colors {
+    .#{$c} {
+      @each $t in $tokens {
+        --c-#{$t}: var(--#{$c}-#{$t});
+      }
+    }
+  }
+}

@@ -10,39 +10,11 @@ export const SHIP_STYLE_COLORS = ['primary', 'accent', 'warn', 'error', 'success
 /** Sheet variants (`$shipVariants`). */
 export const SHIP_STYLE_VARIANTS = ['simple', 'outlined', 'flat', 'raised'] as const;
 
-/** Skins in `styles/skins/_index.scss`; each maps to a `$ship<Name>` flag. */
-export const SHIP_STYLE_SKINS = [
-  'sheet',
-  'spinner',
-  'icon',
-  'progressBar',
-  'tabs',
-  'tooltip',
-  'toggle',
-  'rangeSlider',
-  'radio',
-  'checkbox',
-  'chip',
-  'datepicker',
-  'stepper',
-  'avatar',
-  'codeInput',
-  'video',
-  'videoPlaylist',
-  'chartSparkline',
-  'formField',
-  'alert',
-  'button',
-  'listItemSwipe',
-  'list',
-  'chat',
-  'layoutStat',
-  'layoutStatTrend',
-  'layoutStatGoal',
-  'layoutStatRing',
-  'layoutRanking',
-  'layoutAchievement',
-] as const;
+/**
+ * Skins the global stylesheet still emits (`styles/skins/_index.scss`); each maps to a `$ship<Name>` flag. Every other
+ * component carries its own variant x colour styles and loads them with the component.
+ */
+export const SHIP_STYLE_SKINS = ['sheet', 'tooltip', 'avatar'] as const;
 
 export type ShipStyleSkin = (typeof SHIP_STYLE_SKINS)[number];
 

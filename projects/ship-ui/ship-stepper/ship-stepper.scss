@@ -1,125 +1,127 @@
 @use 'helpers' as *;
 
-// The stepper stamps `.sh-radio` dots itself, so it carries the radio structure instead of importing sh-radio.
-.sh-radio {
-  @include radio-dot;
-}
-
-sh-stepper {
-  --step-track-bg: var(--base-3);
-  --step-c: var(--base-6);
-  --step-radio-cbg: var(--base-1);
-  --step-radio-c: var(--base-g2);
-  --step-active-c: var(--base-8);
-
-  display: flex;
-  flex-wrap: nowrap;
-  width: 100%;
-  position: relative;
-
-  button {
-    background: transparent;
-    border: 0;
-    padding: 0;
+@layer ship {
+  // The stepper stamps `.sh-radio` dots itself, so it carries the radio structure instead of importing sh-radio.
+  .sh-radio {
+    @include radio-dot;
   }
 
-  button,
-  [routerLinkActive],
-  [step],
-  [value] {
-    flex: 2 0;
+  sh-stepper {
+    --step-track-bg: var(--base-3);
+    --step-c: var(--c-6, var(--base-6));
+    --step-radio-cbg: var(--c-1, var(--base-1));
+    --step-radio-c: var(--c-g2, var(--base-g2));
+    --step-active-c: var(--c-8, var(--base-8));
+
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    gap: p2r(8);
+    flex-wrap: nowrap;
+    width: 100%;
     position: relative;
-    color: var(--base-8);
-    cursor: pointer;
-    user-select: none;
-    outline: none;
-    z-index: 1;
 
-    &:focus-visible .sh-radio {
-      outline: 2px solid var(--primary-8);
-      outline-offset: 2px;
-      border-radius: 50%;
+    button {
+      background: transparent;
+      border: 0;
+      padding: 0;
     }
 
-    &:first-child {
-      align-items: flex-start;
-      flex: 1 0;
-    }
-
-    &:last-child {
-      align-items: flex-end;
-      flex: 1 0;
-      text-align: end;
-    }
-
-    &:not(.active) .sh-radio {
-      z-index: 10;
-    }
-
-    &:has(~ button.active),
-    &:has(~ [step].active),
-    &:has(~ [routerLinkActive].active),
-    &:has(~ [value].active) {
-      .sh-radio {
-        --radiod-o: 1;
-
-        .radio {
-          border-width: 0;
-          background: var(--step-radio-c);
-        }
-      }
-    }
-
-    .sh-radio {
-      .radio {
-        --radiod-c: var(--step-radio-cbg);
-
-        width: p2r(16);
-        height: p2r(16);
-      }
-    }
-
-    &.active {
-      color: var(--step-active-c);
+    button,
+    [routerLinkActive],
+    [step],
+    [value] {
+      flex: 2 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: p2r(8);
+      position: relative;
+      color: var(--base-8);
+      cursor: pointer;
+      user-select: none;
       outline: none;
+      z-index: 1;
+
+      &:focus-visible .sh-radio {
+        outline: 2px solid var(--primary-8);
+        outline-offset: 2px;
+        border-radius: 50%;
+      }
+
+      &:first-child {
+        align-items: flex-start;
+        flex: 1 0;
+      }
+
+      &:last-child {
+        align-items: flex-end;
+        flex: 1 0;
+        text-align: end;
+      }
+
+      &:not(.active) .sh-radio {
+        z-index: 10;
+      }
+
+      &:has(~ button.active),
+      &:has(~ [step].active),
+      &:has(~ [routerLinkActive].active),
+      &:has(~ [value].active) {
+        .sh-radio {
+          --radiod-o: 1;
+
+          .radio {
+            border-width: 0;
+            background: var(--step-radio-c);
+          }
+        }
+      }
 
       .sh-radio {
-        z-index: 0;
-        --radiod-o: 1;
-
         .radio {
-          border-width: 0;
-          background: var(--step-radio-c);
+          --radiod-c: var(--step-radio-cbg);
+
+          width: p2r(16);
+          height: p2r(16);
+        }
+      }
+
+      &.active {
+        color: var(--step-active-c);
+        outline: none;
+
+        .sh-radio {
+          z-index: 0;
+          --radiod-o: 1;
+
+          .radio {
+            border-width: 0;
+            background: var(--step-radio-c);
+          }
         }
       }
     }
-  }
 
-  &:before {
-    content: '';
-    position: absolute;
-    top: p2r(6);
-    left: 0;
-    z-index: 0;
-    right: 0;
-    height: p2r(4);
-    background-color: var(--step-track-bg);
-  }
+    &:before {
+      content: '';
+      position: absolute;
+      top: p2r(6);
+      left: 0;
+      z-index: 0;
+      right: 0;
+      height: p2r(4);
+      background-color: var(--step-track-bg);
+    }
 
-  &:after {
-    content: '';
-    position: absolute;
-    top: p2r(6);
-    left: 0;
-    z-index: 0;
-    width: var(--step-progress, 0%);
-    height: p2r(4);
-    background-color: var(--step-active-c);
-    transition: width 150ms ease-out;
+    &:after {
+      content: '';
+      position: absolute;
+      top: p2r(6);
+      left: 0;
+      z-index: 0;
+      width: var(--step-progress, 0%);
+      height: p2r(4);
+      background-color: var(--step-active-c);
+      transition: width 150ms ease-out;
+    }
   }
 }

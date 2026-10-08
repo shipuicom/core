@@ -1,123 +1,125 @@
 @use 'helpers' as *;
 
-sh-lo-stat-goal {
-  --goal-c: var(--primary-8);
-  --goal-track: var(--base-3);
-  --goal-bg: var(--base-1);
-  --goal-py: var(--pad-y-6);
-  --goal-px: var(--pad-x-6);
-  --goal-s: var(--shape-3);
-  --goal-bar-h: #{p2r(10)};
+@layer ship {
+  sh-lo-stat-goal {
+    --goal-c: var(--c-8, var(--primary-8));
+    --goal-track: var(--base-3);
+    --goal-bg: var(--base-1);
+    --goal-py: var(--pad-y-6);
+    --goal-px: var(--pad-x-6);
+    --goal-s: var(--shape-3);
+    --goal-bar-h: #{p2r(10)};
 
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--goal-py) var(--goal-px);
-  background-color: var(--goal-bg);
-  border: var(--border-10);
-  border-color: var(--base-4);
-  border-radius: var(--goal-s);
-  min-width: 0;
-
-  > .head {
     display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    font: var(--paragraph-30);
-    color: var(--base-8);
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--goal-py) var(--goal-px);
+    background-color: var(--goal-bg);
+    border: var(--border-10);
+    border-color: var(--base-4);
+    border-radius: var(--goal-s);
+    min-width: 0;
 
-    > sh-icon,
-    > [icon] {
-      color: var(--goal-c);
-    }
-  }
-
-  > .value {
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-
-    > h2,
-    > h3,
-    > [value] {
-      font: var(--title-30B);
-      font-variant-numeric: tabular-nums;
-    }
-
-    > .target {
-      font: var(--paragraph-20);
+    > .head {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font: var(--paragraph-30);
       color: var(--base-8);
 
-      &:not(:empty)::before {
-        content: '/ ';
+      > sh-icon,
+      > [icon] {
+        color: var(--goal-c);
       }
+    }
+
+    > .value {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+
+      > h2,
+      > h3,
+      > [value] {
+        font: var(--title-30B);
+        font-variant-numeric: tabular-nums;
+      }
+
+      > .target {
+        font: var(--paragraph-20);
+        color: var(--base-8);
+
+        &:not(:empty)::before {
+          content: '/ ';
+        }
+
+        &:empty {
+          display: none;
+        }
+      }
+    }
+
+    > .bar {
+      position: relative;
+      height: var(--goal-bar-h);
+      border-radius: #{p2r(999)};
+      background-color: var(--goal-track);
+      overflow: hidden;
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: calc(var(--goal-pct, 0) * 1%);
+        border-radius: inherit;
+        background: linear-gradient(90deg, rgb(from var(--goal-c) r g b / 0.6), var(--goal-c));
+        transition: width 0.4s ease;
+      }
+    }
+
+    > .footer {
+      font: var(--paragraph-40);
+      color: var(--base-8);
 
       &:empty {
         display: none;
       }
     }
-  }
 
-  > .bar {
-    position: relative;
-    height: var(--goal-bar-h);
-    border-radius: #{p2r(999)};
-    background-color: var(--goal-track);
-    overflow: hidden;
+    // Ten segments instead of a continuous bar.
+    &.type-b > .bar {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: #{p2r(4)};
+      height: calc(var(--goal-bar-h) + #{p2r(4)});
+      background: none;
+      border-radius: 0;
 
-    &::before {
-      content: '';
-      position: absolute;
-      inset: 0 auto 0 0;
-      width: calc(var(--goal-pct, 0) * 1%);
-      border-radius: inherit;
-      background: linear-gradient(90deg, rgb(from var(--goal-c) r g b / 0.6), var(--goal-c));
-      transition: width 0.4s ease;
-    }
-  }
+      &::before {
+        display: none;
+      }
 
-  > .footer {
-    font: var(--paragraph-40);
-    color: var(--base-8);
+      > i {
+        border-radius: var(--shape-1);
+        background-color: var(--goal-track);
 
-    &:empty {
-      display: none;
-    }
-  }
-
-  // Ten segments instead of a continuous bar.
-  &.type-b > .bar {
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    gap: #{p2r(4)};
-    height: calc(var(--goal-bar-h) + #{p2r(4)});
-    background: none;
-    border-radius: 0;
-
-    &::before {
-      display: none;
-    }
-
-    > i {
-      border-radius: var(--shape-1);
-      background-color: var(--goal-track);
-
-      &.on {
-        background-color: var(--goal-c);
+        &.on {
+          background-color: var(--goal-c);
+        }
       }
     }
-  }
 
-  // Compact, no card.
-  &.type-c {
-    --goal-py: 0;
-    --goal-px: 0;
-    --goal-bar-h: #{p2r(6)};
+    // Compact, no card.
+    &.type-c {
+      --goal-py: 0;
+      --goal-px: 0;
+      --goal-bar-h: #{p2r(6)};
 
-    gap: var(--space-2);
-    background: none;
-    border: 0;
-    border-radius: 0;
+      gap: var(--space-2);
+      background: none;
+      border: 0;
+      border-radius: 0;
+    }
   }
 }

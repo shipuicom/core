@@ -1,10 +1,12 @@
 @use 'helpers' as *;
 
-sh-spreadsheet-block {
-  display: block;
-  margin: #{p2r(12 0)};
+@layer ship {
+  sh-spreadsheet-block {
+    display: block;
+    margin: #{p2r(12 0)};
 
-  sh-spreadsheet {
-    max-height: #{p2r(420)};
+    sh-spreadsheet {
+      max-height: #{p2r(420)};
+    }
   }
 }
