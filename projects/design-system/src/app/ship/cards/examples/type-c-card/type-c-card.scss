@@ -1,0 +1,76 @@
+@use 'helpers' as *;
+
+// Type C has no padding, so each part sets its own and every divider runs to the card's border.
+sh-card {
+  width: 100%;
+  max-width: p2r(520);
+}
+
+header,
+li,
+footer {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-x-4);
+  padding: var(--pad-y-5) var(--pad-x-6);
+}
+
+header {
+  justify-content: space-between;
+  border-bottom: var(--border-10);
+
+  h4 {
+    margin: 0;
+    font: var(--paragraph-20B);
+  }
+
+  p {
+    margin: 0;
+    font: var(--paragraph-30);
+    color: var(--base-11);
+  }
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+li {
+  padding-block: var(--pad-y-4);
+
+  & + li {
+    border-top: var(--border-10);
+  }
+
+  div {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  b {
+    font: var(--paragraph-30B);
+  }
+
+  span {
+    font: var(--paragraph-40);
+    color: var(--base-11);
+  }
+}
+
+footer {
+  justify-content: space-between;
+  padding-block: var(--pad-y-4);
+  border-top: var(--border-10);
+  background: var(--base-2);
+  font: var(--paragraph-30);
+  color: var(--base-11);
+
+  a {
+    font: var(--paragraph-30B);
+    color: var(--primary-9);
+  }
+}
