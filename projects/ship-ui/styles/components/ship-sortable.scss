@@ -19,6 +19,9 @@ $shipSortable: true !default;
       transition: none;
       z-index: 2;
       user-select: none;
+      // A long press picks the item up on touch: keep iOS from selecting text or opening its callout.
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
     }
 
     &:not(.sh-sortable-tree) {

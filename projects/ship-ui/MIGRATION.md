@@ -1,5 +1,15 @@
 # Migration Guide
 
+## Unreleased — long-press touch sorting on by default
+
+Nothing to change unless you want the old touch behaviour. `[shSortable]` containers (including `sh-tree` with a
+sortable manager) now pick an item up when a touch is held still for 300ms; before, touch only scrolled unless
+`[touchEnabled]` was set. Touches that move first still scroll, mouse and keyboard are unchanged.
+
+- To keep a list scroll-only on touch (for example when its items have their own long-press action), set
+  `[touchEnabled]="false"` or `touchActivation="none"`.
+- `[touchEnabled]="isEditing()"` bindings keep working as before; `[touchEnabled]="true"` can be dropped.
+
 ## v0.27.0 — lazy skins and the `ship` layer
 
 Nothing to rewrite in templates. Check two things in your styles:

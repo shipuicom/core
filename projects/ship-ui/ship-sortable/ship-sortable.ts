@@ -1,4 +1,5 @@
 import {
+  afterNextRender,
   Injectable,
   computed,
   Directive,
@@ -169,14 +170,20 @@ export class ShipSortable implements OnInit, OnDestroy {
   shSortableAxis = input<'x' | 'y' | 'both'>('both');
 
   /**
-   * Enables touch-based dragging. Off by default and meant to be bound to an
-   * explicit "edit mode" toggle, the way iOS lists work: a plain touch always
-   * scrolls, and reordering only becomes possible once the user asks for it.
-   * Touch devices never fire the native drag events the mouse path relies on,
-   * so this is the only route to reordering on a phone.
+   * Enables touch-based dragging (finger, and a pen that the platform reports as touch). On by default:
+   * a touch held still for 300ms picks the item up, while a touch that moves first scrolls as usual, so
+   * lists stay scrollable on a phone. Mouse drags start immediately and keyboard reordering is
+   * unaffected either way. Set it to `false` to make touch scroll-only again, or bind it to an
+   * "edit mode" toggle the way iOS lists work. Touch devices never fire the native drag events the
+   * mouse path relies on, so this is the only route to reordering on a phone.
    */
-  touchEnabled = input(false, { transform: booleanAttribute });
-  /** How a touch drag is initiated: `'longpress'`, `'handle'`, or `'none'`. */
+  touchEnabled = input(true, { transform: booleanAttribute });
+  /**
+   * How a touch drag is initiated: `'longpress'` (default) picks the item up after a 300ms hold,
+   * `'handle'` starts dragging as soon as a `[sort-handle]` is touched (pair it with `touchEnabled`
+   * bound to an edit mode, since that touch can no longer scroll), and `'none'` turns touch dragging off.
+   * With `'longpress'`, an item that contains a `[sort-handle]` is only picked up from the handle.
+   */
   touchActivation = input<'longpress' | 'handle' | 'none'>('longpress');
 
   /** Emitted on any drop with the source/target containers and indices. */
@@ -206,9 +213,15 @@ export class ShipSortable implements OnInit, OnDestroy {
   touchGhostEl: HTMLElement | null = null;
   touchOffset = { x: 0, y: 0 };
 
+  /** How long, in ms, a touch has to be held still before `'longpress'` picks the item up. */
+  #longPressDelay = 300;
+  /** How far, in px, a touch may wander during the long press before it counts as a scroll. */
+  #longPressSlop = 8;
+
   #boundTouchMove = this.onTouchMove.bind(this);
   #boundTouchEnd = this.onTouchEnd.bind(this);
   #boundTouchCancel = this.onTouchCancel.bind(this);
+  #boundContextMenu = (e: Event) => e.preventDefault();
 
   /** How close to a scrollable edge, in px, a drag has to get before it scrolls. */
   #autoScrollThreshold = 56;
@@ -285,6 +298,7 @@ export class ShipSortable implements OnInit, OnDestroy {
     this.abortController = new AbortController();
 
     const keyshortcuts = this.keyboardShortcuts();
+    const touchActivation = this.touchEnabled() ? this.touchActivation() : 'none';
 
     for (const el of els) {
       // A handle is the keyboard's grip too: focusable, and it announces the move keys.
@@ -296,10 +310,12 @@ export class ShipSortable implements OnInit, OnDestroy {
 
       el.addEventListener('dragstart', (e) => this.dragStart(e), { signal: this.abortController.signal });
       el.addEventListener('dragend', () => this.dragEnd(), { signal: this.abortController.signal });
-      if (this.touchEnabled()) {
+      if (touchActivation !== 'none') {
+        // A long press never cancels the touchstart, so the listener stays passive and the
+        // browser can start scrolling without waiting on it. A handle drag claims the touch at once.
         el.addEventListener('touchstart', (e) => this.onTouchStart(e, el), {
           signal: this.abortController.signal,
-          passive: false,
+          passive: touchActivation === 'longpress',
         });
       }
     }
@@ -661,7 +677,13 @@ export class ShipSortable implements OnInit, OnDestroy {
   }
 
   onTouchStart(e: TouchEvent, el: HTMLElement) {
-    if (!this.touchEnabled() || this.touchActivation() === 'none') {
+    if (!this.touchEnabled() || this.touchActivation() === 'none' || this.isTouchDragging) {
+      return;
+    }
+
+    // A second finger means a pinch or a two-finger scroll, never a pick-up.
+    if (e.touches.length > 1) {
+      this.cancelTouchDrag();
       return;
     }
 
@@ -681,16 +703,27 @@ export class ShipSortable implements OnInit, OnDestroy {
       e.preventDefault();
       this.startTouchDrag(touch, el);
     } else if (this.touchActivation() === 'longpress') {
+      this.cancelTouchDrag();
       this.touchStartCoordinates = { x: touch.clientX, y: touch.clientY };
-
-      this.#document.addEventListener('touchmove', this.#boundTouchMove, { passive: false });
-      this.#document.addEventListener('touchend', this.#boundTouchEnd, { passive: false });
-      this.#document.addEventListener('touchcancel', this.#boundTouchCancel, { passive: false });
+      this.#listenToTouchGesture();
 
       this.touchDragTimer = setTimeout(() => {
+        this.touchDragTimer = null;
         this.startTouchDrag(touch, el);
-      }, 300);
+      }, this.#longPressDelay);
     }
+  }
+
+  /**
+   * Follows the touch on the document until it ends. `touchmove` is not passive so a running drag can
+   * stop the page scrolling; before the long press fires it never cancels anything. The long press would
+   * also open the browser's context menu (or the iOS callout) under the finger, so that is held off too.
+   */
+  #listenToTouchGesture() {
+    this.#document.addEventListener('touchmove', this.#boundTouchMove, { passive: false });
+    this.#document.addEventListener('touchend', this.#boundTouchEnd, { passive: false });
+    this.#document.addEventListener('touchcancel', this.#boundTouchCancel, { passive: false });
+    this.#document.addEventListener('contextmenu', this.#boundContextMenu);
   }
 
   startTouchDrag(touch: Touch, el: HTMLElement) {
@@ -749,9 +782,7 @@ export class ShipSortable implements OnInit, OnDestroy {
 
     if (this.touchActivation() === 'handle') {
       this.touchStartCoordinates = { x: touch.clientX, y: touch.clientY };
-      this.#document.addEventListener('touchmove', this.#boundTouchMove, { passive: false });
-      this.#document.addEventListener('touchend', this.#boundTouchEnd, { passive: false });
-      this.#document.addEventListener('touchcancel', this.#boundTouchCancel, { passive: false });
+      this.#listenToTouchGesture();
     }
   }
 
@@ -761,10 +792,13 @@ export class ShipSortable implements OnInit, OnDestroy {
     const clientY = touch.clientY;
 
     if (!this.isTouchDragging) {
-      if (this.touchStartCoordinates) {
+      // Moving first means the user is scrolling (or pinching): give the touch back to the browser.
+      if (e.touches.length > 1) {
+        this.cancelTouchDrag();
+      } else if (this.touchStartCoordinates) {
         const dx = clientX - this.touchStartCoordinates.x;
         const dy = clientY - this.touchStartCoordinates.y;
-        if (Math.hypot(dx, dy) > 8) {
+        if (Math.hypot(dx, dy) > this.#longPressSlop) {
           this.cancelTouchDrag();
         }
       }
@@ -941,6 +975,9 @@ export class ShipSortable implements OnInit, OnDestroy {
     if (wasDragging) {
       this.isTouchDragging = false;
 
+      // The drop was the whole gesture: no compatibility click on the item under the finger.
+      if (e.cancelable) e.preventDefault();
+
       if (this.#sortableService.activeTarget) {
         this.#sortableService.activeTarget.drop();
       }
@@ -989,6 +1026,7 @@ export class ShipSortable implements OnInit, OnDestroy {
     this.#document.removeEventListener('touchmove', this.#boundTouchMove);
     this.#document.removeEventListener('touchend', this.#boundTouchEnd);
     this.#document.removeEventListener('touchcancel', this.#boundTouchCancel);
+    this.#document.removeEventListener('contextmenu', this.#boundContextMenu);
   }
 
   #clearTreeHoverClasses() {
@@ -1150,15 +1188,22 @@ export class ShipSortable implements OnInit, OnDestroy {
     }
   }
 
+  #syncDragables() {
+    this.dragables.set(
+      Array.from(this.#selfEl.nativeElement.querySelectorAll('[draggable]:not(.sortable-spacer)')) as HTMLElement[]
+    );
+  }
+
+  // The observer only sees items rendered after it starts; a hydrated list reuses the server's DOM and never mutates,
+  // so read the items once after the first render too.
+  #readInitialDragables = afterNextRender(() => this.#syncDragables());
+
   #dragableObserver =
     typeof MutationObserver !== 'undefined'
       ? new MutationObserver((mutations) => {
           for (const mutation of mutations) {
             if (mutation.type === 'childList') {
-              const draggableElements = Array.from(
-                this.#selfEl.nativeElement.querySelectorAll('[draggable]:not(.sortable-spacer)')
-              ) as HTMLElement[];
-              this.dragables.set(draggableElements);
+              this.#syncDragables();
 
               if (this.isDropping) {
                 this.isDropping = false;
@@ -1180,6 +1225,8 @@ export class ShipSortable implements OnInit, OnDestroy {
     this.#sortableService.activeInstances.delete(this);
     (this.#dragableObserver as MutationObserver)?.disconnect();
     this.abortController?.abort();
+    this.cancelTouchDrag();
+    this.touchGhostEl?.remove();
   }
 }
 

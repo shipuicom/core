@@ -1,3 +1,10 @@
+// The board follows its own width: three columns side by side, one column on a phone.
+:host {
+  display: block;
+  width: 100%;
+  container-type: inline-size;
+}
+
 .board {
   display: flex;
   gap: 16px;
@@ -33,4 +40,15 @@
   background: var(--base-1);
   border: 1px solid var(--base-3);
   border-radius: var(--shape-1);
+}
+
+@container (max-width: 640px) {
+  .board {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .column {
+    min-width: 0;
+  }
 }

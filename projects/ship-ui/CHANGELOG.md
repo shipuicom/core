@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.27.2
 
 ### Added
 
@@ -15,9 +15,21 @@
   now read them, so the density knobs move gaps as well as padding. At the default density they equal `--space-1..8`,
   so nothing moves; `--space-N` stays as the fixed scale.
 
+### Changed
+
+- **ship-sortable**: every sortable reorders on touch with a long press. `touchEnabled` now defaults to `true`
+  (`touchActivation` stays `'longpress'`): a touch held still for 300ms picks the item up, a touch that moves first
+  still scrolls, and a two-finger touch never picks anything up. Mouse drags still start immediately and keyboard
+  reordering is unchanged. `[touchEnabled]="false"` (or `touchActivation="none"`) restores scroll-only touch; see
+  [MIGRATION.md](./MIGRATION.md).
+- **ship-sortable**: the long-press `touchstart` listener is passive, the context menu / iOS callout is held off while
+  a touch is pressed, and a touch drop no longer also clicks the item under the finger.
+
 ### Fixed
 
 - Dark `--error-5` and `--success-2` sat off their scale (near-black and grey); they are back on the curve.
+- `shSortable` lists that were already rendered when it started (a hydrated server-rendered page) could not be dragged
+  until their items changed; it now reads the items after the first render too.
 
 ## 0.27.1
 
