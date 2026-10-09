@@ -33,7 +33,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      gap: p2r(8);
+      gap: var(--gap-y-2);
       position: relative;
       color: var(--base-8);
       cursor: pointer;

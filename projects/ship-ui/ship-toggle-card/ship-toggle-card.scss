@@ -60,7 +60,7 @@
     .content {
       display: flex;
       flex-direction: column;
-      gap: p2r(16);
+      gap: var(--gap-y-4);
 
       padding: 0 var(--tc-px);
       min-height: 0;

@@ -1,0 +1,49 @@
+<sh-bl-contact [variant]="variant()" [color]="color()">
+  <span eyebrow>Contact</span>
+  <h2>Talk to the team</h2>
+  <p>Questions about licensing, a migration or a component you are missing? We usually reply within a day.</p>
+
+  <ul>
+    <li>
+      <sh-icon>envelope-simple</sh-icon>
+      <b>Email</b>
+      <a href="mailto:hello@example.com">hello&#64;example.com</a>
+    </li>
+    <li>
+      <sh-icon>phone</sh-icon>
+      <b>Phone</b>
+      <a href="tel:+15550100100">+1 (555) 010-0100</a>
+    </li>
+    <li>
+      <sh-icon>map-pin</sh-icon>
+      <b>Office</b>
+      <span>12 Harbour Street, Copenhagen</span>
+    </li>
+  </ul>
+
+  <form (submit)="$event.preventDefault()">
+    <div row>
+      <sh-form-field>
+        <label>First name</label>
+        <input name="firstName" type="text" autocomplete="given-name" placeholder="Ada" />
+      </sh-form-field>
+      <sh-form-field>
+        <label>Last name</label>
+        <input name="lastName" type="text" autocomplete="family-name" placeholder="Lovelace" />
+      </sh-form-field>
+    </div>
+    <sh-form-field>
+      <label>Work email</label>
+      <input name="email" type="email" autocomplete="email" placeholder="ada@company.com" />
+    </sh-form-field>
+    <sh-form-field>
+      <label>Message</label>
+      <textarea name="message" rows="4" placeholder="How can we help?"></textarea>
+    </sh-form-field>
+    <button shButton type="submit" variant="raised" [color]="color()">
+      Send message
+      <sh-icon>paper-plane-tilt</sh-icon>
+    </button>
+    <small>By sending this form you agree to be contacted about your request.</small>
+  </form>
+</sh-bl-contact>

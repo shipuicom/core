@@ -1,1 +1,30 @@
-<sh-card variant="type-c">hello world</sh-card>
+<sh-card variant="type-c">
+  <header>
+    <div>
+      <h4>Team members</h4>
+      <p>People with access to this project.</p>
+    </div>
+    <button shButton size="small" variant="outlined">
+      <sh-icon>user-plus</sh-icon>
+      Invite
+    </button>
+  </header>
+
+  <ul>
+    @for (member of members; track member.name) {
+      <li>
+        <sh-avatar size="small" [name]="member.name" />
+        <div>
+          <b>{{ member.name }}</b>
+          <span>{{ member.email }}</span>
+        </div>
+        <sh-chip size="small" variant="simple">{{ member.role }}</sh-chip>
+      </li>
+    }
+  </ul>
+
+  <footer>
+    <span>3 of 10 seats used</span>
+    <a href="#">Manage seats</a>
+  </footer>
+</sh-card>

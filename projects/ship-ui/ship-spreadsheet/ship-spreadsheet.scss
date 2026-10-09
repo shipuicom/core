@@ -99,7 +99,7 @@
     .shs-bar-hint {
       display: flex;
       flex-wrap: wrap;
-      gap: 0 #{p2r(8)};
+      gap: 0 var(--gap-x-2);
       align-items: baseline;
       padding: #{p2r(4)} #{p2r(6)};
       border-radius: var(--shape-1);

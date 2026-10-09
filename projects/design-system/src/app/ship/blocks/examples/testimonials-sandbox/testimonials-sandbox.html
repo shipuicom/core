@@ -1,0 +1,19 @@
+<sh-bl-testimonials [variant]="variant()" [color]="color()">
+  <span eyebrow>Loved by builders</span>
+  <h2>Teams ship faster with ShipUI</h2>
+  <p>From solo founders to product teams, here is what people say after their first launch.</p>
+
+  @for (item of quotes(); track item.name) {
+    <sh-bl-testimonial>
+      <div rating role="img" aria-label="Rated 5 out of 5">
+        @for (star of stars; track star) {
+          <sh-icon>star-fill</sh-icon>
+        }
+      </div>
+      <blockquote>{{ item.quote }}</blockquote>
+      <sh-avatar [name]="item.name" />
+      <b>{{ item.name }}</b>
+      <span>{{ item.role }}</span>
+    </sh-bl-testimonial>
+  }
+</sh-bl-testimonials>

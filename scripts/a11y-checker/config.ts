@@ -444,6 +444,20 @@ export const COMPONENT_A11Y_MAP: Record<string, { url: string; rules: AriaRules[
       }
     ]
   },
+  'blocks': {
+    // Every block has a sandbox on the examples tab.
+    url: 'http://localhost:4205/blocks/examples',
+    rules: [
+      {
+        selector: 'sh-bl-header',
+        type: 'navigation',
+      },
+      {
+        selector: 'sh-bl-faq',
+        type: 'details-summary',
+      }
+    ]
+  },
   'layouts': {
     // The ranking and inbox sandboxes live on the examples tab.
     url: 'http://localhost:4205/layouts/examples',

@@ -1,0 +1,200 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+@layer ship {
+  sh-bl-faq {
+    --faq-bg: transparent;
+    --faq-c: var(--base-12);
+    --faq-mw: var(--block-mw);
+    --faq-py: var(--block-py);
+    --faq-px: var(--block-px);
+    --faq-gap: var(--gap-y-7);
+    --faq-ec: var(--c-9, var(--primary-9));
+    --faq-ic: var(--c-9, var(--primary-9));
+    --faq-is: #{p2r(14)};
+    --faq-lw: #{p2r(800)};
+    --faq-bc: var(--base-4);
+    --faq-qc: var(--base-12);
+    --faq-dc: var(--base-11);
+    --faq-sp: var(--space-5);
+    --faq-st: var(--space-6);
+    --faq-cols: 2;
+    --faq-item-bg: var(--base-1);
+    --faq-item-s: var(--shape-3);
+    --faq-item-px: var(--space-5);
+    --faq-dur: 200ms;
+
+    @include frame(faq);
+    @include head(faq);
+
+    > .inner > .items {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: var(--faq-lw);
+      margin-inline: auto;
+      border-top: var(--border-10);
+      border-color: var(--faq-bc);
+    }
+
+    > .inner > .items > details {
+      border-bottom: var(--border-10);
+      border-color: var(--faq-bc);
+
+      > summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--gap-x-4);
+        padding-block: var(--faq-sp);
+        font: var(--paragraph-10B);
+        color: var(--faq-qc);
+        list-style: none;
+        cursor: pointer;
+        border-radius: var(--shape-1);
+
+        &::-webkit-details-marker {
+          display: none;
+        }
+
+        // A plus drawn from two bars; it turns into a cross while open.
+        &::after {
+          content: '';
+          flex: none;
+          width: var(--faq-is);
+          height: var(--faq-is);
+          background:
+            linear-gradient(var(--faq-ic) 0 0) center / 100% 2px no-repeat,
+            linear-gradient(var(--faq-ic) 0 0) center / 2px 100% no-repeat;
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--primary-8);
+          outline-offset: 2px;
+        }
+      }
+
+      &[open] > summary::after {
+        rotate: 45deg;
+      }
+
+      > :not(summary) {
+        margin: 0;
+        padding-inline-end: calc(var(--faq-is) + var(--space-4));
+        font: var(--paragraph-20);
+        line-height: 1.6;
+        color: var(--faq-dc);
+        text-wrap: pretty;
+      }
+
+      > :not(summary) + :not(summary) {
+        margin-top: var(--gap-y-3);
+      }
+
+      > :last-child:not(summary) {
+        padding-bottom: var(--faq-sp);
+      }
+    }
+
+    // Progressive: the answer slides open where `::details-content` and keyword sizes can animate.
+    @media (prefers-reduced-motion: no-preference) {
+      > .inner > .items > details > summary::after {
+        transition: rotate var(--faq-dur) ease;
+      }
+
+      @supports selector(::details-content) and (interpolate-size: allow-keywords) {
+        > .inner > .items {
+          interpolate-size: allow-keywords;
+        }
+
+        > .inner > .items > details {
+          &::details-content {
+            block-size: 0;
+            overflow: hidden;
+            transition:
+              block-size var(--faq-dur) ease,
+              content-visibility var(--faq-dur) allow-discrete;
+          }
+
+          &[open]::details-content {
+            block-size: auto;
+          }
+        }
+      }
+    }
+
+    // Side by side: the header in a sticky left column, the list on the right.
+    &.type-b {
+      > .inner {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+        column-gap: var(--gap-x-7);
+        align-items: start;
+      }
+
+      > .inner > .head {
+        position: sticky;
+        top: var(--faq-st);
+        align-items: flex-start;
+        margin-inline: 0;
+        text-align: start;
+
+        > .actions {
+          justify-content: flex-start;
+        }
+      }
+
+      > .inner > .items {
+        max-width: none;
+      }
+    }
+
+    // Cards: every question on its own card, two columns.
+    &.type-c {
+      > .inner > .items {
+        display: grid;
+        grid-template-columns: repeat(var(--faq-cols), minmax(0, 1fr));
+        align-items: start;
+        gap: var(--gap-y-4) var(--gap-x-4);
+        max-width: none;
+        border-top: 0;
+      }
+
+      > .inner > .items > details {
+        padding-inline: var(--faq-item-px);
+        background-color: var(--faq-item-bg);
+        border: var(--border-10);
+        border-color: var(--faq-bc);
+        border-radius: var(--faq-item-s);
+
+        > summary {
+          border-radius: var(--faq-item-s);
+        }
+
+        &[open] {
+          border-color: color-mix(in oklab, var(--faq-ic) 35%, var(--faq-bc));
+        }
+      }
+    }
+
+    @include below($medium) {
+      &.type-b > .inner {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      &.type-b > .inner > .head {
+        position: static;
+      }
+
+      > .inner > .items {
+        --faq-cols: 1;
+      }
+    }
+
+    @include below($narrow) {
+      > .inner > .items > details > summary {
+        font: var(--paragraph-20B);
+      }
+    }
+  }
+}

@@ -1,0 +1,379 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+$nav: '> .inner > .top > .links > nav';
+
+// Hidden from view, still read by screen readers (the nav headings in the inline variants).
+@mixin visually-hidden() {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+// The link columns laid out as one inline row (type-b, type-c).
+@mixin inline-links() {
+  > .inner > .top > .links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--gap-y-2) var(--gap-x-5);
+  }
+
+  #{$nav} {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--gap-y-2) var(--gap-x-5);
+
+    > h2,
+    > h3,
+    > h4,
+    > b,
+    > [heading] {
+      @include visually-hidden();
+    }
+
+    ul {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: inherit;
+    }
+  }
+}
+
+@layer ship {
+  sh-bl-footer {
+    --footer-bg: var(--base-2);
+    --footer-c: var(--base-12);
+    --footer-mw: var(--block-mw);
+    --footer-py: var(--block-py);
+    --footer-px: var(--block-px);
+    --footer-gap: var(--gap-y-8);
+    --footer-bc: var(--base-4);
+    --footer-bw: #{p2r(320)};
+    --footer-top-gap: var(--gap-x-8);
+    --footer-row-gap: var(--gap-y-7);
+    --footer-col-gap: var(--gap-x-6);
+    --footer-lic: var(--primary-9);
+    --footer-dc: var(--base-11);
+    --footer-hc: var(--base-12);
+    --footer-lc: var(--base-11);
+    --footer-lc-h: var(--base-12);
+    --footer-sh: #{p2r(36)};
+    --footer-ss: var(--shape-2);
+    --footer-sbg-h: var(--base-3);
+
+    @include frame(footer);
+
+    border-block-start: var(--border-10);
+    border-block-start-color: var(--footer-bc);
+
+    > .inner > .top {
+      display: grid;
+      grid-template-columns: minmax(0, var(--footer-bw)) minmax(0, 1fr);
+      gap: var(--gap-y-8) var(--footer-top-gap);
+    }
+
+    > .inner > .top > .brand {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--gap-y-4);
+      min-width: 0;
+
+      &:empty {
+        display: none;
+      }
+
+      > [logo] {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--gap-x-2);
+        font: var(--paragraph-10B);
+        color: var(--footer-c);
+        text-decoration: none;
+        border-radius: var(--shape-1);
+
+        &:focus-visible {
+          outline: 2px solid var(--primary-8);
+          outline-offset: 2px;
+        }
+
+        > sh-icon {
+          font-size: #{p2r(24)};
+          color: var(--footer-lic);
+        }
+
+        > img,
+        > svg,
+        &:is(img, svg) {
+          display: block;
+          height: #{p2r(28)};
+          width: auto;
+        }
+      }
+
+      > p,
+      > [tagline] {
+        max-width: var(--footer-bw);
+        font: var(--paragraph-30);
+        color: var(--footer-dc);
+        text-wrap: pretty;
+      }
+    }
+
+    > .inner > .top > .links {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
+      gap: var(--footer-row-gap) var(--footer-col-gap);
+      min-width: 0;
+
+      &:empty {
+        display: none;
+      }
+    }
+
+    #{$nav} {
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap-y-3);
+      min-width: 0;
+
+      > h2,
+      > h3,
+      > h4,
+      > b,
+      > [heading] {
+        margin: 0 0 var(--gap-y-1);
+        font: var(--paragraph-30B);
+        color: var(--footer-hc);
+      }
+
+      ul {
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap-y-3);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+    }
+
+    #{$nav} a,
+    > .inner > .bottom a {
+      font: var(--paragraph-30);
+      color: var(--footer-lc);
+      text-decoration: none;
+      width: fit-content;
+      border-radius: var(--shape-1);
+      transition: color 0.15s ease;
+
+      &:hover {
+        color: var(--footer-lc-h);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--primary-8);
+        outline-offset: 2px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
+    }
+
+    > .inner > .bottom {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--gap-y-4) var(--gap-x-4);
+      padding-top: var(--space-6);
+      border-top: var(--border-10);
+      border-top-color: var(--footer-bc);
+
+      &:not(:has(> div > *)) {
+        display: none;
+      }
+
+      > .legal {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--gap-y-2) var(--gap-x-5);
+        font: var(--paragraph-40);
+        color: var(--footer-lc);
+
+        &:empty {
+          display: none;
+        }
+
+        > small {
+          font: inherit;
+        }
+
+        > [legal] {
+          display: flex;
+          flex-wrap: wrap;
+          gap: var(--gap-y-2) var(--gap-x-4);
+        }
+
+        a {
+          font: var(--paragraph-40);
+        }
+      }
+
+      > .social {
+        display: flex;
+
+        &:empty {
+          display: none;
+        }
+
+        // The negative margin lines the glyphs, not their hit areas, up with the content edge.
+        > [social] {
+          display: flex;
+          flex-wrap: wrap;
+          gap: var(--gap-y-1) var(--gap-x-1);
+          margin-inline: calc((var(--footer-sh) - #{p2r(20)}) / -2);
+        }
+
+        a {
+          display: grid;
+          place-items: center;
+          width: var(--footer-sh);
+          height: var(--footer-sh);
+          font-size: #{p2r(20)};
+          border-radius: var(--footer-ss);
+
+          &:hover {
+            background-color: var(--footer-sbg-h);
+          }
+        }
+      }
+    }
+
+    // Centred and simple: brand, one row of links, then social over legal.
+    &.type-b {
+      @include inline-links();
+
+      > .inner > .top {
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: center;
+        gap: var(--gap-y-6) var(--gap-x-6);
+        text-align: center;
+      }
+
+      > .inner > .top > .brand {
+        align-items: center;
+        max-width: var(--footer-bw);
+      }
+
+      > .inner > .top > .links {
+        justify-content: center;
+      }
+
+      #{$nav} {
+        justify-content: center;
+
+        ul {
+          justify-content: center;
+        }
+      }
+
+      > .inner > .bottom {
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        > .legal {
+          justify-content: center;
+          text-align: center;
+
+          > [legal] {
+            justify-content: center;
+          }
+        }
+
+        > .social {
+          order: -1;
+        }
+      }
+    }
+
+    // Compact: logo, inline links, then legal and social in a single row.
+    &.type-c {
+      --footer-py: var(--space-6);
+      --footer-gap: var(--gap-y-4);
+
+      @include inline-links();
+
+      > .inner {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        column-gap: var(--gap-x-6);
+      }
+
+      > .inner > .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--gap-y-4) var(--gap-x-7);
+        min-width: 0;
+      }
+
+      > .inner > .top > .brand {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--gap-x-4);
+
+        > p,
+        > [tagline] {
+          display: none;
+        }
+      }
+
+      > .inner > .bottom {
+        padding-top: 0;
+        border-top: 0;
+      }
+    }
+
+    @include below($medium) {
+      > .inner > .top {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      > .inner > .top > .links {
+        grid-auto-flow: row;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @include below($narrow) {
+      > .inner > .bottom {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      &.type-c > .inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      &.type-c > .inner > .top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  }
+}

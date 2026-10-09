@@ -3,7 +3,7 @@
 @layer ship {
   sh-lo-setting {
     --setting-py: var(--pad-y-6);
-    --setting-gap: var(--space-3) var(--space-6);
+    --setting-gap: var(--gap-y-3) var(--gap-x-6);
     --setting-text-w: #{p2r(224)};
 
     display: flex;
@@ -48,7 +48,7 @@
     > .text {
       display: flex;
       flex-direction: column;
-      gap: var(--space-1);
+      gap: var(--gap-y-1);
       flex: 1 1 var(--setting-text-w);
       min-width: 0;
 
@@ -69,7 +69,7 @@
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      gap: var(--space-3);
+      gap: var(--gap-y-3);
       flex: 2 1 #{p2r(320)};
       min-width: 0;
     }

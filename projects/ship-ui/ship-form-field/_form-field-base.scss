@@ -92,7 +92,7 @@
     display: flex;
     align-items: center;
     padding-bottom: p2r(4);
-    gap: p2r(4);
+    gap: var(--gap-x-1);
 
     sh-icon {
       font-size: p2r(16);
@@ -103,7 +103,7 @@
   .prefix {
     display: none;
     align-items: center;
-    gap: p2r(4);
+    gap: var(--gap-x-1);
     padding: var(--ff-py) var(--ff-px);
     padding-right: 0;
     transition: background-color 125ms linear;
@@ -126,7 +126,7 @@
 
       display: flex;
       align-items: center;
-      gap: p2r(4);
+      gap: var(--gap-x-1);
     }
 
     &:not(:empty) {
@@ -269,7 +269,7 @@
     height: p2r(20);
     display: flex;
     align-items: center;
-    gap: p2r(4);
+    gap: var(--gap-x-1);
     padding-top: p2r(4);
     width: 100%;
 
@@ -336,7 +336,7 @@
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: center;
-    gap: 0 p2r(16);
+    gap: 0 var(--gap-x-4);
 
     label {
       padding-bottom: 0;

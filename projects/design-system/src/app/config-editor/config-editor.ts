@@ -48,61 +48,41 @@ const sidenavOptions = [
   { value: 'simple', label: 'Simple' },
 ];
 
-const tableVariantOptions = [
+const optionLabel = (value: string) =>
+  value.startsWith('type-')
+    ? 'Type ' + value.slice(5).toUpperCase()
+    : value[0].toUpperCase() + value.slice(1).replace(/-/g, ' ');
+
+/** A select's options: Default (no config value) followed by `values`, which mirror the library's variant/size types. */
+const options = (...values: string[]) => [
   { value: '', label: 'Default' },
-  { value: 'type-b', label: 'Type B' },
+  ...values.map((value) => ({ value, label: optionLabel(value) })),
 ];
 
-const buttonGroupVariantOptions = [
-  { value: '', label: 'Default' },
-  { value: 'type-b', label: 'Type B' },
-];
+// ShipColor
+const colorOptions = options('primary', 'accent', 'warn', 'error', 'success');
+// ShipSheetVariant
+const variantOptions = options('simple', 'outlined', 'flat', 'raised');
+// ShipFormFieldVariant
+const formFieldVariantOptions = options('base', 'horizontal', 'auto-width', 'autosize');
+// type-b / type-c, the variants of every layout and block
+const typeBcOptions = options('type-b', 'type-c');
+const smallOptions = options('small');
+const xsmallOptions = options('xsmall', 'small');
 
-const cardVariantOptions = [
-  { value: '', label: 'Default' },
-  { value: 'type-b', label: 'Type B' },
-  { value: 'type-c', label: 'Type C' },
-];
+const color: EditorComponentControl = { type: 'select', key: 'color', label: 'Color', options: colorOptions };
+const typeBc: EditorComponentControl = { type: 'select', key: 'variant', label: 'Variant', options: typeBcOptions };
+const sheet: EditorComponentControl = { type: 'select', key: 'variant', label: 'Variant', options: variantOptions };
+const select = (key: string, label: string, opts: { value: any; label: string }[]): EditorComponentControl => ({ type: 'select', key, label, options: opts });
+const toggle = (key: string, label: string): EditorComponentControl => ({ type: 'toggle', key, label });
 
-const formFieldVariantOptions = [
-  { value: '', label: 'Default' },
-  { value: 'horizontal', label: 'Horizontal' },
-];
-
-const editorVariantOptions = [
-  { value: '', label: 'Default' },
-  { value: 'document', label: 'Document' },
-];
-
-const variantOptions = [
-  { value: '', label: 'Default' },
-  { value: 'simple', label: 'Simple' },
-  { value: 'outlined', label: 'Outlined' },
-  { value: 'flat', label: 'Flat' },
-  { value: 'raised', label: 'Raised' },
-];
-
-const sizeOptions = [
-  { value: '', label: 'Default' },
-  { value: 'small', label: 'Small' },
-];
-
-const buttonSizeOptions = [
-  { value: '', label: 'Default' },
-  { value: 'xsmall', label: 'XSmall' },
-  { value: 'small', label: 'Small' },
-];
-
-const colorOptions = [
-  { value: '', label: 'Default' },
-  { value: 'primary', label: 'Primary' },
-  { value: 'accent', label: 'Accent' },
-  { value: 'success', label: 'Success' },
-  { value: 'warning', label: 'Warning' },
-  { value: 'error', label: 'Error' },
-  { value: 'info', label: 'Info' },
-];
-
+/** A layout or block entry: its variants, plus a colour when the component takes one. */
+const typed = (
+  name: string,
+  route: string,
+  configKey: keyof import('ship-ui').ShipConfig,
+  extra: EditorComponentControl[] = [],
+): EditorComponentConfig => ({ name, route, configKey, controls: [typeBc, ...extra] });
 
 @Component({
   selector: 'app-config-editor',
@@ -157,8 +137,7 @@ export class ConfigEditor {
     }
     const opens: string[] = [];
     if (this.showGlobalSettings()) opens.push('global');
-    if (this.filteredEditorComponents().length > 0) opens.push('components');
-    if (this.filteredEditorFormFields().length > 0) opens.push('form-fields');
+    for (const group of this.filteredGroups()) if (group.items.length) opens.push(group.value);
     return opens.join(',');
   });
 
@@ -171,11 +150,6 @@ export class ConfigEditor {
   openAccordion = signal<string | null>(null);
   searchQuery = signal('');
 
-  filteredEditorComponents = computed(() => {
-    const query = this.searchQuery().toLowerCase().trim();
-    if (!query) return this.editorComponents;
-    return this.editorComponents.filter((comp) => comp.name.toLowerCase().includes(query));
-  });
 
   showGlobalSettings = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
@@ -183,11 +157,6 @@ export class ConfigEditor {
     return 'global settings font size'.includes(query);
   });
 
-  filteredEditorFormFields = computed(() => {
-    const query = this.searchQuery().toLowerCase().trim();
-    if (!query) return this.editorFormFields;
-    return this.editorFormFields.filter((comp) => comp.name.toLowerCase().includes(query));
-  });
 
   onAccordionToggle(event: Event, path: string) {
     if ((event.target as HTMLDetailsElement).open) {
@@ -295,250 +264,113 @@ export class ConfigEditor {
   }
 
   editorComponents: EditorComponentConfig[] = [
-    {
-      name: 'Accordion',
-      route: '/accordions',
-      configKey: 'accordion',
-      controls: [
-        { type: 'select', key: 'variant', label: 'Variant', options: tableVariantOptions },
-        { type: 'select', key: 'size', label: 'Size', options: sizeOptions },
-      ],
-    },
-    {
-      name: 'Alert',
-      route: '/alerts',
-      configKey: 'alert',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
-      ],
-    },
-    {
-      name: 'Avatar',
-      route: '/avatars',
-      configKey: 'avatar',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'size', label: 'Size', options: sizeOptions },
-      ],
-    },
-    {
-      name: 'Button',
-      route: '/buttons',
-      configKey: 'button',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
-        { type: 'select', key: 'size', label: 'Size', options: buttonSizeOptions },
-      ],
-    },
-    {
-      name: 'Button Group',
-      route: '/button-groups',
-      configKey: 'buttonGroup',
-      controls: [
-        // { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'variant', label: 'Variant', options: buttonGroupVariantOptions },
-        { type: 'select', key: 'size', label: 'Size', options: sizeOptions },
-      ],
-    },
-    {
-      name: 'Card',
-      route: '/cards',
-      configKey: 'card',
-      controls: [{ type: 'select', key: 'variant', label: 'Variant', options: cardVariantOptions }],
-    },
-    {
-      name: 'Chart Sparkline',
-      route: '/chart-sparkline',
-      configKey: 'chartSparkline',
-      controls: [{ type: 'select', key: 'color', label: 'Color', options: colorOptions }],
-    },
-    {
-      name: 'Chip',
-      route: '/chips',
-      configKey: 'chip',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
-        { type: 'select', key: 'size', label: 'Size', options: buttonSizeOptions },
-        { type: 'toggle', key: 'sharp', label: 'Sharp' },
-      ],
-    },
-    {
-      name: 'Color Picker Input',
-      route: '/color-pickers',
-      configKey: 'colorPickerInput',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'variant', label: 'Variant', options: formFieldVariantOptions },
-        { type: 'select', key: 'size', label: 'Size', options: sizeOptions },
-      ],
-    },
-    {
-      name: 'Editor',
-      route: '/editors',
-      configKey: 'editor',
-      controls: [{ type: 'select', key: 'variant', label: 'Variant', options: editorVariantOptions }],
-    },
-    {
-      name: 'Event Card',
-      route: '/event-cards',
-      configKey: 'eventCard',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
-      ],
-    },
-    {
-      name: 'Icon',
-      route: '/icons',
-      configKey: 'icon',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'size', label: 'Size', options: sizeOptions },
-      ],
-    },
-    {
-      name: 'Progress Bar',
-      route: '/progress-bars',
-      configKey: 'progressBar',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
-      ],
-    },
-    {
-      name: 'Sidenav',
-      route: '/sidenavs',
-      configKey: 'sidenavType',
-      controls: [{ type: 'select', key: 'type', label: 'Type', options: sidenavOptions }],
-    },
-    {
-      name: 'Spinner',
-      route: '/spinners',
-      configKey: 'spinner',
-      controls: [{ type: 'select', key: 'color', label: 'Color', options: colorOptions }],
-    },
-    {
-      name: 'Stepper',
-      route: '/steppers',
-      configKey: 'stepper',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
-      ],
-    },
-    {
-      name: 'Table',
-      route: '/tables',
-      configKey: 'table',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'variant', label: 'Variant', options: tableVariantOptions },
-      ],
-    },
-    {
-      name: 'Tabs',
-      route: '/tabs',
-      configKey: 'tabs',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
-      ],
-    },
+    { name: 'Accordion', route: '/accordions', configKey: 'accordion', controls: [select('variant', 'Variant', options('type-b')), select('size', 'Size', smallOptions)] },
+    { name: 'Alert', route: '/alerts', configKey: 'alert', controls: [color, sheet] },
+    { name: 'Avatar', route: '/avatars', configKey: 'avatar', controls: [color, select('size', 'Size', xsmallOptions)] },
+    { name: 'Breadcrumbs', route: '/breadcrumbs', configKey: 'breadcrumbs', controls: [typeBc, select('size', 'Size', smallOptions)] },
+    { name: 'Button', route: '/buttons', configKey: 'button', controls: [color, sheet, select('size', 'Size', xsmallOptions)] },
+    { name: 'Button Group', route: '/button-groups', configKey: 'buttonGroup', controls: [select('size', 'Size', smallOptions)] },
+    { name: 'Card', route: '/cards', configKey: 'card', controls: [select('variant', 'Variant', options('type-b', 'type-c', 'type-d'))] },
+    { name: 'Chart Sparkline', route: '/chart-sparkline', configKey: 'chartSparkline', controls: [color] },
+    { name: 'Chat', route: '/chats', configKey: 'chat', controls: [color, typeBc] },
+    { name: 'Chip', route: '/chips', configKey: 'chip', controls: [color, sheet, select('size', 'Size', xsmallOptions), toggle('sharp', 'Sharp')] },
+    { name: 'Color Picker Input', route: '/color-pickers', configKey: 'colorPickerInput', controls: [color, select('variant', 'Variant', formFieldVariantOptions), select('size', 'Size', smallOptions)] },
+    { name: 'Editor', route: '/editors', configKey: 'editor', controls: [select('variant', 'Variant', options('document'))] },
+    { name: 'Event Card', route: '/event-cards', configKey: 'eventCard', controls: [color, sheet] },
+    { name: 'Icon', route: '/icons', configKey: 'icon', controls: [color, select('size', 'Size', options('small', 'large'))] },
+    { name: 'Progress Bar', route: '/progress-bars', configKey: 'progressBar', controls: [color, sheet] },
+    { name: 'Sidenav', route: '/sidenavs', configKey: 'sidenavType', controls: [select('type', 'Type', sidenavOptions)] },
+    { name: 'Spinner', route: '/spinners', configKey: 'spinner', controls: [color] },
+    { name: 'Stepper', route: '/steppers', configKey: 'stepper', controls: [color] },
+    { name: 'Table', route: '/tables', configKey: 'table', controls: [select('variant', 'Variant', options('type-a', 'type-b'))] },
+    { name: 'Tabs', route: '/tabs', configKey: 'tabs', controls: [color] },
+    { name: 'Toggle Card', route: '/cards', configKey: 'toggleCard', controls: [select('variant', 'Variant', options('type-a'))] },
+    { name: 'Video', route: '/videos', configKey: 'video', controls: [color, select('variant', 'Variant', options('base', 'edge')), toggle('sharp', 'Sharp')] },
+    { name: 'Video Playlist', route: '/videos', configKey: 'videoPlaylist', controls: [color, toggle('sharp', 'Sharp')] },
   ];
 
   editorFormFields: EditorComponentConfig[] = [
-    {
-      name: 'Checkbox',
-      route: '/checkboxes',
-      configKey: 'checkbox',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
-      ],
-    },
-    {
-      name: 'Datepicker',
-      route: '/datepickers',
-      configKey: 'datepicker',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
-        { type: 'select', key: 'size', label: 'Size', options: sizeOptions },
-      ],
-    },
-    {
-      name: 'Form Field',
-      route: '/form-fields',
-      configKey: 'formField',
-      controls: [
-        { type: 'select', key: 'variant', label: 'Variant', options: formFieldVariantOptions },
-        { type: 'select', key: 'size', label: 'Size', options: sizeOptions },
-      ],
-    },
-    {
-      name: 'Radio',
-      route: '/radio-buttons',
-      configKey: 'radio',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
-      ],
-    },
+    { name: 'Checkbox', route: '/checkboxes', configKey: 'checkbox', controls: [color, sheet] },
+    { name: 'Form Field', route: '/form-fields', configKey: 'formField', controls: [color, select('variant', 'Variant', formFieldVariantOptions), select('size', 'Size', smallOptions)] },
+    { name: 'Radio', route: '/radio-buttons', configKey: 'radio', controls: [color, sheet] },
     {
       name: 'Range Slider',
       route: '/range-sliders',
       configKey: 'rangeSlider',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
-        { type: 'toggle', key: 'sharp', label: 'Sharp' },
-        { type: 'toggle', key: 'alwaysShow', label: 'Always Show Indicator' },
-      ],
+      controls: [color, sheet, select('size', 'Size', smallOptions), toggle('sharp', 'Sharp'), toggle('alwaysShow', 'Always Show Indicator')],
     },
-    {
-      name: 'Select',
-      route: '/selects',
-      configKey: 'select',
-      controls: [
-        { type: 'select', key: 'variant', label: 'Variant', options: formFieldVariantOptions },
-        { type: 'select', key: 'size', label: 'Size', options: sizeOptions },
-      ],
-    },
-    {
-      name: 'Theme Toggle',
-      route: '/theme-toggle',
-      configKey: 'themeToggle',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
-        { type: 'select', key: 'size', label: 'Size', options: buttonSizeOptions },
-      ],
-    },
-    {
-      name: 'Toggle',
-      route: '/toggles',
-      configKey: 'toggle',
-      controls: [
-        { type: 'select', key: 'color', label: 'Color', options: colorOptions },
-        { type: 'select', key: 'variant', label: 'Variant', options: variantOptions },
-      ],
-    },
-    {
-      name: 'Video',
-      route: '/videos',
-      configKey: 'video',
-      controls: [{ type: 'select', key: 'color', label: 'Color', options: colorOptions }],
-    },
-    {
-      name: 'Video Playlist',
-      route: '/videos',
-      configKey: 'videoPlaylist',
-      controls: [{ type: 'select', key: 'color', label: 'Color', options: colorOptions }],
-    },
+    { name: 'Select', route: '/selects', configKey: 'select', controls: [color, select('variant', 'Variant', formFieldVariantOptions), select('size', 'Size', smallOptions)] },
+    { name: 'Theme Toggle', route: '/theme-toggle', configKey: 'themeToggle', controls: [color, sheet, select('size', 'Size', xsmallOptions)] },
+    { name: 'Toggle', route: '/toggles', configKey: 'toggle', controls: [color, sheet] },
   ];
+
+  editorLayouts: EditorComponentConfig[] = [
+    typed('Page', '/layouts/examples', 'layoutPage', [select('size', 'Size', options('small', 'large'))]),
+    typed('Section', '/layouts/examples', 'layoutSection'),
+    typed('Setting', '/layouts/examples', 'layoutSetting'),
+    typed('Empty State', '/layouts/examples', 'layoutEmptyState'),
+    typed('Toolbar', '/layouts/examples', 'layoutToolbar'),
+    {
+      name: 'Stat',
+      route: '/layouts/examples',
+      configKey: 'layoutStat',
+      controls: [select('variant', 'Variant', options('type-b', 'type-c', 'type-d')), color],
+    },
+    typed('Stat Trend', '/layouts/examples', 'layoutStatTrend', [color]),
+    typed('Stat Goal', '/layouts/examples', 'layoutStatGoal', [color]),
+    typed('Stat Ring', '/layouts/examples', 'layoutStatRing', [color]),
+    typed('Ranking', '/layouts/examples', 'layoutRanking', [color]),
+    typed('Achievement', '/layouts/examples', 'layoutAchievement', [color]),
+    typed('Inbox', '/layouts/examples', 'layoutInbox'),
+    typed('Table View', '/layouts/examples', 'layoutTableView'),
+    typed('Details', '/layouts/examples', 'layoutDetails'),
+    typed('Timeline', '/layouts/examples', 'layoutTimeline'),
+  ];
+
+  editorBlocks: EditorComponentConfig[] = [
+    typed('Banner', '/blocks/examples', 'blockBanner', [color]),
+    typed('Header', '/blocks/examples', 'blockHeader'),
+    typed('Hero', '/blocks/examples', 'blockHero', [color]),
+    typed('Logos', '/blocks/examples', 'blockLogos'),
+    typed('Features', '/blocks/examples', 'blockFeatures', [color]),
+    typed('Split', '/blocks/examples', 'blockSplit', [color]),
+    typed('Steps', '/blocks/examples', 'blockSteps', [color]),
+    typed('Stats', '/blocks/examples', 'blockStats', [color]),
+    typed('Testimonials', '/blocks/examples', 'blockTestimonials', [color]),
+    typed('Pricing', '/blocks/examples', 'blockPricing', [color]),
+    typed('FAQ', '/blocks/examples', 'blockFaq', [color]),
+    typed('Call to action', '/blocks/examples', 'blockCta', [color]),
+    typed('Newsletter', '/blocks/examples', 'blockNewsletter', [color]),
+    typed('Team', '/blocks/examples', 'blockTeam'),
+    typed('Posts', '/blocks/examples', 'blockPosts'),
+    typed('Contact', '/blocks/examples', 'blockContact', [color]),
+    typed('Footer', '/blocks/examples', 'blockFooter'),
+  ];
+
+  /** The editor's component sections, in order. */
+  editorGroups: { value: string; title: string; empty: string; items: EditorComponentConfig[] }[] = [
+    { value: 'components', title: 'Components', empty: 'No components found', items: this.editorComponents },
+    { value: 'form-fields', title: 'Form fields', empty: 'No form fields found', items: this.editorFormFields },
+    { value: 'layouts', title: 'Layouts', empty: 'No layouts found', items: this.editorLayouts },
+    { value: 'blocks', title: 'Blocks', empty: 'No blocks found', items: this.editorBlocks },
+  ];
+
+  filteredGroups = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return this.editorGroups;
+    return this.editorGroups.map((group) => ({
+      ...group,
+      items: group.items.filter((comp) => comp.name.toLowerCase().includes(query)),
+    }));
+  });
+
+  isGroupAltered(items: EditorComponentConfig[]) {
+    return items.some((comp) => this.isAltered(comp));
+  }
+
+  resetGroup(items: EditorComponentConfig[]) {
+    items.forEach((comp) => this.resetComponentConfig(comp));
+  }
 
   getComponentConfigValue(compKey: keyof import('ship-ui').ShipConfig, ctrlKey: string): any {
     if (compKey === 'sidenavType') {
@@ -582,13 +414,7 @@ export class ConfigEditor {
            hasCustomColors;
   });
 
-  isComponentsAltered = computed(() => {
-    return this.editorComponents.some((comp) => this.isAltered(comp));
-  });
 
-  isFormFieldsAltered = computed(() => {
-    return this.editorFormFields.some((comp) => this.isAltered(comp));
-  });
 
   readonly styleColors = SHIP_STYLE_COLORS;
   readonly styleVariants = SHIP_STYLE_VARIANTS;
@@ -648,13 +474,7 @@ export class ConfigEditor {
     this.configService.updateConfig({ fontSize: undefined, borderRadius: undefined, borderWidth: undefined, paddingY: undefined, paddingX: undefined, fontFamily: undefined, distribution: undefined, colors: undefined });
   }
 
-  resetComponentsConfig() {
-    this.editorComponents.forEach((comp) => this.resetComponentConfig(comp));
-  }
 
-  resetFormFieldsConfig() {
-    this.editorFormFields.forEach((comp) => this.resetComponentConfig(comp));
-  }
 
   updateAlertVariant(variant: any) {
     this.configService.updateConfig({

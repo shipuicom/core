@@ -2,7 +2,7 @@
 
 @layer ship {
   sh-lo-ranking {
-    --ranking-gap: var(--space-3);
+    --ranking-gap: var(--gap-y-3);
     --ranking-bar-h: #{p2r(6)};
     --ranking-bar-s: #{p2r(999)};
     --ranking-c: var(--c-8, var(--primary-8));
@@ -17,7 +17,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: var(--space-3);
+      gap: var(--gap-x-3);
 
       &:not(:has(> *:not(.actions))):not(:has(> .actions > *)) {
         display: none;
@@ -33,7 +33,7 @@
       > .actions {
         display: flex;
         align-items: center;
-        gap: var(--space-2);
+        gap: var(--gap-x-2);
 
         &:empty {
           display: none;
@@ -51,14 +51,14 @@
     > .items > sh-lo-ranking-item {
       display: flex;
       flex-direction: column;
-      gap: var(--space-1);
+      gap: var(--gap-y-1);
       min-width: 0;
       position: relative;
 
       > .row {
         display: flex;
         align-items: center;
-        gap: var(--space-3);
+        gap: var(--gap-x-3);
         min-width: 0;
         font: var(--paragraph-30);
 
@@ -111,7 +111,7 @@
 
     // Bar as a tinted background behind the whole row.
     &.type-b {
-      --ranking-gap: var(--space-2);
+      --ranking-gap: var(--gap-y-2);
 
       > .items > sh-lo-ranking-item {
         padding: var(--pad-y-3) var(--pad-x-3);

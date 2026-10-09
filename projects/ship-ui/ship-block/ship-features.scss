@@ -1,0 +1,149 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+@layer ship {
+  sh-bl-features {
+    --features-bg: transparent;
+    --features-c: var(--base-12);
+    --features-mw: var(--block-mw);
+    --features-py: var(--block-py);
+    --features-px: var(--block-px);
+    --features-gap: var(--gap-y-7);
+    --features-cols: 3;
+    --features-row-gap: var(--gap-y-6);
+    --features-col-gap: var(--gap-x-6);
+    --features-ec: var(--c-9, var(--primary-9));
+    --features-ic: var(--c-9, var(--primary-9));
+    --features-ibg: var(--c-3, var(--primary-3));
+    --features-is: var(--shape-2);
+    --features-item-bg: var(--base-1);
+    --features-item-bc: var(--base-4);
+    --features-item-s: var(--shape-3);
+    --features-item-p: var(--space-5);
+
+    @include frame(features);
+    @include head(features);
+
+    > .inner > .items {
+      display: grid;
+      grid-template-columns: repeat(var(--features-cols), minmax(0, 1fr));
+      gap: var(--features-row-gap) var(--features-col-gap);
+    }
+
+    sh-bl-feature {
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap-y-4);
+      min-width: 0;
+
+      > .icon {
+        display: flex;
+
+        &:empty {
+          display: none;
+        }
+
+        > sh-icon,
+        > [icon] {
+          // sh-icon caps its box at 1em, so the tile is the padding around a 1em glyph.
+          box-sizing: content-box;
+          display: grid;
+          place-items: center;
+          padding: #{p2r(11)};
+          font-size: #{p2r(22)};
+          color: var(--features-ic);
+          background-color: var(--features-ibg);
+          border-radius: var(--features-is);
+        }
+
+        > img {
+          width: #{p2r(44)};
+          height: #{p2r(44)};
+          object-fit: contain;
+        }
+      }
+
+      > .text {
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap-y-2);
+
+        > h3,
+        > [title] {
+          font: var(--paragraph-10B);
+          color: var(--base-12);
+        }
+
+        > p,
+        > [description] {
+          font: var(--paragraph-20);
+          color: var(--base-11);
+          text-wrap: pretty;
+        }
+
+        > a {
+          font: var(--paragraph-30B);
+          color: var(--features-ic);
+          margin-top: var(--gap-y-1);
+        }
+      }
+    }
+
+    // Cards: every feature on its own surface.
+    &.type-b {
+      --features-row-gap: var(--gap-y-4);
+      --features-col-gap: var(--gap-x-4);
+
+      sh-bl-feature {
+        padding: var(--features-item-p);
+        background-color: var(--features-item-bg);
+        border: var(--border-10);
+        border-color: var(--features-item-bc);
+        border-radius: var(--features-item-s);
+      }
+    }
+
+    // Side by side: the header in a left column, a two-column list of icon-left features on the right.
+    &.type-c {
+      --features-cols: 2;
+
+      > .inner {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+        column-gap: var(--gap-x-7);
+        align-items: start;
+      }
+
+      > .inner > .head {
+        align-items: flex-start;
+        margin-inline: 0;
+        text-align: start;
+
+        > .actions {
+          justify-content: flex-start;
+        }
+      }
+
+      sh-bl-feature {
+        flex-direction: row;
+        gap: var(--gap-x-4);
+      }
+    }
+
+    @include below($medium) {
+      > .inner > .items {
+        --features-cols: 2;
+      }
+
+      &.type-c > .inner {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @include below($narrow) {
+      > .inner > .items {
+        --features-cols: 1;
+      }
+    }
+  }
+}

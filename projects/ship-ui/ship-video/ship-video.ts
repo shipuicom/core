@@ -84,7 +84,7 @@ function isHlsSource(source: ShipVideoSource | undefined): boolean {
     '(keydown)': 'onKeydown($event)',
     '(pointerdown)': 'onHostPointerDown($event)',
     '(pointermove)': 'wakeControls()',
-    '(pointerleave)': 'sleepControls()',
+    '(pointerleave)': 'onHostPointerLeave($event)',
     '(document:fullscreenchange)': 'syncFullscreenState()',
     '(document:visibilitychange)': 'syncVisibility()',
   },
@@ -1056,7 +1056,12 @@ export class ShipVideo {
       if (this.state.playing() && !keyboardFocused) {
         this.state.controlsVisible.set(false);
       }
-    }, CONTROLS_IDLE_TIMEOUT);
+    }, idleTimeout);
+  }
+
+  onHostPointerLeave(event: PointerEvent) {
+    // a lifted finger or pen also "leaves" the host, right after every tap; only a mouse leaving hides the bar
+    if (event.pointerType === 'mouse') this.sleepControls();
   }
 
   sleepControls() {

@@ -331,6 +331,16 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'blocks',
+        loadComponent: () => import('./ship/blocks/blocks'),
+        children: [
+          { path: '', loadComponent: () => import('./ship/blocks/blocks-overview') },
+          { path: 'api', loadComponent: () => import('./ship/blocks/blocks-api') },
+          { path: 'examples', loadComponent: () => import('./ship/blocks/blocks-examples') },
+          fallbackOverview,
+        ],
+      },
+      {
         path: 'cards',
         loadComponent: () => import('./ship/cards/cards'),
         children: [

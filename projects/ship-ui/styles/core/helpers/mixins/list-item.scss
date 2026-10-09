@@ -10,7 +10,7 @@
   color: var(--list-c, var(--base-9));
   display: flex;
   align-items: center;
-  gap: var(--list-item-gap, #{p2r(8)});
+  gap: var(--list-item-gap, var(--gap-x-2));
   width: 100%;
   user-select: none;
   appearance: none;

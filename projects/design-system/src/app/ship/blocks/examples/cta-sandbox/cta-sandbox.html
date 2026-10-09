@@ -1,0 +1,20 @@
+<sh-bl-cta [variant]="variant()" [color]="color()">
+  <span eyebrow>Ready when you are</span>
+  <h2>Build your next landing page today</h2>
+  <p>Start with the free blocks and upgrade when your team grows. Your theme comes along.</p>
+
+  <!-- On the solid type-b panel the plain base button is the high-contrast choice. -->
+  <button
+    shButton
+    [variant]="variant() === 'type-b' ? null : 'raised'"
+    [color]="variant() === 'type-b' ? null : color()">
+    Start building free
+  </button>
+  @if (variant() !== 'type-b') {
+    <a shButton variant="outlined" href="#">
+      <sh-icon>chat-circle</sh-icon>
+      Talk to sales
+    </a>
+  }
+  <small>Free for open source · No credit card required</small>
+</sh-bl-cta>

@@ -1,0 +1,13 @@
+<sh-bl-features [variant]="variant()" [color]="color()">
+  <span eyebrow>Why ShipUI</span>
+  <h2>Everything a product site needs</h2>
+  <p>Blocks are slot based: drop the parts in and they arrange themselves at any width.</p>
+
+  @for (feature of features; track feature.title) {
+    <sh-bl-feature>
+      <sh-icon>{{ feature.icon }}</sh-icon>
+      <h3>{{ feature.title }}</h3>
+      <p>{{ feature.text }}</p>
+    </sh-bl-feature>
+  }
+</sh-bl-features>

@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `@ship-ui/core/ship-block`: website blocks, slot based like the layouts. Site chrome (`sh-bl-banner`,
+  `sh-bl-header` with a built-in mobile menu, `sh-bl-footer`), marketing (`sh-bl-hero`, `sh-bl-logos`,
+  `sh-bl-features`, `sh-bl-split`, `sh-bl-steps`, `sh-bl-cta`), conversion (`sh-bl-pricing`, `sh-bl-testimonials`,
+  `sh-bl-faq`, `sh-bl-newsletter`) and content (`sh-bl-stats`, `sh-bl-team`, `sh-bl-posts`, `sh-bl-contact`). Every
+  block has a default, `type-b` and `type-c` variant (ShipConfig `block<Name>`), reflows at its own width through
+  container queries, and reads the new `--block-mw` / `--block-py` / `--block-px` tokens.
+- MCP prompt `implement_website`.
+- Gap tiers `--gap-y-1..8` / `--gap-x-1..8`: row gaps follow `--pad-y`, column gaps `--pad-x`. Every component's gaps
+  now read them, so the density knobs move gaps as well as padding. At the default density they equal `--space-1..8`,
+  so nothing moves; `--space-N` stays as the fixed scale.
+
+### Fixed
+
+- Dark `--error-5` and `--success-2` sat off their scale (near-black and grey); they are back on the curve.
+
 ## 0.27.1
 
 ### Fixed

@@ -72,6 +72,10 @@ A component's whole style, structure and skin, lives in `ship-<name>.scss`, insi
 - Styles live in the `.scss` file (`styleUrl`), never in an inline `styles:` block (`inline-styles` rule), so the
   helpers and every rule here apply. The same rules run over `styles/skins`, `styles/core` and `src/lib`.
 - Sizes go through `p2r()`. No raw `px` except `1px`/`2px` hairlines and outlines.
+- Density: padding reads a `--pad-y-N` / `--pad-x-N` tier through the component's `--<abbr>-py` / `--<abbr>-px`;
+  gaps read a gap tier by axis: `--gap-y-N` between stacked items (row gap), `--gap-x-N` between items side by side
+  (column gap), both on a grid or a wrapping row (`gap: var(--gap-y-3) var(--gap-x-3)`). `--space-N` is the fixed
+  scale for spacing that must not follow the density.
 - No hardcoded fallback in `var()` (`var-fallback` rule): declare the token's default on the component instead.
   Another `var()`, a Sass variable, `0` or a keyword (`auto`, `none`, `currentColor`) is fine.
 - Colour only through tokens: `--base-1..12`, `--<color>-1..12`, `--<color>-g2/g3`, `--<color>-c8` (contrast text

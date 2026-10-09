@@ -27,7 +27,7 @@
       font: var(--paragraph-30B);
       color: var(--base-8);
       display: flex;
-      gap: p2r(4);
+      gap: var(--gap-x-1);
 
       &.active-start .start-val {
         color: var(--primary-8);

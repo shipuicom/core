@@ -7,7 +7,7 @@
     --ring-py: var(--pad-y-6);
     --ring-px: var(--pad-x-6);
     --ring-s: var(--shape-3);
-    --ring-gap: var(--space-4);
+    --ring-gap: var(--gap-x-4);
     --ring-size: #{p2r(72)};
     --ring-w: #{p2r(7)};
     --ring-c: var(--c-8, var(--primary-8));
@@ -51,7 +51,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: var(--space-1);
+        gap: var(--gap-y-1);
         padding: var(--ring-w);
         font: var(--paragraph-30B);
         font-variant-numeric: tabular-nums;
@@ -78,7 +78,7 @@
     > .text {
       display: flex;
       flex-direction: column;
-      gap: var(--space-1);
+      gap: var(--gap-y-1);
       min-width: 0;
 
       > p,
@@ -112,6 +112,7 @@
       }
 
       flex-direction: column;
+      gap: var(--gap-y-4);
       text-align: center;
 
       > .text {
@@ -130,7 +131,7 @@
       --ring-w: #{p2r(4)};
       --ring-py: 0;
       --ring-px: 0;
-      --ring-gap: var(--space-3);
+      --ring-gap: var(--gap-x-3);
 
       > .ring > .center {
         font: var(--paragraph-40B);

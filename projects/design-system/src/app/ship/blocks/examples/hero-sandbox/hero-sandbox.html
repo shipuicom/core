@@ -1,0 +1,19 @@
+<sh-bl-hero [variant]="variant()" [color]="color()">
+  <sh-chip eyebrow size="small" variant="outlined" [color]="color()">New · Blocks for every page</sh-chip>
+  <h1>
+    Ship landing pages
+    <em>in an afternoon</em>
+  </h1>
+  <p>Headers, heroes, pricing and footers that follow your theme, so the marketing site matches the product.</p>
+  <button shButton variant="raised" [color]="color()">Get started</button>
+  <button shButton variant="outlined">
+    <sh-icon>play</sh-icon>
+    Watch the demo
+  </button>
+  <small>Free for open source · No credit card</small>
+  @if (variant() === 'type-c') {
+    <img src="/examples/blocks/cover.svg" alt="" />
+  } @else {
+    <img src="/examples/blocks/product.svg" alt="The ShipUI dashboard with revenue charts" />
+  }
+</sh-bl-hero>

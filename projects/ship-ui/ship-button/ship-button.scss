@@ -102,7 +102,7 @@
       --btn-f: var(--paragraph-40);
 
       --btn-px: var(--pad-x-2);
-      gap: p2r(4);
+      gap: var(--gap-x-1);
 
       sh-icon {
         font-size: p2r(12);

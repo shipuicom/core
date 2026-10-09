@@ -4,7 +4,7 @@
   dialog[shDialog] {
     --dialog-py: var(--pad-y-5);
     --dialog-px: var(--pad-x-5);
-    --dialog-g: #{p2r(8)};
+    --dialog-g: var(--gap-x-2);
     --dialog-bg: var(--base-1);
     --dialog-s: var(--shape-2);
     --dialog-inner-s: var(--shape-2);
@@ -192,7 +192,7 @@
         'description actions';
       grid-template-columns: 1fr min-content;
       padding: var(--dialog-py) var(--dialog-px);
-      gap: var(--dialog-g);
+      gap: var(--gap-y-2) var(--dialog-g);
 
       h1,
       h2,

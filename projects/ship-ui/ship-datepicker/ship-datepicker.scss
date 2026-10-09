@@ -9,7 +9,7 @@
   sh-datepicker.sharp {
     --dp-sel-s: var(--shape-1);
     --dp-ar: 1/0.8;
-    --dp-day-g: #{p2r(8 0)};
+    --dp-day-g: var(--gap-y-2) 0;
   }
 
   sh-datepicker {
@@ -21,7 +21,7 @@
     --dp-sel-s: 50%;
     --dp-sel-c: var(--c-c8, var(--light-text));
     --dp-day-c: var(--base-8);
-    --dp-day-g: #{p2r(4 0)};
+    --dp-day-g: var(--gap-y-1) 0;
     --dp-day-f: var(--paragraph-20);
     --dp-w: #{p2r(300)};
     --dp-ar: 1/1;

@@ -1,0 +1,18 @@
+<sh-bl-banner [variant]="variant()" [color]="color()" dismissible [(open)]="open">
+  <sh-icon>sparkle</sh-icon>
+  <span>
+    <b>ShipUI 0.28</b>
+    · Website blocks are here: headers, pricing, footers and more.
+  </span>
+  <a href="#">
+    Read the release notes
+    <sh-icon>arrow-right</sh-icon>
+  </a>
+</sh-bl-banner>
+
+@if (!open()) {
+  <button shButton variant="outlined" size="small" (click)="open.set(true)">
+    <sh-icon>arrow-counter-clockwise</sh-icon>
+    Show the banner again
+  </button>
+}

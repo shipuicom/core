@@ -11,7 +11,7 @@
     --tabs-sel-bg: var(--c-8, var(--base-12));
 
     display: flex;
-    gap: p2r(16);
+    gap: var(--gap-x-4);
     border-bottom: var(--border-10);
     position: relative;
     overflow-x: auto;
@@ -27,7 +27,7 @@
     [value] {
       display: flex;
       align-items: center;
-      gap: p2r(8);
+      gap: var(--gap-x-2);
       height: p2r(48);
       font: var(--tabs-f);
       background: var(--tabs-bg);
