@@ -197,7 +197,7 @@
         </summary>
         <sh-accordion [(value)]="openAccordion">
           @for (comp of filteredEditorComponents(); track comp.name) {
-            <details (toggle)="onAccordionToggle($event, comp.route)" [attr.value]="comp.route">
+            <details (toggle)="onAccordionToggle($event, comp.route)" [attr.value]="comp.configKey">
               <summary>
                 {{ comp.name }}
                 @if (isAltered(comp)) {
@@ -273,7 +273,7 @@
         </summary>
         <sh-accordion [(value)]="openAccordion">
           @for (comp of filteredEditorFormFields(); track comp.name) {
-            <details (toggle)="onAccordionToggle($event, comp.route)" [attr.value]="comp.route">
+            <details (toggle)="onAccordionToggle($event, comp.route)" [attr.value]="comp.configKey">
               <summary>
                 {{ comp.name }}
                 @if (isAltered(comp)) {
