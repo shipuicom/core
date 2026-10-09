@@ -2,7 +2,7 @@
 
 @layer ship {
   sh-lo-details {
-    --details-gap: var(--space-3);
+    --details-gap: var(--gap-y-3);
     --details-term-w: #{p2r(160)};
     --details-term-c: var(--base-8);
     --details-cols: #{p2r(160)};
@@ -16,7 +16,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: var(--space-3);
+      gap: var(--gap-x-3);
 
       &:not(:has(> *:not(.actions))):has(> .actions:empty) {
         display: none;
@@ -30,7 +30,7 @@
 
       > .actions {
         display: flex;
-        gap: var(--space-2);
+        gap: var(--gap-x-2);
 
         &:empty {
           display: none;
@@ -47,7 +47,7 @@
     sh-lo-detail {
       display: flex;
       align-items: baseline;
-      gap: var(--space-2) var(--space-4);
+      gap: var(--gap-y-2) var(--gap-x-4);
       padding-block: var(--details-gap);
       min-width: 0;
 
@@ -84,12 +84,12 @@
       > .body {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(var(--details-cols), 1fr));
-        gap: var(--space-4) var(--space-5);
+        gap: var(--gap-y-4) var(--gap-x-5);
       }
 
       sh-lo-detail {
         flex-direction: column;
-        gap: var(--space-1);
+        gap: var(--gap-y-1);
         padding: 0;
 
         & + sh-lo-detail {
@@ -104,7 +104,7 @@
 
     // Compact: tight inline pairs, no dividers.
     &.type-c {
-      --details-gap: var(--space-1);
+      --details-gap: var(--gap-y-1);
 
       sh-lo-detail {
         & + sh-lo-detail {
@@ -121,7 +121,7 @@
     @include breakpoint(-nano) {
       &:not(.type-b):not(.type-c) sh-lo-detail {
         flex-direction: column;
-        gap: var(--space-1);
+        gap: var(--gap-y-1);
 
         > .term {
           flex-basis: auto;

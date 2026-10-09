@@ -1,0 +1,247 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+@layer ship {
+  sh-bl-contact {
+    --contact-bg: transparent;
+    --contact-c: var(--base-12);
+    --contact-mw: var(--block-mw);
+    --contact-py: var(--block-py);
+    --contact-px: var(--block-px);
+    --contact-gap: var(--gap-y-6);
+    --contact-col-gap: var(--gap-x-8);
+    --contact-ec: var(--c-9, var(--primary-9));
+    --contact-ic: var(--c-9, var(--primary-9));
+    --contact-ibg: var(--c-3, var(--primary-3));
+    --contact-is: var(--shape-2);
+    --contact-ip: #{p2r(10)};
+    --contact-dc: var(--base-11);
+    --contact-lc: var(--base-12);
+    --contact-fp: var(--space-6);
+    --contact-fbg: var(--base-1);
+    --contact-fbc: var(--base-4);
+    --contact-fs: var(--shape-4);
+    --contact-fsh: none;
+    --contact-fmw: #{p2r(640)};
+    --contact-ms: var(--shape-3);
+    --contact-mbc: var(--base-4);
+
+    @include frame(contact);
+    @include head(contact);
+
+    // Split: the header, details and extras on the left, the form on the right.
+    > .inner {
+      display: grid;
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      grid-template-rows: auto auto 1fr;
+      grid-template-areas:
+        'head form'
+        'details form'
+        'extra form';
+      align-items: start;
+      column-gap: var(--contact-col-gap);
+    }
+
+    > .inner > .head {
+      grid-area: head;
+    }
+
+    &:not(.type-b) > .inner > .head {
+      align-items: flex-start;
+      max-width: none;
+      margin-inline: 0;
+      text-align: start;
+    }
+
+    > .inner > .details {
+      grid-area: details;
+
+      &:empty {
+        display: none;
+      }
+
+      > ul,
+      > dl,
+      > address,
+      > [details] {
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap-y-5);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font: var(--paragraph-20);
+        font-style: normal;
+        color: var(--contact-dc);
+      }
+
+      // A method: the icon tile, then a label (`b`, `dt`) over the value, or just the value.
+      > * > :is(li, div, p) {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        column-gap: var(--gap-x-4);
+        margin: 0;
+
+        > sh-icon {
+          grid-row: span 2;
+          box-sizing: content-box;
+          padding: var(--contact-ip);
+          line-height: 1;
+          color: var(--contact-ic);
+          background-color: var(--contact-ibg);
+          border-radius: var(--contact-is);
+        }
+
+        > b,
+        > strong,
+        > dt {
+          font: var(--paragraph-30B);
+          color: var(--contact-lc);
+        }
+
+        > dd {
+          margin: 0;
+        }
+
+        a {
+          color: var(--contact-lc);
+          text-decoration: none;
+          text-underline-offset: 0.15em;
+          border-radius: var(--shape-1);
+
+          &:hover {
+            text-decoration: underline;
+          }
+
+          &:focus-visible {
+            outline: 2px solid var(--primary-8);
+            outline-offset: 2px;
+          }
+        }
+      }
+    }
+
+    > .inner > .form {
+      grid-area: form;
+      box-sizing: border-box;
+      padding: var(--contact-fp);
+      background-color: var(--contact-fbg);
+      border: var(--border-10);
+      border-color: var(--contact-fbc);
+      border-radius: var(--contact-fs);
+      box-shadow: var(--contact-fsh);
+
+      &:empty {
+        display: none;
+      }
+
+      > form,
+      > [form] {
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap-y-4);
+        margin: 0;
+
+        > [row] {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: var(--gap-y-4) var(--gap-x-4);
+        }
+
+        > small {
+          font: var(--paragraph-40);
+          color: var(--contact-dc);
+        }
+      }
+    }
+
+    > .inner > .extra {
+      grid-area: extra;
+      min-width: 0;
+
+      &:empty {
+        display: none;
+      }
+
+      > img,
+      > picture,
+      > iframe {
+        display: block;
+        width: 100%;
+        height: auto;
+        border: var(--border-10);
+        border-color: var(--contact-mbc);
+        border-radius: var(--contact-ms);
+      }
+    }
+
+    // Centered: the header, a row of methods and the form below in one column.
+    &.type-b {
+      > .inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      > .inner > .details {
+        > ul,
+        > dl,
+        > address,
+        > [details] {
+          flex-direction: row;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: var(--gap-y-5) var(--gap-x-7);
+        }
+      }
+
+      > .inner > .form,
+      > .inner > .extra {
+        width: 100%;
+        max-width: var(--contact-fmw);
+      }
+    }
+
+    // Band: the form card lifted off a tinted full-bleed background.
+    &.type-c {
+      --contact-bg: var(--c-2, var(--base-2));
+      --contact-ibg: var(--base-1);
+      --contact-fbc: transparent;
+      --contact-fsh: var(--box-shadow-50);
+    }
+
+    @include below($medium) {
+      > .inner {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: none;
+        grid-template-areas:
+          'head'
+          'details'
+          'form'
+          'extra';
+      }
+    }
+
+    @include below($narrow) {
+      > .inner {
+        --contact-fp: var(--space-5);
+      }
+
+      > .inner > .form > form > [row],
+      > .inner > .form > [form] > [row] {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      &.type-b > .inner > .details {
+        > ul,
+        > dl,
+        > address,
+        > [details] {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    }
+  }
+}

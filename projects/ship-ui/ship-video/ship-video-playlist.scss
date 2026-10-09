@@ -31,7 +31,7 @@
     .sh-video-playlist-item {
       display: grid;
       grid-template-columns: p2r(112) 1fr auto;
-      gap: p2r(12);
+      gap: var(--gap-y-3) var(--gap-x-3);
       align-items: center;
       padding: p2r(8) p2r(14) p2r(8) p2r(8);
       border: 0;

@@ -1,0 +1,24 @@
+@use '../showcase' as *;
+
+:host {
+  @extend %tab-host;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: p2r(20);
+}
+
+app-landing-page-example,
+app-company-page-example {
+  display: block;
+  width: 100%;
+}
+
+// Label for the sandbox controls projected into the previewer's controls bar.
+.controls-label {
+  font: var(--paragraph-30B);
+  color: var(--base-12);
+  margin: 0;
+}

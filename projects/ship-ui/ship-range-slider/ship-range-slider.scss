@@ -37,7 +37,7 @@
   sh-range-slider {
     --rs-h: #{p2r(40)};
     --rs-f: var(--paragraph-30);
-    --rs-unit-g: #{p2r(12)};
+    --rs-unit-g: var(--gap-x-3);
     --rs-unit-c: var(--base-8);
     --rst: var(--base-3);
     --rst-bc: var(--base-1);
@@ -67,13 +67,13 @@
     .label {
       display: flex;
       align-items: center;
-      gap: p2r(8);
+      gap: var(--gap-x-2);
       padding-bottom: p2r(4);
 
       > label {
         display: flex;
         align-items: center;
-        gap: p2r(4);
+        gap: var(--gap-x-1);
       }
 
       sh-icon {

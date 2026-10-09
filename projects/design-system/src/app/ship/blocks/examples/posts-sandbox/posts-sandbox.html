@@ -1,0 +1,28 @@
+<sh-bl-posts [variant]="variant()">
+  <span eyebrow>Blog</span>
+  <h2>From the ShipUI team</h2>
+  <p>Release notes, deep dives and the occasional opinion about CSS.</p>
+  <a shButton actions href="#" variant="outlined">
+    View all posts
+    <sh-icon>arrow-right</sh-icon>
+  </a>
+
+  @for (post of posts; track post.title) {
+    <sh-bl-post>
+      <img [src]="post.image" alt="" />
+      <sh-chip size="small" variant="simple" [color]="post.color">{{ post.category }}</sh-chip>
+      <span meta>
+        <time [attr.datetime]="post.date">{{ post.dateLabel }}</time>
+        · {{ post.readTime }} min read
+      </span>
+      <h3>
+        <a href="#">{{ post.title }}</a>
+      </h3>
+      <p>{{ post.excerpt }}</p>
+      <footer>
+        <sh-avatar size="small" [name]="post.author" />
+        {{ post.author }}
+      </footer>
+    </sh-bl-post>
+  }
+</sh-bl-posts>

@@ -1,0 +1,192 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+@layer ship {
+  sh-bl-hero {
+    --hero-bg: transparent;
+    --hero-c: var(--base-12);
+    --hero-mw: var(--block-mw);
+    --hero-py: calc(var(--block-py) * 1.5);
+    --hero-px: var(--block-px);
+    --hero-gap: var(--gap-y-7);
+    --hero-tw: #{p2r(760)};
+    --hero-ac: var(--c-9, var(--primary-9));
+    --hero-dc: var(--base-11);
+    --hero-ms: var(--shape-4);
+    --hero-mbc: var(--base-4);
+    --hero-mh: #{p2r(560)};
+
+    @include frame(hero);
+
+    > .inner {
+      align-items: center;
+    }
+
+    > .inner > .text {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--gap-y-4);
+      max-width: var(--hero-tw);
+      text-align: center;
+
+      > [eyebrow] {
+        font: var(--paragraph-30B);
+        color: var(--hero-ac);
+      }
+
+      > h1,
+      > h2 {
+        font: var(--display-40);
+        color: var(--hero-c);
+        letter-spacing: -0.02em;
+        text-wrap: balance;
+
+        > em {
+          font-style: normal;
+          color: var(--hero-ac);
+        }
+      }
+
+      > p,
+      > [description] {
+        font: var(--paragraph-10);
+        color: var(--hero-dc);
+        text-wrap: pretty;
+      }
+
+      > .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: var(--gap-y-3) var(--gap-x-3);
+        margin-top: var(--gap-y-3);
+
+        &:empty {
+          display: none;
+        }
+      }
+
+      > small {
+        font: var(--paragraph-40);
+        color: var(--hero-dc);
+      }
+    }
+
+    > .inner > .media {
+      width: 100%;
+
+      &:empty {
+        display: none;
+      }
+
+      > img,
+      > video,
+      > picture,
+      > [media] {
+        display: block;
+        width: 100%;
+        height: auto;
+        border: var(--border-10);
+        border-color: var(--hero-mbc);
+        border-radius: var(--hero-ms);
+        box-shadow: var(--box-shadow-50);
+      }
+
+      > picture > img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: inherit;
+      }
+    }
+
+    // Split: text beside the media.
+    &.type-b {
+      > .inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: var(--gap-x-7);
+        align-items: center;
+      }
+
+      > .inner > .text {
+        align-items: flex-start;
+        text-align: start;
+
+        > .actions {
+          justify-content: flex-start;
+        }
+      }
+    }
+
+    // Cover: the media fills the block behind the text, under a scrim.
+    &.type-c {
+      --hero-c: var(--light-text);
+      --hero-dc: rgb(from var(--light-text) r g b / 0.85);
+      --hero-ac: var(--c-6, var(--light-text));
+
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+
+      > .inner {
+        justify-content: center;
+        min-height: var(--hero-mh);
+      }
+
+      > .inner > .media {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+
+        &::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            to top,
+            rgb(from var(--dark-text) r g b / 0.75),
+            rgb(from var(--dark-text) r g b / 0.35)
+          );
+        }
+
+        > img,
+        > video,
+        > picture,
+        > [media],
+        > picture > img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border: 0;
+          border-radius: 0;
+          box-shadow: none;
+        }
+      }
+    }
+
+    @include below($medium) {
+      > .inner > .text > h1,
+      > .inner > .text > h2 {
+        font: var(--display-50);
+      }
+
+      &.type-b > .inner {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @include below($narrow) {
+      > .inner > .text > h1,
+      > .inner > .text > h2 {
+        font: var(--title-10B);
+      }
+
+      > .inner > .text > p,
+      > .inner > .text > [description] {
+        font: var(--paragraph-20);
+      }
+    }
+  }
+}

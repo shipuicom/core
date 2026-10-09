@@ -40,7 +40,7 @@
     background-size: p2r(24) 100%, p2r(24) 100%, p2r(8) 100%, p2r(8) 100%;
     background-attachment: local, local, scroll, scroll;
     padding: p2r(3);
-    gap: p2r(4);
+    gap: var(--gap-x-1);
     border: 0;
     border-radius: var(--btng-s);
 
@@ -56,7 +56,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: p2r(8);
+      gap: var(--gap-x-2);
       position: relative;
       padding: var(--btng-py) var(--btng-px);
       min-width: auto;

@@ -14,7 +14,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-4);
+    gap: var(--gap-y-4);
     padding: var(--ach-py) var(--ach-px);
     text-align: center;
     background-color: var(--ach-bg);
@@ -88,7 +88,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--space-1);
+      gap: var(--gap-y-1);
       min-width: 0;
 
       > .title {
@@ -96,7 +96,7 @@
         flex-wrap: wrap;
         align-items: center;
         justify-content: center;
-        gap: var(--space-2);
+        gap: var(--gap-y-2) var(--gap-x-2);
 
         > h2,
         > h3,
@@ -113,7 +113,7 @@
       }
 
       > .meta {
-        margin-top: var(--space-1);
+        margin-top: var(--gap-y-1);
         font: var(--paragraph-40);
         color: var(--base-8);
 
@@ -152,6 +152,7 @@
       --ach-icon: #{p2r(26)};
 
       flex-direction: row;
+      gap: var(--gap-x-4);
       align-items: center;
       text-align: left;
       background-image: radial-gradient(60% 120% at 0% 50%, rgb(from var(--ach-c) r g b / 0.16), transparent 70%);
@@ -177,7 +178,7 @@
 
       flex-direction: row;
       display: inline-flex;
-      gap: var(--space-2);
+      gap: var(--gap-x-2);
       text-align: left;
       border-radius: #{p2r(999)};
       background-image: none;

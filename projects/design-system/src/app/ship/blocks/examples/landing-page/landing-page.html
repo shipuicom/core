@@ -1,0 +1,190 @@
+<sh-bl-banner color="primary" dismissible>
+  <sh-icon>sparkle</sh-icon>
+  <span>
+    <b>Acme 2.0</b>
+    · Real-time sync is live for every workspace.
+  </span>
+  <a href="#">
+    See what's new
+    <sh-icon>arrow-right</sh-icon>
+  </a>
+</sh-bl-banner>
+
+<header>
+  <sh-bl-header>
+    <a logo href="#">
+      <sh-icon>sailboat</sh-icon>
+      Acme
+    </a>
+    <nav aria-label="Main">
+      <a href="#" aria-current="page">Product</a>
+      <a href="#">Customers</a>
+      <a href="#">Pricing</a>
+      <a href="#">Docs</a>
+    </nav>
+    <a shButton actions href="#" variant="outlined">Sign in</a>
+    <a shButton actions href="#" variant="raised" color="primary">Start free</a>
+  </sh-bl-header>
+</header>
+
+<main>
+  <sh-bl-hero variant="type-b">
+    <sh-chip eyebrow size="small" variant="outlined" color="primary">Now with real-time sync</sh-chip>
+    <h1>
+      The workspace your team
+      <em>actually opens</em>
+    </h1>
+    <p>Plan, track and ship in one place. Acme keeps roadmaps, docs and metrics side by side, so nobody asks where things are.</p>
+    <a shButton href="#" variant="raised" color="primary">Start free</a>
+    <a shButton href="#" variant="outlined">
+      <sh-icon>play</sh-icon>
+      Watch the tour
+    </a>
+    <small>Free for teams up to 5 · No credit card</small>
+    <img src="/examples/blocks/product.svg" alt="The Acme dashboard with revenue and activity panels" />
+  </sh-bl-hero>
+
+  <sh-bl-logos>
+    <p>Trusted by 4,000+ teams</p>
+    <span logo><sh-icon>hexagon</sh-icon>Hexacorp</span>
+    <span logo><sh-icon>compass</sh-icon>Northvale</span>
+    <span logo><sh-icon>triangle</sh-icon>Peakform</span>
+    <span logo><sh-icon>lightning</sh-icon>Voltwave</span>
+    <span logo><sh-icon>planet</sh-icon>Orbitly</span>
+  </sh-bl-logos>
+
+  <sh-bl-features>
+    <span eyebrow>Features</span>
+    <h2>Everything in one place</h2>
+    <p>Stop stitching five tools together. Acme covers the whole loop from idea to release.</p>
+
+    @for (feature of features; track feature.title) {
+      <sh-bl-feature>
+        <sh-icon>{{ feature.icon }}</sh-icon>
+        <h3>{{ feature.title }}</h3>
+        <p>{{ feature.text }}</p>
+      </sh-bl-feature>
+    }
+  </sh-bl-features>
+
+  <sh-bl-split>
+    <span eyebrow>Insights</span>
+    <h2>Know what moved the needle</h2>
+    <p>Every release links to the metrics it changed, so the retro writes itself.</p>
+    <ul>
+      <li>Dashboards built from your own events</li>
+      <li>Release annotations on every chart</li>
+      <li>Weekly digest for the whole team</li>
+    </ul>
+    <a shButton href="#" variant="outlined">
+      Explore insights
+      <sh-icon>arrow-right</sh-icon>
+    </a>
+    <img src="/examples/blocks/product.svg" alt="Acme insights with a revenue chart" />
+  </sh-bl-split>
+
+  <sh-bl-stats variant="type-c">
+    <sh-bl-stat>
+      <b>4,000+</b>
+      <p>Teams</p>
+    </sh-bl-stat>
+    <sh-bl-stat>
+      <b>99.99%</b>
+      <p>Uptime</p>
+    </sh-bl-stat>
+    <sh-bl-stat>
+      <b>3.2×</b>
+      <p>Faster releases</p>
+    </sh-bl-stat>
+    <sh-bl-stat>
+      <b>24/7</b>
+      <p>Support</p>
+    </sh-bl-stat>
+  </sh-bl-stats>
+
+  <sh-bl-testimonials>
+    <span eyebrow>Customers</span>
+    <h2>Teams that switched, stayed</h2>
+
+    @for (item of quotes; track item.name) {
+      <sh-bl-testimonial>
+        <blockquote>{{ item.quote }}</blockquote>
+        <sh-avatar [name]="item.name" />
+        <b>{{ item.name }}</b>
+        <span>{{ item.role }}</span>
+      </sh-bl-testimonial>
+    }
+  </sh-bl-testimonials>
+
+  <sh-bl-pricing>
+    <span eyebrow>Pricing</span>
+    <h2>Simple plans that grow with you</h2>
+    <p>Start free, upgrade when the team does.</p>
+
+    @for (tier of tiers; track tier.name) {
+      <sh-bl-pricing-tier [featured]="tier.featured">
+        <h3>{{ tier.name }}</h3>
+        @if (tier.featured) {
+          <sh-chip size="small" variant="flat" color="primary">Most popular</sh-chip>
+        }
+        <p>{{ tier.description }}</p>
+        <div price>
+          <b>{{ tier.price }}</b>
+          <span>/ month</span>
+        </div>
+        <ul>
+          @for (item of tier.features; track item) {
+            <li>{{ item }}</li>
+          }
+        </ul>
+        <button shButton [variant]="tier.featured ? 'raised' : 'outlined'" [color]="tier.featured ? 'primary' : null">
+          {{ tier.cta }}
+        </button>
+      </sh-bl-pricing-tier>
+    }
+  </sh-bl-pricing>
+
+  <sh-bl-faq>
+    <h2>Questions, answered</h2>
+
+    @for (item of faq; track item.q) {
+      <details name="landing-faq">
+        <summary>{{ item.q }}</summary>
+        <p>{{ item.a }}</p>
+      </details>
+    }
+  </sh-bl-faq>
+
+  <sh-bl-cta variant="type-b" color="primary">
+    <h2>Ready when your team is</h2>
+    <p>Set up a workspace in two minutes and invite everyone after lunch.</p>
+    <a shButton href="#" variant="raised">Start free</a>
+    <small>No credit card required</small>
+  </sh-bl-cta>
+</main>
+
+<footer>
+  <sh-bl-footer>
+    <a logo href="#">
+      <sh-icon>sailboat</sh-icon>
+      Acme
+    </a>
+    <p>The workspace for teams that ship.</p>
+
+    @for (column of footer; track column.title) {
+      <nav [attr.aria-label]="column.title">
+        <h3>{{ column.title }}</h3>
+        @for (link of column.links; track link) {
+          <a href="#">{{ link }}</a>
+        }
+      </nav>
+    }
+
+    <small>© 2026 Acme Inc.</small>
+    <div social>
+      <a href="#" aria-label="Acme on GitHub"><sh-icon>github-logo</sh-icon></a>
+      <a href="#" aria-label="Acme on LinkedIn"><sh-icon>linkedin-logo</sh-icon></a>
+      <a href="#" aria-label="Acme on YouTube"><sh-icon>youtube-logo</sh-icon></a>
+    </div>
+  </sh-bl-footer>
+</footer>

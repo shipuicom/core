@@ -3,7 +3,7 @@
 @layer ship {
   sh-breadcrumbs {
     --crumb-f: var(--paragraph-30);
-    --crumb-gap: var(--space-2);
+    --crumb-gap: var(--gap-x-2);
     --crumb-py: 0;
     --crumb-px: 0;
     --crumb-c: var(--base-8);
@@ -24,7 +24,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--crumb-gap);
+    gap: var(--gap-y-2) var(--crumb-gap);
     padding: var(--crumb-py) var(--crumb-px);
     min-width: 0;
     font: var(--crumb-f);
@@ -34,7 +34,7 @@
       position: relative;
       display: inline-flex;
       align-items: center;
-      gap: var(--space-1);
+      gap: var(--gap-x-1);
       padding: var(--crumb-item-py) var(--crumb-item-px);
       margin: 0;
       font: inherit;
@@ -103,7 +103,9 @@
 
     &.small {
       --crumb-f: var(--paragraph-40);
-      --crumb-gap: var(--space-1);
+      --crumb-gap: var(--gap-x-1);
+
+      row-gap: var(--gap-y-1);
     }
 
     // Boxed surface.
@@ -124,12 +126,14 @@
 
     // Pill crumbs: each crumb is a hit area, the current one filled.
     &.type-c {
-      --crumb-gap: var(--space-1);
+      --crumb-gap: var(--gap-x-1);
       --crumb-item-py: var(--pad-y-2);
       --crumb-item-px: var(--pad-x-2);
       --crumb-item-bg-h: var(--base-3);
       --crumb-item-bg-current: var(--base-3);
       --crumb-item-s: var(--shape-2);
+
+      row-gap: var(--gap-y-1);
 
       &.small {
         --crumb-item-py: var(--pad-y-1);

@@ -32,7 +32,7 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
     --list-px: var(--pad-x-4);
     --list-item-py: var(--pad-y-3);
     --list-item-px: var(--pad-x-3);
-    --list-item-gap: #{p2r(8)};
+    --list-item-gap: var(--gap-x-2);
     // Color of the active item's leading icon and, for .outlined, its border.
     // Follows the color class (.primary, .accent, ...); the plain list keeps
     // the icon in the text color.
@@ -42,7 +42,7 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
 
     width: 100%;
     padding: var(--list-py) var(--list-px);
-    gap: p2r(8);
+    gap: var(--gap-y-2);
     display: flex;
     flex-direction: column;
     transition: width 200ms linear;
@@ -69,7 +69,7 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
       --list-accent: var(--c-8, var(--primary-8));
       --list-item-py: var(--pad-y-3);
       --list-item-px: var(--pad-x-3);
-      --list-item-gap: #{p2r(12)};
+      --list-item-gap: var(--gap-x-3);
       --list-s: var(--shape-2);
 
       #{$item} {
@@ -115,7 +115,7 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
 
         .shortcut {
           display: flex;
-          gap: p2r(4);
+          gap: var(--gap-x-1);
 
           kbd {
             font-family: inherit;
@@ -140,7 +140,7 @@ $interactive: '> :where(a, button, label, [action], [value]):not([title]):not([r
       --list-px: 0;
       --list-item-py: var(--pad-y-4);
       --list-item-px: var(--pad-x-4);
-      --list-item-gap: #{p2r(12)};
+      --list-item-gap: var(--gap-x-3);
       --list-s: var(--shape-3);
       --list-c: var(--base-12);
       --list-bg-a: var(--base-3);

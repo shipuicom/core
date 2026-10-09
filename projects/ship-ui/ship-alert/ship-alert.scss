@@ -53,7 +53,7 @@
         '. content .';
       padding: var(--alert-py) var(--alert-px);
       align-items: flex-start;
-      gap: p2r(4 8);
+      gap: var(--gap-y-1) var(--gap-x-2);
 
       .close-icon {
         display: none;
@@ -90,7 +90,7 @@
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      gap: p2r(4);
+      gap: var(--gap-x-1);
     }
 
     .icon {

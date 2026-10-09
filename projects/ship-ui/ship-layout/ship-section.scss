@@ -2,7 +2,7 @@
 
 @layer ship {
   sh-lo-section {
-    --section-gap: var(--space-4);
+    --section-gap: var(--gap-y-4);
     --section-bg: var(--base-1);
     --section-bc: var(--base-4);
     --section-py: var(--pad-y-6);
@@ -38,7 +38,7 @@
     &.type-c {
       flex-direction: row;
       align-items: flex-start;
-      gap: var(--space-6);
+      gap: var(--gap-x-6);
 
       > .head {
         flex: 0 0 var(--section-text-w);
@@ -46,7 +46,7 @@
         align-items: flex-start;
         align-self: flex-start;
         justify-content: flex-start;
-        gap: var(--space-3);
+        gap: var(--gap-y-3);
 
         > .text {
           flex: 0 0 auto;
@@ -72,7 +72,7 @@
       flex-wrap: wrap;
       align-items: flex-end;
       justify-content: space-between;
-      gap: var(--space-3) var(--space-4);
+      gap: var(--gap-y-3) var(--gap-x-4);
 
       &:not(:has(> * > *)) {
         display: none;
@@ -81,7 +81,7 @@
       > .text {
         display: flex;
         flex-direction: column;
-        gap: var(--space-1);
+        gap: var(--gap-y-1);
         flex: 1 1 #{p2r(240)};
         min-width: 0;
 
@@ -104,7 +104,7 @@
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: var(--space-2);
+        gap: var(--gap-y-2) var(--gap-x-2);
 
         &:empty {
           display: none;

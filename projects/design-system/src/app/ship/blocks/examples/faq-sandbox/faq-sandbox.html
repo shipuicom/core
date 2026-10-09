@@ -1,0 +1,18 @@
+<sh-bl-faq [variant]="variant()" [color]="color()">
+  <span eyebrow>FAQ</span>
+  <h2>Questions, answered</h2>
+  <p>Everything you need to know before you ship. Still curious? Our team replies within a day.</p>
+  <div actions>
+    <button shButton type="button" variant="outlined">
+      <sh-icon>chat-circle</sh-icon>
+      Ask a question
+    </button>
+  </div>
+
+  @for (item of questions; track item.q; let first = $first) {
+    <details [open]="first">
+      <summary>{{ item.q }}</summary>
+      <p>{{ item.a }}</p>
+    </details>
+  }
+</sh-bl-faq>

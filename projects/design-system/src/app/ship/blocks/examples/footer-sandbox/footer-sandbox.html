@@ -1,0 +1,33 @@
+<footer>
+  <sh-bl-footer [variant]="variant()">
+    <a logo href="#">
+      <sh-icon>sailboat</sh-icon>
+      ShipUI
+    </a>
+    <p>Angular components and website blocks that follow your theme, from the dashboard to the landing page.</p>
+
+    @for (column of columns(); track column.title) {
+      <nav [attr.aria-label]="column.title">
+        <h3>{{ column.title }}</h3>
+        @for (link of column.links; track link) {
+          <a href="#">{{ link }}</a>
+        }
+      </nav>
+    }
+
+    <small>© 2026 ShipUI. All rights reserved.</small>
+    @if (variant() !== 'type-c') {
+      <div legal>
+        <a href="#">Sitemap</a>
+        <a href="#">Accessibility</a>
+      </div>
+    }
+
+    <div social>
+      <a href="#" aria-label="ShipUI on GitHub"><sh-icon>github-logo</sh-icon></a>
+      <a href="#" aria-label="ShipUI on LinkedIn"><sh-icon>linkedin-logo</sh-icon></a>
+      <a href="#" aria-label="ShipUI on Discord"><sh-icon>discord-logo</sh-icon></a>
+      <a href="#" aria-label="ShipUI on YouTube"><sh-icon>youtube-logo</sh-icon></a>
+    </div>
+  </sh-bl-footer>
+</footer>

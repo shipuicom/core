@@ -1,0 +1,234 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+@layer ship {
+  sh-bl-logos {
+    --logos-bg: transparent;
+    --logos-c: var(--base-12);
+    --logos-mw: var(--block-mw);
+    --logos-py: var(--space-6);
+    --logos-px: var(--block-px);
+    --logos-gap: var(--gap-y-5);
+    --logos-cc: var(--base-11);
+    --logos-ic: var(--base-10);
+    --logos-ic-h: var(--base-12);
+    --logos-io: 0.75;
+    --logos-ih: #{p2r(32)};
+    --logos-is: #{p2r(28)};
+    --logos-row-gap: var(--gap-y-5);
+    --logos-col-gap: var(--gap-x-7);
+    --logos-cols: 3;
+    --logos-bc: var(--base-4);
+    --logos-s: var(--shape-3);
+    --logos-cell-h: #{p2r(96)};
+    --logos-cell-bg: var(--base-1);
+    --logos-cell-bg-h: var(--base-2);
+    --logos-cw: #{p2r(220)};
+
+    @include frame(logos);
+
+    > .inner > .caption {
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap-y-1);
+      text-align: center;
+
+      &:empty {
+        display: none;
+      }
+
+      > p,
+      > h2,
+      > [caption] {
+        font: var(--paragraph-30);
+        color: var(--logos-cc);
+        text-wrap: balance;
+      }
+    }
+
+    > .inner > .items {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: var(--logos-row-gap) var(--logos-col-gap);
+
+      > * {
+        --icon-c: currentColor;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--gap-x-2);
+        min-height: var(--logos-ih);
+        font: var(--paragraph-10B);
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+        color: var(--logos-ic);
+        text-decoration: none;
+        transition:
+          color 150ms ease-out,
+          opacity 150ms ease-out,
+          filter 150ms ease-out,
+          background-color 150ms ease-out;
+
+        > sh-icon {
+          font-size: var(--logos-is);
+        }
+
+        &:hover {
+          color: var(--logos-ic-h);
+        }
+      }
+
+      > a:focus-visible {
+        outline: 2px solid var(--primary-8);
+        outline-offset: 2px;
+        border-radius: var(--shape-1);
+      }
+
+      // Raster and vector marks lose their colour until hovered.
+      > img,
+      > svg,
+      > a > img,
+      > a > svg,
+      > [logo] > img,
+      > [logo] > svg {
+        display: block;
+        height: var(--logos-ih);
+        width: auto;
+        max-width: 100%;
+        object-fit: contain;
+        filter: grayscale(1);
+        opacity: var(--logos-io);
+        transition:
+          opacity 150ms ease-out,
+          filter 150ms ease-out;
+      }
+
+      > img:hover,
+      > svg:hover,
+      > *:hover > img,
+      > *:hover > svg {
+        filter: none;
+        opacity: 1;
+      }
+    }
+
+    // Grid: one bordered cell per logo, neighbours share their borders.
+    &.type-b {
+      --logos-gap: var(--gap-y-4);
+
+      > .inner > .items {
+        display: grid;
+        grid-template-columns: repeat(var(--logos-cols), minmax(0, 1fr));
+        gap: 0;
+        overflow: hidden;
+        border: var(--border-10);
+        border-color: var(--logos-bc);
+        border-radius: var(--logos-s);
+
+        // Every cell draws its end and bottom edge; the 1px negative margin tucks the outer ones under the frame.
+        > * {
+          box-sizing: border-box;
+          min-height: var(--logos-cell-h);
+          margin: 0 -1px -1px 0;
+          padding: var(--space-4);
+          background-color: var(--logos-cell-bg);
+          border-inline-end: var(--border-10);
+          border-block-end: var(--border-10);
+          border-color: var(--logos-bc);
+
+          &:hover {
+            background-color: var(--logos-cell-bg-h);
+          }
+        }
+
+        > img,
+        > svg {
+          height: var(--logos-cell-h);
+          width: 100%;
+          padding: var(--space-5);
+        }
+
+        > a:focus-visible {
+          outline-offset: -2px;
+          border-radius: 0;
+        }
+      }
+    }
+
+    // Inline: the caption on the start side, a divider, then the logos.
+    &.type-c {
+      > .inner {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--gap-x-6);
+      }
+
+      > .inner > .caption {
+        flex: 0 1 var(--logos-cw);
+        min-width: 0;
+        padding-inline-end: var(--space-6);
+        text-align: start;
+        border-inline-end: var(--border-10);
+        border-color: var(--logos-bc);
+      }
+
+      > .inner > .items {
+        --logos-is: #{p2r(24)};
+
+        flex: 1 1 0;
+        min-width: 0;
+        justify-content: space-between;
+        gap: var(--logos-row-gap) var(--gap-x-5);
+
+        > * {
+          font: var(--paragraph-20B);
+        }
+      }
+    }
+
+    @include below($medium) {
+      > .inner > .items {
+        --logos-cols: 3;
+        --logos-col-gap: var(--gap-x-6);
+      }
+
+      &.type-c > .inner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--gap-y-4);
+      }
+
+      &.type-c > .inner > .caption {
+        flex: none;
+        padding-inline-end: 0;
+        text-align: center;
+        border-inline-end: 0;
+      }
+
+      &.type-c > .inner > .items {
+        justify-content: center;
+        gap: var(--logos-row-gap) var(--logos-col-gap);
+      }
+    }
+
+    @include below($narrow) {
+      > .inner > .items {
+        --logos-cols: 2;
+        --logos-col-gap: var(--gap-x-5);
+        --logos-row-gap: var(--gap-y-4);
+        --logos-cell-h: #{p2r(80)};
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      > .inner > .items > *,
+      > .inner > .items img,
+      > .inner > .items svg {
+        transition: none;
+      }
+    }
+  }
+}

@@ -1,0 +1,244 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+// Markers in a start column, the text beside them, the connecting line running down between markers.
+@mixin vertical {
+  > .inner > .items {
+    grid-auto-flow: row;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  sh-bl-step {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--gap-x-4);
+    text-align: start;
+
+    &:not(:last-child)::after {
+      top: calc(var(--steps-mk-s) + var(--space-2));
+      bottom: calc(var(--space-2) - var(--steps-row-gap));
+      inset-inline-start: calc(var(--steps-mk-s) / 2);
+      width: var(--steps-lw);
+      height: auto;
+      margin: 0;
+      margin-inline-start: calc(var(--steps-lw) / -2);
+    }
+
+    > .text {
+      padding-top: calc((var(--steps-mk-s) - #{p2r(22)}) / 2);
+    }
+  }
+}
+
+@layer ship {
+  sh-bl-steps {
+    --steps-bg: transparent;
+    --steps-c: var(--base-12);
+    --steps-mw: var(--block-mw);
+    --steps-py: var(--block-py);
+    --steps-px: var(--block-px);
+    --steps-gap: var(--gap-y-7);
+    --steps-ec: var(--c-9, var(--primary-9));
+    --steps-cols: 3;
+    --steps-row-gap: var(--gap-y-6);
+    --steps-col-gap: var(--gap-x-6);
+    --steps-mk-s: #{p2r(48)};
+    --steps-mbg: var(--c-2, var(--primary-2));
+    --steps-mbc: var(--c-6, var(--primary-6));
+    --steps-mc: var(--c-11, var(--primary-11));
+    --steps-lc: var(--base-4);
+    --steps-lw: 2px;
+    --steps-nc: var(--c-9, var(--primary-9));
+    --steps-item-bg: var(--base-1);
+    --steps-item-bc: var(--base-4);
+    --steps-item-s: var(--shape-3);
+    --steps-item-p: var(--space-5);
+
+    @include frame(steps);
+    @include head(steps);
+
+    > .inner > .items {
+      counter-reset: ship-step;
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
+      gap: var(--steps-row-gap) var(--steps-col-gap);
+    }
+
+    sh-bl-step {
+      counter-increment: ship-step;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--gap-y-4);
+      min-width: 0;
+      text-align: center;
+
+      // The line from this marker to the next one, across the column gap.
+      &:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: calc(var(--steps-mk-s) / 2);
+        inset-inline-start: calc(50% + var(--steps-mk-s) / 2 + var(--space-3));
+        width: calc(100% + var(--steps-col-gap) - var(--steps-mk-s) - 2 * var(--space-3));
+        height: var(--steps-lw);
+        margin-top: calc(var(--steps-lw) / -2);
+        border-radius: var(--steps-lw);
+        background-color: var(--steps-lc);
+      }
+
+      > .marker {
+        box-sizing: border-box;
+        display: grid;
+        place-items: center;
+        flex: none;
+        width: var(--steps-mk-s);
+        height: var(--steps-mk-s);
+        font: var(--paragraph-10B);
+        color: var(--steps-mc);
+        background-color: var(--steps-mbg);
+        border: var(--border-10);
+        border-color: var(--steps-mbc);
+        border-radius: 50%;
+
+        // No marker slotted: the step's number.
+        &:empty::before {
+          content: counter(ship-step);
+        }
+
+        > sh-icon,
+        > [marker] {
+          --icon-c: currentColor;
+
+          font-size: #{p2r(22)};
+        }
+      }
+
+      > .text {
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap-y-2);
+        min-width: 0;
+
+        > h3,
+        > [title] {
+          font: var(--paragraph-10B);
+          color: var(--base-12);
+        }
+
+        > p,
+        > [description] {
+          font: var(--paragraph-20);
+          color: var(--base-11);
+          text-wrap: pretty;
+        }
+
+        > a {
+          font: var(--paragraph-30B);
+          color: var(--steps-nc);
+          margin-top: var(--gap-y-1);
+
+          &:focus-visible {
+            outline: 2px solid var(--primary-8);
+            outline-offset: 2px;
+            border-radius: var(--shape-1);
+          }
+        }
+      }
+    }
+
+    // Timeline: the header in a start column, the steps as a vertical list beside it.
+    &.type-b {
+      > .inner {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+        align-items: start;
+        column-gap: var(--gap-x-8);
+      }
+
+      > .inner > .head {
+        align-items: flex-start;
+        margin-inline: 0;
+        text-align: start;
+
+        > .actions {
+          justify-content: flex-start;
+        }
+      }
+
+      @include vertical;
+    }
+
+    // Cards: every step on its own surface, a large number in the accent colour.
+    &.type-c {
+      > .inner > .items {
+        grid-auto-flow: row;
+        grid-template-columns: repeat(var(--steps-cols), minmax(0, 1fr));
+        gap: var(--gap-y-4) var(--gap-x-4);
+      }
+
+      sh-bl-step {
+        align-items: flex-start;
+        padding: var(--steps-item-p);
+        text-align: start;
+        background-color: var(--steps-item-bg);
+        border: var(--border-10);
+        border-color: var(--steps-item-bc);
+        border-radius: var(--steps-item-s);
+
+        &:not(:last-child)::after {
+          content: none;
+        }
+
+        > .marker {
+          width: auto;
+          height: auto;
+          place-items: start;
+          font: var(--title-10B);
+          letter-spacing: -0.02em;
+          line-height: 1;
+          color: var(--steps-nc);
+          background-color: transparent;
+          border: 0;
+          border-radius: 0;
+
+          &:empty::before {
+            content: counter(ship-step, decimal-leading-zero);
+          }
+
+          > sh-icon,
+          > [marker] {
+            font-size: #{p2r(32)};
+          }
+        }
+      }
+    }
+
+    @include below($medium) {
+      &:not(.type-c) {
+        @include vertical;
+      }
+
+      &.type-b > .inner {
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: var(--steps-gap);
+      }
+
+      &.type-c > .inner > .items {
+        --steps-cols: 2;
+      }
+    }
+
+    @include below($narrow) {
+      > .inner > .items {
+        --steps-mk-s: #{p2r(40)};
+        --steps-row-gap: var(--gap-y-5);
+      }
+
+      &.type-c > .inner > .items {
+        --steps-cols: 1;
+      }
+    }
+  }
+}

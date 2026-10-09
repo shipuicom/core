@@ -91,6 +91,7 @@ export const appConfig: ApplicationConfig = {
         { id: 'icons', label: 'Icons', category: 'Components', data: { route: '/icons' } },
         { id: 'kbds', label: 'Keyboard Keys', category: 'Components', data: { route: '/kbds' } },
         { id: 'layouts', label: 'Layouts', category: 'Components', data: { route: '/layouts' } },
+        { id: 'blocks', label: 'Blocks', category: 'Components', data: { route: '/blocks' } },
         { id: 'lists', label: 'Lists', category: 'Components', data: { route: '/lists' } },
         { id: 'menus', label: 'Menus', category: 'Components', data: { route: '/menus' } },
         { id: 'popovers', label: 'Popovers', category: 'Components', data: { route: '/popovers' } },

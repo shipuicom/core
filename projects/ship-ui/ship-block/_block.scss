@@ -1,0 +1,114 @@
+@use 'helpers' as *;
+
+// Shared by every ship-block component. Each block declares its own tokens on its host (so the API reference lists
+// them); these mixins only lay out what reads them. `$p` is the block's token prefix (`hero` → `--hero-mw`).
+//
+// Blocks follow their own width, not the viewport: the host is an inline-size container and the responsive rules are
+// container queries, so a block reflows the same in a full page, a docs preview or a sidebar. A container query only
+// sees ancestors, so the rules inside `below()` style `.inner` and its descendants, never the host.
+
+$narrow: p2r(640);
+$medium: p2r(960);
+
+@mixin below($width) {
+  @container (max-width: #{$width}) {
+    @content;
+  }
+}
+
+/// Full-bleed host with a centered content column (`.inner`).
+@mixin frame($p) {
+  display: block;
+  container-type: inline-size;
+  min-width: 0;
+  background-color: var(--#{$p}-bg);
+  color: var(--#{$p}-c);
+
+  > .inner {
+    box-sizing: content-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--#{$p}-gap);
+    max-width: var(--#{$p}-mw);
+    margin-inline: auto;
+    padding: var(--#{$p}-py) var(--#{$p}-px);
+  }
+
+  // `full` drops the max width, `flush` the outer padding.
+  &.full > .inner {
+    max-width: none;
+  }
+
+  &.flush > .inner {
+    padding: 0;
+  }
+
+  @include below($narrow) {
+    > .inner {
+      padding-block: calc(var(--#{$p}-py) * 0.75);
+    }
+  }
+}
+
+/// Section header: `[eyebrow]`/`sh-chip`, `h2`, `p`, `[actions]`. Centered; add class `start` to left-align it.
+@mixin head($p) {
+  > .inner > .head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--gap-y-3);
+    max-width: #{p2r(720)};
+    margin-inline: auto;
+    text-align: center;
+
+    &:not(:has(> :not(.actions), > .actions > *)) {
+      display: none;
+    }
+
+    > [eyebrow] {
+      font: var(--paragraph-30B);
+      color: var(--#{$p}-ec);
+    }
+
+    > h2 {
+      font: var(--title-20B);
+      color: var(--base-12);
+      text-wrap: balance;
+    }
+
+    > p,
+    > [description] {
+      font: var(--paragraph-10);
+      color: var(--base-11);
+      text-wrap: pretty;
+    }
+
+    > .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--gap-y-2) var(--gap-x-2);
+      margin-top: var(--gap-y-2);
+
+      &:empty {
+        display: none;
+      }
+    }
+  }
+
+  &.start > .inner > .head {
+    align-items: flex-start;
+    margin-inline: 0;
+    text-align: start;
+
+    > .actions {
+      justify-content: flex-start;
+    }
+  }
+
+  @include below($narrow) {
+    > .inner > .head > h2 {
+      font: var(--title-30B);
+    }
+  }
+}

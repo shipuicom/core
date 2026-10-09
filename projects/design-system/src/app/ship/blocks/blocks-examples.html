@@ -1,0 +1,283 @@
+<div class="content">
+  <app-previewer path="/blocks/examples/banner-sandbox/banner-sandbox" title="Banner" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-banner</p>
+      <sh-button-group class="small" [(value)]="bannerVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+      <sh-button-group class="small" [(value)]="bannerColor">
+        @for (color of colors; track color) {
+          <button [value]="color">{{ color }}</button>
+        }
+      </sh-button-group>
+    </ng-container>
+
+    <app-banner-sandbox [variant]="bannerVariant()" [color]="bannerColor()" />
+  </app-previewer>
+
+  <app-previewer path="/blocks/examples/header-sandbox/header-sandbox" title="Header" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-header</p>
+      <sh-button-group class="small" [(value)]="headerVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-header-sandbox [variant]="headerVariant()" />
+  </app-previewer>
+
+  <app-previewer path="/blocks/examples/hero-sandbox/hero-sandbox" title="Hero" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-hero</p>
+      <sh-button-group class="small" [(value)]="heroVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+      <sh-button-group class="small" [(value)]="heroColor">
+        @for (color of colors; track color) {
+          <button [value]="color">{{ color }}</button>
+        }
+      </sh-button-group>
+    </ng-container>
+
+    <app-hero-sandbox [variant]="heroVariant()" [color]="heroColor()" />
+  </app-previewer>
+
+  <app-previewer path="/blocks/examples/logos-sandbox/logos-sandbox" title="Logos" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-logos</p>
+      <sh-button-group class="small" [(value)]="logosVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-logos-sandbox [variant]="logosVariant()" />
+  </app-previewer>
+
+  <app-previewer path="/blocks/examples/features-sandbox/features-sandbox" title="Features" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-features</p>
+      <sh-button-group class="small" [(value)]="featuresVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+      <sh-button-group class="small" [(value)]="featuresColor">
+        @for (color of colors; track color) {
+          <button [value]="color">{{ color }}</button>
+        }
+      </sh-button-group>
+    </ng-container>
+
+    <app-features-sandbox [variant]="featuresVariant()" [color]="featuresColor()" />
+  </app-previewer>
+
+  <app-previewer path="/blocks/examples/split-sandbox/split-sandbox" title="Split" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-split</p>
+      <sh-button-group class="small" [(value)]="splitVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+      <sh-button-group class="small" [(value)]="splitColor">
+        @for (color of colors; track color) {
+          <button [value]="color">{{ color }}</button>
+        }
+      </sh-button-group>
+    </ng-container>
+
+    <app-split-sandbox [variant]="splitVariant()" [color]="splitColor()" />
+  </app-previewer>
+
+  <app-previewer path="/blocks/examples/steps-sandbox/steps-sandbox" title="Steps" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-steps</p>
+      <sh-button-group class="small" [(value)]="stepsVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+      <sh-button-group class="small" [(value)]="stepsColor">
+        @for (color of colors; track color) {
+          <button [value]="color">{{ color }}</button>
+        }
+      </sh-button-group>
+    </ng-container>
+
+    <app-steps-sandbox [variant]="stepsVariant()" [color]="stepsColor()" />
+  </app-previewer>
+
+  <app-previewer path="/blocks/examples/stats-sandbox/stats-sandbox" title="Stats" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-stats</p>
+      <sh-button-group class="small" [(value)]="statsVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+      <sh-button-group class="small" [(value)]="statsColor">
+        @for (color of colors; track color) {
+          <button [value]="color">{{ color }}</button>
+        }
+      </sh-button-group>
+    </ng-container>
+
+    <app-stats-sandbox [variant]="statsVariant()" [color]="statsColor()" />
+  </app-previewer>
+
+  <app-previewer path="/blocks/examples/testimonials-sandbox/testimonials-sandbox" title="Testimonials" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-testimonials</p>
+      <sh-button-group class="small" [(value)]="testimonialsVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+      <sh-button-group class="small" [(value)]="testimonialsColor">
+        @for (color of colors; track color) {
+          <button [value]="color">{{ color }}</button>
+        }
+      </sh-button-group>
+    </ng-container>
+
+    <app-testimonials-sandbox [variant]="testimonialsVariant()" [color]="testimonialsColor()" />
+  </app-previewer>
+
+  <app-previewer path="/blocks/examples/pricing-sandbox/pricing-sandbox" title="Pricing" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-pricing</p>
+      <sh-button-group class="small" [(value)]="pricingVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+      <sh-button-group class="small" [(value)]="pricingColor">
+        @for (color of colors; track color) {
+          <button [value]="color">{{ color }}</button>
+        }
+      </sh-button-group>
+    </ng-container>
+
+    <app-pricing-sandbox [variant]="pricingVariant()" [color]="pricingColor()" />
+  </app-previewer>
+
+  <app-previewer path="/blocks/examples/faq-sandbox/faq-sandbox" title="FAQ" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-faq</p>
+      <sh-button-group class="small" [(value)]="faqVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+      <sh-button-group class="small" [(value)]="faqColor">
+        @for (color of colors; track color) {
+          <button [value]="color">{{ color }}</button>
+        }
+      </sh-button-group>
+    </ng-container>
+
+    <app-faq-sandbox [variant]="faqVariant()" [color]="faqColor()" />
+  </app-previewer>
+
+  <app-previewer path="/blocks/examples/cta-sandbox/cta-sandbox" title="Call to action" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-cta</p>
+      <sh-button-group class="small" [(value)]="ctaVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+      <sh-button-group class="small" [(value)]="ctaColor">
+        @for (color of colors; track color) {
+          <button [value]="color">{{ color }}</button>
+        }
+      </sh-button-group>
+    </ng-container>
+
+    <app-cta-sandbox [variant]="ctaVariant()" [color]="ctaColor()" />
+  </app-previewer>
+
+  <app-previewer path="/blocks/examples/newsletter-sandbox/newsletter-sandbox" title="Newsletter" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-newsletter</p>
+      <sh-button-group class="small" [(value)]="newsletterVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+      <sh-button-group class="small" [(value)]="newsletterColor">
+        @for (color of colors; track color) {
+          <button [value]="color">{{ color }}</button>
+        }
+      </sh-button-group>
+    </ng-container>
+
+    <app-newsletter-sandbox [variant]="newsletterVariant()" [color]="newsletterColor()" />
+  </app-previewer>
+
+  <app-previewer path="/blocks/examples/team-sandbox/team-sandbox" title="Team" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-team</p>
+      <sh-button-group class="small" [(value)]="teamVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-team-sandbox [variant]="teamVariant()" />
+  </app-previewer>
+
+  <app-previewer path="/blocks/examples/posts-sandbox/posts-sandbox" title="Posts" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-posts</p>
+      <sh-button-group class="small" [(value)]="postsVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-posts-sandbox [variant]="postsVariant()" />
+  </app-previewer>
+
+  <app-previewer path="/blocks/examples/contact-sandbox/contact-sandbox" title="Contact" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-contact</p>
+      <sh-button-group class="small" [(value)]="contactVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+      <sh-button-group class="small" [(value)]="contactColor">
+        @for (color of colors; track color) {
+          <button [value]="color">{{ color }}</button>
+        }
+      </sh-button-group>
+    </ng-container>
+
+    <app-contact-sandbox [variant]="contactVariant()" [color]="contactColor()" />
+  </app-previewer>
+
+  <app-previewer path="/blocks/examples/footer-sandbox/footer-sandbox" title="Footer" class="no-space">
+    <ng-container controls>
+      <p class="controls-label">sh-bl-footer</p>
+      <sh-button-group class="small" [(value)]="footerVariant">
+        <button value="">Default</button>
+        <button value="type-b">Type B</button>
+        <button value="type-c">Type C</button>
+      </sh-button-group>
+    </ng-container>
+
+    <app-footer-sandbox [variant]="footerVariant()" />
+  </app-previewer>
+
+</div>

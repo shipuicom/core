@@ -1,0 +1,276 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+@layer ship {
+  sh-bl-header {
+    --header-bg: var(--base-1);
+    --header-c: var(--base-12);
+    --header-mw: var(--block-mw);
+    --header-h: #{p2r(64)};
+    --header-py: 0;
+    --header-px: var(--block-px);
+    --header-gap: var(--gap-x-6);
+    --header-bc: var(--base-4);
+    --header-z: 10;
+    --header-blur: #{p2r(12)};
+    --header-inset: var(--space-3);
+    --header-s: var(--shape-4);
+    --header-sh: var(--box-shadow-30);
+    --header-lic: var(--primary-9);
+    --header-nc: var(--base-11);
+    --header-nc-h: var(--base-12);
+    --header-nbg-h: var(--base-2);
+    --header-nc-a: var(--base-12);
+    --header-nbg-a: var(--base-3);
+    --header-ns: var(--shape-2);
+    --header-th: #{p2r(40)};
+    --header-tbg-h: var(--base-3);
+
+    @include frame(header);
+
+    border-block-end: var(--border-10);
+    border-block-end-color: var(--header-bc);
+
+    > .inner {
+      flex-direction: row;
+      align-items: center;
+      min-height: var(--header-h);
+    }
+
+    > .inner > .logo {
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+
+      &:empty {
+        display: none;
+      }
+
+      > [logo] {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--gap-x-2);
+        font: var(--paragraph-10B);
+        color: var(--header-c);
+        text-decoration: none;
+        border-radius: var(--shape-1);
+
+        &:focus-visible {
+          outline: 2px solid var(--primary-8);
+          outline-offset: 2px;
+        }
+
+        > sh-icon {
+          font-size: #{p2r(24)};
+          color: var(--header-lic);
+        }
+
+        > img,
+        > svg,
+        &:is(img, svg) {
+          display: block;
+          height: #{p2r(28)};
+          width: auto;
+        }
+      }
+    }
+
+    // The menu button only shows below the medium width (see the container query at the end).
+    > .inner > .toggle {
+      display: none;
+      place-items: center;
+      flex-shrink: 0;
+      width: var(--header-th);
+      height: var(--header-th);
+      padding: 0;
+      font-size: #{p2r(22)};
+      color: var(--header-c);
+      background: transparent;
+      border: 0;
+      border-radius: var(--header-ns);
+      cursor: pointer;
+
+      &:hover {
+        background-color: var(--header-tbg-h);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--primary-8);
+        outline-offset: 2px;
+      }
+    }
+
+    > .inner > .panel {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      gap: var(--header-gap);
+      min-width: 0;
+
+      > nav {
+        display: flex;
+        align-items: center;
+        gap: var(--gap-x-1);
+        min-width: 0;
+
+        ul {
+          display: flex;
+          align-items: inherit;
+          flex-direction: inherit;
+          gap: inherit;
+          margin: 0;
+          padding: 0;
+          list-style: none;
+        }
+
+        a {
+          display: flex;
+          align-items: center;
+          gap: var(--gap-x-2);
+          padding: var(--space-2) var(--space-3);
+          font: var(--paragraph-30B);
+          color: var(--header-nc);
+          text-decoration: none;
+          white-space: nowrap;
+          border-radius: var(--header-ns);
+          transition:
+            color 0.15s ease,
+            background-color 0.15s ease;
+
+          &:hover {
+            color: var(--header-nc-h);
+            background-color: var(--header-nbg-h);
+          }
+
+          &[aria-current='page'],
+          &[aria-current='true'] {
+            color: var(--header-nc-a);
+            background-color: var(--header-nbg-a);
+          }
+
+          &:focus-visible {
+            outline: 2px solid var(--primary-8);
+            outline-offset: 2px;
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            transition: none;
+          }
+        }
+      }
+
+      > .actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--gap-y-2) var(--gap-x-2);
+        margin-inline-start: auto;
+
+        &:empty {
+          display: none;
+        }
+      }
+    }
+
+    // Pinned to the top of the scroll container, over a translucent, blurred surface.
+    &.sticky {
+      --header-bg: rgb(from var(--base-1) r g b / 0.85);
+
+      position: sticky;
+      top: 0;
+      z-index: var(--header-z);
+      backdrop-filter: blur(var(--header-blur));
+    }
+
+    // Centred nav: logo, nav and actions in three columns.
+    &.type-b {
+      > .inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      }
+
+      > .inner > .panel {
+        display: contents;
+
+        > .actions {
+          justify-content: flex-end;
+          justify-self: end;
+          margin-inline-start: 0;
+        }
+      }
+    }
+
+    // Floating: a rounded, translucent bar inset from the edges.
+    &.type-c {
+      --header-bg: rgb(from var(--base-1) r g b / 0.8);
+      --header-px: var(--space-5);
+
+      padding: var(--header-inset);
+      background-color: transparent;
+      border-block-end: 0;
+      backdrop-filter: none;
+
+      > .inner {
+        background-color: var(--header-bg);
+        border: var(--border-10);
+        border-color: var(--header-bc);
+        border-radius: var(--header-s);
+        box-shadow: var(--header-sh);
+        backdrop-filter: blur(var(--header-blur));
+      }
+    }
+
+    // Collapsed: the nav and actions move into a panel under the bar, toggled by the menu button.
+    @include below($medium) {
+      > .inner,
+      &.type-b > .inner {
+        display: flex;
+        flex-wrap: wrap;
+        column-gap: var(--gap-x-3);
+        row-gap: 0;
+      }
+
+      > .inner > .logo {
+        margin-inline-end: auto;
+      }
+
+      > .inner > .toggle {
+        display: grid;
+      }
+
+      > .inner > .panel,
+      &.type-b > .inner > .panel {
+        display: none;
+        flex-basis: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--gap-y-4);
+        padding-block: var(--space-2) var(--space-4);
+
+        > nav {
+          flex-direction: column;
+          align-items: stretch;
+          gap: var(--gap-y-1);
+
+          a {
+            padding: var(--space-3);
+          }
+        }
+
+        > .actions {
+          justify-self: auto;
+          margin-inline-start: 0;
+
+          > * {
+            flex: 1 1 auto;
+          }
+        }
+      }
+
+      > .inner > .panel.open,
+      &.type-b > .inner > .panel.open {
+        display: flex;
+      }
+    }
+  }
+}

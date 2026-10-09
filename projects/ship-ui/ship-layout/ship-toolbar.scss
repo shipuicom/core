@@ -3,7 +3,7 @@
 @layer ship {
   sh-lo-toolbar {
     --toolbar-h: #{p2r(44)};
-    --toolbar-gap: var(--space-1);
+    --toolbar-gap: var(--gap-x-1);
     --toolbar-py: 0;
     --toolbar-px: 0;
     --toolbar-bg: var(--base-1);
@@ -58,7 +58,7 @@
       flex-direction: column;
       width: p2r(1);
       height: p2r(20);
-      margin: 0 var(--space-1);
+      margin: 0 var(--gap-x-1);
       gap: 0;
 
       &::before,
@@ -71,7 +71,7 @@
     > .end {
       display: flex;
       align-items: center;
-      gap: var(--space-1);
+      gap: var(--gap-x-1);
       flex: 0 0 auto;
       margin-inline-start: auto;
       padding-inline-start: var(--space-3);

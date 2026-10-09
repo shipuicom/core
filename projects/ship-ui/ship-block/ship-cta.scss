@@ -1,0 +1,272 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+@layer ship {
+  sh-bl-cta {
+    --cta-bg: transparent;
+    --cta-c: var(--base-12);
+    --cta-mw: var(--block-mw);
+    --cta-py: var(--block-py);
+    --cta-px: var(--block-px);
+    --cta-gap: var(--gap-y-5);
+    --cta-ec: var(--c-9, var(--primary-9));
+    --cta-hc: var(--base-12);
+    --cta-dc: var(--base-11);
+    --cta-tw: #{p2r(640)};
+    --cta-pbg: var(--c-2, var(--base-2));
+    --cta-pbc: var(--c-6, var(--base-4));
+    --cta-pp: var(--space-8);
+    --cta-ps: var(--shape-5);
+    --cta-g1: transparent;
+    --cta-g2: transparent;
+    --cta-ms: var(--shape-3);
+    --cta-mbc: var(--base-4);
+    --cta-thumb: #{p2r(160)};
+
+    @include frame(cta);
+
+    > .inner > .panel {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: center;
+      gap: var(--gap-y-7) var(--gap-x-7);
+      padding: var(--cta-pp);
+      color: var(--cta-hc);
+      background-color: var(--cta-pbg);
+      background-image:
+        radial-gradient(circle at 100% 0%, var(--cta-g1), transparent 55%),
+        radial-gradient(circle at 0% 100%, var(--cta-g2), transparent 50%);
+      border: var(--border-10);
+      border-color: var(--cta-pbc);
+      border-radius: var(--cta-ps);
+      overflow: hidden;
+    }
+
+    > .inner > .panel > .body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--gap-y-5);
+      min-width: 0;
+      text-align: center;
+
+      > .text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--gap-y-3);
+        max-width: var(--cta-tw);
+
+        > [eyebrow] {
+          font: var(--paragraph-30B);
+          color: var(--cta-ec);
+        }
+
+        > h2 {
+          font: var(--title-10B);
+          letter-spacing: -0.02em;
+          color: var(--cta-hc);
+          text-wrap: balance;
+        }
+
+        > p,
+        > [description] {
+          font: var(--paragraph-10);
+          color: var(--cta-dc);
+          text-wrap: pretty;
+        }
+      }
+
+      > .side {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--gap-y-3);
+
+        &:not(:has(> small, > .actions > *)) {
+          display: none;
+        }
+
+        > .actions {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: var(--gap-y-3) var(--gap-x-3);
+
+          &:empty {
+            display: none;
+          }
+        }
+
+        > small {
+          font: var(--paragraph-40);
+          color: var(--cta-dc);
+        }
+      }
+    }
+
+    > .inner > .panel > .media {
+      min-width: 0;
+
+      &:empty {
+        display: none;
+      }
+
+      > img,
+      > video,
+      > picture,
+      > [media] {
+        display: block;
+        width: 100%;
+        height: auto;
+        border: var(--border-10);
+        border-color: var(--cta-mbc);
+        border-radius: var(--cta-ms);
+        box-shadow: var(--box-shadow-40);
+      }
+
+      > picture {
+        overflow: hidden;
+      }
+
+      > picture > img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+    }
+
+    // With media: text and media side by side, the text start-aligned.
+    &:not(.type-c) > .inner > .panel:has(> .media > *) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+      > .body,
+      > .body > .text,
+      > .body > .side {
+        align-items: flex-start;
+        text-align: start;
+      }
+
+      > .body > .side > .actions {
+        justify-content: flex-start;
+      }
+    }
+
+    // Bold: a solid panel in the accent colour with a soft glow.
+    &.type-b {
+      --cta-pbg: var(--c-8, var(--base-12));
+      --cta-pbc: transparent;
+      --cta-hc: var(--c-c8, var(--base-1));
+      --cta-dc: rgb(from var(--cta-hc) r g b / 0.8);
+      --cta-ec: rgb(from var(--cta-hc) r g b / 0.85);
+      --cta-g1: rgb(from var(--c-5, var(--base-9)) r g b / 0.55);
+      --cta-g2: rgb(from var(--c-11, var(--base-11)) r g b / 0.35);
+      --cta-mbc: transparent;
+    }
+
+    // Inline: text on the start side, actions on the end side, on a plain bordered panel.
+    &.type-c {
+      --cta-pbg: var(--base-1);
+      --cta-pbc: var(--base-4);
+      --cta-pp: var(--space-6) var(--space-7);
+      --cta-ps: var(--shape-4);
+
+      > .inner > .panel:has(> .media > *) {
+        grid-template-columns: var(--cta-thumb) minmax(0, 1fr);
+        gap: var(--gap-y-6) var(--gap-x-6);
+
+        > .media {
+          order: -1;
+        }
+      }
+
+      > .inner > .panel > .body {
+        flex-direction: row;
+        justify-content: space-between;
+        gap: var(--gap-x-6);
+        text-align: start;
+
+        > .text {
+          flex: 1 1 auto;
+          align-items: flex-start;
+          min-width: 0;
+
+          > h2 {
+            font: var(--title-30B);
+            letter-spacing: -0.01em;
+          }
+
+          > p,
+          > [description] {
+            font: var(--paragraph-20);
+          }
+        }
+
+        > .side {
+          flex: none;
+          align-items: flex-end;
+          text-align: end;
+
+          > .actions {
+            justify-content: flex-end;
+          }
+        }
+      }
+    }
+
+    @include below($medium) {
+      > .inner > .panel {
+        --cta-pp: var(--space-7);
+      }
+
+      > .inner > .panel > .body > .text > h2 {
+        font: var(--title-20B);
+      }
+
+      &:not(.type-c) > .inner > .panel:has(> .media > *) {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      &.type-c > .inner > .panel {
+        --cta-pp: var(--space-6);
+      }
+
+      &.type-c > .inner > .panel > .body > .text > h2 {
+        font: var(--title-30B);
+      }
+    }
+
+    @include below($narrow) {
+      > .inner > .panel {
+        --cta-pp: var(--space-6) var(--space-5);
+      }
+
+      > .inner > .panel > .body > .text > h2 {
+        font: var(--title-30B);
+      }
+
+      &.type-c > .inner > .panel,
+      &.type-c > .inner > .panel:has(> .media > *) {
+        --cta-pp: var(--space-5);
+
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      &.type-c > .inner > .panel > .body {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--gap-y-6);
+
+        > .side {
+          align-items: flex-start;
+          text-align: start;
+
+          > .actions {
+            justify-content: flex-start;
+          }
+        }
+      }
+    }
+  }
+}

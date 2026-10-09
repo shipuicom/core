@@ -6,7 +6,7 @@
     --divider-h: #{p2r(1)};
 
     display: flex;
-    gap: p2r(8);
+    gap: var(--gap-x-2);
     align-items: center;
     text-align: center;
 

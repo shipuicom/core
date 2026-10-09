@@ -88,6 +88,57 @@ export type ShipLayoutTimelineVariant = (typeof __SHIP_LAYOUT_TIMELINE_VARIANTS)
 export const __SHIP_LAYOUT_TOOLBAR_VARIANTS = ['type-b', 'type-c', ''] as const;
 export type ShipLayoutToolbarVariant = (typeof __SHIP_LAYOUT_TOOLBAR_VARIANTS)[number];
 
+export const __SHIP_BLOCK_BANNER_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockBannerVariant = (typeof __SHIP_BLOCK_BANNER_VARIANTS)[number];
+
+export const __SHIP_BLOCK_HEADER_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockHeaderVariant = (typeof __SHIP_BLOCK_HEADER_VARIANTS)[number];
+
+export const __SHIP_BLOCK_HERO_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockHeroVariant = (typeof __SHIP_BLOCK_HERO_VARIANTS)[number];
+
+export const __SHIP_BLOCK_LOGOS_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockLogosVariant = (typeof __SHIP_BLOCK_LOGOS_VARIANTS)[number];
+
+export const __SHIP_BLOCK_FEATURES_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockFeaturesVariant = (typeof __SHIP_BLOCK_FEATURES_VARIANTS)[number];
+
+export const __SHIP_BLOCK_SPLIT_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockSplitVariant = (typeof __SHIP_BLOCK_SPLIT_VARIANTS)[number];
+
+export const __SHIP_BLOCK_STEPS_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockStepsVariant = (typeof __SHIP_BLOCK_STEPS_VARIANTS)[number];
+
+export const __SHIP_BLOCK_STATS_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockStatsVariant = (typeof __SHIP_BLOCK_STATS_VARIANTS)[number];
+
+export const __SHIP_BLOCK_TESTIMONIALS_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockTestimonialsVariant = (typeof __SHIP_BLOCK_TESTIMONIALS_VARIANTS)[number];
+
+export const __SHIP_BLOCK_PRICING_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockPricingVariant = (typeof __SHIP_BLOCK_PRICING_VARIANTS)[number];
+
+export const __SHIP_BLOCK_FAQ_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockFaqVariant = (typeof __SHIP_BLOCK_FAQ_VARIANTS)[number];
+
+export const __SHIP_BLOCK_CTA_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockCtaVariant = (typeof __SHIP_BLOCK_CTA_VARIANTS)[number];
+
+export const __SHIP_BLOCK_NEWSLETTER_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockNewsletterVariant = (typeof __SHIP_BLOCK_NEWSLETTER_VARIANTS)[number];
+
+export const __SHIP_BLOCK_TEAM_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockTeamVariant = (typeof __SHIP_BLOCK_TEAM_VARIANTS)[number];
+
+export const __SHIP_BLOCK_POSTS_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockPostsVariant = (typeof __SHIP_BLOCK_POSTS_VARIANTS)[number];
+
+export const __SHIP_BLOCK_CONTACT_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockContactVariant = (typeof __SHIP_BLOCK_CONTACT_VARIANTS)[number];
+
+export const __SHIP_BLOCK_FOOTER_VARIANTS = ['type-b', 'type-c', ''] as const;
+export type ShipBlockFooterVariant = (typeof __SHIP_BLOCK_FOOTER_VARIANTS)[number];
+
 export const __SHIP_BREADCRUMBS_VARIANTS = ['type-b', 'type-c', ''] as const;
 export type ShipBreadcrumbsVariant = (typeof __SHIP_BREADCRUMBS_VARIANTS)[number];
 

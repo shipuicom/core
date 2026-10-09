@@ -94,6 +94,25 @@ describe('ShipVideo', () => {
     expect(fixture.debugElement.query(By.css('.sh-video-featured'))).toBeNull();
   });
 
+  it('keeps the controls when a finger lifts, hides them when the mouse leaves', () => {
+    const el: HTMLElement = fixture.debugElement.query(By.directive(ShipVideo)).nativeElement;
+    const leave = (pointerType: string) => {
+      const event = new Event('pointerleave');
+      Object.defineProperty(event, 'pointerType', { value: pointerType });
+      el.dispatchEvent(event);
+    };
+    video.state.playing.set(true);
+    video.wakeControls();
+
+    leave('touch');
+    expect(video.state.controlsVisible()).toBe(true);
+    leave('pen');
+    expect(video.state.controlsVisible()).toBe(true);
+
+    leave('mouse');
+    expect(video.state.controlsVisible()).toBe(false);
+  });
+
   it('runs the pre-roll ad before content on first start', () => {
     host.ad.set({ src: 'ad.mp4', skipAfter: 5 });
     fixture.detectChanges();

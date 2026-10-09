@@ -1,0 +1,161 @@
+<app-previewer path="/blocks/examples/landing-page/landing-page" title="Landing page" class="no-space">
+  <app-landing-page-example />
+</app-previewer>
+
+<app-previewer path="/blocks/examples/company-page/company-page" title="Company page" class="no-space">
+  <app-company-page-example />
+</app-previewer>
+
+<app-property-viewer>
+  <section>
+    <h4>Slot it in</h4>
+    <p>
+      Blocks are the sections of a website, from
+      <code>@ship-ui/core/ship-block</code>
+      . Like the layouts they arrange what you put in them: a
+      <code>&lt;sh-bl-hero&gt;</code>
+      takes an
+      <code>eyebrow</code>
+      or
+      <code>sh-chip</code>
+      , an
+      <code>h1</code>
+      , a
+      <code>p</code>
+      , buttons, a
+      <code>small</code>
+      and an
+      <code>img</code>
+      , and lays them out. Section blocks (
+      <code>features</code>
+      ,
+      <code>steps</code>
+      ,
+      <code>stats</code>
+      ,
+      <code>testimonials</code>
+      ,
+      <code>pricing</code>
+      ,
+      <code>faq</code>
+      ,
+      <code>team</code>
+      ,
+      <code>posts</code>
+      ) share one header: an element marked
+      <code>eyebrow</code>
+      , an
+      <code>h2</code>
+      , a
+      <code>p</code>
+      and buttons marked
+      <code>actions</code>
+      , followed by their items (
+      <code>sh-bl-feature</code>
+      ,
+      <code>sh-bl-step</code>
+      ,
+      <code>sh-bl-stat</code>
+      ,
+      <code>sh-bl-testimonial</code>
+      ,
+      <code>sh-bl-pricing-tier</code>
+      ,
+      <code>details</code>
+      ,
+      <code>sh-bl-member</code>
+      ,
+      <code>sh-bl-post</code>
+      ). The header is centered; add class
+      <code>start</code>
+      to left-align it. The site chrome is
+      <code>&lt;sh-bl-banner&gt;</code>
+      ,
+      <code>&lt;sh-bl-header&gt;</code>
+      (logo,
+      <code>nav</code>
+      , actions; collapses into a menu when narrow) and
+      <code>&lt;sh-bl-footer&gt;</code>
+      (one link column per
+      <code>nav</code>
+      ). Wrap the header in a
+      <code>&lt;header&gt;</code>
+      and the footer in a
+      <code>&lt;footer&gt;</code>
+      for the landmarks.
+    </p>
+  </section>
+  <section>
+    <h4>Responsive by container</h4>
+    <p>
+      Every block is a size container and reflows at its own width (960px and 640px), not the viewport's, so a block
+      looks the same in a full page, a preview or a sidebar. Content is centered at
+      <code>--block-mw</code>
+      (1200px) with
+      <code>--block-py</code>
+      /
+      <code>--block-px</code>
+      around it; set those once to change every block, or a block's own
+      <code>--hero-mw</code>
+      ,
+      <code>--features-py</code>
+      , … for one. Add class
+      <code>full</code>
+      for no max width or
+      <code>flush</code>
+      for no outer padding.
+    </p>
+  </section>
+  <section>
+    <h4>Variants</h4>
+    <p>
+      Every block takes a
+      <code>variant</code>
+      and a project-wide default can be set in
+      <code>ShipConfig</code>
+      (
+      <code>{{ "{ blockHeader: { variant: 'type-c' } }" }}</code>
+      ). Blocks with an accent (eyebrow, icons, panels) also take a
+      <code>color</code>
+      .
+      <b>sh-bl-banner</b>
+      : tinted strip, type-b solid, type-c floating pill.
+      <b>sh-bl-header</b>
+      : nav after the logo, type-b nav centered, type-c floating rounded bar.
+      <b>sh-bl-hero</b>
+      : centered with the media below, type-b split, type-c cover (media behind the text).
+      <b>sh-bl-logos</b>
+      : centered row, type-b bordered grid, type-c caption beside the logos.
+      <b>sh-bl-features</b>
+      : open grid, type-b cards, type-c header beside a two-column list.
+      <b>sh-bl-split</b>
+      : 50/50 framed media, type-b media on a tinted panel, type-c media bleeding to the edge (class
+      <code>reverse</code>
+      puts the media first).
+      <b>sh-bl-steps</b>
+      : numbered row joined by a line, type-b vertical timeline, type-c numbered cards.
+      <b>sh-bl-stats</b>
+      : numbers split by hairlines, type-b cards, type-c solid colour panel.
+      <b>sh-bl-testimonials</b>
+      : card grid, type-b one large quote, type-c masonry.
+      <b>sh-bl-pricing</b>
+      : cards, type-b joined columns, type-c compact rows; mark a tier
+      <code>featured</code>
+      .
+      <b>sh-bl-faq</b>
+      : divided list, type-b header in a sticky column, type-c cards.
+      <b>sh-bl-cta</b>
+      : tinted panel, type-b solid panel, type-c one bordered row.
+      <b>sh-bl-newsletter</b>
+      : centered, type-b text beside the form, type-c sign-up card.
+      <b>sh-bl-team</b>
+      : round photos, type-b photo cards, type-c compact list.
+      <b>sh-bl-posts</b>
+      : card grid, type-b list, type-c featured first post.
+      <b>sh-bl-contact</b>
+      : details beside the form, type-b centered, type-c form card on a tinted band.
+      <b>sh-bl-footer</b>
+      : brand and link columns, type-b centered, type-c compact single row.
+    </p>
+  </section>
+</app-property-viewer>

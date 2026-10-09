@@ -1,0 +1,363 @@
+@use 'helpers' as *;
+@use './block' as *;
+
+@layer ship {
+  sh-bl-pricing {
+    --pricing-bg: transparent;
+    --pricing-c: var(--base-12);
+    --pricing-mw: var(--block-mw);
+    --pricing-py: var(--block-py);
+    --pricing-px: var(--block-px);
+    --pricing-gap: var(--gap-y-7);
+    --pricing-ec: var(--c-9, var(--primary-9));
+    --pricing-ac: var(--c-9, var(--primary-9));
+    --pricing-cols: 3;
+    --pricing-col-gap: var(--gap-x-4);
+    --pricing-row-gap: var(--gap-y-4);
+    --pricing-narrow-mw: #{p2r(480)};
+    --pricing-tier-bg: var(--base-1);
+    --pricing-tier-bc: var(--base-4);
+    --pricing-tier-s: var(--shape-4);
+    --pricing-tier-p: var(--space-6);
+    --pricing-tier-gap: var(--gap-y-4);
+    --pricing-tier-bs: var(--box-shadow-10);
+    --pricing-featured-bs: var(--box-shadow-40);
+    --pricing-featured-lift: var(--space-4);
+    --pricing-dc: var(--base-11);
+    --pricing-pc: var(--base-12);
+    --pricing-ck-s: #{p2r(18)};
+    // Resolved where it is used, in a tier, so `100%` is the width of the tier row.
+    --pricing-basis: calc((100% - (var(--pricing-cols) - 1) * var(--pricing-col-gap)) / var(--pricing-cols));
+
+    @include frame(pricing);
+    @include head(pricing);
+
+    // Tiers flex rather than grid so a short row (two plans in a three column table) still fills the width, up to
+    // half of it each, and centres.
+    > .inner > .tiers {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: stretch;
+      gap: var(--pricing-row-gap) var(--pricing-col-gap);
+    }
+
+    sh-bl-pricing-tier {
+      // The tier's own colour class wins over the block's accent.
+      --pricing-tier-ac: var(--c-9, var(--pricing-ac));
+      --pricing-tier-ck-bg: color-mix(in oklab, var(--pricing-tier-ac) 14%, transparent);
+
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: var(--pricing-tier-gap);
+      flex: 1 1 var(--pricing-basis);
+      min-width: 0;
+      max-width: max(var(--pricing-basis), calc((100% - var(--pricing-col-gap)) / 2));
+      box-sizing: border-box;
+      padding: var(--pricing-tier-p);
+      background-color: var(--pricing-tier-bg);
+      border: var(--border-10);
+      border-color: var(--pricing-tier-bc);
+      border-radius: var(--pricing-tier-s);
+      box-shadow: var(--pricing-tier-bs);
+
+      > .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--gap-y-2) var(--gap-x-2);
+
+        &:empty {
+          display: none;
+        }
+
+        > h3,
+        > [title] {
+          font: var(--paragraph-10B);
+          color: var(--base-12);
+        }
+
+        > [badge] {
+          font: var(--paragraph-40B);
+          color: var(--pricing-tier-ac);
+        }
+      }
+
+      > p,
+      > [description] {
+        font: var(--paragraph-20);
+        color: var(--pricing-dc);
+        text-wrap: pretty;
+      }
+
+      > [price] {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: var(--gap-y-1) var(--gap-x-1);
+        font: var(--paragraph-20);
+        color: var(--pricing-dc);
+
+        > b,
+        > strong {
+          font: var(--title-10B);
+          letter-spacing: -0.02em;
+          color: var(--pricing-pc);
+        }
+      }
+
+      > ul {
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap-y-3);
+        margin: 0;
+        padding: var(--space-4) 0 0;
+        list-style: none;
+        border-top: var(--border-10);
+        border-color: var(--pricing-tier-bc);
+
+        > li {
+          position: relative;
+          padding-inline-start: calc(var(--pricing-ck-s) + var(--space-3));
+          font: var(--paragraph-20);
+          color: var(--base-12);
+
+          // A tinted dot with a check drawn from two borders, centred on the first line.
+          &::before,
+          &::after {
+            content: '';
+            position: absolute;
+            box-sizing: border-box;
+          }
+
+          &::before {
+            inset-inline-start: 0;
+            top: calc((1lh - var(--pricing-ck-s)) / 2);
+            width: var(--pricing-ck-s);
+            height: var(--pricing-ck-s);
+            background-color: var(--pricing-tier-ck-bg);
+            border-radius: 50%;
+          }
+
+          &::after {
+            inset-inline-start: calc(var(--pricing-ck-s) * 0.36);
+            top: calc((1lh - var(--pricing-ck-s)) / 2 + var(--pricing-ck-s) * 0.2);
+            width: calc(var(--pricing-ck-s) * 0.3);
+            height: calc(var(--pricing-ck-s) * 0.5);
+            border: solid var(--pricing-tier-ac);
+            border-width: 0 2px 2px 0;
+            rotate: 45deg;
+          }
+        }
+      }
+
+      > .actions {
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap-y-2);
+        margin-top: auto;
+        padding-top: var(--space-2);
+
+        &:empty {
+          display: none;
+        }
+
+        > button,
+        > a,
+        > [actions],
+        > [actions] > * {
+          width: 100%;
+        }
+
+        > [actions] {
+          display: flex;
+          flex-direction: column;
+          gap: var(--gap-y-2);
+        }
+      }
+
+      // The accent ring is the border plus a 1px shadow spread, so the content does not shift.
+      &.featured {
+        --pricing-tier-bc: var(--pricing-tier-ac);
+        --pricing-tier-bg: color-mix(in oklab, var(--pricing-tier-ac) 4%, var(--base-1));
+        --pricing-tier-bs: 0 0 0 1px var(--pricing-tier-ac), var(--pricing-featured-bs);
+
+        z-index: 1;
+
+        > ul {
+          border-color: color-mix(in oklab, var(--pricing-tier-ac) 25%, var(--base-4));
+        }
+      }
+    }
+
+    // Joined columns: one bordered surface split by vertical rules; the featured tier is lifted out of it.
+    &.type-b {
+      // A length, not a bare 0: it is subtracted from 100% in --pricing-basis.
+      --pricing-col-gap: 0%;
+      --pricing-row-gap: 0;
+
+      > .inner > .tiers {
+        margin-block: var(--pricing-featured-lift);
+        background-color: var(--pricing-tier-bg);
+        border: var(--border-10);
+        border-color: var(--pricing-tier-bc);
+        border-radius: var(--pricing-tier-s);
+        box-shadow: var(--box-shadow-10);
+      }
+
+      sh-bl-pricing-tier {
+        --pricing-tier-bs: none;
+
+        background-color: transparent;
+        border: 0;
+        border-radius: 0;
+
+        + sh-bl-pricing-tier {
+          border-inline-start: var(--border-10);
+          border-color: var(--pricing-tier-bc);
+        }
+
+        &.featured {
+          --pricing-tier-bs: 0 0 0 1px var(--pricing-tier-ac), var(--pricing-featured-bs);
+
+          margin-block: calc(var(--pricing-featured-lift) * -1);
+          padding-block: calc(var(--pricing-tier-p) + var(--pricing-featured-lift));
+          background-color: color-mix(in oklab, var(--pricing-tier-ac) 4%, var(--base-1));
+          border: var(--border-10);
+          border-color: var(--pricing-tier-ac);
+          border-radius: var(--pricing-tier-s);
+
+          + sh-bl-pricing-tier {
+            border-inline-start: 0;
+          }
+        }
+      }
+    }
+
+    // Compact rows: name and description | price | call to action, the features as an inline list below.
+    &.type-c {
+      > .inner > .tiers {
+        flex-direction: column;
+        flex-wrap: nowrap;
+      }
+
+      sh-bl-pricing-tier {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        grid-template-areas:
+          'top price actions'
+          'desc price actions'
+          'list list list';
+        align-items: center;
+        gap: var(--gap-y-2) var(--gap-x-6);
+        flex: none;
+        max-width: none;
+
+        // Anything else gets its own full-width row below the features.
+        > * {
+          grid-column: 1 / -1;
+        }
+
+        > .top {
+          grid-area: top;
+          justify-content: flex-start;
+        }
+
+        > p,
+        > [description] {
+          grid-area: desc;
+          align-self: start;
+        }
+
+        > [price] {
+          grid-area: price;
+          justify-content: flex-end;
+        }
+
+        > ul {
+          grid-area: list;
+          flex-direction: row;
+          flex-wrap: wrap;
+          gap: var(--gap-y-2) var(--gap-x-5);
+          margin-top: var(--gap-y-2);
+          padding-top: var(--space-3);
+
+          > li {
+            font: var(--paragraph-30);
+          }
+        }
+
+        > .actions {
+          grid-area: actions;
+          min-width: #{p2r(160)};
+          margin-top: 0;
+          padding-top: 0;
+        }
+      }
+    }
+
+    @include below($medium) {
+      > .inner > .tiers {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        width: 100%;
+        max-width: var(--pricing-narrow-mw);
+        margin-inline: auto;
+        box-sizing: border-box;
+      }
+
+      sh-bl-pricing-tier {
+        flex: none;
+        max-width: none;
+      }
+
+      &.type-b {
+        sh-bl-pricing-tier {
+          + sh-bl-pricing-tier {
+            border-inline-start: 0;
+            border-top: var(--border-10);
+            border-color: var(--pricing-tier-bc);
+          }
+
+          &.featured {
+            margin-block: 0;
+            margin-inline: calc(var(--pricing-featured-lift) * -0.5);
+            padding-block: var(--pricing-tier-p);
+
+            + sh-bl-pricing-tier {
+              border-top: 0;
+            }
+          }
+        }
+      }
+
+      &.type-c > .inner > .tiers {
+        max-width: none;
+      }
+    }
+
+    @include below($narrow) {
+      // Compact rows fall back to the card stack, which keeps the call to action last.
+      &.type-c sh-bl-pricing-tier {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+
+        > [price] {
+          justify-content: flex-start;
+        }
+
+        > .actions {
+          min-width: 0;
+          margin-top: var(--gap-y-2);
+        }
+      }
+
+      > .inner > .tiers > sh-bl-pricing-tier {
+        --pricing-tier-p: var(--space-5);
+      }
+    }
+  }
+}

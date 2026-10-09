@@ -55,7 +55,7 @@
 
     display: flex;
     align-items: center;
-    gap: p2r(8);
+    gap: var(--gap-x-2);
     cursor: pointer;
     user-select: none;
     position: relative;
@@ -69,7 +69,7 @@
     label {
       display: flex;
       align-items: center;
-      gap: p2r(8);
+      gap: var(--gap-x-2);
       position: relative;
       z-index: 1;
     }
