@@ -8,12 +8,12 @@
     --testimonials-mw: var(--block-mw);
     --testimonials-py: var(--block-py);
     --testimonials-px: var(--block-px);
-    --testimonials-gap: var(--space-7);
+    --testimonials-gap: var(--gap-y-7);
     --testimonials-ec: var(--c-9, var(--primary-9));
     --testimonials-ac: var(--c-9, var(--primary-9));
     --testimonials-cols: 3;
-    --testimonials-col-gap: var(--space-4);
-    --testimonials-row-gap: var(--space-4);
+    --testimonials-col-gap: var(--gap-x-4);
+    --testimonials-row-gap: var(--gap-y-4);
     --testimonials-item-bg: var(--base-1);
     --testimonials-item-bc: var(--base-4);
     --testimonials-item-s: var(--shape-4);
@@ -46,7 +46,7 @@
       > figure {
         display: flex;
         flex-direction: column;
-        gap: var(--space-5);
+        gap: var(--gap-y-5);
         flex: 1;
         min-width: 0;
         margin: 0;
@@ -54,7 +54,7 @@
         > [rating] {
           display: flex;
           align-items: center;
-          gap: var(--space-1);
+          gap: var(--gap-x-1);
           font-size: #{p2r(18)};
           color: var(--testimonials-ac);
         }
@@ -77,7 +77,7 @@
         > figcaption {
           display: flex;
           align-items: center;
-          gap: var(--space-3);
+          gap: var(--gap-x-3);
           margin-top: auto;
 
           > img,
@@ -151,7 +151,7 @@
 
         > figure {
           align-items: center;
-          gap: var(--space-5);
+          gap: var(--gap-y-5);
 
           &:not(:has(> [rating]))::before {
             content: '\201C';
@@ -173,7 +173,7 @@
 
           > figcaption {
             justify-content: center;
-            margin-top: var(--space-2);
+            margin-top: var(--gap-y-2);
             text-align: start;
           }
         }

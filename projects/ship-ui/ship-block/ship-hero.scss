@@ -8,7 +8,7 @@
     --hero-mw: var(--block-mw);
     --hero-py: calc(var(--block-py) * 1.5);
     --hero-px: var(--block-px);
-    --hero-gap: var(--space-7);
+    --hero-gap: var(--gap-y-7);
     --hero-tw: #{p2r(760)};
     --hero-ac: var(--c-9, var(--primary-9));
     --hero-dc: var(--base-11);
@@ -26,7 +26,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--space-4);
+      gap: var(--gap-y-4);
       max-width: var(--hero-tw);
       text-align: center;
 
@@ -59,8 +59,8 @@
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        gap: var(--space-3);
-        margin-top: var(--space-3);
+        gap: var(--gap-y-3) var(--gap-x-3);
+        margin-top: var(--gap-y-3);
 
         &:empty {
           display: none;
@@ -106,6 +106,7 @@
       > .inner {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: var(--gap-x-7);
         align-items: center;
       }
 

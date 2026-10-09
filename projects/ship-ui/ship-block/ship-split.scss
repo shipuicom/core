@@ -11,7 +11,7 @@ $edge: max(var(--split-px), calc((100cqi - var(--split-mw)) / 2));
     --split-mw: var(--block-mw);
     --split-py: var(--block-py);
     --split-px: var(--block-px);
-    --split-gap: var(--space-8);
+    --split-gap: var(--gap-x-8);
     --split-ec: var(--c-9, var(--primary-9));
     --split-dc: var(--base-11);
     --split-ac: var(--c-9, var(--primary-9));
@@ -39,7 +39,7 @@ $edge: max(var(--split-px), calc((100cqi - var(--split-mw)) / 2));
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: var(--space-4);
+      gap: var(--gap-y-4);
       min-width: 0;
 
       > [eyebrow] {
@@ -64,8 +64,8 @@ $edge: max(var(--split-px), calc((100cqi - var(--split-mw)) / 2));
       > ul {
         display: flex;
         flex-direction: column;
-        gap: var(--space-3);
-        margin: var(--space-1) 0 0;
+        gap: var(--gap-y-3);
+        margin: var(--gap-y-1) 0 0;
         padding: 0;
         list-style: none;
 
@@ -107,8 +107,8 @@ $edge: max(var(--split-px), calc((100cqi - var(--split-mw)) / 2));
       > .actions {
         display: flex;
         flex-wrap: wrap;
-        gap: var(--space-3);
-        margin-top: var(--space-3);
+        gap: var(--gap-y-3) var(--gap-x-3);
+        margin-top: var(--gap-y-3);
 
         &:empty {
           display: none;
@@ -224,7 +224,7 @@ $edge: max(var(--split-px), calc((100cqi - var(--split-mw)) / 2));
     @include below($medium) {
       > .inner {
         grid-template-columns: minmax(0, 1fr);
-        gap: var(--space-6);
+        gap: var(--gap-y-6) var(--gap-x-6);
       }
 
       > .inner > .media {

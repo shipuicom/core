@@ -8,7 +8,7 @@
     --faq-mw: var(--block-mw);
     --faq-py: var(--block-py);
     --faq-px: var(--block-px);
-    --faq-gap: var(--space-7);
+    --faq-gap: var(--gap-y-7);
     --faq-ec: var(--c-9, var(--primary-9));
     --faq-ic: var(--c-9, var(--primary-9));
     --faq-is: #{p2r(14)};
@@ -45,7 +45,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: var(--space-4);
+        gap: var(--gap-x-4);
         padding-block: var(--faq-sp);
         font: var(--paragraph-10B);
         color: var(--faq-qc);
@@ -88,7 +88,7 @@
       }
 
       > :not(summary) + :not(summary) {
-        margin-top: var(--space-3);
+        margin-top: var(--gap-y-3);
       }
 
       > :last-child:not(summary) {
@@ -128,6 +128,7 @@
       > .inner {
         display: grid;
         grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+        column-gap: var(--gap-x-7);
         align-items: start;
       }
 
@@ -154,7 +155,7 @@
         display: grid;
         grid-template-columns: repeat(var(--faq-cols), minmax(0, 1fr));
         align-items: start;
-        gap: var(--space-4);
+        gap: var(--gap-y-4) var(--gap-x-4);
         max-width: none;
         border-top: 0;
       }

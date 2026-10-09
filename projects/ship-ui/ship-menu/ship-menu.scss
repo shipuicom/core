@@ -141,7 +141,7 @@
       position: relative;
       display: flex;
       flex-direction: column;
-      gap: p2r(4);
+      gap: var(--gap-y-1);
       padding: 0;
       margin: 0;
       max-height: var(--menu-mh);
@@ -197,7 +197,7 @@
         height: auto;
         margin: p2r(0 8);
         padding: var(--pad-y-2) var(--pad-x-2);
-        gap: p2r(0 8);
+        gap: 0 var(--gap-x-2);
         width: calc(100% - #{p2r(16)});
         border-radius: var(--shape-2);
         appearance: none;
@@ -214,7 +214,7 @@
           min-height: p2r(24);
           display: inline-block;
           width: 0;
-          margin-right: p2r(-8);
+          margin-right: calc(var(--gap-x-2) * -1);
         }
 
         &:active {

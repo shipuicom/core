@@ -8,7 +8,7 @@
     --cta-mw: var(--block-mw);
     --cta-py: var(--block-py);
     --cta-px: var(--block-px);
-    --cta-gap: var(--space-5);
+    --cta-gap: var(--gap-y-5);
     --cta-ec: var(--c-9, var(--primary-9));
     --cta-hc: var(--base-12);
     --cta-dc: var(--base-11);
@@ -30,7 +30,7 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr);
       align-items: center;
-      gap: var(--space-7);
+      gap: var(--gap-y-7) var(--gap-x-7);
       padding: var(--cta-pp);
       color: var(--cta-hc);
       background-color: var(--cta-pbg);
@@ -47,7 +47,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--space-5);
+      gap: var(--gap-y-5);
       min-width: 0;
       text-align: center;
 
@@ -55,7 +55,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: var(--space-3);
+        gap: var(--gap-y-3);
         max-width: var(--cta-tw);
 
         > [eyebrow] {
@@ -82,7 +82,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: var(--space-3);
+        gap: var(--gap-y-3);
 
         &:not(:has(> small, > .actions > *)) {
           display: none;
@@ -92,7 +92,7 @@
           display: flex;
           flex-wrap: wrap;
           justify-content: center;
-          gap: var(--space-3);
+          gap: var(--gap-y-3) var(--gap-x-3);
 
           &:empty {
             display: none;
@@ -174,7 +174,7 @@
 
       > .inner > .panel:has(> .media > *) {
         grid-template-columns: var(--cta-thumb) minmax(0, 1fr);
-        gap: var(--space-6);
+        gap: var(--gap-y-6) var(--gap-x-6);
 
         > .media {
           order: -1;
@@ -184,7 +184,7 @@
       > .inner > .panel > .body {
         flex-direction: row;
         justify-content: space-between;
-        gap: var(--space-6);
+        gap: var(--gap-x-6);
         text-align: start;
 
         > .text {
@@ -256,6 +256,7 @@
       &.type-c > .inner > .panel > .body {
         flex-direction: column;
         align-items: flex-start;
+        gap: var(--gap-y-6);
 
         > .side {
           align-items: flex-start;

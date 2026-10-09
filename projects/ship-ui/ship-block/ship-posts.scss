@@ -8,11 +8,11 @@
     --posts-mw: var(--block-mw);
     --posts-py: var(--block-py);
     --posts-px: var(--block-px);
-    --posts-gap: var(--space-7);
+    --posts-gap: var(--gap-y-7);
     --posts-ec: var(--primary-9);
     --posts-cols: 3;
-    --posts-row-gap: var(--space-7);
-    --posts-col-gap: var(--space-6);
+    --posts-row-gap: var(--gap-y-7);
+    --posts-col-gap: var(--gap-x-6);
     --posts-ms: var(--shape-3);
     --posts-mbg: var(--base-3);
     --posts-mbc: var(--base-4);
@@ -36,7 +36,7 @@
       position: relative;
       display: flex;
       flex-direction: column;
-      gap: var(--space-4);
+      gap: var(--gap-y-4);
       min-width: 0;
       border-radius: var(--posts-ms);
 
@@ -85,7 +85,7 @@
         display: flex;
         flex: 1;
         flex-direction: column;
-        gap: var(--space-2);
+        gap: var(--gap-y-2);
         min-width: 0;
         font: var(--paragraph-30);
         color: var(--posts-dc);
@@ -94,7 +94,7 @@
           display: flex;
           flex-wrap: wrap;
           align-items: center;
-          gap: var(--space-2) var(--space-3);
+          gap: var(--gap-y-2) var(--gap-x-3);
 
           &:empty {
             display: none;
@@ -144,7 +144,7 @@
         > [author] {
           display: flex;
           align-items: center;
-          gap: var(--space-2);
+          gap: var(--gap-x-2);
           margin-top: auto;
           padding-top: var(--space-2);
           font: var(--paragraph-30B);
@@ -165,7 +165,7 @@
     // List: one post per row, the thumbnail on the left (about 40 %) and the text beside it.
     &.type-b {
       --posts-cols: 1;
-      --posts-row-gap: var(--space-6);
+      --posts-row-gap: var(--gap-y-6);
 
       sh-bl-post {
         --posts-tf: var(--title-30B);
@@ -173,7 +173,7 @@
         display: grid;
         grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
         align-items: center;
-        gap: var(--space-6);
+        gap: var(--gap-y-6) var(--gap-x-6);
 
         > .body {
           align-self: stretch;
@@ -181,7 +181,7 @@
 
           > footer,
           > [author] {
-            margin-top: var(--space-2);
+            margin-top: var(--gap-y-2);
           }
         }
 
@@ -281,14 +281,14 @@
     @include below($narrow) {
       > .inner > .items {
         --posts-cols: 1;
-        --posts-row-gap: var(--space-6);
+        --posts-row-gap: var(--gap-y-6);
       }
 
       &.type-b > .inner > .items > sh-bl-post {
         --posts-tf: var(--paragraph-10B);
 
         grid-template-columns: minmax(0, 1fr);
-        gap: var(--space-4);
+        gap: var(--gap-y-4) var(--gap-x-4);
       }
 
       &.type-c > .inner > .items > sh-bl-post:first-child {

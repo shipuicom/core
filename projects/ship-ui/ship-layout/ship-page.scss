@@ -5,8 +5,8 @@
     --page-mw: #{p2r(1200)};
     --page-py: var(--pad-y-7);
     --page-px: var(--pad-x-7);
-    --page-gap: var(--space-6);
-    --page-head-gap: var(--space-4);
+    --page-gap: var(--gap-y-6);
+    --page-head-gap: var(--gap-y-4);
     --page-aside-w: #{p2r(320)};
 
     display: flex;
@@ -54,7 +54,7 @@
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: var(--space-2);
+        gap: var(--gap-y-2) var(--gap-x-2);
         font: var(--paragraph-30);
         color: var(--base-8);
 
@@ -68,12 +68,12 @@
         flex-wrap: wrap;
         align-items: flex-start;
         justify-content: space-between;
-        gap: var(--space-4);
+        gap: var(--gap-y-4) var(--gap-x-4);
 
         > .text {
           display: flex;
           flex-direction: column;
-          gap: var(--space-1);
+          gap: var(--gap-y-1);
           flex: 1 1 #{p2r(320)};
           min-width: 0;
 
@@ -91,7 +91,7 @@
           display: flex;
           flex-wrap: wrap;
           align-items: center;
-          gap: var(--space-2);
+          gap: var(--gap-y-2) var(--gap-x-2);
 
           &:empty {
             display: none;
@@ -103,7 +103,7 @@
     > .body {
       display: flex;
       align-items: flex-start;
-      gap: var(--page-gap);
+      gap: var(--gap-x-6);
       min-width: 0;
 
       > .main {
@@ -140,6 +140,7 @@
       > .body {
         flex-direction: column;
         align-items: stretch;
+        gap: var(--page-gap);
 
         > .aside {
           flex-basis: auto;
@@ -150,7 +151,7 @@
     }
 
     @include breakpoint(-milli) {
-      --page-gap: var(--space-5);
+      --page-gap: var(--gap-y-5);
 
       &:not(.type-c) {
         --page-py: var(--pad-y-5);

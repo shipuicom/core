@@ -1,8 +1,8 @@
 <h1>Spacing & density</h1>
-<!-- @keywords: spacing, density, padding, pad-y, pad-x, tiers, space, shape, radius, compact, comfortable -->
+<!-- @keywords: spacing, density, padding, gap, gap-y, gap-x, pad-y, pad-x, tiers, space, shape, radius, compact, comfortable -->
 <p class="lead">
-  Two custom properties set the density of the whole library. Every component's padding is a tier of that pair, so
-  one change makes an app tighter or airier, and any component can still be tuned on its own.
+  Two custom properties set the density of the whole library. Every component's padding and every gap is a tier of
+  that pair, so one change makes an app tighter or airier, and any component can still be tuned on its own.
 </p>
 
 <app-property-viewer>
@@ -65,6 +65,34 @@
   </section>
 
   <section>
+    <h4>Gaps</h4>
+    <p>
+      Gaps follow the same pair, per axis: a row gap (between stacked items) is a <code>--gap-y-N</code> tier of
+      <code>--pad-y</code>, a column gap (between items side by side) a <code>--gap-x-N</code> tier of
+      <code>--pad-x</code>. At the default pair both equal the <code>--space-N</code> step, so the scale reads the
+      same; only the density moves it.
+    </p>
+    <table class="token-table">
+      <thead>
+        <tr><th>Tier</th><th>Rows</th><th>At 8px</th><th>Columns</th><th>At 12px</th><th></th></tr>
+      </thead>
+      <tbody>
+        @for (t of gaps; track t.tier) {
+          <tr>
+            <td><code>--gap-y-{{ t.tier }}</code> / <code>--gap-x-{{ t.tier }}</code></td>
+            <td>× {{ t.y }}</td>
+            <td>{{ t.yPx }}px</td>
+            <td>× {{ t.x }}</td>
+            <td>{{ t.xPx }}px</td>
+            <td><span class="bar" [style.width.px]="t.xPx"></span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-highlight lang="scss" [content]="GAPS" />
+  </section>
+
+  <section>
     <h4>A denser region</h4>
     <p>
       Set the pair on <code>:root</code>: the tiers are computed once on <code>&lt;body&gt;</code>, so changing
@@ -87,8 +115,8 @@
   <section>
     <h4>Space and shape</h4>
     <p>
-      Gaps between elements use a fixed spacing scale; corner radii use the shape scale, which multiplies by
-      <code>--shape-scale</code>.
+      <code>--space-N</code> is the same scale at a fixed size, for spacing that should not follow the density; corner
+      radii use the shape scale, which multiplies by <code>--shape-scale</code>.
     </p>
     <table class="token-table">
       <thead>

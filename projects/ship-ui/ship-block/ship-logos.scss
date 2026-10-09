@@ -8,15 +8,15 @@
     --logos-mw: var(--block-mw);
     --logos-py: var(--space-6);
     --logos-px: var(--block-px);
-    --logos-gap: var(--space-5);
+    --logos-gap: var(--gap-y-5);
     --logos-cc: var(--base-11);
     --logos-ic: var(--base-10);
     --logos-ic-h: var(--base-12);
     --logos-io: 0.75;
     --logos-ih: #{p2r(32)};
     --logos-is: #{p2r(28)};
-    --logos-row-gap: var(--space-5);
-    --logos-col-gap: var(--space-7);
+    --logos-row-gap: var(--gap-y-5);
+    --logos-col-gap: var(--gap-x-7);
     --logos-cols: 3;
     --logos-bc: var(--base-4);
     --logos-s: var(--shape-3);
@@ -30,7 +30,7 @@
     > .inner > .caption {
       display: flex;
       flex-direction: column;
-      gap: var(--space-1);
+      gap: var(--gap-y-1);
       text-align: center;
 
       &:empty {
@@ -59,7 +59,7 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: var(--space-2);
+        gap: var(--gap-x-2);
         min-height: var(--logos-ih);
         font: var(--paragraph-10B);
         letter-spacing: -0.01em;
@@ -117,7 +117,7 @@
 
     // Grid: one bordered cell per logo, neighbours share their borders.
     &.type-b {
-      --logos-gap: var(--space-4);
+      --logos-gap: var(--gap-y-4);
 
       > .inner > .items {
         display: grid;
@@ -163,7 +163,7 @@
       > .inner {
         flex-direction: row;
         align-items: center;
-        gap: var(--space-6);
+        gap: var(--gap-x-6);
       }
 
       > .inner > .caption {
@@ -181,7 +181,7 @@
         flex: 1 1 0;
         min-width: 0;
         justify-content: space-between;
-        gap: var(--logos-row-gap) var(--space-5);
+        gap: var(--logos-row-gap) var(--gap-x-5);
 
         > * {
           font: var(--paragraph-20B);
@@ -192,13 +192,13 @@
     @include below($medium) {
       > .inner > .items {
         --logos-cols: 3;
-        --logos-col-gap: var(--space-6);
+        --logos-col-gap: var(--gap-x-6);
       }
 
       &.type-c > .inner {
         flex-direction: column;
         align-items: stretch;
-        gap: var(--space-4);
+        gap: var(--gap-y-4);
       }
 
       &.type-c > .inner > .caption {
@@ -217,8 +217,8 @@
     @include below($narrow) {
       > .inner > .items {
         --logos-cols: 2;
-        --logos-col-gap: var(--space-5);
-        --logos-row-gap: var(--space-4);
+        --logos-col-gap: var(--gap-x-5);
+        --logos-row-gap: var(--gap-y-4);
         --logos-cell-h: #{p2r(80)};
       }
     }

@@ -8,7 +8,7 @@
     --newsletter-mw: var(--block-mw);
     --newsletter-py: var(--block-py);
     --newsletter-px: var(--block-px);
-    --newsletter-gap: var(--space-6);
+    --newsletter-gap: var(--gap-y-6);
     --newsletter-ec: var(--c-9, var(--primary-9));
     --newsletter-ic: var(--c-9, var(--primary-9));
     --newsletter-ibg: var(--c-3, var(--primary-3));
@@ -37,7 +37,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--space-3);
+      gap: var(--gap-y-3);
       max-width: var(--newsletter-tw);
 
       &:empty {
@@ -50,7 +50,7 @@
         place-items: center;
         width: #{p2r(48)};
         height: #{p2r(48)};
-        margin-bottom: var(--space-2);
+        margin-bottom: var(--gap-y-2);
         font-size: #{p2r(24)};
         color: var(--newsletter-ic);
         background-color: var(--newsletter-ibg);
@@ -86,7 +86,7 @@
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      gap: var(--space-3);
+      gap: var(--gap-y-3);
       width: 100%;
       max-width: var(--newsletter-fw);
 
@@ -99,7 +99,7 @@
       > [form] {
         display: flex;
         align-items: flex-end;
-        gap: var(--space-2);
+        gap: var(--gap-x-2);
         margin: 0;
 
         > sh-form-field {
@@ -130,7 +130,7 @@
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         align-items: center;
-        gap: var(--space-7);
+        gap: var(--gap-y-7) var(--gap-x-7);
         text-align: start;
       }
 
@@ -177,6 +177,7 @@
       > .inner > .box > .form > [form] {
         flex-direction: column;
         align-items: stretch;
+        gap: var(--gap-y-2);
       }
 
       > .inner > .box > .text > h2 {

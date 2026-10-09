@@ -8,7 +8,7 @@
     --banner-mw: var(--block-mw);
     --banner-py: var(--space-2);
     --banner-px: var(--block-px);
-    --banner-gap: var(--space-3);
+    --banner-gap: var(--gap-x-3);
     --banner-bc: var(--c-5, var(--base-4));
     --banner-ac: currentColor;
     --banner-ic: var(--c-9, var(--base-11));
@@ -31,7 +31,7 @@
       align-items: center;
       justify-content: center;
       column-gap: var(--banner-gap);
-      row-gap: var(--space-1);
+      row-gap: var(--gap-y-1);
       font: var(--paragraph-30);
       text-align: center;
 
@@ -67,7 +67,7 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: var(--space-3);
+      gap: var(--gap-y-3) var(--gap-x-3);
 
       &:empty {
         display: none;
@@ -77,7 +77,7 @@
       > [actions] {
         display: inline-flex;
         align-items: center;
-        gap: var(--space-1);
+        gap: var(--gap-x-1);
         font: var(--paragraph-30B);
         color: var(--banner-ac);
         text-decoration: underline;

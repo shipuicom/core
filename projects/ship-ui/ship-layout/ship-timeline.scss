@@ -2,7 +2,7 @@
 
 @layer ship {
   sh-lo-timeline {
-    --timeline-gap: var(--space-5);
+    --timeline-gap: var(--gap-y-5);
     --timeline-marker-si: #{p2r(32)};
     --timeline-line-c: var(--base-4);
     --timeline-line-w: #{p2r(2)};
@@ -15,7 +15,7 @@
     sh-lo-timeline-item {
       position: relative;
       display: flex;
-      gap: var(--space-3);
+      gap: var(--gap-x-3);
       min-width: 0;
 
       // The connecting line runs from this marker to the next item's.
@@ -60,7 +60,7 @@
       > .content {
         display: flex;
         flex-direction: column;
-        gap: var(--space-1);
+        gap: var(--gap-y-1);
         flex: 1 1 0;
         min-width: 0;
         padding-top: calc((var(--timeline-marker-si) - 1.25em) / 2);
@@ -70,7 +70,7 @@
           flex-wrap: wrap;
           align-items: baseline;
           justify-content: space-between;
-          gap: var(--space-2);
+          gap: var(--gap-y-2) var(--gap-x-2);
 
           > b,
           > strong,
@@ -100,7 +100,7 @@
 
     // Compact: small markers, tighter rhythm.
     &.type-c {
-      --timeline-gap: var(--space-3);
+      --timeline-gap: var(--gap-y-3);
       --timeline-marker-si: #{p2r(24)};
 
       sh-lo-timeline-item > .marker {

@@ -2,7 +2,7 @@
 @use '../fn/p2r.scss' as *;
 @use 'sass:math' as mat;
 
-@mixin wrapper($gap: p2r(32), $padding: p2r(32)) {
+@mixin wrapper($gap: var(--gap-y-6), $padding: p2r(32)) {
   display: flex;
   flex-direction: column;
   width: 100%;

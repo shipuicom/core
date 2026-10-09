@@ -11,6 +11,7 @@
   sh-bl-step {
     flex-direction: row;
     align-items: flex-start;
+    gap: var(--gap-x-4);
     text-align: start;
 
     &:not(:last-child)::after {
@@ -36,11 +37,11 @@
     --steps-mw: var(--block-mw);
     --steps-py: var(--block-py);
     --steps-px: var(--block-px);
-    --steps-gap: var(--space-7);
+    --steps-gap: var(--gap-y-7);
     --steps-ec: var(--c-9, var(--primary-9));
     --steps-cols: 3;
-    --steps-row-gap: var(--space-6);
-    --steps-col-gap: var(--space-6);
+    --steps-row-gap: var(--gap-y-6);
+    --steps-col-gap: var(--gap-x-6);
     --steps-mk-s: #{p2r(48)};
     --steps-mbg: var(--c-2, var(--primary-2));
     --steps-mbc: var(--c-6, var(--primary-6));
@@ -70,7 +71,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--space-4);
+      gap: var(--gap-y-4);
       min-width: 0;
       text-align: center;
 
@@ -117,7 +118,7 @@
       > .text {
         display: flex;
         flex-direction: column;
-        gap: var(--space-2);
+        gap: var(--gap-y-2);
         min-width: 0;
 
         > h3,
@@ -136,7 +137,7 @@
         > a {
           font: var(--paragraph-30B);
           color: var(--steps-nc);
-          margin-top: var(--space-1);
+          margin-top: var(--gap-y-1);
 
           &:focus-visible {
             outline: 2px solid var(--primary-8);
@@ -153,7 +154,7 @@
         display: grid;
         grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
         align-items: start;
-        column-gap: var(--space-8);
+        column-gap: var(--gap-x-8);
       }
 
       > .inner > .head {
@@ -174,7 +175,7 @@
       > .inner > .items {
         grid-auto-flow: row;
         grid-template-columns: repeat(var(--steps-cols), minmax(0, 1fr));
-        gap: var(--space-4);
+        gap: var(--gap-y-4) var(--gap-x-4);
       }
 
       sh-bl-step {
@@ -232,7 +233,7 @@
     @include below($narrow) {
       > .inner > .items {
         --steps-mk-s: #{p2r(40)};
-        --steps-row-gap: var(--space-5);
+        --steps-row-gap: var(--gap-y-5);
       }
 
       &.type-c > .inner > .items {

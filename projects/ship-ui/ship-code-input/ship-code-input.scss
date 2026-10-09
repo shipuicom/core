@@ -15,7 +15,7 @@
 
   sh-code-input {
     --ci-size: #{p2r(44)};
-    --ci-gap: #{p2r(8)};
+    --ci-gap: var(--gap-x-2);
     --ci-group-gap: #{p2r(20)};
     --ci-s: var(--shape-2);
     --ci-bc: var(--base-4);
@@ -27,7 +27,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: p2r(4);
+    gap: var(--gap-y-1);
 
     &[disabled],
     &.disabled {
@@ -45,7 +45,7 @@
     > label {
       display: flex;
       align-items: center;
-      gap: p2r(4);
+      gap: var(--gap-x-1);
     }
 
     // Projected form input: the boxes are the visible control.

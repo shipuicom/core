@@ -4,13 +4,13 @@
   sh-lo-inbox {
     --inbox-folders-w: #{p2r(220)};
     --inbox-reader-w: minmax(0, 1.3fr);
-    --inbox-gap: var(--space-4);
+    --inbox-gap: var(--gap-x-4);
     --inbox-row-h: #{p2r(44)};
     --inbox-c: var(--primary-8);
 
     display: grid;
     grid-template-columns: var(--inbox-folders-w) minmax(0, 1fr);
-    gap: var(--inbox-gap);
+    gap: var(--gap-y-4) var(--inbox-gap);
     height: 100%;
     min-height: 0;
 
@@ -29,7 +29,7 @@
     > .folders {
       display: flex;
       flex-direction: column;
-      gap: var(--space-1);
+      gap: var(--gap-y-1);
       min-height: 0;
       overflow: auto;
 
@@ -48,7 +48,7 @@
         > button:not([shButton]) {
           display: flex;
           align-items: center;
-          gap: var(--space-3);
+          gap: var(--gap-x-3);
           width: 100%;
           padding: var(--pad-y-3) var(--pad-x-3);
           border: 0;
@@ -77,7 +77,7 @@
         }
 
         > [shButton] {
-          margin-bottom: var(--space-3);
+          margin-bottom: var(--gap-y-3);
         }
       }
     }
@@ -118,7 +118,7 @@
       grid-template-columns: auto auto auto minmax(0, #{p2r(180)}) minmax(0, 1fr) auto auto;
       grid-template-areas: 'select star avatar from message labels time';
       align-items: center;
-      column-gap: var(--space-3);
+      column-gap: var(--gap-x-3);
       min-height: var(--inbox-row-h);
       padding: var(--pad-y-2) var(--pad-x-3);
       border-bottom: var(--border-10);
@@ -183,7 +183,7 @@
         grid-area: message;
         display: flex;
         align-items: baseline;
-        gap: var(--space-2);
+        gap: var(--gap-x-2);
         min-width: 0;
         overflow: hidden;
         white-space: nowrap;
@@ -213,7 +213,7 @@
       > .labels {
         grid-area: labels;
         display: flex;
-        gap: var(--space-1);
+        gap: var(--gap-x-1);
       }
 
       > .time {
@@ -267,7 +267,7 @@
       }
 
       > .labels:not(:empty) {
-        margin-top: var(--space-1);
+        margin-top: var(--gap-y-1);
       }
     }
 

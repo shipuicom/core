@@ -8,10 +8,10 @@
     --stats-mw: var(--block-mw);
     --stats-py: var(--block-py);
     --stats-px: var(--block-px);
-    --stats-gap: var(--space-7);
+    --stats-gap: var(--gap-y-7);
     --stats-ec: var(--c-9, var(--primary-9));
     --stats-min: #{p2r(180)};
-    --stats-row-gap: var(--space-6);
+    --stats-row-gap: var(--gap-y-6);
     --stats-item-p: var(--space-2) var(--space-5);
     --stats-bc: var(--base-4);
     --stats-ic: var(--c-9, var(--primary-9));
@@ -43,7 +43,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--space-2);
+      gap: var(--gap-y-2);
       min-width: 0;
       margin-inline-start: -1px;
       padding: var(--stats-item-p);
@@ -56,7 +56,7 @@
       > [icon] {
         font-size: #{p2r(28)};
         color: var(--stats-ic);
-        margin-bottom: var(--space-1);
+        margin-bottom: var(--gap-y-1);
       }
 
       > b,
@@ -78,11 +78,11 @@
 
     // Cards: every stat on its own surface, start aligned.
     &.type-b {
-      --stats-row-gap: var(--space-4);
+      --stats-row-gap: var(--gap-y-4);
       --stats-item-p: var(--space-5);
 
       > .inner > .items {
-        column-gap: var(--space-4);
+        column-gap: var(--gap-x-4);
         overflow: visible;
       }
 

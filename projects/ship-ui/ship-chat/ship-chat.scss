@@ -2,8 +2,8 @@
 
 @layer ship {
   sh-chat {
-    --chat-gap: var(--space-4);
-    --chat-gap-continued: var(--space-1);
+    --chat-gap: var(--gap-y-4);
+    --chat-gap-continued: var(--gap-y-1);
     --chat-avatar-si: #{p2r(32)};
     --chat-max-w: 75%;
     --chat-py: var(--pad-y-3);
@@ -18,7 +18,7 @@
 
     display: flex;
     align-items: flex-start;
-    gap: var(--space-2);
+    gap: var(--gap-x-2);
     min-width: 0;
     margin-block-start: var(--chat-gap);
 
@@ -47,7 +47,7 @@
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: var(--space-1);
+      gap: var(--gap-y-1);
       min-width: 0;
       max-width: var(--chat-max-w);
     }
@@ -55,7 +55,7 @@
     > .body > .meta {
       display: flex;
       align-items: baseline;
-      gap: var(--space-2);
+      gap: var(--gap-x-2);
       padding-inline: var(--space-1);
       font: var(--paragraph-40);
       color: var(--chat-meta-c);
@@ -74,7 +74,7 @@
     > .body > .bubble {
       display: flex;
       flex-direction: column;
-      gap: var(--space-2);
+      gap: var(--gap-y-2);
       min-width: 0;
       max-width: 100%;
       padding: var(--chat-py) var(--chat-px);
@@ -111,7 +111,7 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: var(--space-1);
+      gap: var(--gap-y-1) var(--gap-x-1);
       font: var(--paragraph-40);
       color: var(--chat-meta-c);
 
@@ -156,7 +156,7 @@
     .typing {
       display: inline-flex;
       align-items: center;
-      gap: p2r(4);
+      gap: var(--gap-x-1);
 
       > i {
         width: p2r(6);
@@ -196,7 +196,7 @@
 
     // Flat rows (team chat): no bubbles, every message start-aligned, full width.
     &.type-c {
-      --chat-gap: var(--space-2);
+      --chat-gap: var(--gap-y-2);
       --chat-gap-continued: 0;
       --chat-py: 0;
       --chat-px: 0;
@@ -206,7 +206,7 @@
       // Set only under a colour class: the sender name takes it.
       --chat-name-c: var(--c-8);
 
-      gap: var(--space-3);
+      gap: var(--gap-x-3);
       padding: var(--pad-y-2) var(--pad-x-2);
       border-radius: var(--shape-2);
 

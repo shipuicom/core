@@ -6,14 +6,14 @@
     --ec-px: var(--pad-x-5);
 
     display: flex;
-    gap: p2r(8);
+    gap: var(--gap-x-2);
     width: 100%;
     padding: var(--ec-py) var(--ec-px);
 
     .content {
       display: flex;
       flex-direction: column;
-      gap: p2r(4);
+      gap: var(--gap-y-1);
       flex: 1;
 
       > * {
@@ -33,7 +33,7 @@
     .actions [actions],
     .actions {
       display: flex;
-      gap: p2r(8);
+      gap: var(--gap-x-2);
       align-items: center;
 
       [shButton] {

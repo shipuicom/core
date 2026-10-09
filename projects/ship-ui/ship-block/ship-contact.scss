@@ -8,8 +8,8 @@
     --contact-mw: var(--block-mw);
     --contact-py: var(--block-py);
     --contact-px: var(--block-px);
-    --contact-gap: var(--space-6);
-    --contact-col-gap: var(--space-8);
+    --contact-gap: var(--gap-y-6);
+    --contact-col-gap: var(--gap-x-8);
     --contact-ec: var(--c-9, var(--primary-9));
     --contact-ic: var(--c-9, var(--primary-9));
     --contact-ibg: var(--c-3, var(--primary-3));
@@ -66,7 +66,7 @@
       > [details] {
         display: flex;
         flex-direction: column;
-        gap: var(--space-5);
+        gap: var(--gap-y-5);
         margin: 0;
         padding: 0;
         list-style: none;
@@ -80,7 +80,7 @@
         display: grid;
         grid-template-columns: auto minmax(0, 1fr);
         align-items: center;
-        column-gap: var(--space-4);
+        column-gap: var(--gap-x-4);
         margin: 0;
 
         > sh-icon {
@@ -140,13 +140,13 @@
       > [form] {
         display: flex;
         flex-direction: column;
-        gap: var(--space-4);
+        gap: var(--gap-y-4);
         margin: 0;
 
         > [row] {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: var(--space-4);
+          gap: var(--gap-y-4) var(--gap-x-4);
         }
 
         > small {
@@ -192,7 +192,7 @@
           flex-direction: row;
           flex-wrap: wrap;
           justify-content: center;
-          gap: var(--space-5) var(--space-7);
+          gap: var(--gap-y-5) var(--gap-x-7);
         }
       }
 

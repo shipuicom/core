@@ -8,18 +8,18 @@
     --pricing-mw: var(--block-mw);
     --pricing-py: var(--block-py);
     --pricing-px: var(--block-px);
-    --pricing-gap: var(--space-7);
+    --pricing-gap: var(--gap-y-7);
     --pricing-ec: var(--c-9, var(--primary-9));
     --pricing-ac: var(--c-9, var(--primary-9));
     --pricing-cols: 3;
-    --pricing-col-gap: var(--space-4);
-    --pricing-row-gap: var(--space-4);
+    --pricing-col-gap: var(--gap-x-4);
+    --pricing-row-gap: var(--gap-y-4);
     --pricing-narrow-mw: #{p2r(480)};
     --pricing-tier-bg: var(--base-1);
     --pricing-tier-bc: var(--base-4);
     --pricing-tier-s: var(--shape-4);
     --pricing-tier-p: var(--space-6);
-    --pricing-tier-gap: var(--space-4);
+    --pricing-tier-gap: var(--gap-y-4);
     --pricing-tier-bs: var(--box-shadow-10);
     --pricing-featured-bs: var(--box-shadow-40);
     --pricing-featured-lift: var(--space-4);
@@ -67,7 +67,7 @@
         flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
-        gap: var(--space-2);
+        gap: var(--gap-y-2) var(--gap-x-2);
 
         &:empty {
           display: none;
@@ -96,7 +96,7 @@
         display: flex;
         flex-wrap: wrap;
         align-items: baseline;
-        gap: var(--space-1);
+        gap: var(--gap-y-1) var(--gap-x-1);
         font: var(--paragraph-20);
         color: var(--pricing-dc);
 
@@ -111,7 +111,7 @@
       > ul {
         display: flex;
         flex-direction: column;
-        gap: var(--space-3);
+        gap: var(--gap-y-3);
         margin: 0;
         padding: var(--space-4) 0 0;
         list-style: none;
@@ -156,7 +156,7 @@
       > .actions {
         display: flex;
         flex-direction: column;
-        gap: var(--space-2);
+        gap: var(--gap-y-2);
         margin-top: auto;
         padding-top: var(--space-2);
 
@@ -174,7 +174,7 @@
         > [actions] {
           display: flex;
           flex-direction: column;
-          gap: var(--space-2);
+          gap: var(--gap-y-2);
         }
       }
 
@@ -251,7 +251,7 @@
           'desc price actions'
           'list list list';
         align-items: center;
-        gap: var(--space-2) var(--space-6);
+        gap: var(--gap-y-2) var(--gap-x-6);
         flex: none;
         max-width: none;
 
@@ -280,8 +280,8 @@
           grid-area: list;
           flex-direction: row;
           flex-wrap: wrap;
-          gap: var(--space-2) var(--space-5);
-          margin-top: var(--space-2);
+          gap: var(--gap-y-2) var(--gap-x-5);
+          margin-top: var(--gap-y-2);
           padding-top: var(--space-3);
 
           > li {
@@ -351,7 +351,7 @@
 
         > .actions {
           min-width: 0;
-          margin-top: var(--space-2);
+          margin-top: var(--gap-y-2);
         }
       }
 

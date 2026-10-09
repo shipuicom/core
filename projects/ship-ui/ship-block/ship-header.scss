@@ -9,7 +9,7 @@
     --header-h: #{p2r(64)};
     --header-py: 0;
     --header-px: var(--block-px);
-    --header-gap: var(--space-6);
+    --header-gap: var(--gap-x-6);
     --header-bc: var(--base-4);
     --header-z: 10;
     --header-blur: #{p2r(12)};
@@ -49,7 +49,7 @@
       > [logo] {
         display: inline-flex;
         align-items: center;
-        gap: var(--space-2);
+        gap: var(--gap-x-2);
         font: var(--paragraph-10B);
         color: var(--header-c);
         text-decoration: none;
@@ -110,7 +110,7 @@
       > nav {
         display: flex;
         align-items: center;
-        gap: var(--space-1);
+        gap: var(--gap-x-1);
         min-width: 0;
 
         ul {
@@ -126,7 +126,7 @@
         a {
           display: flex;
           align-items: center;
-          gap: var(--space-2);
+          gap: var(--gap-x-2);
           padding: var(--space-2) var(--space-3);
           font: var(--paragraph-30B);
           color: var(--header-nc);
@@ -163,7 +163,7 @@
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: var(--space-2);
+        gap: var(--gap-y-2) var(--gap-x-2);
         margin-inline-start: auto;
 
         &:empty {
@@ -226,7 +226,7 @@
       &.type-b > .inner {
         display: flex;
         flex-wrap: wrap;
-        column-gap: var(--space-3);
+        column-gap: var(--gap-x-3);
         row-gap: 0;
       }
 
@@ -244,13 +244,13 @@
         flex-basis: 100%;
         flex-direction: column;
         align-items: stretch;
-        gap: var(--space-4);
+        gap: var(--gap-y-4);
         padding-block: var(--space-2) var(--space-4);
 
         > nav {
           flex-direction: column;
           align-items: stretch;
-          gap: var(--space-1);
+          gap: var(--gap-y-1);
 
           a {
             padding: var(--space-3);

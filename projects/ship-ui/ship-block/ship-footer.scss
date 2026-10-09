@@ -22,14 +22,14 @@ $nav: '> .inner > .top > .links > nav';
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-2) var(--space-5);
+    gap: var(--gap-y-2) var(--gap-x-5);
   }
 
   #{$nav} {
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-2) var(--space-5);
+    gap: var(--gap-y-2) var(--gap-x-5);
 
     > h2,
     > h3,
@@ -54,12 +54,12 @@ $nav: '> .inner > .top > .links > nav';
     --footer-mw: var(--block-mw);
     --footer-py: var(--block-py);
     --footer-px: var(--block-px);
-    --footer-gap: var(--space-8);
+    --footer-gap: var(--gap-y-8);
     --footer-bc: var(--base-4);
     --footer-bw: #{p2r(320)};
-    --footer-top-gap: var(--space-8);
-    --footer-row-gap: var(--space-7);
-    --footer-col-gap: var(--space-6);
+    --footer-top-gap: var(--gap-x-8);
+    --footer-row-gap: var(--gap-y-7);
+    --footer-col-gap: var(--gap-x-6);
     --footer-lic: var(--primary-9);
     --footer-dc: var(--base-11);
     --footer-hc: var(--base-12);
@@ -77,14 +77,14 @@ $nav: '> .inner > .top > .links > nav';
     > .inner > .top {
       display: grid;
       grid-template-columns: minmax(0, var(--footer-bw)) minmax(0, 1fr);
-      gap: var(--footer-top-gap);
+      gap: var(--gap-y-8) var(--footer-top-gap);
     }
 
     > .inner > .top > .brand {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: var(--space-4);
+      gap: var(--gap-y-4);
       min-width: 0;
 
       &:empty {
@@ -94,7 +94,7 @@ $nav: '> .inner > .top > .links > nav';
       > [logo] {
         display: inline-flex;
         align-items: center;
-        gap: var(--space-2);
+        gap: var(--gap-x-2);
         font: var(--paragraph-10B);
         color: var(--footer-c);
         text-decoration: none;
@@ -143,7 +143,7 @@ $nav: '> .inner > .top > .links > nav';
     #{$nav} {
       display: flex;
       flex-direction: column;
-      gap: var(--space-3);
+      gap: var(--gap-y-3);
       min-width: 0;
 
       > h2,
@@ -151,7 +151,7 @@ $nav: '> .inner > .top > .links > nav';
       > h4,
       > b,
       > [heading] {
-        margin: 0 0 var(--space-1);
+        margin: 0 0 var(--gap-y-1);
         font: var(--paragraph-30B);
         color: var(--footer-hc);
       }
@@ -159,7 +159,7 @@ $nav: '> .inner > .top > .links > nav';
       ul {
         display: flex;
         flex-direction: column;
-        gap: var(--space-3);
+        gap: var(--gap-y-3);
         margin: 0;
         padding: 0;
         list-style: none;
@@ -194,7 +194,7 @@ $nav: '> .inner > .top > .links > nav';
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: var(--space-4);
+      gap: var(--gap-y-4) var(--gap-x-4);
       padding-top: var(--space-6);
       border-top: var(--border-10);
       border-top-color: var(--footer-bc);
@@ -207,7 +207,7 @@ $nav: '> .inner > .top > .links > nav';
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: var(--space-2) var(--space-5);
+        gap: var(--gap-y-2) var(--gap-x-5);
         font: var(--paragraph-40);
         color: var(--footer-lc);
 
@@ -222,7 +222,7 @@ $nav: '> .inner > .top > .links > nav';
         > [legal] {
           display: flex;
           flex-wrap: wrap;
-          gap: var(--space-2) var(--space-4);
+          gap: var(--gap-y-2) var(--gap-x-4);
         }
 
         a {
@@ -241,7 +241,7 @@ $nav: '> .inner > .top > .links > nav';
         > [social] {
           display: flex;
           flex-wrap: wrap;
-          gap: var(--space-1);
+          gap: var(--gap-y-1) var(--gap-x-1);
           margin-inline: calc((var(--footer-sh) - #{p2r(20)}) / -2);
         }
 
@@ -267,7 +267,7 @@ $nav: '> .inner > .top > .links > nav';
       > .inner > .top {
         grid-template-columns: minmax(0, 1fr);
         justify-items: center;
-        gap: var(--space-6);
+        gap: var(--gap-y-6) var(--gap-x-6);
         text-align: center;
       }
 
@@ -311,7 +311,7 @@ $nav: '> .inner > .top > .links > nav';
     // Compact: logo, inline links, then legal and social in a single row.
     &.type-c {
       --footer-py: var(--space-6);
-      --footer-gap: var(--space-4);
+      --footer-gap: var(--gap-y-4);
 
       @include inline-links();
 
@@ -320,20 +320,21 @@ $nav: '> .inner > .top > .links > nav';
         flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
-        column-gap: var(--space-6);
+        column-gap: var(--gap-x-6);
       }
 
       > .inner > .top {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: var(--space-4) var(--space-7);
+        gap: var(--gap-y-4) var(--gap-x-7);
         min-width: 0;
       }
 
       > .inner > .top > .brand {
         flex-direction: row;
         align-items: center;
+        gap: var(--gap-x-4);
 
         > p,
         > [tagline] {

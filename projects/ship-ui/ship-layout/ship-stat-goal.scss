@@ -12,7 +12,7 @@
 
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--gap-y-3);
     padding: var(--goal-py) var(--goal-px);
     background-color: var(--goal-bg);
     border: var(--border-10);
@@ -23,7 +23,7 @@
     > .head {
       display: flex;
       align-items: center;
-      gap: var(--space-2);
+      gap: var(--gap-x-2);
       font: var(--paragraph-30);
       color: var(--base-8);
 
@@ -37,7 +37,7 @@
       display: flex;
       align-items: baseline;
       flex-wrap: wrap;
-      gap: var(--space-2);
+      gap: var(--gap-y-2) var(--gap-x-2);
 
       > h2,
       > h3,
@@ -91,7 +91,7 @@
     &.type-b > .bar {
       display: grid;
       grid-template-columns: repeat(10, 1fr);
-      gap: #{p2r(4)};
+      gap: var(--gap-y-1) var(--gap-x-1);
       height: calc(var(--goal-bar-h) + #{p2r(4)});
       background: none;
       border-radius: 0;
@@ -116,7 +116,7 @@
       --goal-px: 0;
       --goal-bar-h: #{p2r(6)};
 
-      gap: var(--space-2);
+      gap: var(--gap-y-2);
       background: none;
       border: 0;
       border-radius: 0;

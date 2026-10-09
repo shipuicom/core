@@ -8,10 +8,10 @@
     --features-mw: var(--block-mw);
     --features-py: var(--block-py);
     --features-px: var(--block-px);
-    --features-gap: var(--space-7);
+    --features-gap: var(--gap-y-7);
     --features-cols: 3;
-    --features-row-gap: var(--space-6);
-    --features-col-gap: var(--space-6);
+    --features-row-gap: var(--gap-y-6);
+    --features-col-gap: var(--gap-x-6);
     --features-ec: var(--c-9, var(--primary-9));
     --features-ic: var(--c-9, var(--primary-9));
     --features-ibg: var(--c-3, var(--primary-3));
@@ -33,7 +33,7 @@
     sh-bl-feature {
       display: flex;
       flex-direction: column;
-      gap: var(--space-4);
+      gap: var(--gap-y-4);
       min-width: 0;
 
       > .icon {
@@ -66,7 +66,7 @@
       > .text {
         display: flex;
         flex-direction: column;
-        gap: var(--space-2);
+        gap: var(--gap-y-2);
 
         > h3,
         > [title] {
@@ -84,15 +84,15 @@
         > a {
           font: var(--paragraph-30B);
           color: var(--features-ic);
-          margin-top: var(--space-1);
+          margin-top: var(--gap-y-1);
         }
       }
     }
 
     // Cards: every feature on its own surface.
     &.type-b {
-      --features-row-gap: var(--space-4);
-      --features-col-gap: var(--space-4);
+      --features-row-gap: var(--gap-y-4);
+      --features-col-gap: var(--gap-x-4);
 
       sh-bl-feature {
         padding: var(--features-item-p);
@@ -110,6 +110,7 @@
       > .inner {
         display: grid;
         grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+        column-gap: var(--gap-x-7);
         align-items: start;
       }
 
@@ -125,7 +126,7 @@
 
       sh-bl-feature {
         flex-direction: row;
-        gap: var(--space-4);
+        gap: var(--gap-x-4);
       }
     }
 

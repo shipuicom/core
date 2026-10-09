@@ -8,11 +8,11 @@
     --team-mw: var(--block-mw);
     --team-py: var(--block-py);
     --team-px: var(--block-px);
-    --team-gap: var(--space-7);
+    --team-gap: var(--gap-y-7);
     --team-ec: var(--primary-9);
     --team-cols: 4;
-    --team-row-gap: var(--space-7);
-    --team-col-gap: var(--space-6);
+    --team-row-gap: var(--gap-y-7);
+    --team-col-gap: var(--gap-x-6);
     --team-ps: #{p2r(96)};
     --team-pbg: var(--base-3);
     --team-nc: var(--base-12);
@@ -39,7 +39,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--space-4);
+      gap: var(--gap-y-4);
       min-width: 0;
       text-align: center;
 
@@ -63,7 +63,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: var(--space-1);
+        gap: var(--gap-y-1);
         min-width: 0;
         font: var(--paragraph-30);
         color: var(--team-bc);
@@ -83,7 +83,7 @@
         }
 
         > p {
-          margin-top: var(--space-2);
+          margin-top: var(--gap-y-2);
         }
       }
 
@@ -91,7 +91,7 @@
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        gap: var(--space-1);
+        gap: var(--gap-y-1) var(--gap-x-1);
 
         > a,
         > button {
@@ -125,8 +125,8 @@
 
     // Cards: a square photo across the top of each card, the text start aligned below it.
     &.type-b {
-      --team-row-gap: var(--space-5);
-      --team-col-gap: var(--space-5);
+      --team-row-gap: var(--gap-y-5);
+      --team-col-gap: var(--gap-x-5);
 
       sh-bl-member {
         align-items: stretch;
@@ -168,14 +168,14 @@
     &.type-c {
       --team-cols: 2;
       --team-row-gap: 0;
-      --team-col-gap: var(--space-7);
+      --team-col-gap: var(--gap-x-7);
       --team-ps: #{p2r(48)};
 
       sh-bl-member {
         display: grid;
         grid-template-columns: auto minmax(0, 1fr) auto;
         align-items: center;
-        gap: var(--space-4);
+        gap: var(--gap-y-4) var(--gap-x-4);
         padding-block: var(--space-4);
         text-align: start;
         border-bottom: 1px solid var(--team-item-bc);
@@ -196,7 +196,7 @@
           }
 
           > p {
-            margin-top: var(--space-1);
+            margin-top: var(--gap-y-1);
             display: -webkit-box;
             -webkit-box-orient: vertical;
             -webkit-line-clamp: 2;
@@ -225,13 +225,13 @@
     @include below($narrow) {
       > .inner > .items {
         --team-cols: 2;
-        --team-col-gap: var(--space-4);
-        --team-row-gap: var(--space-6);
+        --team-col-gap: var(--gap-x-4);
+        --team-row-gap: var(--gap-y-6);
         --team-ps: #{p2r(80)};
       }
 
       &.type-b > .inner > .items {
-        --team-row-gap: var(--space-4);
+        --team-row-gap: var(--gap-y-4);
         --team-item-p: var(--space-4);
       }
 
