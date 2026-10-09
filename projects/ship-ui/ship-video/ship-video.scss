@@ -114,7 +114,7 @@
     .sh-video-ad-link {
       display: inline-flex;
       align-items: center;
-      gap: p2r(4);
+      gap: var(--gap-x-1);
       color: var(--vid-chrome-text);
       font-size: p2r(13);
       text-decoration: none;
@@ -328,7 +328,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: p2r(4);
+        gap: var(--gap-y-1);
         transform: translateX(-50%);
         pointer-events: none;
       }
@@ -391,7 +391,7 @@
     .sh-video-time {
       display: inline-flex;
       align-items: center;
-      gap: p2r(4);
+      gap: var(--gap-x-1);
       padding: 0 p2r(8);
       font-size: p2r(13);
       font-variant-numeric: tabular-nums;
