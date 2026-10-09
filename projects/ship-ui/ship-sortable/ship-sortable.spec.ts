@@ -278,41 +278,208 @@ describe('ShipSortable', () => {
       sortable4.dragEnd();
     });
 
-    function createMockTouchEvent(type: string, target: HTMLElement, clientX = 0, clientY = 0): TouchEvent {
-      const touch = {
-        identifier: Date.now(),
+    function createMockTouchEvent(
+      type: string,
+      target: HTMLElement,
+      clientX = 0,
+      clientY = 0,
+      fingers = 1
+    ): TouchEvent {
+      const touches = Array.from({ length: fingers }, (_, i) => ({
+        identifier: i,
         target: target,
-        clientX: clientX,
+        clientX: clientX + i * 40,
         clientY: clientY,
-        screenX: clientX,
+        screenX: clientX + i * 40,
         screenY: clientY,
-        pageX: clientX,
+        pageX: clientX + i * 40,
         pageY: clientY,
-      } as unknown as Touch;
+      })) as unknown as Touch[];
 
       const event = new CustomEvent(type, { bubbles: true, cancelable: true }) as any;
-      event.touches = [touch];
-      event.targetTouches = [touch];
-      event.changedTouches = [touch];
+      event.touches = touches;
+      event.targetTouches = touches;
+      event.changedTouches = touches;
       return event;
     }
 
-    it('should not initiate touch drag until sorting is enabled (default)', async () => {
-      const list4El = fixture.nativeElement.querySelector('#list4');
-      const firstItem = list4El.querySelector('.item');
+    describe('defaults (no touch inputs bound)', () => {
+      it('picks an item up only after a 300ms long press', () => {
+        const firstItem = fixture.nativeElement.querySelector('#list4 .item');
 
-      const touchStart = createMockTouchEvent('touchstart', firstItem, 100, 100);
-      firstItem.dispatchEvent(touchStart);
+        firstItem.dispatchEvent(createMockTouchEvent('touchstart', firstItem, 100, 100));
+        vi.advanceTimersByTime(299);
+        fixture.detectChanges();
+
+        expect(sortable4.isTouchDragging).toBe(false);
+        expect(sortableService.activeSource).toBeNull();
+
+        vi.advanceTimersByTime(1);
+        fixture.detectChanges();
+
+        expect(sortable4.isTouchDragging).toBe(true);
+        expect(sortableService.activeSource).toBe(sortable4);
+        expect(sortableService.activeDraggedElement).toBe(firstItem);
+        expect(firstItem.classList.contains('sortable-ghost')).toBe(true);
+        expect(document.querySelector('.sortable-ghost-touch')).toBeTruthy();
+
+        const touchEnd = createMockTouchEvent('touchend', firstItem, 100, 100);
+        document.dispatchEvent(touchEnd);
+        fixture.detectChanges();
+
+        // The drop swallows the compatibility click, and the drag is torn down.
+        expect(touchEnd.defaultPrevented).toBe(true);
+        expect(sortable4.isTouchDragging).toBe(false);
+        expect(sortableService.activeSource).toBeNull();
+        expect(document.querySelector('.sortable-ghost-touch')).toBeNull();
+      });
+
+      it('reorders after a long press and a drag', () => {
+        const firstItem = fixture.nativeElement.querySelector('#list4 .item');
+
+        firstItem.dispatchEvent(createMockTouchEvent('touchstart', firstItem, 100, 100));
+        vi.advanceTimersByTime(300);
+        fixture.detectChanges();
+
+        const touchMove = createMockTouchEvent('touchmove', firstItem, 100, 160);
+        document.dispatchEvent(touchMove);
+        expect(touchMove.defaultPrevented).toBe(true);
+
+        let dropped: ShipDropEvent | null = null;
+        sortable4.sortDrop.subscribe((event) => (dropped = event));
+
+        sortable4.dragToIndex.set(2);
+        document.dispatchEvent(createMockTouchEvent('touchend', firstItem, 100, 160));
+        fixture.detectChanges();
+
+        expect(dropped).toMatchObject({ container: sortable4, previousIndex: 0, currentIndex: 2 });
+      });
+
+      it('leaves the touch to the browser before the long press fires, so the list scrolls', () => {
+        const firstItem = fixture.nativeElement.querySelector('#list4 .item');
+
+        const touchStart = createMockTouchEvent('touchstart', firstItem, 100, 100);
+        firstItem.dispatchEvent(touchStart);
+        expect(touchStart.defaultPrevented).toBe(false);
+
+        const smallMove = createMockTouchEvent('touchmove', firstItem, 100, 104);
+        document.dispatchEvent(smallMove);
+        expect(smallMove.defaultPrevented).toBe(false);
+
+        const scroll = createMockTouchEvent('touchmove', firstItem, 100, 140);
+        document.dispatchEvent(scroll);
+        expect(scroll.defaultPrevented).toBe(false);
+
+        vi.advanceTimersByTime(300);
+        fixture.detectChanges();
+
+        expect(sortable4.isTouchDragging).toBe(false);
+        expect(sortableService.activeSource).toBeNull();
+      });
+
+      it('does nothing on a quick tap', () => {
+        const firstItem = fixture.nativeElement.querySelector('#list4 .item');
+
+        firstItem.dispatchEvent(createMockTouchEvent('touchstart', firstItem, 100, 100));
+        vi.advanceTimersByTime(120);
+
+        const touchEnd = createMockTouchEvent('touchend', firstItem, 100, 100);
+        document.dispatchEvent(touchEnd);
+        vi.advanceTimersByTime(300);
+        fixture.detectChanges();
+
+        expect(touchEnd.defaultPrevented).toBe(false);
+        expect(sortable4.isTouchDragging).toBe(false);
+        expect(sortableService.activeSource).toBeNull();
+      });
+
+      it('never picks up on a two-finger touch', () => {
+        const firstItem = fixture.nativeElement.querySelector('#list4 .item');
+
+        firstItem.dispatchEvent(createMockTouchEvent('touchstart', firstItem, 100, 100, 2));
+        vi.advanceTimersByTime(300);
+        fixture.detectChanges();
+        expect(sortable4.isTouchDragging).toBe(false);
+
+        // A second finger landing during the press cancels it too.
+        firstItem.dispatchEvent(createMockTouchEvent('touchstart', firstItem, 100, 100));
+        document.dispatchEvent(createMockTouchEvent('touchmove', firstItem, 100, 100, 2));
+        vi.advanceTimersByTime(300);
+        fixture.detectChanges();
+
+        expect(sortable4.isTouchDragging).toBe(false);
+        expect(sortableService.activeSource).toBeNull();
+      });
+
+      it('holds off the context menu only while a touch is pressed', () => {
+        const firstItem = fixture.nativeElement.querySelector('#list4 .item');
+
+        firstItem.dispatchEvent(createMockTouchEvent('touchstart', firstItem, 100, 100));
+        const during = new Event('contextmenu', { bubbles: true, cancelable: true });
+        firstItem.dispatchEvent(during);
+        expect(during.defaultPrevented).toBe(true);
+
+        document.dispatchEvent(createMockTouchEvent('touchend', firstItem, 100, 100));
+        const after = new Event('contextmenu', { bubbles: true, cancelable: true });
+        firstItem.dispatchEvent(after);
+        expect(after.defaultPrevented).toBe(false);
+      });
+
+      it('starts a mouse drag immediately, with no long press', () => {
+        const firstItem = fixture.nativeElement.querySelector('#list4 .item');
+
+        const dragStart = new Event('dragstart', { bubbles: true }) as any;
+        dragStart.dataTransfer = { effectAllowed: '', setDragImage: vi.fn() };
+        dragStart.clientX = 100;
+        dragStart.clientY = 100;
+        firstItem.dispatchEvent(dragStart);
+
+        expect(sortableService.activeSource).toBe(sortable4);
+        expect(sortableService.activeDraggedElement).toBe(firstItem);
+        expect(sortable4.dragStartIndex()).toBe(0);
+        expect(sortable4.isTouchDragging).toBe(false);
+      });
+    });
+
+    it('registers a passive touchstart for longpress and an active one for handles', () => {
+      const firstItem = fixture.nativeElement.querySelector('#list1 .item') as HTMLElement;
+      const spy = vi.spyOn(firstItem, 'addEventListener');
+      const touchStartOptions = () =>
+        spy.mock.calls.filter(([type]) => type === 'touchstart').map(([, , options]) => (options as any)?.passive);
+
+      host.list1TouchEnabled.set(true);
+      host.list1TouchActivation.set('longpress');
+      fixture.detectChanges();
+      expect(touchStartOptions()).toEqual([true]);
+
+      spy.mockClear();
+      host.list1TouchActivation.set('handle');
+      fixture.detectChanges();
+      expect(touchStartOptions()).toEqual([false]);
+
+      spy.mockClear();
+      host.list1TouchActivation.set('none');
+      fixture.detectChanges();
+      expect(touchStartOptions()).toEqual([]);
+    });
+
+    it('does not initiate touch drag when touchActivation is none', () => {
+      host.list1TouchEnabled.set(true);
+      host.list1TouchActivation.set('none');
       fixture.detectChanges();
 
+      const firstItem = fixture.nativeElement.querySelector('#list1 .item');
+      firstItem.dispatchEvent(createMockTouchEvent('touchstart', firstItem, 100, 100));
       vi.advanceTimersByTime(300);
       fixture.detectChanges();
 
-      expect(sortable4.isTouchDragging).toBe(false);
+      expect(sortable1.isTouchDragging).toBe(false);
       expect(sortableService.activeSource).toBeNull();
     });
 
     it('should not initiate touch drag when touchEnabled is explicitly false', async () => {
+      host.list1TouchEnabled.set(true);
+      fixture.detectChanges();
       host.list1TouchEnabled.set(false);
       fixture.detectChanges();
 

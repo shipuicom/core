@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- **ship-sortable**: every sortable reorders on touch with a long press. `touchEnabled` now defaults to `true`
+  (`touchActivation` stays `'longpress'`): a touch held still for 300ms picks the item up, a touch that moves first
+  still scrolls, and a two-finger touch never picks anything up. Mouse drags still start immediately and keyboard
+  reordering is unchanged. `[touchEnabled]="false"` (or `touchActivation="none"`) restores scroll-only touch; see
+  [MIGRATION.md](./MIGRATION.md).
+- **ship-sortable**: the long-press `touchstart` listener is passive, the context menu / iOS callout is held off while
+  a touch is pressed, and a touch drop no longer also clicks the item under the finger.
+
 ## 0.27.1
 
 ### Fixed

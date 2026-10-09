@@ -1,6 +1,6 @@
 <span class="hint">Long-press an item to pick it up — a plain touch still scrolls the list.</span>
 
-<sh-list [shSortable]="manager" [touchEnabled]="true" touchActivation="longpress" class="stops">
+<sh-list [shSortable]="manager" class="stops">
   @for (stop of stops(); track stop.title) {
     <div class="stop" draggable="true">
       <div class="badge">

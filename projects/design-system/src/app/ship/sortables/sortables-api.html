@@ -54,4 +54,18 @@
       attribute to a specific element within a sortable item to limit dragging to that specific region.
     </p>
   </section>
+
+  <section>
+    <h4>Touch</h4>
+    <p>
+      Every sortable reorders on touch with a long press: a touch held still for 300ms picks the item up, and a touch
+      that moves first scrolls. Mouse drags start immediately and keyboard reordering is unchanged. Set
+      <code>[touchEnabled]="false"</code>
+      or
+      <code>touchActivation="none"</code>
+      to keep touch scroll-only, or use
+      <code>touchActivation="handle"</code>
+      bound to an edit mode to drag from the handles at once.
+    </p>
+  </section>
 </app-property-viewer>
