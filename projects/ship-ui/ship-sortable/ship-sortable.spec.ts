@@ -647,3 +647,31 @@ describe('ShipSortable axis and keyboard', () => {
     row.dragEnd();
   });
 });
+
+// Items that already exist when the directive starts, as on a hydrated server-rendered page: the MutationObserver never
+// fires for them, so the directive has to read them after the first render.
+@Component({
+  template: `
+    <div shSortable>
+      <div draggable="true">a</div>
+      <div draggable="true">b</div>
+      <div draggable="true">c</div>
+    </div>
+  `,
+  imports: [ShipSortable],
+})
+class StaticItemsHost {
+  sortable = viewChild.required(ShipSortable);
+}
+
+describe('ShipSortable with pre-rendered items', () => {
+  it('picks up items that were in the DOM before it started observing', async () => {
+    const fixture = TestBed.createComponent(StaticItemsHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const items = fixture.componentInstance.sortable().dragables();
+    expect(items.length).toBe(3);
+    expect(items.map((el) => el.textContent)).toEqual(['a', 'b', 'c']);
+  });
+});

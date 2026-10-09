@@ -18,6 +18,8 @@
 ### Fixed
 
 - Dark `--error-5` and `--success-2` sat off their scale (near-black and grey); they are back on the curve.
+- `shSortable` lists that were already rendered when it started (a hydrated server-rendered page) could not be dragged
+  until their items changed; it now reads the items after the first render too.
 
 ## 0.27.1
 
