@@ -1,4 +1,5 @@
 import {
+  afterNextRender,
   Injectable,
   computed,
   Directive,
@@ -1187,15 +1188,22 @@ export class ShipSortable implements OnInit, OnDestroy {
     }
   }
 
+  #syncDragables() {
+    this.dragables.set(
+      Array.from(this.#selfEl.nativeElement.querySelectorAll('[draggable]:not(.sortable-spacer)')) as HTMLElement[]
+    );
+  }
+
+  // The observer only sees items rendered after it starts; a hydrated list reuses the server's DOM and never mutates,
+  // so read the items once after the first render too.
+  #readInitialDragables = afterNextRender(() => this.#syncDragables());
+
   #dragableObserver =
     typeof MutationObserver !== 'undefined'
       ? new MutationObserver((mutations) => {
           for (const mutation of mutations) {
             if (mutation.type === 'childList') {
-              const draggableElements = Array.from(
-                this.#selfEl.nativeElement.querySelectorAll('[draggable]:not(.sortable-spacer)')
-              ) as HTMLElement[];
-              this.dragables.set(draggableElements);
+              this.#syncDragables();
 
               if (this.isDropping) {
                 this.isDropping = false;
